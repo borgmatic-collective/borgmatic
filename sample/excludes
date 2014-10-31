@@ -1,0 +1,3 @@
+*.pyc
+/home/*/.cache
+/etc/ssl

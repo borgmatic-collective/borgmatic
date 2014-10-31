@@ -1,0 +1,51 @@
+Overview
+--------
+
+atticmatic is a simple Python wrapper script for the Attic backup software
+that initiates a backup and prunes any old backups according to a retention
+policy. The script supports specifying your settings in a declarative
+configuration file rather than having to put them all on the command-line, and
+handles common errors.
+
+Read more about Attic at https://attic-backup.org/
+
+
+Setup
+-----
+
+To get up and running with Attic, follow the Attic Quick Start guide at
+https://attic-backup.org/quickstart.html to create an Attic repository on a
+local or remote host.
+
+If the repository is on a remote host, make sure that your local root user has
+key-based ssh access to the desired user account on the remote host.
+
+To install atticmatic, run the following from the directory containing this
+README:
+
+    python setup.py install
+
+Then copy the following configuration files:
+
+    sudo cp sample/atticmatic.cron /etc/init.d/atticmatic
+    sudo cp sample/config sample/excludes /etc/atticmatic/
+
+Lastly, modify those files with your desired configuration.
+
+
+Usage
+-----
+
+You can run atticmatic and start a backup simply by invoking it without
+arguments:
+
+    atticmatic
+
+To get additional information about the progress of the backup, use the
+verbose option:
+
+    atticmattic --verbose
+
+If you'd like to see the available command-line arguments, view the help:
+
+    atticmattic --help
