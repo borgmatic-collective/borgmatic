@@ -1,0 +1,12 @@
+[location]
+# Space-separated list of source directories to backup.
+source_directories: /home /etc
+
+# Path to local or remote Attic repository.
+repository: user@backupserver:sourcehostname.attic
+
+# Retention policy for how many backups to keep in each category.
+[retention]
+keep_daily: 7
+keep_weekly: 4
+keep_monthly: 6
