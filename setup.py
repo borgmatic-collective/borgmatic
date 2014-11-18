@@ -8,4 +8,8 @@ setup(
     author_email='witten@torsion.org',
     packages=find_packages(),
     entry_points={'console_scripts': ['atticmatic = atticmatic.command:main']},
+    tests_require=(
+        'flexmock',
+        'nose',
+    )
 )

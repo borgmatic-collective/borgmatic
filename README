@@ -51,6 +51,18 @@ If you'd like to see the available command-line arguments, view the help:
     atticmattic --help
 
 
+Running tests
+-------------
+
+To install test-specific dependencies, first run:
+
+    python setup.py test
+
+To actually run tests, run:
+
+    nosetests --detailed-errors
+
+
 Feedback
 --------
 
