@@ -9,6 +9,9 @@ handles common errors.
 
 Read more about Attic at https://attic-backup.org/
 
+atticmatic is hosted at http://torsion.org/hg/atticmatic/ and is mirrored on
+GitHub and BitBucket for convenience.
+
 
 Setup
 -----
