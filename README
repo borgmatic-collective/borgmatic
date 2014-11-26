@@ -7,6 +7,24 @@ policy. The script supports specifying your settings in a declarative
 configuration file rather than having to put them all on the command-line, and
 handles common errors.
 
+Here's an example config file:
+
+    [location]
+    # Space-separated list of source directories to backup.
+    source_directories: /home /etc
+
+    # Path to local or remote Attic repository.
+    repository: user@backupserver:sourcehostname.attic
+
+    [retention]
+    # Retention policy for how many backups to keep in each category.
+    keep_daily: 7
+    keep_weekly: 4
+    keep_monthly: 6
+
+Additionally, exclude patterns can be specified in a separate excludes config
+file, one pattern per line.
+
 Read more about Attic at https://attic-backup.org/
 
 atticmatic is hosted at http://torsion.org/hg/atticmatic/ and is mirrored on
@@ -44,8 +62,10 @@ arguments:
 
     atticmatic
 
-To get additional information about the progress of the backup, use the
-verbose option:
+This will also prune any old backups as per the configured retention policy.
+By default, the backup will proceed silently except in the case of errors. But
+if you'd like to to get additional information about the progress of the
+backup as it proceeds, use the verbose option instead:
 
     atticmattic --verbose
 

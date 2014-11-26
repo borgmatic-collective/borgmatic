@@ -5,8 +5,8 @@ source_directories: /home /etc
 # Path to local or remote Attic repository.
 repository: user@backupserver:sourcehostname.attic
 
-# Retention policy for how many backups to keep in each category.
 [retention]
+# Retention policy for how many backups to keep in each category.
 keep_daily: 7
 keep_weekly: 4
 keep_monthly: 6
