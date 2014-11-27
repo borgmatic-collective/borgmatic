@@ -49,6 +49,7 @@ README:
 Then copy the following configuration files:
 
     sudo cp sample/atticmatic.cron /etc/cron.d/atticmatic
+    sudo mkdir /etc/atticmatic/
     sudo cp sample/config sample/excludes /etc/atticmatic/
 
 Lastly, modify those files with your desired configuration.
