@@ -1,5 +1,4 @@
-Overview
---------
+## Overview
 
 atticmatic is a simple Python wrapper script for the Attic backup software
 that initiates a backup and prunes any old backups according to a retention
@@ -31,8 +30,7 @@ atticmatic is hosted at http://torsion.org/hg/atticmatic/ and is mirrored on
 GitHub and BitBucket for convenience.
 
 
-Setup
------
+## Setup
 
 To get up and running with Attic, follow the Attic Quick Start guide at
 https://attic-backup.org/quickstart.html to create an Attic repository on a
@@ -55,8 +53,7 @@ Then copy the following configuration files:
 Lastly, modify those files with your desired configuration.
 
 
-Usage
------
+## Usage
 
 You can run atticmatic and start a backup simply by invoking it without
 arguments:
@@ -75,8 +72,7 @@ If you'd like to see the available command-line arguments, view the help:
     atticmattic --help
 
 
-Running tests
--------------
+## Running tests
 
 To install test-specific dependencies, first run:
 
@@ -87,7 +83,6 @@ To actually run tests, run:
     nosetests --detailed-errors
 
 
-Feedback
---------
+## Feedback
 
 Questions? Comments? Got a patch? Contact witten@torsion.org
