@@ -1,5 +1,6 @@
 title: Atticmatic
 date:
+save_as: atticmatic/index.html
 
 ## Overview
 
