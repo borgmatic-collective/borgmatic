@@ -13,7 +13,7 @@ def parse_arguments():
     '''
     parser = ArgumentParser()
     parser.add_argument(
-        '--config',
+        '-c', '--config',
         dest='config_filename',
         default='/etc/atticmatic/config',
         help='Configuration filename',
@@ -25,7 +25,7 @@ def parse_arguments():
         help='Excludes filename',
     )
     parser.add_argument(
-        '--verbose',
+        '-v', '--verbose',
         action='store_true',
         help='Display verbose progress information',
     )
