@@ -1,5 +1,5 @@
 from collections import namedtuple
-from ConfigParser import SafeConfigParser
+from ConfigParser import ConfigParser
 
 
 CONFIG_SECTION_LOCATION = 'location'
@@ -19,7 +19,7 @@ def parse_configuration(config_filename):
     Given a config filename of the expected format, return the parse configuration as a tuple of
     (LocationConfig, RetentionConfig). Raise if the format is not as expected.
     '''
-    parser = SafeConfigParser()
+    parser = ConfigParser()
     parser.read((config_filename,))
     section_names = parser.sections()
     expected_section_names = CONFIG_FORMAT.keys()
