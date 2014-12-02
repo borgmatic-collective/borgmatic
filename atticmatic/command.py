@@ -33,6 +33,6 @@ def main():
 
         create_archive(args.excludes_filename, args.verbose, *location_config)
         prune_archives(location_config.repository, args.verbose, *retention_config)
-    except (ValueError, CalledProcessError), error:
+    except (ValueError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
