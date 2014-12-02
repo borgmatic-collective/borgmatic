@@ -23,10 +23,12 @@ RetentionConfig = namedtuple('RetentionConfig', CONFIG_FORMAT[CONFIG_SECTION_RET
 def parse_configuration(config_filename):
     '''
     Given a config filename of the expected format, return the parse configuration as a tuple of
-    (LocationConfig, RetentionConfig). Raise if the format is not as expected.
+    (LocationConfig, RetentionConfig).
+
+    Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
     parser = ConfigParser()
-    parser.read((config_filename,))
+    parser.readfp(open(config_filename))
     section_names = parser.sections()
     expected_section_names = CONFIG_FORMAT.keys()
 
