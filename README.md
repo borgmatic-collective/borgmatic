@@ -1,10 +1,13 @@
+title: Atticmatic
+date:
+
 ## Overview
 
-atticmatic is a simple Python wrapper script for the Attic backup software
-that initiates a backup and prunes any old backups according to a retention
-policy. The script supports specifying your settings in a declarative
-configuration file rather than having to put them all on the command-line, and
-handles common errors.
+atticmatic is a simple Python wrapper script for the [Attic backup
+software](https://attic-backup.org/) that initiates a backup and prunes any
+old backups according to a retention policy. The script supports specifying
+your settings in a declarative configuration file rather than having to put
+them all on the command-line, and handles common errors.
 
 Here's an example config file:
 
@@ -24,25 +27,23 @@ Here's an example config file:
 Additionally, exclude patterns can be specified in a separate excludes config
 file, one pattern per line.
 
-Read more about Attic at https://attic-backup.org/
-
-atticmatic is hosted at http://torsion.org/hg/atticmatic/ and is mirrored on
-GitHub and BitBucket for convenience.
+atticmatic is hosted at <https://torsion.org/atticmatic> and is mirrored on
+[GitHub](https://github.com/witten/atticmatic) and
+[BitBucket](https://bitbucket.org/dhelfman/atticmatic) for convenience.
 
 
 ## Setup
 
-To get up and running with Attic, follow the Attic Quick Start guide at
-https://attic-backup.org/quickstart.html to create an Attic repository on a
-local or remote host.
+To get up and running with Attic, follow the [Attic Quick
+Start](https://attic-backup.org/quickstart.html) guide to create an Attic
+repository on a local or remote host.
 
 If the repository is on a remote host, make sure that your local root user has
 key-based ssh access to the desired user account on the remote host.
 
-To install atticmatic, run the following from the directory containing this
-README:
+To install atticmatic, run the following command to download and install it:
 
-    python setup.py install
+    sudo pip install hg+https://torsion.org/hg/atticmatic
 
 Then copy the following configuration files:
 
@@ -85,4 +86,4 @@ To actually run tests, run:
 
 ## Feedback
 
-Questions? Comments? Got a patch? Contact witten@torsion.org
+Questions? Comments? Got a patch? Contact <mailto:witten@torsion.org>.
