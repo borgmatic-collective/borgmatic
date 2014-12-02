@@ -28,7 +28,8 @@ Here's an example config file:
 Additionally, exclude patterns can be specified in a separate excludes config
 file, one pattern per line.
 
-atticmatic is hosted at <https://torsion.org/atticmatic> and is mirrored on
+atticmatic is hosted at <https://torsion.org/atticmatic> with [source code
+available](https://torsion.org/hg/atticmatic). It's also mirrored on
 [GitHub](https://github.com/witten/atticmatic) and
 [BitBucket](https://bitbucket.org/dhelfman/atticmatic) for convenience.
 
