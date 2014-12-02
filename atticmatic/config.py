@@ -1,5 +1,11 @@
 from collections import namedtuple
-from ConfigParser import ConfigParser
+
+try:
+    # Python 2
+    from ConfigParser import ConfigParser
+except ImportError:
+    # Python 3
+    from configparser import ConfigParser
 
 
 CONFIG_SECTION_LOCATION = 'location'
