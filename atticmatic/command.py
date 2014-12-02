@@ -7,7 +7,10 @@ from atticmatic.attic import create_archive, prune_archives
 from atticmatic.config import parse_configuration
 
 
-def main():
+def parse_arguments():
+    '''
+    Parse the command-line arguments from sys.argv and return them as an ArgumentParser instance.
+    '''
     parser = ArgumentParser()
     parser.add_argument(
         '--config',
@@ -26,13 +29,17 @@ def main():
         action='store_true',
         help='Display verbose progress information',
     )
-    args = parser.parse_args()
 
+    return parser.parse_args()
+
+
+def main():
     try:
+        args = parse_arguments()
         location_config, retention_config = parse_configuration(args.config_filename)
 
         create_archive(args.excludes_filename, args.verbose, *location_config)
         prune_archives(location_config.repository, args.verbose, *retention_config)
-    except (ValueError, CalledProcessError) as error:
+    except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

@@ -6,8 +6,9 @@ from atticmatic import config as module
 
 def insert_mock_parser(section_names):
     parser = flexmock()
-    parser.should_receive('read')
+    parser.should_receive('readfp')
     parser.should_receive('sections').and_return(section_names)
+    flexmock(module).open = lambda filename: None
     flexmock(module).ConfigParser = parser
 
     return parser
