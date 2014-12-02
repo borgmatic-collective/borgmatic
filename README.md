@@ -79,7 +79,7 @@ If you'd like to see the available command-line arguments, view the help:
 
 To install test-specific dependencies, first run:
 
-    python setup.py test
+    sudo python setup.py test
 
 To actually run tests, run:
 
