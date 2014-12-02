@@ -8,7 +8,7 @@ def insert_mock_parser(section_names):
     parser = flexmock()
     parser.should_receive('read')
     parser.should_receive('sections').and_return(section_names)
-    flexmock(module).SafeConfigParser = parser
+    flexmock(module).ConfigParser = parser
 
     return parser
 
