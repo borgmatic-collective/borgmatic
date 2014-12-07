@@ -5,6 +5,10 @@ import subprocess
 
 
 def create_archive(excludes_filename, verbose, source_directories, repository):
+    '''
+    Given an excludes filename, a vebosity flag, a space-separated list of source directories, and
+    a local or remote repository path, create an attic archive.
+    '''
     sources = tuple(source_directories.split(' '))
 
     command = (
@@ -22,13 +26,40 @@ def create_archive(excludes_filename, verbose, source_directories, repository):
     subprocess.check_call(command)
 
 
-def prune_archives(repository, verbose, keep_daily, keep_weekly, keep_monthly):
+def make_prune_flags(retention_config):
+    '''
+    Given a retention config dict mapping from option name to value, tranform it into an iterable of
+    command-line name-value flag pairs.
+
+    For example, given a retention config of:
+
+        {'keep_weekly': 4, 'keep_monthly': 6}
+
+    This will be returned as an iterable of:
+
+        (
+            ('--keep-weekly', '4'),
+            ('--keep-monthly', '6'),
+        )
+    '''
+    return (
+        ('--' + option_name.replace('_', '-'), str(retention_config[option_name]))
+        for option_name, value in retention_config.items()
+    )
+
+
+def prune_archives(verbose, repository, retention_config):
+    '''
+    Given a verbosity flag, a local or remote repository path, and a retention config dict, prune
+    attic archives according the the retention policy specified in that configuration.
+    '''
     command = (
         'attic', 'prune',
         repository,
-        '--keep-daily', str(keep_daily),
-        '--keep-weekly', str(keep_weekly),
-        '--keep-monthly', str(keep_monthly),
+    ) + tuple(
+        element
+        for pair in make_prune_flags(retention_config)
+        for element in pair
     ) + (('--verbose',) if verbose else ())
 
     subprocess.check_call(command)

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from flexmock import flexmock
 
 from atticmatic import attic as module
@@ -52,7 +54,32 @@ def test_create_archive_with_verbose_should_call_attic_with_verbose_parameters()
     )
 
 
+BASE_PRUNE_FLAGS = (
+    ('--keep-daily', '1'),
+    ('--keep-weekly', '2'),
+    ('--keep-monthly', '3'),
+)
+
+
+def test_make_prune_flags_should_return_flags_from_config():
+    retention_config = OrderedDict(
+        (
+            ('keep_daily', 1),
+            ('keep_weekly', 2),
+            ('keep_monthly', 3),
+        )
+    )
+
+    result = module.make_prune_flags(retention_config)
+
+    assert tuple(result) == BASE_PRUNE_FLAGS
+
+
 def test_prune_archives_should_call_attic_with_parameters():
+    retention_config = flexmock()
+    flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
     insert_subprocess_mock(
         (
             'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
@@ -61,15 +88,17 @@ def test_prune_archives_should_call_attic_with_parameters():
     )
 
     module.prune_archives(
-        repository='repo',
         verbose=False,
-        keep_daily=1,
-        keep_weekly=2,
-        keep_monthly=3
+        repository='repo',
+        retention_config=retention_config,
     )
 
 
 def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters():
+    retention_config = flexmock()
+    flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
     insert_subprocess_mock(
         (
             'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
@@ -80,7 +109,5 @@ def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters()
     module.prune_archives(
         repository='repo',
         verbose=True,
-        keep_daily=1,
-        keep_weekly=2,
-        keep_monthly=3
+        retention_config=retention_config,
     )

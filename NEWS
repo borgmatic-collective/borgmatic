@@ -1,0 +1,8 @@
+0.0.2
+
+ * Configuration support for additional attic prune flags: keep_within, keep_hourly, keep_yearly,
+   and prefix.
+
+0.0.1
+
+ * Initial release.
