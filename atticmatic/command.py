@@ -38,8 +38,8 @@ def main():
         args = parse_arguments()
         location_config, retention_config = parse_configuration(args.config_filename)
 
-        create_archive(args.excludes_filename, args.verbose, *location_config)
-        prune_archives(location_config.repository, args.verbose, *retention_config)
+        create_archive(args.excludes_filename, args.verbose, **location_config)
+        prune_archives(args.verbose, location_config['repository'], retention_config)
     except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
