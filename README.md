@@ -38,7 +38,12 @@ available](https://torsion.org/hg/atticmatic). It's also mirrored on
 
 To get up and running with Attic, follow the [Attic Quick
 Start](https://attic-backup.org/quickstart.html) guide to create an Attic
-repository on a local or remote host.
+repository on a local or remote host. Note that if you plan to run atticmatic
+on a schedule with cron, and you encrypt your attic repository with a
+passphrase instead of a key file, you'll need to set the `ATTIC_PASSPHRASE`
+environment variable. See [attic's repository encryption
+documentation](https://attic-backup.org/quickstart.html#encrypted-repos) for
+more info.
 
 If the repository is on a remote host, make sure that your local root user has
 key-based ssh access to the desired user account on the remote host.
