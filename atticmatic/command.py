@@ -7,7 +7,11 @@ from atticmatic.attic import create_archive, prune_archives
 from atticmatic.config import parse_configuration
 
 
-def parse_arguments():
+DEFAULT_CONFIG_FILENAME = '/etc/atticmatic/config'
+DEFAULT_EXCLUDES_FILENAME = '/etc/atticmatic/excludes'
+
+
+def parse_arguments(*arguments):
     '''
     Parse the command-line arguments from sys.argv and return them as an ArgumentParser instance.
     '''
@@ -15,13 +19,13 @@ def parse_arguments():
     parser.add_argument(
         '-c', '--config',
         dest='config_filename',
-        default='/etc/atticmatic/config',
+        default=DEFAULT_CONFIG_FILENAME,
         help='Configuration filename',
     )
     parser.add_argument(
         '--excludes',
         dest='excludes_filename',
-        default='/etc/atticmatic/excludes',
+        default=DEFAULT_EXCLUDES_FILENAME,
         help='Excludes filename',
     )
     parser.add_argument(
@@ -30,12 +34,12 @@ def parse_arguments():
         help='Display verbose progress information',
     )
 
-    return parser.parse_args()
+    return parser.parse_args(arguments)
 
 
 def main():
     try:
-        args = parse_arguments()
+        args = parse_arguments(*sys.argv[1:])
         location_config, retention_config = parse_configuration(args.config_filename)
 
         create_archive(args.excludes_filename, args.verbose, **location_config)
