@@ -1,3 +1,8 @@
+default
+
+ * Integration tests for argument parsing.
+ * Documentation updates about repository encryption.
+
 0.0.2
 
  * Configuration support for additional attic prune flags: keep_within, keep_hourly, keep_yearly,
