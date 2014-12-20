@@ -13,7 +13,7 @@ DEFAULT_EXCLUDES_FILENAME = '/etc/atticmatic/excludes'
 
 def parse_arguments(*arguments):
     '''
-    Parse the command-line arguments from sys.argv and return them as an ArgumentParser instance.
+    Parse the given command-line arguments and return them as an ArgumentParser instance.
     '''
     parser = ArgumentParser()
     parser.add_argument(
