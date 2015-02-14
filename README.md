@@ -51,7 +51,7 @@ key-based ssh access to the desired user account on the remote host.
 
 To install atticmatic, run the following command to download and install it:
 
-    sudo pip install hg+https://torsion.org/hg/atticmatic
+    sudo pip install --upgrade hg+https://torsion.org/hg/atticmatic
 
 Then copy the following configuration files:
 
