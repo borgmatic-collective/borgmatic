@@ -1,5 +1,5 @@
 from datetime import datetime
-
+import os
 import platform
 import subprocess
 
@@ -63,3 +63,19 @@ def prune_archives(verbose, repository, retention_config):
     ) + (('--verbose',) if verbose else ())
 
     subprocess.check_call(command)
+
+
+def check_archives(verbose, repository):
+    '''
+    Given a verbosity flag and a local or remote repository path, check the contained attic archives
+    for consistency.
+    '''
+    command = (
+        'attic', 'check',
+        repository,
+    ) + (('--verbose',) if verbose else ())
+
+    # Attic's check command spews to stdout even without the verbose flag. Suppress it.
+    stdout = None if verbose else open(os.devnull, 'w')
+
+    subprocess.check_call(command, stdout=stdout)

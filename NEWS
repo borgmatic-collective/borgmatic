@@ -1,5 +1,6 @@
-default
+0.0.3
 
+ * After pruning, run attic's consistency checks on all archives.
  * Integration tests for argument parsing.
  * Documentation updates about repository encryption.
 

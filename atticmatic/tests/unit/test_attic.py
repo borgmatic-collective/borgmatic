@@ -5,9 +5,9 @@ from flexmock import flexmock
 from atticmatic import attic as module
 
 
-def insert_subprocess_mock(check_call_command):
+def insert_subprocess_mock(check_call_command, **kwargs):
     subprocess = flexmock()
-    subprocess.should_receive('check_call').with_args(check_call_command).once()
+    subprocess.should_receive('check_call').with_args(check_call_command, **kwargs).once()
     flexmock(module).subprocess = subprocess
 
 
@@ -110,4 +110,35 @@ def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters()
         repository='repo',
         verbose=True,
         retention_config=retention_config,
+    )
+
+
+def test_check_archives_should_call_attic_with_parameters():
+    stdout = flexmock()
+    insert_subprocess_mock(
+        ('attic', 'check', 'repo'),
+        stdout=stdout,
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+    flexmock(module).open = lambda filename, mode: stdout
+    flexmock(module).os = flexmock().should_receive('devnull').mock
+
+    module.check_archives(
+        verbose=False,
+        repository='repo',
+    )
+
+
+def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters():
+    insert_subprocess_mock(
+        ('attic', 'check', 'repo', '--verbose'),
+        stdout=None,
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.check_archives(
+        verbose=True,
+        repository='repo',
     )
