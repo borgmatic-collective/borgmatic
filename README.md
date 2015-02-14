@@ -5,10 +5,11 @@ save_as: atticmatic/index.html
 ## Overview
 
 atticmatic is a simple Python wrapper script for the [Attic backup
-software](https://attic-backup.org/) that initiates a backup and prunes any
-old backups according to a retention policy. The script supports specifying
-your settings in a declarative configuration file rather than having to put
-them all on the command-line, and handles common errors.
+software](https://attic-backup.org/) that initiates a backup, prunes any old
+backups according to a retention policy, and validates backups for
+consistency. The script supports specifying your settings in a declarative
+configuration file rather than having to put them all on the command-line, and
+handles common errors.
 
 Here's an example config file:
 
@@ -68,7 +69,9 @@ arguments:
 
     atticmatic
 
-This will also prune any old backups as per the configured retention policy.
+This will also prune any old backups as per the configured retention policy,
+and check backups for consistency problems due to things like file damage.
+
 By default, the backup will proceed silently except in the case of errors. But
 if you'd like to to get additional information about the progress of the
 backup as it proceeds, use the verbose option instead:

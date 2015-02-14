@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from subprocess import CalledProcessError
 import sys
 
-from atticmatic.attic import create_archive, prune_archives
+from atticmatic.attic import check_archives, create_archive, prune_archives
 from atticmatic.config import parse_configuration
 
 
@@ -41,9 +41,11 @@ def main():
     try:
         args = parse_arguments(*sys.argv[1:])
         location_config, retention_config = parse_configuration(args.config_filename)
+        repository = location_config['repository']
 
         create_archive(args.excludes_filename, args.verbose, **location_config)
-        prune_archives(args.verbose, location_config['repository'], retention_config)
+        prune_archives(args.verbose, repository, retention_config)
+        check_archives(args.verbose, repository)
     except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
