@@ -94,6 +94,27 @@ To actually run tests, run:
     nosetests --detailed-errors
 
 
+## Troubleshooting
+
+### Broken pipe with remote repository
+
+When running atticmatic on a large remote repository, you may receive errors
+like the following, particularly while "attic check" is valiating backups for
+consistency:
+
+    Write failed: Broken pipe
+    attic: Error: Connection closed by remote host
+
+This error can be caused by an ssh timeout, which you can rectify by adding
+the following to the ~/.ssh/config file on the client:
+
+    Host *
+        ServerAliveInterval 120
+
+This should make the client keep the connection alive while validating
+backups.
+
+
 ## Feedback
 
 Questions? Comments? Got a patch? Contact <mailto:witten@torsion.org>.

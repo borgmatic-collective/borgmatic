@@ -1,3 +1,7 @@
+0.0.4-dev
+
+ * Added a troubleshooting section with steps to deal with broken pipes.
+
 0.0.3
 
  * After pruning, run attic's consistency checks on all archives.
