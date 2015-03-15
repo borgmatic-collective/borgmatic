@@ -90,13 +90,13 @@ If you'd like to see the available command-line arguments, view the help:
 
 ## Running tests
 
-To install test-specific dependencies, first run:
+First install tox, which is used for setting up testing environments:
 
-    sudo python setup.py test
+    pip install tox
 
-To actually run tests, run:
+Then, to actually run tests, run:
 
-    nosetests
+    tox
 
 
 ## Troubleshooting
