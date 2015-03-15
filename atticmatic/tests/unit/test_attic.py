@@ -1,5 +1,10 @@
 from collections import OrderedDict
-import sys
+try:
+    # Python 2
+    import __builtin__ as builtins
+except ImportError:
+    # Python 3
+    import builtins
 
 from flexmock import flexmock
 from nose.tools import assert_raises
@@ -23,7 +28,7 @@ def insert_subprocess_check_output_mock(call_command, error_output=None, **kwarg
 
     if error_output:
         expectation.and_raise(MockCalledProcessError, output=error_output)
-        flexmock(sys.modules['__builtin__']).should_receive('print')
+        flexmock(builtins).should_receive('print')
 
     flexmock(module).subprocess = subprocess
     return subprocess

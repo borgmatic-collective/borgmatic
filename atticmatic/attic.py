@@ -28,7 +28,7 @@ def create_archive(excludes_filename, verbose, source_directories, repository):
 
     try:
         subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError, error:
+    except subprocess.CalledProcessError as error:
         print(error.output.strip(), file=sys.stderr)
 
         if re.search('Error: Repository .* does not exist', error.output):
