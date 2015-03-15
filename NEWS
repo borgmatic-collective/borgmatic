@@ -1,4 +1,4 @@
-0.0.4-dev
+0.0.4
 
  * Now using tox to run tests against multiple versions of Python in one go.
  * Helpful error message about how to create a repository if one is missing.
