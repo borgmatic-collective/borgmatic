@@ -46,6 +46,6 @@ def main():
         create_archive(args.excludes_filename, args.verbose, **location_config)
         prune_archives(args.verbose, repository, retention_config)
         check_archives(args.verbose, repository)
-    except (ValueError, IOError, CalledProcessError, RuntimeError) as error:
+    except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

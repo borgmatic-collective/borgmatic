@@ -37,6 +37,18 @@ available](https://torsion.org/hg/atticmatic). It's also mirrored on
 
 ## Setup
 
+To get up and running with Attic, follow the [Attic Quick
+Start](https://attic-backup.org/quickstart.html) guide to create an Attic
+repository on a local or remote host. Note that if you plan to run atticmatic
+on a schedule with cron, and you encrypt your attic repository with a
+passphrase instead of a key file, you'll need to set the `ATTIC_PASSPHRASE`
+environment variable. See [attic's repository encryption
+documentation](https://attic-backup.org/quickstart.html#encrypted-repos) for
+more info.
+
+If the repository is on a remote host, make sure that your local root user has
+key-based ssh access to the desired user account on the remote host.
+
 To install atticmatic, run the following command to download and install it:
 
     sudo pip install --upgrade hg+https://torsion.org/hg/atticmatic
@@ -47,24 +59,7 @@ Then copy the following configuration files:
     sudo mkdir /etc/atticmatic/
     sudo cp sample/config sample/excludes /etc/atticmatic/
 
-Modify those files with your desired configuration, including the path to an
-attic repository.
-
-If you don't yet have an attic repository, then the first time you run
-atticmatic, you'll get an error with information on how to create a repository
-on a local or remote host.
-
-And if the repository is on a remote host, make sure that your local root user
-has key-based ssh access to the desired user account on the remote host.
-
-It is recommended that you create your attic repository with keyfile
-encryption, as passphrase-based encryption is less suited for automated
-backups. If you do plan to run atticmatic on a schedule with cron, and you
-encrypt your attic repository with a passphrase instead of a key file, you'll
-need to set the `ATTIC_PASSPHRASE` environment variable. See [attic's
-repository encryption
-documentation](https://attic-backup.org/quickstart.html#encrypted-repos) for
-more info.
+Lastly, modify those files with your desired configuration.
 
 
 ## Usage
