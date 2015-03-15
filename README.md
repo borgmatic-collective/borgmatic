@@ -91,7 +91,7 @@ To install test-specific dependencies, first run:
 
 To actually run tests, run:
 
-    nosetests --detailed-errors
+    nosetests
 
 
 ## Troubleshooting
