@@ -1,10 +1,7 @@
-from __future__ import print_function
 from datetime import datetime
 import os
 import platform
-import re
 import subprocess
-import sys
 
 
 def create_archive(excludes_filename, verbose, source_directories, repository):
@@ -26,14 +23,7 @@ def create_archive(excludes_filename, verbose, source_directories, repository):
         ('--verbose', '--stats') if verbose else ()
     )
 
-    try:
-        subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as error:
-        print(error.output.strip(), file=sys.stderr)
-
-        if re.search('Error: Repository .* does not exist', error.output):
-            raise RuntimeError('To create a repository, run: attic init --encryption=keyfile {}'.format(repository))
-        raise error
+    subprocess.check_call(command)
 
 
 def make_prune_flags(retention_config):

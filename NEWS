@@ -1,3 +1,8 @@
+0.0.5
+
+ * Fixed regression with --verbose output being buffered. This means dropping the helpful error
+   message introduced in 0.0.4.
+
 0.0.4
 
  * Now using tox to run tests against multiple versions of Python in one go.
