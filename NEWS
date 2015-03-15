@@ -1,5 +1,6 @@
 0.0.4-dev
 
+ * Helpful error message about how to create a repository if one is missing.
  * Added a troubleshooting section with steps to deal with broken pipes.
  * Added nosetests config file (setup.cfg) with defaults.
 
