@@ -1,8 +1,9 @@
 0.0.4-dev
 
+ * Now using tox to run tests against multiple versions of Python in one go.
  * Helpful error message about how to create a repository if one is missing.
- * Added a troubleshooting section with steps to deal with broken pipes.
- * Added nosetests config file (setup.cfg) with defaults.
+ * Troubleshooting section with steps to deal with broken pipes.
+ * Nosetests config file (setup.cfg) with defaults.
 
 0.0.3
 
