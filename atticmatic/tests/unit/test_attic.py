@@ -1,14 +1,44 @@
 from collections import OrderedDict
+import sys
 
 from flexmock import flexmock
+from nose.tools import assert_raises
 
 from atticmatic import attic as module
 
 
-def insert_subprocess_mock(check_call_command, **kwargs):
-    subprocess = flexmock()
-    subprocess.should_receive('check_call').with_args(check_call_command, **kwargs).once()
+class MockCalledProcessError(Exception):
+    def __init__(self, output):
+        self.output = output
+
+
+def insert_subprocess_check_output_mock(call_command, error_output=None, **kwargs):
+    subprocess = flexmock(CalledProcessError=MockCalledProcessError, STDOUT=flexmock())
+
+    expectation = subprocess.should_receive('check_output').with_args(
+        call_command,
+        stderr=subprocess.STDOUT,
+        **kwargs
+    ).once()
+
+    if error_output:
+        expectation.and_raise(MockCalledProcessError, output=error_output)
+        flexmock(sys.modules['__builtin__']).should_receive('print')
+
     flexmock(module).subprocess = subprocess
+    return subprocess
+
+
+def insert_subprocess_check_call_mock(call_command, **kwargs):
+    subprocess = flexmock()
+
+    subprocess.should_receive('check_call').with_args(
+        call_command,
+        **kwargs
+    ).once()
+
+    flexmock(module).subprocess = subprocess
+    return subprocess
 
 
 def insert_platform_mock():
@@ -22,7 +52,7 @@ def insert_datetime_mock():
 
 
 def test_create_archive_should_call_attic_with_parameters():
-    insert_subprocess_mock(
+    insert_subprocess_check_output_mock(
         ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar'),
     )
     insert_platform_mock()
@@ -37,7 +67,7 @@ def test_create_archive_should_call_attic_with_parameters():
 
 
 def test_create_archive_with_verbose_should_call_attic_with_verbose_parameters():
-    insert_subprocess_mock(
+    insert_subprocess_check_output_mock(
         (
             'attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar',
             '--verbose', '--stats',
@@ -52,6 +82,39 @@ def test_create_archive_with_verbose_should_call_attic_with_verbose_parameters()
         source_directories='foo bar',
         repository='repo',
     )
+
+def test_create_archive_with_missing_repository_should_raise():
+    insert_subprocess_check_output_mock(
+        ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar'),
+        error_output='Error: Repository repo does not exist',
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    with assert_raises(RuntimeError):
+        module.create_archive(
+            excludes_filename='excludes',
+            verbose=False,
+            source_directories='foo bar',
+            repository='repo',
+        )
+
+
+def test_create_archive_with_other_error_should_raise():
+    subprocess = insert_subprocess_check_output_mock(
+        ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar'),
+        error_output='Something went wrong',
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    with assert_raises(subprocess.CalledProcessError):
+        module.create_archive(
+            excludes_filename='excludes',
+            verbose=False,
+            source_directories='foo bar',
+            repository='repo',
+        )
 
 
 BASE_PRUNE_FLAGS = (
@@ -80,7 +143,7 @@ def test_prune_archives_should_call_attic_with_parameters():
     flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(
+    insert_subprocess_check_call_mock(
         (
             'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
             '3',
@@ -99,7 +162,7 @@ def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters()
     flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(
+    insert_subprocess_check_call_mock(
         (
             'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
             '3', '--verbose',
@@ -115,7 +178,7 @@ def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters()
 
 def test_check_archives_should_call_attic_with_parameters():
     stdout = flexmock()
-    insert_subprocess_mock(
+    insert_subprocess_check_call_mock(
         ('attic', 'check', 'repo'),
         stdout=stdout,
     )
@@ -131,7 +194,7 @@ def test_check_archives_should_call_attic_with_parameters():
 
 
 def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters():
-    insert_subprocess_mock(
+    insert_subprocess_check_call_mock(
         ('attic', 'check', 'repo', '--verbose'),
         stdout=None,
     )
