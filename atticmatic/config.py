@@ -39,6 +39,12 @@ CONFIG_FORMAT = (
             option('keep_yearly', int, required=False),
             option('prefix', required=False),
         ),
+    ),
+    Section_format(
+        'consistency',
+        (
+            option('checks', required=False),
+        ),
     )
 )
 
@@ -49,20 +55,34 @@ def validate_configuration_format(parser, config_format):
     configuration file has the expected sections, that any required options are present in those
     sections, and that there aren't any unexpected options.
 
+    A section is required if any of its contained options are required.
+
     Raise ValueError if anything is awry.
     '''
-    section_names = parser.sections()
-    required_section_names = tuple(section.name for section in config_format)
+    section_names = set(parser.sections())
+    required_section_names = tuple(
+        section.name for section in config_format
+        if any(option.required for option in section.options)
+    )
 
-    if set(section_names) != set(required_section_names):
+    unknown_section_names = section_names - set(
+        section_format.name for section_format in config_format
+    )
+    if unknown_section_names:
         raise ValueError(
-            'Expected config sections {} but found sections: {}'.format(
-                ', '.join(required_section_names),
-                ', '.join(section_names)
-            )
+            'Unknown config sections found: {}'.format(', '.join(unknown_section_names))
+        )
+
+    missing_section_names = set(required_section_names) - section_names
+    if missing_section_names:
+        raise ValueError(
+            'Missing config sections: {}'.format(', '.join(missing_section_names))
         )
 
     for section_format in config_format:
+        if section_format.name not in section_names:
+            continue
+
         option_names = parser.options(section_format.name)
         expected_options = section_format.options
 
@@ -90,6 +110,11 @@ def validate_configuration_format(parser, config_format):
             )
 
 
+# Describes a parsed configuration, where each attribute is the name of a configuration file section 
+# and each value is a dict of that section's parsed options.
+Parsed_config = namedtuple('Config', (section_format.name for section_format in CONFIG_FORMAT))
+
+
 def parse_section_options(parser, section_format):
     '''
     Given an open ConfigParser and an expected section format, return the option values from that
@@ -112,8 +137,8 @@ def parse_section_options(parser, section_format):
 
 def parse_configuration(config_filename):
     '''
-    Given a config filename of the expected format, return the parsed configuration as a tuple of
-    (location config, retention config) where each config is a dict of that section's options.
+    Given a config filename of the expected format, return the parsed configuration as Parsed_config
+    data structure.
 
     Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
@@ -122,7 +147,9 @@ def parse_configuration(config_filename):
 
     validate_configuration_format(parser, CONFIG_FORMAT)
 
-    return tuple(
-        parse_section_options(parser, section_format)
-        for section_format in CONFIG_FORMAT
+    return Parsed_config(
+        *(
+            parse_section_options(parser, section_format)
+            for section_format in CONFIG_FORMAT
+        )
     )

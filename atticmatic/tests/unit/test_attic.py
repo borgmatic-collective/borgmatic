@@ -11,6 +11,12 @@ def insert_subprocess_mock(check_call_command, **kwargs):
     flexmock(module).subprocess = subprocess
 
 
+def insert_subprocess_never():
+    subprocess = flexmock()
+    subprocess.should_receive('check_call').never()
+    flexmock(module).subprocess = subprocess
+
+
 def insert_platform_mock():
     flexmock(module).platform = flexmock().should_receive('node').and_return('host').mock
 
@@ -70,14 +76,14 @@ def test_make_prune_flags_should_return_flags_from_config():
         )
     )
 
-    result = module.make_prune_flags(retention_config)
+    result = module._make_prune_flags(retention_config)
 
     assert tuple(result) == BASE_PRUNE_FLAGS
 
 
 def test_prune_archives_should_call_attic_with_parameters():
     retention_config = flexmock()
-    flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
     insert_subprocess_mock(
@@ -96,7 +102,7 @@ def test_prune_archives_should_call_attic_with_parameters():
 
 def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters():
     retention_config = flexmock()
-    flexmock(module).should_receive('make_prune_flags').with_args(retention_config).and_return(
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
     insert_subprocess_mock(
@@ -113,7 +119,46 @@ def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters()
     )
 
 
+def test_parse_checks_returns_them_as_tuple():
+    checks = module._parse_checks({'checks': 'foo disabled bar'})
+
+    assert checks == ('foo', 'bar')
+
+
+def test_parse_checks_with_missing_value_returns_defaults():
+    checks = module._parse_checks({})
+
+    assert checks == module.DEFAULT_CHECKS
+
+
+def test_parse_checks_with_blank_value_returns_defaults():
+    checks = module._parse_checks({'checks': ''})
+
+    assert checks == module.DEFAULT_CHECKS
+
+
+def test_parse_checks_with_disabled_returns_no_checks():
+    checks = module._parse_checks({'checks': 'disabled'})
+
+    assert checks == ()
+
+
+def test_make_check_flags_with_checks_returns_flags():
+    flags = module._make_check_flags(('foo', 'bar'))
+
+    assert flags == ('--foo-only', '--bar-only')
+
+
+def test_make_check_flags_with_default_checks_returns_no_flags():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS)
+
+    assert flags == ()
+
+
 def test_check_archives_should_call_attic_with_parameters():
+    consistency_config = flexmock()
+    flexmock(module).should_receive('_parse_checks').and_return(flexmock())
+    flexmock(module).should_receive('_make_check_flags').and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
         ('attic', 'check', 'repo'),
@@ -127,10 +172,14 @@ def test_check_archives_should_call_attic_with_parameters():
     module.check_archives(
         verbose=False,
         repository='repo',
+        consistency_config=consistency_config,
     )
 
 
 def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters():
+    consistency_config = flexmock()
+    flexmock(module).should_receive('_parse_checks').and_return(flexmock())
+    flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
         ('attic', 'check', 'repo', '--verbose'),
         stdout=None,
@@ -141,4 +190,19 @@ def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters()
     module.check_archives(
         verbose=True,
         repository='repo',
+        consistency_config=consistency_config,
     )
+
+
+def test_check_archives_without_any_checks_should_bail():
+    consistency_config = flexmock()
+    flexmock(module).should_receive('_parse_checks').and_return(())
+    insert_subprocess_never()
+
+    module.check_archives(
+        verbose=False,
+        repository='repo',
+        consistency_config=consistency_config,
+    )
+
+
