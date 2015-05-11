@@ -40,12 +40,12 @@ def parse_arguments(*arguments):
 def main():
     try:
         args = parse_arguments(*sys.argv[1:])
-        location_config, retention_config = parse_configuration(args.config_filename)
-        repository = location_config['repository']
+        config = parse_configuration(args.config_filename)
+        repository = config.location['repository']
 
-        create_archive(args.excludes_filename, args.verbose, **location_config)
-        prune_archives(args.verbose, repository, retention_config)
-        check_archives(args.verbose, repository)
+        create_archive(args.excludes_filename, args.verbose, **config.location)
+        prune_archives(args.verbose, repository, config.retention)
+        check_archives(args.verbose, repository, config.consistency)
     except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

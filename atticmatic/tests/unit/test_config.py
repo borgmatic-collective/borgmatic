@@ -41,19 +41,55 @@ def test_validate_configuration_format_with_valid_config_should_not_raise():
     module.validate_configuration_format(parser, config_format)
 
 
-def test_validate_configuration_format_with_missing_section_should_raise():
+def test_validate_configuration_format_with_missing_required_section_should_raise():
     parser = flexmock()
     parser.should_receive('sections').and_return(('section',))
     config_format = (
-        module.Section_format('section', options=()),
-        module.Section_format('missing', options=()),
+        module.Section_format(
+            'section',
+            options=(
+                module.Config_option('stuff', str, required=True),
+            ),
+        ),
+        # At least one option in this section is required, so the section is required.
+        module.Section_format(
+            'missing',
+            options=(
+                module.Config_option('such', str, required=False),
+                module.Config_option('things', str, required=True),
+            ),
+        ),
     )
 
     with assert_raises(ValueError):
         module.validate_configuration_format(parser, config_format)
 
 
-def test_validate_configuration_format_with_extra_section_should_raise():
+def test_validate_configuration_format_with_missing_optional_section_should_not_raise():
+    parser = flexmock()
+    parser.should_receive('sections').and_return(('section',))
+    parser.should_receive('options').with_args('section').and_return(('stuff',))
+    config_format = (
+        module.Section_format(
+            'section',
+            options=(
+                module.Config_option('stuff', str, required=True),
+            ),
+        ),
+        # No options in the section are required, so the section is optional.
+        module.Section_format(
+            'missing',
+            options=(
+                module.Config_option('such', str, required=False),
+                module.Config_option('things', str, required=False),
+            ),
+        ),
+    )
+
+    module.validate_configuration_format(parser, config_format)
+
+
+def test_validate_configuration_format_with_unknown_section_should_raise():
     parser = flexmock()
     parser.should_receive('sections').and_return(('section', 'extra'))
     config_format = (
@@ -139,6 +175,26 @@ def test_parse_section_options_should_return_section_options():
     )
 
 
+def test_parse_section_options_for_missing_section_should_return_empty_dict():
+    parser = flexmock()
+    parser.should_receive('get').never()
+    parser.should_receive('getint').never()
+    parser.should_receive('has_option').with_args('section', 'foo').and_return(False)
+    parser.should_receive('has_option').with_args('section', 'bar').and_return(False)
+
+    section_format = module.Section_format(
+        'section',
+        (
+            module.Config_option('foo', str, required=False),
+            module.Config_option('bar', int, required=False),
+        ),
+    )
+
+    config = module.parse_section_options(parser, section_format)
+
+    assert config == OrderedDict()
+
+
 def insert_mock_parser():
     parser = flexmock()
     parser.should_receive('readfp')
@@ -154,13 +210,13 @@ def test_parse_configuration_should_return_section_configs():
     mock_module.should_receive('validate_configuration_format').with_args(
         parser, module.CONFIG_FORMAT,
     ).once()
-    mock_section_configs = (flexmock(), flexmock())
+    mock_section_configs = (flexmock(),) * len(module.CONFIG_FORMAT)
 
     for section_format, section_config in zip(module.CONFIG_FORMAT, mock_section_configs):
         mock_module.should_receive('parse_section_options').with_args(
             parser, section_format,
         ).and_return(section_config).once()
 
-    section_configs = module.parse_configuration('filename')
+    parsed_config = module.parse_configuration('filename')
 
-    assert section_configs == mock_section_configs
+    assert parsed_config == module.Parsed_config(*mock_section_configs)

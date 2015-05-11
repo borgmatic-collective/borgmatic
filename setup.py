@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='atticmatic',
-    version='0.0.5',
+    version='0.0.6',
     description='A wrapper script for Attic backup software that creates and prunes backups',
     author='Dan Helfman',
     author_email='witten@torsion.org',

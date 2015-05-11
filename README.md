@@ -26,6 +26,9 @@ Here's an example config file:
     keep_weekly: 4
     keep_monthly: 6
 
+    [consistency]
+    checks: repository archives
+
 Additionally, exclude patterns can be specified in a separate excludes config
 file, one pattern per line.
 

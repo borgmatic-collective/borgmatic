@@ -1,3 +1,7 @@
+0.0.6
+
+ * New configuration section for customizing which Attic consistency checks run, if any.
+
 0.0.5
 
  * Fixed regression with --verbose output being buffered. This means dropping the helpful error
