@@ -27,6 +27,7 @@ Here's an example config file:
     keep_monthly: 6
 
     [consistency]
+    # Consistency checks to run, or "disabled" to prevent checks.
     checks: repository archives
 
 Additionally, exclude patterns can be specified in a separate excludes config
