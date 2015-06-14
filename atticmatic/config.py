@@ -143,7 +143,7 @@ def parse_configuration(config_filename):
     Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
     parser = ConfigParser()
-    parser.readfp(open(config_filename))
+    parser.read(config_filename)
 
     validate_configuration_format(parser, CONFIG_FORMAT)
 

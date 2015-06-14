@@ -3,6 +3,7 @@ from collections import OrderedDict
 from flexmock import flexmock
 
 from atticmatic import attic as module
+from atticmatic.tests.builtins import builtins_mock
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):
@@ -18,7 +19,7 @@ def insert_subprocess_never():
 
 
 def insert_platform_mock():
-    flexmock(module).platform = flexmock().should_receive('node').and_return('host').mock
+    flexmock(module.platform).should_receive('node').and_return('host')
 
 
 def insert_datetime_mock():
@@ -166,8 +167,8 @@ def test_check_archives_should_call_attic_with_parameters():
     )
     insert_platform_mock()
     insert_datetime_mock()
-    flexmock(module).open = lambda filename, mode: stdout
-    flexmock(module).os = flexmock().should_receive('devnull').mock
+    builtins_mock().should_receive('open').and_return(stdout)
+    flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
         verbose=False,
@@ -204,5 +205,3 @@ def test_check_archives_without_any_checks_should_bail():
         repository='repo',
         consistency_config=consistency_config,
     )
-
-
