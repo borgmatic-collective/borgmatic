@@ -197,9 +197,8 @@ def test_parse_section_options_for_missing_section_should_return_empty_dict():
 
 def insert_mock_parser():
     parser = flexmock()
-    parser.should_receive('readfp')
-    flexmock(module).open = lambda filename: None
-    flexmock(module).ConfigParser = parser
+    parser.should_receive('read')
+    module.ConfigParser = lambda: parser
 
     return parser
 
