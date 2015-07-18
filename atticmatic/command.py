@@ -29,9 +29,9 @@ def parse_arguments(*arguments):
         help='Excludes filename',
     )
     parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Display verbose progress information',
+        '-v', '--verbosity',
+        type=int,
+        help='Display verbose progress (1 for some, 2 for lots)',
     )
 
     return parser.parse_args(arguments)
@@ -43,9 +43,9 @@ def main():
         config = parse_configuration(args.config_filename)
         repository = config.location['repository']
 
-        create_archive(args.excludes_filename, args.verbose, **config.location)
-        prune_archives(args.verbose, repository, config.retention)
-        check_archives(args.verbose, repository, config.consistency)
+        create_archive(args.excludes_filename, args.verbosity, **config.location)
+        prune_archives(args.verbosity, repository, config.retention)
+        check_archives(args.verbosity, repository, config.consistency)
     except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

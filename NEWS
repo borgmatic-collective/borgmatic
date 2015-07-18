@@ -1,5 +1,6 @@
-0.0.7-dev
+0.0.7
 
+ * Flag for multiple levels of verbosity: some, and lots.
  * Improved mocking of Python builtins in unit tests.
 
 0.0.6

@@ -3,13 +3,19 @@ import os
 import platform
 import subprocess
 
+from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
-def create_archive(excludes_filename, verbose, source_directories, repository):
+
+def create_archive(excludes_filename, verbosity, source_directories, repository):
     '''
     Given an excludes filename, a vebosity flag, a space-separated list of source directories, and
     a local or remote repository path, create an attic archive.
     '''
     sources = tuple(source_directories.split(' '))
+    verbosity_flags = {
+        VERBOSITY_SOME: ('--stats',),
+        VERBOSITY_LOTS: ('--verbose', '--stats'),
+    }.get(verbosity, ())
 
     command = (
         'attic', 'create',
@@ -19,9 +25,7 @@ def create_archive(excludes_filename, verbose, source_directories, repository):
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + sources + (
-        ('--verbose', '--stats') if verbose else ()
-    )
+    ) + sources + verbosity_flags
 
     subprocess.check_call(command)
 
@@ -48,11 +52,16 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbose, repository, retention_config):
+def prune_archives(verbosity, repository, retention_config):
     '''
     Given a verbosity flag, a local or remote repository path, and a retention config dict, prune
     attic archives according the the retention policy specified in that configuration.
     '''
+    verbosity_flags = {
+        VERBOSITY_SOME: ('--stats',),
+        VERBOSITY_LOTS: ('--verbose', '--stats'),
+    }.get(verbosity, ())
+
     command = (
         'attic', 'prune',
         repository,
@@ -60,7 +69,7 @@ def prune_archives(verbose, repository, retention_config):
         element
         for pair in _make_prune_flags(retention_config)
         for element in pair
-    ) + (('--verbose',) if verbose else ())
+    ) + verbosity_flags
 
     subprocess.check_call(command)
 
@@ -114,7 +123,7 @@ def _make_check_flags(checks):
     )
 
 
-def check_archives(verbose, repository, consistency_config):
+def check_archives(verbosity, repository, consistency_config):
     '''
     Given a verbosity flag, a local or remote repository path, and a consistency config dict, check
     the contained attic archives for consistency.
@@ -125,12 +134,17 @@ def check_archives(verbose, repository, consistency_config):
     if not checks:
         return
 
+    verbosity_flags = {
+        VERBOSITY_SOME: ('--verbose',),
+        VERBOSITY_LOTS: ('--verbose',),
+    }.get(verbosity, ())
+
     command = (
         'attic', 'check',
         repository,
-    ) + _make_check_flags(checks) + (('--verbose',) if verbose else ())
+    ) + _make_check_flags(checks) + verbosity_flags
 
     # Attic's check command spews to stdout even without the verbose flag. Suppress it.
-    stdout = None if verbose else open(os.devnull, 'w')
+    stdout = None if verbosity_flags else open(os.devnull, 'w')
 
     subprocess.check_call(command, stdout=stdout)

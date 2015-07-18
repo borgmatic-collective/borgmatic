@@ -4,6 +4,7 @@ from flexmock import flexmock
 
 from atticmatic import attic as module
 from atticmatic.tests.builtins import builtins_mock
+from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):
@@ -28,34 +29,43 @@ def insert_datetime_mock():
     ).mock
 
 
+CREATE_COMMAND = ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar')
+
+
 def test_create_archive_should_call_attic_with_parameters():
-    insert_subprocess_mock(
-        ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar'),
-    )
+    insert_subprocess_mock(CREATE_COMMAND)
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
         excludes_filename='excludes',
-        verbose=False,
+        verbosity=None,
         source_directories='foo bar',
         repository='repo',
     )
 
 
-def test_create_archive_with_verbose_should_call_attic_with_verbose_parameters():
-    insert_subprocess_mock(
-        (
-            'attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar',
-            '--verbose', '--stats',
-        ),
-    )
+def test_create_archive_with_verbosity_some_should_call_attic_with_stats_parameter():
+    insert_subprocess_mock(CREATE_COMMAND + ('--stats',))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
         excludes_filename='excludes',
-        verbose=True,
+        verbosity=VERBOSITY_SOME,
+        source_directories='foo bar',
+        repository='repo',
+    )
+
+
+def test_create_archive_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+    insert_subprocess_mock(CREATE_COMMAND + ('--verbose', '--stats'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=VERBOSITY_LOTS,
         source_directories='foo bar',
         repository='repo',
     )
@@ -82,40 +92,49 @@ def test_make_prune_flags_should_return_flags_from_config():
     assert tuple(result) == BASE_PRUNE_FLAGS
 
 
+PRUNE_COMMAND = (
+    'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3',
+)
+
+
 def test_prune_archives_should_call_attic_with_parameters():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(
-        (
-            'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
-            '3',
-        ),
-    )
+    insert_subprocess_mock(PRUNE_COMMAND)
 
     module.prune_archives(
-        verbose=False,
+        verbosity=None,
         repository='repo',
         retention_config=retention_config,
     )
 
 
-def test_prune_archives_with_verbose_should_call_attic_with_verbose_parameters():
+def test_prune_archives_with_verbosity_some_should_call_attic_with_stats_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(
-        (
-            'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly',
-            '3', '--verbose',
-        ),
-    )
+    insert_subprocess_mock(PRUNE_COMMAND + ('--stats',))
 
     module.prune_archives(
         repository='repo',
-        verbose=True,
+        verbosity=VERBOSITY_SOME,
+        retention_config=retention_config,
+    )
+
+
+def test_prune_archives_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
+    insert_subprocess_mock(PRUNE_COMMAND + ('--verbose', '--stats',))
+
+    module.prune_archives(
+        repository='repo',
+        verbosity=VERBOSITY_LOTS,
         retention_config=retention_config,
     )
 
@@ -171,13 +190,13 @@ def test_check_archives_should_call_attic_with_parameters():
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbose=False,
+        verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
     )
 
 
-def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters():
+def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_parameter():
     consistency_config = flexmock()
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
@@ -189,7 +208,25 @@ def test_check_archives_with_verbose_should_call_attic_with_verbose_parameters()
     insert_datetime_mock()
 
     module.check_archives(
-        verbose=True,
+        verbosity=VERBOSITY_SOME,
+        repository='repo',
+        consistency_config=consistency_config,
+    )
+
+
+def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+    consistency_config = flexmock()
+    flexmock(module).should_receive('_parse_checks').and_return(flexmock())
+    flexmock(module).should_receive('_make_check_flags').and_return(())
+    insert_subprocess_mock(
+        ('attic', 'check', 'repo', '--verbose'),
+        stdout=None,
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.check_archives(
+        verbosity=VERBOSITY_LOTS,
         repository='repo',
         consistency_config=consistency_config,
     )
@@ -201,7 +238,7 @@ def test_check_archives_without_any_checks_should_bail():
     insert_subprocess_never()
 
     module.check_archives(
-        verbose=False,
+        verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
     )
