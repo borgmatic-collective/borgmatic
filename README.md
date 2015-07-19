@@ -66,7 +66,7 @@ If you are using Attic, copy the following configuration files:
 
 If you are using Borg, copy the files like this instead:
 
-    sudo cp sample/atticmatic.cron /etc/cron.d/borgmatic
+    sudo cp sample/borgmatic.cron /etc/cron.d/borgmatic
     sudo mkdir /etc/borgmatic/
     sudo cp sample/config sample/excludes /etc/borgmatic/
 
