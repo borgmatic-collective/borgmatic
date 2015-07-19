@@ -1,3 +1,7 @@
+0.1.1
+
+ * Adding borgmatic cron example, and updating documentation to refer to it.
+
 0.1.0
 
  * New "borgmatic" command to support Borg backup software, a fork of Attic.
