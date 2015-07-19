@@ -2,12 +2,17 @@ from setuptools import setup, find_packages
 
 setup(
     name='atticmatic',
-    version='0.0.7',
-    description='A wrapper script for Attic backup software that creates and prunes backups',
+    version='0.1.0',
+    description='A wrapper script for Attic/Borg backup software that creates and prunes backups',
     author='Dan Helfman',
     author_email='witten@torsion.org',
     packages=find_packages(),
-    entry_points={'console_scripts': ['atticmatic = atticmatic.command:main']},
+    entry_points={
+        'console_scripts': [
+            'atticmatic = atticmatic.command:main',
+            'borgmatic = atticmatic.command:main',
+        ]
+    },
     tests_require=(
         'flexmock',
         'nose',

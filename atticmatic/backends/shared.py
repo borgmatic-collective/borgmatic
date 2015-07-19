@@ -6,10 +6,16 @@ import subprocess
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
-def create_archive(excludes_filename, verbosity, source_directories, repository):
+# Common backend functionality shared by Attic and Borg. As the two backup
+# commands diverge, these shared functions will likely need to be replaced
+# with non-shared functions within atticmatic.backends.attic and
+# atticmatic.backends.borg.
+
+
+def create_archive(excludes_filename, verbosity, source_directories, repository, command):
     '''
-    Given an excludes filename, a vebosity flag, a space-separated list of source directories, and
-    a local or remote repository path, create an attic archive.
+    Given an excludes filename, a vebosity flag, a space-separated list of source directories, a
+    local or remote repository path, and a command to run, create an attic archive.
     '''
     sources = tuple(source_directories.split(' '))
     verbosity_flags = {
@@ -17,8 +23,8 @@ def create_archive(excludes_filename, verbosity, source_directories, repository)
         VERBOSITY_LOTS: ('--verbose', '--stats'),
     }.get(verbosity, ())
 
-    command = (
-        'attic', 'create',
+    full_command = (
+        command, 'create',
         '--exclude-from', excludes_filename,
         '{repo}::{hostname}-{timestamp}'.format(
             repo=repository,
@@ -27,7 +33,7 @@ def create_archive(excludes_filename, verbosity, source_directories, repository)
         ),
     ) + sources + verbosity_flags
 
-    subprocess.check_call(command)
+    subprocess.check_call(full_command)
 
 
 def _make_prune_flags(retention_config):
@@ -52,18 +58,19 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, repository, retention_config):
+def prune_archives(verbosity, repository, retention_config, command):
     '''
-    Given a verbosity flag, a local or remote repository path, and a retention config dict, prune
-    attic archives according the the retention policy specified in that configuration.
+    Given a verbosity flag, a local or remote repository path, a retention config dict, and a
+    command to run, prune attic archives according the the retention policy specified in that
+    configuration.
     '''
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
     }.get(verbosity, ())
 
-    command = (
-        'attic', 'prune',
+    full_command = (
+        command, 'prune',
         repository,
     ) + tuple(
         element
@@ -71,7 +78,7 @@ def prune_archives(verbosity, repository, retention_config):
         for element in pair
     ) + verbosity_flags
 
-    subprocess.check_call(command)
+    subprocess.check_call(full_command)
 
 
 DEFAULT_CHECKS = ('repository', 'archives')
@@ -123,10 +130,10 @@ def _make_check_flags(checks):
     )
 
 
-def check_archives(verbosity, repository, consistency_config):
+def check_archives(verbosity, repository, consistency_config, command):
     '''
-    Given a verbosity flag, a local or remote repository path, and a consistency config dict, check
-    the contained attic archives for consistency.
+    Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
+    command to run, check the contained attic archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
@@ -139,12 +146,12 @@ def check_archives(verbosity, repository, consistency_config):
         VERBOSITY_LOTS: ('--verbose',),
     }.get(verbosity, ())
 
-    command = (
-        'attic', 'check',
+    full_command = (
+        command, 'check',
         repository,
     ) + _make_check_flags(checks) + verbosity_flags
 
-    # Attic's check command spews to stdout even without the verbose flag. Suppress it.
+    # The check command spews to stdout even without the verbose flag. Suppress it.
     stdout = None if verbosity_flags else open(os.devnull, 'w')
 
-    subprocess.check_call(command, stdout=stdout)
+    subprocess.check_call(full_command, stdout=stdout)

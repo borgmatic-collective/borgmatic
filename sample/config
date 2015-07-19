@@ -2,7 +2,7 @@
 # Space-separated list of source directories to backup.
 source_directories: /home /etc
 
-# Path to local or remote Attic repository.
+# Path to local or remote repository.
 repository: user@backupserver:sourcehostname.attic
 
 [retention]

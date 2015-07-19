@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from flexmock import flexmock
 
-from atticmatic import attic as module
+from atticmatic.backends import shared as module
 from atticmatic.tests.builtins import builtins_mock
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
@@ -42,6 +42,7 @@ def test_create_archive_should_call_attic_with_parameters():
         verbosity=None,
         source_directories='foo bar',
         repository='repo',
+        command='attic',
     )
 
 
@@ -55,6 +56,7 @@ def test_create_archive_with_verbosity_some_should_call_attic_with_stats_paramet
         verbosity=VERBOSITY_SOME,
         source_directories='foo bar',
         repository='repo',
+        command='attic',
     )
 
 
@@ -68,6 +70,7 @@ def test_create_archive_with_verbosity_lots_should_call_attic_with_verbose_param
         verbosity=VERBOSITY_LOTS,
         source_directories='foo bar',
         repository='repo',
+        command='attic',
     )
 
 
@@ -108,6 +111,7 @@ def test_prune_archives_should_call_attic_with_parameters():
         verbosity=None,
         repository='repo',
         retention_config=retention_config,
+        command='attic',
     )
 
 
@@ -122,6 +126,7 @@ def test_prune_archives_with_verbosity_some_should_call_attic_with_stats_paramet
         repository='repo',
         verbosity=VERBOSITY_SOME,
         retention_config=retention_config,
+        command='attic',
     )
 
 
@@ -136,6 +141,7 @@ def test_prune_archives_with_verbosity_lots_should_call_attic_with_verbose_param
         repository='repo',
         verbosity=VERBOSITY_LOTS,
         retention_config=retention_config,
+        command='attic',
     )
 
 
@@ -193,6 +199,7 @@ def test_check_archives_should_call_attic_with_parameters():
         verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
+        command='attic',
     )
 
 
@@ -211,6 +218,7 @@ def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_param
         verbosity=VERBOSITY_SOME,
         repository='repo',
         consistency_config=consistency_config,
+        command='attic',
     )
 
 
@@ -229,6 +237,7 @@ def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_param
         verbosity=VERBOSITY_LOTS,
         repository='repo',
         consistency_config=consistency_config,
+        command='attic',
     )
 
 
@@ -241,4 +250,5 @@ def test_check_archives_without_any_checks_should_bail():
         verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
+        command='attic',
     )
