@@ -1,3 +1,7 @@
+0.1.2-dev
+
+ * New issue tracker, linked from documentation.
+
 0.1.1
 
  * Adding borgmatic cron example, and updating documentation to refer to it.

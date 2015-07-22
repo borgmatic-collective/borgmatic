@@ -135,6 +135,9 @@ This should make the client keep the connection alive while validating
 backups.
 
 
-## Feedback
+## Issues and feedback
 
-Questions? Comments? Got a patch? Contact <mailto:witten@torsion.org>.
+Got an issue or an idea for a feature enhancement? Check out the [atticmatic
+issue tracker](https://tree.taiga.io/project/witten-atticmatic/issues).
+
+Other questions or comments? Contact <mailto:witten@torsion.org>.
