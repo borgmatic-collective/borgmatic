@@ -18,17 +18,20 @@ def parse_arguments(command_name, *arguments):
     parse the arguments and return them as an ArgumentParser instance. Use the command name to
     determine the default configuration and excludes paths.
     '''
+    config_filename_default = DEFAULT_CONFIG_FILENAME_PATTERN.format(command_name)
+    excludes_filename_default = DEFAULT_EXCLUDES_FILENAME_PATTERN.format(command_name)
+
     parser = ArgumentParser()
     parser.add_argument(
         '-c', '--config',
         dest='config_filename',
-        default=DEFAULT_CONFIG_FILENAME_PATTERN.format(command_name),
+        default=config_filename_default,
         help='Configuration filename',
     )
     parser.add_argument(
         '--excludes',
         dest='excludes_filename',
-        default=DEFAULT_EXCLUDES_FILENAME_PATTERN.format(command_name),
+        default=excludes_filename_default if os.path.exists(excludes_filename_default) else None,
         help='Excludes filename',
     )
     parser.add_argument(

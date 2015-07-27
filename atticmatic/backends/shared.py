@@ -14,10 +14,11 @@ from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 def create_archive(excludes_filename, verbosity, source_directories, repository, command):
     '''
-    Given an excludes filename, a vebosity flag, a space-separated list of source directories, a
-    local or remote repository path, and a command to run, create an attic archive.
+    Given an excludes filename (or None), a vebosity flag, a space-separated list of source
+    directories, a local or remote repository path, and a command to run, create an attic archive.
     '''
     sources = tuple(source_directories.split(' '))
+    exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -25,13 +26,12 @@ def create_archive(excludes_filename, verbosity, source_directories, repository,
 
     full_command = (
         command, 'create',
-        '--exclude-from', excludes_filename,
         '{repo}::{hostname}-{timestamp}'.format(
             repo=repository,
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + sources + verbosity_flags
+    ) + sources + exclude_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 

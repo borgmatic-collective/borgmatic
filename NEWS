@@ -1,5 +1,6 @@
-0.1.2-dev
+0.1.2
 
+ * As a convenience to new users, allow a missing default excludes file.
  * New issue tracker, linked from documentation.
 
 0.1.1
