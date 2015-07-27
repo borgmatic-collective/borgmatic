@@ -10,4 +10,3 @@ COMMAND = 'borg'
 create_archive = partial(shared.create_archive, command=COMMAND)
 prune_archives = partial(shared.prune_archives, command=COMMAND)
 check_archives = partial(shared.check_archives, command=COMMAND)
-
