@@ -29,7 +29,8 @@ def insert_datetime_mock():
     ).mock
 
 
-CREATE_COMMAND = ('attic', 'create', '--exclude-from', 'excludes', 'repo::host-now', 'foo', 'bar')
+CREATE_COMMAND_WITHOUT_EXCLUDES = ('attic', 'create', 'repo::host-now', 'foo', 'bar')
+CREATE_COMMAND = CREATE_COMMAND_WITHOUT_EXCLUDES + ('--exclude-from', 'excludes')
 
 
 def test_create_archive_should_call_attic_with_parameters():
@@ -39,6 +40,20 @@ def test_create_archive_should_call_attic_with_parameters():
 
     module.create_archive(
         excludes_filename='excludes',
+        verbosity=None,
+        source_directories='foo bar',
+        repository='repo',
+        command='attic',
+    )
+
+
+def test_create_archive_with_none_excludes_filename_should_call_attic_without_excludes():
+    insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename=None,
         verbosity=None,
         source_directories='foo bar',
         repository='repo',
