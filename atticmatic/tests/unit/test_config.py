@@ -205,17 +205,18 @@ def insert_mock_parser():
 
 def test_parse_configuration_should_return_section_configs():
     parser = insert_mock_parser()
+    config_format = (flexmock(name='items'), flexmock(name='things'))
     mock_module = flexmock(module)
     mock_module.should_receive('validate_configuration_format').with_args(
-        parser, module.CONFIG_FORMAT,
+        parser, config_format,
     ).once()
-    mock_section_configs = (flexmock(),) * len(module.CONFIG_FORMAT)
+    mock_section_configs = (flexmock(), flexmock())
 
-    for section_format, section_config in zip(module.CONFIG_FORMAT, mock_section_configs):
+    for section_format, section_config in zip(config_format, mock_section_configs):
         mock_module.should_receive('parse_section_options').with_args(
             parser, section_format,
         ).and_return(section_config).once()
 
-    parsed_config = module.parse_configuration('filename')
+    parsed_config = module.parse_configuration('filename', config_format)
 
-    assert parsed_config == module.Parsed_config(*mock_section_configs)
+    assert parsed_config == type(parsed_config)(*mock_section_configs)

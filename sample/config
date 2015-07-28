@@ -23,3 +23,5 @@ keep_yearly: 1
 # checks. See https://attic-backup.org/usage.html#attic-check or
 # https://borgbackup.github.io/borgbackup/usage.html#borg-check for details.
 checks: repository archives
+# For Borg only, you can restrict the number of checked archives to the last n.
+#check_last: 3

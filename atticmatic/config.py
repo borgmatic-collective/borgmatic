@@ -20,35 +20,6 @@ def option(name, value_type=str, required=True):
     return Config_option(name, value_type, required)
 
 
-CONFIG_FORMAT = (
-    Section_format(
-        'location',
-        (
-            option('source_directories'),
-            option('repository'),
-        ),
-    ),
-    Section_format(
-        'retention',
-        (
-            option('keep_within', required=False),
-            option('keep_hourly', int, required=False),
-            option('keep_daily', int, required=False),
-            option('keep_weekly', int, required=False),
-            option('keep_monthly', int, required=False),
-            option('keep_yearly', int, required=False),
-            option('prefix', required=False),
-        ),
-    ),
-    Section_format(
-        'consistency',
-        (
-            option('checks', required=False),
-        ),
-    )
-)
-
-
 def validate_configuration_format(parser, config_format):
     '''
     Given an open ConfigParser and an expected config file format, validate that the parsed
@@ -110,11 +81,6 @@ def validate_configuration_format(parser, config_format):
             )
 
 
-# Describes a parsed configuration, where each attribute is the name of a configuration file section 
-# and each value is a dict of that section's parsed options.
-Parsed_config = namedtuple('Config', (section_format.name for section_format in CONFIG_FORMAT))
-
-
 def parse_section_options(parser, section_format):
     '''
     Given an open ConfigParser and an expected section format, return the option values from that
@@ -135,21 +101,25 @@ def parse_section_options(parser, section_format):
     )
 
 
-def parse_configuration(config_filename):
+def parse_configuration(config_filename, config_format):
     '''
-    Given a config filename of the expected format, return the parsed configuration as Parsed_config
-    data structure.
+    Given a config filename and an expected config file format, return the parsed configuration
+    as a namedtuple with one attribute for each parsed section.
 
     Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
     parser = ConfigParser()
     parser.read(config_filename)
 
-    validate_configuration_format(parser, CONFIG_FORMAT)
+    validate_configuration_format(parser, config_format)
+
+    # Describes a parsed configuration, where each attribute is the name of a configuration file
+    # section and each value is a dict of that section's parsed options.
+    Parsed_config = namedtuple('Parsed_config', (section_format.name for section_format in config_format))
 
     return Parsed_config(
         *(
             parse_section_options(parser, section_format)
-            for section_format in CONFIG_FORMAT
+            for section_format in config_format
         )
     )

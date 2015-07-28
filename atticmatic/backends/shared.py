@@ -3,6 +3,7 @@ import os
 import platform
 import subprocess
 
+from atticmatic.config import Section_format, option
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
@@ -11,6 +12,34 @@ from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 # with non-shared functions within atticmatic.backends.attic and
 # atticmatic.backends.borg.
 
+
+CONFIG_FORMAT = (
+    Section_format(
+        'location',
+        (
+            option('source_directories'),
+            option('repository'),
+        ),
+    ),
+    Section_format(
+        'retention',
+        (
+            option('keep_within', required=False),
+            option('keep_hourly', int, required=False),
+            option('keep_daily', int, required=False),
+            option('keep_weekly', int, required=False),
+            option('keep_monthly', int, required=False),
+            option('keep_yearly', int, required=False),
+            option('prefix', required=False),
+        ),
+    ),
+    Section_format(
+        'consistency',
+        (
+            option('checks', required=False),
+        ),
+    )
+)
 
 def create_archive(excludes_filename, verbosity, source_directories, repository, command):
     '''
@@ -110,7 +139,7 @@ def _parse_checks(consistency_config):
     )
 
 
-def _make_check_flags(checks):
+def _make_check_flags(checks, check_last=None):
     '''
     Given a parsed sequence of checks, transform it into tuple of command-line flags.
 
@@ -121,13 +150,17 @@ def _make_check_flags(checks):
     This will be returned as:
     
         ('--repository-only',)
+
+    Additionally, if a check_last value is given, a "--last" flag will be added. Note that only
+    Borg supports this flag.
     '''
+    last_flag = ('--last', check_last) if check_last else ()
     if checks == DEFAULT_CHECKS:
-        return ()
+        return last_flag
 
     return tuple(
         '--{}-only'.format(check) for check in checks
-    )
+    ) + last_flag
 
 
 def check_archives(verbosity, repository, consistency_config, command):
@@ -138,6 +171,7 @@ def check_archives(verbosity, repository, consistency_config, command):
     If there are no consistency checks to run, skip running them.
     '''
     checks = _parse_checks(consistency_config)
+    check_last = consistency_config.get('check_last', None)
     if not checks:
         return
 
@@ -149,7 +183,7 @@ def check_archives(verbosity, repository, consistency_config, command):
     full_command = (
         command, 'check',
         repository,
-    ) + _make_check_flags(checks) + verbosity_flags
+    ) + _make_check_flags(checks, check_last) + verbosity_flags
 
     # The check command spews to stdout even without the verbose flag. Suppress it.
     stdout = None if verbosity_flags else open(os.devnull, 'w')
