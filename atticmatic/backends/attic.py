@@ -5,7 +5,7 @@ from atticmatic.backends import shared
 # An atticmatic backend that supports Attic for actually handling backups.
 
 COMMAND = 'attic'
-
+CONFIG_FORMAT = shared.CONFIG_FORMAT
 
 create_archive = partial(shared.create_archive, command=COMMAND)
 prune_archives = partial(shared.prune_archives, command=COMMAND)

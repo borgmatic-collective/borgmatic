@@ -196,10 +196,24 @@ def test_make_check_flags_with_default_checks_returns_no_flags():
     assert flags == ()
 
 
+def test_make_check_flags_with_checks_and_last_returns_flags_including_last():
+    flags = module._make_check_flags(('foo', 'bar'), check_last=3)
+
+    assert flags == ('--foo-only', '--bar-only', '--last', 3)
+
+
+def test_make_check_flags_with_last_returns_last_flag():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS, check_last=3)
+
+    assert flags == ('--last', 3)
+
+
 def test_check_archives_should_call_attic_with_parameters():
-    consistency_config = flexmock()
-    flexmock(module).should_receive('_parse_checks').and_return(flexmock())
-    flexmock(module).should_receive('_make_check_flags').and_return(())
+    checks = flexmock()
+    check_last = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(check_last).mock
+    flexmock(module).should_receive('_parse_checks').and_return(checks)
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
         ('attic', 'check', 'repo'),
@@ -219,7 +233,7 @@ def test_check_archives_should_call_attic_with_parameters():
 
 
 def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_parameter():
-    consistency_config = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
@@ -238,7 +252,7 @@ def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_param
 
 
 def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_parameter():
-    consistency_config = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
@@ -257,7 +271,7 @@ def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_param
 
 
 def test_check_archives_without_any_checks_should_bail():
-    consistency_config = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(())
     insert_subprocess_never()
 

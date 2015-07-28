@@ -60,9 +60,9 @@ def main():
     try:
         command_name = os.path.basename(sys.argv[0])
         args = parse_arguments(command_name, *sys.argv[1:])
-        config = parse_configuration(args.config_filename)
-        repository = config.location['repository']
         backend = load_backend(command_name)
+        config = parse_configuration(args.config_filename, backend.CONFIG_FORMAT)
+        repository = config.location['repository']
 
         backend.create_archive(args.excludes_filename, args.verbosity, **config.location)
         backend.prune_archives(args.verbosity, repository, config.retention)
