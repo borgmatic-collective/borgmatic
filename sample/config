@@ -9,7 +9,7 @@ repository: user@backupserver:sourcehostname.attic
 # Retention policy for how many backups to keep in each category. See
 # https://attic-backup.org/usage.html#attic-prune or
 # https://borgbackup.github.io/borgbackup/usage.html#borg-prune for details.
-#keep_within: 3h
+#keep_within: 3H
 #keep_hourly: 24
 keep_daily: 7
 keep_weekly: 4
