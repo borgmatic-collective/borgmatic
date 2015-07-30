@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='atticmatic',
-    version='0.1.1',
+    version='0.1.4',
     description='A wrapper script for Attic/Borg backup software that creates and prunes backups',
     author='Dan Helfman',
     author_email='witten@torsion.org',
