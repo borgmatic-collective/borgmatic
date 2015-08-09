@@ -1,3 +1,7 @@
+0.1.5
+
+ * Changes to support release on PyPI. Now pip installable by name!
+
 0.1.4
 
  * Adding test that setup.py version matches release version.
