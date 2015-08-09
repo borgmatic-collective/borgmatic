@@ -3,4 +3,5 @@ syntax: glob
 *.pyc
 *.swp
 .tox
+build
 dist
