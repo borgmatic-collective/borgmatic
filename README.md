@@ -136,6 +136,8 @@ backups.
 ## Issues and feedback
 
 Got an issue or an idea for a feature enhancement? Check out the [atticmatic
-issue tracker](https://tree.taiga.io/project/witten-atticmatic/issues).
+issue tracker](https://tree.taiga.io/project/witten-atticmatic/issues). In
+order to create a new issue or comment on an issue, you'll need to [login
+first](https://tree.taiga.io/login).
 
 Other questions or comments? Contact <mailto:witten@torsion.org>.
