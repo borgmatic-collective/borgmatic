@@ -1,3 +1,8 @@
+0.1.6
+
+ * #9: New configuration option for the encryption passphrase.
+ * #10: Support for Borg's new archive compression feature.
+
 0.1.5
 
  * Changes to support release on PyPI. Now pip installable by name!
