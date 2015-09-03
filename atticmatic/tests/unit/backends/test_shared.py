@@ -1,10 +1,33 @@
 from collections import OrderedDict
+import os
 
 from flexmock import flexmock
 
 from atticmatic.backends import shared as module
 from atticmatic.tests.builtins import builtins_mock
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+
+
+def test_initialize_with_passphrase_should_set_environment():
+    orig_environ = os.environ
+
+    try:
+        os.environ = {}
+        module.initialize({'encryption_passphrase': 'pass'}, command='attic')
+        assert os.environ.get('ATTIC_PASSPHRASE') == 'pass'
+    finally:
+        os.environ = orig_environ
+
+
+def test_initialize_without_passphrase_should_not_set_environment():
+    orig_environ = os.environ
+
+    try:
+        os.environ = {}
+        module.initialize({}, command='attic')
+        assert os.environ.get('ATTIC_PASSPHRASE') == None
+    finally:
+        os.environ = orig_environ
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):
@@ -41,6 +64,7 @@ def test_create_archive_should_call_attic_with_parameters():
     module.create_archive(
         excludes_filename='excludes',
         verbosity=None,
+        storage_config={},
         source_directories='foo bar',
         repository='repo',
         command='attic',
@@ -55,6 +79,7 @@ def test_create_archive_with_none_excludes_filename_should_call_attic_without_ex
     module.create_archive(
         excludes_filename=None,
         verbosity=None,
+        storage_config={},
         source_directories='foo bar',
         repository='repo',
         command='attic',
@@ -69,6 +94,7 @@ def test_create_archive_with_verbosity_some_should_call_attic_with_stats_paramet
     module.create_archive(
         excludes_filename='excludes',
         verbosity=VERBOSITY_SOME,
+        storage_config={},
         source_directories='foo bar',
         repository='repo',
         command='attic',
@@ -83,6 +109,22 @@ def test_create_archive_with_verbosity_lots_should_call_attic_with_verbose_param
     module.create_archive(
         excludes_filename='excludes',
         verbosity=VERBOSITY_LOTS,
+        storage_config={},
+        source_directories='foo bar',
+        repository='repo',
+        command='attic',
+    )
+
+
+def test_create_archive_with_compression_should_call_attic_with_compression_parameters():
+    insert_subprocess_mock(CREATE_COMMAND + ('--compression', 'rle'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={'compression': 'rle'},
         source_directories='foo bar',
         repository='repo',
         command='attic',

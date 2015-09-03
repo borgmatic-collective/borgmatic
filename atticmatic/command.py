@@ -64,7 +64,10 @@ def main():
         config = parse_configuration(args.config_filename, backend.CONFIG_FORMAT)
         repository = config.location['repository']
 
-        backend.create_archive(args.excludes_filename, args.verbosity, **config.location)
+        backend.initialize(config.storage)
+        backend.create_archive(
+            args.excludes_filename, args.verbosity, config.storage, **config.location
+        )
         backend.prune_archives(args.verbosity, repository, config.retention)
         backend.check_archives(args.verbosity, repository, config.consistency)
     except (ValueError, IOError, CalledProcessError) as error:
