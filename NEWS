@@ -1,6 +1,7 @@
 0.1.7-dev
 
  * #11: Fixed parsing of punctuation in configuration file.
+ * Better error message when configuration file is missing.
 
 0.1.6
 
