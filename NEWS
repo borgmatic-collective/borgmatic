@@ -1,3 +1,7 @@
+0.1.7-dev
+
+ * #11: Fixed parsing of punctuation in configuration file.
+
 0.1.6
 
  * #9: New configuration option for the encryption passphrase.
