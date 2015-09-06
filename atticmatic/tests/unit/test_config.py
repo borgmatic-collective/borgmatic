@@ -197,7 +197,7 @@ def test_parse_section_options_for_missing_section_should_return_empty_dict():
 
 def insert_mock_parser():
     parser = flexmock()
-    parser.should_receive('read')
+    parser.should_receive('read').and_return([flexmock()])
     module.RawConfigParser = lambda: parser
 
     return parser
@@ -220,3 +220,11 @@ def test_parse_configuration_should_return_section_configs():
     parsed_config = module.parse_configuration('filename', config_format)
 
     assert parsed_config == type(parsed_config)(*mock_section_configs)
+
+
+def test_parse_configuration_with_file_open_error_should_raise():
+    parser = insert_mock_parser()
+    parser.should_receive('read').and_return([])
+
+    with assert_raises(ValueError):
+        module.parse_configuration('filename', config_format=flexmock())

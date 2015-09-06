@@ -109,7 +109,8 @@ def parse_configuration(config_filename, config_format):
     Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
     parser = RawConfigParser()
-    parser.read(config_filename)
+    if not parser.read(config_filename):
+        raise ValueError('Configuration file cannot be opened: {}'.format(config_filename))
 
     validate_configuration_format(parser, config_format)
 
