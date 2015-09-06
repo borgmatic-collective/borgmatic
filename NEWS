@@ -1,4 +1,4 @@
-0.1.7-dev
+0.1.7
 
  * #11: Fixed parsing of punctuation in configuration file.
  * Better error message when configuration file is missing.
