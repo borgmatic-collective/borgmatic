@@ -2,10 +2,10 @@ from collections import OrderedDict, namedtuple
 
 try:
     # Python 2
-    from ConfigParser import ConfigParser
+    from ConfigParser import RawConfigParser
 except ImportError:
     # Python 3
-    from configparser import ConfigParser
+    from configparser import RawConfigParser
 
 
 Section_format = namedtuple('Section_format', ('name', 'options'))
@@ -22,7 +22,7 @@ def option(name, value_type=str, required=True):
 
 def validate_configuration_format(parser, config_format):
     '''
-    Given an open ConfigParser and an expected config file format, validate that the parsed
+    Given an open RawConfigParser and an expected config file format, validate that the parsed
     configuration file has the expected sections, that any required options are present in those
     sections, and that there aren't any unexpected options.
 
@@ -83,7 +83,7 @@ def validate_configuration_format(parser, config_format):
 
 def parse_section_options(parser, section_format):
     '''
-    Given an open ConfigParser and an expected section format, return the option values from that
+    Given an open RawConfigParser and an expected section format, return the option values from that
     section as a dict mapping from option name to value. Omit those options that are not present in
     the parsed options.
 
@@ -108,7 +108,7 @@ def parse_configuration(config_filename, config_format):
 
     Raise IOError if the file cannot be read, or ValueError if the format is not as expected.
     '''
-    parser = ConfigParser()
+    parser = RawConfigParser()
     parser.read(config_filename)
 
     validate_configuration_format(parser, config_format)
