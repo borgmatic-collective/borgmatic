@@ -117,7 +117,7 @@ Then, to actually run tests, run:
 ### Broken pipe with remote repository
 
 When running atticmatic on a large remote repository, you may receive errors
-like the following, particularly while "attic check" is valiating backups for
+like the following, particularly while "attic check" is validating backups for
 consistency:
 
     Write failed: Broken pipe
