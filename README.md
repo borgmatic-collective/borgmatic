@@ -12,22 +12,24 @@ all on the command-line, and handles common errors.
 
 Here's an example config file:
 
-    [location]
-    # Space-separated list of source directories to backup.
-    source_directories: /home /etc
+```INI
+[location]
+# Space-separated list of source directories to backup.
+source_directories: /home /etc
 
-    # Path to local or remote backup repository.
-    repository: user@backupserver:sourcehostname.attic
+# Path to local or remote backup repository.
+repository: user@backupserver:sourcehostname.attic
 
-    [retention]
-    # Retention policy for how many backups to keep in each category.
-    keep_daily: 7
-    keep_weekly: 4
-    keep_monthly: 6
+[retention]
+# Retention policy for how many backups to keep in each category.
+keep_daily: 7
+keep_weekly: 4
+keep_monthly: 6
 
-    [consistency]
-    # Consistency checks to run, or "disabled" to prevent checks.
-    checks: repository archives
+[consistency]
+# Consistency checks to run, or "disabled" to prevent checks.
+checks: repository archives
+```
 
 Additionally, exclude patterns can be specified in a separate excludes config
 file, one pattern per line.
