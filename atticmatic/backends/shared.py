@@ -3,6 +3,8 @@ import os
 import re
 import platform
 import subprocess
+from glob import glob
+from itertools import chain
 
 from atticmatic.config import Section_format, option
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
@@ -19,6 +21,7 @@ CONFIG_FORMAT = (
         'location',
         (
             option('source_directories'),
+            option('source_directories_glob', int, required=False),
             option('repository'),
         ),
     ),
@@ -58,7 +61,7 @@ def initialize(storage_config, command):
 
 def create_archive(
     excludes_filename, verbosity, storage_config, source_directories, repository, command,
-    one_file_system=None,
+    one_file_system=None, source_directories_glob=None
 ):
     '''
     Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
@@ -66,6 +69,8 @@ def create_archive(
     attic archive.
     '''
     sources = tuple(re.split('\s+', source_directories))
+    if source_directories_glob:
+        sources = tuple(chain.from_iterable([glob(x) for x in sources]))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()

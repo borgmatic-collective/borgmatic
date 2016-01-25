@@ -16,6 +16,7 @@ Here's an example config file:
 [location]
 # Space-separated list of source directories to backup.
 source_directories: /home /etc
+# source_directories_glob: 1
 
 # Path to local or remote backup repository.
 repository: user@backupserver:sourcehostname.attic
