@@ -64,7 +64,7 @@ def create_archive(
     one_file_system=None,
 ):
     '''
-    Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
+    Given an excludes filename (or None), a verbosity flag, a storage config dict, a space-separated
     list of source directories, a local or remote repository path, and a command to run, create an
     attic archive.
     '''
@@ -95,7 +95,7 @@ def create_archive(
 
 def _make_prune_flags(retention_config):
     '''
-    Given a retention config dict mapping from option name to value, tranform it into an iterable of
+    Given a retention config dict mapping from option name to value, transform it into an iterable of
     command-line name-value flag pairs.
 
     For example, given a retention config of:
@@ -118,7 +118,7 @@ def _make_prune_flags(retention_config):
 def prune_archives(verbosity, repository, retention_config, command):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, and a
-    command to run, prune attic archives according the the retention policy specified in that
+    command to run, prune attic archives according the retention policy specified in that
     configuration.
     '''
     verbosity_flags = {
