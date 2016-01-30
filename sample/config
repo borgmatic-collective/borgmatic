@@ -2,6 +2,8 @@
 # Space-separated list of source directories to backup.
 source_directories: /home /etc
 
+one_file_system: 1
+
 # Path to local or remote repository.
 repository: user@backupserver:sourcehostname.attic
 
