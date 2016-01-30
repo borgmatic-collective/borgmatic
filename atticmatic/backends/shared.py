@@ -59,7 +59,9 @@ def initialize(storage_config, command):
 
 
 def create_archive(
-    excludes_filename, verbosity, storage_config, source_directories, repository, command, source_directories_glob=None
+    excludes_filename, verbosity, storage_config, source_directories, repository, command,
+    source_directories_glob=None,
+    one_file_system=None,
 ):
     '''
     Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
@@ -72,6 +74,7 @@ def create_archive(
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
+    one_file_system_flags = ('--one-file-system',) if one_file_system else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -84,7 +87,8 @@ def create_archive(
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + tuple(sources) + exclude_flags + compression_flags + verbosity_flags
+    ) + tuple(sources) + exclude_flags + compression_flags + one_file_system_flags + \
+        verbosity_flags
 
     subprocess.check_call(full_command)
 
