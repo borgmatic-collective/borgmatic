@@ -2,6 +2,8 @@ from datetime import datetime
 import os
 import platform
 import subprocess
+from glob import glob
+from itertools import chain
 
 from atticmatic.config import Section_format, option
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
@@ -18,6 +20,7 @@ CONFIG_FORMAT = (
         'location',
         (
             option('source_directories'),
+            option('source_directories_glob', int, required=False),
             option('repository'),
         ),
     ),
@@ -56,14 +59,16 @@ def initialize(storage_config, command):
 
 
 def create_archive(
-    excludes_filename, verbosity, storage_config, source_directories, repository, command,
+    excludes_filename, verbosity, storage_config, source_directories, repository, command, source_directories_glob=None
 ):
     '''
     Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
     list of source directories, a local or remote repository path, and a command to run, create an
     attic archive.
     '''
-    sources = tuple(source_directories.split(' '))
+    sources = source_directories.split(' ')
+    if source_directories_glob:
+        sources = list(chain.from_iterable([glob(x) for x in sources]))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
@@ -79,7 +84,7 @@ def create_archive(
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + sources + exclude_flags + compression_flags + verbosity_flags
+    ) + tuple(sources) + exclude_flags + compression_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
@@ -167,7 +172,7 @@ def _make_check_flags(checks, check_last=None):
         ('repository',)
 
     This will be returned as:
-    
+
         ('--repository-only',)
 
     Additionally, if a check_last value is given, a "--last" flag will be added. Note that only

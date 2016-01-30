@@ -131,6 +131,22 @@ def test_create_archive_with_compression_should_call_attic_with_compression_para
     )
 
 
+def test_create_archive_with_globs():
+    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'setup.py', 'setup.cfg'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename=None,
+        verbosity=None,
+        storage_config={},
+        source_directories='setup*',
+        repository='repo',
+        command='attic',
+        source_directories_glob=1,
+    )
+
+
 BASE_PRUNE_FLAGS = (
     ('--keep-daily', '1'),
     ('--keep-weekly', '2'),
