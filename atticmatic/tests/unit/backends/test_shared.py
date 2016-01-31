@@ -163,7 +163,7 @@ def test_create_archive_with_globs():
 
 
 def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
-    insert_subprocess_mock(CREATE_COMMAND + ('--umask', 740))
+    insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
     insert_platform_mock()
     insert_datetime_mock()
 
