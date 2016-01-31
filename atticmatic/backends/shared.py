@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import re
 import platform
 import subprocess
 
@@ -63,7 +64,7 @@ def create_archive(
     list of source directories, a local or remote repository path, and a command to run, create an
     attic archive.
     '''
-    sources = tuple(source_directories.split(' '))
+    sources = tuple(re.split('\s+', source_directories))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
@@ -167,7 +168,7 @@ def _make_check_flags(checks, check_last=None):
         ('repository',)
 
     This will be returned as:
-    
+
         ('--repository-only',)
 
     Additionally, if a check_last value is given, a "--last" flag will be added. Note that only
