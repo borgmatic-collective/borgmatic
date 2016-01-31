@@ -71,6 +71,21 @@ def test_create_archive_should_call_attic_with_parameters():
     )
 
 
+def test_create_archive_with_two_spaces_in_source_directories():
+    insert_subprocess_mock(CREATE_COMMAND)
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={},
+        source_directories='foo  bar',
+        repository='repo',
+        command='attic',
+    )
+
+
 def test_create_archive_with_none_excludes_filename_should_call_attic_without_excludes():
     insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
     insert_platform_mock()

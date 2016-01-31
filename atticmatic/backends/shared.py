@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import re
 import platform
 import subprocess
 from glob import glob
@@ -68,7 +69,7 @@ def create_archive(
     list of source directories, a local or remote repository path, and a command to run, create an
     attic archive.
     '''
-    sources = source_directories.split(' ')
+    sources = re.split('\s+', source_directories)
     if source_directories_glob:
         sources = list(chain.from_iterable([glob(x) for x in sources]))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
