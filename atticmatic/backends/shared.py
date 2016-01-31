@@ -67,6 +67,8 @@ def create_archive(
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
+    umask = storage_config.get('umask', None)
+    umask_flags = ('--umask', umask) if umask else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -79,7 +81,7 @@ def create_archive(
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + sources + exclude_flags + compression_flags + verbosity_flags
+    ) + sources + exclude_flags + compression_flags + umask_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
@@ -167,7 +169,7 @@ def _make_check_flags(checks, check_last=None):
         ('repository',)
 
     This will be returned as:
-    
+
         ('--repository-only',)
 
     Additionally, if a check_last value is given, a "--last" flag will be added. Note that only
