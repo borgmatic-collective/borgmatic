@@ -20,6 +20,7 @@ CONFIG_FORMAT = (
         (
             option('encryption_passphrase', required=False),
             option('compression', required=False),
+            option('umask', int, required=False),
         ),
     ),
     shared.CONFIG_FORMAT[2],  # retention
@@ -34,6 +35,7 @@ CONFIG_FORMAT = (
 
 
 initialize = partial(shared.initialize, command=COMMAND)
+
 create_archive = partial(shared.create_archive, command=COMMAND)
 prune_archives = partial(shared.prune_archives, command=COMMAND)
 check_archives = partial(shared.check_archives, command=COMMAND)

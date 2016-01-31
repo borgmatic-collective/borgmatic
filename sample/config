@@ -16,6 +16,8 @@ repository: user@backupserver:sourcehostname.attic
 # archives. See https://borgbackup.github.io/borgbackup/usage.html#borg-create
 # for details. Defaults to no compression.
 #compression: lz4
+# For Borg only, you can specify the umask to be used for borg create.
+#umask: 0740
 
 [retention]
 # Retention policy for how many backups to keep in each category. See

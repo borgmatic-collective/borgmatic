@@ -162,19 +162,18 @@ def test_create_archive_with_globs():
     )
 
 
-def test_create_archive_with_one_file_system_should_call_attic_with_one_file_system_parameters():
-    insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
+def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
+    insert_subprocess_mock(CREATE_COMMAND + ('--umask', 740))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
         excludes_filename='excludes',
         verbosity=None,
-        storage_config={},
+        storage_config={'umask': 740},
         source_directories='foo bar',
         repository='repo',
         command='attic',
-        one_file_system=True,
     )
 
 
