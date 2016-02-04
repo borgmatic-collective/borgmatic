@@ -71,6 +71,21 @@ def test_create_archive_should_call_attic_with_parameters():
     )
 
 
+def test_create_archive_with_two_spaces_in_source_directories():
+    insert_subprocess_mock(CREATE_COMMAND)
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={},
+        source_directories='foo  bar',
+        repository='repo',
+        command='attic',
+    )
+
+
 def test_create_archive_with_none_excludes_filename_should_call_attic_without_excludes():
     insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
     insert_platform_mock()
@@ -125,6 +140,37 @@ def test_create_archive_with_compression_should_call_attic_with_compression_para
         excludes_filename='excludes',
         verbosity=None,
         storage_config={'compression': 'rle'},
+        source_directories='foo bar',
+        repository='repo',
+        command='attic',
+    )
+
+
+def test_create_archive_with_globs():
+    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'setup.py', 'setup.cfg'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename=None,
+        verbosity=None,
+        storage_config={},
+        source_directories='setup*',
+        repository='repo',
+        command='attic',
+        source_directories_glob=1,
+    )
+
+
+def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
+    insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={'umask': 740},
         source_directories='foo bar',
         repository='repo',
         command='attic',

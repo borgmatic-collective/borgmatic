@@ -1,7 +1,10 @@
 from datetime import datetime
 import os
+import re
 import platform
 import subprocess
+from glob import glob
+from itertools import chain
 
 from atticmatic.config import Section_format, option
 from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
@@ -18,6 +21,7 @@ CONFIG_FORMAT = (
         'location',
         (
             option('source_directories'),
+            option('source_directories_glob', int, required=False),
             option('repository'),
         ),
     ),
@@ -57,16 +61,23 @@ def initialize(storage_config, command):
 
 def create_archive(
     excludes_filename, verbosity, storage_config, source_directories, repository, command,
+    source_directories_glob=None,
+    one_file_system=None,
 ):
     '''
-    Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
+    Given an excludes filename (or None), a verbosity flag, a storage config dict, a space-separated
     list of source directories, a local or remote repository path, and a command to run, create an
     attic archive.
     '''
-    sources = tuple(source_directories.split(' '))
+    sources = re.split('\s+', source_directories)
+    if source_directories_glob:
+        sources = list(chain.from_iterable([glob(x) for x in sources]))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
+    one_file_system_flags = ('--one-file-system',) if one_file_system else ()
+    umask = storage_config.get('umask', None)
+    umask_flags = ('--umask', str(umask)) if umask else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -79,14 +90,15 @@ def create_archive(
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
-    ) + sources + exclude_flags + compression_flags + verbosity_flags
+    ) + tuple(sources) + exclude_flags + compression_flags + one_file_system_flags + \
+        umask_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
 
 def _make_prune_flags(retention_config):
     '''
-    Given a retention config dict mapping from option name to value, tranform it into an iterable of
+    Given a retention config dict mapping from option name to value, transform it into an iterable of
     command-line name-value flag pairs.
 
     For example, given a retention config of:
@@ -109,7 +121,7 @@ def _make_prune_flags(retention_config):
 def prune_archives(verbosity, repository, retention_config, command):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, and a
-    command to run, prune attic archives according the the retention policy specified in that
+    command to run, prune attic archives according the retention policy specified in that
     configuration.
     '''
     verbosity_flags = {
@@ -167,7 +179,7 @@ def _make_check_flags(checks, check_last=None):
         ('repository',)
 
     This will be returned as:
-    
+
         ('--repository-only',)
 
     Additionally, if a check_last value is given, a "--last" flag will be added. Note that only
