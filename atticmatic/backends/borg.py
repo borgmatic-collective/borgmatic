@@ -11,7 +11,7 @@ CONFIG_FORMAT = (
         'location',
         (
             option('source_directories'),
-            option('one_file_system', required=False),
+            option('one_file_system', value_type=bool, required=False),
             option('repository'),
         ),
     ),

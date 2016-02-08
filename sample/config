@@ -2,7 +2,9 @@
 # Space-separated list of source directories to backup.
 source_directories: /home /etc
 
-# one_file_system: 1
+# For Borg only, you can specify to stay in same file system (do not cross
+# mount points).
+#one_file_system: True
 
 # Path to local or remote repository.
 repository: user@backupserver:sourcehostname.attic
