@@ -13,7 +13,7 @@ CONFIG_FORMAT = (
         (
             option('encryption_passphrase', required=False),
             option('compression', required=False),
-            option('umask', int, required=False),
+            option('umask', required=False),
         ),
     ),
     shared.CONFIG_FORMAT[2],  # retention
