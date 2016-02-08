@@ -7,7 +7,14 @@ from atticmatic.backends import shared
 
 COMMAND = 'borg'
 CONFIG_FORMAT = (
-    shared.CONFIG_FORMAT[0],  # location
+    Section_format(
+        'location',
+        (
+            option('source_directories'),
+            option('one_file_system', value_type=bool, required=False),
+            option('repository'),
+        ),
+    ),
     Section_format(
         'storage',
         (

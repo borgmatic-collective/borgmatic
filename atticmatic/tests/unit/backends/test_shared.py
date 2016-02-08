@@ -131,6 +131,22 @@ def test_create_archive_with_compression_should_call_attic_with_compression_para
     )
 
 
+def test_create_archive_with_one_file_system_should_call_attic_with_one_file_system_parameters():
+    insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={},
+        source_directories='foo bar',
+        repository='repo',
+        command='attic',
+        one_file_system=True,
+    )
+
+
 BASE_PRUNE_FLAGS = (
     ('--keep-daily', '1'),
     ('--keep-weekly', '2'),
