@@ -154,6 +154,7 @@ def test_parse_section_options_should_return_section_options():
     parser = flexmock()
     parser.should_receive('get').with_args('section', 'foo').and_return('value')
     parser.should_receive('getint').with_args('section', 'bar').and_return(1)
+    parser.should_receive('getboolean').never()
     parser.should_receive('has_option').with_args('section', 'foo').and_return(True)
     parser.should_receive('has_option').with_args('section', 'bar').and_return(True)
 
@@ -179,6 +180,7 @@ def test_parse_section_options_for_missing_section_should_return_empty_dict():
     parser = flexmock()
     parser.should_receive('get').never()
     parser.should_receive('getint').never()
+    parser.should_receive('getboolean').never()
     parser.should_receive('has_option').with_args('section', 'foo').and_return(False)
     parser.should_receive('has_option').with_args('section', 'bar').and_return(False)
 

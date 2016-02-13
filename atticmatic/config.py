@@ -92,6 +92,7 @@ def parse_section_options(parser, section_format):
     type_getter = {
         str: parser.get,
         int: parser.getint,
+        bool: parser.getboolean,
     }
 
     return OrderedDict(
