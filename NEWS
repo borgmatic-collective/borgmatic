@@ -1,3 +1,7 @@
+0.1.8-dev
+
+ * Fixed handling of repeated spaces in source_directories which resulted in backup up everything.
+
 0.1.7
 
  * #11: Fixed parsing of punctuation in configuration file.
