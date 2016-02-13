@@ -189,7 +189,6 @@ def test_create_archive_with_globs():
         source_directories='setup*',
         repository='repo',
         command='attic',
-        source_directories_glob=1,
     )
 
 
