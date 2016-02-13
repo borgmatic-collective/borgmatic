@@ -69,6 +69,8 @@ def create_archive(
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
+    umask = storage_config.get('umask', None)
+    umask_flags = ('--umask', str(umask)) if umask else ()
     one_file_system_flags = ('--one-file-system',) if one_file_system else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
@@ -83,7 +85,7 @@ def create_archive(
             timestamp=datetime.now().isoformat(),
         ),
     ) + sources + exclude_flags + compression_flags + one_file_system_flags + \
-        verbosity_flags
+        umask_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
