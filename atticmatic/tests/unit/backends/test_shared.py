@@ -177,16 +177,49 @@ def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
     )
 
 
-def test_create_archive_with_globs():
-    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'setup.py', 'setup.cfg'))
+def test_create_archive_with_source_directories_glob_expands():
+    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo', 'food'))
     insert_platform_mock()
     insert_datetime_mock()
+    flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
         excludes_filename=None,
         verbosity=None,
         storage_config={},
-        source_directories='setup*',
+        source_directories='foo*',
+        repository='repo',
+        command='attic',
+    )
+
+
+def test_create_archive_with_non_matching_source_directories_glob_passes_through():
+    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo*'))
+    insert_platform_mock()
+    insert_datetime_mock()
+    flexmock(module).should_receive('glob').with_args('foo*').and_return([])
+
+    module.create_archive(
+        excludes_filename=None,
+        verbosity=None,
+        storage_config={},
+        source_directories='foo*',
+        repository='repo',
+        command='attic',
+    )
+
+
+def test_create_archive_with_glob_should_call_attic_with_expanded_directories():
+    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo', 'food'))
+    insert_platform_mock()
+    insert_datetime_mock()
+    flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
+
+    module.create_archive(
+        excludes_filename=None,
+        verbosity=None,
+        storage_config={},
+        source_directories='foo*',
         repository='repo',
         command='attic',
     )
