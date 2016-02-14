@@ -3,6 +3,7 @@
  * Fixed handling of repeated spaces in source_directories which resulted in backup up everything.
  * Added support for --one-file-system for Borg.
  * Support borg create --umask.
+ * Added support for file globs in source_directories.
 
 0.1.7
 

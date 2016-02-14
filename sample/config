@@ -1,6 +1,7 @@
 [location]
 # Space-separated list of source directories to backup.
-source_directories: /home /etc
+# Globs are expanded.
+source_directories: /home /etc /var/log/syslog*
 
 # For Borg only, you can specify to stay in same file system (do not cross
 # mount points).
