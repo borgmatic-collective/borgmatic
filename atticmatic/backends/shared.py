@@ -68,7 +68,7 @@ def create_archive(
     attic archive.
     '''
     sources = re.split('\s+', source_directories)
-    sources = tuple(chain.from_iterable([glob(x) if glob(x) else [x] for x in sources]))
+    sources = tuple(chain.from_iterable(glob(x) or [x] for x in sources))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
