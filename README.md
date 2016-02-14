@@ -15,7 +15,8 @@ Here's an example config file:
 ```INI
 [location]
 # Space-separated list of source directories to backup.
-source_directories: /home /etc
+# Globs are expanded.
+source_directories: /home /etc /var/log/syslog*
 
 # Path to local or remote backup repository.
 repository: user@backupserver:sourcehostname.attic
