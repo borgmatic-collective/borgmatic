@@ -30,6 +30,6 @@ setup(
     },
     tests_require=(
         'flexmock',
-        'nose',
+        'pytest',
     )
 )
