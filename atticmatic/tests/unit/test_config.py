@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from flexmock import flexmock
-from nose.tools import assert_raises
+import pytest
 
 from atticmatic import config as module
 
@@ -61,7 +61,7 @@ def test_validate_configuration_format_with_missing_required_section_should_rais
         ),
     )
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         module.validate_configuration_format(parser, config_format)
 
 
@@ -96,7 +96,7 @@ def test_validate_configuration_format_with_unknown_section_should_raise():
         module.Section_format('section', options=()),
     )
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         module.validate_configuration_format(parser, config_format)
 
 
@@ -114,7 +114,7 @@ def test_validate_configuration_format_with_missing_required_option_should_raise
         ),
     )
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         module.validate_configuration_format(parser, config_format)
 
 
@@ -146,7 +146,7 @@ def test_validate_configuration_format_with_extra_option_should_raise():
         ),
     )
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         module.validate_configuration_format(parser, config_format)
 
 
@@ -228,5 +228,5 @@ def test_parse_configuration_with_file_open_error_should_raise():
     parser = insert_mock_parser()
     parser.should_receive('read').and_return([])
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         module.parse_configuration('filename', config_format=flexmock())

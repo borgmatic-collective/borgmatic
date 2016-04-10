@@ -2,7 +2,7 @@ import os
 import sys
 
 from flexmock import flexmock
-from nose.tools import assert_raises
+import pytest
 
 from atticmatic import command as module
 
@@ -66,7 +66,7 @@ def test_parse_arguments_with_invalid_arguments_exits():
     sys.stderr = sys.stdout
 
     try:
-        with assert_raises(SystemExit):
+        with pytest.raises(SystemExit):
             module.parse_arguments(COMMAND_NAME, '--posix-me-harder')
     finally:
         sys.stderr = original_stderr
