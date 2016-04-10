@@ -4,7 +4,7 @@ title: Atticmatic
 
 atticmatic is a simple Python wrapper script for the
 [Attic](https://attic-backup.org/) and
-[Borg](https://borgbackup.github.io/borgbackup/) backup software that
+[Borg](https://borgbackup.readthedocs.org/en/stable/) backup software that
 initiates a backup, prunes any old backups according to a retention policy,
 and validates backups for consistency. The script supports specifying your
 settings in a declarative configuration file rather than having to put them
