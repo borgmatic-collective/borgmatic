@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from subprocess import STDOUT
 import os
 
 from flexmock import flexmock
@@ -31,7 +32,7 @@ def test_initialize_without_passphrase_should_not_set_environment():
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):
-    subprocess = flexmock()
+    subprocess = flexmock(STDOUT=STDOUT)
     subprocess.should_receive('check_call').with_args(check_call_command, **kwargs).once()
     flexmock(module).subprocess = subprocess
 
@@ -353,7 +354,7 @@ def test_check_archives_should_call_attic_with_parameters():
     stdout = flexmock()
     insert_subprocess_mock(
         ('attic', 'check', 'repo'),
-        stdout=stdout,
+        stdout=stdout, stderr=STDOUT,
     )
     insert_platform_mock()
     insert_datetime_mock()
@@ -374,7 +375,7 @@ def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_param
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
         ('attic', 'check', 'repo', '--verbose'),
-        stdout=None,
+        stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
     insert_datetime_mock()
@@ -393,7 +394,7 @@ def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_param
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
         ('attic', 'check', 'repo', '--verbose'),
-        stdout=None,
+        stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
     insert_datetime_mock()
