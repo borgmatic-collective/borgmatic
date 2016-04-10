@@ -1,8 +1,8 @@
-0.1.8.dev0
+0.1.8
 
  * Fix for handling of spaces in source_directories which resulted in backup up everything.
  * Fix for broken links to Borg documentation.
- * At verbosity zero, suppressing Borg check spew to stderr about "Checking segments".
+ * At verbosity zero, suppressing Borg check stderr spew about "Checking segments".
  * Support for Borg --one-file-system.
  * Support for Borg create --umask.
  * Support for file globs in source_directories.
