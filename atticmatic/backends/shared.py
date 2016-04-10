@@ -213,7 +213,7 @@ def check_archives(verbosity, repository, consistency_config, command):
         repository,
     ) + _make_check_flags(checks, check_last) + verbosity_flags
 
-    # The check command spews to stdout even without the verbose flag. Suppress it.
+    # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
     stdout = None if verbosity_flags else open(os.devnull, 'w')
 
-    subprocess.check_call(full_command, stdout=stdout)
+    subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
