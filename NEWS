@@ -1,10 +1,10 @@
 0.1.8.dev0
 
- * Fixed handling of repeated spaces in source_directories which resulted in backup up everything.
- * Added support for --one-file-system for Borg.
- * Support borg create --umask.
- * Added support for file globs in source_directories.
- * Fixed links to Borg documentation.
+ * Fix for handling of spaces in source_directories which resulted in backup up everything.
+ * Fix for broken links to Borg documentation.
+ * Support for Borg --one-file-system.
+ * Support for Borg create --umask.
+ * support for file globs in source_directories.
 
 0.1.7
 
