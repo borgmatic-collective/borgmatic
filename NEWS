@@ -4,6 +4,7 @@
  * Added support for --one-file-system for Borg.
  * Support borg create --umask.
  * Added support for file globs in source_directories.
+ * Fixed links to Borg documentation.
 
 0.1.7
 
