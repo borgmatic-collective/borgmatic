@@ -45,7 +45,7 @@ available](https://torsion.org/hg/atticmatic). It's also mirrored on
 
 To get up and running, follow the [Attic Quick
 Start](https://attic-backup.org/quickstart.html) or the [Borg Quick
-Start](https://borgbackup.github.io/borgbackup/quickstart.html) to create a
+Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create a
 repository on a local or remote host. Note that if you plan to run atticmatic
 on a schedule with cron, and you encrypt your attic repository with a
 passphrase instead of a key file, you'll need to set the atticmatic
