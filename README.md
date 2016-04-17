@@ -93,15 +93,15 @@ By default, the backup will proceed silently except in the case of errors. But
 if you'd like to to get additional information about the progress of the
 backup as it proceeds, use the verbosity option:
 
-    atticmattic --verbosity 1
+    atticmatic --verbosity 1
 
 Or, for even more progress spew:
 
-    atticmattic --verbosity 2
+    atticmatic --verbosity 2
 
 If you'd like to see the available command-line arguments, view the help:
 
-    atticmattic --help
+    atticmatic --help
 
 
 ## Running tests
