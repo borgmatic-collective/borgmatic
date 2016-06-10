@@ -26,6 +26,7 @@ CONFIG_FORMAT = (
         (
             option('source_directories'),
             option('one_file_system', value_type=bool, required=False),
+            option('remote_path', required=False),
             option('repository'),
         ),
     ),

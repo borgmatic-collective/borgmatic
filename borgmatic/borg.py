@@ -24,7 +24,7 @@ def initialize(storage_config, command=COMMAND):
 
 def create_archive(
     excludes_filename, verbosity, storage_config, source_directories, repository, command=COMMAND,
-    one_file_system=None
+    one_file_system=None, remote_path=None,
 ):
     '''
     Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
@@ -39,6 +39,7 @@ def create_archive(
     umask = storage_config.get('umask', None)
     umask_flags = ('--umask', str(umask)) if umask else ()
     one_file_system_flags = ('--one-file-system',) if one_file_system else ()
+    remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -52,7 +53,7 @@ def create_archive(
             timestamp=datetime.now().isoformat(),
         ),
     ) + sources + exclude_flags + compression_flags + one_file_system_flags + \
-        umask_flags + verbosity_flags
+        remote_path_flags + umask_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
@@ -79,12 +80,13 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, repository, retention_config, command=COMMAND):
+def prune_archives(verbosity, repository, retention_config, command=COMMAND, remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, and a
     command to run, prune attic archives according the the retention policy specified in that
     configuration.
     '''
+    remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--stats',),
         VERBOSITY_LOTS: ('--verbose', '--stats'),
@@ -97,7 +99,7 @@ def prune_archives(verbosity, repository, retention_config, command=COMMAND):
         element
         for pair in _make_prune_flags(retention_config)
         for element in pair
-    ) + verbosity_flags
+    ) + remote_path_flags + verbosity_flags
 
     subprocess.check_call(full_command)
 
@@ -155,7 +157,7 @@ def _make_check_flags(checks, check_last=None):
     ) + last_flag
 
 
-def check_archives(verbosity, repository, consistency_config, command=COMMAND):
+def check_archives(verbosity, repository, consistency_config, command=COMMAND, remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
     command to run, check the contained attic archives for consistency.
@@ -167,6 +169,7 @@ def check_archives(verbosity, repository, consistency_config, command=COMMAND):
     if not checks:
         return
 
+    remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--verbose',),
         VERBOSITY_LOTS: ('--verbose',),
@@ -175,7 +178,7 @@ def check_archives(verbosity, repository, consistency_config, command=COMMAND):
     full_command = (
         command, 'check',
         repository,
-    ) + _make_check_flags(checks, check_last) + verbosity_flags
+    ) + _make_check_flags(checks, check_last) + remote_path_flags + verbosity_flags
 
     # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
     stdout = None if verbosity_flags else open(os.devnull, 'w')

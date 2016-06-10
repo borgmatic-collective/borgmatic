@@ -1,3 +1,8 @@
+1.0.1
+
+ * #19: Support for Borg's --remote-path option to use an alternate Borg
+   executable. See sample/config.
+
 1.0.0
 
  * Attic is no longer supported, as there hasn't been any recent development on
