@@ -14,8 +14,8 @@ def test_initialize_with_passphrase_should_set_environment():
 
     try:
         os.environ = {}
-        module.initialize({'encryption_passphrase': 'pass'}, command='attic')
-        assert os.environ.get('ATTIC_PASSPHRASE') == 'pass'
+        module.initialize({'encryption_passphrase': 'pass'}, command='borg')
+        assert os.environ.get('BORG_PASSPHRASE') == 'pass'
     finally:
         os.environ = orig_environ
 
@@ -25,8 +25,8 @@ def test_initialize_without_passphrase_should_not_set_environment():
 
     try:
         os.environ = {}
-        module.initialize({}, command='attic')
-        assert os.environ.get('ATTIC_PASSPHRASE') == None
+        module.initialize({}, command='borg')
+        assert os.environ.get('BORG_PASSPHRASE') == None
     finally:
         os.environ = orig_environ
 
@@ -53,11 +53,11 @@ def insert_datetime_mock():
     ).mock
 
 
-CREATE_COMMAND_WITHOUT_EXCLUDES = ('attic', 'create', 'repo::host-now', 'foo', 'bar')
+CREATE_COMMAND_WITHOUT_EXCLUDES = ('borg', 'create', 'repo::host-now', 'foo', 'bar')
 CREATE_COMMAND = CREATE_COMMAND_WITHOUT_EXCLUDES + ('--exclude-from', 'excludes')
 
 
-def test_create_archive_should_call_attic_with_parameters():
+def test_create_archive_should_call_borg_with_parameters():
     insert_subprocess_mock(CREATE_COMMAND)
     insert_platform_mock()
     insert_datetime_mock()
@@ -68,7 +68,7 @@ def test_create_archive_should_call_attic_with_parameters():
         storage_config={},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
@@ -83,11 +83,11 @@ def test_create_archive_with_two_spaces_in_source_directories():
         storage_config={},
         source_directories='foo  bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_none_excludes_filename_should_call_attic_without_excludes():
+def test_create_archive_with_none_excludes_filename_should_call_borg_without_excludes():
     insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
     insert_platform_mock()
     insert_datetime_mock()
@@ -98,11 +98,11 @@ def test_create_archive_with_none_excludes_filename_should_call_attic_without_ex
         storage_config={},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_verbosity_some_should_call_attic_with_stats_parameter():
+def test_create_archive_with_verbosity_some_should_call_borg_with_stats_parameter():
     insert_subprocess_mock(CREATE_COMMAND + ('--stats',))
     insert_platform_mock()
     insert_datetime_mock()
@@ -113,11 +113,11 @@ def test_create_archive_with_verbosity_some_should_call_attic_with_stats_paramet
         storage_config={},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+def test_create_archive_with_verbosity_lots_should_call_borg_with_verbose_parameter():
     insert_subprocess_mock(CREATE_COMMAND + ('--verbose', '--stats'))
     insert_platform_mock()
     insert_datetime_mock()
@@ -128,11 +128,11 @@ def test_create_archive_with_verbosity_lots_should_call_attic_with_verbose_param
         storage_config={},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_compression_should_call_attic_with_compression_parameters():
+def test_create_archive_with_compression_should_call_borg_with_compression_parameters():
     insert_subprocess_mock(CREATE_COMMAND + ('--compression', 'rle'))
     insert_platform_mock()
     insert_datetime_mock()
@@ -143,11 +143,11 @@ def test_create_archive_with_compression_should_call_attic_with_compression_para
         storage_config={'compression': 'rle'},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_one_file_system_should_call_attic_with_one_file_system_parameters():
+def test_create_archive_with_one_file_system_should_call_borg_with_one_file_system_parameters():
     insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
     insert_platform_mock()
     insert_datetime_mock()
@@ -158,12 +158,28 @@ def test_create_archive_with_one_file_system_should_call_attic_with_one_file_sys
         storage_config={},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
         one_file_system=True,
     )
 
 
-def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
+def test_create_archive_with_remote_path_should_call_borg_with_remote_path_parameters():
+    insert_subprocess_mock(CREATE_COMMAND + ('--remote-path', 'borg1'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename='excludes',
+        verbosity=None,
+        storage_config={},
+        source_directories='foo bar',
+        repository='repo',
+        command='borg',
+        remote_path='borg1',
+    )
+
+
+def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
     insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
     insert_platform_mock()
     insert_datetime_mock()
@@ -174,12 +190,12 @@ def test_create_archive_with_umask_should_call_attic_with_umask_parameters():
         storage_config={'umask': 740},
         source_directories='foo bar',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
 def test_create_archive_with_source_directories_glob_expands():
-    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo', 'food'))
+    insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo', 'food'))
     insert_platform_mock()
     insert_datetime_mock()
     flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
@@ -190,12 +206,12 @@ def test_create_archive_with_source_directories_glob_expands():
         storage_config={},
         source_directories='foo*',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
 def test_create_archive_with_non_matching_source_directories_glob_passes_through():
-    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo*'))
+    insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo*'))
     insert_platform_mock()
     insert_datetime_mock()
     flexmock(module).should_receive('glob').with_args('foo*').and_return([])
@@ -206,12 +222,12 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
         storage_config={},
         source_directories='foo*',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
-def test_create_archive_with_glob_should_call_attic_with_expanded_directories():
-    insert_subprocess_mock(('attic', 'create', 'repo::host-now', 'foo', 'food'))
+def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
+    insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo', 'food'))
     insert_platform_mock()
     insert_datetime_mock()
     flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
@@ -222,7 +238,7 @@ def test_create_archive_with_glob_should_call_attic_with_expanded_directories():
         storage_config={},
         source_directories='foo*',
         repository='repo',
-        command='attic',
+        command='borg',
     )
 
 
@@ -248,11 +264,11 @@ def test_make_prune_flags_should_return_flags_from_config():
 
 
 PRUNE_COMMAND = (
-    'attic', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3',
+    'borg', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3',
 )
 
 
-def test_prune_archives_should_call_attic_with_parameters():
+def test_prune_archives_should_call_borg_with_parameters():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -263,11 +279,11 @@ def test_prune_archives_should_call_attic_with_parameters():
         verbosity=None,
         repository='repo',
         retention_config=retention_config,
-        command='attic',
+        command='borg',
     )
 
 
-def test_prune_archives_with_verbosity_some_should_call_attic_with_stats_parameter():
+def test_prune_archives_with_verbosity_some_should_call_borg_with_stats_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -278,11 +294,11 @@ def test_prune_archives_with_verbosity_some_should_call_attic_with_stats_paramet
         repository='repo',
         verbosity=VERBOSITY_SOME,
         retention_config=retention_config,
-        command='attic',
+        command='borg',
     )
 
 
-def test_prune_archives_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+def test_prune_archives_with_verbosity_lots_should_call_borg_with_verbose_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -293,7 +309,22 @@ def test_prune_archives_with_verbosity_lots_should_call_attic_with_verbose_param
         repository='repo',
         verbosity=VERBOSITY_LOTS,
         retention_config=retention_config,
-        command='attic',
+        command='borg',
+    )
+
+def test_prune_archive_with_remote_path_should_call_borg_with_remote_path_parameters():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
+    insert_subprocess_mock(PRUNE_COMMAND + ('--remote-path', 'borg1'))
+
+    module.prune_archives(
+        verbosity=None,
+        repository='repo',
+        retention_config=retention_config,
+        command='borg',
+        remote_path='borg1',
     )
 
 
@@ -345,7 +376,7 @@ def test_make_check_flags_with_last_returns_last_flag():
     assert flags == ('--last', 3)
 
 
-def test_check_archives_should_call_attic_with_parameters():
+def test_check_archives_should_call_borg_with_parameters():
     checks = flexmock()
     check_last = flexmock()
     consistency_config = flexmock().should_receive('get').and_return(check_last).mock
@@ -353,7 +384,7 @@ def test_check_archives_should_call_attic_with_parameters():
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('attic', 'check', 'repo'),
+        ('borg', 'check', 'repo'),
         stdout=stdout, stderr=STDOUT,
     )
     insert_platform_mock()
@@ -365,16 +396,16 @@ def test_check_archives_should_call_attic_with_parameters():
         verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
-        command='attic',
+        command='borg',
     )
 
 
-def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_parameter():
+def test_check_archives_with_verbosity_some_should_call_borg_with_verbose_parameter():
     consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('attic', 'check', 'repo', '--verbose'),
+        ('borg', 'check', 'repo', '--verbose'),
         stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
@@ -384,16 +415,16 @@ def test_check_archives_with_verbosity_some_should_call_attic_with_verbose_param
         verbosity=VERBOSITY_SOME,
         repository='repo',
         consistency_config=consistency_config,
-        command='attic',
+        command='borg',
     )
 
 
-def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_parameter():
+def test_check_archives_with_verbosity_lots_should_call_borg_with_verbose_parameter():
     consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('attic', 'check', 'repo', '--verbose'),
+        ('borg', 'check', 'repo', '--verbose'),
         stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
@@ -403,7 +434,7 @@ def test_check_archives_with_verbosity_lots_should_call_attic_with_verbose_param
         verbosity=VERBOSITY_LOTS,
         repository='repo',
         consistency_config=consistency_config,
-        command='attic',
+        command='borg',
     )
 
 
@@ -416,5 +447,30 @@ def test_check_archives_without_any_checks_should_bail():
         verbosity=None,
         repository='repo',
         consistency_config=consistency_config,
-        command='attic',
+        command='borg',
+    )
+
+
+def test_check_archives_with_remote_path_should_call_borg_with_remote_path_parameters():
+    checks = flexmock()
+    check_last = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(check_last).mock
+    flexmock(module).should_receive('_parse_checks').and_return(checks)
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    stdout = flexmock()
+    insert_subprocess_mock(
+        ('borg', 'check', 'repo', '--remote-path', 'borg1'),
+        stdout=stdout, stderr=STDOUT,
+    )
+    insert_platform_mock()
+    insert_datetime_mock()
+    builtins_mock().should_receive('open').and_return(stdout)
+    flexmock(module.os).should_receive('devnull')
+
+    module.check_archives(
+        verbosity=None,
+        repository='repo',
+        consistency_config=consistency_config,
+        command='borg',
+        remote_path='borg1',
     )

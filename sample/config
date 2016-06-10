@@ -3,9 +3,11 @@
 # Globs are expanded.
 source_directories: /home /etc /var/log/syslog*
 
-# For Borg only, you can specify to stay in same file system (do not cross
-# mount points).
+# Stay in same file system (do not cross mount points).
 #one_file_system: True
+
+# Alternate Borg remote executable (defaults to "borg"):
+#remote_path: borg1
 
 # Path to local or remote repository.
 repository: user@backupserver:sourcehostname.borg
@@ -14,10 +16,12 @@ repository: user@backupserver:sourcehostname.borg
 # Passphrase to unlock the encryption key with. Only use on repositories that
 # were initialized with passphrase/repokey encryption.
 #encryption_passphrase: foo
+
 # Type of compression to use when creating archives. See
 # https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create
 # for details. Defaults to no compression.
 #compression: lz4
+
 # Umask to be used for borg create.
 #umask: 0740
 
@@ -30,6 +34,7 @@ keep_daily: 7
 keep_weekly: 4
 keep_monthly: 6
 keep_yearly: 1
+
 #prefix: sourcehostname
 
 [consistency]
@@ -38,5 +43,6 @@ keep_yearly: 1
 # checks. See https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check
 # for details.
 checks: repository archives
+
 # Restrict the number of checked archives to the last n.
 #check_last: 3
