@@ -1,8 +1,10 @@
 1.0.0
 
- * Attic is no longer supported, as there hasn't been any recent development on it.
-   This will allow faster iteration on Borg-specific configuration.
- * Project renamed from atticmatic to borgmatic.
+ * Attic is no longer supported, as there hasn't been any recent development on
+   it. Dropping Attic support will allow faster iteration on Borg-specific
+   features. If you're still using Attic, this is a good time to switch to Borg!
+ * Project renamed from atticmatic to borgmatic. See the borgmatic README for
+   information on upgrading.
 
 0.1.8
 
