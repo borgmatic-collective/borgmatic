@@ -8,22 +8,21 @@ source_directories: /home /etc /var/log/syslog*
 #one_file_system: True
 
 # Path to local or remote repository.
-repository: user@backupserver:sourcehostname.attic
+repository: user@backupserver:sourcehostname.borg
 
 [storage]
 # Passphrase to unlock the encryption key with. Only use on repositories that
 # were initialized with passphrase/repokey encryption.
 #encryption_passphrase: foo
-# For Borg only, you can specify the type of compression to use when creating
-# archives. See https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create
+# Type of compression to use when creating archives. See
+# https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create
 # for details. Defaults to no compression.
 #compression: lz4
-# For Borg only, you can specify the umask to be used for borg create.
+# Umask to be used for borg create.
 #umask: 0740
 
 [retention]
 # Retention policy for how many backups to keep in each category. See
-# https://attic-backup.org/usage.html#attic-prune or
 # https://borgbackup.readthedocs.org/en/stable/usage.html#borg-prune for details.
 #keep_within: 3H
 #keep_hourly: 24
@@ -36,8 +35,8 @@ keep_yearly: 1
 [consistency]
 # Space-separated list of consistency checks to run: "repository", "archives",
 # or both. Defaults to both. Set to "disabled" to disable all consistency
-# checks. See https://attic-backup.org/usage.html#attic-check or
-# https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check for details.
+# checks. See https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check
+# for details.
 checks: repository archives
-# For Borg only, you can restrict the number of checked archives to the last n.
+# Restrict the number of checked archives to the last n.
 #check_last: 3

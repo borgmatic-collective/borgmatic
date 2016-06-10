@@ -4,9 +4,9 @@ import os
 
 from flexmock import flexmock
 
-from atticmatic.backends import shared as module
-from atticmatic.tests.builtins import builtins_mock
-from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+from borgmatic import borg as module
+from borgmatic.tests.builtins import builtins_mock
+from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 def test_initialize_with_passphrase_should_set_environment():

@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '0.1.8'
+VERSION = '1.0.0'
 
 
 setup(
-    name='atticmatic',
+    name='borgmatic',
     version=VERSION,
-    description='A wrapper script for Attic/Borg backup software that creates and prunes backups',
+    description='A wrapper script for Borg backup software that creates and prunes backups',
     author='Dan Helfman',
     author_email='witten@torsion.org',
-    url='https://torsion.org/atticmatic',
-    download_url='https://torsion.org/hg/atticmatic/archive/%s.tar.gz' % VERSION,
+    url='https://torsion.org/borgmatic',
+    download_url='https://torsion.org/hg/borgmatic/archive/%s.tar.gz' % VERSION,
     classifiers=(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
@@ -24,10 +24,12 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'atticmatic = atticmatic.command:main',
-            'borgmatic = atticmatic.command:main',
+            'borgmatic = borgmatic.command:main',
         ]
     },
+    obsoletes=(
+        'atticmatic',
+    ),
     tests_require=(
         'flexmock',
         'pytest',

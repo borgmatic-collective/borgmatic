@@ -1,9 +1,8 @@
-title: Atticmatic
+title: Borgmatic
 
 ## Overview
 
-atticmatic is a simple Python wrapper script for the
-[Attic](https://attic-backup.org/) and
+borgmatic (formerly atticmatic) is a simple Python wrapper script for the
 [Borg](https://borgbackup.readthedocs.org/en/stable/) backup software that
 initiates a backup, prunes any old backups according to a retention policy,
 and validates backups for consistency. The script supports specifying your
@@ -19,7 +18,7 @@ Here's an example config file:
 source_directories: /home /etc /var/log/syslog*
 
 # Path to local or remote backup repository.
-repository: user@backupserver:sourcehostname.attic
+repository: user@backupserver:sourcehostname.borg
 
 [retention]
 # Retention policy for how many backups to keep in each category.
@@ -35,37 +34,30 @@ checks: repository archives
 Additionally, exclude patterns can be specified in a separate excludes config
 file, one pattern per line.
 
-atticmatic is hosted at <https://torsion.org/atticmatic> with [source code
-available](https://torsion.org/hg/atticmatic). It's also mirrored on
-[GitHub](https://github.com/witten/atticmatic) and
-[BitBucket](https://bitbucket.org/dhelfman/atticmatic) for convenience.
+borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
+available](https://torsion.org/hg/borgmatic). It's also mirrored on
+[GitHub](https://github.com/witten/borgmatic) and
+[BitBucket](https://bitbucket.org/dhelfman/borgmatic) for convenience.
 
 
 ## Setup
 
-To get up and running, follow the [Attic Quick
-Start](https://attic-backup.org/quickstart.html) or the [Borg Quick
-Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create a
-repository on a local or remote host. Note that if you plan to run atticmatic
-on a schedule with cron, and you encrypt your attic repository with a
-passphrase instead of a key file, you'll need to set the atticmatic
+To get up and running, follow the [Borg Quick
+Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create
+a repository on a local or remote host. Note that if you plan to run
+borgmatic on a schedule with cron, and you encrypt your Borg repository with
+a passphrase instead of a key file, you'll need to set the borgmatic
 `encryption_passphrase` configuration variable. See the repository encryption
 section of the Quick Start for more info.
 
 If the repository is on a remote host, make sure that your local root user has
 key-based ssh access to the desired user account on the remote host.
 
-To install atticmatic, run the following command to download and install it:
+To install borgmatic, run the following command to download and install it:
 
-    sudo pip install --upgrade atticmatic
+    sudo pip install --upgrade borgmatic
 
-If you are using Attic, copy the following configuration files:
-
-    sudo cp sample/atticmatic.cron /etc/cron.d/atticmatic
-    sudo mkdir /etc/atticmatic/
-    sudo cp sample/config sample/excludes /etc/atticmatic/
-
-If you are using Borg, copy the files like this instead:
+Then, copy the following configuration files:
 
     sudo cp sample/borgmatic.cron /etc/cron.d/borgmatic
     sudo mkdir /etc/borgmatic/
@@ -76,13 +68,8 @@ Lastly, modify the /etc files with your desired configuration.
 
 ## Usage
 
-You can run atticmatic and start a backup simply by invoking it without
+You can run borgmatic and start a backup simply by invoking it without
 arguments:
-
-    atticmatic
-
-Or, if you're using Borg, use this command instead to make use of the Borg
-backend:
 
     borgmatic
 
@@ -93,15 +80,15 @@ By default, the backup will proceed silently except in the case of errors. But
 if you'd like to to get additional information about the progress of the
 backup as it proceeds, use the verbosity option:
 
-    atticmatic --verbosity 1
+    borgmatic --verbosity 1
 
 Or, for even more progress spew:
 
-    atticmatic --verbosity 2
+    borgmatic --verbosity 2
 
 If you'd like to see the available command-line arguments, view the help:
 
-    atticmatic --help
+    borgmatic --help
 
 
 ## Running tests
@@ -119,12 +106,12 @@ Then, to actually run tests, run:
 
 ### Broken pipe with remote repository
 
-When running atticmatic on a large remote repository, you may receive errors
-like the following, particularly while "attic check" is validating backups for
+When running borgmatic on a large remote repository, you may receive errors
+like the following, particularly while "borg check" is validating backups for
 consistency:
 
     Write failed: Broken pipe
-    attic: Error: Connection closed by remote host
+    borg: Error: Connection closed by remote host
 
 This error can be caused by an ssh timeout, which you can rectify by adding
 the following to the ~/.ssh/config file on the client:
@@ -138,8 +125,8 @@ backups.
 
 ## Issues and feedback
 
-Got an issue or an idea for a feature enhancement? Check out the [atticmatic
-issue tracker](https://tree.taiga.io/project/witten-atticmatic/issues). In
+Got an issue or an idea for a feature enhancement? Check out the [borgmatic
+issue tracker](https://tree.taiga.io/project/witten-borgmatic/issues). In
 order to create a new issue or comment on an issue, you'll need to [login
 first](https://tree.taiga.io/login).
 

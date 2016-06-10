@@ -20,6 +20,45 @@ def option(name, value_type=str, required=True):
     return Config_option(name, value_type, required)
 
 
+CONFIG_FORMAT = (
+    Section_format(
+        'location',
+        (
+            option('source_directories'),
+            option('one_file_system', value_type=bool, required=False),
+            option('repository'),
+        ),
+    ),
+    Section_format(
+        'storage',
+        (
+            option('encryption_passphrase', required=False),
+            option('compression', required=False),
+            option('umask', required=False),
+        ),
+    ),
+    Section_format(
+        'retention',
+        (
+            option('keep_within', required=False),
+            option('keep_hourly', int, required=False),
+            option('keep_daily', int, required=False),
+            option('keep_weekly', int, required=False),
+            option('keep_monthly', int, required=False),
+            option('keep_yearly', int, required=False),
+            option('prefix', required=False),
+        ),
+    ),
+    Section_format(
+        'consistency',
+        (
+            option('checks', required=False),
+            option('check_last', required=False),
+        ),
+    )
+)
+
+
 def validate_configuration_format(parser, config_format):
     '''
     Given an open RawConfigParser and an expected config file format, validate that the parsed

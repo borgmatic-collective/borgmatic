@@ -6,52 +6,16 @@ import subprocess
 from glob import glob
 from itertools import chain
 
-from atticmatic.config import Section_format, option
-from atticmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
-# Common backend functionality shared by Attic and Borg. As the two backup
-# commands diverge, these shared functions will likely need to be replaced
-# with non-shared functions within atticmatic.backends.attic and
-# atticmatic.backends.borg.
+# Integration with Borg for actually handling backups.
 
 
-CONFIG_FORMAT = (
-    Section_format(
-        'location',
-        (
-            option('source_directories'),
-            option('repository'),
-        ),
-    ),
-    Section_format(
-        'storage',
-        (
-            option('encryption_passphrase', required=False),
-        ),
-    ),
-    Section_format(
-        'retention',
-        (
-            option('keep_within', required=False),
-            option('keep_hourly', int, required=False),
-            option('keep_daily', int, required=False),
-            option('keep_weekly', int, required=False),
-            option('keep_monthly', int, required=False),
-            option('keep_yearly', int, required=False),
-            option('prefix', required=False),
-        ),
-    ),
-    Section_format(
-        'consistency',
-        (
-            option('checks', required=False),
-        ),
-    )
-)
+COMMAND = 'borg'
 
 
-def initialize(storage_config, command):
+def initialize(storage_config, command=COMMAND):
     passphrase = storage_config.get('encryption_passphrase')
 
     if passphrase:
@@ -59,7 +23,7 @@ def initialize(storage_config, command):
 
 
 def create_archive(
-    excludes_filename, verbosity, storage_config, source_directories, repository, command,
+    excludes_filename, verbosity, storage_config, source_directories, repository, command=COMMAND,
     one_file_system=None
 ):
     '''
@@ -115,7 +79,7 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, repository, retention_config, command):
+def prune_archives(verbosity, repository, retention_config, command=COMMAND):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, and a
     command to run, prune attic archives according the the retention policy specified in that
@@ -191,7 +155,7 @@ def _make_check_flags(checks, check_last=None):
     ) + last_flag
 
 
-def check_archives(verbosity, repository, consistency_config, command):
+def check_archives(verbosity, repository, consistency_config, command=COMMAND):
     '''
     Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
     command to run, check the contained attic archives for consistency.
