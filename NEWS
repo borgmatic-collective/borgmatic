@@ -1,3 +1,9 @@
+1.0.0
+
+ * Attic is no longer supported, as there hasn't been any recent development on it.
+   This will allow faster iteration on Borg-specific configuration.
+ * Project renamed from atticmatic to borgmatic.
+
 0.1.8
 
  * Fix for handling of spaces in source_directories which resulted in backup up everything.

@@ -8,7 +8,7 @@ except ImportError:
 from collections import OrderedDict
 import string
 
-from atticmatic import config as module
+from borgmatic import config as module
 
 
 def test_parse_section_options_with_punctuation_should_return_section_options():

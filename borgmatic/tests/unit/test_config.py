@@ -3,7 +3,7 @@ from collections import OrderedDict
 from flexmock import flexmock
 import pytest
 
-from atticmatic import config as module
+from borgmatic import config as module
 
 
 def test_option_should_create_config_option():
