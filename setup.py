@@ -27,9 +27,9 @@ setup(
             'borgmatic = borgmatic.command:main',
         ]
     },
-    obsoletes=(
+    obsoletes=[
         'atticmatic',
-    ),
+    ],
     tests_require=(
         'flexmock',
         'pytest',
