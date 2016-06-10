@@ -66,6 +66,26 @@ Then, copy the following configuration files:
 Lastly, modify the /etc files with your desired configuration.
 
 
+## Upgrading from atticmatic
+
+You can ignore this section if you're not an atticmatic user (the former name
+of borgmatic).
+
+borgmatic only supports Borg now and no longer supports Attic. So if you're
+an Attic user, consider switching to Borg. See the [Borg upgrade
+command](https://borgbackup.readthedocs.io/en/stable/usage.html#borg-upgrade)
+for more information. Then, follow the instructions above about setting up
+your borgmatic configuration files.
+
+If you were already using Borg with atticmatic, then you can easily upgrade
+from atticmatic to borgmatic. Simply run the following commands:
+
+    sudo pip uninstall atticmatic
+    sudo pip install borgmatic
+
+That's it! borgmatic will continue using your /etc/borgmatic configuration
+files.
+
 ## Usage
 
 You can run borgmatic and start a backup simply by invoking it without
