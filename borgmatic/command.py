@@ -45,7 +45,7 @@ def main():
         args = parse_arguments(*sys.argv[1:])
         config = parse_configuration(args.config_filename, CONFIG_FORMAT)
         repository = config.location['repository']
-        remote_path = config.location['remote_path']
+        remote_path = config.location.get('remote_path')
 
         borg.initialize(config.storage)
         borg.create_archive(

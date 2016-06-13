@@ -1,3 +1,7 @@
+1.0.2
+
+ * #20: Fix for traceback when remote_path option is missing.
+
 1.0.1
 
  * #19: Support for Borg's --remote-path option to use an alternate Borg
