@@ -146,7 +146,7 @@ backups.
 ## Issues and feedback
 
 Got an issue or an idea for a feature enhancement? Check out the [borgmatic
-issue tracker](https://tree.taiga.io/project/witten-borgmatic/issues). In
+issue tracker](https://tree.taiga.io/project/witten-borgmatic/issues?page=1&status=399951,399952,399955). In
 order to create a new issue or comment on an issue, you'll need to [login
 first](https://tree.taiga.io/login).
 
