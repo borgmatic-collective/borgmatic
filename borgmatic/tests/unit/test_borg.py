@@ -102,8 +102,8 @@ def test_create_archive_with_none_excludes_filename_should_call_borg_without_exc
     )
 
 
-def test_create_archive_with_verbosity_some_should_call_borg_with_stats_parameter():
-    insert_subprocess_mock(CREATE_COMMAND + ('--stats',))
+def test_create_archive_with_verbosity_some_should_call_borg_with_info_parameter():
+    insert_subprocess_mock(CREATE_COMMAND + ('--info', '--stats',))
     insert_platform_mock()
     insert_datetime_mock()
 
@@ -117,8 +117,8 @@ def test_create_archive_with_verbosity_some_should_call_borg_with_stats_paramete
     )
 
 
-def test_create_archive_with_verbosity_lots_should_call_borg_with_verbose_parameter():
-    insert_subprocess_mock(CREATE_COMMAND + ('--verbose', '--stats'))
+def test_create_archive_with_verbosity_lots_should_call_borg_with_debug_parameter():
+    insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--stats'))
     insert_platform_mock()
     insert_datetime_mock()
 
@@ -283,12 +283,12 @@ def test_prune_archives_should_call_borg_with_parameters():
     )
 
 
-def test_prune_archives_with_verbosity_some_should_call_borg_with_stats_parameter():
+def test_prune_archives_with_verbosity_some_should_call_borg_with_info_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(PRUNE_COMMAND + ('--stats',))
+    insert_subprocess_mock(PRUNE_COMMAND + ('--info', '--stats',))
 
     module.prune_archives(
         repository='repo',
@@ -298,12 +298,12 @@ def test_prune_archives_with_verbosity_some_should_call_borg_with_stats_paramete
     )
 
 
-def test_prune_archives_with_verbosity_lots_should_call_borg_with_verbose_parameter():
+def test_prune_archives_with_verbosity_lots_should_call_borg_with_debug_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(PRUNE_COMMAND + ('--verbose', '--stats',))
+    insert_subprocess_mock(PRUNE_COMMAND + ('--debug', '--stats',))
 
     module.prune_archives(
         repository='repo',
@@ -400,12 +400,12 @@ def test_check_archives_should_call_borg_with_parameters():
     )
 
 
-def test_check_archives_with_verbosity_some_should_call_borg_with_verbose_parameter():
+def test_check_archives_with_verbosity_some_should_call_borg_with_info_parameter():
     consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--verbose'),
+        ('borg', 'check', 'repo', '--info'),
         stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
@@ -419,12 +419,12 @@ def test_check_archives_with_verbosity_some_should_call_borg_with_verbose_parame
     )
 
 
-def test_check_archives_with_verbosity_lots_should_call_borg_with_verbose_parameter():
+def test_check_archives_with_verbosity_lots_should_call_borg_with_debug_parameter():
     consistency_config = flexmock().should_receive('get').and_return(None).mock
     flexmock(module).should_receive('_parse_checks').and_return(flexmock())
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--verbose'),
+        ('borg', 'check', 'repo', '--debug'),
         stdout=None, stderr=STDOUT,
     )
     insert_platform_mock()
