@@ -41,8 +41,8 @@ def create_archive(
     one_file_system_flags = ('--one-file-system',) if one_file_system else ()
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
-        VERBOSITY_SOME: ('--stats',),
-        VERBOSITY_LOTS: ('--verbose', '--stats'),
+        VERBOSITY_SOME: ('--info', '--stats',),
+        VERBOSITY_LOTS: ('--debug', '--list', '--stats'),
     }.get(verbosity, ())
 
     full_command = (
@@ -88,8 +88,8 @@ def prune_archives(verbosity, repository, retention_config, command=COMMAND, rem
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
-        VERBOSITY_SOME: ('--stats',),
-        VERBOSITY_LOTS: ('--verbose', '--stats'),
+        VERBOSITY_SOME: ('--info', '--stats',),
+        VERBOSITY_LOTS: ('--debug', '--stats'),
     }.get(verbosity, ())
 
     full_command = (
@@ -171,8 +171,8 @@ def check_archives(verbosity, repository, consistency_config, command=COMMAND, r
 
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
-        VERBOSITY_SOME: ('--verbose',),
-        VERBOSITY_LOTS: ('--verbose',),
+        VERBOSITY_SOME: ('--info',),
+        VERBOSITY_LOTS: ('--debug',),
     }.get(verbosity, ())
 
     full_command = (
