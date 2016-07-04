@@ -140,7 +140,7 @@ and the [sample systemd timer
 file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/systemd/borgmatic.timer).
 Then, from the directory where you downloaded them:
 
-    sudo mv {borgmatic.service,borgmatic.timer} /etc/systemd/system/
+    sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
     sudo systemctl enable borgmatic.timer
     sudo systemctl start borgmatic.timer
 
