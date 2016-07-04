@@ -1,3 +1,8 @@
+1.0.3-dev
+
+ * #18: Fix for README mention of sample files not included in package.
+ * Added logo.
+
 1.0.3
 
  * #21: Fix for verbosity flag not actually causing verbose output.
