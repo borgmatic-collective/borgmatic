@@ -1,4 +1,6 @@
-title: Borgmatic
+title: borgmatic
+
+<img src="static/borgmatic.svg" alt="borgmatic logo" style="width: 8em; float: right; padding-left: 1em;" />
 
 ## Overview
 
@@ -57,11 +59,14 @@ To install borgmatic, run the following command to download and install it:
 
     sudo pip install --upgrade borgmatic
 
-Then, copy the following configuration files:
+Then, download a [sample config
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/config) and a
+[sample excludes
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/excludes). From the
+directory where you downloaded them:
 
-    sudo cp sample/borgmatic.cron /etc/cron.d/borgmatic
     sudo mkdir /etc/borgmatic/
-    sudo cp sample/config sample/excludes /etc/borgmatic/
+    sudo mv config excludes /etc/borgmatic/
 
 Lastly, modify the /etc files with your desired configuration.
 
@@ -109,6 +114,17 @@ Or, for even more progress spew:
 If you'd like to see the available command-line arguments, view the help:
 
     borgmatic --help
+
+
+## Autopilot
+
+If you want to run borgmatic automatically, say once a day, the you can
+configure a job runner like cron to invoke it periodically. Download the
+[sample cron
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/borgmatic.cron).
+Then, from the directory where you downloaded it:
+
+    sudo cp borgmatic.cron /etc/cron.d/borgmatic
 
 
 ## Running tests
