@@ -119,12 +119,33 @@ If you'd like to see the available command-line arguments, view the help:
 ## Autopilot
 
 If you want to run borgmatic automatically, say once a day, the you can
-configure a job runner like cron to invoke it periodically. Download the
-[sample cron
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/borgmatic.cron).
+configure a job runner to invoke it periodically.
+
+### cron
+
+If you're using cron, download the [sample cron
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
-    sudo cp borgmatic.cron /etc/cron.d/borgmatic
+    sudo mv borgmatic /etc/cron.d/borgmatic
+
+You can modify the cron file if you'd like to run borgmatic more or less frequently.
+
+### systemd
+
+If you're using systemd instead of cron to run jobs, download the [sample
+systemd service
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/systemd/borgmatic.service)
+and the [sample systemd timer
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/systemd/borgmatic.timer).
+Then, from the directory where you downloaded them:
+
+    sudo mv {borgmatic.service,borgmatic.timer} /etc/systemd/system/
+    sudo systemctl enable borgmatic.timer
+    sudo systemctl start borgmatic.timer
+
+Feel free to modify the timer file based on how frequently you'd like
+borgmatic to run.
 
 
 ## Running tests
