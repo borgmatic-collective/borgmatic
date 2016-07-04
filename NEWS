@@ -1,6 +1,7 @@
 1.0.3-dev
 
  * #18: Fix for README mention of sample files not included in package.
+ * #22: Sample files for triggering borgmatic from a systemd timer.
  * Added logo.
 
 1.0.3
