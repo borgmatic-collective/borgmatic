@@ -9,7 +9,7 @@ source_directories: /home /etc /var/log/syslog*
 # Alternate Borg remote executable (defaults to "borg"):
 #remote_path: borg1
 
-# Path to local or remote repository.
+# Space-separated paths to local or remote repositories.
 repository: user@backupserver:sourcehostname.borg
 
 [storage]
