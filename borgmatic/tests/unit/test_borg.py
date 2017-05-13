@@ -87,6 +87,21 @@ def test_create_archive_with_two_spaces_in_source_directories():
     )
 
 
+def test_create_archive_with_escaped_spaces_in_source_directories():
+    insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo dir', 'bar'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        excludes_filename=None,
+        verbosity=None,
+        storage_config={},
+        source_directories=r'foo\ dir  bar',
+        repository='repo',
+        command='borg',
+    )
+
+
 def test_create_archive_with_none_excludes_filename_should_call_borg_without_excludes():
     insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
     insert_platform_mock()

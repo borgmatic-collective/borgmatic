@@ -13,6 +13,8 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 COMMAND = 'borg'
+ESCAPED_SPACE = r'\ '
+TEMP_REPLACEMENT_FOR_ESCAPED_SPACE = 'SLASH_ESCAPED_SPACE'
 
 
 def initialize(storage_config, command=COMMAND):
@@ -28,10 +30,13 @@ def create_archive(
 ):
     '''
     Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
-    list of source directories, a local or remote repository path, and a command to run, create an
-    attic archive.
+    list of source directories (spaces escaped with a backslash not treated as separators), a local
+    or remote repository path, and a command to run, create an attic archive.
     '''
-    sources = re.split('\s+', source_directories)
+    # To support escaping spaces in directory name, temporarily replace them
+    temp_source_directories = source_directories.replace(ESCAPED_SPACE, TEMP_REPLACEMENT_FOR_ESCAPED_SPACE)
+    sources = re.split('\s+', temp_source_directories)
+    sources = [s.replace(TEMP_REPLACEMENT_FOR_ESCAPED_SPACE, ' ') for s in sources]
     sources = tuple(chain.from_iterable(glob(x) or [x] for x in sources))
     exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
     compression = storage_config.get('compression', None)

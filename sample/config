@@ -1,7 +1,8 @@
 [location]
 # Space-separated list of source directories to backup.
 # Globs are expanded.
-source_directories: /home /etc /var/log/syslog*
+# Spaces in names can be escaped with a backslash.
+source_directories: /home /etc /var/log/syslog* /dir\ with\ spaces
 
 # Stay in same file system (do not cross mount points).
 #one_file_system: True

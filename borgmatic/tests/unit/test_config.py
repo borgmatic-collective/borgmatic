@@ -152,7 +152,7 @@ def test_validate_configuration_format_with_extra_option_should_raise():
 
 def test_parse_section_options_should_return_section_options():
     parser = flexmock()
-    parser.should_receive('get').with_args('section', 'foo').and_return('value')
+    parser.should_receive('get').with_args('section', 'foo').and_return(r'value\ baz')
     parser.should_receive('getint').with_args('section', 'bar').and_return(1)
     parser.should_receive('getboolean').never()
     parser.should_receive('has_option').with_args('section', 'foo').and_return(True)
@@ -170,7 +170,7 @@ def test_parse_section_options_should_return_section_options():
 
     assert config == OrderedDict(
         (
-            ('foo', 'value'),
+            ('foo', r'value\ baz'),
             ('bar', 1),
         )
     )
