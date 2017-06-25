@@ -17,7 +17,8 @@ Here's an example config file:
 [location]
 # Space-separated list of source directories to backup.
 # Globs are expanded.
-source_directories: /home /etc /var/log/syslog*
+# Spaces in names can be escaped with a backslash.
+source_directories: /home /etc /var/log/syslog* /dir\ with\ spaces
 
 # Path to local or remote backup repository.
 repository: user@backupserver:sourcehostname.borg
