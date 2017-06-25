@@ -23,7 +23,7 @@ repository: user@backupserver:sourcehostname.borg
 #compression: lz4
 
 # Umask to be used for borg create.
-#umask: 0740
+#umask: 0077
 
 [retention]
 # Retention policy for how many backups to keep in each category. See
