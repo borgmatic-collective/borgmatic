@@ -44,15 +44,20 @@ def main():
     try:
         args = parse_arguments(*sys.argv[1:])
         config = parse_configuration(args.config_filename, CONFIG_FORMAT)
-        repository = config.location['repository']
+        source_directories = config.location['source_directories']
+        repositories = config.location['repository'].split()
         remote_path = config.location.get('remote_path')
 
+        config_location = {k:v for k,v in config.location.items() if k != 'repository' and k != 'source_directories'}
+
         borg.initialize(config.storage)
-        borg.create_archive(
-            args.excludes_filename, args.verbosity, config.storage, **config.location
-        )
-        borg.prune_archives(args.verbosity, repository, config.retention, remote_path=remote_path)
-        borg.check_archives(args.verbosity, repository, config.consistency, remote_path=remote_path)
+
+        for repository in repositories:
+            borg.create_archive(
+                args.excludes_filename, args.verbosity, config.storage, source_directories, repository, **config_location
+            )
+            borg.prune_archives(args.verbosity, repository, config.retention, remote_path=remote_path)
+            borg.check_archives(args.verbosity, repository, config.consistency, remote_path=remote_path)
     except (ValueError, IOError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
