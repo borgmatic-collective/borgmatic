@@ -1,11 +1,5 @@
 from collections import OrderedDict, namedtuple
-
-try:
-    # Python 2
-    from ConfigParser import RawConfigParser
-except ImportError:
-    # Python 3
-    from configparser import RawConfigParser
+from configparser import RawConfigParser
 
 
 Section_format = namedtuple('Section_format', ('name', 'options'))
