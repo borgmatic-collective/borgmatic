@@ -59,6 +59,9 @@ To install borgmatic, run the following command to download and install it:
 
     sudo pip install --upgrade borgmatic
 
+Make sure you're using Python 3, as borgmatic does not support Python 2. (You
+may have to use "pip3" instead of "pip".)
+
 Then, download a [sample config
 file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/config) and a
 [sample excludes

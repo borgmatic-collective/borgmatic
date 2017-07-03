@@ -1,9 +1,4 @@
-try:
-    # Python 2
-    from cStringIO import StringIO
-except ImportError:
-    # Python 3
-    from io import StringIO
+from io import StringIO
 
 from collections import OrderedDict
 import string
