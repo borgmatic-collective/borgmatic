@@ -3,7 +3,7 @@ from io import StringIO
 from collections import OrderedDict
 import string
 
-from borgmatic import config as module
+from borgmatic.config import legacy as module
 
 
 def test_parse_section_options_with_punctuation_should_return_section_options():

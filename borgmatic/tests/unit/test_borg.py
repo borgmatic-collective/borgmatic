@@ -1,11 +1,11 @@
 from collections import OrderedDict
 from subprocess import STDOUT
+import sys
 import os
 
 from flexmock import flexmock
 
 from borgmatic import borg as module
-from borgmatic.tests.builtins import builtins_mock
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
@@ -389,7 +389,7 @@ def test_check_archives_should_call_borg_with_parameters():
     )
     insert_platform_mock()
     insert_datetime_mock()
-    builtins_mock().should_receive('open').and_return(stdout)
+    flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
@@ -464,7 +464,7 @@ def test_check_archives_with_remote_path_should_call_borg_with_remote_path_param
     )
     insert_platform_mock()
     insert_datetime_mock()
-    builtins_mock().should_receive('open').and_return(stdout)
+    flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
