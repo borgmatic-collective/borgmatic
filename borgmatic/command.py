@@ -5,7 +5,7 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic import borg
-from borgmatic.config import parse_configuration, CONFIG_FORMAT
+from borgmatic.config.legacy import parse_configuration, CONFIG_FORMAT
 
 
 DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config'

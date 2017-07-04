@@ -2,6 +2,7 @@ syntax: glob
 *.egg-info
 *.pyc
 *.swp
+.cache
 .tox
 build
 dist

@@ -1,0 +1,48 @@
+map:
+    location:
+        required: True
+        map:
+            source_directories:
+                required: True
+                seq:
+                    - type: scalar
+            one_file_system:
+                type: bool
+            remote_path:
+                type: scalar
+            repository:
+                required: True
+                type: scalar
+    storage:
+        map:
+            encryption_passphrase:
+                type: scalar
+            compression:
+                type: scalar
+            umask:
+                type: scalar
+    retention:
+        map:
+            keep_within:
+                type: scalar
+            keep_hourly:
+                type: int
+            keep_daily:
+                type: int
+            keep_weekly:
+                type: int
+            keep_monthly:
+                type: int
+            keep_yearly:
+                type: int
+            prefix:
+                type: scalar
+    consistency:
+        map:
+            checks:
+                seq:
+                    - type: str
+                      enum: ['repository', 'archives', 'disabled']
+                      unique: True
+            check_last:
+                type: int

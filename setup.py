@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '1.0.3-dev'
+VERSION = '1.1.0'
 
 
 setup(
@@ -30,8 +30,14 @@ setup(
     obsoletes=[
         'atticmatic',
     ],
+    install_requires=(
+        'pykwalify',
+        'ruamel.yaml<=0.15',
+        'setuptools',
+    ),
     tests_require=(
         'flexmock',
         'pytest',
-    )
+    ),
+    include_package_data=True,
 )
