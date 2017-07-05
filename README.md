@@ -13,24 +13,28 @@ all on the command-line, and handles common errors.
 
 Here's an example config file:
 
-```INI
-[location]
-# Space-separated list of source directories to backup.
-# Globs are expanded.
-source_directories: /home /etc /var/log/syslog*
+```yaml
+location:
+    # List of source directories to backup. Globs are expanded.
+    source_directories:
+        - /home
+        - /etc
+        - /var/log/syslog*
 
-# Path to local or remote backup repository.
-repository: user@backupserver:sourcehostname.borg
+    # Path to local or remote repository.
+    repository: user@backupserver:sourcehostname.borg
 
-[retention]
-# Retention policy for how many backups to keep in each category.
-keep_daily: 7
-keep_weekly: 4
-keep_monthly: 6
+retention:
+    # Retention policy for how many backups to keep in each category.
+    keep_daily: 7
+    keep_weekly: 4
+    keep_monthly: 6
 
-[consistency]
-# Consistency checks to run, or "disabled" to prevent checks.
-checks: repository archives
+consistency:
+    # List of consistency checks to run: "repository", "archives", or both.
+    checks:
+        - repository
+        - archives
 ```
 
 Additionally, exclude patterns can be specified in a separate excludes config
@@ -63,13 +67,13 @@ Make sure you're using Python 3, as borgmatic does not support Python 2. (You
 may have to use "pip3" instead of "pip".)
 
 Then, download a [sample config
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/config) and a
+file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/config.yaml) and a
 [sample excludes
 file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/excludes). From the
 directory where you downloaded them:
 
     sudo mkdir /etc/borgmatic/
-    sudo mv config excludes /etc/borgmatic/
+    sudo mv config.yaml excludes /etc/borgmatic/
 
 Lastly, modify the /etc files with your desired configuration.
 
