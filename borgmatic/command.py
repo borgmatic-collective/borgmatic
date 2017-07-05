@@ -5,10 +5,10 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic import borg
-from borgmatic.config.legacy import parse_configuration, CONFIG_FORMAT
+from borgmatic.config.yaml import parse_configuration, schema_filename
 
 
-DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config'
+DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
 DEFAULT_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'
 
 
@@ -43,7 +43,7 @@ def parse_arguments(*arguments):
 def main():
     try:
         args = parse_arguments(*sys.argv[1:])
-        config = parse_configuration(args.config_filename, CONFIG_FORMAT)
+        config = parse_configuration(args.config_filename, schema_filename())
         repository = config.location['repository']
         remote_path = config.location.get('remote_path')
 
@@ -53,6 +53,6 @@ def main():
         )
         borg.prune_archives(args.verbosity, repository, config.retention, remote_path=remote_path)
         borg.check_archives(args.verbosity, repository, config.consistency, remote_path=remote_path)
-    except (ValueError, IOError, CalledProcessError) as error:
+    except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
