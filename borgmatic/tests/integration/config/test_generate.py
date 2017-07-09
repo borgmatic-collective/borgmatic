@@ -1,0 +1,43 @@
+from io import StringIO
+import sys
+
+from flexmock import flexmock
+
+from borgmatic.config import generate as module
+
+
+def test_insert_newline_before_comment_does_not_raise():
+    field_name = 'foo'
+    config = module.yaml.comments.CommentedMap([(field_name, 33)])
+    config.yaml_set_comment_before_after_key(key=field_name, before='Comment',)
+
+    module._insert_newline_before_comment(config, field_name)
+
+
+def test_write_configuration_does_not_raise():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').and_return(StringIO())
+
+    module.write_configuration('config.yaml', {})
+
+
+def test_add_comments_to_configuration_does_not_raise():
+    # Ensure that it can deal with fields both in the schema and missing from the schema.
+    config = module.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
+    schema = {
+        'map': {
+            'foo': {'desc': 'Foo'},
+            'bar': {'desc': 'Bar'},
+        }
+    }
+
+    module.add_comments_to_configuration(config, schema)
+
+
+def test_generate_sample_configuration_does_not_raise():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    flexmock(module).should_receive('write_configuration')
+    flexmock(module).should_receive('_schema_to_sample_configuration')
+
+    module.generate_sample_configuration('config.yaml', 'schema.yaml')

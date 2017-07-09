@@ -6,15 +6,6 @@ from ruamel import yaml
 INDENT = 4
 
 
-def write_configuration(config_filename, config):
-    '''
-    Given a target config filename and a config data structure of nested OrderedDicts, write out the
-    config to file as YAML.
-    '''
-    with open(config_filename, 'w') as config_file:
-        config_file.write(yaml.round_trip_dump(config, indent=INDENT, block_seq_indent=INDENT))
-
-
 def _insert_newline_before_comment(config, field_name):
     '''
     Using some ruamel.yaml black magic, insert a blank line in the config right befor the given
@@ -24,6 +15,37 @@ def _insert_newline_before_comment(config, field_name):
         0,
         yaml.tokens.CommentToken('\n', yaml.error.CommentMark(0), None),
     )
+
+
+def _schema_to_sample_configuration(schema, level=0):
+    '''
+    Given a loaded configuration schema, generate and return sample config for it. Include comments
+    for each section based on the schema "desc" description.
+    '''
+    example = schema.get('example')
+    if example:
+        return example
+
+    config = yaml.comments.CommentedMap([
+        (
+            section_name,
+            _schema_to_sample_configuration(section_schema, level + 1),
+        )
+        for section_name, section_schema in schema['map'].items()
+    ])
+
+    add_comments_to_configuration(config, schema, indent=(level * INDENT))
+
+    return config
+
+
+def write_configuration(config_filename, config):
+    '''
+    Given a target config filename and a config data structure of nested OrderedDicts, write out the
+    config to file as YAML.
+    '''
+    with open(config_filename, 'w') as config_file:
+        config_file.write(yaml.round_trip_dump(config, indent=INDENT, block_seq_indent=INDENT))
 
 
 def add_comments_to_configuration(config, schema, indent=0):
@@ -37,7 +59,7 @@ def add_comments_to_configuration(config, schema, indent=0):
         description = field_schema.get('desc')
 
         # No description to use? Skip it.
-        if not schema or not description:
+        if not field_schema or not description:
             continue
 
         config.yaml_set_comment_before_after_key(
@@ -47,36 +69,6 @@ def add_comments_to_configuration(config, schema, indent=0):
         )
         if index > 0:
             _insert_newline_before_comment(config, field_name)
-
-
-def _section_schema_to_sample_configuration(section_schema):
-    '''
-    Given the schema for a particular config section, generate and return sample config for that
-    section. Include comments for each field based on the schema "desc" description.
-    '''
-    section_config = yaml.comments.CommentedMap([
-        (field_name, field_schema['example'])
-        for field_name, field_schema in section_schema['map'].items()
-    ])
-
-    add_comments_to_configuration(section_config, section_schema, indent=INDENT)
-
-    return section_config
-
-
-def _schema_to_sample_configuration(schema):
-    '''
-    Given a loaded configuration schema, generate and return sample config for it. Include comments
-    for each section based on the schema "desc" description.
-    '''
-    config = yaml.comments.CommentedMap([
-        (section_name, _section_schema_to_sample_configuration(section_schema))
-        for section_name, section_schema in schema['map'].items()
-    ])
-
-    add_comments_to_configuration(config, schema)
-
-    return config
 
 
 def generate_sample_configuration(config_filename, schema_filename):
