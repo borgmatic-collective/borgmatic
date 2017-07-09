@@ -17,15 +17,14 @@ def test_schema_filename_returns_plausable_path():
 
 def mock_config_and_schema(config_yaml):
     '''
-    Set up mocks for the config config YAML string and the default schema so that pykwalify consumes
-    them when parsing the configuration. This is a little brittle in that it's relying on the code
-    under test to open() the respective files in a particular order.
+    Set up mocks for the config config YAML string and the default schema so that the code under
+    test consumes them when parsing the configuration.
     '''
-    schema_stream = open(module.schema_filename())
     config_stream = io.StringIO(config_yaml)
-    builtins = flexmock(sys.modules['builtins']).should_call('open').mock
-    builtins.should_receive('open').and_return(schema_stream).and_return(config_stream)
-    flexmock(os.path).should_receive('exists').and_return(True)
+    schema_stream = open(module.schema_filename())
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_stream)
+    builtins.should_receive('open').with_args('schema.yaml').and_return(schema_stream)
 
 
 def test_parse_configuration_transforms_file_into_mapping():
@@ -95,9 +94,9 @@ def test_parse_configuration_raises_for_missing_schema_file():
 
 
 def test_parse_configuration_raises_for_syntax_error():
-    mock_config_and_schema('invalid = yaml')
+    mock_config_and_schema('foo:\nbar')
 
-    with pytest.raises(module.Validation_error):
+    with pytest.raises(ValueError):
         module.parse_configuration('config.yaml', 'schema.yaml')
 
 
