@@ -25,7 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'borgmatic = borgmatic.commands.borgmatic:main',
-            'convert-borgmatic-config = borgmatic.commands.convert_config:main',
+            'upgrade-borgmatic-config = borgmatic.commands.convert_config:main',
             'generate-borgmatic-config = borgmatic.commands.generate_config:main',
         ]
     },

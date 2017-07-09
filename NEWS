@@ -1,6 +1,6 @@
 1.1.0.dev0
 
- * Switched config file format to YAML. Run convert-borgmatic-config to upgrade.
+ * Switched config file format to YAML. Run upgrade-borgmatic-config to upgrade.
  * Dropped Python 2 support. Now Python 3 only.
  * #18: Fix for README mention of sample files not included in package.
  * #22: Sample files for triggering borgmatic from a systemd timer.
