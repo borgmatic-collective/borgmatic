@@ -39,6 +39,7 @@ def parse_configuration(config_filename, schema_filename):
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
     try:
+        config = yaml.round_trip_load(open(config_filename))
         schema = yaml.round_trip_load(open(schema_filename))
     except yaml.error.YAMLError as error:
         raise Validation_error(config_filename, (str(error),))
@@ -49,7 +50,7 @@ def parse_configuration(config_filename, schema_filename):
         for field_name, field_schema in section_schema['map'].items():
             field_schema.pop('example')
 
-    validator = pykwalify.core.Core(source_file=config_filename, schema_data=schema)
+    validator = pykwalify.core.Core(source_data=config, schema_data=schema)
     parsed_result = validator.validate(raise_exception=False)
 
     if validator.validation_errors:
@@ -58,7 +59,7 @@ def parse_configuration(config_filename, schema_filename):
     return parsed_result
 
 
-def display_validation_error(validation_error):
+def display_validation_error(validation_error):  # pragma: no cover
     '''
     Given a Validation_error, display its error messages to stderr.
     '''
