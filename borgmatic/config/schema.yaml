@@ -1,4 +1,5 @@
 name: Borgmatic configuration file schema
+version: 1
 map:
     location:
         desc: |
