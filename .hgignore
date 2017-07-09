@@ -3,6 +3,7 @@ syntax: glob
 *.pyc
 *.swp
 .cache
+.coverage
 .tox
 build
 dist
