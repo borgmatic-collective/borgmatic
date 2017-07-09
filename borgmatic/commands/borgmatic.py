@@ -5,7 +5,7 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic import borg
-from borgmatic.config.yaml import parse_configuration, schema_filename
+from borgmatic.config.validate import parse_configuration, schema_filename
 
 
 DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
@@ -14,9 +14,8 @@ DEFAULT_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'
 
 def parse_arguments(*arguments):
     '''
-    Given the name of the command with which this script was invoked and command-line arguments,
-    parse the arguments and return them as an ArgumentParser instance. Use the command name to
-    determine the default configuration and excludes paths.
+    Given command-line arguments with which this script was invoked, parse the arguments and return
+    them as an ArgumentParser instance.
     '''
     parser = ArgumentParser()
     parser.add_argument(

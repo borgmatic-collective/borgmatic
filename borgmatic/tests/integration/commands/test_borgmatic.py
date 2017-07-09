@@ -4,7 +4,7 @@ import sys
 from flexmock import flexmock
 import pytest
 
-from borgmatic import command as module
+from borgmatic.commands import borgmatic as module
 
 
 def test_parse_arguments_with_no_arguments_uses_defaults():

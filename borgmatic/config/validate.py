@@ -5,7 +5,7 @@ import warnings
 import pkg_resources
 import pykwalify.core
 import pykwalify.errors
-import ruamel.yaml.error
+from ruamel import yaml
 
 
 def schema_filename():
@@ -38,20 +38,18 @@ def parse_configuration(config_filename, schema_filename):
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
-    warnings.simplefilter('ignore', ruamel.yaml.error.UnsafeLoaderWarning)
-    logging.getLogger('pykwalify').setLevel(logging.CRITICAL)
-
     try:
-        validator = pykwalify.core.Core(source_file=config_filename, schema_files=[schema_filename])
-    except pykwalify.errors.CoreError as error:
-        if 'do not exists on disk' in str(error):
-            raise FileNotFoundError("No such file or directory: '{}'".format(config_filename))
-        if 'Unable to load any data' in str(error):
-            # If the YAML file has a syntax error, pykwalify's exception is particularly unhelpful.
-            # So reach back to the originating exception from ruamel.yaml for something more useful.
-            raise Validation_error(config_filename, (error.__context__,))
-        raise
+        schema = yaml.round_trip_load(open(schema_filename))
+    except yaml.error.YAMLError as error:
+        raise Validation_error(config_filename, (str(error),))
 
+    # pykwalify gets angry if the example field is not a string. So rather than bend to its will,
+    # simply remove all examples before passing the schema to pykwalify.
+    for section_name, section_schema in schema['map'].items():
+        for field_name, field_schema in section_schema['map'].items():
+            field_schema.pop('example')
+
+    validator = pykwalify.core.Core(source_file=config_filename, schema_data=schema)
     parsed_result = validator.validate(raise_exception=False)
 
     if validator.validation_errors:
@@ -73,12 +71,3 @@ def display_validation_error(validation_error):
 
     for error in validation_error.error_messages:
         print(error, file=sys.stderr)
-
-
-# FOR TESTING
-if __name__ == '__main__':
-    try:
-        configuration = parse_configuration('sample/config.yaml', schema_filename())
-        print(configuration)
-    except Validation_error as error:
-        display_validation_error(error)

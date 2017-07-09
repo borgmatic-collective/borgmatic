@@ -16,8 +16,10 @@ location:
 
 #storage:
     # Passphrase to unlock the encryption key with. Only use on repositories
-    # that were initialized with passphrase/repokey encryption.
-    #encryption_passphrase: foo
+    # that were initialized with passphrase/repokey encryption. Quote the value
+    # if it contains punctuation so it parses correctly. And backslash any
+    # quote or backslash literals as well.
+    #encryption_passphrase: "foo"
 
     # Type of compression to use when creating archives. See
     # https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create

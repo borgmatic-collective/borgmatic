@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '1.1.0'
+VERSION = '1.1.0.dev0'
 
 
 setup(
@@ -24,7 +24,8 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts': [
-            'borgmatic = borgmatic.command:main',
+            'borgmatic = borgmatic.commands.borgmatic:main',
+            'convert-borgmatic-config = borgmatic.commands.convert_config:main',
         ]
     },
     obsoletes=[

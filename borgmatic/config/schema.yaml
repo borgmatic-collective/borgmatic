@@ -1,48 +1,110 @@
+name: Borgmatic configuration file schema
 map:
     location:
+        desc: |
+            Where to look for files to backup, and where to store those backups. See
+            https://borgbackup.readthedocs.io/en/stable/quickstart.html and
+            https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create for details.
         required: True
         map:
             source_directories:
                 required: True
                 seq:
                     - type: scalar
+                desc: List of source directories to backup. Globs are expanded.
+                example:
+                    - /home
+                    - /etc
+                    - /var/log/syslog*
             one_file_system:
                 type: bool
+                desc: Stay in same file system (do not cross mount points).
+                example: yes
             remote_path:
                 type: scalar
+                desc: Alternate Borg remote executable. Defaults to "borg".
+                example: borg1
             repository:
                 required: True
                 type: scalar
+                desc: Path to local or remote repository.
+                example: user@backupserver:sourcehostname.borg
     storage:
+        desc: |
+            Repository storage options. See
+            https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create and
+            https://borgbackup.readthedocs.io/en/stable/usage.html#environment-variables for details.
         map:
             encryption_passphrase:
                 type: scalar
+                desc: |
+                    Passphrase to unlock the encryption key with. Only use on repositories that were
+                    initialized with passphrase/repokey encryption. Quote the value if it contains
+                    punctuation, so it parses correctly. And backslash any quote or backslash
+                    literals as well.
+                example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
             compression:
                 type: scalar
+                desc: |
+                    Type of compression to use when creating archives. See
+                    https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create for details.
+                    Defaults to no compression.
+                example: lz4
             umask:
                 type: scalar
+                desc: Umask to be used for borg create.
+                example: 0077
     retention:
+        desc: |
+            Retention policy for how many backups to keep in each category. See
+            https://borgbackup.readthedocs.org/en/stable/usage.html#borg-prune for details.
         map:
             keep_within:
                 type: scalar
+                desc: Keep all archives within this time interval.
+                example: 3H
             keep_hourly:
                 type: int
+                desc: Number of hourly archives to keep.
+                example: 24
             keep_daily:
                 type: int
+                desc: Number of daily archives to keep.
+                example: 7
             keep_weekly:
                 type: int
+                desc: Number of weekly archives to keep.
+                example: 4
             keep_monthly:
                 type: int
+                desc: Number of monthly archives to keep.
+                example: 6
             keep_yearly:
                 type: int
+                desc: Number of yearly archives to keep.
+                example: 1
             prefix:
                 type: scalar
+                desc: When pruning, only consider archive names starting with this prefix.
+                example: sourcehostname
     consistency:
+        desc: |
+            Consistency checks to run after backups. See
+            https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check for details.
         map:
             checks:
                 seq:
                     - type: str
                       enum: ['repository', 'archives', 'disabled']
                       unique: True
+                desc: |
+                    List of consistency checks to run: "repository", "archives", or both. Defaults
+                    to both. Set to "disabled" to disable all consistency checks. See
+                    https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check for details.
+                example:
+                    - repository
+                    - archives
             check_last:
                 type: int
+                desc: Restrict the number of checked archives to the last n.
+                example: 3
