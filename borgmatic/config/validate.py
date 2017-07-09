@@ -59,7 +59,7 @@ def parse_configuration(config_filename, schema_filename):
     return parsed_result
 
 
-def display_validation_error(validation_error):  # pragma: no cover
+def display_validation_error(validation_error):
     '''
     Given a Validation_error, display its error messages to stderr.
     '''
