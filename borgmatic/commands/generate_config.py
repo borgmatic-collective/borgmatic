@@ -34,6 +34,11 @@ def main():  # pragma: no cover
         args = parse_arguments(*sys.argv[1:])
 
         generate.generate_sample_configuration(args.destination_filename, validate.schema_filename())
+
+        print('Generated a sample configuration file at {}.'.format(args.destination_filename))
+        print()
+        print('Please edit the file to suit your needs. The values are just representative.')
+        print('All fields are optional except where indicated.')
     except (ValueError, OSError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

@@ -12,7 +12,7 @@ map:
                 required: True
                 seq:
                     - type: scalar
-                desc: List of source directories to backup. Globs are expanded.
+                desc: List of source directories to backup (required). Globs are expanded.
                 example:
                     - /home
                     - /etc
@@ -28,16 +28,15 @@ map:
             repository:
                 required: True
                 type: scalar
-                desc: Path to local or remote repository.
+                desc: Path to local or remote repository (required).
                 example: user@backupserver:sourcehostname.borg
             exclude_patterns:
                 seq:
                     - type: scalar
                 desc: |
-                    Exclude patterns. Any paths matching these patterns are excluded from backups.
-                    Globs are expanded. See
-                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-patterns for
-                    details.
+                    Any paths matching these patterns are excluded from backups. Globs are expanded.
+                    See https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-patterns
+                    for details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
