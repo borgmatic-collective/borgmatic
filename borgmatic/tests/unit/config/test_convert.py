@@ -1,6 +1,8 @@
 from collections import defaultdict, OrderedDict, namedtuple
+import os
 
 from flexmock import flexmock
+import pytest
 
 from borgmatic.config import convert as module
 
@@ -61,3 +63,32 @@ def test_convert_legacy_parsed_config_splits_space_separated_values():
         ('retention', OrderedDict()),
         ('consistency', OrderedDict([('checks', ['repository', 'archives'])])),
     ])
+
+
+def test_guard_configuration_upgraded_raises_when_only_source_config_present():
+    flexmock(os.path).should_receive('exists').with_args('config').and_return(True)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+
+    with pytest.raises(module.LegacyConfigurationNotUpgraded):
+        module.guard_configuration_upgraded('config', 'config.yaml')
+
+
+def test_guard_configuration_upgraded_does_not_raise_when_only_destination_config_present():
+    flexmock(os.path).should_receive('exists').with_args('config').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(True)
+
+    module.guard_configuration_upgraded('config', 'config.yaml')
+
+
+def test_guard_configuration_upgraded_does_not_raise_when_both_configs_present():
+    flexmock(os.path).should_receive('exists').with_args('config').and_return(True)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(True)
+
+    module.guard_configuration_upgraded('config', 'config.yaml')
+
+
+def test_guard_configuration_upgraded_does_not_raise_when_neither_config_present():
+    flexmock(os.path).should_receive('exists').with_args('config').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+
+    module.guard_configuration_upgraded('config', 'config.yaml')

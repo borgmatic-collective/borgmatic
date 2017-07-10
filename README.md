@@ -97,7 +97,7 @@ upgrade to the new version of borgmatic:
 
 Then, run:
 
-    sudo upgrade-borgmatic-configuration
+    sudo upgrade-borgmatic-config
 
 That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
 (by default) using the values from both your existing configuration and
