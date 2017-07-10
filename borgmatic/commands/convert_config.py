@@ -11,6 +11,7 @@ from borgmatic.config import convert, generate, legacy, validate
 
 
 DEFAULT_SOURCE_CONFIG_FILENAME = '/etc/borgmatic/config'
+# TODO: Fold excludes into the YAML config file.
 DEFAULT_SOURCE_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'
 DEFAULT_DESTINATION_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
 
@@ -37,7 +38,7 @@ def parse_arguments(*arguments):
     return parser.parse_args(arguments)
 
 
-def main():
+def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
         source_config = legacy.parse_configuration(args.source_filename, legacy.CONFIG_FORMAT)

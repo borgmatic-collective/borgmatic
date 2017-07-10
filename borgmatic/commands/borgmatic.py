@@ -39,7 +39,7 @@ def parse_arguments(*arguments):
     return parser.parse_args(arguments)
 
 
-def main():
+def main():  # pragma: no cover
     try:
         # TODO: Detect whether only legacy config is present. If so, inform the user about how to
         # upgrade, then exet.
