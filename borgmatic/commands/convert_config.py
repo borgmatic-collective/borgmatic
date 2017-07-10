@@ -87,8 +87,11 @@ def main():  # pragma: no cover
 
         destination_config = convert.convert_legacy_parsed_config(source_config, source_excludes, schema)
 
-        generate.write_configuration(args.destination_config_filename, destination_config)
-        os.chmod(args.destination_config_filename, source_config_file_mode)
+        generate.write_configuration(
+            args.destination_config_filename,
+            destination_config,
+            mode=source_config_file_mode,
+        )
 
         # TODO: As a backstop, check that the written config can actually be read and parsed, and
         # that it matches the destination config data structure that was written.
