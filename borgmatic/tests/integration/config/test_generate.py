@@ -1,7 +1,9 @@
 from io import StringIO
+import os
 import sys
 
 from flexmock import flexmock
+import pytest
 
 from borgmatic.config import generate as module
 
@@ -15,10 +17,20 @@ def test_insert_newline_before_comment_does_not_raise():
 
 
 def test_write_configuration_does_not_raise():
+    flexmock(os.path).should_receive('exists').and_return(False)
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').and_return(StringIO())
 
     module.write_configuration('config.yaml', {})
+
+
+def test_write_configuration_with_already_existing_file_raises():
+    flexmock(os.path).should_receive('exists').and_return(True)
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').and_return(StringIO())
+
+    with pytest.raises(FileExistsError):
+        module.write_configuration('config.yaml', {})
 
 
 def test_add_comments_to_configuration_does_not_raise():

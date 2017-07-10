@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import os
 
 from ruamel import yaml
 
@@ -44,6 +45,9 @@ def write_configuration(config_filename, config):
     Given a target config filename and a config data structure of nested OrderedDicts, write out the
     config to file as YAML.
     '''
+    if os.path.exists(config_filename):
+        raise FileExistsError('{} already exists. Aborting.'.format(config_filename))
+
     with open(config_filename, 'w') as config_file:
         config_file.write(yaml.round_trip_dump(config, indent=INDENT, block_seq_indent=INDENT))
 

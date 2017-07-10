@@ -78,6 +78,7 @@ def main():  # pragma: no cover
         args = parse_arguments(*sys.argv[1:])
         schema = yaml.round_trip_load(open(validate.schema_filename()).read())
         source_config = legacy.parse_configuration(args.source_config_filename, legacy.CONFIG_FORMAT)
+        source_config_file_mode = os.stat(args.source_config_filename).st_mode
         source_excludes = (
             open(args.source_excludes_filename).read().splitlines()
             if args.source_excludes_filename
@@ -87,6 +88,7 @@ def main():  # pragma: no cover
         destination_config = convert.convert_legacy_parsed_config(source_config, source_excludes, schema)
 
         generate.write_configuration(args.destination_config_filename, destination_config)
+        os.chmod(args.destination_config_filename, source_config_file_mode)
 
         # TODO: As a backstop, check that the written config can actually be read and parsed, and
         # that it matches the destination config data structure that was written.
