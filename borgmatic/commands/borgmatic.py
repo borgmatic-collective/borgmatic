@@ -28,7 +28,7 @@ def parse_arguments(*arguments):
     parser.add_argument(
         '--excludes',
         dest='excludes_filename',
-        help='Excludes filename, deprecated in favor of excludes_patterns within configuration',
+        help='Excludes filename, deprecated in favor of exclude_patterns within configuration',
     )
     parser.add_argument(
         '-v', '--verbosity',
@@ -48,6 +48,7 @@ def main():  # pragma: no cover
         remote_path = config.location['remote_path']
 
         borg.initialize(config.storage)
+        # TODO: Use the new exclude_patterns.
         borg.create_archive(
             args.excludes_filename, args.verbosity, config.storage, **config.location
         )
