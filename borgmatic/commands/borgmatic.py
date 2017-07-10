@@ -28,8 +28,7 @@ def parse_arguments(*arguments):
     parser.add_argument(
         '--excludes',
         dest='excludes_filename',
-        default=DEFAULT_EXCLUDES_FILENAME if os.path.exists(DEFAULT_EXCLUDES_FILENAME) else None,
-        help='Excludes filename',
+        help='Excludes filename, deprecated in favor of excludes_patterns within configuration',
     )
     parser.add_argument(
         '-v', '--verbosity',
@@ -46,7 +45,7 @@ def main():  # pragma: no cover
         convert.guard_configuration_upgraded(LEGACY_CONFIG_FILENAME, args.config_filename)
         config = validate.parse_configuration(args.config_filename, validate.schema_filename())
         repository = config.location['repository']
-        remote_path = config.location.get('remote_path')
+        remote_path = config.location['remote_path']
 
         borg.initialize(config.storage)
         borg.create_archive(

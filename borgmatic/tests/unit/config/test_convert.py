@@ -92,3 +92,12 @@ def test_guard_configuration_upgraded_does_not_raise_when_neither_config_present
     flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
 
     module.guard_configuration_upgraded('config', 'config.yaml')
+
+
+def test_guard_excludes_filename_omitted_raises_when_filename_provided():
+    with pytest.raises(module.LegacyExcludesFilenamePresent):
+        module.guard_excludes_filename_omitted(excludes_filename='/etc/borgmatic/excludes')
+
+
+def test_guard_excludes_filename_omitted_does_not_raise_when_filename_not_provided():
+    module.guard_excludes_filename_omitted(excludes_filename=None)
