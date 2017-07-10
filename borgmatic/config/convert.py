@@ -1,3 +1,5 @@
+import os
+
 from ruamel import yaml
 
 from borgmatic.config import generate
@@ -48,3 +50,30 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
         )
 
     return destination_config
+
+
+class LegacyConfigurationNotUpgraded(FileNotFoundError):
+    def __init__(self):
+        super(LegacyConfigurationNotUpgraded, self).__init__(
+            '''borgmatic changed its configuration file format in version 1.1.0 from INI-style
+to YAML. This better supports validation, and has a more natural way to express
+lists of values. To upgrade your existing configuration, run:
+
+    sudo upgrade-borgmatic-config
+
+That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
+(by default) using the values from both your existing configuration and excludes
+files. The new version of borgmatic will consume the YAML configuration file
+instead of the old one.'''
+        )
+
+
+def guard_configuration_upgraded(source_config_filename, destination_config_filename):
+    '''
+    If legacy souce configuration exists but destination upgraded config doesn't, raise
+    LegacyConfigurationNotUpgraded.
+
+    The idea is that we want to alert the user about upgrading their config if they haven't already.
+    '''
+    if os.path.exists(source_config_filename) and not os.path.exists(destination_config_filename):
+        raise LegacyConfigurationNotUpgraded()

@@ -5,9 +5,10 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic import borg
-from borgmatic.config.validate import parse_configuration, schema_filename
+from borgmatic.config import convert, validate
 
 
+LEGACY_CONFIG_FILENAME = '/etc/borgmatic/config'
 DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
 DEFAULT_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'
 
@@ -41,11 +42,9 @@ def parse_arguments(*arguments):
 
 def main():  # pragma: no cover
     try:
-        # TODO: Detect whether only legacy config is present. If so, inform the user about how to
-        # upgrade, then exit.
-
         args = parse_arguments(*sys.argv[1:])
-        config = parse_configuration(args.config_filename, schema_filename())
+        convert.guard_configuration_upgraded(LEGACY_CONFIG_FILENAME, args.config_filename)
+        config = validate.parse_configuration(args.config_filename, validate.schema_filename())
         repository = config.location['repository']
         remote_path = config.location.get('remote_path')
 
