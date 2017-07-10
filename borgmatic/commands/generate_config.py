@@ -29,7 +29,7 @@ def parse_arguments(*arguments):
     return parser.parse_args(arguments)
 
 
-def main():
+def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
 
