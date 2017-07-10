@@ -30,6 +30,18 @@ map:
                 type: scalar
                 desc: Path to local or remote repository.
                 example: user@backupserver:sourcehostname.borg
+            exclude_patterns:
+                seq:
+                    - type: scalar
+                desc: |
+                    Exclude patterns. Any paths matching these patterns are excluded from backups.
+                    Globs are expanded. See
+                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-patterns for
+                    details.
+                example:
+                    - '*.pyc'
+                    - /home/*/.cache
+                    - /etc/ssl
     storage:
         desc: |
             Repository storage options. See
