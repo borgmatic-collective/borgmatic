@@ -24,6 +24,10 @@ location:
     # Path to local or remote repository.
     repository: user@backupserver:sourcehostname.borg
 
+    # Any paths matching these patterns are excluded from backups.
+    exclude_patterns:
+        - /home/*/.cache
+
 retention:
     # Retention policy for how many backups to keep in each category.
     keep_daily: 7
@@ -37,16 +41,13 @@ consistency:
         - archives
 ```
 
-Additionally, exclude patterns can be specified in a separate excludes config
-file, one pattern per line.
-
 borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
 available](https://torsion.org/hg/borgmatic). It's also mirrored on
 [GitHub](https://github.com/witten/borgmatic) and
 [BitBucket](https://bitbucket.org/dhelfman/borgmatic) for convenience.
 
 
-## Setup
+## Installation
 
 To get up and running, follow the [Borg Quick
 Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create
@@ -66,19 +67,45 @@ To install borgmatic, run the following command to download and install it:
 Make sure you're using Python 3, as borgmatic does not support Python 2. (You
 may have to use "pip3" instead of "pip".)
 
-Then, download a [sample config
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/config.yaml) and a
-[sample excludes
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/excludes). From the
-directory where you downloaded them:
+Then, generate a sample configuration file:
 
-    sudo mkdir /etc/borgmatic/
-    sudo mv config.yaml excludes /etc/borgmatic/
+    sudo generate-borgmatic-config
 
-Lastly, modify the /etc files with your desired configuration.
+This generates a sample configuration file at /etc/borgmatic/config.yaml (by
+default). You should edit the file to suit your needs, as the values are just
+representative. All fields are optional except where indicated, so feel free
+to remove anything you don't need.
 
 
-## Upgrading from atticmatic
+## Upgrading
+
+In general, all you should need to do to upgrade borgmatic is run the
+following:
+
+    sudo pip install --upgrade borgmatic
+
+However, see below about special cases.
+
+### Upgrading from borgmatic 1.0.x
+
+borgmatic changed its configuration file format in version 1.1.0 from
+INI-style to YAML. This better supports validation, and has a more natural way
+to express lists of values. To upgrade your existing configuration, first
+upgrade to the new version of borgmatic:
+
+    sudo pip install --upgrade borgmatic
+
+Then, run:
+
+    sudo upgrade-borgmatic-configuration
+
+That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
+(by default) using the values from both your existing configuration and
+excludes files. The new version of borgmatic will consume the YAML
+configuration file instead of the old one.
+
+
+### Upgrading from atticmatic
 
 You can ignore this section if you're not an atticmatic user (the former name
 of borgmatic).
@@ -97,6 +124,7 @@ from atticmatic to borgmatic. Simply run the following commands:
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
+
 
 ## Usage
 
