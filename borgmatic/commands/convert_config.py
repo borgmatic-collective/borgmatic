@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import os
 from subprocess import CalledProcessError
 import sys
+import textwrap
 
 from ruamel import yaml
 
@@ -48,6 +49,30 @@ def parse_arguments(*arguments):
     return parser.parse_args(arguments)
 
 
+TEXT_WRAP_CHARACTERS = 80
+
+
+def display_result(args):  # pragma: no cover
+    result_lines = textwrap.wrap(
+        'Your borgmatic configuration has been upgraded. Please review the result in {}.'.format(
+            args.destination_config_filename
+        ),
+        TEXT_WRAP_CHARACTERS,
+    )
+    
+    delete_lines = textwrap.wrap(
+        'Once you are satisfied, you can safely delete {}{}.'.format(
+            args.source_config_filename,
+            ' and {}'.format(args.source_excludes_filename) if args.source_excludes_filename else '',
+        ),
+        TEXT_WRAP_CHARACTERS,
+    )
+
+    print('\n'.join(result_lines))
+    print()
+    print('\n'.join(delete_lines))
+
+
 def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
@@ -65,6 +90,8 @@ def main():  # pragma: no cover
 
         # TODO: As a backstop, check that the written config can actually be read and parsed, and
         # that it matches the destination config data structure that was written.
+
+        display_result(args)
     except (ValueError, OSError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
