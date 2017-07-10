@@ -18,19 +18,29 @@ def test_insert_newline_before_comment_does_not_raise():
 
 def test_write_configuration_does_not_raise():
     flexmock(os.path).should_receive('exists').and_return(False)
+    flexmock(os).should_receive('makedirs')
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').and_return(StringIO())
+    flexmock(os).should_receive('chmod')
 
     module.write_configuration('config.yaml', {})
 
 
 def test_write_configuration_with_already_existing_file_raises():
     flexmock(os.path).should_receive('exists').and_return(True)
-    builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').and_return(StringIO())
 
     with pytest.raises(FileExistsError):
         module.write_configuration('config.yaml', {})
+
+
+def test_write_configuration_with_already_existing_directory_does_not_raise():
+    flexmock(os.path).should_receive('exists').and_return(False)
+    flexmock(os).should_receive('makedirs').and_raise(FileExistsError)
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').and_return(StringIO())
+    flexmock(os).should_receive('chmod')
+
+    module.write_configuration('config.yaml', {})
 
 
 def test_add_comments_to_configuration_does_not_raise():

@@ -40,16 +40,23 @@ def _schema_to_sample_configuration(schema, level=0):
     return config
 
 
-def write_configuration(config_filename, config):
+def write_configuration(config_filename, config, mode=0o600):
     '''
     Given a target config filename and a config data structure of nested OrderedDicts, write out the
-    config to file as YAML.
+    config to file as YAML. Create any containing directories as needed.
     '''
     if os.path.exists(config_filename):
         raise FileExistsError('{} already exists. Aborting.'.format(config_filename))
 
+    try:
+        os.makedirs(os.path.dirname(config_filename), mode=0o700)
+    except FileExistsError:
+        pass
+
     with open(config_filename, 'w') as config_file:
         config_file.write(yaml.round_trip_dump(config, indent=INDENT, block_seq_indent=INDENT))
+
+    os.chmod(config_filename, mode)
 
 
 def add_comments_to_configuration(config, schema, indent=0):

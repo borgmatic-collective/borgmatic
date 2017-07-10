@@ -42,7 +42,7 @@ def parse_arguments(*arguments):
 def main():  # pragma: no cover
     try:
         # TODO: Detect whether only legacy config is present. If so, inform the user about how to
-        # upgrade, then exet.
+        # upgrade, then exit.
 
         args = parse_arguments(*sys.argv[1:])
         config = parse_configuration(args.config_filename, schema_filename())
