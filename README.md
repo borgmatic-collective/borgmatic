@@ -180,6 +180,7 @@ file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
     sudo mv borgmatic /etc/cron.d/borgmatic
+    sudo chmod +x /etc/cron.d/borgmatic
 
 You can modify the cron file if you'd like to run borgmatic more or less frequently.
 
