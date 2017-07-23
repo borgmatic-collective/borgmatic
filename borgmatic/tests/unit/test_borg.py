@@ -30,6 +30,20 @@ def test_initialize_without_passphrase_should_not_set_environment():
     finally:
         os.environ = orig_environ
 
+def test_write_exclude_file_does_not_raise():
+    temporary_file = flexmock(
+        name='filename',
+        write=lambda mode: None,
+        flush=lambda: None,
+    )
+    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
+
+    module._write_exclude_file(['exclude'])
+
+
+def test_write_exclude_file_with_empty_exclude_patterns_does_not_raise():
+    module._write_exclude_file([])
+
 
 def insert_subprocess_mock(check_call_command, **kwargs):
     subprocess = flexmock(STDOUT=STDOUT)
@@ -53,110 +67,100 @@ def insert_datetime_mock():
     ).mock
 
 
-CREATE_COMMAND_WITHOUT_EXCLUDES = ('borg', 'create', 'repo::host-now', 'foo', 'bar')
-CREATE_COMMAND = CREATE_COMMAND_WITHOUT_EXCLUDES + ('--exclude-from', 'excludes')
+CREATE_COMMAND = ('borg', 'create', 'repo::host-now', 'foo', 'bar')
 
 
 def test_create_archive_should_call_borg_with_parameters():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND)
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
-def test_create_archive_with_two_spaces_in_source_directories():
-    insert_subprocess_mock(CREATE_COMMAND)
+def test_create_archive_with_exclude_patterns_should_call_borg_with_excludes():
+    flexmock(module).should_receive('_write_exclude_file').and_return(flexmock(name='excludes'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--exclude-from', 'excludes'))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=['exclude'],
         verbosity=None,
         storage_config={},
-        source_directories='foo  bar',
-        repository='repo',
-        command='borg',
-    )
-
-
-def test_create_archive_with_none_excludes_filename_should_call_borg_without_excludes():
-    insert_subprocess_mock(CREATE_COMMAND_WITHOUT_EXCLUDES)
-    insert_platform_mock()
-    insert_datetime_mock()
-
-    module.create_archive(
-        excludes_filename=None,
-        verbosity=None,
-        storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_verbosity_some_should_call_borg_with_info_parameter():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--info', '--stats',))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=VERBOSITY_SOME,
         storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_verbosity_lots_should_call_borg_with_debug_parameter():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--stats'))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=VERBOSITY_LOTS,
         storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_compression_should_call_borg_with_compression_parameters():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--compression', 'rle'))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=None,
         storage_config={'compression': 'rle'},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_one_file_system_should_call_borg_with_one_file_system_parameters():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
         one_file_system=True,
@@ -164,15 +168,16 @@ def test_create_archive_with_one_file_system_should_call_borg_with_one_file_syst
 
 
 def test_create_archive_with_remote_path_should_call_borg_with_remote_path_parameters():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--remote-path', 'borg1'))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
         remote_path='borg1',
@@ -180,63 +185,67 @@ def test_create_archive_with_remote_path_should_call_borg_with_remote_path_param
 
 
 def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
     insert_platform_mock()
     insert_datetime_mock()
 
     module.create_archive(
-        excludes_filename='excludes',
+        exclude_patterns=None,
         verbosity=None,
         storage_config={'umask': 740},
-        source_directories='foo bar',
+        source_directories=['foo', 'bar'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_source_directories_glob_expands():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo', 'food'))
     insert_platform_mock()
     insert_datetime_mock()
-    flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
+    flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
-        excludes_filename=None,
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo*',
+        source_directories=['foo*'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_non_matching_source_directories_glob_passes_through():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo*'))
     insert_platform_mock()
     insert_datetime_mock()
-    flexmock(module).should_receive('glob').with_args('foo*').and_return([])
+    flexmock(module.glob).should_receive('glob').with_args('foo*').and_return([])
 
     module.create_archive(
-        excludes_filename=None,
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo*',
+        source_directories=['foo*'],
         repository='repo',
         command='borg',
     )
 
 
 def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
+    flexmock(module).should_receive('_write_exclude_file')
     insert_subprocess_mock(('borg', 'create', 'repo::host-now', 'foo', 'food'))
     insert_platform_mock()
     insert_datetime_mock()
-    flexmock(module).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
+    flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
-        excludes_filename=None,
+        exclude_patterns=None,
         verbosity=None,
         storage_config={},
-        source_directories='foo*',
+        source_directories=['foo*'],
         repository='repo',
         command='borg',
     )
@@ -329,7 +338,7 @@ def test_prune_archive_with_remote_path_should_call_borg_with_remote_path_parame
 
 
 def test_parse_checks_returns_them_as_tuple():
-    checks = module._parse_checks({'checks': 'foo disabled bar'})
+    checks = module._parse_checks({'checks': ['foo', 'disabled', 'bar']})
 
     assert checks == ('foo', 'bar')
 
@@ -341,13 +350,13 @@ def test_parse_checks_with_missing_value_returns_defaults():
 
 
 def test_parse_checks_with_blank_value_returns_defaults():
-    checks = module._parse_checks({'checks': ''})
+    checks = module._parse_checks({'checks': []})
 
     assert checks == module.DEFAULT_CHECKS
 
 
 def test_parse_checks_with_disabled_returns_no_checks():
-    checks = module._parse_checks({'checks': 'disabled'})
+    checks = module._parse_checks({'checks': ['disabled']})
 
     assert checks == ()
 

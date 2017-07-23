@@ -1,10 +1,11 @@
 from datetime import datetime
+import glob
+import itertools
 import os
-import re
 import platform
+import re
 import subprocess
-from glob import glob
-from itertools import chain
+import tempfile
 
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
@@ -22,18 +23,38 @@ def initialize(storage_config, command=COMMAND):
         os.environ['{}_PASSPHRASE'.format(command.upper())] = passphrase
 
 
+def _write_exclude_file(exclude_patterns=None):
+    '''
+    Given a sequence of exclude patterns, write them to a named temporary file and return it. Return
+    None if no patterns are provided.
+    '''
+    if not exclude_patterns:
+        return None
+
+    exclude_file = tempfile.NamedTemporaryFile('w')
+    exclude_file.write('\n'.join(exclude_patterns))
+    exclude_file.flush()
+
+    return exclude_file
+
+
 def create_archive(
-    excludes_filename, verbosity, storage_config, source_directories, repository, command=COMMAND,
-    one_file_system=None, remote_path=None,
+    verbosity, storage_config, source_directories, repository, exclude_patterns=None,
+    command=COMMAND, one_file_system=None, remote_path=None,
 ):
     '''
-    Given an excludes filename (or None), a vebosity flag, a storage config dict, a space-separated
-    list of source directories, a local or remote repository path, and a command to run, create an
-    attic archive.
+    Given a vebosity flag, a storage config dict, a list of source directories, a local or remote
+    repository path, a list of exclude patterns, and a command to run, create an attic archive.
     '''
-    sources = re.split('\s+', source_directories)
-    sources = tuple(chain.from_iterable(glob(x) or [x] for x in sources))
-    exclude_flags = ('--exclude-from', excludes_filename) if excludes_filename else ()
+    sources = tuple(
+        itertools.chain.from_iterable(
+            glob.glob(directory) or [directory]
+            for directory in source_directories
+        )
+    )
+
+    exclude_file = _write_exclude_file(exclude_patterns)
+    exclude_flags = ('--exclude-from', exclude_file.name) if exclude_file else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
     umask = storage_config.get('umask', None)
@@ -109,12 +130,11 @@ DEFAULT_CHECKS = ('repository', 'archives')
 
 def _parse_checks(consistency_config):
     '''
-    Given a consistency config with a space-separated "checks" option, transform it to a tuple of
-    named checks to run.
+    Given a consistency config with a "checks" list, transform it to a tuple of named checks to run.
 
     For example, given a retention config of:
 
-        {'checks': 'repository archives'}
+        {'checks': ['repository', 'archives']}
 
     This will be returned as:
 
@@ -123,14 +143,11 @@ def _parse_checks(consistency_config):
     If no "checks" option is present, return the DEFAULT_CHECKS. If the checks value is the string
     "disabled", return an empty tuple, meaning that no checks should be run.
     '''
-    checks = consistency_config.get('checks', '').strip()
-    if not checks:
-        return DEFAULT_CHECKS
+    checks = consistency_config.get('checks', [])
+    if checks == ['disabled']:
+        return ()
 
-    return tuple(
-        check for check in consistency_config['checks'].split(' ')
-        if check.lower() not in ('disabled', '')
-    )
+    return tuple(check for check in checks if check.lower() not in ('disabled', '')) or DEFAULT_CHECKS
 
 
 def _make_check_flags(checks, check_last=None):
