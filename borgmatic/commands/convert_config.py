@@ -93,9 +93,6 @@ def main():  # pragma: no cover
             mode=source_config_file_mode,
         )
 
-        # TODO: As a backstop, check that the written config can actually be read and parsed, and
-        # that it matches the destination config data structure that was written.
-
         display_result(args)
     except (ValueError, OSError) as error:
         print(error, file=sys.stderr)
