@@ -65,7 +65,7 @@ To install borgmatic, run the following command to download and install it:
     sudo pip install --upgrade borgmatic
 
 Make sure you're using Python 3, as borgmatic does not support Python 2. (You
-may have to use "pip3" instead of "pip".)
+may have to use "pip3" or similar instead of "pip".)
 
 Then, generate a sample configuration file:
 
@@ -84,7 +84,11 @@ following:
 
     sudo pip install --upgrade borgmatic
 
+(You may have to use "pip3" or similar instead of "pip", so Python 3 gets
+used.)
+
 However, see below about special cases.
+
 
 ### Upgrading from borgmatic 1.0.x
 
@@ -93,9 +97,22 @@ INI-style to YAML. This better supports validation, and has a more natural way
 to express lists of values. To upgrade your existing configuration, first
 upgrade to the new version of borgmatic:
 
+As of version 1.1.0, borgmatic no longer supports Python 2. If you were
+already running borgmatic with Python 3, then you can simply upgrade borgmatic
+in-place:
+
     sudo pip install --upgrade borgmatic
 
-Then, run:
+But if you were running borgmatic with Python 2, uninstall and reinstall instead:
+
+    sudo pip uninstall borgmatic
+    sudo pip3 install borgmatic
+
+The pip binary names for different versions of Python can differ, so the above
+commands may need some tweaking to work on your machine.
+
+
+Once borgmatic is upgraded, run:
 
     sudo upgrade-borgmatic-config
 
