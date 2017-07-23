@@ -35,7 +35,8 @@ def test_parse_configuration_transforms_file_into_mapping():
                 - /home
                 - /etc
 
-            repository: hostname.borg
+            repositories:
+                - hostname.borg
 
         retention:
             keep_daily: 7
@@ -50,7 +51,7 @@ def test_parse_configuration_transforms_file_into_mapping():
     result = module.parse_configuration('config.yaml', 'schema.yaml')
 
     assert result == {
-        'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
+        'location': {'source_directories': ['/home', '/etc'], 'repositories': ['hostname.borg']},
         'retention': {'keep_daily': 7},
         'consistency': {'checks': ['repository', 'archives']},
     }
@@ -65,7 +66,8 @@ def test_parse_configuration_passes_through_quoted_punctuation():
             source_directories:
                 - /home
 
-            repository: "{}.borg"
+            repositories:
+                - "{}.borg"
         '''.format(escaped_punctuation)
     )
 
@@ -74,7 +76,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
     assert result == {
         'location': {
             'source_directories': ['/home'],
-            'repository': '{}.borg'.format(string.punctuation),
+            'repositories': ['{}.borg'.format(string.punctuation)],
         },
     }
 
@@ -105,7 +107,8 @@ def test_parse_configuration_raises_for_validation_error():
         '''
         location:
             source_directories: yes
-            repository: hostname.borg
+            repositories:
+                - hostname.borg
         '''
     )
 

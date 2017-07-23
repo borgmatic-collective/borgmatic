@@ -32,9 +32,12 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
         for section_name, section_config in source_config._asdict().items()
     ])
 
-    # Split space-seperated values into actual lists, and merge in excludes.
-    destination_config['location']['source_directories'] = source_config.location['source_directories'].split(' ')
-    destination_config['location']['exclude_patterns'] = source_excludes
+    # Split space-seperated values into actual lists, make "repository" into a list, and merge in
+    # excludes.
+    location = destination_config['location']
+    location['source_directories'] = source_config.location['source_directories'].split(' ')
+    location['repositories'] = [location.pop('repository')]
+    location['exclude_patterns'] = source_excludes
 
     if source_config.consistency['checks']:
         destination_config['consistency']['checks'] = source_config.consistency['checks'].split(' ')
