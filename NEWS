@@ -5,6 +5,7 @@
  * Dropped Python 2 support. Now Python 3 only.
  * #18: Fix for README mention of sample files not included in package.
  * #22: Sample files for triggering borgmatic from a systemd timer.
+ * Enabled test coverage output during tox runs.
  * Added logo.
 
 1.0.3
