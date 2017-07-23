@@ -48,10 +48,7 @@ def main():  # pragma: no cover
         remote_path = config.location['remote_path']
 
         borg.initialize(config.storage)
-        # TODO: Use the new exclude_patterns.
-        borg.create_archive(
-            args.excludes_filename, args.verbosity, config.storage, **config.location
-        )
+        borg.create_archive(args.verbosity, config.storage, **config.location)
         borg.prune_archives(args.verbosity, repository, config.retention, remote_path=remote_path)
         borg.check_archives(args.verbosity, repository, config.consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
