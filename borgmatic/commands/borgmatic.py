@@ -47,8 +47,8 @@ def main():  # pragma: no cover
         repository = config['location']['repository']
         remote_path = config['location']['remote_path']
         (storage, retention, consistency) = (
-            config.get(group_name, {})
-            for group_name in ('storage', 'retention', 'consistency')
+            config.get(section_name, {})
+            for section_name in ('storage', 'retention', 'consistency')
         )
 
         borg.initialize(storage)
