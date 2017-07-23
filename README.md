@@ -21,8 +21,9 @@ location:
         - /etc
         - /var/log/syslog*
 
-    # Path to local or remote repository.
-    repository: user@backupserver:sourcehostname.borg
+    # Paths to local or remote repositories.
+    repositories:
+        - user@backupserver:sourcehostname.borg
 
     # Any paths matching these patterns are excluded from backups.
     exclude_patterns:

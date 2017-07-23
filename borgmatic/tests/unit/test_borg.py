@@ -77,11 +77,14 @@ def test_create_archive_should_call_borg_with_parameters():
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -93,11 +96,14 @@ def test_create_archive_with_exclude_patterns_should_call_borg_with_excludes():
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=['exclude'],
         verbosity=None,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': ['exclude'],
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -109,11 +115,14 @@ def test_create_archive_with_verbosity_some_should_call_borg_with_info_parameter
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=VERBOSITY_SOME,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -125,11 +134,14 @@ def test_create_archive_with_verbosity_lots_should_call_borg_with_debug_paramete
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=VERBOSITY_LOTS,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -141,11 +153,14 @@ def test_create_archive_with_compression_should_call_borg_with_compression_param
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={'compression': 'rle'},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'compression': 'rle'},
         command='borg',
     )
 
@@ -157,13 +172,16 @@ def test_create_archive_with_one_file_system_should_call_borg_with_one_file_syst
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'one_file_system': True,
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
-        one_file_system=True,
     )
 
 
@@ -174,13 +192,16 @@ def test_create_archive_with_remote_path_should_call_borg_with_remote_path_param
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'remote_path': 'borg1',
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
-        remote_path='borg1',
     )
 
 
@@ -191,11 +212,14 @@ def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
     insert_datetime_mock()
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={'umask': 740},
-        source_directories=['foo', 'bar'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'umask': 740},
         command='borg',
     )
 
@@ -208,11 +232,14 @@ def test_create_archive_with_source_directories_glob_expands():
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo*'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo*'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -225,11 +252,14 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return([])
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo*'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo*'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 
@@ -242,11 +272,14 @@ def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
-        exclude_patterns=None,
         verbosity=None,
-        storage_config={},
-        source_directories=['foo*'],
         repository='repo',
+        location_config={
+            'source_directories': ['foo*'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
         command='borg',
     )
 

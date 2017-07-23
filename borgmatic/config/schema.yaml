@@ -25,11 +25,15 @@ map:
                 type: scalar
                 desc: Alternate Borg remote executable. Defaults to "borg".
                 example: borg1
-            repository:
+            repositories:
                 required: True
-                type: scalar
-                desc: Path to local or remote repository (required).
-                example: user@backupserver:sourcehostname.borg
+                seq:
+                    - type: scalar
+                desc: |
+                    Paths to local or remote repositories (required). Multiple repositories are
+                    backed up to in sequence.
+                example:
+                    - user@backupserver:sourcehostname.borg
             exclude_patterns:
                 seq:
                     - type: scalar

@@ -28,7 +28,7 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
             'location',
             OrderedDict([
                 ('source_directories', ['/home']),
-                ('repository', 'hostname.borg'),
+                ('repositories', ['hostname.borg']),
                 ('exclude_patterns', ['/var']),
             ]),
         ),
@@ -41,7 +41,7 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
 def test_convert_legacy_parsed_config_splits_space_separated_values():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
     source_config = Parsed_config(
-        location=OrderedDict([('source_directories', '/home /etc')]),
+        location=OrderedDict([('source_directories', '/home /etc'), ('repository', 'hostname.borg')]),
         storage=OrderedDict(),
         retention=OrderedDict(),
         consistency=OrderedDict([('checks', 'repository archives')]),
@@ -56,6 +56,7 @@ def test_convert_legacy_parsed_config_splits_space_separated_values():
             'location',
             OrderedDict([
                 ('source_directories', ['/home', '/etc']),
+                ('repositories', ['hostname.borg']),
                 ('exclude_patterns', ['/var']),
             ]),
         ),

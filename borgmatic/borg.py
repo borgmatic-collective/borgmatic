@@ -39,8 +39,7 @@ def _write_exclude_file(exclude_patterns=None):
 
 
 def create_archive(
-    verbosity, storage_config, source_directories, repository, exclude_patterns=None,
-    command=COMMAND, one_file_system=None, remote_path=None,
+    verbosity, repository, location_config, storage_config, command=COMMAND,
 ):
     '''
     Given a vebosity flag, a storage config dict, a list of source directories, a local or remote
@@ -49,17 +48,18 @@ def create_archive(
     sources = tuple(
         itertools.chain.from_iterable(
             glob.glob(directory) or [directory]
-            for directory in source_directories
+            for directory in location_config['source_directories']
         )
     )
 
-    exclude_file = _write_exclude_file(exclude_patterns)
+    exclude_file = _write_exclude_file(location_config.get('exclude_patterns'))
     exclude_flags = ('--exclude-from', exclude_file.name) if exclude_file else ()
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
     umask = storage_config.get('umask', None)
     umask_flags = ('--umask', str(umask)) if umask else ()
-    one_file_system_flags = ('--one-file-system',) if one_file_system else ()
+    one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
+    remote_path = location_config.get('remote_path')
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info', '--stats',),
