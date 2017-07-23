@@ -44,13 +44,17 @@ def main():  # pragma: no cover
         args = parse_arguments(*sys.argv[1:])
         convert.guard_configuration_upgraded(LEGACY_CONFIG_FILENAME, args.config_filename)
         config = validate.parse_configuration(args.config_filename, validate.schema_filename())
-        repository = config.location['repository']
-        remote_path = config.location['remote_path']
+        repository = config['location']['repository']
+        remote_path = config['location']['remote_path']
+        (storage, retention, consistency) = (
+            config.get(group_name, {})
+            for group_name in ('storage', 'retention', 'consistency')
+        )
 
-        borg.initialize(config.storage)
-        borg.create_archive(args.verbosity, config.storage, **config.location)
-        borg.prune_archives(args.verbosity, repository, config.retention, remote_path=remote_path)
-        borg.check_archives(args.verbosity, repository, config.consistency, remote_path=remote_path)
+        borg.initialize(storage)
+        borg.create_archive(args.verbosity, storage, **config['location'])
+        borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+        borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
