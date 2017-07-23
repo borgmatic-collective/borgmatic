@@ -52,8 +52,8 @@ def main():  # pragma: no cover
         )
 
         borg.initialize(storage)
-        borg.create_archive(args.verbosity, storage, **config['location'])
         borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+        borg.create_archive(args.verbosity, storage, **config['location'])
         borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
