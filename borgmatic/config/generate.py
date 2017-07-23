@@ -50,7 +50,7 @@ def write_configuration(config_filename, config, mode=0o600):
 
     try:
         os.makedirs(os.path.dirname(config_filename), mode=0o700)
-    except FileExistsError:
+    except (FileExistsError, FileNotFoundError):
         pass
 
     with open(config_filename, 'w') as config_file:
