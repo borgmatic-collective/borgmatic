@@ -1,4 +1,4 @@
-1.1.0.dev0
+1.1.0
 
  * Switched config file format to YAML. Run upgrade-borgmatic-config to upgrade.
  * Added generate-borgmatic-config command for initial config creation.
