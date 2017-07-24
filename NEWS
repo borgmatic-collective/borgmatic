@@ -1,6 +1,8 @@
-1.1.1.dev0
+1.1.1
 
- * 
+ * #32: Fix for upgrade-borgmatic-config converting check_last option as a string instead of an
+   integer.
+ * Fix for upgrade-borgmatic-config erroring when consistency checks option is not present.
 
 1.1.0
 
