@@ -10,10 +10,16 @@ def _convert_section(source_section_config, section_schema):
     Given a legacy Parsed_config instance for a single section, convert it to its corresponding
     yaml.comments.CommentedMap representation in preparation for actual serialization to YAML.
 
-    Additionally, use the section schema as a source of helpful comments to include within the
-    returned CommentedMap.
+    Where integer types exist in the given section schema, convert their values to integers.
     '''
-    destination_section_config = yaml.comments.CommentedMap(source_section_config)
+    destination_section_config = yaml.comments.CommentedMap([
+        (
+            option_name,
+            int(option_value)
+                if section_schema['map'].get(option_name, {}).get('type') == 'int' else option_value
+        )
+        for option_name, option_value in source_section_config.items()
+    ])
 
     return destination_section_config
 
@@ -39,7 +45,7 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
     location['repositories'] = [location.pop('repository')]
     location['exclude_patterns'] = source_excludes
 
-    if source_config.consistency['checks']:
+    if source_config.consistency.get('checks'):
         destination_config['consistency']['checks'] = source_config.consistency['checks'].split(' ')
 
     # Add comments to each section, and then add comments to the fields in each section.

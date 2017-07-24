@@ -10,6 +10,16 @@ from borgmatic.config import convert as module
 Parsed_config = namedtuple('Parsed_config', ('location', 'storage', 'retention', 'consistency'))
 
 
+def test_convert_section_generates_integer_value_for_integer_type_in_schema():
+    flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
+    source_section_config = OrderedDict([('check_last', '3')])
+    section_schema = {'map': {'check_last': {'type': 'int'}}}
+
+    destination_config = module._convert_section(source_section_config, section_schema)
+
+    assert destination_config == OrderedDict([('check_last', 3)])
+
+
 def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
     source_config = Parsed_config(
