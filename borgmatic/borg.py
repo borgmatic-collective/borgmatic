@@ -162,10 +162,9 @@ def _make_check_flags(checks, check_last=None):
 
         ('--repository-only',)
 
-    Additionally, if a check_last value is given, a "--last" flag will be added. Note that only
-    Borg supports this flag.
+    Additionally, if a check_last value is given, a "--last" flag will be added.
     '''
-    last_flag = ('--last', check_last) if check_last else ()
+    last_flag = ('--last', str(check_last)) if check_last else ()
     if checks == DEFAULT_CHECKS:
         return last_flag
 
