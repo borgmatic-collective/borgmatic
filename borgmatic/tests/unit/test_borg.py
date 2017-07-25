@@ -409,13 +409,13 @@ def test_make_check_flags_with_default_checks_returns_no_flags():
 def test_make_check_flags_with_checks_and_last_returns_flags_including_last():
     flags = module._make_check_flags(('foo', 'bar'), check_last=3)
 
-    assert flags == ('--foo-only', '--bar-only', '--last', 3)
+    assert flags == ('--foo-only', '--bar-only', '--last', '3')
 
 
 def test_make_check_flags_with_last_returns_last_flag():
     flags = module._make_check_flags(module.DEFAULT_CHECKS, check_last=3)
 
-    assert flags == ('--last', 3)
+    assert flags == ('--last', '3')
 
 
 def test_check_archives_should_call_borg_with_parameters():

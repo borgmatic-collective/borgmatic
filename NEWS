@@ -1,7 +1,11 @@
+1.1.2
+
+ * #32: Fix for passing check_last as integer to subprocess when calling Borg.
+
 1.1.1
 
- * #32: Fix for upgrade-borgmatic-config converting check_last option as a string instead of an
-   integer.
+ * Part of #32: Fix for upgrade-borgmatic-config converting check_last option as a string instead of
+   an integer.
  * Fix for upgrade-borgmatic-config erroring when consistency checks option is not present.
 
 1.1.0
