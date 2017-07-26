@@ -68,7 +68,9 @@ To install borgmatic, run the following command to download and install it:
 Make sure you're using Python 3, as borgmatic does not support Python 2. (You
 may have to use "pip3" or similar instead of "pip".)
 
-Then, generate a sample configuration file:
+## Configuration
+
+After you install borgmatic, generate a sample configuration file:
 
     sudo generate-borgmatic-config
 
@@ -76,6 +78,25 @@ This generates a sample configuration file at /etc/borgmatic/config.yaml (by
 default). You should edit the file to suit your needs, as the values are just
 representative. All fields are optional except where indicated, so feel free
 to remove anything you don't need.
+
+
+### Multiple configuration files
+
+A more advanced usage is to create multiple separate configuration files and
+place each one in a /etc/borgmatic.d directory. For instance:
+
+    sudo mkdir /etc/borgmatic.d
+    sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
+    sudo generate-borgmatic-config --destination /etc/borgmatic.d/app2.yaml
+
+With this approach, you can have entirely different backup policies for
+different applications on your system. For instance, you may want one backup
+configuration for your database data directory, and a different configuration
+for your user home directories.
+
+When you set up multiple configuration files like this, borgmatic will run
+each one in turn from a single borgmatic invocation. This includes, by
+default, the traditional /etc/borgmatic/config.yaml as well.
 
 
 ## Upgrading

@@ -77,14 +77,19 @@ instead of the old one.'''
         )
 
 
-def guard_configuration_upgraded(source_config_filename, destination_config_filename):
+def guard_configuration_upgraded(source_config_filename, destination_config_filenames):
     '''
-    If legacy souce configuration exists but destination upgraded config doesn't, raise
+    If legacy source configuration exists but no destination upgraded configs do, raise
     LegacyConfigurationNotUpgraded.
 
     The idea is that we want to alert the user about upgrading their config if they haven't already.
     '''
-    if os.path.exists(source_config_filename) and not os.path.exists(destination_config_filename):
+    destination_config_exists = any(
+        os.path.exists(filename)
+        for filename in destination_config_filenames
+    )
+
+    if os.path.exists(source_config_filename) and not destination_config_exists:
         raise LegacyConfigurationNotUpgraded()
 
 

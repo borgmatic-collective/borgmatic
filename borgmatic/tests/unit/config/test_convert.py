@@ -79,30 +79,34 @@ def test_convert_legacy_parsed_config_splits_space_separated_values():
 def test_guard_configuration_upgraded_raises_when_only_source_config_present():
     flexmock(os.path).should_receive('exists').with_args('config').and_return(True)
     flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('other.yaml').and_return(False)
 
     with pytest.raises(module.LegacyConfigurationNotUpgraded):
-        module.guard_configuration_upgraded('config', 'config.yaml')
+        module.guard_configuration_upgraded('config', ('config.yaml', 'other.yaml'))
 
 
 def test_guard_configuration_upgraded_does_not_raise_when_only_destination_config_present():
     flexmock(os.path).should_receive('exists').with_args('config').and_return(False)
-    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(True)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('other.yaml').and_return(True)
 
-    module.guard_configuration_upgraded('config', 'config.yaml')
+    module.guard_configuration_upgraded('config', ('config.yaml', 'other.yaml'))
 
 
 def test_guard_configuration_upgraded_does_not_raise_when_both_configs_present():
     flexmock(os.path).should_receive('exists').with_args('config').and_return(True)
-    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(True)
+    flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('other.yaml').and_return(True)
 
-    module.guard_configuration_upgraded('config', 'config.yaml')
+    module.guard_configuration_upgraded('config', ('config.yaml', 'other.yaml'))
 
 
 def test_guard_configuration_upgraded_does_not_raise_when_neither_config_present():
     flexmock(os.path).should_receive('exists').with_args('config').and_return(False)
     flexmock(os.path).should_receive('exists').with_args('config.yaml').and_return(False)
+    flexmock(os.path).should_receive('exists').with_args('other.yaml').and_return(False)
 
-    module.guard_configuration_upgraded('config', 'config.yaml')
+    module.guard_configuration_upgraded('config', ('config.yaml', 'other.yaml'))
 
 
 def test_guard_excludes_filename_omitted_raises_when_filename_provided():
