@@ -5,12 +5,12 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic import borg
-from borgmatic.config import convert, validate
+from borgmatic.config import collect, convert, validate
 
 
-LEGACY_CONFIG_FILENAME = '/etc/borgmatic/config'
-DEFAULT_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
-DEFAULT_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'
+LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
+DEFAULT_CONFIG_PATHS = ['/etc/borgmatic/config.yaml', '/etc/borgmatic.d']
+DEFAULT_EXCLUDES_PATH = '/etc/borgmatic/excludes'
 
 
 def parse_arguments(*arguments):
@@ -21,9 +21,10 @@ def parse_arguments(*arguments):
     parser = ArgumentParser()
     parser.add_argument(
         '-c', '--config',
-        dest='config_filename',
-        default=DEFAULT_CONFIG_FILENAME,
-        help='Configuration filename',
+        nargs='+',
+        dest='config_paths',
+        default=DEFAULT_CONFIG_PATHS,
+        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(DEFAULT_CONFIG_PATHS)),
     )
     parser.add_argument(
         '--excludes',
@@ -42,25 +43,31 @@ def parse_arguments(*arguments):
 def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
-        convert.guard_configuration_upgraded(LEGACY_CONFIG_FILENAME, args.config_filename)
-        config = validate.parse_configuration(args.config_filename, validate.schema_filename())
-        (location, storage, retention, consistency) = (
-            config.get(section_name, {})
-            for section_name in ('location', 'storage', 'retention', 'consistency')
-        )
-        remote_path = location.get('remote_path')
+        config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
+        convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
-        borg.initialize(storage)
+        if len(config_filenames) == 0:
+            raise ValueError('Error: No configuration files found in: {}'.format(' '.join(args.config_paths)))
 
-        for repository in location['repositories']:
-            borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-            borg.create_archive(
-                args.verbosity,
-                repository,
-                location,
-                storage,
+        for config_filename in config_filenames:
+            config = validate.parse_configuration(config_filename, validate.schema_filename())
+            (location, storage, retention, consistency) = (
+                config.get(section_name, {})
+                for section_name in ('location', 'storage', 'retention', 'consistency')
             )
-            borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+            remote_path = location.get('remote_path')
+
+            borg.initialize(storage)
+
+            for repository in location['repositories']:
+                borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                borg.create_archive(
+                    args.verbosity,
+                    repository,
+                    location,
+                    storage,
+                )
+                borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
