@@ -83,7 +83,7 @@ to remove anything you don't need.
 ### Multiple configuration files
 
 A more advanced usage is to create multiple separate configuration files and
-place each one in a /etc/borgmatic.d directory. For instance:
+place each one in an /etc/borgmatic.d directory. For instance:
 
     sudo mkdir /etc/borgmatic.d
     sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
@@ -175,6 +175,12 @@ arguments:
 This will also prune any old backups as per the configured retention policy,
 and check backups for consistency problems due to things like file damage.
 
+If you'd like to see the available command-line arguments, view the help:
+
+    borgmatic --help
+
+### Verbosity
+
 By default, the backup will proceed silently except in the case of errors. But
 if you'd like to to get additional information about the progress of the
 backup as it proceeds, use the verbosity option:
@@ -185,9 +191,19 @@ Or, for even more progress spew:
 
     borgmatic --verbosity 2
 
-If you'd like to see the available command-line arguments, view the help:
+### À la carte
 
-    borgmatic --help
+If you want to run borgmatic with only pruning, creating, or checking enabled,
+the following optional flags are available:
+
+    borgmatic --prune
+    borgmatic --create
+    borgmatic --check
+
+You can run with only one of these flags provided, or you can mix and match
+any number of them. This supports use cases like running consistency checks
+from a different cron job with a different frequency, or running pruning with
+a different verbosity level.
 
 
 ## Autopilot

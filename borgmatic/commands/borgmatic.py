@@ -18,7 +18,14 @@ def parse_arguments(*arguments):
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as an ArgumentParser instance.
     '''
-    parser = ArgumentParser()
+    parser = ArgumentParser(
+        description=
+            '''
+            A simple wrapper script for the Borg backup software that creates and prunes backups.
+            If none of the --prune, --create, or --check options are given, then borgmatic defaults
+            to all three: prune, create, and check archives.
+            '''
+    )
     parser.add_argument(
         '-c', '--config',
         nargs='+',
@@ -29,7 +36,25 @@ def parse_arguments(*arguments):
     parser.add_argument(
         '--excludes',
         dest='excludes_filename',
-        help='Excludes filename, deprecated in favor of exclude_patterns within configuration',
+        help='Deprecated in favor of exclude_patterns within configuration',
+    )
+    parser.add_argument(
+        '-p', '--prune',
+        dest='prune',
+        action='store_true',
+        help='Prune archives according to the retention policy',
+    )
+    parser.add_argument(
+        '-C', '--create',
+        dest='create',
+        action='store_true',
+        help='Create archives (actually perform backups)',
+    )
+    parser.add_argument(
+        '-k', '--check',
+        dest='check',
+        action='store_true',
+        help='Check archives for consistency',
     )
     parser.add_argument(
         '-v', '--verbosity',
@@ -37,7 +62,17 @@ def parse_arguments(*arguments):
         help='Display verbose progress (1 for some, 2 for lots)',
     )
 
-    return parser.parse_args(arguments)
+    args = parser.parse_args(arguments)
+
+    # If any of the three action flags in the given parse arguments have been explicitly requested,
+    # leave them as-is. Otherwise, assume defaults: Mutate the given arguments to enable all the
+    # actions.
+    if not args.prune and not args.create and not args.check:
+        args.prune = True
+        args.create = True
+        args.check = True
+
+    return args
 
 
 def main():  # pragma: no cover
@@ -60,14 +95,17 @@ def main():  # pragma: no cover
             borg.initialize(storage)
 
             for repository in location['repositories']:
-                borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-                borg.create_archive(
-                    args.verbosity,
-                    repository,
-                    location,
-                    storage,
-                )
-                borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+                if args.prune:
+                    borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                if args.create:
+                    borg.create_archive(
+                        args.verbosity,
+                        repository,
+                        location,
+                        storage,
+                    )
+                if args.check:
+                    borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
