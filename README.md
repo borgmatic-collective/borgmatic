@@ -1,5 +1,3 @@
-title: borgmatic
-
 <img src="https://cdn.rawgit.com/witten/borgmatic/master/static/borgmatic.svg" width="150px" style="float: right; padding-left: 1em;">
 
 ## Overview
