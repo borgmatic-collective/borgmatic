@@ -1,3 +1,9 @@
+1.1.4
+
+ * #17: Added command-line flags for performing a borgmatic run with only pruning, creating, or
+   checking enabled. This supports use cases like running consistency checks from a different cron
+   job with a different frequency, or running pruning with a different verbosity level.
+
 1.1.3
 
  * #14: Support for running multiple config files in /etc/borgmatic.d/ from a single borgmatic run.
