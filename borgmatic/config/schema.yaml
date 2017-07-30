@@ -106,21 +106,25 @@ map:
     consistency:
         desc: |
             Consistency checks to run after backups. See
-            https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check for details.
+            https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check and
+            https://borgbackup.readthedocs.org/en/stable/usage.html#borg-extract for details.
         map:
             checks:
                 seq:
                     - type: str
-                      enum: ['repository', 'archives', 'disabled']
+                      enum: ['repository', 'archives', 'extract', 'disabled']
                       unique: true
                 desc: |
-                    List of consistency checks to run: "repository", "archives", or both. Defaults
-                    to both. Set to "disabled" to disable all consistency checks. See
-                    https://borgbackup.readthedocs.org/en/stable/usage.html#borg-check for details.
+                    List of one or more consistency checks to run: "repository", "archives", and/or
+                    "extract". Defaults to "repository" and "archives". Set to "disabled" to disable
+                    all consistency checks. "repository" checks the consistency of the repository,
+                    "archive" checks all of the archives, and "extract" does an extraction dry-run
+                    of just the most recent archive.
                 example:
                     - repository
                     - archives
             check_last:
                 type: int
-                desc: Restrict the number of checked archives to the last n.
+                desc: Restrict the number of checked archives to the last n. Applies only to the
+                      "archives" check.
                 example: 3

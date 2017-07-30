@@ -3,6 +3,7 @@ import glob
 import itertools
 import os
 import platform
+import sys
 import re
 import subprocess
 import tempfile
@@ -43,7 +44,7 @@ def create_archive(
 ):
     '''
     Given a vebosity flag, a storage config dict, a list of source directories, a local or remote
-    repository path, a list of exclude patterns, and a command to run, create an attic archive.
+    repository path, a list of exclude patterns, and a command to run, create a Borg archive.
     '''
     sources = tuple(
         itertools.chain.from_iterable(
@@ -68,8 +69,8 @@ def create_archive(
 
     full_command = (
         command, 'create',
-        '{repo}::{hostname}-{timestamp}'.format(
-            repo=repository,
+        '{repository}::{hostname}-{timestamp}'.format(
+            repository=repository,
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),
@@ -104,7 +105,7 @@ def _make_prune_flags(retention_config):
 def prune_archives(verbosity, repository, retention_config, command=COMMAND, remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, and a
-    command to run, prune attic archives according the the retention policy specified in that
+    command to run, prune Borg archives according the the retention policy specified in that
     configuration.
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
@@ -170,33 +171,72 @@ def _make_check_flags(checks, check_last=None):
 
     return tuple(
         '--{}-only'.format(check) for check in checks
+        if check in DEFAULT_CHECKS
     ) + last_flag
 
 
 def check_archives(verbosity, repository, consistency_config, command=COMMAND, remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
-    command to run, check the contained attic archives for consistency.
+    command to run, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
     checks = _parse_checks(consistency_config)
     check_last = consistency_config.get('check_last', None)
-    if not checks:
-        return
 
+    if set(checks).intersection(set(DEFAULT_CHECKS)):
+        remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
+        verbosity_flags = {
+            VERBOSITY_SOME: ('--info',),
+            VERBOSITY_LOTS: ('--debug',),
+        }.get(verbosity, ())
+
+        full_command = (
+            command, 'check',
+            repository,
+        ) + _make_check_flags(checks, check_last) + remote_path_flags + verbosity_flags
+
+        # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
+        stdout = None if verbosity_flags else open(os.devnull, 'w')
+
+        subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
+
+    if 'extract' in checks:
+        extract_last_archive_dry_run(verbosity, repository, command, remote_path)
+
+
+def extract_last_archive_dry_run(verbosity, repository, command=COMMAND, remote_path=None):
+    '''
+    Perform an extraction dry-run of just the most recent archive. If there are no archives, skip
+    the dry-run.
+    '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info',),
         VERBOSITY_LOTS: ('--debug',),
     }.get(verbosity, ())
 
-    full_command = (
-        command, 'check',
+    full_list_command = (
+        command, 'list',
+        '--short',
         repository,
-    ) + _make_check_flags(checks, check_last) + remote_path_flags + verbosity_flags
+    ) + remote_path_flags + verbosity_flags
 
-    # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
-    stdout = None if verbosity_flags else open(os.devnull, 'w')
+    list_output = subprocess.check_output(full_list_command).decode(sys.stdout.encoding)
 
-    subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
+    last_archive_name = list_output.strip().split('\n')[-1]
+    if not last_archive_name:
+        return
+
+    list_flag = ('--list',) if verbosity == VERBOSITY_LOTS else ()
+    full_extract_command = (
+        command, 'extract',
+        '--dry-run',
+        '{repository}::{last_archive_name}'.format(
+            repository=repository,
+            last_archive_name=last_archive_name,
+        ),
+    ) + remote_path_flags + verbosity_flags + list_flag
+
+    subprocess.check_call(full_extract_command)

@@ -77,6 +77,12 @@ default). You should edit the file to suit your needs, as the values are just
 representative. All fields are optional except where indicated, so feel free
 to remove anything you don't need.
 
+You can also have a look at the [full configuration
+schema](https://torsion.org/hg/borgmatic/file/tip/borgmatic/config/schema.yaml)
+for the authoritative set of all configuration options. This is handy if
+borgmatic has added new options since you originally created your
+configuration file.
+
 
 ### Multiple configuration files
 
