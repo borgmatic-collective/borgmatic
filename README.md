@@ -121,7 +121,7 @@ However, see below about special cases.
 borgmatic changed its configuration file format in version 1.1.0 from
 INI-style to YAML. This better supports validation, and has a more natural way
 to express lists of values. To upgrade your existing configuration, first
-upgrade to the new version of borgmatic:
+upgrade to the new version of borgmatic.
 
 As of version 1.1.0, borgmatic no longer supports Python 2. If you were
 already running borgmatic with Python 3, then you can simply upgrade borgmatic
