@@ -4,7 +4,7 @@ import os
 from subprocess import CalledProcessError
 import sys
 
-from borgmatic import borg
+from borgmatic.borg import check, create, prune
 from borgmatic.config import collect, convert, validate
 
 
@@ -92,20 +92,20 @@ def main():  # pragma: no cover
             )
             remote_path = location.get('remote_path')
 
-            borg.initialize(storage)
+            create.initialize(storage)
 
             for repository in location['repositories']:
                 if args.prune:
-                    borg.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                    prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
                 if args.create:
-                    borg.create_archive(
+                    create.create_archive(
                         args.verbosity,
                         repository,
                         location,
                         storage,
                     )
                 if args.check:
-                    borg.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+                    check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
