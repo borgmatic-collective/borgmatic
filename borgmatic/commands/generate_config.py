@@ -4,9 +4,6 @@ import os
 from subprocess import CalledProcessError
 import sys
 
-from ruamel import yaml
-
-from borgmatic import borg
 from borgmatic.config import convert, generate, validate
 
 

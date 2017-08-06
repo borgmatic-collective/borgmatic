@@ -7,7 +7,6 @@ import textwrap
 
 from ruamel import yaml
 
-from borgmatic import borg
 from borgmatic.config import convert, generate, legacy, validate
 
 
