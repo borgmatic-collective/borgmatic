@@ -31,12 +31,33 @@ def _write_exclude_file(exclude_patterns=None):
     return exclude_file
 
 
+def _make_exclude_flags(location_config, exclude_patterns_filename=None):
+    '''
+    Given a location config dict with various exclude options, and a filename containing any exclude
+    patterns, return the corresponding Borg flags as a tuple.
+    '''
+    exclude_filenames = tuple(location_config.get('exclude_from', ())) + (
+        (exclude_patterns_filename,) if exclude_patterns_filename else ()
+    )
+    exclude_from_flags = tuple(
+        itertools.chain.from_iterable(
+            ('--exclude-from', exclude_filename)
+            for exclude_filename in exclude_filenames
+        )
+    )
+    caches_flag = ('--exclude-caches',) if location_config.get('exclude_caches') else ()
+    if_present = location_config.get('exclude_if_present')
+    if_present_flags = ('--exclude-if-present', if_present) if if_present else ()
+
+    return exclude_from_flags + caches_flag + if_present_flags
+
+
 def create_archive(
     verbosity, repository, location_config, storage_config,
 ):
     '''
-    Given a vebosity flag, a storage config dict, a list of source directories, a local or remote
-    repository path, a list of exclude patterns, create a Borg archive.
+    Given a vebosity flag, a local or remote repository path, a location config dict, and a storage
+    config dict, create a Borg archive.
     '''
     sources = tuple(
         itertools.chain.from_iterable(
@@ -45,8 +66,11 @@ def create_archive(
         )
     )
 
-    exclude_file = _write_exclude_file(location_config.get('exclude_patterns'))
-    exclude_flags = ('--exclude-from', exclude_file.name) if exclude_file else ()
+    exclude_patterns_file = _write_exclude_file(location_config.get('exclude_patterns'))
+    exclude_flags = _make_exclude_flags(
+        location_config,
+        exclude_patterns_file.name if exclude_patterns_file else None,
+    )
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
     umask = storage_config.get('umask', None)

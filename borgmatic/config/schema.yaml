@@ -45,6 +45,24 @@ map:
                     - '*.pyc'
                     - /home/*/.cache
                     - /etc/ssl
+            exclude_from:
+                seq:
+                    - type: scalar
+                desc: |
+                    Read exclude patterns from one or more separate named files, one pattern per
+                    line.
+                example:
+                    - /etc/borgmatic/excludes
+            exclude_caches:
+                type: bool
+                desc: |
+                    Exclude directories that contain a CACHEDIR.TAG file. See
+                    http://www.brynosaurus.com/cachedir/spec.html for details.
+                example: true
+            exclude_if_present:
+                type: scalar
+                desc: Exclude directories that contain a file with the given filename.
+                example: .nobackup
     storage:
         desc: |
             Repository storage options. See
