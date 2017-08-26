@@ -1,3 +1,7 @@
+1.1.7.dev0
+
+ * When pruning, make highest verbosity level list archives kept and pruned.
+
 1.1.6
 
  * #12, #35: Support for Borg --exclude-from, --exclude-caches, and --exclude-if-present options.
