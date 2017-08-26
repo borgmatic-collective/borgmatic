@@ -33,7 +33,7 @@ def prune_archives(verbosity, repository, retention_config, remote_path=None):
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info', '--stats',),
-        VERBOSITY_LOTS: ('--debug', '--stats'),
+        VERBOSITY_LOTS: ('--debug', '--stats', '--list'),
     }.get(verbosity, ())
 
     full_command = (
