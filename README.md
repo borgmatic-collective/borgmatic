@@ -183,6 +183,11 @@ If you'd like to see the available command-line arguments, view the help:
 
     borgmatic --help
 
+Note that borgmatic prunes archives *before* creating an archive, so as to
+free up space for archiving. This means that when a borgmatic run finishes,
+there may still be prune-able archives. Not to worry, as they will get cleaned
+up at the start of the next run.
+
 ### Verbosity
 
 By default, the backup will proceed silently except in the case of errors. But
