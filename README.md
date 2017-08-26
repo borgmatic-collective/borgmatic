@@ -61,10 +61,10 @@ key-based ssh access to the desired user account on the remote host.
 
 To install borgmatic, run the following command to download and install it:
 
-    sudo pip install --upgrade borgmatic
+    sudo pip3 install --upgrade borgmatic
 
-Make sure you're using Python 3, as borgmatic does not support Python 2. (You
-may have to use "pip3" or similar instead of "pip".)
+Note that your pip binary may have a different name than "pip3". Make sure
+you're using Python 3, as borgmatic does not support Python 2.
 
 ## Configuration
 
@@ -108,10 +108,7 @@ default, the traditional /etc/borgmatic/config.yaml as well.
 In general, all you should need to do to upgrade borgmatic is run the
 following:
 
-    sudo pip install --upgrade borgmatic
-
-(You may have to use "pip3" or similar instead of "pip", so Python 3 gets
-used.)
+    sudo pip3 install --upgrade borgmatic
 
 However, see below about special cases.
 
@@ -127,7 +124,7 @@ As of version 1.1.0, borgmatic no longer supports Python 2. If you were
 already running borgmatic with Python 3, then you can simply upgrade borgmatic
 in-place:
 
-    sudo pip install --upgrade borgmatic
+    sudo pip3 install --upgrade borgmatic
 
 But if you were running borgmatic with Python 2, uninstall and reinstall instead:
 
@@ -162,8 +159,8 @@ your borgmatic configuration files.
 If you were already using Borg with atticmatic, then you can easily upgrade
 from atticmatic to borgmatic. Simply run the following commands:
 
-    sudo pip uninstall atticmatic
-    sudo pip install borgmatic
+    sudo pip3 uninstall atticmatic
+    sudo pip3 install borgmatic
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
@@ -252,7 +249,7 @@ borgmatic to run.
 
 First install tox, which is used for setting up testing environments:
 
-    pip install tox
+    pip3 install tox
 
 Then, to actually run tests, run:
 

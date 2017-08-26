@@ -1,6 +1,7 @@
 1.1.7.dev0
 
  * When pruning, make highest verbosity level list archives kept and pruned.
+ * Clarification of Python 3 pip usage in documentation.
 
 1.1.6
 
