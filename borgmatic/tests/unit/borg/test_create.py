@@ -88,6 +88,16 @@ def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_excl
     assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', '/tmp/excludes')
 
 
+def test_make_exclude_flags_considers_none_exclude_from_filenames_as_empty():
+    flexmock(module).should_receive('_write_exclude_file').and_return(None)
+
+    exclude_flags = module._make_exclude_flags(
+        location_config={'exclude_from': None},
+    )
+
+    assert exclude_flags == ()
+
+
 def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
     exclude_flags = module._make_exclude_flags(
         location_config={'exclude_caches': True},
