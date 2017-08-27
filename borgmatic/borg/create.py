@@ -36,7 +36,7 @@ def _make_exclude_flags(location_config, exclude_patterns_filename=None):
     Given a location config dict with various exclude options, and a filename containing any exclude
     patterns, return the corresponding Borg flags as a tuple.
     '''
-    exclude_filenames = tuple(location_config.get('exclude_from', ())) + (
+    exclude_filenames = tuple(location_config.get('exclude_from') or ()) + (
         (exclude_patterns_filename,) if exclude_patterns_filename else ()
     )
     exclude_from_flags = tuple(

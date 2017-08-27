@@ -1,5 +1,6 @@
 1.1.7.dev0
 
+ * Fix for traceback when "exclude_from" value is empty in configuration file.
  * When pruning, make highest verbosity level list archives kept and pruned.
  * Clarification of Python 3 pip usage in documentation.
 
