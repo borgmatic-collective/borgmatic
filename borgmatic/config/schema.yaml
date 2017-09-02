@@ -88,6 +88,13 @@ map:
                 type: scalar
                 desc: Umask to be used for borg create.
                 example: 0077
+            archive-prefix:
+                type: scalar
+                desc: |
+                    Prefix to be added to the archive name.
+                    The complete archive name is : '{archive-prefix}{hostname}-{timestamp}'
+                    Defaults to ''
+                example: prefix1-
     retention:
         desc: |
             Retention policy for how many backups to keep in each category. See
@@ -119,7 +126,9 @@ map:
                 example: 1
             prefix:
                 type: scalar
-                desc: When pruning, only consider archive names starting with this prefix.
+                desc: |
+                    When pruning, only consider archive names starting with this prefix.
+                    The complete archive name is : '{archive-prefix}{hostname}-{timestamp}'
                 example: sourcehostname
     consistency:
         desc: |
