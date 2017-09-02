@@ -82,11 +82,13 @@ def create_archive(
         VERBOSITY_SOME: ('--info', '--stats',),
         VERBOSITY_LOTS: ('--debug', '--list', '--stats'),
     }.get(verbosity, ())
+    archive_prefix = storage_config.get('archive-prefix', '')
 
     full_command = (
         'borg', 'create',
-        '{repository}::{hostname}-{timestamp}'.format(
+        '{repository}::{archive_prefix}{hostname}-{timestamp}'.format(
             repository=repository,
+            archive_prefix=archive_prefix,
             hostname=platform.node(),
             timestamp=datetime.now().isoformat(),
         ),

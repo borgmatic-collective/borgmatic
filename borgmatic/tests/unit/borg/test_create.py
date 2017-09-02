@@ -344,3 +344,22 @@ def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
         },
         storage_config={},
     )
+
+
+def test_create_archive_with_prefix():
+    flexmock(module).should_receive('_write_exclude_file').and_return(None)
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(('borg', 'create', 'repo::PREFIX-host-now', 'foo', 'bar'))
+    insert_platform_mock()
+    insert_datetime_mock()
+
+    module.create_archive(
+        verbosity=None,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'archive-prefix': 'PREFIX-'},
+    )
