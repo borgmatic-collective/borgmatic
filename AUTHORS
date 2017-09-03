@@ -2,4 +2,6 @@ Dan Helfman <witten@torsion.org>: Main developer
 
 Alexander Görtz: Python 3 compatibility
 Henning Schroeder: Copy editing
+Michele Lazzeri: Custom archive names
 Robin `ypid` Schneider: Support additional options of Borg
+Scott Squires: Custom archive names
