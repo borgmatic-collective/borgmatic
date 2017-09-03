@@ -88,7 +88,7 @@ map:
                 type: scalar
                 desc: Umask to be used for borg create.
                 example: 0077
-            archive_name:
+            archive_name_format:
                 type: scalar
                 desc: |
                     Name of the archive. Borg placeholders can be used. See
