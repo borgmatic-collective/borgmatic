@@ -118,7 +118,8 @@ def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
     assert exclude_flags == ()
 
 
-CREATE_COMMAND = ('borg', 'create', 'repo::{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}', 'foo', 'bar')
+DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+CREATE_COMMAND = ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'bar')
 
 
 def test_create_archive_should_call_borg_with_parameters():
@@ -263,7 +264,7 @@ def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
 def test_create_archive_with_source_directories_glob_expands():
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(('borg', 'create', 'repo::{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}', 'foo', 'food'))
+    insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
@@ -281,7 +282,7 @@ def test_create_archive_with_source_directories_glob_expands():
 def test_create_archive_with_non_matching_source_directories_glob_passes_through():
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(('borg', 'create', 'repo::{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}', 'foo*'))
+    insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'))
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return([])
 
     module.create_archive(
@@ -299,7 +300,7 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
 def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(('borg', 'create', 'repo::{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}', 'foo', 'food'))
+    insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
@@ -314,7 +315,7 @@ def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
     )
 
 
-def test_create_archive_with_archive_name():
+def test_create_archive_with_archive_name_format_without_placeholders():
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'))
@@ -328,12 +329,12 @@ def test_create_archive_with_archive_name():
             'exclude_patterns': None,
         },
         storage_config={
-            'archive_name': 'ARCHIVE_NAME',
+            'archive_name_format': 'ARCHIVE_NAME',
         },
     )
 
 
-def test_create_archive_with_archive_name_accepts_borg_placeholders():
+def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'))
@@ -347,6 +348,6 @@ def test_create_archive_with_archive_name_accepts_borg_placeholders():
             'exclude_patterns': None,
         },
         storage_config={
-            'archive_name': 'Documents_{hostname}-{now}',
+            'archive_name_format': 'Documents_{hostname}-{now}',
         },
     )

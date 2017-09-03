@@ -91,10 +91,10 @@ map:
             archive_name:
                 type: scalar
                 desc: |
-                    Name of the archive. Borg placeholders can be used, see
+                    Name of the archive. Borg placeholders can be used. See
                     https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
                     Default is "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}"
-                example: "Documents-{hostname}-{now}"
+                example: "{hostname}-documents-{now}"
     retention:
         desc: |
             Retention policy for how many backups to keep in each category. See
@@ -128,7 +128,7 @@ map:
                 type: scalar
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
-                    Borg placeholders can be used, see
+                    Borg placeholders can be used. See
                     https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
                 example: sourcehostname
     consistency:
