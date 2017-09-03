@@ -1,8 +1,6 @@
-from datetime import datetime
 import glob
 import itertools
 import os
-import platform
 import subprocess
 import tempfile
 
@@ -82,13 +80,14 @@ def create_archive(
         VERBOSITY_SOME: ('--info', '--stats',),
         VERBOSITY_LOTS: ('--debug', '--list', '--stats'),
     }.get(verbosity, ())
+    default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+    archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
 
     full_command = (
         'borg', 'create',
-        '{repository}::{hostname}-{timestamp}'.format(
+        '{repository}::{archive_name_format}'.format(
             repository=repository,
-            hostname=platform.node(),
-            timestamp=datetime.now().isoformat(),
+            archive_name_format=archive_name_format,
         ),
     ) + sources + exclude_flags + compression_flags + one_file_system_flags + \
         remote_path_flags + umask_flags + verbosity_flags

@@ -32,6 +32,24 @@ def test_make_prune_flags_should_return_flags_from_config():
     assert tuple(result) == BASE_PRUNE_FLAGS
 
 
+def test_make_prune_flags_accepts_prefix_with_placeholders():
+    retention_config = OrderedDict(
+        (
+            ('keep_daily', 1),
+            ('prefix', 'Documents_{hostname}-{now}'),
+        )
+    )
+
+    result = module._make_prune_flags(retention_config)
+
+    expected = (
+        ('--keep-daily', '1'),
+        ('--prefix', 'Documents_{hostname}-{now}'),
+    )
+
+    assert tuple(result) == expected
+
+
 PRUNE_COMMAND = (
     'borg', 'prune', 'repo', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3',
 )
@@ -77,6 +95,7 @@ def test_prune_archives_with_verbosity_lots_should_call_borg_with_debug_paramete
         verbosity=VERBOSITY_LOTS,
         retention_config=retention_config,
     )
+
 
 def test_prune_archives_with_remote_path_should_call_borg_with_remote_path_parameters():
     retention_config = flexmock()
