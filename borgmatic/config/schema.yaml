@@ -88,6 +88,13 @@ map:
                 type: scalar
                 desc: Umask to be used for borg create.
                 example: 0077
+            archive_name_format:
+                type: scalar
+                desc: |
+                    Name of the archive. Borg placeholders can be used. See
+                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
+                    Default is "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}"
+                example: "{hostname}-documents-{now}"
     retention:
         desc: |
             Retention policy for how many backups to keep in each category. See
@@ -119,7 +126,10 @@ map:
                 example: 1
             prefix:
                 type: scalar
-                desc: When pruning, only consider archive names starting with this prefix.
+                desc: |
+                    When pruning, only consider archive names starting with this prefix.
+                    Borg placeholders can be used. See
+                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
                 example: sourcehostname
     consistency:
         desc: |
