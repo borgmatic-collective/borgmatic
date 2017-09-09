@@ -1,3 +1,7 @@
+1.1.8
+ * #39: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default
+   config paths.
+
 1.1.7
 
  * #28: Add "archive_name_format" to configuration for customizing archive names.

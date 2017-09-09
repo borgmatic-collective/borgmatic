@@ -1,6 +1,9 @@
 import os
 
 
+DEFAULT_CONFIG_PATHS = ['/etc/borgmatic/config.yaml', '/etc/borgmatic.d']
+
+
 def collect_config_filenames(config_paths):
     '''
     Given a sequence of config paths, both filenames and directories, resolve that to just an
@@ -14,7 +17,7 @@ def collect_config_filenames(config_paths):
     for path in config_paths:
         exists = os.path.exists(path)
 
-        if os.path.realpath(path) == '/etc/borgmatic.d' and not exists:
+        if os.path.realpath(path) in DEFAULT_CONFIG_PATHS and not exists:
             continue
 
         if not os.path.isdir(path) or not exists:

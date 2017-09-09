@@ -9,7 +9,7 @@ from borgmatic.commands import borgmatic as module
 def test_parse_arguments_with_no_arguments_uses_defaults():
     parser = module.parse_arguments()
 
-    assert parser.config_paths == module.DEFAULT_CONFIG_PATHS
+    assert parser.config_paths == module.collect.DEFAULT_CONFIG_PATHS
     assert parser.excludes_filename == None
     assert parser.verbosity is None
 
@@ -32,7 +32,7 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
 def test_parse_arguments_with_verbosity_flag_overrides_default():
     parser = module.parse_arguments('--verbosity', '1')
 
-    assert parser.config_paths == module.DEFAULT_CONFIG_PATHS
+    assert parser.config_paths == module.collect.DEFAULT_CONFIG_PATHS
     assert parser.excludes_filename == None
     assert parser.verbosity == 1
 
