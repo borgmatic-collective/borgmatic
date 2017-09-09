@@ -9,8 +9,6 @@ from borgmatic.config import collect, convert, validate
 
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
-DEFAULT_CONFIG_PATHS = ['/etc/borgmatic/config.yaml', '/etc/borgmatic.d']
-DEFAULT_EXCLUDES_PATH = '/etc/borgmatic/excludes'
 
 
 def parse_arguments(*arguments):
@@ -30,8 +28,8 @@ def parse_arguments(*arguments):
         '-c', '--config',
         nargs='+',
         dest='config_paths',
-        default=DEFAULT_CONFIG_PATHS,
-        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(DEFAULT_CONFIG_PATHS)),
+        default=collect.DEFAULT_CONFIG_PATHS,
+        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(collect.DEFAULT_CONFIG_PATHS)),
     )
     parser.add_argument(
         '--excludes',
