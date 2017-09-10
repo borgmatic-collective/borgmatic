@@ -14,6 +14,16 @@ def initialize(storage_config):
         os.environ['BORG_PASSPHRASE'] = passphrase
 
 
+def _expand_directory(directory):
+    '''
+    Given a directory path, expand any tilde (representing a user's home directory) and any globs
+    therein. Return a list of one or more resulting paths.
+    '''
+    expanded_directory = os.path.expanduser(directory)
+
+    return glob.glob(expanded_directory) or [expanded_directory]
+
+
 def _write_exclude_file(exclude_patterns=None):
     '''
     Given a sequence of exclude patterns, write them to a named temporary file and return it. Return
@@ -59,7 +69,7 @@ def create_archive(
     '''
     sources = tuple(
         itertools.chain.from_iterable(
-            glob.glob(directory) or [directory]
+            _expand_directory(directory)
             for directory in location_config['source_directories']
         )
     )

@@ -1,3 +1,6 @@
+1.1.9.dev0
+ * #29: Support for using tilde in source directory path to reference home directory.
+
 1.1.8
  * #39: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default
    config paths.

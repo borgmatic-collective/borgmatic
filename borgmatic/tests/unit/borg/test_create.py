@@ -28,6 +28,24 @@ def test_initialize_without_passphrase_should_not_set_environment():
         os.environ = orig_environ
 
 
+def test_expand_directory_with_basic_path_passes_it_through():
+    flexmock(module.os.path).should_receive('expanduser').and_return('foo')
+    flexmock(module.glob).should_receive('glob').and_return([])
+
+    paths = module._expand_directory('foo')
+
+    assert paths == ['foo']
+
+
+def test_expand_directory_with_glob_expands():
+    flexmock(module.os.path).should_receive('expanduser').and_return('foo*')
+    flexmock(module.glob).should_receive('glob').and_return(['foo', 'food'])
+
+    paths = module._expand_directory('foo*')
+
+    assert paths == ['foo', 'food']
+
+
 def test_write_exclude_file_does_not_raise():
     temporary_file = flexmock(
         name='filename',
@@ -122,7 +140,8 @@ DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 CREATE_COMMAND = ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'bar')
 
 
-def test_create_archive_should_call_borg_with_parameters():
+def test_create_archive_calls_borg_with_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND)
@@ -139,8 +158,9 @@ def test_create_archive_should_call_borg_with_parameters():
     )
 
 
-def test_create_archive_with_exclude_patterns_should_call_borg_with_excludes():
+def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     exclude_flags = ('--exclude-from', 'excludes')
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(flexmock(name='/tmp/excludes'))
     flexmock(module).should_receive('_make_exclude_flags').and_return(exclude_flags)
     insert_subprocess_mock(CREATE_COMMAND + exclude_flags)
@@ -157,7 +177,8 @@ def test_create_archive_with_exclude_patterns_should_call_borg_with_excludes():
     )
 
 
-def test_create_archive_with_verbosity_some_should_call_borg_with_info_parameter():
+def test_create_archive_with_verbosity_some_calls_borg_with_info_parameter():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--info', '--stats',))
@@ -174,7 +195,8 @@ def test_create_archive_with_verbosity_some_should_call_borg_with_info_parameter
     )
 
 
-def test_create_archive_with_verbosity_lots_should_call_borg_with_debug_parameter():
+def test_create_archive_with_verbosity_lots_calls_borg_with_debug_parameter():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--stats'))
@@ -191,7 +213,8 @@ def test_create_archive_with_verbosity_lots_should_call_borg_with_debug_paramete
     )
 
 
-def test_create_archive_with_compression_should_call_borg_with_compression_parameters():
+def test_create_archive_with_compression_calls_borg_with_compression_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--compression', 'rle'))
@@ -208,7 +231,8 @@ def test_create_archive_with_compression_should_call_borg_with_compression_param
     )
 
 
-def test_create_archive_with_one_file_system_should_call_borg_with_one_file_system_parameters():
+def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
@@ -226,7 +250,8 @@ def test_create_archive_with_one_file_system_should_call_borg_with_one_file_syst
     )
 
 
-def test_create_archive_with_remote_path_should_call_borg_with_remote_path_parameters():
+def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--remote-path', 'borg1'))
@@ -244,7 +269,8 @@ def test_create_archive_with_remote_path_should_call_borg_with_remote_path_param
     )
 
 
-def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
+def test_create_archive_with_umask_calls_borg_with_umask_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
@@ -262,6 +288,7 @@ def test_create_archive_with_umask_should_call_borg_with_umask_parameters():
 
 
 def test_create_archive_with_source_directories_glob_expands():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo', 'food'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
@@ -280,6 +307,7 @@ def test_create_archive_with_source_directories_glob_expands():
 
 
 def test_create_archive_with_non_matching_source_directories_glob_passes_through():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo*'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'))
@@ -297,11 +325,11 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     )
 
 
-def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
+def test_create_archive_with_glob_calls_borg_with_expanded_directories():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo', 'food'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
-    flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
         verbosity=None,
@@ -315,7 +343,8 @@ def test_create_archive_with_glob_should_call_borg_with_expanded_directories():
     )
 
 
-def test_create_archive_with_archive_name_format_without_placeholders():
+def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'))
@@ -335,6 +364,7 @@ def test_create_archive_with_archive_name_format_without_placeholders():
 
 
 def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'))
