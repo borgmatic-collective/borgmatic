@@ -12,7 +12,8 @@ map:
                 required: true
                 seq:
                     - type: scalar
-                desc: List of source directories to backup (required). Globs are expanded.
+                desc: |
+                    List of source directories to backup (required). Globs and tildes are expanded.
                 example:
                     - /home
                     - /etc
