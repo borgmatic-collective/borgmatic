@@ -6,6 +6,7 @@ import sys
 
 from borgmatic.borg import check, create, prune
 from borgmatic.config import collect, convert, validate
+from borgmatic.commands import hook
 
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
@@ -74,6 +75,7 @@ def parse_arguments(*arguments):
 
 
 def main():  # pragma: no cover
+    hooks = {}
     try:
         args = parse_arguments(*sys.argv[1:])
         config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
@@ -84,13 +86,14 @@ def main():  # pragma: no cover
 
         for config_filename in config_filenames:
             config = validate.parse_configuration(config_filename, validate.schema_filename())
-            (location, storage, retention, consistency) = (
+            (location, storage, retention, consistency, hooks) = (
                 config.get(section_name, {})
-                for section_name in ('location', 'storage', 'retention', 'consistency')
+                for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
             )
             remote_path = location.get('remote_path')
 
             create.initialize(storage)
+            hook.exec_cmd(hooks.get('before_backup'))
 
             for repository in location['repositories']:
                 if args.prune:
@@ -104,6 +107,9 @@ def main():  # pragma: no cover
                     )
                 if args.check:
                     check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+
+            hook.exec_cmd(hooks.get('after_backup'))
     except (ValueError, OSError, CalledProcessError) as error:
+        hook.exec_cmd(hooks.get('on_error'))
         print(error, file=sys.stderr)
         sys.exit(1)

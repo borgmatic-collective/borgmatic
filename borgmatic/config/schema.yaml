@@ -157,3 +157,52 @@ map:
                 desc: Restrict the number of checked archives to the last n. Applies only to the
                       "archives" check.
                 example: 3
+    hooks:
+        desc: |
+            Shell commands or scripts to execute before and after a backup or if an error has occurred.
+            IMPORTANT: All provided commands and scripts are executed with user permissions of borgmatic.
+            Do not forget to set secure permissions on this file as well as on any script listed (chmod 0600) to
+            prevent potential shell injection or privilege escalation.
+        map:
+            before_backup:
+                desc: Options for a hook to execute before the backup process is started.
+                map:
+                    enable_hook:
+                        type: bool
+                        desc: Define whether the commands in "exec_hook" should be run before creating a backup.
+                        example: false
+                    exec_hook:
+                        seq:
+                            - type: scalar
+                        desc: |
+                            List of one or more shell commands or scripts to run in advance.
+                        example:
+                            - echo "The number of days since the year's beginning is `date +%j`."
+            after_backup:
+                desc: Options for a hook to execute after the backup process has completed.
+                map:
+                    enable_hook:
+                        type: bool
+                        desc: Define whether the commands in "exec_hook" should be run after creating a backup.
+                        example: false
+                    exec_hook:
+                        seq:
+                            - type: scalar
+                        desc: |
+                            List of one or more shell commands or scripts to run afterwards.
+                        example:
+                            - echo "The number of seconds elapsed since 01/01/1970 is `date +%s`."
+            on_error:
+                desc: Options for a hook to execute in case an exception has occurred.
+                map:
+                    enable_hook:
+                        type: bool
+                        desc: Define whether the commands in "exec_hook" should be run on error.
+                        example: false
+                    exec_hook:
+                        seq:
+                            - type: scalar
+                        desc: |
+                            List of one or more shell commands or scripts to run on error.
+                        example:
+                            - echo "Error while creating a backup. `date`."
