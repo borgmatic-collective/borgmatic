@@ -44,14 +44,7 @@ def parse_configuration(config_filename, schema_filename):
     except yaml.error.YAMLError as error:
         raise Validation_error(config_filename, (str(error),))
 
-    # pykwalify gets angry if the example field is not a string. So rather than bend to its will,
-    # simply remove all examples before passing the schema to pykwalify.
-    for section_name, section_schema in schema['map'].items():
-        for field_name, field_schema in section_schema['map'].items():
-            field_schema.pop('example', None)
-            if 'map' in field_schema:
-                for field_name1, field_schema1 in field_schema['map'].items():
-                    field_schema1.pop('example', None)
+    clean_pykwalify(schema)
 
     validator = pykwalify.core.Core(source_data=config, schema_data=schema)
     parsed_result = validator.validate(raise_exception=False)
@@ -60,6 +53,17 @@ def parse_configuration(config_filename, schema_filename):
         raise Validation_error(config_filename, validator.validation_errors)
 
     return parsed_result
+
+
+def clean_pykwalify(schema):
+    '''
+    pykwalify gets angry if the example field is not a string. So rather than bend to its will,
+    simply remove all examples before passing the schema to pykwalify.
+    '''
+    for section_name, section_schema in schema['map'].items():
+        section_schema.pop('example', None)
+        if 'map' in section_schema:
+            clean_pykwalify(section_schema)
 
 
 def display_validation_error(validation_error):
