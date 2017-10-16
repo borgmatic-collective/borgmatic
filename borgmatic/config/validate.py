@@ -49,9 +49,6 @@ def parse_configuration(config_filename, schema_filename):
     for section_name, section_schema in schema['map'].items():
         for field_name, field_schema in section_schema['map'].items():
             field_schema.pop('example', None)
-            if 'map' in field_schema:
-                for field_name1, field_schema1 in field_schema['map'].items():
-                    field_schema1.pop('example', None)
 
     validator = pykwalify.core.Core(source_data=config, schema_data=schema)
     parsed_result = validator.validate(raise_exception=False)

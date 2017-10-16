@@ -5,8 +5,8 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic.borg import check, create, prune
-from borgmatic.config import collect, convert, validate
 from borgmatic.commands import hook
+from borgmatic.config import collect, convert, validate
 
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
@@ -75,7 +75,6 @@ def parse_arguments(*arguments):
 
 
 def main():  # pragma: no cover
-    hooks = {}
     try:
         args = parse_arguments(*sys.argv[1:])
         config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
@@ -92,24 +91,27 @@ def main():  # pragma: no cover
             )
             remote_path = location.get('remote_path')
 
-            create.initialize(storage)
-            hook.exec_cmd(hooks.get('before_backup'))
+            try:
+                create.initialize(storage)
+                hook.execute_hook(hooks.get('before_backup'))
 
-            for repository in location['repositories']:
-                if args.prune:
-                    prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-                if args.create:
-                    create.create_archive(
-                        args.verbosity,
-                        repository,
-                        location,
-                        storage,
-                    )
-                if args.check:
-                    check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+                for repository in location['repositories']:
+                    if args.prune:
+                        prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                    if args.create:
+                        create.create_archive(
+                            args.verbosity,
+                            repository,
+                            location,
+                            storage,
+                        )
+                    if args.check:
+                        check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
 
-            hook.exec_cmd(hooks.get('after_backup'))
+                hook.execute_hook(hooks.get('after_backup'))
+            except (OSError, CalledProcessError):
+                hook.execute_hook(hooks.get('on_error'))
+                raise
     except (ValueError, OSError, CalledProcessError) as error:
-        hook.exec_cmd(hooks.get('on_error'))
         print(error, file=sys.stderr)
         sys.exit(1)
