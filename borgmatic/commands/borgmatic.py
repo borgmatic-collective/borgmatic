@@ -1,10 +1,15 @@
 from argparse import ArgumentParser
+import logging
 import os
 from subprocess import CalledProcessError
 import sys
 
 from borgmatic.borg import check, create, prune
 from borgmatic.config import collect, convert, validate
+from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS, verbosity_to_log_level
+
+
+logger = logging.getLogger(__name__)
 
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
@@ -75,13 +80,17 @@ def parse_arguments(*arguments):
 def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
+        logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
+
         config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
+        logger.debug('Ensuring legacy configuration is upgraded')
         convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
         if len(config_filenames) == 0:
             raise ValueError('Error: No configuration files found in: {}'.format(' '.join(args.config_paths)))
 
         for config_filename in config_filenames:
+            logger.info('{}: Parsing configuration file'.format(config_filename))
             config = validate.parse_configuration(config_filename, validate.schema_filename())
             (location, storage, retention, consistency) = (
                 config.get(section_name, {})
@@ -93,8 +102,10 @@ def main():  # pragma: no cover
 
             for repository in location['repositories']:
                 if args.prune:
+                    logger.info('{}: Pruning archives'.format(repository))
                     prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
                 if args.create:
+                    logger.info('{}: Creating archive'.format(repository))
                     create.create_archive(
                         args.verbosity,
                         repository,
@@ -102,6 +113,7 @@ def main():  # pragma: no cover
                         storage,
                     )
                 if args.check:
+                    logger.info('{}: Running consistency checks'.format(repository))
                     check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)

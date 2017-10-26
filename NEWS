@@ -1,4 +1,6 @@
 1.1.9.dev0
+ * #16, #38: Support for user-defined hooks before/after backup, or on error.
+ * #33: Improve clarity of logging spew at high verbosity levels.
  * #29: Support for using tilde in source directory path to reference home directory.
 
 1.1.8

@@ -38,6 +38,8 @@ def parse_configuration(config_filename, schema_filename):
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
+    logging.getLogger('pykwalify').setLevel(logging.ERROR)
+
     try:
         config = yaml.round_trip_load(open(config_filename))
         schema = yaml.round_trip_load(open(schema_filename))
