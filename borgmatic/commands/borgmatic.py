@@ -104,21 +104,21 @@ def main():  # pragma: no cover
                 create.initialize(storage)
                 hook.execute_hook(hooks.get('before_backup'))
 
-		        for repository in location['repositories']:
-		            if args.prune:
-		                logger.info('{}: Pruning archives'.format(repository))
-		                prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-		            if args.create:
-		                logger.info('{}: Creating archive'.format(repository))
-		                create.create_archive(
-		                    args.verbosity,
-		                    repository,
-		                    location,
-		                    storage,
-		                )
-		            if args.check:
-		                logger.info('{}: Running consistency checks'.format(repository))
-		                check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+                for repository in location['repositories']:
+                    if args.prune:
+                        logger.info('{}: Pruning archives'.format(repository))
+                        prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                    if args.create:
+                        logger.info('{}: Creating archive'.format(repository))
+                        create.create_archive(
+                            args.verbosity,
+                            repository,
+                            location,
+                            storage,
+                        )
+                    if args.check:
+                        logger.info('{}: Running consistency checks'.format(repository))
+                        check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
 
                 hook.execute_hook(hooks.get('after_backup'))
             except (OSError, CalledProcessError):
