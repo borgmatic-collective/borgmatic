@@ -102,7 +102,7 @@ def main():  # pragma: no cover
 
             try:
                 create.initialize(storage)
-                hook.execute_hook(hooks.get('before_backup'))
+                hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
                 for repository in location['repositories']:
                     if args.prune:
@@ -120,9 +120,9 @@ def main():  # pragma: no cover
                         logger.info('{}: Running consistency checks'.format(repository))
                         check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
 
-                hook.execute_hook(hooks.get('after_backup'))
+                hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
             except (OSError, CalledProcessError):
-                hook.execute_hook(hooks.get('on_error'))
+                hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
                 raise
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)

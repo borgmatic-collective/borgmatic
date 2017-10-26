@@ -15,13 +15,18 @@ def test_schema_filename_returns_plausable_path():
     assert schema_path.endswith('/schema.yaml')
 
 
-def mock_config_and_schema(config_yaml):
+def mock_config_and_schema(config_yaml, schema_yaml=None):
     '''
-    Set up mocks for the config config YAML string and the default schema so that the code under
-    test consumes them when parsing the configuration.
+    Set up mocks for the given config config YAML string and the schema YAML string, or the default
+    schema if no schema is provided. The idea is that that the code under test consumes these mocks
+    when parsing the configuration.
     '''
     config_stream = io.StringIO(config_yaml)
-    schema_stream = open(module.schema_filename())
+    if schema_yaml is None:
+        schema_stream = open(module.schema_filename())
+    else:
+        schema_stream = io.StringIO(schema_yaml)
+
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('config.yaml').and_return(config_stream)
     builtins.should_receive('open').with_args('schema.yaml').and_return(schema_stream)
@@ -79,6 +84,35 @@ def test_parse_configuration_passes_through_quoted_punctuation():
             'repositories': ['{}.borg'.format(string.punctuation)],
         },
     }
+
+
+def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
+    mock_config_and_schema(
+        '''
+        location:
+            source_directories:
+                - /home
+
+            repositories:
+                - hostname.borg
+        ''',
+        '''
+        map:
+            location:
+                required: true
+                map:
+                    source_directories:
+                        required: true
+                        seq:
+                            - type: scalar
+                    repositories:
+                        required: true
+                        seq:
+                            - type: scalar
+        '''
+    )
+
+    module.parse_configuration('config.yaml', 'schema.yaml')
 
 
 def test_parse_configuration_raises_for_missing_config_file():
