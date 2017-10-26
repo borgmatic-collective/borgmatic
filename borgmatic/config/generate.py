@@ -24,7 +24,7 @@ def _schema_to_sample_configuration(schema, level=0):
     for each section based on the schema "desc" description.
     '''
     example = schema.get('example')
-    if example:
+    if example is not None:
         return example
 
     config = yaml.comments.CommentedMap([
