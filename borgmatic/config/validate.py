@@ -50,7 +50,7 @@ def parse_configuration(config_filename, schema_filename):
     # simply remove all examples before passing the schema to pykwalify.
     for section_name, section_schema in schema['map'].items():
         for field_name, field_schema in section_schema['map'].items():
-            field_schema.pop('example')
+            field_schema.pop('example', None)
 
     validator = pykwalify.core.Core(source_data=config, schema_data=schema)
     parsed_result = validator.validate(raise_exception=False)

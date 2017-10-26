@@ -1,3 +1,4 @@
+
 from argparse import ArgumentParser
 import logging
 import os
@@ -5,6 +6,7 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic.borg import check, create, prune
+from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS, verbosity_to_log_level
 
@@ -92,29 +94,36 @@ def main():  # pragma: no cover
         for config_filename in config_filenames:
             logger.info('{}: Parsing configuration file'.format(config_filename))
             config = validate.parse_configuration(config_filename, validate.schema_filename())
-            (location, storage, retention, consistency) = (
+            (location, storage, retention, consistency, hooks) = (
                 config.get(section_name, {})
-                for section_name in ('location', 'storage', 'retention', 'consistency')
+                for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
             )
             remote_path = location.get('remote_path')
 
-            create.initialize(storage)
+            try:
+                create.initialize(storage)
+                hook.execute_hook(hooks.get('before_backup'))
 
-            for repository in location['repositories']:
-                if args.prune:
-                    logger.info('{}: Pruning archives'.format(repository))
-                    prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-                if args.create:
-                    logger.info('{}: Creating archive'.format(repository))
-                    create.create_archive(
-                        args.verbosity,
-                        repository,
-                        location,
-                        storage,
-                    )
-                if args.check:
-                    logger.info('{}: Running consistency checks'.format(repository))
-                    check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+		        for repository in location['repositories']:
+		            if args.prune:
+		                logger.info('{}: Pruning archives'.format(repository))
+		                prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+		            if args.create:
+		                logger.info('{}: Creating archive'.format(repository))
+		                create.create_archive(
+		                    args.verbosity,
+		                    repository,
+		                    location,
+		                    storage,
+		                )
+		            if args.check:
+		                logger.info('{}: Running consistency checks'.format(repository))
+		                check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+
+                hook.execute_hook(hooks.get('after_backup'))
+            except (OSError, CalledProcessError):
+                hook.execute_hook(hooks.get('on_error'))
+                raise
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
