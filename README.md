@@ -42,7 +42,7 @@ consistency:
 
 borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
 available](https://projects.torsion.org/witten/borgmatic). It's also mirrored
-on [GitHub](https://github.com/witten/borgmatic) and for convenience.
+on [GitHub](https://github.com/witten/borgmatic) for convenience.
 
 
 ## Installation
