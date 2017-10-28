@@ -60,7 +60,9 @@ key-based ssh access to the desired user account on the remote host.
 
 To install borgmatic, run the following command to download and install it:
 
-    sudo pip3 install --upgrade borgmatic
+```bash
+sudo pip3 install --upgrade borgmatic
+```
 
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
@@ -75,7 +77,9 @@ information.
 
 After you install borgmatic, generate a sample configuration file:
 
-    sudo generate-borgmatic-config
+```bash
+sudo generate-borgmatic-config
+```
 
 This generates a sample configuration file at /etc/borgmatic/config.yaml (by
 default). You should edit the file to suit your needs, as the values are just
@@ -94,9 +98,11 @@ configuration file.
 A more advanced usage is to create multiple separate configuration files and
 place each one in an /etc/borgmatic.d directory. For instance:
 
-    sudo mkdir /etc/borgmatic.d
-    sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
-    sudo generate-borgmatic-config --destination /etc/borgmatic.d/app2.yaml
+```bash
+sudo mkdir /etc/borgmatic.d
+sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
+sudo generate-borgmatic-config --destination /etc/borgmatic.d/app2.yaml
+```
 
 With this approach, you can have entirely different backup policies for
 different applications on your system. For instance, you may want one backup
@@ -113,7 +119,9 @@ default, the traditional /etc/borgmatic/config.yaml as well.
 In general, all you should need to do to upgrade borgmatic is run the
 following:
 
-    sudo pip3 install --upgrade borgmatic
+```bash
+sudo pip3 install --upgrade borgmatic
+```
 
 However, see below about special cases.
 
@@ -129,12 +137,16 @@ As of version 1.1.0, borgmatic no longer supports Python 2. If you were
 already running borgmatic with Python 3, then you can simply upgrade borgmatic
 in-place:
 
-    sudo pip3 install --upgrade borgmatic
+```bash
+sudo pip3 install --upgrade borgmatic
+```
 
 But if you were running borgmatic with Python 2, uninstall and reinstall instead:
 
-    sudo pip uninstall borgmatic
-    sudo pip3 install borgmatic
+```bash
+sudo pip uninstall borgmatic
+sudo pip3 install borgmatic
+```
 
 The pip binary names for different versions of Python can differ, so the above
 commands may need some tweaking to work on your machine.
@@ -142,7 +154,9 @@ commands may need some tweaking to work on your machine.
 
 Once borgmatic is upgraded, run:
 
-    sudo upgrade-borgmatic-config
+```bash
+sudo upgrade-borgmatic-config
+```
 
 That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
 (by default) using the values from both your existing configuration and
@@ -164,8 +178,10 @@ your borgmatic configuration files.
 If you were already using Borg with atticmatic, then you can easily upgrade
 from atticmatic to borgmatic. Simply run the following commands:
 
-    sudo pip3 uninstall atticmatic
-    sudo pip3 install borgmatic
+```bash
+sudo pip3 uninstall atticmatic
+sudo pip3 install borgmatic
+```
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
@@ -176,14 +192,18 @@ files.
 You can run borgmatic and start a backup simply by invoking it without
 arguments:
 
-    borgmatic
+```bash
+borgmatic
+```
 
 This will also prune any old backups as per the configured retention policy,
 and check backups for consistency problems due to things like file damage.
 
 If you'd like to see the available command-line arguments, view the help:
 
-    borgmatic --help
+```bash
+borgmatic --help
+```
 
 Note that borgmatic prunes archives *before* creating an archive, so as to
 free up space for archiving. This means that when a borgmatic run finishes,
@@ -196,20 +216,26 @@ By default, the backup will proceed silently except in the case of errors. But
 if you'd like to to get additional information about the progress of the
 backup as it proceeds, use the verbosity option:
 
-    borgmatic --verbosity 1
+```bash
+borgmatic --verbosity 1
+```
 
 Or, for even more progress spew:
 
-    borgmatic --verbosity 2
+```bash
+borgmatic --verbosity 2
+```
 
 ### À la carte
 
 If you want to run borgmatic with only pruning, creating, or checking enabled,
 the following optional flags are available:
 
-    borgmatic --prune
-    borgmatic --create
-    borgmatic --check
+```bash
+borgmatic --prune
+borgmatic --create
+borgmatic --check
+```
 
 You can run with only one of these flags provided, or you can mix and match
 any number of them. This supports use cases like running consistency checks
@@ -228,8 +254,10 @@ If you're using cron, download the [sample cron
 file](https://projects.torsion.org/witten/borgmatic/raw/master/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
-    sudo mv borgmatic /etc/cron.d/borgmatic
-    sudo chmod +x /etc/cron.d/borgmatic
+```bash
+sudo mv borgmatic /etc/cron.d/borgmatic
+sudo chmod +x /etc/cron.d/borgmatic
+```
 
 You can modify the cron file if you'd like to run borgmatic more or less frequently.
 
@@ -242,9 +270,11 @@ and the [sample systemd timer
 file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.timer).
 Then, from the directory where you downloaded them:
 
-    sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
-    sudo systemctl enable borgmatic.timer
-    sudo systemctl start borgmatic.timer
+```bash
+sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
+sudo systemctl enable borgmatic.timer
+sudo systemctl start borgmatic.timer
+```
 
 Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
@@ -254,11 +284,15 @@ borgmatic to run.
 
 First install tox, which is used for setting up testing environments:
 
-    pip3 install tox
+```bash
+pip3 install tox
+```
 
 Then, to actually run tests, run:
 
-    tox
+```bash
+tox
+```
 
 
 ## Troubleshooting
@@ -269,14 +303,18 @@ When running borgmatic on a large remote repository, you may receive errors
 like the following, particularly while "borg check" is validating backups for
 consistency:
 
+```text
     Write failed: Broken pipe
     borg: Error: Connection closed by remote host
+```
 
 This error can be caused by an ssh timeout, which you can rectify by adding
 the following to the ~/.ssh/config file on the client:
 
+```text
     Host *
         ServerAliveInterval 120
+```
 
 This should make the client keep the connection alive while validating
 backups.
