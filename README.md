@@ -1,4 +1,4 @@
-<img src="static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
+<img src="https://projects.torsion.org/witten/borgmatic/raw/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
 
 ## Overview
 
