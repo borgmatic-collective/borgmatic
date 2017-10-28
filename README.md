@@ -83,7 +83,7 @@ representative. All fields are optional except where indicated, so feel free
 to remove anything you don't need.
 
 You can also have a look at the [full configuration
-schema](https://torsion.org/hg/borgmatic/file/tip/borgmatic/config/schema.yaml)
+schema](https://projects.torsion.org/witten/borgmatic/src/master/borgmatic/config/schema.yaml)
 for the authoritative set of all configuration options. This is handy if
 borgmatic has added new options since you originally created your
 configuration file.
@@ -225,7 +225,7 @@ configure a job runner to invoke it periodically.
 ### cron
 
 If you're using cron, download the [sample cron
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/cron/borgmatic).
+file](https://projects.torsion.org/witten/borgmatic/raw/master/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
     sudo mv borgmatic /etc/cron.d/borgmatic
@@ -237,9 +237,9 @@ You can modify the cron file if you'd like to run borgmatic more or less frequen
 
 If you're using systemd instead of cron to run jobs, download the [sample
 systemd service
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/systemd/borgmatic.service)
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.service)
 and the [sample systemd timer
-file](https://torsion.org/hg/borgmatic/raw-file/tip/sample/systemd/borgmatic.timer).
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.timer).
 Then, from the directory where you downloaded them:
 
     sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
