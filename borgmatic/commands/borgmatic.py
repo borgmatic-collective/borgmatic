@@ -79,6 +79,45 @@ def parse_arguments(*arguments):
     return args
 
 
+def run_configuration(config_filename, args):  # pragma: no cover
+    '''
+    Parse and single configuration file, and execute its defined pruning, backups, and/or consistency
+    checks.
+    '''
+    logger.info('{}: Parsing configuration file'.format(config_filename))
+    config = validate.parse_configuration(config_filename, validate.schema_filename())
+    (location, storage, retention, consistency, hooks) = (
+        config.get(section_name, {})
+        for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
+    )
+
+    try:
+        remote_path = location.get('remote_path')
+        create.initialize(storage)
+        hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
+
+        for repository in location['repositories']:
+            if args.prune:
+                logger.info('{}: Pruning archives'.format(repository))
+                prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+            if args.create:
+                logger.info('{}: Creating archive'.format(repository))
+                create.create_archive(
+                    args.verbosity,
+                    repository,
+                    location,
+                    storage,
+                )
+            if args.check:
+                logger.info('{}: Running consistency checks'.format(repository))
+                check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+
+        hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
+    except (OSError, CalledProcessError):
+        hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
+        raise
+
+
 def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
@@ -92,38 +131,7 @@ def main():  # pragma: no cover
             raise ValueError('Error: No configuration files found in: {}'.format(' '.join(args.config_paths)))
 
         for config_filename in config_filenames:
-            logger.info('{}: Parsing configuration file'.format(config_filename))
-            config = validate.parse_configuration(config_filename, validate.schema_filename())
-            (location, storage, retention, consistency, hooks) = (
-                config.get(section_name, {})
-                for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
-            )
-            remote_path = location.get('remote_path')
-
-            try:
-                create.initialize(storage)
-                hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
-
-                for repository in location['repositories']:
-                    if args.prune:
-                        logger.info('{}: Pruning archives'.format(repository))
-                        prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
-                    if args.create:
-                        logger.info('{}: Creating archive'.format(repository))
-                        create.create_archive(
-                            args.verbosity,
-                            repository,
-                            location,
-                            storage,
-                        )
-                    if args.check:
-                        logger.info('{}: Running consistency checks'.format(repository))
-                        check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
-
-                hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
-            except (OSError, CalledProcessError):
-                hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
-                raise
+            run_configuration(config_filename, args)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
