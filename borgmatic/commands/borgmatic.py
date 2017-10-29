@@ -81,7 +81,7 @@ def parse_arguments(*arguments):
 
 def run_configuration(config_filename, args):  # pragma: no cover
     '''
-    Parse and single configuration file, and execute its defined pruning, backups, and/or consistency
+    Parse a single configuration file, and execute its defined pruning, backups, and/or consistency
     checks.
     '''
     logger.info('{}: Parsing configuration file'.format(config_filename))
