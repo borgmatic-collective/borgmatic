@@ -3,7 +3,8 @@
  * #33: Improve clarity of logging spew at high verbosity levels.
  * #29: Support for using tilde in source directory path to reference home directory.
  * Require "prefix" in retention section when "archive_name_format" is set. This is to avoid
-   accidental pruning of archives with a different archive name format.
+   accidental pruning of archives with a different archive name format. For similar reasons, default
+   "prefix" to "{hostname}-" if not specified.
  * Convert main source repository from Mercurial to Git.
  * Update dead links to Borg documentation.
 

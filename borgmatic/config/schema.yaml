@@ -132,7 +132,7 @@ map:
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
                     Borg placeholders can be used. See the output of "borg help placeholders" for
-                    details.
+                    details. Default is "{hostname}-".
                 example: sourcehostname
     consistency:
         desc: |

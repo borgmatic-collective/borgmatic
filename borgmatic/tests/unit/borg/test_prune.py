@@ -18,7 +18,7 @@ BASE_PRUNE_FLAGS = (
 )
 
 
-def test_make_prune_flags_should_return_flags_from_config():
+def test_make_prune_flags_should_return_flags_from_config_plus_default_prefix():
     retention_config = OrderedDict(
         (
             ('keep_daily', 1),
@@ -29,7 +29,7 @@ def test_make_prune_flags_should_return_flags_from_config():
 
     result = module._make_prune_flags(retention_config)
 
-    assert tuple(result) == BASE_PRUNE_FLAGS
+    assert tuple(result) == BASE_PRUNE_FLAGS + (('--prefix', '{hostname}-'),)
 
 
 def test_make_prune_flags_accepts_prefix_with_placeholders():
