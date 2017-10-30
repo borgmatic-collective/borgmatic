@@ -11,7 +11,6 @@ setup(
     author='Dan Helfman',
     author_email='witten@torsion.org',
     url='https://torsion.org/borgmatic',
-    download_url='https://projects.torsion.org/witten/borgmatic/archive/%s.tar.gz' % VERSION,
     classifiers=(
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
