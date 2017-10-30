@@ -3,6 +3,7 @@
  * #33: Improve clarity of logging spew at high verbosity levels.
  * #29: Support for using tilde in source directory path to reference home directory.
  * Converted main source repository from Mercurial to Git.
+ * Updated dead links to Borg documentation.
 
 1.1.8
  * #39: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default

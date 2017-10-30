@@ -40,8 +40,7 @@ map:
                     - type: scalar
                 desc: |
                     Any paths matching these patterns are excluded from backups. Globs are expanded.
-                    See https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-patterns
-                    for details.
+                    See the output of "borg help patterns" for more details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
@@ -68,7 +67,8 @@ map:
         desc: |
             Repository storage options. See
             https://borgbackup.readthedocs.io/en/stable/usage.html#borg-create and
-            https://borgbackup.readthedocs.io/en/stable/usage.html#environment-variables for details.
+            https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables for
+            details.
         map:
             encryption_passphrase:
                 type: scalar
@@ -92,9 +92,9 @@ map:
             archive_name_format:
                 type: scalar
                 desc: |
-                    Name of the archive. Borg placeholders can be used. See
-                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
-                    Default is "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}"
+                    Name of the archive. Borg placeholders can be used. See the output of
+                    "borg help placeholders" for details. Default is
+                    "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}"
                 example: "{hostname}-documents-{now}"
     retention:
         desc: |
@@ -129,8 +129,8 @@ map:
                 type: scalar
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
-                    Borg placeholders can be used. See
-                    https://borgbackup.readthedocs.io/en/stable/usage.html#borg-help-placeholders
+                    Borg placeholders can be used. See the output of "borg help placeholders" for
+                    details.
                 example: sourcehostname
     consistency:
         desc: |
