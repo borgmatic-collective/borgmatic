@@ -2,8 +2,10 @@
  * #16, #38: Support for user-defined hooks before/after backup, or on error.
  * #33: Improve clarity of logging spew at high verbosity levels.
  * #29: Support for using tilde in source directory path to reference home directory.
- * Converted main source repository from Mercurial to Git.
- * Updated dead links to Borg documentation.
+ * Require "prefix" in retention section when "archive_name_format" is set. This is to avoid
+   accidental pruning of archives with a different archive name format.
+ * Convert main source repository from Mercurial to Git.
+ * Update dead links to Borg documentation.
 
 1.1.8
  * #39: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default

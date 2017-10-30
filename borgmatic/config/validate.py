@@ -25,6 +25,31 @@ class Validation_error(ValueError):
         self.config_filename = config_filename
         self.error_messages = error_messages
 
+    def __str__(self):
+        '''
+        Render a validation error as a user-facing string.
+        '''
+        return 'An error occurred while parsing a configuration file at {}:\n'.format(
+            self.config_filename
+        ) + '\n'.join(self.error_messages)
+
+
+def apply_logical_validation(config_filename, parsed_configuration):
+    '''
+    Given a parsed and schematically valid configuration as a data structure of nested dicts (see
+    below), run through any additional logical validation checks. If there are any such validation
+    problems, raise a Validation_error.
+    '''
+    archive_name_format = parsed_configuration.get('storage', {}).get('archive_name_format')
+    prefix = parsed_configuration.get('retention', {}).get('prefix')
+
+    if archive_name_format and not prefix:
+        raise Validation_error(
+            config_filename, (
+                'If you provide an archive_name_format, you must also specify a retention prefix.',
+            )
+        )
+
 
 def parse_configuration(config_filename, schema_filename):
     '''
@@ -58,19 +83,6 @@ def parse_configuration(config_filename, schema_filename):
     if validator.validation_errors:
         raise Validation_error(config_filename, validator.validation_errors)
 
+    apply_logical_validation(config_filename, parsed_result)
+
     return parsed_result
-
-
-def display_validation_error(validation_error):
-    '''
-    Given a Validation_error, display its error messages to stderr.
-    '''
-    print(
-        'An error occurred while parsing a configuration file at {}:'.format(
-            validation_error.config_filename
-        ),
-        file=sys.stderr,
-    )
-
-    for error in validation_error.error_messages:
-        print(error, file=sys.stderr)

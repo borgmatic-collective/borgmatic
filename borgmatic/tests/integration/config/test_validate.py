@@ -148,10 +148,3 @@ def test_parse_configuration_raises_for_validation_error():
 
     with pytest.raises(module.Validation_error):
         module.parse_configuration('config.yaml', 'schema.yaml')
-
-
-def test_display_validation_error_does_not_raise():
-    flexmock(sys.modules['builtins']).should_receive('print')
-    error = module.Validation_error('config.yaml', ('oops', 'uh oh'))
-
-    module.display_validation_error(error)
