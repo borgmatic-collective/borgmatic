@@ -8,6 +8,7 @@ import sys
 from borgmatic.borg import check, create, prune
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
+from borgmatic.signals import configure_signals
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS, verbosity_to_log_level
 
 
@@ -120,6 +121,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
 
 def main():  # pragma: no cover
     try:
+        configure_signals()
         args = parse_arguments(*sys.argv[1:])
         logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
 

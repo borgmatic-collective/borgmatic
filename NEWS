@@ -1,3 +1,7 @@
+1.1.10.dev0
+ * Passing the Unix SIGTERM signal through to child processes like Borg. This means that Borg now
+   properly shuts down if borgmatic is terminated (e.g. due to a system suspend).
+
 1.1.9
  * #16, #38: Support for user-defined hooks before/after backup, or on error.
  * #33: Improve clarity of logging spew at high verbosity levels.
