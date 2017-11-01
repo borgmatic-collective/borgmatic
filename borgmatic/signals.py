@@ -12,7 +12,7 @@ def _handle_signal(signal_number, frame):  # pragma: no cover
 def configure_signals():  # pragma: no cover
     '''
     Configure borgmatic's signal handlers to pass relevant signals through to any child processes
-    like Borg. No that SIGINT gets passed through already even without these changes.
+    like Borg. Note that SIGINT gets passed through even without these changes.
     '''
     for signal_number in (signal.SIGHUP, signal.SIGTERM, signal.SIGUSR1, signal.SIGUSR2):
         signal.signal(signal_number, _handle_signal)
