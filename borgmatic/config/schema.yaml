@@ -22,6 +22,12 @@ map:
                 type: bool
                 desc: Stay in same file system (do not cross mount points).
                 example: true
+            files_cache:
+                type: scalar
+                desc: Mode in which to operate the files cache. See
+                      https://borgbackup.readthedocs.io/en/stable/usage/create.html#description for
+                      details.
+                example: ctime,size,inode
             remote_path:
                 type: scalar
                 desc: Alternate Borg remote executable. Defaults to "borg".

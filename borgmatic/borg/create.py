@@ -84,6 +84,8 @@ def create_archive(
     umask = storage_config.get('umask', None)
     umask_flags = ('--umask', str(umask)) if umask else ()
     one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
+    files_cache = location_config.get('files_cache')
+    files_cache_flags = ('--files-cache', files_cache) if files_cache else ()
     remote_path = location_config.get('remote_path')
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
@@ -99,7 +101,7 @@ def create_archive(
             repository=repository,
             archive_name_format=archive_name_format,
         ),
-    ) + sources + exclude_flags + compression_flags + one_file_system_flags + \
+    ) + sources + exclude_flags + compression_flags + one_file_system_flags + files_cache_flags + \
         remote_path_flags + umask_flags + verbosity_flags
 
     subprocess.check_call(full_command)
