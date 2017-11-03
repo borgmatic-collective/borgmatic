@@ -113,6 +113,10 @@ When you set up multiple configuration files like this, borgmatic will run
 each one in turn from a single borgmatic invocation. This includes, by
 default, the traditional /etc/borgmatic/config.yaml as well.
 
+And if you need even more customizability, you can specify alternate
+configuration paths on the command-line with borgmatic's `--config` option.
+See `borgmatic --help` for more information.
+
 
 ## Upgrading
 
