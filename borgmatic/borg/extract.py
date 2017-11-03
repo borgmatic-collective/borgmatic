@@ -1,7 +1,11 @@
+import logging
 import sys
 import subprocess
 
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+
+
+logger = logging.getLogger(__name__)
 
 
 def extract_last_archive_dry_run(verbosity, repository, remote_path=None):
@@ -37,4 +41,5 @@ def extract_last_archive_dry_run(verbosity, repository, remote_path=None):
         ),
     ) + remote_path_flags + verbosity_flags + list_flag
 
+    logger.debug(' '.join(full_extract_command))
     subprocess.check_call(full_extract_command)

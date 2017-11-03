@@ -231,6 +231,24 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     )
 
 
+def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_parameters():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
+    flexmock(module).should_receive('_write_exclude_file').and_return(None)
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--remote-ratelimit', '100'))
+
+    module.create_archive(
+        verbosity=None,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'remote_rate_limit': 100},
+    )
+
+
 def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_parameters():
     flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_exclude_file').and_return(None)

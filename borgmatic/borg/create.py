@@ -1,10 +1,14 @@
 import glob
 import itertools
+import logging
 import os
 import subprocess
 import tempfile
 
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+
+
+logger = logging.getLogger(__name__)
 
 
 def initialize(storage_config):
@@ -81,6 +85,8 @@ def create_archive(
     )
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
+    remote_rate_limit = storage_config.get('remote_rate_limit', None)
+    remote_rate_limit_flags = ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
     umask = storage_config.get('umask', None)
     umask_flags = ('--umask', str(umask)) if umask else ()
     one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
@@ -101,7 +107,9 @@ def create_archive(
             repository=repository,
             archive_name_format=archive_name_format,
         ),
-    ) + sources + exclude_flags + compression_flags + one_file_system_flags + files_cache_flags + \
-        remote_path_flags + umask_flags + verbosity_flags
+    ) + sources + exclude_flags + compression_flags + remote_rate_limit_flags + \
+        one_file_system_flags + files_cache_flags + remote_path_flags + umask_flags + \
+        verbosity_flags
 
+    logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)

@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 
@@ -6,6 +7,9 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 DEFAULT_CHECKS = ('repository', 'archives')
+
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_checks(consistency_config):
@@ -79,6 +83,7 @@ def check_archives(verbosity, repository, consistency_config, remote_path=None):
         # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
         stdout = None if verbosity_flags else open(os.devnull, 'w')
 
+        logger.debug(' '.join(full_command))
         subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
 
     if 'extract' in checks:

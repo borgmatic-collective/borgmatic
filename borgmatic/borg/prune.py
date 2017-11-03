@@ -1,6 +1,10 @@
+import logging
 import subprocess
 
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+
+
+logger = logging.getLogger(__name__)
 
 
 def _make_prune_flags(retention_config):
@@ -48,4 +52,5 @@ def prune_archives(verbosity, repository, retention_config, remote_path=None):
         for element in pair
     ) + remote_path_flags + verbosity_flags
 
+    logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)

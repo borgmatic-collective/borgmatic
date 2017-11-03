@@ -3,6 +3,8 @@
    shuts down if borgmatic is terminated (e.g. due to a system suspend).
  * #29: Support for using tilde in repository paths to reference home directory.
  * #42: Support for Borg --files-cache option for setting the files cache operation mode.
+ * #44: Support for Borg --remote-ratelimit for limiting upload rate.
+ * Log invoked Borg commands when at highest verbosity level.
 
 1.1.9
  * #16, #38: Support for user-defined hooks before/after backup, or on error.
