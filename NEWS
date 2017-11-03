@@ -1,6 +1,7 @@
 1.1.10.dev0
- * Passing several Unix signals through to child processes like Borg. This means that Borg now
-   properly shuts down if borgmatic is terminated (e.g. due to a system suspend).
+ * Pass several Unix signals through to child processes like Borg. This means that Borg now properly
+   shuts down if borgmatic is terminated (e.g. due to a system suspend).
+ * #29: Support for using tilde in repository paths to reference home directory.
 
 1.1.9
  * #16, #38: Support for user-defined hooks before/after backup, or on error.

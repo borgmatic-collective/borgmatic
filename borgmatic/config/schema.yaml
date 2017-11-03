@@ -31,8 +31,8 @@ map:
                 seq:
                     - type: scalar
                 desc: |
-                    Paths to local or remote repositories (required). Multiple repositories are
-                    backed up to in sequence.
+                    Paths to local or remote repositories (required). Tildes are expanded. Multiple
+                    repositories are backed up to in sequence.
                 example:
                     - user@backupserver:sourcehostname.borg
             exclude_patterns:

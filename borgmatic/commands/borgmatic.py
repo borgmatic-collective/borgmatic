@@ -97,7 +97,8 @@ def run_configuration(config_filename, args):  # pragma: no cover
         create.initialize(storage)
         hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
-        for repository in location['repositories']:
+        for unexpanded_repository in location['repositories']:
+            repository = os.path.expanduser(unexpanded_repository)
             if args.prune:
                 logger.info('{}: Pruning archives'.format(repository))
                 prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
