@@ -1,3 +1,6 @@
+1.1.11.dev0
+ * 
+
 1.1.10
  * Pass several Unix signals through to child processes like Borg. This means that Borg now properly
    shuts down if borgmatic is terminated (e.g. due to a system suspend).

@@ -49,11 +49,12 @@ on [GitHub](https://github.com/witten/borgmatic) for convenience.
 
 To get up and running, follow the [Borg Quick
 Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create
-a repository on a local or remote host. Note that if you plan to run
-borgmatic on a schedule with cron, and you encrypt your Borg repository with
-a passphrase instead of a key file, you'll need to set the borgmatic
-`encryption_passphrase` configuration variable. See the repository encryption
-section of the Quick Start for more info.
+a repository on a local or remote host. Note that if you plan to run borgmatic
+on a schedule with cron, and you encrypt your Borg repository with a
+passphrase instead of a key file, you'll either need to set the borgmatic
+`encryption_passphrase` configuration variable or set the `BORG_PASSPHRASE`
+environment variable. See the repository encryption section of the Quick Start
+for more info.
 
 If the repository is on a remote host, make sure that your local root user has
 key-based ssh access to the desired user account on the remote host.
