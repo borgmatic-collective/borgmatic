@@ -94,7 +94,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
 
     try:
         remote_path = location.get('remote_path')
-        create.initialize(storage)
+        create.initialize_environment(storage)
         hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
         for unexpanded_repository in location['repositories']:

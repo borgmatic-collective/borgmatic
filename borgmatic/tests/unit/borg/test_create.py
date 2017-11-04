@@ -6,24 +6,36 @@ from borgmatic.borg import create as module
 from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
-def test_initialize_with_passphrase_should_set_environment():
+def test_initialize_environment_with_passphrase_should_set_environment():
     orig_environ = os.environ
 
     try:
         os.environ = {}
-        module.initialize({'encryption_passphrase': 'pass'})
+        module.initialize_environment({'encryption_passphrase': 'pass'})
         assert os.environ.get('BORG_PASSPHRASE') == 'pass'
     finally:
         os.environ = orig_environ
 
 
-def test_initialize_without_passphrase_should_not_set_environment():
+def test_initialize_environment_with_ssh_command_should_set_environment():
     orig_environ = os.environ
 
     try:
         os.environ = {}
-        module.initialize({})
+        module.initialize_environment({'ssh_command': 'ssh -C'})
+        assert os.environ.get('BORG_RSH') == 'ssh -C'
+    finally:
+        os.environ = orig_environ
+
+
+def test_initialize_environment_without_configuration_should_not_set_environment():
+    orig_environ = os.environ
+
+    try:
+        os.environ = {}
+        module.initialize_environment({})
         assert os.environ.get('BORG_PASSPHRASE') == None
+        assert os.environ.get('BORG_RSH') == None
     finally:
         os.environ = orig_environ
 

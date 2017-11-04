@@ -96,6 +96,10 @@ map:
                 type: int
                 desc: Remote network upload rate limit in kiBytes/second.
                 example: 100
+            ssh_command:
+                type: scalar
+                desc: Command to use instead of just "ssh". This can be used to specify ssh options.
+                example: ssh -i /path/to/private/key
             umask:
                 type: scalar
                 desc: Umask to be used for borg create.

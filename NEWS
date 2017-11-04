@@ -1,5 +1,5 @@
 1.1.11.dev0
- * 
+ * #25: Add "ssh_command" to configuration for specifying a custom SSH command or options.
 
 1.1.10
  * Pass several Unix signals through to child processes like Borg. This means that Borg now properly

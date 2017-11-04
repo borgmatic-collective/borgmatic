@@ -11,11 +11,14 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 logger = logging.getLogger(__name__)
 
 
-def initialize(storage_config):
+def initialize_environment(storage_config):
     passphrase = storage_config.get('encryption_passphrase')
-
     if passphrase:
         os.environ['BORG_PASSPHRASE'] = passphrase
+
+    ssh_command = storage_config.get('ssh_command')
+    if ssh_command:
+        os.environ['BORG_RSH'] = ssh_command
 
 
 def _expand_directory(directory):
