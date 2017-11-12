@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# For each Borg sub-command that borgmatic uses, print out the Borg flags that borgmatic does not
+# appear to support yet. This script isn't terribly robust. It's intended as a basic tool to ferret
+# out unsupported Borg options so that they can be considered for addition to borgmatic.
+
+# Generate a sample borgmatic configuration with all options set.
+generate-borgmatic-config --destination temp.yaml
+
+# For each sub-command (prune, create, and check), collect the Borg command-line flags that result
+# from running borgmatic with the generated configuration. Then, collect the full set of available
+# Borg flags as reported by "borg --help" for that sub-command. Finally, compare the two lists of
+# flags to determine which Borg flags borgmatic doesn't yet support.
+for sub_command in prune create check; do
+    echo "********** borg $sub_command **********"
+
+    for line in $(borgmatic --config temp.yaml --$sub_command -v 2 2>&1 | grep "borg $sub_command") ; do
+        echo "$line" | grep '^-' >> borgmatic_borg_flags
+    done
+    sort borgmatic_borg_flags > borgmatic_borg_flags.sorted
+    mv borgmatic_borg_flags.sorted borgmatic_borg_flags
+
+    for line in $(borg $sub_command --help | awk -v RS= '/^usage:/') ; do
+        # Exclude a bunch of flags that borgmatic actually supports, but don't get exercised by the
+        # generated sample config, and also flags that don't make sense to support.
+        echo "$line" | grep -- -- | sed -r 's/(\[|\])//g' \
+            | grep -v '^-h$' \
+            | grep -v '^--archives-only$' \
+            | grep -v '^--repository-only$' \
+            | grep -v '^--stats$' \
+            | grep -v '^--list$' \
+            | grep -v '^--critical$' \
+            | grep -v '^--error$' \
+            | grep -v '^--warning$' \
+            | grep -v '^--info$' \
+            | grep -v '^--debug$' \
+            >> all_borg_flags
+    done
+    sort all_borg_flags > all_borg_flags.sorted
+    mv all_borg_flags.sorted all_borg_flags
+
+    comm -13 borgmatic_borg_flags all_borg_flags
+
+    rm ./*_borg_flags
+done
+
+rm temp.yaml
