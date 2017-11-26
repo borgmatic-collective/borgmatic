@@ -1,3 +1,7 @@
+1.1.12.dev0
+ * #45: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"
+   rule errors.
+
 1.1.11
  * #25: Add "ssh_command" to configuration for specifying a custom SSH command or options.
  * Fix for incorrect /etc/borgmatic.d/ configuration path probing on macOS. This problem manifested

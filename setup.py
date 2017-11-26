@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '1.1.11'
+VERSION = '1.1.12.dev0'
 
 
 setup(
@@ -32,7 +32,7 @@ setup(
         'atticmatic',
     ],
     install_requires=(
-        'pykwalify',
+        'pykwalify>=1.6.0',
         'ruamel.yaml<=0.15',
         'setuptools',
     ),
