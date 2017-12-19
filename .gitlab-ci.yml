@@ -1,0 +1,9 @@
+image: danieldent/pyinstaller
+
+build-linux-amd64:
+  script:
+  - python3 setup.py install
+  - pyinstaller -n borgmatic --onefile --add-data borgmatic/config/schema.yaml:borgmatic/config pyinstaller-main.py
+  artifacts:
+    paths:
+    - dist/borgmatic
