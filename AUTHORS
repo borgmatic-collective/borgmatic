@@ -2,7 +2,8 @@ Dan Helfman <witten@torsion.org>: Main developer
 
 Alexander Görtz: Python 3 compatibility
 Henning Schroeder: Copy editing
+Johannes Feichtner: Support for user hooks
 Michele Lazzeri: Custom archive names
 Robin `ypid` Schneider: Support additional options of Borg
 Scott Squires: Custom archive names
-Johannes Feichtner: Support for user hooks
+Thomas LÉVEIL: Support for a keep_minutely prune option
