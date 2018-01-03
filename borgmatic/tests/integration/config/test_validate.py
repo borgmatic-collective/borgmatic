@@ -44,6 +44,8 @@ def test_parse_configuration_transforms_file_into_mapping():
                 - hostname.borg
 
         retention:
+            keep_minutely: 60
+            keep_hourly: 24
             keep_daily: 7
 
         consistency:
@@ -57,7 +59,7 @@ def test_parse_configuration_transforms_file_into_mapping():
 
     assert result == {
         'location': {'source_directories': ['/home', '/etc'], 'repositories': ['hostname.borg']},
-        'retention': {'keep_daily': 7},
+        'retention': {'keep_daily': 7, 'keep_hourly': 24, 'keep_minutely': 60},
         'consistency': {'checks': ['repository', 'archives']},
     }
 

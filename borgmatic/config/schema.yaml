@@ -122,6 +122,10 @@ map:
                 type: scalar
                 desc: Keep all archives within this time interval.
                 example: 3H
+            keep_minutely:
+                type: int
+                desc: Number of minutely archives to keep.
+                example: 60
             keep_hourly:
                 type: int
                 desc: Number of hourly archives to keep.
