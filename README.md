@@ -29,8 +29,6 @@ location:
 
 retention:
     # Retention policy for how many backups to keep in each category.
-    keep_minutely: 60
-    keep_hourly: 24
     keep_daily: 7
     keep_weekly: 4
     keep_monthly: 6
