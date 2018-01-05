@@ -1,3 +1,7 @@
+1.1.13.dev0
+ * Moved issue tracker from Taiga to integrated Gitea tracker at
+   https://projects.torsion.org/witten/borgmatic/issues
+
 1.1.12
  * #45: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"
    rule errors.
