@@ -3,27 +3,27 @@
    https://projects.torsion.org/witten/borgmatic/issues
 
 1.1.12
- * #45: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"
+ * #46: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"
    rule errors.
  * Support for Borg --keep-minutely prune option.
 
 1.1.11
- * #25: Add "ssh_command" to configuration for specifying a custom SSH command or options.
+ * #26: Add "ssh_command" to configuration for specifying a custom SSH command or options.
  * Fix for incorrect /etc/borgmatic.d/ configuration path probing on macOS. This problem manifested
    as an error on startup: "[Errno 2] No such file or directory: '/etc/borgmatic.d'".
 
 1.1.10
  * Pass several Unix signals through to child processes like Borg. This means that Borg now properly
    shuts down if borgmatic is terminated (e.g. due to a system suspend).
- * #29: Support for using tilde in repository paths to reference home directory.
- * #42: Support for Borg --files-cache option for setting the files cache operation mode.
- * #44: Support for Borg --remote-ratelimit for limiting upload rate.
+ * #30: Support for using tilde in repository paths to reference home directory.
+ * #43: Support for Borg --files-cache option for setting the files cache operation mode.
+ * #45: Support for Borg --remote-ratelimit for limiting upload rate.
  * Log invoked Borg commands when at highest verbosity level.
 
 1.1.9
- * #16, #38: Support for user-defined hooks before/after backup, or on error.
- * #33: Improve clarity of logging spew at high verbosity levels.
- * #29: Support for using tilde in source directory path to reference home directory.
+ * #17, #39: Support for user-defined hooks before/after backup, or on error.
+ * #34: Improve clarity of logging spew at high verbosity levels.
+ * #30: Support for using tilde in source directory path to reference home directory.
  * Require "prefix" in retention section when "archive_name_format" is set. This is to avoid
    accidental pruning of archives with a different archive name format. For similar reasons, default
    "prefix" to "{hostname}-" if not specified.
@@ -31,43 +31,43 @@
  * Update dead links to Borg documentation.
 
 1.1.8
- * #39: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default
+ * #40: Fix to make /etc/borgmatic/config.yaml optional rather than required when using the default
    config paths.
 
 1.1.7
 
- * #28: Add "archive_name_format" to configuration for customizing archive names.
+ * #29: Add "archive_name_format" to configuration for customizing archive names.
  * Fix for traceback when "exclude_from" value is empty in configuration file.
  * When pruning, make highest verbosity level list archives kept and pruned.
  * Clarification of Python 3 pip usage in documentation.
 
 1.1.6
 
- * #12, #35: Support for Borg --exclude-from, --exclude-caches, and --exclude-if-present options.
+ * #13, #36: Support for Borg --exclude-from, --exclude-caches, and --exclude-if-present options.
 
 1.1.5
 
- * #34: New "extract" consistency check that performs a dry-run extraction of the most recent
+ * #35: New "extract" consistency check that performs a dry-run extraction of the most recent
    archive.
 
 1.1.4
 
- * #17: Added command-line flags for performing a borgmatic run with only pruning, creating, or
+ * #18: Added command-line flags for performing a borgmatic run with only pruning, creating, or
    checking enabled. This supports use cases like running consistency checks from a different cron
    job with a different frequency, or running pruning with a different verbosity level.
 
 1.1.3
 
- * #14: Support for running multiple config files in /etc/borgmatic.d/ from a single borgmatic run.
+ * #15: Support for running multiple config files in /etc/borgmatic.d/ from a single borgmatic run.
  * Fix for generate-borgmatic-config writing config with invalid one_file_system value.
 
 1.1.2
 
- * #32: Fix for passing check_last as integer to subprocess when calling Borg.
+ * #33: Fix for passing check_last as integer to subprocess when calling Borg.
 
 1.1.1
 
- * Part of #32: Fix for upgrade-borgmatic-config converting check_last option as a string instead of
+ * Part of #33: Fix for upgrade-borgmatic-config converting check_last option as a string instead of
    an integer.
  * Fix for upgrade-borgmatic-config erroring when consistency checks option is not present.
 
@@ -76,8 +76,8 @@
  * Switched config file format to YAML. Run upgrade-borgmatic-config to upgrade.
  * Added generate-borgmatic-config command for initial config creation.
  * Dropped Python 2 support. Now Python 3 only.
- * #18: Fix for README mention of sample files not included in package.
- * #22: Sample files for triggering borgmatic from a systemd timer.
+ * #19: Fix for README mention of sample files not included in package.
+ * #23: Sample files for triggering borgmatic from a systemd timer.
  * Support for backing up to multiple repositories.
  * To free up space, now pruning backups prior to creating a new backup.
  * Enabled test coverage output during tox runs.
@@ -85,15 +85,15 @@
 
 1.0.3
 
- * #21: Fix for verbosity flag not actually causing verbose output.
+ * #22: Fix for verbosity flag not actually causing verbose output.
 
 1.0.2
 
- * #20: Fix for traceback when remote_path option is missing.
+ * #21: Fix for traceback when remote_path option is missing.
 
 1.0.1
 
- * #19: Support for Borg's --remote-path option to use an alternate Borg
+ * #20: Support for Borg's --remote-path option to use an alternate Borg
    executable. See sample/config.
 
 1.0.0
@@ -115,13 +115,13 @@
 
 0.1.7
 
- * #11: Fixed parsing of punctuation in configuration file.
+ * #12: Fixed parsing of punctuation in configuration file.
  * Better error message when configuration file is missing.
 
 0.1.6
 
- * #9: New configuration option for the encryption passphrase.
- * #10: Support for Borg's new archive compression feature.
+ * #10: New configuration option for the encryption passphrase.
+ * #11: Support for Borg's new archive compression feature.
 
 0.1.5
 
@@ -133,7 +133,7 @@
 
 0.1.3
 
- * #1: Add support for "borg check --last N" to Borg backend.
+ * #2: Add support for "borg check --last N" to Borg backend.
 
 0.1.2
 
