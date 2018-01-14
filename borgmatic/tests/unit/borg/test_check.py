@@ -60,6 +60,12 @@ def test_make_check_flags_with_default_checks_returns_no_flags():
     assert flags == ()
 
 
+def test_make_check_flags_with_all_checks_returns_no_flags():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS + ('extract',))
+
+    assert flags == ()
+
+
 def test_make_check_flags_with_checks_and_last_returns_flags_including_last():
     flags = module._make_check_flags(('repository',), check_last=3)
 

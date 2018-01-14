@@ -1,4 +1,6 @@
 1.1.13.dev0
+ * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",
+   "archives", and "extract") are specified in borgmatic configuration.
  * Moved issue tracker from Taiga to integrated Gitea tracker at
    https://projects.torsion.org/witten/borgmatic/issues
 

@@ -46,10 +46,12 @@ def _make_check_flags(checks, check_last=None):
 
         ('--repository-only',)
 
-    Additionally, if a check_last value is given, a "--last" flag will be added.
+    However, if both "repository" and "archives" are in checks, then omit them from the returned
+    flags because Borg does both checks by default. Additionally, if a check_last value is given,
+    a "--last" flag will be added.
     '''
     last_flag = ('--last', str(check_last)) if check_last else ()
-    if checks == DEFAULT_CHECKS:
+    if set(DEFAULT_CHECKS).issubset(set(checks)):
         return last_flag
 
     return tuple(
