@@ -31,28 +31,45 @@ def _expand_directory(directory):
     return glob.glob(expanded_directory) or [expanded_directory]
 
 
-def _write_exclude_file(exclude_patterns=None):
+def _write_pattern_file(patterns=None):
     '''
-    Given a sequence of exclude patterns, write them to a named temporary file and return it. Return
-    None if no patterns are provided.
+    Given a sequence of patterns, write them to a named temporary file and return it. Return None
+    if no patterns are provided.
     '''
-    if not exclude_patterns:
+    if not patterns:
         return None
 
-    exclude_file = tempfile.NamedTemporaryFile('w')
-    exclude_file.write('\n'.join(exclude_patterns))
-    exclude_file.flush()
+    pattern_file = tempfile.NamedTemporaryFile('w')
+    pattern_file.write('\n'.join(patterns))
+    pattern_file.flush()
 
-    return exclude_file
+    return pattern_file
 
 
-def _make_exclude_flags(location_config, exclude_patterns_filename=None):
+def _make_pattern_flags(location_config, pattern_filename=None):
+    '''
+    Given a location config dict with a potential pattern_from option, and a filename containing any
+    additional patterns, return the corresponding Borg flags for those files as a tuple.
+    '''
+    pattern_filenames = tuple(location_config.get('patterns_from') or ()) + (
+        (pattern_filename,) if pattern_filename else ()
+    )
+
+    return tuple(
+        itertools.chain.from_iterable(
+            ('--pattern-from', pattern_filename)
+            for pattern_filename in pattern_filenames
+        )
+    )
+
+
+def _make_exclude_flags(location_config, exclude_filename=None):
     '''
     Given a location config dict with various exclude options, and a filename containing any exclude
     patterns, return the corresponding Borg flags as a tuple.
     '''
     exclude_filenames = tuple(location_config.get('exclude_from') or ()) + (
-        (exclude_patterns_filename,) if exclude_patterns_filename else ()
+        (exclude_filename,) if exclude_filename else ()
     )
     exclude_from_flags = tuple(
         itertools.chain.from_iterable(
@@ -81,10 +98,15 @@ def create_archive(
         )
     )
 
-    exclude_patterns_file = _write_exclude_file(location_config.get('exclude_patterns'))
+    pattern_file = _write_pattern_file(location_config.get('patterns'))
+    pattern_flags = _make_pattern_flags(
+        location_config,
+        pattern_file.name if pattern_file else None,
+    )
+    exclude_file = _write_pattern_file(location_config.get('exclude_patterns'))
     exclude_flags = _make_exclude_flags(
         location_config,
-        exclude_patterns_file.name if exclude_patterns_file else None,
+        exclude_file.name if exclude_file else None,
     )
     compression = storage_config.get('compression', None)
     compression_flags = ('--compression', compression) if compression else ()
@@ -110,7 +132,7 @@ def create_archive(
             repository=repository,
             archive_name_format=archive_name_format,
         ),
-    ) + sources + exclude_flags + compression_flags + remote_rate_limit_flags + \
+    ) + sources + pattern_flags + exclude_flags + compression_flags + remote_rate_limit_flags + \
         one_file_system_flags + files_cache_flags + remote_path_flags + umask_flags + \
         verbosity_flags
 

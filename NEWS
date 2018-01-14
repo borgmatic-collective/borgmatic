@@ -1,6 +1,8 @@
 1.1.13.dev0
  * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",
    "archives", and "extract") are specified in borgmatic configuration.
+ * #49: Support for Borg experimental --patterns-from and --patterns options for specifying mixed
+   includes/excludes.
  * Moved issue tracker from Taiga to integrated Gitea tracker at
    https://projects.torsion.org/witten/borgmatic/issues
 
@@ -19,7 +21,7 @@
    shuts down if borgmatic is terminated (e.g. due to a system suspend).
  * #30: Support for using tilde in repository paths to reference home directory.
  * #43: Support for Borg --files-cache option for setting the files cache operation mode.
- * #45: Support for Borg --remote-ratelimit for limiting upload rate.
+ * #45: Support for Borg --remote-ratelimit option for limiting upload rate.
  * Log invoked Borg commands when at highest verbosity level.
 
 1.1.9

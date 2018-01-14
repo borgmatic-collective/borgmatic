@@ -42,6 +42,28 @@ map:
                     repositories are backed up to in sequence.
                 example:
                     - user@backupserver:sourcehostname.borg
+            patterns:
+                seq:
+                    - type: scalar
+                desc: |
+                    Any paths matching these patterns are included/excluded from backups. Globs are
+                    expanded. Note that Borg considers this option experimental. See the output of
+                    "borg help patterns" for more details. Quoting any value if it contains leading
+                    punctuation, so it parses correctly.
+                example:
+                    - 'R /'
+                    - '- /home/*/.cache'
+                    - '+ /home/susan'
+                    - '- /home/*'
+            patterns_from:
+                seq:
+                    - type: scalar
+                desc: |
+                    Read include/exclude patterns from one or more separate named files, one pattern
+                    per line. Note that Borg considers this option experimental. See the output of
+                    "borg help patterns" for more details.
+                example:
+                    - /etc/borgmatic/patterns
             exclude_patterns:
                 seq:
                     - type: scalar
@@ -57,7 +79,7 @@ map:
                     - type: scalar
                 desc: |
                     Read exclude patterns from one or more separate named files, one pattern per
-                    line.
+                    line. See the output of "borg help patterns" for more details.
                 example:
                     - /etc/borgmatic/excludes
             exclude_caches:
