@@ -357,6 +357,26 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     )
 
 
+def test_create_archive_with_local_path_calls_borg_via_local_path():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(('borg1',) + CREATE_COMMAND[1:])
+
+    module.create_archive(
+        verbosity=None,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        local_path='borg1',
+    )
+
+
 def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters():
     flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
@@ -370,10 +390,10 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
         location_config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'remote_path': 'borg1',
             'exclude_patterns': None,
         },
         storage_config={},
+        remote_path='borg1',
     )
 
 

@@ -93,6 +93,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
     )
 
     try:
+        local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
         create.initialize_environment(storage)
         hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
@@ -101,7 +102,13 @@ def run_configuration(config_filename, args):  # pragma: no cover
             repository = os.path.expanduser(unexpanded_repository)
             if args.prune:
                 logger.info('{}: Pruning archives'.format(repository))
-                prune.prune_archives(args.verbosity, repository, retention, remote_path=remote_path)
+                prune.prune_archives(
+                    args.verbosity,
+                    repository,
+                    retention,
+                    local_path=local_path,
+                    remote_path=remote_path,
+                )
             if args.create:
                 logger.info('{}: Creating archive'.format(repository))
                 create.create_archive(
@@ -109,10 +116,18 @@ def run_configuration(config_filename, args):  # pragma: no cover
                     repository,
                     location,
                     storage,
+                    local_path=local_path,
+                    remote_path=remote_path,
                 )
             if args.check:
                 logger.info('{}: Running consistency checks'.format(repository))
-                check.check_archives(args.verbosity, repository, consistency, remote_path=remote_path)
+                check.check_archives(
+                    args.verbosity,
+                    repository,
+                    consistency,
+                    local_path=local_path,
+                    remote_path=remote_path,
+                )
 
         hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
     except (OSError, CalledProcessError):

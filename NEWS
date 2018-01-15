@@ -1,6 +1,7 @@
 1.1.13.dev0
  * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",
    "archives", and "extract") are specified in borgmatic configuration.
+ * #48: Add "local_path" to configuration for specifying an alternative Borg executable path.
  * #49: Support for Borg experimental --patterns-from and --patterns options for specifying mixed
    includes/excludes.
  * Moved issue tracker from Taiga to integrated Gitea tracker at

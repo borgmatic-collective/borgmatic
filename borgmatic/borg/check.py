@@ -60,10 +60,10 @@ def _make_check_flags(checks, check_last=None):
     ) + last_flag
 
 
-def check_archives(verbosity, repository, consistency_config, remote_path=None):
+def check_archives(verbosity, repository, consistency_config, local_path='borg', remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
-    command to run, check the contained Borg archives for consistency.
+    local/remote commands to run, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
@@ -78,7 +78,7 @@ def check_archives(verbosity, repository, consistency_config, remote_path=None):
         }.get(verbosity, ())
 
         full_command = (
-            'borg', 'check',
+            local_path, 'check',
             repository,
         ) + _make_check_flags(checks, check_last) + remote_path_flags + verbosity_flags
 
@@ -89,4 +89,4 @@ def check_archives(verbosity, repository, consistency_config, remote_path=None):
         subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
 
     if 'extract' in checks:
-        extract.extract_last_archive_dry_run(verbosity, repository, remote_path)
+        extract.extract_last_archive_dry_run(verbosity, repository, local_path, remote_path)

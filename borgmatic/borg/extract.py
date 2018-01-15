@@ -8,7 +8,7 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 logger = logging.getLogger(__name__)
 
 
-def extract_last_archive_dry_run(verbosity, repository, remote_path=None):
+def extract_last_archive_dry_run(verbosity, repository, local_path='borg', remote_path=None):
     '''
     Perform an extraction dry-run of just the most recent archive. If there are no archives, skip
     the dry-run.
@@ -20,7 +20,7 @@ def extract_last_archive_dry_run(verbosity, repository, remote_path=None):
     }.get(verbosity, ())
 
     full_list_command = (
-        'borg', 'list',
+        local_path, 'list',
         '--short',
         repository,
     ) + remote_path_flags + verbosity_flags
@@ -33,7 +33,7 @@ def extract_last_archive_dry_run(verbosity, repository, remote_path=None):
 
     list_flag = ('--list',) if verbosity == VERBOSITY_LOTS else ()
     full_extract_command = (
-        'borg', 'extract',
+        local_path, 'extract',
         '--dry-run',
         '{repository}::{last_archive_name}'.format(
             repository=repository,

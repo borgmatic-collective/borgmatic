@@ -29,6 +29,10 @@ map:
                     https://borgbackup.readthedocs.io/en/stable/usage/create.html#description for
                     details.
                 example: ctime,size,inode
+            local_path:
+                type: scalar
+                desc: Alternate Borg local executable. Defaults to "borg".
+                example: borg1
             remote_path:
                 type: scalar
                 desc: Alternate Borg remote executable. Defaults to "borg".

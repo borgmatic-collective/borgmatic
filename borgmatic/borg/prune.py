@@ -32,7 +32,7 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, repository, retention_config, remote_path=None):
+def prune_archives(verbosity, repository, retention_config, local_path='borg', remote_path=None):
     '''
     Given a verbosity flag, a local or remote repository path, a retention config dict, prune Borg
     archives according the the retention policy specified in that configuration.
@@ -44,7 +44,7 @@ def prune_archives(verbosity, repository, retention_config, remote_path=None):
     }.get(verbosity, ())
 
     full_command = (
-        'borg', 'prune',
+        local_path, 'prune',
         repository,
     ) + tuple(
         element

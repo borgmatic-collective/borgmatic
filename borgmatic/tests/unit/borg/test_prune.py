@@ -18,7 +18,7 @@ BASE_PRUNE_FLAGS = (
 )
 
 
-def test_make_prune_flags_should_return_flags_from_config_plus_default_prefix():
+def test_make_prune_flags_returns_flags_from_config_plus_default_prefix():
     retention_config = OrderedDict(
         (
             ('keep_daily', 1),
@@ -55,7 +55,7 @@ PRUNE_COMMAND = (
 )
 
 
-def test_prune_archives_should_call_borg_with_parameters():
+def test_prune_archives_calls_borg_with_parameters():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -69,7 +69,7 @@ def test_prune_archives_should_call_borg_with_parameters():
     )
 
 
-def test_prune_archives_with_verbosity_some_should_call_borg_with_info_parameter():
+def test_prune_archives_with_verbosity_some_calls_borg_with_info_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -83,7 +83,7 @@ def test_prune_archives_with_verbosity_some_should_call_borg_with_info_parameter
     )
 
 
-def test_prune_archives_with_verbosity_lots_should_call_borg_with_debug_parameter():
+def test_prune_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
@@ -97,7 +97,22 @@ def test_prune_archives_with_verbosity_lots_should_call_borg_with_debug_paramete
     )
 
 
-def test_prune_archives_with_remote_path_should_call_borg_with_remote_path_parameters():
+def test_prune_archives_with_local_path_calls_borg_via_local_path():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
+    insert_subprocess_mock(('borg1',) + PRUNE_COMMAND[1:])
+
+    module.prune_archives(
+        verbosity=None,
+        repository='repo',
+        retention_config=retention_config,
+        local_path='borg1',
+    )
+
+
+def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,

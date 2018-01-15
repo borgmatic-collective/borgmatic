@@ -85,7 +85,7 @@ def _make_exclude_flags(location_config, exclude_filename=None):
 
 
 def create_archive(
-    verbosity, repository, location_config, storage_config,
+    verbosity, repository, location_config, storage_config, local_path='borg', remote_path=None,
 ):
     '''
     Given a vebosity flag, a local or remote repository path, a location config dict, and a storage
@@ -117,7 +117,6 @@ def create_archive(
     one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
     files_cache = location_config.get('files_cache')
     files_cache_flags = ('--files-cache', files_cache) if files_cache else ()
-    remote_path = location_config.get('remote_path')
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info', '--stats',),
@@ -127,7 +126,7 @@ def create_archive(
     archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
 
     full_command = (
-        'borg', 'create',
+        local_path, 'create',
         '{repository}::{archive_name_format}'.format(
             repository=repository,
             archive_name_format=archive_name_format,

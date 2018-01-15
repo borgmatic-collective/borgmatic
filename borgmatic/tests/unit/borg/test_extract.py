@@ -83,6 +83,23 @@ def test_extract_last_archive_dry_run_with_verbosity_lots_should_call_borg_with_
     )
 
 
+def test_extract_last_archive_dry_run_should_call_borg_via_local_path():
+    flexmock(sys.stdout).encoding = 'utf-8'
+    insert_subprocess_check_output_mock(
+        ('borg1', 'list', '--short', 'repo'),
+        result='archive1\narchive2\n'.encode('utf-8'),
+    )
+    insert_subprocess_mock(
+        ('borg1', 'extract', '--dry-run', 'repo::archive2'),
+    )
+
+    module.extract_last_archive_dry_run(
+        verbosity=None,
+        repository='repo',
+        local_path='borg1',
+    )
+
+
 def test_extract_last_archive_dry_run_should_call_borg_with_remote_path_parameters():
     flexmock(sys.stdout).encoding = 'utf-8'
     insert_subprocess_check_output_mock(
