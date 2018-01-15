@@ -1,4 +1,4 @@
-1.1.13.dev0
+1.1.13
  * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",
    "archives", and "extract") are specified in borgmatic configuration.
  * #48: Add "local_path" to configuration for specifying an alternative Borg executable path.
