@@ -57,7 +57,7 @@ def _make_pattern_flags(location_config, pattern_filename=None):
 
     return tuple(
         itertools.chain.from_iterable(
-            ('--pattern-from', pattern_filename)
+            ('--patterns-from', pattern_filename)
             for pattern_filename in pattern_filenames
         )
     )

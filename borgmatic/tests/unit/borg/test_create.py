@@ -84,7 +84,7 @@ def test_make_pattern_flags_includes_pattern_filename_when_given():
         pattern_filename='/tmp/patterns',
     )
 
-    assert pattern_flags == ('--pattern-from', '/tmp/patterns')
+    assert pattern_flags == ('--patterns-from', '/tmp/patterns')
 
 
 def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
@@ -92,7 +92,7 @@ def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
         location_config={'patterns_from': ['patterns', 'other']},
     )
 
-    assert pattern_flags == ('--pattern-from', 'patterns', '--pattern-from', 'other')
+    assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', 'other')
 
 
 def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patterns_from_in_config():
@@ -101,7 +101,7 @@ def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patt
         pattern_filename='/tmp/patterns',
     )
 
-    assert pattern_flags == ('--pattern-from', 'patterns', '--pattern-from', '/tmp/patterns')
+    assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', '/tmp/patterns')
 
 
 def test_make_pattern_flags_considers_none_patterns_from_filenames_as_empty():

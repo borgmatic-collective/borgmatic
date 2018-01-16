@@ -1,3 +1,6 @@
+1.1.14.dev0
+ * #49: Rename incorrect --pattern-from option to correct --patterns-from.
+
 1.1.13
  * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",
    "archives", and "extract") are specified in borgmatic configuration.
