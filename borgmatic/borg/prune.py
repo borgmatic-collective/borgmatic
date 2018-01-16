@@ -32,16 +32,17 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, repository, retention_config, local_path='borg', remote_path=None):
+def prune_archives(verbosity, dry_run, repository, retention_config, local_path='borg', remote_path=None):
     '''
-    Given a verbosity flag, a local or remote repository path, a retention config dict, prune Borg
-    archives according the the retention policy specified in that configuration.
+    Given verbosity/dry-run flags, a local or remote repository path, a retention config dict, prune
+    Borg archives according the the retention policy specified in that configuration.
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info', '--stats',),
         VERBOSITY_LOTS: ('--debug', '--stats', '--list'),
     }.get(verbosity, ())
+    dry_run_flags = ('--dry-run',) if dry_run else ()
 
     full_command = (
         local_path, 'prune',
@@ -50,7 +51,7 @@ def prune_archives(verbosity, repository, retention_config, local_path='borg', r
         element
         for pair in _make_prune_flags(retention_config)
         for element in pair
-    ) + remote_path_flags + verbosity_flags
+    ) + remote_path_flags + verbosity_flags + dry_run_flags
 
     logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)

@@ -62,6 +62,12 @@ def parse_arguments(*arguments):
         help='Check archives for consistency',
     )
     parser.add_argument(
+        '-n', '--dry-run',
+        dest='dry_run',
+        action='store_true',
+        help='Go through the motions, but do not actually write any changes to the repository',
+    )
+    parser.add_argument(
         '-v', '--verbosity',
         type=int,
         help='Display verbose progress (1 for some, 2 for lots)',
@@ -100,19 +106,22 @@ def run_configuration(config_filename, args):  # pragma: no cover
 
         for unexpanded_repository in location['repositories']:
             repository = os.path.expanduser(unexpanded_repository)
+            dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
             if args.prune:
-                logger.info('{}: Pruning archives'.format(repository))
+                logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
                 prune.prune_archives(
                     args.verbosity,
+                    args.dry_run,
                     repository,
                     retention,
                     local_path=local_path,
                     remote_path=remote_path,
                 )
             if args.create:
-                logger.info('{}: Creating archive'.format(repository))
+                logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
                 create.create_archive(
                     args.verbosity,
+                    args.dry_run,
                     repository,
                     location,
                     storage,

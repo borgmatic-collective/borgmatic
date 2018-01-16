@@ -64,6 +64,7 @@ def test_prune_archives_calls_borg_with_parameters():
 
     module.prune_archives(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         retention_config=retention_config,
     )
@@ -79,6 +80,7 @@ def test_prune_archives_with_verbosity_some_calls_borg_with_info_parameter():
     module.prune_archives(
         repository='repo',
         verbosity=VERBOSITY_SOME,
+        dry_run=False,
         retention_config=retention_config,
     )
 
@@ -93,6 +95,22 @@ def test_prune_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     module.prune_archives(
         repository='repo',
         verbosity=VERBOSITY_LOTS,
+        dry_run=False,
+        retention_config=retention_config,
+    )
+
+
+def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
+    insert_subprocess_mock(PRUNE_COMMAND + ('--dry-run',))
+
+    module.prune_archives(
+        repository='repo',
+        verbosity=None,
+        dry_run=True,
         retention_config=retention_config,
     )
 
@@ -106,6 +124,7 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
 
     module.prune_archives(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         retention_config=retention_config,
         local_path='borg1',
@@ -121,6 +140,7 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
 
     module.prune_archives(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         retention_config=retention_config,
         remote_path='borg1',

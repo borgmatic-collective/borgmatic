@@ -1,5 +1,6 @@
 1.1.14.dev0
- * #49: Rename incorrect --pattern-from option to correct --patterns-from.
+ * #49: Fix for typo in --patterns-from option.
+ * #47: Support for Borg --dry-run option via borgmatic command-line.
 
 1.1.13
  * #54: Fix for incorrect consistency check flags passed to Borg when all three checks ("repository",

@@ -190,6 +190,7 @@ def test_create_archive_calls_borg_with_parameters():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -210,6 +211,7 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -230,6 +232,7 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -250,6 +253,7 @@ def test_create_archive_with_verbosity_some_calls_borg_with_info_parameter():
 
     module.create_archive(
         verbosity=VERBOSITY_SOME,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -269,6 +273,28 @@ def test_create_archive_with_verbosity_lots_calls_borg_with_debug_parameter():
 
     module.create_archive(
         verbosity=VERBOSITY_LOTS,
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+    )
+
+
+def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--dry-run',))
+
+    module.create_archive(
+        verbosity=None,
+        dry_run=True,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -288,6 +314,7 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -307,6 +334,7 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -326,6 +354,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -346,6 +375,7 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -366,6 +396,7 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -386,6 +417,7 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -406,6 +438,7 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -426,6 +459,7 @@ def test_create_archive_with_source_directories_glob_expands():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo*'],
@@ -446,6 +480,7 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo*'],
@@ -465,6 +500,7 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo*'],
@@ -484,6 +520,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],
@@ -505,6 +542,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
 
     module.create_archive(
         verbosity=None,
+        dry_run=False,
         repository='repo',
         location_config={
             'source_directories': ['foo', 'bar'],

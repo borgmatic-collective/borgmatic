@@ -85,11 +85,11 @@ def _make_exclude_flags(location_config, exclude_filename=None):
 
 
 def create_archive(
-    verbosity, repository, location_config, storage_config, local_path='borg', remote_path=None,
+    verbosity, dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None,
 ):
     '''
-    Given a vebosity flag, a local or remote repository path, a location config dict, and a storage
-    config dict, create a Borg archive.
+    Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
+    storage config dict, create a Borg archive.
     '''
     sources = tuple(
         itertools.chain.from_iterable(
@@ -122,6 +122,7 @@ def create_archive(
         VERBOSITY_SOME: ('--info', '--stats',),
         VERBOSITY_LOTS: ('--debug', '--list', '--stats'),
     }.get(verbosity, ())
+    dry_run_flags = ('--dry-run',) if dry_run else ()
     default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
     archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
 
@@ -133,7 +134,7 @@ def create_archive(
         ),
     ) + sources + pattern_flags + exclude_flags + compression_flags + remote_rate_limit_flags + \
         one_file_system_flags + files_cache_flags + remote_path_flags + umask_flags + \
-        verbosity_flags
+        verbosity_flags + dry_run_flags
 
     logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)
