@@ -1,4 +1,4 @@
-1.1.14.dev0
+1.1.14
  * #49: Fix for typo in --patterns-from option.
  * #47: Support for Borg --dry-run option via borgmatic command-line.
 
