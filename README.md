@@ -57,6 +57,12 @@ environment variable. See the [repository encryption
 section](https://borgbackup.readthedocs.io/en/latest/quickstart.html#repository-encryption)
 of the Quick Start for more info.
 
+Alternatively, the passphrase can be specified programatically by setting
+either the borgmatic `encryption_passcommand` configuration variable or the
+`BORG_PASSCOMMAND` environment variable. See the [Borg Security
+FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)
+for more info.
+
 If the repository is on a remote host, make sure that your local root user has
 key-based ssh access to the desired user account on the remote host.
 
