@@ -103,6 +103,14 @@ map:
             https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables for
             details.
         map:
+            encryption_passcommand:
+                type: scalar
+                desc: |
+                    The standard output of this command is used to unlock the encryption key. Only
+                    use on repositories that were initialized with passcommand/repokey encryption.
+                    Note that if both encryption_passcommand and encryption_passphrase are set,
+                    then encryption_passphrase takes precedence.
+                example: "secret-tool lookup borg-repository repo-name"
             encryption_passphrase:
                 type: scalar
                 desc: |
