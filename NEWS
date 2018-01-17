@@ -1,3 +1,6 @@
+1.1.15.dev0
+ * Support for Borg BORG_PASSCOMMAND environment variable to read a password from an external file.
+
 1.1.14
  * #49: Fix for typo in --patterns-from option.
  * #47: Support for Borg --dry-run option via borgmatic command-line.
