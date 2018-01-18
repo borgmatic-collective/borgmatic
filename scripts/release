@@ -2,6 +2,11 @@
 
 set -e
 
+version=$(head --lines=1 NEWS)
+git tag $version
+git push origin $version
+git push github $version
+
 rm -fr dist
 python3 setup.py bdist_wheel
 python3 setup.py sdist

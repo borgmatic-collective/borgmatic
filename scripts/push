@@ -2,5 +2,5 @@
 
 set -e
 
-git push -u origin
-git push -u github
+git push -u origin master
+git push -u github master
