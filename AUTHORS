@@ -4,6 +4,7 @@ Alexander Görtz: Python 3 compatibility
 Henning Schroeder: Copy editing
 Johannes Feichtner: Support for user hooks
 Michele Lazzeri: Custom archive names
+newtonne: Reading encryption password from external file
 Robin `ypid` Schneider: Support additional options of Borg
 Scott Squires: Custom archive names
 Thomas LÉVEIL: Support for a keep_minutely prune option
