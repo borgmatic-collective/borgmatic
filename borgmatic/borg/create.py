@@ -123,8 +123,8 @@ def create_archive(
     files_cache_flags = ('--files-cache', files_cache) if files_cache else ()
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     verbosity_flags = {
-        VERBOSITY_SOME: ('--info', '--stats',),
-        VERBOSITY_LOTS: ('--debug', '--list', '--stats'),
+        VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats',),
+        VERBOSITY_LOTS: ('--debug', '--list',) if dry_run else ('--debug', '--list', '--stats',),
     }.get(verbosity, ())
     dry_run_flags = ('--dry-run',) if dry_run else ()
     default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
