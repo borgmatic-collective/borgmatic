@@ -52,9 +52,9 @@ map:
                     - type: scalar
                 desc: |
                     Any paths matching these patterns are included/excluded from backups. Globs are
-                    expanded. Note that Borg considers this option experimental. See the output of
-                    "borg help patterns" for more details. Quoting any value if it contains leading
-                    punctuation, so it parses correctly.
+                    expanded. (Tildes are not.) Note that Borg considers this option experimental.
+                    See the output of "borg help patterns" for more details. Quote any value if it
+                    contains leading punctuation, so it parses correctly.
                 example:
                     - 'R /'
                     - '- /home/*/.cache'
@@ -73,11 +73,11 @@ map:
                 seq:
                     - type: scalar
                 desc: |
-                    Any paths matching these patterns are excluded from backups. Globs are expanded.
-                    See the output of "borg help patterns" for more details.
+                    Any paths matching these patterns are excluded from backups. Globs and tildes
+                    are expanded. See the output of "borg help patterns" for more details.
                 example:
                     - '*.pyc'
-                    - /home/*/.cache
+                    - ~/*/.cache
                     - /etc/ssl
             exclude_from:
                 seq:

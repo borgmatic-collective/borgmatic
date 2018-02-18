@@ -35,6 +35,22 @@ def _expand_directory(directory):
     return glob.glob(expanded_directory) or [expanded_directory]
 
 
+def _expand_directories(directories):
+    '''
+    Given a sequence of directory paths, expand tildes and globs in each one. Return all the
+    resulting directories as a single flattened tuple.
+    '''
+    if directories is None:
+        return ()
+
+    return tuple(
+        itertools.chain.from_iterable(
+            _expand_directory(directory)
+            for directory in directories
+        )
+    )
+
+
 def _write_pattern_file(patterns=None):
     '''
     Given a sequence of patterns, write them to a named temporary file and return it. Return None
@@ -95,19 +111,14 @@ def create_archive(
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
     storage config dict, create a Borg archive.
     '''
-    sources = tuple(
-        itertools.chain.from_iterable(
-            _expand_directory(directory)
-            for directory in location_config['source_directories']
-        )
-    )
+    sources = _expand_directories(location_config['source_directories'])
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
     pattern_flags = _make_pattern_flags(
         location_config,
         pattern_file.name if pattern_file else None,
     )
-    exclude_file = _write_pattern_file(location_config.get('exclude_patterns'))
+    exclude_file = _write_pattern_file(_expand_directories(location_config.get('exclude_patterns')))
     exclude_flags = _make_exclude_flags(
         location_config,
         exclude_file.name if exclude_file else None,
