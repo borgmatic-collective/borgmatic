@@ -317,6 +317,48 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     )
 
 
+def test_create_archive_with_dry_run_and_verbosity_some_calls_borg_without_stats_parameter():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--info', '--dry-run'))
+
+    module.create_archive(
+        verbosity=VERBOSITY_SOME,
+        dry_run=True,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+    )
+
+
+def test_create_archive_with_dry_run_and_verbosity_lots_calls_borg_without_stats_parameter():
+    flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--dry-run'))
+
+    module.create_archive(
+        verbosity=VERBOSITY_LOTS,
+        dry_run=True,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+    )
+
+
 def test_create_archive_with_compression_calls_borg_with_compression_parameters():
     flexmock(module).should_receive('_expand_directory').and_return(['foo']).and_return(['bar'])
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
