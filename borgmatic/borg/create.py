@@ -129,6 +129,8 @@ def create_archive(
     remote_rate_limit_flags = ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
     umask = storage_config.get('umask', None)
     umask_flags = ('--umask', str(umask)) if umask else ()
+    lock_wait = storage_config.get('lock_wait', None)
+    lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
     one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
     files_cache = location_config.get('files_cache')
     files_cache_flags = ('--files-cache', files_cache) if files_cache else ()
@@ -149,7 +151,7 @@ def create_archive(
         ),
     ) + sources + pattern_flags + exclude_flags + compression_flags + remote_rate_limit_flags + \
         one_file_system_flags + files_cache_flags + remote_path_flags + umask_flags + \
-        verbosity_flags + dry_run_flags
+        lock_wait_flags + verbosity_flags + dry_run_flags
 
     logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)

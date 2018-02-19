@@ -518,6 +518,26 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     )
 
 
+def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--lock-wait', '5'))
+
+    module.create_archive(
+        verbosity=None,
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'lock_wait': 5},
+    )
+
+
 def test_create_archive_with_source_directories_glob_expands():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'food')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)

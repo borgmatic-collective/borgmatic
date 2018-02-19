@@ -1,7 +1,9 @@
-1.1.15.dev0
+1.1.15
  * Support for Borg BORG_PASSCOMMAND environment variable to read a password from an external file.
  * Fix for Borg create error when using borgmatic's --dry-run and --verbosity options together.
- * #55: Fix for missing tags/releases from Gitea and GitHub project hosting.
+   Work-around for behavior introduced in Borg 1.1.3: https://github.com/borgbackup/borg/issues/3298
+ * #55: Fix for missing tags/releases on Gitea and GitHub project hosting.
+ * #56: Support for Borg --lock-wait option for the maximum wait for a repository/cache lock.
  * #58: Support for using tilde in exclude_patterns to reference home directory.
 
 1.1.14

@@ -103,6 +103,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
     module.check_archives(
         verbosity=None,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
     )
 
@@ -119,6 +120,7 @@ def test_check_archives_with_extract_check_calls_extract_only():
     module.check_archives(
         verbosity=None,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
     )
 
@@ -136,6 +138,7 @@ def test_check_archives_with_verbosity_some_calls_borg_with_info_parameter():
     module.check_archives(
         verbosity=VERBOSITY_SOME,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
     )
 
@@ -153,6 +156,7 @@ def test_check_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     module.check_archives(
         verbosity=VERBOSITY_LOTS,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
     )
 
@@ -165,6 +169,7 @@ def test_check_archives_without_any_checks_bails():
     module.check_archives(
         verbosity=None,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
     )
 
@@ -186,6 +191,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     module.check_archives(
         verbosity=None,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
         local_path='borg1',
     )
@@ -208,6 +214,29 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     module.check_archives(
         verbosity=None,
         repository='repo',
+        storage_config={},
         consistency_config=consistency_config,
         remote_path='borg1',
+    )
+
+
+def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    checks = ('repository',)
+    check_last = flexmock()
+    consistency_config = flexmock().should_receive('get').and_return(check_last).mock
+    flexmock(module).should_receive('_parse_checks').and_return(checks)
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    stdout = flexmock()
+    insert_subprocess_mock(
+        ('borg', 'check', 'repo', '--lock-wait', '5'),
+        stdout=stdout, stderr=STDOUT,
+    )
+    flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
+    flexmock(module.os).should_receive('devnull')
+
+    module.check_archives(
+        verbosity=None,
+        repository='repo',
+        storage_config={'lock_wait': 5},
+        consistency_config=consistency_config,
     )

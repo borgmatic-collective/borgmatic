@@ -113,6 +113,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
                     args.verbosity,
                     args.dry_run,
                     repository,
+                    storage,
                     retention,
                     local_path=local_path,
                     remote_path=remote_path,
@@ -133,6 +134,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
                 check.check_archives(
                     args.verbosity,
                     repository,
+                    storage,
                     consistency,
                     local_path=local_path,
                     remote_path=remote_path,

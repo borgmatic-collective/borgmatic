@@ -139,6 +139,10 @@ map:
                 type: scalar
                 desc: Umask to be used for borg create.
                 example: 0077
+            lock_wait:
+                type: int
+                desc: Maximum seconds to wait for acquiring a repository/cache lock.
+                example: 5
             archive_name_format:
                 type: scalar
                 desc: |
@@ -152,6 +156,7 @@ map:
         desc: |
             Retention policy for how many backups to keep in each category. See
             https://borgbackup.readthedocs.org/en/stable/usage.html#borg-prune for details.
+            At least one of the "keep" options is required for pruning to work.
         map:
             keep_within:
                 type: scalar

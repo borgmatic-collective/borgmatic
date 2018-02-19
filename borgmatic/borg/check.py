@@ -60,18 +60,23 @@ def _make_check_flags(checks, check_last=None):
     ) + last_flag
 
 
-def check_archives(verbosity, repository, consistency_config, local_path='borg', remote_path=None):
+def check_archives(verbosity, repository, storage_config, consistency_config, local_path='borg',
+                   remote_path=None):
     '''
-    Given a verbosity flag, a local or remote repository path, a consistency config dict, and a
-    local/remote commands to run, check the contained Borg archives for consistency.
+    Given a verbosity flag, a local or remote repository path, a storage config dict, a consistency
+    config dict, and a local/remote commands to run, check the contained Borg archives for
+    consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
     checks = _parse_checks(consistency_config)
     check_last = consistency_config.get('check_last', None)
+    lock_wait = None
 
     if set(checks).intersection(set(DEFAULT_CHECKS)):
         remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
+        lock_wait = storage_config.get('lock_wait', None)
+        lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
         verbosity_flags = {
             VERBOSITY_SOME: ('--info',),
             VERBOSITY_LOTS: ('--debug',),
@@ -80,7 +85,7 @@ def check_archives(verbosity, repository, consistency_config, local_path='borg',
         full_command = (
             local_path, 'check',
             repository,
-        ) + _make_check_flags(checks, check_last) + remote_path_flags + verbosity_flags
+        ) + _make_check_flags(checks, check_last) + remote_path_flags + lock_wait_flags + verbosity_flags
 
         # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
         stdout = None if verbosity_flags else open(os.devnull, 'w')
@@ -89,4 +94,4 @@ def check_archives(verbosity, repository, consistency_config, local_path='borg',
         subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
 
     if 'extract' in checks:
-        extract.extract_last_archive_dry_run(verbosity, repository, local_path, remote_path)
+        extract.extract_last_archive_dry_run(verbosity, repository, lock_wait, local_path, remote_path)

@@ -8,12 +8,13 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 logger = logging.getLogger(__name__)
 
 
-def extract_last_archive_dry_run(verbosity, repository, local_path='borg', remote_path=None):
+def extract_last_archive_dry_run(verbosity, repository, lock_wait=None, local_path='borg', remote_path=None):
     '''
     Perform an extraction dry-run of just the most recent archive. If there are no archives, skip
     the dry-run.
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
+    lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info',),
         VERBOSITY_LOTS: ('--debug',),
@@ -23,7 +24,7 @@ def extract_last_archive_dry_run(verbosity, repository, local_path='borg', remot
         local_path, 'list',
         '--short',
         repository,
-    ) + remote_path_flags + verbosity_flags
+    ) + remote_path_flags + lock_wait_flags + verbosity_flags
 
     list_output = subprocess.check_output(full_list_command).decode(sys.stdout.encoding)
 
@@ -39,7 +40,7 @@ def extract_last_archive_dry_run(verbosity, repository, local_path='borg', remot
             repository=repository,
             last_archive_name=last_archive_name,
         ),
-    ) + remote_path_flags + verbosity_flags + list_flag
+    ) + remote_path_flags + lock_wait_flags + verbosity_flags + list_flag
 
     logger.debug(' '.join(full_extract_command))
     subprocess.check_call(full_extract_command)
