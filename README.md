@@ -44,6 +44,8 @@ borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
 available](https://projects.torsion.org/witten/borgmatic). It's also mirrored
 on [GitHub](https://github.com/witten/borgmatic) for convenience.
 
+<a href="https://asciinema.org/a/164143" target="_blank"><img src="https://asciinema.org/a/164143.png" width="100%" /></a>
+
 
 ## Installation
 
