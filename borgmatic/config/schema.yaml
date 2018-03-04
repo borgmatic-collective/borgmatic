@@ -218,6 +218,13 @@ map:
                 desc: Restrict the number of checked archives to the last n. Applies only to the
                       "archives" check.
                 example: 3
+            archive_prefix:
+                type: scalar
+                desc: |
+                    When performing consistency checks, only consider archive names starting with
+                    this prefix. Borg placeholders can be used. See the output of
+                    "borg help placeholders" for details. Default is "{hostname}-".
+                example: sourcehostname
     hooks:
         desc: |
             Shell commands or scripts to execute before and after a backup or if an error has occurred.
