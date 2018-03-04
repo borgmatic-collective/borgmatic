@@ -1,4 +1,6 @@
 1.1.16.dev0
+ * Support for Borg --prefix option for consistency checks via "prefix" option in borgmatic's
+   consistency configuration.
  * Add introductory screencast link to documentation.
 
 1.1.15
