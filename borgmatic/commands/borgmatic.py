@@ -136,7 +136,6 @@ def run_configuration(config_filename, args):  # pragma: no cover
                     repository,
                     storage,
                     consistency,
-                    retention,
                     local_path=local_path,
                     remote_path=remote_path,
                 )
