@@ -8,6 +8,8 @@ import pykwalify.errors
 from ruamel import yaml
 
 
+logger = logging.getLogger(__name__)
+
 def schema_filename():
     '''
     Path to the installed YAML configuration schema file, used to validate and parse the
@@ -52,12 +54,8 @@ def apply_logical_validation(config_filename, parsed_configuration):
 
     consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
     if archive_name_format and not consistency_prefix:
-        raise Validation_error(
-            config_filename, (
-                'Since version 1.2.0, if you provide `archive_name_format`, you must also specify'
-                ' `consistency.prefix`.',
-            )
-        )
+        logger.warning('Since version 1.2.0, if you provide `archive_name_format`, you must also'
+                       ' specify `consistency.prefix`.')
 
 
 def parse_configuration(config_filename, schema_filename):
