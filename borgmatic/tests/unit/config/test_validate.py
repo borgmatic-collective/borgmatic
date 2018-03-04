@@ -30,7 +30,7 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
             {
                 'storage': {'archive_name_format': '{hostname}-{now}'},
                 'retention': {'keep_daily': 7},
-                'consistency': {'archive_prefix': '{hostname}-'}
+                'consistency': {'prefix': '{hostname}-'}
             },
         )
 
@@ -53,7 +53,7 @@ def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_pref
         {
             'storage': {'archive_name_format': '{hostname}-{now}'},
             'retention': {'prefix': '{hostname}-'},
-            'consistency': {'archive_prefix': '{hostname}-'}
+            'consistency': {'prefix': '{hostname}-'}
         },
     )
 

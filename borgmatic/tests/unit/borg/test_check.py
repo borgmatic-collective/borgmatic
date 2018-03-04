@@ -245,7 +245,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 def test_check_archives_with_retention_prefix():
     checks = ('repository',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last, 'archive_prefix': 'foo-'}
+    consistency_config = {'check_last': check_last, 'prefix': 'foo-'}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()

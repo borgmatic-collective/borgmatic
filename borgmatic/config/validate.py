@@ -50,11 +50,12 @@ def apply_logical_validation(config_filename, parsed_configuration):
             )
         )
 
-    consistency_archive_prefix = parsed_configuration.get('consistency', {}).get('archive_prefix')
-    if archive_name_format and not consistency_archive_prefix:
+    consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
+    if archive_name_format and not consistency_prefix:
         raise Validation_error(
             config_filename, (
-                'If you provide an archive_name_format, you must also specify a consistency archive_prefix.',
+                'Since version 1.2.0, if you provide `archive_name_format`, you must also specify'
+                ' `consistency.prefix`.',
             )
         )
 

@@ -218,7 +218,7 @@ map:
                 desc: Restrict the number of checked archives to the last n. Applies only to the
                       "archives" check.
                 example: 3
-            archive_prefix:
+            prefix:
                 type: scalar
                 desc: |
                     When performing consistency checks, only consider archive names starting with
