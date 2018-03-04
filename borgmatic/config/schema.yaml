@@ -150,7 +150,8 @@ map:
                     "borg help placeholders" for details. Default is
                     "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this option, you must
                     also specify a prefix in the retention section to avoid accidental pruning of
-                    archives with a different archive name format.
+                    archives with a different archive name format. And you should also specify a
+                    prefix in the consistency section as well.
                 example: "{hostname}-documents-{now}"
     retention:
         desc: |
