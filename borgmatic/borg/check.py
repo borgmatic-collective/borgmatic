@@ -82,7 +82,7 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
             VERBOSITY_LOTS: ('--debug',),
         }.get(verbosity, ())
 
-        prefix = consistency_config.get('prefix')
+        prefix = consistency_config.get('prefix', '{hostname}-')
         prefix_flags = ('--prefix', prefix) if prefix else ()
 
         full_command = (
