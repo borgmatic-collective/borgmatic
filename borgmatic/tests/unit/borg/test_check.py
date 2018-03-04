@@ -94,7 +94,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo'),
+        ('borg', 'check', 'repo', '--prefix', '{hostname}-'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -131,7 +131,7 @@ def test_check_archives_with_verbosity_some_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--info'),
+        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--info'),
         stdout=None, stderr=STDOUT,
     )
 
@@ -149,7 +149,7 @@ def test_check_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--debug'),
+        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--debug'),
         stdout=None, stderr=STDOUT,
     )
 
@@ -182,7 +182,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg1', 'check', 'repo'),
+        ('borg1', 'check', 'repo', '--prefix', '{hostname}-'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -205,7 +205,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--remote-path', 'borg1'),
+        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--remote-path', 'borg1'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -228,7 +228,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--lock-wait', '5'),
+        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--lock-wait', '5'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
