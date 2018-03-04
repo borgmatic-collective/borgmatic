@@ -12,4 +12,4 @@ def verbosity_to_log_level(verbosity):
     return {
         VERBOSITY_SOME: logging.INFO,
         VERBOSITY_LOTS: logging.DEBUG,
-    }.get(verbosity, logging.ERROR)
+    }.get(verbosity, logging.WARNING)

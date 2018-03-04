@@ -82,10 +82,13 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
             VERBOSITY_LOTS: ('--debug',),
         }.get(verbosity, ())
 
+        prefix = consistency_config.get('prefix', '{hostname}-')
+        prefix_flags = ('--prefix', prefix) if prefix else ()
+
         full_command = (
             local_path, 'check',
             repository,
-        ) + _make_check_flags(checks, check_last) + remote_path_flags + lock_wait_flags + verbosity_flags
+        ) + _make_check_flags(checks, check_last) + prefix_flags + remote_path_flags + lock_wait_flags + verbosity_flags
 
         # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
         stdout = None if verbosity_flags else open(os.devnull, 'w')
