@@ -54,7 +54,7 @@ def apply_logical_validation(config_filename, parsed_configuration):
 
     consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
     if archive_name_format and not consistency_prefix:
-        logger.warning('Since version 1.2.0, if you provide `archive_name_format`, you must also'
+        logger.warning('Since version 1.1.16, if you provide `archive_name_format`, you should also'
                        ' specify `consistency.prefix`.')
 
 
