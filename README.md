@@ -91,6 +91,9 @@ After you install borgmatic, generate a sample configuration file:
 sudo generate-borgmatic-config
 ```
 
+If that command is not found, then it may be installed in a location that's
+not in your system `PATH`. Try looking in `/usr/local/bin/`.
+
 This generates a sample configuration file at /etc/borgmatic/config.yaml (by
 default). You should edit the file to suit your needs, as the values are just
 representative. All fields are optional except where indicated, so feel free
