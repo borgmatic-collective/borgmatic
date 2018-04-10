@@ -299,15 +299,22 @@ borgmatic to run.
 
 ## Running tests
 
-First install tox, which is used for setting up testing environments:
+First, clone a copy of [borgmatic source code](https://projects.torsion.org/witten/borgmatic):
 
 ```bash
-pip3 install tox
+git clone https://projects.torsion.org/witten/borgmatic
 ```
 
-Then, to actually run tests, run:
+Then, install tox, which is used for setting up testing environments:
 
 ```bash
+sudo pip3 install tox
+```
+
+Finally, to actually run tests, run:
+
+```bash
+cd borgmatic
 tox
 ```
 

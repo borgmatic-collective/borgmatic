@@ -2,6 +2,7 @@
  * Support for Borg --prefix option for consistency checks via "prefix" option in borgmatic's
    consistency configuration.
  * Add introductory screencast link to documentation.
+ * Update tox.ini to only assume Python 3.x instead of Python 3.4 specifically.
 
 1.1.15
  * Support for Borg BORG_PASSCOMMAND environment variable to read a password from an external file.
