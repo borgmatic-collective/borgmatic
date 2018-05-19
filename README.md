@@ -77,11 +77,17 @@ sudo pip3 install --upgrade borgmatic
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
 
-### Docker
+### Other ways to install
 
-If you would like to run borgmatic within Docker, please take a look at
-[b3vis/borgmatic](https://hub.docker.com/r/b3vis/borgmatic/) for more
-information.
+ * [A borgmatic Docker image](https://hub.docker.com/r/b3vis/borgmatic/) based
+   on Alpine Linux.
+ * [Another borgmatic Docker image](https://hub.docker.com/r/coaxial/borgmatic/) based
+   on Alpine Linux, updated automatically whenever the Alpine image updates.
+ * [A borgmatic package for
+   Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic).
+ * [A borgmatic package for Arch
+   Linux](https://aur.archlinux.org/packages/borgmatic/).
+<br><br>
 
 ## Configuration
 
