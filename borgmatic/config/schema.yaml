@@ -222,7 +222,7 @@ map:
             prefix:
                 type: scalar
                 desc: |
-                    When performing consistency checks, only consider archive names starting with
+                    When performing the "archives" check, only consider archive names starting with
                     this prefix. Borg placeholders can be used. See the output of
                     "borg help placeholders" for details. Default is "{hostname}-".
                 example: sourcehostname

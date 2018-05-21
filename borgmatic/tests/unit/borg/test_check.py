@@ -42,40 +42,64 @@ def test_parse_checks_with_disabled_returns_no_checks():
     assert checks == ()
 
 
-def test_make_check_flags_with_checks_returns_flags():
+def test_make_check_flags_with_repository_check_returns_flag():
     flags = module._make_check_flags(('repository',))
 
     assert flags == ('--repository-only',)
 
 
-def test_make_check_flags_with_extract_check_does_not_make_extract_flag():
+def test_make_check_flags_with_extract_omits_extract_flag():
     flags = module._make_check_flags(('extract',))
 
     assert flags == ()
 
 
-def test_make_check_flags_with_default_checks_returns_no_flags():
+def test_make_check_flags_with_default_checks_returns_default_flags():
     flags = module._make_check_flags(module.DEFAULT_CHECKS)
 
-    assert flags == ()
+    assert flags == ('--prefix', module.DEFAULT_PREFIX)
 
 
-def test_make_check_flags_with_all_checks_returns_no_flags():
+def test_make_check_flags_with_all_checks_returns_default_flags():
     flags = module._make_check_flags(module.DEFAULT_CHECKS + ('extract',))
 
-    assert flags == ()
+    assert flags == ('--prefix', module.DEFAULT_PREFIX)
 
 
-def test_make_check_flags_with_checks_and_last_returns_flags_including_last():
+def test_make_check_flags_with_archives_check_and_last_includes_last_flag():
+    flags = module._make_check_flags(('archives',), check_last=3)
+
+    assert flags == ('--archives-only', '--last', '3', '--prefix', module.DEFAULT_PREFIX)
+
+
+def test_make_check_flags_with_repository_check_and_last_omits_last_flag():
     flags = module._make_check_flags(('repository',), check_last=3)
 
-    assert flags == ('--repository-only', '--last', '3')
+    assert flags == ('--repository-only',)
 
 
-def test_make_check_flags_with_default_checks_and_last_returns_last_flag():
+def test_make_check_flags_with_default_checks_and_last_includes_last_flag():
     flags = module._make_check_flags(module.DEFAULT_CHECKS, check_last=3)
 
-    assert flags == ('--last', '3')
+    assert flags == ('--last', '3', '--prefix', module.DEFAULT_PREFIX)
+
+
+def test_make_check_flags_with_archives_check_and_prefix_includes_prefix_flag():
+    flags = module._make_check_flags(('archives',), prefix='foo-')
+
+    assert flags == ('--archives-only', '--prefix', 'foo-')
+
+
+def test_make_check_flags_with_repository_check_and_prefix_omits_prefix_flag():
+    flags = module._make_check_flags(('repository',), prefix='foo-')
+
+    assert flags == ('--repository-only',)
+
+
+def test_make_check_flags_with_default_checks_and_prefix_includes_prefix_flag():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS, prefix='foo-')
+
+    assert flags == ('--prefix', 'foo-')
 
 
 @pytest.mark.parametrize(
@@ -91,10 +115,10 @@ def test_check_archives_calls_borg_with_parameters(checks):
     check_last = flexmock()
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
-    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last, None).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', '{hostname}-'),
+        ('borg', 'check', 'repo'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -131,7 +155,7 @@ def test_check_archives_with_verbosity_some_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--info'),
+        ('borg', 'check', 'repo', '--info'),
         stdout=None, stderr=STDOUT,
     )
 
@@ -149,7 +173,7 @@ def test_check_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--debug'),
+        ('borg', 'check', 'repo', '--debug'),
         stdout=None, stderr=STDOUT,
     )
 
@@ -179,10 +203,10 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     check_last = flexmock()
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
-    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last, None).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg1', 'check', 'repo', '--prefix', '{hostname}-'),
+        ('borg1', 'check', 'repo'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -202,10 +226,10 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     check_last = flexmock()
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
-    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last, None).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--remote-path', 'borg1'),
+        ('borg', 'check', 'repo', '--remote-path', 'borg1'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -225,10 +249,10 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     check_last = flexmock()
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
-    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last, None).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', '{hostname}-', '--lock-wait', '5'),
+        ('borg', 'check', 'repo', '--lock-wait', '5'),
         stdout=stdout, stderr=STDOUT,
     )
     flexmock(sys.modules['builtins']).should_receive('open').and_return(stdout)
@@ -245,12 +269,13 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 def test_check_archives_with_retention_prefix():
     checks = ('repository',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last, 'prefix': 'foo-'}
+    prefix = 'foo-'
+    consistency_config = {'check_last': check_last, 'prefix': prefix}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
-    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last).and_return(())
+    flexmock(module).should_receive('_make_check_flags').with_args(checks, check_last, prefix).and_return(())
     stdout = flexmock()
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--prefix', 'foo-'),
+        ('borg', 'check', 'repo'),
         stdout=stdout, stderr=STDOUT,
     )
 

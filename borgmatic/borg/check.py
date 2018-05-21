@@ -7,6 +7,7 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 DEFAULT_CHECKS = ('repository', 'archives')
+DEFAULT_PREFIX = '{hostname}-'
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ def _parse_checks(consistency_config):
     return tuple(check for check in checks if check.lower() not in ('disabled', '')) or DEFAULT_CHECKS
 
 
-def _make_check_flags(checks, check_last=None):
+def _make_check_flags(checks, check_last=None, prefix=None):
     '''
     Given a parsed sequence of checks, transform it into tuple of command-line flags.
 
@@ -47,17 +48,30 @@ def _make_check_flags(checks, check_last=None):
         ('--repository-only',)
 
     However, if both "repository" and "archives" are in checks, then omit them from the returned
-    flags because Borg does both checks by default. Additionally, if a check_last value is given,
-    a "--last" flag will be added.
+    flags because Borg does both checks by default.
+
+    Additionally, if a check_last value is given and "archives" is in checks, then include a
+    "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
+    "--prefix" flag.
     '''
-    last_flag = ('--last', str(check_last)) if check_last else ()
+    if 'archives' in checks:
+        last_flags = ('--last', str(check_last)) if check_last else ()
+        prefix_flags = ('--prefix', prefix) if prefix else ('--prefix', DEFAULT_PREFIX)
+    else:
+        last_flags = ()
+        prefix_flags = ()
+        if check_last:
+            logger.warn('Ignoring check_last option, as "archives" is not in consistency checks.')
+        if prefix:
+            logger.warn('Ignoring consistency prefix option, as "archives" is not in consistency checks.')
+        
     if set(DEFAULT_CHECKS).issubset(set(checks)):
-        return last_flag
+        return last_flags + prefix_flags
 
     return tuple(
         '--{}-only'.format(check) for check in checks
         if check in DEFAULT_CHECKS
-    ) + last_flag
+    ) + last_flags + prefix_flags
 
 
 def check_archives(verbosity, repository, storage_config, consistency_config, local_path='borg',
@@ -81,14 +95,12 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
             VERBOSITY_SOME: ('--info',),
             VERBOSITY_LOTS: ('--debug',),
         }.get(verbosity, ())
-
-        prefix = consistency_config.get('prefix', '{hostname}-')
-        prefix_flags = ('--prefix', prefix) if prefix else ()
+        prefix = consistency_config.get('prefix')
 
         full_command = (
             local_path, 'check',
             repository,
-        ) + _make_check_flags(checks, check_last) + prefix_flags + remote_path_flags + lock_wait_flags + verbosity_flags
+        ) + _make_check_flags(checks, check_last, prefix) + remote_path_flags + lock_wait_flags + verbosity_flags
 
         # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
         stdout = None if verbosity_flags else open(os.devnull, 'w')
