@@ -5,6 +5,7 @@
  * Update tox.ini to only assume Python 3.x instead of Python 3.4 specifically.
  * #62: Update README to mention other ways of installing borgmatic.
  * #59: Ignore "check_last" and consistency "prefix" when "archives" not in consistency checks.
+ * #60: Add "Persistent" flag to systemd timer example.
 
 1.1.15
  * Support for Borg BORG_PASSCOMMAND environment variable to read a password from an external file.
