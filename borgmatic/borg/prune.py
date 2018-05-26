@@ -36,7 +36,7 @@ def prune_archives(verbosity, dry_run, repository, storage_config, retention_con
                    local_path='borg', remote_path=None):
     '''
     Given verbosity/dry-run flags, a local or remote repository path, a storage config dict, and a
-    retention config dict, prune Borg archives according the the retention policy specified in that
+    retention config dict, prune Borg archives according to the retention policy specified in that
     configuration.
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()

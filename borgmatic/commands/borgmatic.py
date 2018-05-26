@@ -5,7 +5,8 @@ import os
 from subprocess import CalledProcessError
 import sys
 
-from borgmatic.borg import check, create, prune
+from borgmatic.borg import check as borg_check, create as borg_create, prune as borg_prune, \
+     list as borg_list
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
 from borgmatic.signals import configure_signals
@@ -62,10 +63,16 @@ def parse_arguments(*arguments):
         help='Check archives for consistency',
     )
     parser.add_argument(
+        '-l', '--list',
+        dest='list',
+        action='store_true',
+        help='List archives',
+    )
+    parser.add_argument(
         '-n', '--dry-run',
         dest='dry_run',
         action='store_true',
-        help='Go through the motions, but do not actually write any changes to the repository',
+        help='Go through the motions, but do not actually write to any repositories',
     )
     parser.add_argument(
         '-v', '--verbosity',
@@ -75,10 +82,9 @@ def parse_arguments(*arguments):
 
     args = parser.parse_args(arguments)
 
-    # If any of the three action flags in the given parse arguments have been explicitly requested,
-    # leave them as-is. Otherwise, assume defaults: Mutate the given arguments to enable all the
-    # actions.
-    if not args.prune and not args.create and not args.check:
+    # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
+    # defaults: Mutate the given arguments to enable the default actions.
+    if not args.prune and not args.create and not args.check and not args.list:
         args.prune = True
         args.create = True
         args.check = True
@@ -101,7 +107,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
     try:
         local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
-        create.initialize_environment(storage)
+        borg_create.initialize_environment(storage)
         hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
         for unexpanded_repository in location['repositories']:
@@ -109,7 +115,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
             dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
             if args.prune:
                 logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
-                prune.prune_archives(
+                borg_prune.prune_archives(
                     args.verbosity,
                     args.dry_run,
                     repository,
@@ -120,7 +126,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
                 )
             if args.create:
                 logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
-                create.create_archive(
+                borg_create.create_archive(
                     args.verbosity,
                     args.dry_run,
                     repository,
@@ -131,11 +137,20 @@ def run_configuration(config_filename, args):  # pragma: no cover
                 )
             if args.check:
                 logger.info('{}: Running consistency checks'.format(repository))
-                check.check_archives(
-                    args.verbosity,
+                borg_check.check_archives(
+                   args.verbosity,
                     repository,
                     storage,
                     consistency,
+                    local_path=local_path,
+                    remote_path=remote_path,
+                )
+            if args.list:
+                logger.info('{}: Listing archives'.format(repository))
+                borg_list.list_archives(
+                    args.verbosity,
+                    repository,
+                    storage,
                     local_path=local_path,
                     remote_path=remote_path,
                 )
