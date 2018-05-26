@@ -1,14 +1,15 @@
 1.1.16.dev0
+ * #61: Support for Borg --list option via borgmatic command-line to list all archives.
+ * #61: Support for Borg --info option via borgmatic command-line to display summary information.
+ * #62: Update README to mention other ways of installing borgmatic.
  * Support for Borg --prefix option for consistency checks via "prefix" option in borgmatic's
    consistency configuration.
  * Add introductory screencast link to documentation.
- * Update tox.ini to only assume Python 3.x instead of Python 3.4 specifically.
- * #62: Update README to mention other ways of installing borgmatic.
  * #59: Ignore "check_last" and consistency "prefix" when "archives" not in consistency checks.
  * #60: Add "Persistent" flag to systemd timer example.
  * #63: Support for Borg --nobsdflags option to skip recording bsdflags (e.g. NODUMP, IMMUTABLE) in
    archive.
- * #61: Support for Borg --list option via borgmatic command-line to list all archives.
+ * Update tox.ini to only assume Python 3.x instead of Python 3.4 specifically.
 
 1.1.15
  * Support for Borg BORG_PASSCOMMAND environment variable to read a password from an external file.

@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 import sys
 
 from borgmatic.borg import check as borg_check, create as borg_create, prune as borg_prune, \
-     list as borg_list
+     list as borg_list, info as borg_info
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
 from borgmatic.signals import configure_signals
@@ -69,6 +69,12 @@ def parse_arguments(*arguments):
         help='List archives',
     )
     parser.add_argument(
+        '-i', '--info',
+        dest='info',
+        action='store_true',
+        help='Display summary information on archives',
+    )
+    parser.add_argument(
         '-n', '--dry-run',
         dest='dry_run',
         action='store_true',
@@ -84,11 +90,12 @@ def parse_arguments(*arguments):
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
-    if not args.prune and not args.create and not args.check and not args.list:
-        args.prune = True
-        args.create = True
-        args.check = True
+    if args.prune or args.create or args.check or args.list or args.info:
+        return args
 
+    args.prune = True
+    args.create = True
+    args.check = True
     return args
 
 
@@ -148,6 +155,15 @@ def run_configuration(config_filename, args):  # pragma: no cover
             if args.list:
                 logger.info('{}: Listing archives'.format(repository))
                 borg_list.list_archives(
+                    args.verbosity,
+                    repository,
+                    storage,
+                    local_path=local_path,
+                    remote_path=remote_path,
+                )
+            if args.info:
+                logger.info('{}: Displaying summary info for archives'.format(repository))
+                borg_info.display_archives_info(
                     args.verbosity,
                     repository,
                     storage,
