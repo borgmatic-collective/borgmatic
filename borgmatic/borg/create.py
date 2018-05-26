@@ -114,44 +114,46 @@ def create_archive(
     sources = _expand_directories(location_config['source_directories'])
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
-    pattern_flags = _make_pattern_flags(
-        location_config,
-        pattern_file.name if pattern_file else None,
-    )
     exclude_file = _write_pattern_file(_expand_directories(location_config.get('exclude_patterns')))
-    exclude_flags = _make_exclude_flags(
-        location_config,
-        exclude_file.name if exclude_file else None,
-    )
     compression = storage_config.get('compression', None)
-    compression_flags = ('--compression', compression) if compression else ()
     remote_rate_limit = storage_config.get('remote_rate_limit', None)
-    remote_rate_limit_flags = ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
     umask = storage_config.get('umask', None)
-    umask_flags = ('--umask', str(umask)) if umask else ()
     lock_wait = storage_config.get('lock_wait', None)
-    lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
-    one_file_system_flags = ('--one-file-system',) if location_config.get('one_file_system') else ()
     files_cache = location_config.get('files_cache')
-    files_cache_flags = ('--files-cache', files_cache) if files_cache else ()
-    remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
-    verbosity_flags = {
-        VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats',),
-        VERBOSITY_LOTS: ('--debug', '--list',) if dry_run else ('--debug', '--list', '--stats',),
-    }.get(verbosity, ())
-    dry_run_flags = ('--dry-run',) if dry_run else ()
     default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
     archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
 
     full_command = (
-        local_path, 'create',
-        '{repository}::{archive_name_format}'.format(
-            repository=repository,
-            archive_name_format=archive_name_format,
-        ),
-    ) + sources + pattern_flags + exclude_flags + compression_flags + remote_rate_limit_flags + \
-        one_file_system_flags + files_cache_flags + remote_path_flags + umask_flags + \
-        lock_wait_flags + verbosity_flags + dry_run_flags
+        (
+            local_path, 'create',
+            '{repository}::{archive_name_format}'.format(
+                repository=repository,
+                archive_name_format=archive_name_format,
+            ),
+        )
+        + sources
+        + _make_pattern_flags(
+            location_config,
+            pattern_file.name if pattern_file else None,
+        )
+        + _make_exclude_flags(
+            location_config,
+            exclude_file.name if exclude_file else None,
+        )
+        + (('--compression', compression) if compression else ())
+        + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
+        + (('--one-file-system',) if location_config.get('one_file_system') else ())
+        + (('--nobsdflags',) if location_config.get('bsd_flags') is False else ())
+        + (('--files-cache', files_cache) if files_cache else ())
+        + (('--remote-path', remote_path) if remote_path else ())
+        + (('--umask', str(umask)) if umask else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + {
+            VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats',),
+            VERBOSITY_LOTS: ('--debug', '--list',) if dry_run else ('--debug', '--list', '--stats',),
+        }.get(verbosity, ())
+        + (('--dry-run',) if dry_run else ())
+    )
 
     logger.debug(' '.join(full_command))
     subprocess.check_call(full_command)

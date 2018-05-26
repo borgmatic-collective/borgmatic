@@ -22,6 +22,10 @@ map:
                 type: bool
                 desc: Stay in same file system (do not cross mount points).
                 example: true
+            bsd_flags:
+                type: bool
+                desc: Record bsdflags (e.g. NODUMP, IMMUTABLE) in archive. Defaults to true.
+                example: true
             files_cache:
                 type: scalar
                 desc: |
