@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o nounset
+
 # For each Borg sub-command that borgmatic uses, print out the Borg flags that borgmatic does not
 # appear to support yet. This script isn't terribly robust. It's intended as a basic tool to ferret
 # out unsupported Borg options so that they can be considered for addition to borgmatic.
@@ -11,10 +13,10 @@ generate-borgmatic-config --destination temp.yaml
 # from running borgmatic with the generated configuration. Then, collect the full set of available
 # Borg flags as reported by "borg --help" for that sub-command. Finally, compare the two lists of
 # flags to determine which Borg flags borgmatic doesn't yet support.
-for sub_command in prune create check; do
+for sub_command in prune create check list info; do
     echo "********** borg $sub_command **********"
 
-    for line in $(borgmatic --config temp.yaml --$sub_command -v 2 2>&1 | grep "borg $sub_command") ; do
+    for line in $(borgmatic --config temp.yaml --$sub_command -v 2 2>&1 | grep "borg\w* $sub_command") ; do
         echo "$line" | grep '^-' >> borgmatic_borg_flags
     done
     sort borgmatic_borg_flags > borgmatic_borg_flags.sorted
