@@ -153,6 +153,23 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     )
 
 
+def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
+    storage_config = {'umask': '077'}
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS,
+    )
+    insert_subprocess_mock(PRUNE_COMMAND + ('--umask', '077'))
+
+    module.prune_archives(
+        verbosity=None,
+        dry_run=False,
+        repository='repo',
+        storage_config=storage_config,
+        retention_config=retention_config,
+    )
+
+
 def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     storage_config = {'lock_wait': 5}
     retention_config = flexmock()

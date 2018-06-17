@@ -1,4 +1,4 @@
-1.1.16.dev0
+1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.
  * #61: Support for Borg --info option via borgmatic command-line to display summary information.
  * #62: Update README to mention other ways of installing borgmatic.
@@ -9,6 +9,8 @@
  * #60: Add "Persistent" flag to systemd timer example.
  * #63: Support for Borg --nobsdflags option to skip recording bsdflags (e.g. NODUMP, IMMUTABLE) in
    archive.
+ * #69: Support for Borg prune --umask option using value of existing "umask" option in borgmatic's
+   storage configuration.
  * Update tox.ini to only assume Python 3.x instead of Python 3.4 specifically.
  * Add ~/.config/borgmatic/config.yaml to default configuration path probing.
  * Document how to develop on and contribute to borgmatic.
