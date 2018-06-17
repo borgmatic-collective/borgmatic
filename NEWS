@@ -1,3 +1,6 @@
+1.2.1.dev0
+ *
+
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.
  * #61: Support for Borg --info option via borgmatic command-line to display summary information.
