@@ -304,15 +304,66 @@ Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
 
 
-## Running tests
+## Support and contributing
 
-First, clone a copy of [borgmatic source code](https://projects.torsion.org/witten/borgmatic):
+### Issues
 
-```bash
-git clone https://projects.torsion.org/witten/borgmatic
+You've got issues? Or an idea for a feature enhancement? We've got an [issue
+tracker](https://projects.torsion.org/witten/borgmatic/issues). In order to
+create a new issue or comment on an issue, you'll need to [login
+first](https://projects.torsion.org/user/login). Note that you can login with
+an existing GitHub account if you prefer.
+
+Other questions or comments? Contact <mailto:witten@torsion.org>.
+
+
+### Contributing
+
+If you'd like to contribute to borgmatic development, please feel free to
+submit a [Pull Request](https://projects.torsion.org/witten/borgmatic/pulls)
+or open an [issue](https://projects.torsion.org/witten/borgmatic/issues) first
+to discuss your idea. We also accept Pull Requests on GitHub, if that's more
+your thing. In general, contributions are very welcome. We don't bite! 
+
+
+### Development
+
+To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
+
+```
+git clone https://projects.torsion.org/witten/borgmatic.git
 ```
 
-Then, install tox, which is used for setting up testing environments:
+Or:
+
+```bash
+git clone ssh://git@projects.torsion.org:3022/witten/borgmatic.git
+```
+
+Then, install borgmatic
+"[editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)"
+so that you can easily run borgmatic commands while you're hacking on them to
+make sure your changes work.
+
+```bash
+cd borgmatic/
+pip3 install --editable --user .
+```
+
+Note that this will typically install the borgmatic commands into
+`~/.local/bin`, which may or may not be on your PATH. There are other ways to
+install borgmatic editable as well, for instance into the system Python
+install (so without `--user`, as root), or even into a
+[virtualenv](https://virtualenv.pypa.io/en/stable/). How or where you install
+borgmatic is up to you, but generally an editable install makes development
+and testing easier.
+
+
+### Running tests
+
+Assuming you've cloned the borgmatic source code as described above, and
+you're in the `borgmatic/` working copy, install tox, which is used for
+setting up testing environments:
 
 ```bash
 sudo pip3 install tox
@@ -360,14 +411,3 @@ YAML library. If so, not to worry. borgmatic should install and function
 correctly even without the C YAML library. And borgmatic won't be any faster
 with the C library present, so you don't need to go out of your way to install
 it.
-
-
-## Issues and feedback
-
-Got an issue or an idea for a feature enhancement? Check out the [borgmatic
-issue tracker](https://projects.torsion.org/witten/borgmatic/issues). In order
-to create a new issue or comment on an issue, you'll need to [login
-first](https://projects.torsion.org/user/login). Note that you can login with
-an existing GitHub account if you prefer.
-
-Other questions or comments? Contact <mailto:witten@torsion.org>.
