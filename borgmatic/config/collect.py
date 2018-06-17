@@ -1,8 +1,11 @@
 import os
 
 
-DEFAULT_CONFIG_PATHS = ['/etc/borgmatic/config.yaml', '/etc/borgmatic.d',
-                        os.path.expanduser('~/.config/borgmatic/config.yaml')]
+DEFAULT_CONFIG_PATHS = [
+    '/etc/borgmatic/config.yaml',
+    '/etc/borgmatic.d',
+    os.path.expanduser('~/.config/borgmatic/config.yaml'),
+]
 
 
 def collect_config_filenames(config_paths):
