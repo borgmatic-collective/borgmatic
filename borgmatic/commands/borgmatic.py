@@ -115,7 +115,9 @@ def run_configuration(config_filename, args):  # pragma: no cover
         local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
         borg_create.initialize_environment(storage)
-        hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
+
+        if args.create:
+            hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
         for unexpanded_repository in location['repositories']:
             repository = os.path.expanduser(unexpanded_repository)
@@ -171,7 +173,8 @@ def run_configuration(config_filename, args):  # pragma: no cover
                     remote_path=remote_path,
                 )
 
-        hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
+        if args.create:
+            hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
     except (OSError, CalledProcessError):
         hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
         raise
