@@ -1,5 +1,5 @@
 1.2.1.dev0
- *
+ * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.
