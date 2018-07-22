@@ -33,7 +33,7 @@ setup(
     ],
     install_requires=(
         'pykwalify>=1.6.0',
-        'ruamel.yaml<=0.15',
+        'ruamel.yaml>0.15.0,<0.16.0',
         'setuptools',
     ),
     tests_require=(

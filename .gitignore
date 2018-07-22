@@ -3,6 +3,7 @@
 *.swp
 .cache
 .coverage
+.pytest_cache
 .tox
 build
 dist

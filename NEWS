@@ -1,5 +1,6 @@
 1.2.1.dev0
  * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
+ * #38, #76: Upgrade ruamel.yaml compatibility version range and fix support for Python 3.7.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.
