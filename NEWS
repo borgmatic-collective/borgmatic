@@ -1,6 +1,8 @@
 1.2.1.dev0
  * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
  * #38, #76: Upgrade ruamel.yaml compatibility version range and fix support for Python 3.7.
+ * #77: Skip non-"*.yaml" config filenames in /etc/borgmatic.d/ so as not to parse backup files,
+   editor swap files, etc.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.

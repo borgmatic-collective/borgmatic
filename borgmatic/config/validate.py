@@ -10,6 +10,7 @@ from ruamel import yaml
 
 logger = logging.getLogger(__name__)
 
+
 def schema_filename():
     '''
     Path to the installed YAML configuration schema file, used to validate and parse the
