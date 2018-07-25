@@ -3,6 +3,22 @@ from flexmock import flexmock
 from borgmatic.config import collect as module
 
 
+def test_get_default_config_paths_includes_absolute_user_config_path():
+    flexmock(module.os, environ={'XDG_CONFIG_HOME': None, 'HOME': '/home/user'})
+
+    config_paths = module.get_default_config_paths()
+
+    assert '/home/user/.config/borgmatic/config.yaml' in config_paths
+
+
+def test_get_default_config_paths_prefers_xdg_config_home_for_user_config_path():
+    flexmock(module.os, environ={'XDG_CONFIG_HOME': '/home/user/.etc', 'HOME': '/home/user'})
+
+    config_paths = module.get_default_config_paths()
+
+    assert '/home/user/.etc/borgmatic/config.yaml' in config_paths
+
+
 def test_collect_config_filenames_collects_given_files():
     config_paths = ('config.yaml', 'other.yaml')
     flexmock(module.os.path).should_receive('isdir').and_return(False)

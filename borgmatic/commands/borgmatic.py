@@ -24,6 +24,8 @@ def parse_arguments(*arguments):
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as an ArgumentParser instance.
     '''
+    config_paths = collect.get_default_config_paths()
+
     parser = ArgumentParser(
         description=
             '''
@@ -36,8 +38,8 @@ def parse_arguments(*arguments):
         '-c', '--config',
         nargs='+',
         dest='config_paths',
-        default=collect.DEFAULT_CONFIG_PATHS,
-        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(collect.DEFAULT_CONFIG_PATHS)),
+        default=config_paths,
+        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(config_paths)),
     )
     parser.add_argument(
         '--excludes',
