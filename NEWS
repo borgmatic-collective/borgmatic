@@ -2,9 +2,12 @@
  * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
  * #71: Support for XDG_CONFIG_HOME environment variable for specifying alternate user ~/.config/
    path.
+ * #74: Support for Borg --list --json options via borgmatic command-line to list all archives in
+   JSON format, ideal for programmatic consumption.
  * #38, #76: Upgrade ruamel.yaml compatibility version range and fix support for Python 3.7.
  * #77: Skip non-"*.yaml" config filenames in /etc/borgmatic.d/ so as not to parse backup files,
    editor swap files, etc.
+ * Add code style guidelines to the documention.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.

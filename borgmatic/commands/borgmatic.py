@@ -98,7 +98,7 @@ def parse_arguments(*arguments):
     args = parser.parse_args(arguments)
 
     if args.json and not args.list:
-        raise ValueError("The --json option can only be used with the --list option")
+        raise ValueError('The --json option can only be used with the --list option')
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
@@ -143,14 +143,18 @@ def run_configuration(config_filename, args):  # pragma: no cover
 def _run_commands(args, consistency, local_path, location, remote_path, retention, storage):
     json_results = []
     for unexpanded_repository in location['repositories']:
-        _run_commands_on_repository(args, consistency, json_results, local_path, location, remote_path, retention,
-                                    storage, unexpanded_repository)
+        _run_commands_on_repository(
+            args, consistency, json_results, local_path, location, remote_path, retention, storage,
+            unexpanded_repository,
+        )
     if args.json:
         sys.stdout.write(json.dumps(json_results))
 
 
-def _run_commands_on_repository(args, consistency, json_results, local_path, location, remote_path, retention, storage,
-                                unexpanded_repository):  # pragma: no cover
+def _run_commands_on_repository(
+    args, consistency, json_results, local_path, location, remote_path,
+    retention, storage, unexpanded_repository,
+):  # pragma: no cover
     repository = os.path.expanduser(unexpanded_repository)
     dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
     if args.prune:

@@ -326,6 +326,20 @@ to discuss your idea. We also accept Pull Requests on GitHub, if that's more
 your thing. In general, contributions are very welcome. We don't bite! 
 
 
+### Code style
+
+Start with [PEP 8](https://www.python.org/dev/peps/pep-0008/). But then, apply
+the following deviations from PEP 8:
+
+ * For strings, prefer single quotes over double quotes.
+ * Limit all lines to a maximum of 100 characters.
+ * Use trailing commas within multiline values or argument lists.
+ * Within multiline constructs:
+  * Use standard four-space indentation. Don't align indentation with an opening
+    delimeter.
+  * Put opening and closing delimeters on lines separate from their contents.
+
+
 ### Development
 
 To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
