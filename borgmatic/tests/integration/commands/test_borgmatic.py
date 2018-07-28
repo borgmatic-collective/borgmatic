@@ -15,6 +15,7 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert parser.config_paths == config_paths
     assert parser.excludes_filename == None
     assert parser.verbosity is None
+    assert parser.json is False
 
 
 def test_parse_arguments_with_path_arguments_overrides_defaults():
@@ -45,6 +46,11 @@ def test_parse_arguments_with_verbosity_flag_overrides_default():
     assert parser.config_paths == config_paths
     assert parser.excludes_filename == None
     assert parser.verbosity == 1
+
+
+def test_parse_arguments_with_json_flag_overrides_default():
+    parser = module.parse_arguments('--list', '--json')
+    assert parser.json is True
 
 
 def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
@@ -82,3 +88,8 @@ def test_parse_arguments_with_invalid_arguments_exits():
 
     with pytest.raises(SystemExit):
         module.parse_arguments('--posix-me-harder')
+
+
+def test_parse_arguments_with_json_flag_but_no_list_flag_raises_value_error():
+    with pytest.raises(ValueError):
+        module.parse_arguments('--json')

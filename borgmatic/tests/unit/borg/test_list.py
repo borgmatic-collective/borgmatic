@@ -8,7 +8,7 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 def insert_subprocess_mock(check_call_command, **kwargs):
     subprocess = flexmock(module.subprocess)
-    subprocess.should_receive('check_call').with_args(check_call_command, **kwargs).once()
+    subprocess.should_receive('check_output').with_args(check_call_command, **kwargs).once()
 
 
 LIST_COMMAND = ('borg', 'list', 'repo')
@@ -41,6 +41,17 @@ def test_list_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
         repository='repo',
         storage_config={},
         verbosity=VERBOSITY_LOTS,
+    )
+
+
+def test_list_archives_with_json_calls_borg_with_json_parameter():
+    insert_subprocess_mock(LIST_COMMAND + ('--json',))
+
+    module.list_archives(
+        verbosity=None,
+        repository='repo',
+        storage_config={},
+        json=True,
     )
 
 

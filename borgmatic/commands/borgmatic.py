@@ -1,5 +1,5 @@
-
 from argparse import ArgumentParser
+import json
 import logging
 import os
 from subprocess import CalledProcessError
@@ -77,6 +77,13 @@ def parse_arguments(*arguments):
         help='Display summary information on archives',
     )
     parser.add_argument(
+        '--json',
+        dest='json',
+        default=False,
+        action='store_true',
+        help='Output results from the --list option as json',
+    )
+    parser.add_argument(
         '-n', '--dry-run',
         dest='dry_run',
         action='store_true',
@@ -89,6 +96,9 @@ def parse_arguments(*arguments):
     )
 
     args = parser.parse_args(arguments)
+
+    if args.json and not args.list:
+        raise ValueError("The --json option can only be used with the --list option")
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
@@ -121,65 +131,83 @@ def run_configuration(config_filename, args):  # pragma: no cover
         if args.create:
             hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
-        for unexpanded_repository in location['repositories']:
-            repository = os.path.expanduser(unexpanded_repository)
-            dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
-            if args.prune:
-                logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
-                borg_prune.prune_archives(
-                    args.verbosity,
-                    args.dry_run,
-                    repository,
-                    storage,
-                    retention,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
-            if args.create:
-                logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
-                borg_create.create_archive(
-                    args.verbosity,
-                    args.dry_run,
-                    repository,
-                    location,
-                    storage,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
-            if args.check:
-                logger.info('{}: Running consistency checks'.format(repository))
-                borg_check.check_archives(
-                   args.verbosity,
-                    repository,
-                    storage,
-                    consistency,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
-            if args.list:
-                logger.info('{}: Listing archives'.format(repository))
-                borg_list.list_archives(
-                    args.verbosity,
-                    repository,
-                    storage,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
-            if args.info:
-                logger.info('{}: Displaying summary info for archives'.format(repository))
-                borg_info.display_archives_info(
-                    args.verbosity,
-                    repository,
-                    storage,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                )
+        _run_commands(args, consistency, local_path, location, remote_path, retention, storage)
 
         if args.create:
             hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
     except (OSError, CalledProcessError):
         hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
         raise
+
+
+def _run_commands(args, consistency, local_path, location, remote_path, retention, storage):
+    json_results = []
+    for unexpanded_repository in location['repositories']:
+        _run_commands_on_repository(args, consistency, json_results, local_path, location, remote_path, retention,
+                                    storage, unexpanded_repository)
+    if args.json:
+        sys.stdout.write(json.dumps(json_results))
+
+
+def _run_commands_on_repository(args, consistency, json_results, local_path, location, remote_path, retention, storage,
+                                unexpanded_repository):  # pragma: no cover
+    repository = os.path.expanduser(unexpanded_repository)
+    dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
+    if args.prune:
+        logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
+        borg_prune.prune_archives(
+            args.verbosity,
+            args.dry_run,
+            repository,
+            storage,
+            retention,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+    if args.create:
+        logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
+        borg_create.create_archive(
+            args.verbosity,
+            args.dry_run,
+            repository,
+            location,
+            storage,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+    if args.check:
+        logger.info('{}: Running consistency checks'.format(repository))
+        borg_check.check_archives(
+            args.verbosity,
+            repository,
+            storage,
+            consistency,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+    if args.list:
+        logger.info('{}: Listing archives'.format(repository))
+        output = borg_list.list_archives(
+            args.verbosity,
+            repository,
+            storage,
+            local_path=local_path,
+            remote_path=remote_path,
+            json=args.json,
+        )
+        if args.json:
+            json_results.append(json.loads(output))
+        else:
+            sys.stdout.write(output)
+    if args.info:
+        logger.info('{}: Displaying summary info for archives'.format(repository))
+        borg_info.display_archives_info(
+            args.verbosity,
+            repository,
+            storage,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
 
 
 def main():  # pragma: no cover
