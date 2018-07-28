@@ -334,10 +334,10 @@ the following deviations from PEP 8:
  * For strings, prefer single quotes over double quotes.
  * Limit all lines to a maximum of 100 characters.
  * Use trailing commas within multiline values or argument lists.
- * Within multiline constructs:
-  * Use standard four-space indentation. Don't align indentation with an opening
-    delimeter.
-  * Put opening and closing delimeters on lines separate from their contents.
+ * For multiline constructs, put opening and closing delimeters on lines
+   separate from their contents.
+ * Within multiline constructs, use standard four-space indentation. Don't align
+   indentation with an opening delimeter.
 
 
 ### Development
