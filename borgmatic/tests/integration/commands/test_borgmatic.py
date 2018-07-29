@@ -90,6 +90,16 @@ def test_parse_arguments_with_invalid_arguments_exits():
         module.parse_arguments('--posix-me-harder')
 
 
-def test_parse_arguments_with_json_flag_but_no_list_flag_raises_value_error():
+def test_parse_arguments_with_json_flag_with_list_or_info_flag_does_not_raise_any_error():
+    module.parse_arguments('--list', '--json')
+    module.parse_arguments('--info', '--json')
+
+
+def test_parse_arguments_with_json_flag_but_no_list_or_info_flag_raises_value_error():
     with pytest.raises(ValueError):
         module.parse_arguments('--json')
+
+
+def test_parse_arguments_with_json_flag_and_both_list_and_info_flag_raises_value_error():
+    with pytest.raises(ValueError):
+        module.parse_arguments('--list', '--info', '--json')

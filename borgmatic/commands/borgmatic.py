@@ -97,8 +97,13 @@ def parse_arguments(*arguments):
 
     args = parser.parse_args(arguments)
 
-    if args.json and not args.list:
-        raise ValueError('The --json option can only be used with the --list option')
+    if args.json and not (args.list or args.info):
+        raise ValueError('The --json option can only be used with the --list or --info options')
+
+    if args.json and args.list and args.info:
+        raise ValueError(
+            'With the --json option, options --list and --info cannot be used together'
+        )
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
@@ -205,13 +210,18 @@ def _run_commands_on_repository(
             sys.stdout.write(output)
     if args.info:
         logger.info('{}: Displaying summary info for archives'.format(repository))
-        borg_info.display_archives_info(
+        output = borg_info.display_archives_info(
             args.verbosity,
             repository,
             storage,
             local_path=local_path,
             remote_path=remote_path,
+            json=args.json,
         )
+        if args.json:
+            json_results.append(json.loads(output))
+        else:
+            sys.stdout.write(output)
 
 
 def main():  # pragma: no cover

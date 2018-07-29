@@ -7,8 +7,9 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 logger = logging.getLogger(__name__)
 
 
-def display_archives_info(verbosity, repository, storage_config, local_path='borg',
-                          remote_path=None):
+def display_archives_info(
+        verbosity, repository, storage_config, local_path='borg', remote_path=None, json=False
+):
     '''
     Given a verbosity flag, a local or remote repository path, and a storage config dict,
     display summary information for Borg archives in the repository.
@@ -19,6 +20,7 @@ def display_archives_info(verbosity, repository, storage_config, local_path='bor
         (local_path, 'info', repository)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--json',) if json else ())
         + {
             VERBOSITY_SOME: ('--info',),
             VERBOSITY_LOTS: ('--debug',),
@@ -26,4 +28,6 @@ def display_archives_info(verbosity, repository, storage_config, local_path='bor
     )
 
     logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+
+    output = subprocess.check_output(full_command)
+    return output.decode() if output is not None else None

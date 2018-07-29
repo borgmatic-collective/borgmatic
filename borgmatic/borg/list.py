@@ -7,7 +7,9 @@ from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 logger = logging.getLogger(__name__)
 
 
-def list_archives(verbosity, repository, storage_config, local_path='borg', remote_path=None, json=False):
+def list_archives(
+        verbosity, repository, storage_config, local_path='borg', remote_path=None, json=False
+):
     '''
     Given a verbosity flag, a local or remote repository path, and a storage config dict,
     list Borg archives in the repository.
