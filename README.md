@@ -138,6 +138,31 @@ configuration paths on the command-line with borgmatic's `--config` option.
 See `borgmatic --help` for more information.
 
 
+### Hooks
+
+If you find yourself performing prepraration tasks before your backup runs, or
+cleanup work afterwards, borgmatic hooks may be of interest. They're simply
+shell commands that borgmatic executes for you at various points, and they're
+configured in the `hooks` section of your configuration file.
+
+For instance, you can specify `before_backup` hooks to dump a database to file
+before backing it up, and specify `after_backup` hooks to delete the temporary
+file afterwards.
+
+borgmatic hooks run once per configuration file. `before_backup` hooks run
+prior to backups of all repositories. `after_backup` hooks run afterwards, but
+not if an error occurs in previous hook or in the backups themselves. And
+borgmatic runs `on_error` hooks if an error occurs.
+
+An important security note about hooks: borgmatic executes all hook commands
+with the user permissions of borgmatic itself. So to prevent potential shell
+injection or privilege escalation, do not forget to set secure permissions
+(chmod 0700) on borgmatic configuration files and scripts invoked by hooks.
+
+See the sample generated configuration file mentioned above for specifics
+about hook configuration syntax.
+
+
 ## Upgrading
 
 In general, all you should need to do to upgrade borgmatic is run the
@@ -329,7 +354,7 @@ your thing. In general, contributions are very welcome. We don't bite!
 ### Code style
 
 Start with [PEP 8](https://www.python.org/dev/peps/pep-0008/). But then, apply
-the following deviations from PEP 8:
+the following deviations from it:
 
  * For strings, prefer single quotes over double quotes.
  * Limit all lines to a maximum of 100 characters.
