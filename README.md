@@ -151,7 +151,7 @@ file afterwards.
 
 borgmatic hooks run once per configuration file. `before_backup` hooks run
 prior to backups of all repositories. `after_backup` hooks run afterwards, but
-not if an error occurs in previous hook or in the backups themselves. And
+not if an error occurs in a previous hook or in the backups themselves. And
 borgmatic runs `on_error` hooks if an error occurs.
 
 An important security note about hooks: borgmatic executes all hook commands
