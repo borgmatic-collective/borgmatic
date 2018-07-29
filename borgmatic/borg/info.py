@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def display_archives_info(
-        verbosity, repository, storage_config, local_path='borg', remote_path=None, json=False
+    verbosity, repository, storage_config, local_path='borg', remote_path=None, json=False
 ):
     '''
     Given a verbosity flag, a local or remote repository path, and a storage config dict,
