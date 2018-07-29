@@ -275,7 +275,7 @@ configure a job runner to invoke it periodically.
 ### cron
 
 If you're using cron, download the [sample cron
-file](https://projects.torsion.org/witten/borgmatic/raw/master/sample/cron/borgmatic).
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
 ```bash
