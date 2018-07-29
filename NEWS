@@ -1,4 +1,4 @@
-1.2.1.dev0
+1.2.1
  * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
  * #71: Support for XDG_CONFIG_HOME environment variable for specifying alternate user ~/.config/
    path.
