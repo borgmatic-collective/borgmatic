@@ -1,3 +1,7 @@
+1.2.2
+ * #85: Fix compatibility issue between pykwalify and ruamel.yaml 0.15.52, which manifested in
+   borgmatic as a pykwalify RuleError.
+
 1.2.1
  * Skip before/after backup hooks when only doing --prune, --check, --list, and/or --info.
  * #71: Support for XDG_CONFIG_HOME environment variable for specifying alternate user ~/.config/

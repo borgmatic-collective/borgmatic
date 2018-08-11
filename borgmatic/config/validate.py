@@ -74,8 +74,8 @@ def parse_configuration(config_filename, schema_filename):
     logging.getLogger('pykwalify').setLevel(logging.ERROR)
 
     try:
-        config = yaml.round_trip_load(open(config_filename))
-        schema = yaml.round_trip_load(open(schema_filename))
+        config = yaml.safe_load(open(config_filename))
+        schema = yaml.safe_load(open(schema_filename))
     except yaml.error.YAMLError as error:
         raise Validation_error(config_filename, (str(error),))
 
