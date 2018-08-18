@@ -1,3 +1,7 @@
+1.2.3.dev0
+ * #88: Fix declared pykwalify compatibility version range in setup.py to prevent use of ancient
+   versions of pykwalify with large version numbers.
+
 1.2.2
  * #85: Fix compatibility issue between pykwalify and ruamel.yaml 0.15.52, which manifested in
    borgmatic as a pykwalify RuleError.
