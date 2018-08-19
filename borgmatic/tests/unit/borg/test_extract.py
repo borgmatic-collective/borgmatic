@@ -73,11 +73,11 @@ def test_extract_last_archive_dry_run_with_verbosity_some_should_call_borg_with_
 def test_extract_last_archive_dry_run_with_verbosity_lots_should_call_borg_with_debug_parameter():
     flexmock(sys.stdout).encoding = 'utf-8'
     insert_subprocess_check_output_mock(
-        ('borg', 'list', '--short', 'repo', '--debug'),
+        ('borg', 'list', '--short', 'repo', '--debug', '--show-rc'),
         result='archive1\narchive2\n'.encode('utf-8'),
     )
     insert_subprocess_mock(
-        ('borg', 'extract', '--dry-run', 'repo::archive2', '--debug', '--list'),
+        ('borg', 'extract', '--dry-run', 'repo::archive2', '--debug', '--show-rc', '--list'),
     )
 
     module.extract_last_archive_dry_run(

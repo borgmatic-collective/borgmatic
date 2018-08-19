@@ -37,6 +37,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--nobsdflags$' \
             | grep -v '^--pattern$' \
             | grep -v '^--repository-only$' \
+            | grep -v '^--show-rc$' \
             | grep -v '^--stats$' \
             | grep -v '^--verbose$' \
             | grep -v '^--warning$' \

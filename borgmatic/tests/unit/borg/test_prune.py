@@ -92,7 +92,7 @@ def test_prune_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(PRUNE_COMMAND + ('--debug', '--stats', '--list'))
+    insert_subprocess_mock(PRUNE_COMMAND + ('--debug', '--stats', '--list', '--show-rc'))
 
     module.prune_archives(
         repository='repo',

@@ -56,7 +56,7 @@ def prune_archives(verbosity, dry_run, repository, storage_config, retention_con
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + {
             VERBOSITY_SOME: ('--info', '--stats',),
-            VERBOSITY_LOTS: ('--debug', '--stats', '--list'),
+            VERBOSITY_LOTS: ('--debug', '--stats', '--list', '--show-rc'),
         }.get(verbosity, ())
         + (('--dry-run',) if dry_run else ())
     )

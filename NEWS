@@ -3,6 +3,7 @@
    borgmatic's storage configuration.
  * #88: Fix declared pykwalify compatibility version range in setup.py to prevent use of ancient
    versions of pykwalify with large version numbers.
+ * #89: Pass --show-rc option to Borg when at highest verbosity level.
 
 1.2.2
  * #85: Fix compatibility issue between pykwalify and ruamel.yaml 0.15.52, which manifested in

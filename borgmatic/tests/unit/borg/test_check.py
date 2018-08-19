@@ -173,7 +173,7 @@ def test_check_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     insert_subprocess_mock(
-        ('borg', 'check', 'repo', '--debug'),
+        ('borg', 'check', 'repo', '--debug', '--show-rc'),
         stdout=None, stderr=STDOUT,
     )
 

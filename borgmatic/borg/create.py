@@ -151,8 +151,8 @@ def create_archive(
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + {
-            VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats',),
-            VERBOSITY_LOTS: ('--debug', '--list',) if dry_run else ('--debug', '--list', '--stats',),
+            VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats'),
+            VERBOSITY_LOTS: ('--debug', '--list', '--show-rc') if dry_run else ('--debug', '--list', '--show-rc', '--stats'),
         }.get(verbosity, ())
         + (('--dry-run',) if dry_run else ())
     )

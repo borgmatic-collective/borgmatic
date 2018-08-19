@@ -23,7 +23,7 @@ def list_archives(
         + (('--json',) if json else ())
         + {
             VERBOSITY_SOME: ('--info',),
-            VERBOSITY_LOTS: ('--debug',),
+            VERBOSITY_LOTS: ('--debug', '--show-rc'),
         }.get(verbosity, ())
     )
 
