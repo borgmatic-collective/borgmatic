@@ -374,6 +374,26 @@ def test_create_archive_with_dry_run_and_verbosity_lots_calls_borg_without_stats
     )
 
 
+def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_interval_parameters():
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--checkpoint-interval', '600'))
+
+    module.create_archive(
+        verbosity=None,
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'checkpoint_interval': 600},
+    )
+
+
 def test_create_archive_with_compression_calls_borg_with_compression_parameters():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)

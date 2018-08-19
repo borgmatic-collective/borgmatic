@@ -115,6 +115,7 @@ def create_archive(
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
     exclude_file = _write_pattern_file(_expand_directories(location_config.get('exclude_patterns')))
+    checkpoint_interval = storage_config.get('checkpoint_interval', None)
     compression = storage_config.get('compression', None)
     remote_rate_limit = storage_config.get('remote_rate_limit', None)
     umask = storage_config.get('umask', None)
@@ -140,6 +141,7 @@ def create_archive(
             location_config,
             exclude_file.name if exclude_file else None,
         )
+        + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--compression', compression) if compression else ())
         + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
         + (('--one-file-system',) if location_config.get('one_file_system') else ())
