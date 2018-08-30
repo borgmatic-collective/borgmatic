@@ -388,7 +388,7 @@ the following deviations from it:
 
 To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
 
-```
+```bash
 git clone https://projects.torsion.org/witten/borgmatic.git
 ```
 
