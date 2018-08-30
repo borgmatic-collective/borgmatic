@@ -1,6 +1,11 @@
-<img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
-
+---
+layout: layouts/main.njk
+title: borgmatic
+permalink: borgmatic/index.html
+---
 ## Overview
+
+<img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic (formerly atticmatic) is a simple Python wrapper script for the
 [Borg](https://borgbackup.readthedocs.org/en/stable/) backup software that
