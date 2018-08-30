@@ -7,7 +7,7 @@ permalink: borgmatic/index.html
 
 <img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
 
-borgmatic (formerly atticmatic) is a simple Python wrapper script for the
+borgmatic is a simple Python wrapper script for the
 [Borg](https://borgbackup.readthedocs.org/en/stable/) backup software that
 initiates a backup, prunes any old backups according to a retention policy,
 and validates backups for consistency. The script supports specifying your
@@ -162,7 +162,7 @@ borgmatic runs `on_error` hooks if an error occurs.
 An important security note about hooks: borgmatic executes all hook commands
 with the user permissions of borgmatic itself. So to prevent potential shell
 injection or privilege escalation, do not forget to set secure permissions
-(chmod 0700) on borgmatic configuration files and scripts invoked by hooks.
+(`chmod 0700`) on borgmatic configuration files and scripts invoked by hooks.
 
 See the sample generated configuration file mentioned above for specifics
 about hook configuration syntax.
@@ -295,6 +295,20 @@ You can run with only one of these flags provided, or you can mix and match
 any number of them. This supports use cases like running consistency checks
 from a different cron job with a different frequency, or running pruning with
 a different verbosity level.
+
+Additionally, borgmatic provides convenient flags for Borg's
+[list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
+[info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
+functionality:
+
+
+```bash
+borgmatic --list
+borgmatic --info
+```
+
+You can include an optional `--json` flag with either `--list` or `--info` to
+get the output formatted as JSON.
 
 
 ## Autopilot
