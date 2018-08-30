@@ -81,7 +81,7 @@ def parse_arguments(*arguments):
         dest='json',
         default=False,
         action='store_true',
-        help='Output results from the --list option as json',
+        help='Output results from the --list or --info options as json',
     )
     parser.add_argument(
         '-n', '--dry-run',

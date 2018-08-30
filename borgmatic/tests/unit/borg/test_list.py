@@ -35,7 +35,7 @@ def test_list_archives_with_verbosity_some_calls_borg_with_info_parameter():
 
 
 def test_list_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
-    insert_subprocess_mock(LIST_COMMAND + ('--debug',))
+    insert_subprocess_mock(LIST_COMMAND + ('--debug', '--show-rc'))
 
     module.list_archives(
         repository='repo',

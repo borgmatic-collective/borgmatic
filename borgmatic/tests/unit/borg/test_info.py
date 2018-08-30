@@ -35,7 +35,7 @@ def test_display_archives_info_with_verbosity_some_calls_borg_with_info_paramete
 
 
 def test_display_archives_info_with_verbosity_lots_calls_borg_with_debug_parameter():
-    insert_subprocess_mock(INFO_COMMAND + ('--debug',))
+    insert_subprocess_mock(INFO_COMMAND + ('--debug', '--show-rc'))
 
     module.display_archives_info(
         repository='repo',

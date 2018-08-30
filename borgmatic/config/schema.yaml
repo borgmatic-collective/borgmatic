@@ -124,6 +124,13 @@ map:
                     punctuation, so it parses correctly. And backslash any quote or backslash
                     literals as well.
                 example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+            checkpoint_interval:
+                type: int
+                desc: |
+                    Number of seconds between each checkpoint during a long-running backup. See
+                    https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there
+                    for details. Defaults to checkpoints every 1800 seconds (30 minutes).
+                example: 1800
             compression:
                 type: scalar
                 desc: |

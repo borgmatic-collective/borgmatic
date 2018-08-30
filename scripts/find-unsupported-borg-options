@@ -22,22 +22,29 @@ for sub_command in prune create check list info; do
     sort borgmatic_borg_flags > borgmatic_borg_flags.sorted
     mv borgmatic_borg_flags.sorted borgmatic_borg_flags
 
-    for line in $(borg $sub_command --help | awk -v RS= '/^usage:/') ; do
+    for word in $(borg $sub_command --help | grep '^  -') ; do
         # Exclude a bunch of flags that borgmatic actually supports, but don't get exercised by the
         # generated sample config, and also flags that don't make sense to support.
-        echo "$line" | grep -- -- | sed -r 's/(\[|\])//g' \
-            | grep -v '^-h$' \
+        echo "$word" | grep ^-- | sed -e 's/,$//' \
             | grep -v '^--archives-only$' \
-            | grep -v '^--repository-only$' \
-            | grep -v '^--stats$' \
-            | grep -v '^--list$' \
             | grep -v '^--critical$' \
-            | grep -v '^--error$' \
-            | grep -v '^--warning$' \
-            | grep -v '^--info$' \
             | grep -v '^--debug$' \
+            | grep -v '^--dry-run$' \
+            | grep -v '^--error$' \
+            | grep -v '^--help$' \
+            | grep -v '^--info$' \
+            | grep -v '^--list$' \
+            | grep -v '^--nobsdflags$' \
+            | grep -v '^--pattern$' \
+            | grep -v '^--repository-only$' \
+            | grep -v '^--show-rc$' \
+            | grep -v '^--stats$' \
+            | grep -v '^--verbose$' \
+            | grep -v '^--warning$' \
+            | grep -v '^-h$' \
             >> all_borg_flags
     done
+
     sort all_borg_flags > all_borg_flags.sorted
     mv all_borg_flags.sorted all_borg_flags
 

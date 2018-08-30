@@ -93,7 +93,7 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
         lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
         verbosity_flags = {
             VERBOSITY_SOME: ('--info',),
-            VERBOSITY_LOTS: ('--debug',),
+            VERBOSITY_LOTS: ('--debug', '--show-rc'),
         }.get(verbosity, ())
         prefix = consistency_config.get('prefix')
 

@@ -17,7 +17,7 @@ def extract_last_archive_dry_run(verbosity, repository, lock_wait=None, local_pa
     lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
     verbosity_flags = {
         VERBOSITY_SOME: ('--info',),
-        VERBOSITY_LOTS: ('--debug',),
+        VERBOSITY_LOTS: ('--debug', '--show-rc'),
     }.get(verbosity, ())
 
     full_list_command = (
