@@ -1,3 +1,6 @@
+---json
+{"title": "borgmatic", "permalink": "borgmatic/index.html"}
+---
 ## Overview
 
 <img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
