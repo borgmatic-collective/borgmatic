@@ -1,5 +1,6 @@
----json
-{"title": "borgmatic", "permalink": "borgmatic/index.html"}
+---
+title: borgmatic
+permalink: borgmatic/index.html
 ---
 ## Overview
 
