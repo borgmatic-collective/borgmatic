@@ -7,11 +7,11 @@ permalink: borgmatic/index.html
 <img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic is a simple Python wrapper script for the
-[Borg](https://borgbackup.readthedocs.org/en/stable/) backup software that
-initiates a backup, prunes any old backups according to a retention policy,
-and validates backups for consistency. The script supports specifying your
-settings in a declarative configuration file rather than having to put them
-all on the command-line, and handles common errors.
+[Borg](https://www.borgbackup.org/) backup software that initiates a backup,
+prunes any old backups according to a retention policy, and validates backups
+for consistency. The script supports specifying your settings in a declarative
+configuration file rather than having to put them all on the command-line, and
+handles common errors.
 
 Here's an example config file:
 
