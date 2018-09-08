@@ -3,7 +3,6 @@ import os
 import subprocess
 
 from borgmatic.borg import extract
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 DEFAULT_CHECKS = ('repository', 'archives')
@@ -74,12 +73,10 @@ def _make_check_flags(checks, check_last=None, prefix=None):
     ) + last_flags + prefix_flags
 
 
-def check_archives(verbosity, repository, storage_config, consistency_config, local_path='borg',
-                   remote_path=None):
+def check_archives(repository, storage_config, consistency_config, local_path='borg', remote_path=None):
     '''
-    Given a verbosity flag, a local or remote repository path, a storage config dict, a consistency
-    config dict, and a local/remote commands to run, check the contained Borg archives for
-    consistency.
+    Given a local or remote repository path, a storage config dict, a consistency config dict, 
+    and a local/remote commands to run, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
@@ -91,10 +88,13 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
         remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
         lock_wait = storage_config.get('lock_wait', None)
         lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
-        verbosity_flags = {
-            VERBOSITY_SOME: ('--info',),
-            VERBOSITY_LOTS: ('--debug', '--show-rc'),
-        }.get(verbosity, ())
+
+        verbosity_flags = ()
+        if logger.isEnabledFor(logging.INFO):
+            verbosity_flags = ('--info',)
+        if logger.isEnabledFor(logging.DEBUG):
+            verbosity_flags = ('--debug', '--show-rc')
+
         prefix = consistency_config.get('prefix')
 
         full_command = (
@@ -109,4 +109,4 @@ def check_archives(verbosity, repository, storage_config, consistency_config, lo
         subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
 
     if 'extract' in checks:
-        extract.extract_last_archive_dry_run(verbosity, repository, lock_wait, local_path, remote_path)
+        extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

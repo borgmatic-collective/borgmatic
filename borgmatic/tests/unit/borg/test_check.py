@@ -1,12 +1,11 @@
 from subprocess import STDOUT
-import sys
+import logging, sys
 
 from flexmock import flexmock
 import pytest
 
 from borgmatic.borg import check as module
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
-
+from borgmatic.tests.unit.test_verbosity import insert_logging_mock
 
 def insert_subprocess_mock(check_call_command, **kwargs):
     subprocess = flexmock(module.subprocess)
@@ -125,7 +124,6 @@ def test_check_archives_calls_borg_with_parameters(checks):
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
@@ -142,43 +140,42 @@ def test_check_archives_with_extract_check_calls_extract_only():
     insert_subprocess_never()
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
     )
 
 
-def test_check_archives_with_verbosity_some_calls_borg_with_info_parameter():
+def test_check_archives_with_log_info_calls_borg_with_info_parameter():
     checks = ('repository',)
     consistency_config = {'check_last': None}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
+    insert_logging_mock(logging.INFO)
     insert_subprocess_mock(
         ('borg', 'check', 'repo', '--info'),
         stdout=None, stderr=STDOUT,
     )
 
     module.check_archives(
-        verbosity=VERBOSITY_SOME,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
     )
 
 
-def test_check_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
+def test_check_archives_with_log_debug_calls_borg_with_debug_parameter():
     checks = ('repository',)
     consistency_config = {'check_last': None}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
+    insert_logging_mock(logging.DEBUG)
     insert_subprocess_mock(
         ('borg', 'check', 'repo', '--debug', '--show-rc'),
         stdout=None, stderr=STDOUT,
     )
 
     module.check_archives(
-        verbosity=VERBOSITY_LOTS,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
@@ -191,7 +188,6 @@ def test_check_archives_without_any_checks_bails():
     insert_subprocess_never()
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
@@ -213,7 +209,6 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
@@ -236,7 +231,6 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,
@@ -259,7 +253,6 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={'lock_wait': 5},
         consistency_config=consistency_config,
@@ -283,7 +276,6 @@ def test_check_archives_with_retention_prefix():
     flexmock(module.os).should_receive('devnull')
 
     module.check_archives(
-        verbosity=None,
         repository='repo',
         storage_config={},
         consistency_config=consistency_config,

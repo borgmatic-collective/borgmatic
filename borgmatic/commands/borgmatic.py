@@ -10,7 +10,7 @@ from borgmatic.borg import check as borg_check, create as borg_create, prune as 
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
 from borgmatic.signals import configure_signals
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS, verbosity_to_log_level
+from borgmatic.verbosity import verbosity_to_log_level
 
 
 logger = logging.getLogger(__name__)
@@ -165,7 +165,6 @@ def _run_commands_on_repository(
     if args.prune:
         logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
         borg_prune.prune_archives(
-            args.verbosity,
             args.dry_run,
             repository,
             storage,
@@ -176,7 +175,6 @@ def _run_commands_on_repository(
     if args.create:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
         borg_create.create_archive(
-            args.verbosity,
             args.dry_run,
             repository,
             location,
@@ -187,7 +185,6 @@ def _run_commands_on_repository(
     if args.check:
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
-            args.verbosity,
             repository,
             storage,
             consistency,
@@ -197,7 +194,6 @@ def _run_commands_on_repository(
     if args.list:
         logger.info('{}: Listing archives'.format(repository))
         output = borg_list.list_archives(
-            args.verbosity,
             repository,
             storage,
             local_path=local_path,
@@ -211,7 +207,6 @@ def _run_commands_on_repository(
     if args.info:
         logger.info('{}: Displaying summary info for archives'.format(repository))
         output = borg_info.display_archives_info(
-            args.verbosity,
             repository,
             storage,
             local_path=local_path,
