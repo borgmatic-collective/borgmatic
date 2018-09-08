@@ -1,14 +1,16 @@
+import logging
 from collections import OrderedDict
 
 from flexmock import flexmock
 
 from borgmatic.borg import prune as module
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+from borgmatic.tests.unit.test_verbosity import insert_logging_mock
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):
     subprocess = flexmock(module.subprocess)
     subprocess.should_receive('check_call').with_args(check_call_command, **kwargs).once()
+
 
 
 BASE_PRUNE_FLAGS = (
@@ -63,7 +65,6 @@ def test_prune_archives_calls_borg_with_parameters():
     insert_subprocess_mock(PRUNE_COMMAND)
 
     module.prune_archives(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         storage_config={},
@@ -71,33 +72,33 @@ def test_prune_archives_calls_borg_with_parameters():
     )
 
 
-def test_prune_archives_with_verbosity_some_calls_borg_with_info_parameter():
+def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(PRUNE_COMMAND + ('--info', '--stats',))
+    insert_subprocess_mock(PRUNE_COMMAND + ('--stats', '--info',))
+    insert_logging_mock(logging.INFO)
 
     module.prune_archives(
         repository='repo',
         storage_config={},
-        verbosity=VERBOSITY_SOME,
         dry_run=False,
         retention_config=retention_config,
     )
 
 
-def test_prune_archives_with_verbosity_lots_calls_borg_with_debug_parameter():
+def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS,
     )
-    insert_subprocess_mock(PRUNE_COMMAND + ('--debug', '--stats', '--list', '--show-rc'))
+    insert_subprocess_mock(PRUNE_COMMAND + ('--stats', '--debug', '--list', '--show-rc'))
+    insert_logging_mock(logging.DEBUG)
 
     module.prune_archives(
         repository='repo',
         storage_config={},
-        verbosity=VERBOSITY_LOTS,
         dry_run=False,
         retention_config=retention_config,
     )
@@ -113,7 +114,6 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
     module.prune_archives(
         repository='repo',
         storage_config={},
-        verbosity=None,
         dry_run=True,
         retention_config=retention_config,
     )
@@ -127,7 +127,6 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
     insert_subprocess_mock(('borg1',) + PRUNE_COMMAND[1:])
 
     module.prune_archives(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         storage_config={},
@@ -144,7 +143,6 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     insert_subprocess_mock(PRUNE_COMMAND + ('--remote-path', 'borg1'))
 
     module.prune_archives(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         storage_config={},
@@ -162,7 +160,6 @@ def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
     insert_subprocess_mock(PRUNE_COMMAND + ('--umask', '077'))
 
     module.prune_archives(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         storage_config=storage_config,
@@ -179,7 +176,6 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     insert_subprocess_mock(PRUNE_COMMAND + ('--lock-wait', '5'))
 
     module.prune_archives(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         storage_config=storage_config,

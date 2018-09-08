@@ -5,8 +5,6 @@ import os
 import subprocess
 import tempfile
 
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
-
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +103,7 @@ def _make_exclude_flags(location_config, exclude_filename=None):
 
 
 def create_archive(
-    verbosity, dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None,
+    dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None,
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
@@ -150,10 +148,10 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + {
-            VERBOSITY_SOME: ('--info',) if dry_run else ('--info', '--stats'),
-            VERBOSITY_LOTS: ('--debug', '--list', '--show-rc') if dry_run else ('--debug', '--list', '--show-rc', '--stats'),
-        }.get(verbosity, ())
+        + (('--list', '--filter', 'AME',) if logger.isEnabledFor(logging.INFO) else ())
+        + (( '--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
     )
 

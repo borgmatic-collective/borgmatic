@@ -1,9 +1,9 @@
-import os
+import logging, os
 
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
+from borgmatic.tests.unit.test_verbosity import insert_logging_mock
 
 
 def test_initialize_environment_with_passcommand_should_set_environment():
@@ -216,7 +216,6 @@ def test_create_archive_calls_borg_with_parameters():
     insert_subprocess_mock(CREATE_COMMAND)
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -237,7 +236,6 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
     insert_subprocess_mock(CREATE_COMMAND + pattern_flags)
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -258,7 +256,6 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     insert_subprocess_mock(CREATE_COMMAND + exclude_flags)
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -270,16 +267,16 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     )
 
 
-def test_create_archive_with_verbosity_some_calls_borg_with_info_parameter():
+def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--info', '--stats',))
-
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--stats',))
+    insert_logging_mock(logging.INFO)
+    
     module.create_archive(
-        verbosity=VERBOSITY_SOME,
         dry_run=False,
         repository='repo',
         location_config={
@@ -291,15 +288,15 @@ def test_create_archive_with_verbosity_some_calls_borg_with_info_parameter():
     )
 
 
-def test_create_archive_with_verbosity_lots_calls_borg_with_debug_parameter():
+def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--show-rc', '--stats'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME','--stats', '--debug', '--show-rc'))
+    insert_logging_mock(logging.DEBUG)
 
     module.create_archive(
-        verbosity=VERBOSITY_LOTS,
         dry_run=False,
         repository='repo',
         location_config={
@@ -320,7 +317,6 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     insert_subprocess_mock(CREATE_COMMAND + ('--dry-run',))
 
     module.create_archive(
-        verbosity=None,
         dry_run=True,
         repository='repo',
         location_config={
@@ -332,16 +328,18 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     )
 
 
-def test_create_archive_with_dry_run_and_verbosity_some_calls_borg_without_stats_parameter():
+def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_parameter():
+    """ --dry-run and --stats are mutually exclusive, see:
+    https://borgbackup.readthedocs.io/en/stable/usage/create.html#description """
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--info', '--dry-run'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--dry-run'))
+    insert_logging_mock(logging.INFO)
 
     module.create_archive(
-        verbosity=VERBOSITY_SOME,
         dry_run=True,
         repository='repo',
         location_config={
@@ -353,16 +351,18 @@ def test_create_archive_with_dry_run_and_verbosity_some_calls_borg_without_stats
     )
 
 
-def test_create_archive_with_dry_run_and_verbosity_lots_calls_borg_without_stats_parameter():
+def test_create_archive_with_dry_run_and_log_debug_calls_borg_without_stats_parameter():
+    """ --dry-run and --stats are mutually exclusive, see:
+    https://borgbackup.readthedocs.io/en/stable/usage/create.html#description """
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--debug', '--list', '--show-rc', '--dry-run'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--debug', '--show-rc', '--dry-run'))
+    insert_logging_mock(logging.DEBUG)
 
     module.create_archive(
-        verbosity=VERBOSITY_LOTS,
         dry_run=True,
         repository='repo',
         location_config={
@@ -382,7 +382,6 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     insert_subprocess_mock(CREATE_COMMAND + ('--checkpoint-interval', '600'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -402,7 +401,6 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     insert_subprocess_mock(CREATE_COMMAND + ('--compression', 'rle'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -422,7 +420,6 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_
     insert_subprocess_mock(CREATE_COMMAND + ('--remote-ratelimit', '100'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -442,7 +439,6 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     insert_subprocess_mock(CREATE_COMMAND + ('--one-file-system',))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -463,7 +459,6 @@ def test_create_archive_with_bsd_flags_true_calls_borg_without_nobsdflags_parame
     insert_subprocess_mock(CREATE_COMMAND)
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -484,7 +479,6 @@ def test_create_archive_with_bsd_flags_false_calls_borg_with_nobsdflags_paramete
     insert_subprocess_mock(CREATE_COMMAND + ('--nobsdflags',))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -505,7 +499,6 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     insert_subprocess_mock(CREATE_COMMAND + ('--files-cache', 'ctime,size'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -526,7 +519,6 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
     insert_subprocess_mock(('borg1',) + CREATE_COMMAND[1:])
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -547,7 +539,6 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
     insert_subprocess_mock(CREATE_COMMAND + ('--remote-path', 'borg1'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -568,7 +559,6 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     insert_subprocess_mock(CREATE_COMMAND + ('--umask', '740'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -588,7 +578,6 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     insert_subprocess_mock(CREATE_COMMAND + ('--lock-wait', '5'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -609,7 +598,6 @@ def test_create_archive_with_source_directories_glob_expands():
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -630,7 +618,6 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return([])
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -650,7 +637,6 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
     insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -670,7 +656,6 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
     insert_subprocess_mock(('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={
@@ -692,7 +677,6 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     insert_subprocess_mock(('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'))
 
     module.create_archive(
-        verbosity=None,
         dry_run=False,
         repository='repo',
         location_config={

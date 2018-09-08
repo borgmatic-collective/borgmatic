@@ -1,7 +1,6 @@
 import logging
 import subprocess
 
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 
 
 logger = logging.getLogger(__name__)
@@ -32,10 +31,9 @@ def _make_prune_flags(retention_config):
     )
 
 
-def prune_archives(verbosity, dry_run, repository, storage_config, retention_config,
-                   local_path='borg', remote_path=None):
+def prune_archives(dry_run, repository, storage_config, retention_config, local_path='borg', remote_path=None):
     '''
-    Given verbosity/dry-run flags, a local or remote repository path, a storage config dict, and a
+    Given dry-run flag, a local or remote repository path, a storage config dict, and a
     retention config dict, prune Borg archives according to the retention policy specified in that
     configuration.
     '''
@@ -54,10 +52,9 @@ def prune_archives(verbosity, dry_run, repository, storage_config, retention_con
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + {
-            VERBOSITY_SOME: ('--info', '--stats',),
-            VERBOSITY_LOTS: ('--debug', '--stats', '--list', '--show-rc'),
-        }.get(verbosity, ())
+        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
+        + (( '--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
     )
 
