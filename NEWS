@@ -1,4 +1,6 @@
 1.2.3.dev0
+ * Part of #80: Support for Borg create --read-special via "read_special" option in borgmatic's
+   location configuration.
  * #87: Support for Borg create --checkpoint-interval via "checkpoint_interval" option in
    borgmatic's storage configuration.
  * #88: Fix declared pykwalify compatibility version range in setup.py to prevent use of ancient

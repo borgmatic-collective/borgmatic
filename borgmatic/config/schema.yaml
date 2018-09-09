@@ -25,9 +25,9 @@ map:
             read_special:
                 type: bool
                 desc: |
-                    Use borg's --read-special flag to allow backup of block and other special
+                    Use Borg's --read-special flag to allow backup of block and other special
                     devices. Use with caution, as it will lead to problems if used when
-                    backing up special devices such as /dev/zero
+                    backing up special devices such as /dev/zero.
                 example: false
             bsd_flags:
                 type: bool
