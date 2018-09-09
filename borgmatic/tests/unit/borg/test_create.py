@@ -451,6 +451,27 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     )
 
 
+def test_create_archive_with_read_special_calls_borg_with_read_special_parameters():
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--read-special',))
+
+    module.create_archive(
+        verbosity=None,
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'read_special': True,
+            'exclude_patterns': None,
+        },
+        storage_config={},
+    )
+
+
 def test_create_archive_with_bsd_flags_true_calls_borg_without_nobsdflags_parameter():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
