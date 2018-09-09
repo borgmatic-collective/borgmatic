@@ -1,4 +1,6 @@
 1.2.3.dev0
+ * #64, #90: Rewrite of logging system. Now verbosity flags passed to Borg are derived from
+   borgmatic's log level. Note that the output of borgmatic might slightly change.
  * Part of #80: Support for Borg create --read-special via "read_special" option in borgmatic's
    location configuration.
  * #87: Support for Borg create --checkpoint-interval via "checkpoint_interval" option in
@@ -6,8 +8,6 @@
  * #88: Fix declared pykwalify compatibility version range in setup.py to prevent use of ancient
    versions of pykwalify with large version numbers.
  * #89: Pass --show-rc option to Borg when at highest verbosity level.
- * #90: Rewrite of logging system. Now verbosity flags passed to borg are derived from borgmatic's
-   log level. Note that the output of borgmatic might slightly change.
 
 1.2.2
  * #85: Fix compatibility issue between pykwalify and ruamel.yaml 0.15.52, which manifested in
