@@ -139,6 +139,7 @@ def create_archive(
             location_config,
             exclude_file.name if exclude_file else None,
         )
+        + ('--info',)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--compression', compression) if compression else ())
         + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
@@ -150,11 +151,16 @@ def create_archive(
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--list', '--filter', 'AME',) if logger.isEnabledFor(logging.INFO) else ())
-        + (( '--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
+        + (('--stats',) if not dry_run else ('--dry-run',))
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--dry-run',) if dry_run else ())
     )
 
     logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+    output = subprocess.check_output(full_command, stderr=subprocess.STDOUT, universal_newlines=True)
+    if logger.isEnabledFor(logging.INFO):
+        logger.debug(output)
+    if not dry_run:
+        borg_output_logger = logging.getLogger('borg_output')
+        borg_output_logger.info('=== borg create ===')
+        borg_output_logger.info(output)
+        borg_output_logger.info('=== borg create end ===')

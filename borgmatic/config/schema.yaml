@@ -269,3 +269,16 @@ map:
                 desc: List of one or more shell commands or scripts to execute in case an exception has occurred.
                 example:
                     - echo "`date` - Error while creating a backup."
+    metrics:
+        desc: Module to log metrics for each borgmatic run. Currently we support the Prometheus format.
+        map:
+            prometheus:
+                desc: |
+                    The Prometheus module. It will write all metrics to a file.
+                    You will need Node exporter's Textfile Collector to read that file.
+                map:
+                    path:
+                        required: true
+                        type: str
+                        desc: Path to file
+                        example: /var/lib/node_exporter/textfile_collector/borgmatic.prom
