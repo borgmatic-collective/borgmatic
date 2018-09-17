@@ -10,7 +10,7 @@ from borgmatic.borg import check as borg_check, create as borg_create, prune as 
      list as borg_list, info as borg_info
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
-from borgmatic.metrics import create_metrics
+from borgmatic.metrics.base import create_metrics
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -137,8 +137,8 @@ def run_configuration(config_filename, args):  # pragma: no cover
 
         if metrics and not args.dry_run:
             stream = StringIO()
-            sh = logging.StreamHandler(stream)
-            logging.getLogger('borg_output').addHandler(sh)
+            stream_handler = logging.StreamHandler(stream)
+            logging.getLogger('borg_output').addHandler(stream_handler)
             logging.getLogger('borg_output').setLevel(logging.INFO)
 
         if args.create:

@@ -48,12 +48,11 @@ def prune_archives(dry_run, repository, storage_config, retention_config, local_
             for pair in _make_prune_flags(retention_config)
             for element in pair
         )
-        + ('--info',)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--stats',) if not dry_run else ('--dry-run',))
-        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ('--info',))
     )
 
     logger.debug(' '.join(full_command))
