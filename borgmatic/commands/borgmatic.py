@@ -92,6 +92,8 @@ def parse_arguments(*arguments):
     parser.add_argument(
         '-v', '--verbosity',
         type=int,
+        choices=range(0,3),
+        default=0,
         help='Display verbose progress (1 for some, 2 for lots)',
     )
 

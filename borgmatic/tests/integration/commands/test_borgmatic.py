@@ -14,7 +14,7 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
 
     assert parser.config_paths == config_paths
     assert parser.excludes_filename == None
-    assert parser.verbosity is None
+    assert parser.verbosity is 0
     assert parser.json is False
 
 
@@ -25,7 +25,7 @@ def test_parse_arguments_with_path_arguments_overrides_defaults():
 
     assert parser.config_paths == ['myconfig']
     assert parser.excludes_filename == 'myexcludes'
-    assert parser.verbosity is None
+    assert parser.verbosity is 0
 
 
 def test_parse_arguments_with_multiple_config_paths_parses_as_list():
@@ -34,7 +34,7 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     parser = module.parse_arguments('--config', 'myconfig', 'otherconfig')
 
     assert parser.config_paths == ['myconfig', 'otherconfig']
-    assert parser.verbosity is None
+    assert parser.verbosity is 0
 
 
 def test_parse_arguments_with_verbosity_flag_overrides_default():
