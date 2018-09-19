@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import json
 import logging
 import os
+from io import StringIO
 from subprocess import CalledProcessError
 import sys
 
@@ -9,6 +10,7 @@ from borgmatic.borg import check as borg_check, create as borg_create, prune as 
      list as borg_list, info as borg_info
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
+from borgmatic.metrics.base import create_metrics
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -125,15 +127,21 @@ def run_configuration(config_filename, args):  # pragma: no cover
     '''
     logger.info('{}: Parsing configuration file'.format(config_filename))
     config = validate.parse_configuration(config_filename, validate.schema_filename())
-    (location, storage, retention, consistency, hooks) = (
+    (location, storage, retention, consistency, hooks, metrics) = (
         config.get(section_name, {})
-        for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
+        for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks', 'metrics')
     )
 
     try:
         local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
         borg_create.initialize_environment(storage)
+
+        if metrics and not args.dry_run:
+            stream = StringIO()
+            stream_handler = logging.StreamHandler(stream)
+            logging.getLogger('borg_output').addHandler(stream_handler)
+            logging.getLogger('borg_output').setLevel(logging.INFO)
 
         if args.create:
             hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
@@ -142,6 +150,10 @@ def run_configuration(config_filename, args):  # pragma: no cover
 
         if args.create:
             hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
+
+        if metrics and not args.dry_run:
+            create_metrics(metrics)
+
     except (OSError, CalledProcessError):
         hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
         raise
@@ -225,7 +237,13 @@ def main():  # pragma: no cover
     try:
         configure_signals()
         args = parse_arguments(*sys.argv[1:])
-        logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
+        log = logging.getLogger('borgmatic')
+        log.setLevel(verbosity_to_log_level(args.verbosity))
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(message)s')
+        handler.setFormatter(formatter)
+        handler.setLevel(verbosity_to_log_level(args.verbosity))
+        log.addHandler(handler)
 
         config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
         logger.debug('Ensuring legacy configuration is upgraded')

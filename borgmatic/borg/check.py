@@ -102,11 +102,14 @@ def check_archives(repository, storage_config, consistency_config, local_path='b
             repository,
         ) + _make_check_flags(checks, check_last, prefix) + remote_path_flags + lock_wait_flags + verbosity_flags
 
-        # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
-        stdout = None if verbosity_flags else open(os.devnull, 'w')
-
         logger.debug(' '.join(full_command))
-        subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(full_command, stderr=subprocess.STDOUT, universal_newlines=True)
+        logger.debug(output)
+
+        borg_output_logger = logging.getLogger('borg_output')
+        borg_output_logger.info('=== borg check ===')
+        borg_output_logger.info(output)
+        borg_output_logger.info('=== borg check end ===')
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

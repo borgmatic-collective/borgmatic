@@ -2,7 +2,6 @@ import logging
 import subprocess
 
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -52,11 +51,16 @@ def prune_archives(dry_run, repository, storage_config, retention_config, local_
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
-        + (( '--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--dry-run',) if dry_run else ())
+        + (('--stats',) if not dry_run else ('--dry-run',))
+        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ('--info',))
     )
 
     logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+    output = subprocess.check_output(full_command, stderr=subprocess.STDOUT, universal_newlines=True)
+    if logger.isEnabledFor(logging.INFO):
+        logger.debug(output)
+    if not dry_run:
+        borg_output_logger = logging.getLogger('borg_output')
+        borg_output_logger.info('=== borg prune ===')
+        borg_output_logger.info(output)
+        borg_output_logger.info('=== borg prune end ===')
