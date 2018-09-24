@@ -103,8 +103,7 @@ def _make_exclude_flags(location_config, exclude_filename=None):
 
 
 def create_archive(
-    dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None,
-):
+        dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None, json=False):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
     storage config dict, create a Borg archive.
@@ -154,6 +153,7 @@ def create_archive(
         + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
+        + (('--json',) if json else ())
     )
 
     logger.debug(' '.join(full_command))
