@@ -99,8 +99,8 @@ def parse_arguments(*arguments):
 
     args = parser.parse_args(arguments)
 
-    if args.json and not (args.list or args.info):
-        raise ValueError('The --json option can only be used with the --list or --info options')
+    if args.json and not (args.create or args.list or args.info):
+        raise ValueError('The --json option can only be used with the --create, --list or --info  options')
 
     if args.json and args.list and args.info:
         raise ValueError(
@@ -192,6 +192,7 @@ def _run_commands_on_repository(
             consistency,
             local_path=local_path,
             remote_path=remote_path,
+            json=args.json
         )
     if args.list:
         logger.info('{}: Listing archives'.format(repository))
