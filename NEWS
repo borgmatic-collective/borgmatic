@@ -1,4 +1,4 @@
-1.2.3.dev0
+1.2.3
  * #64, #90, #92: Rewrite of logging system. Now verbosity flags passed to Borg are derived from
    borgmatic's log level. Note that the output of borgmatic might slightly change.
  * Part of #80: Support for Borg create --read-special via "read_special" option in borgmatic's
