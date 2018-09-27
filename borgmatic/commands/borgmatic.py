@@ -81,7 +81,7 @@ def parse_arguments(*arguments):
         dest='json',
         default=False,
         action='store_true',
-        help='Output results from the --list or --info options as json',
+        help='Output results from the --create, --list, or --info options as json',
     )
     parser.add_argument(
         '-n', '--dry-run',
@@ -100,7 +100,7 @@ def parse_arguments(*arguments):
     args = parser.parse_args(arguments)
 
     if args.json and not (args.create or args.list or args.info):
-        raise ValueError('The --json option can only be used with the --create, --list or --info  options')
+        raise ValueError('The --json option can only be used with the --create, --list, or --info options')
 
     if args.json and args.list and args.info:
         raise ValueError(

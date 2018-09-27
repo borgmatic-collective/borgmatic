@@ -306,8 +306,8 @@ borgmatic --list
 borgmatic --info
 ```
 
-You can include an optional `--json` flag with either `--list` or `--info` to
-get the output formatted as JSON.
+You can include an optional `--json` flag with `--create`, `--list`, or
+`--info` to get the output formatted as JSON.
 
 
 ## Autopilot
