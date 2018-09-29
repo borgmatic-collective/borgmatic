@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '1.2.5'
+VERSION = '1.2.6'
 
 
 setup(

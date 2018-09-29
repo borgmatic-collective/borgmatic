@@ -1,3 +1,7 @@
+1.2.6
+ * Fix generated configuration to also include a "keep_daily" value so pruning works out of the
+   box.
+
 1.2.5
  * #57: When generating sample configuration with generate-borgmatic-config, comment out all
    optional configuration so as to streamline the initial configuration process.

@@ -55,6 +55,10 @@ def _comment_out_line(line):
     return '#'.join((one_indent, line[INDENT:]))
 
 
+REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
+REQUIRED_SECTION_NAMES = {'location', 'retention'}
+
+
 def _comment_out_optional_configuration(rendered_config):
     '''
     Post-process a rendered configuration string to comment out optional key/values. The idea is
@@ -68,12 +72,17 @@ def _comment_out_optional_configuration(rendered_config):
     required = False
 
     for line in rendered_config.split('\n'):
+        key = line.strip().split(':')[0]
+
+        if key in REQUIRED_SECTION_NAMES:
+            lines.append(line)
+            continue
+
         # Upon encountering a required configuration option, skip commenting out lines until the
         # next blank line.
-        stripped_line = line.strip()
-        if stripped_line in {'source_directories:', 'repositories:'} or line == 'location:':
+        if key in REQUIRED_KEYS:
             required = True
-        elif not stripped_line:
+        elif not key:
             required = False
 
         lines.append(_comment_out_line(line) if not required else line)
