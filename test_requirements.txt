@@ -1,5 +1,5 @@
 flexmock==0.10.2
 pykwalify==1.6.1
-pytest==3.7.4
-pytest-cov==2.5.1
+pytest==3.8.1
+pytest-cov==2.6.0
 ruamel.yaml>0.15.0,<0.16.0
