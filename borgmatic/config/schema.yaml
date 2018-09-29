@@ -18,6 +18,16 @@ map:
                     - /home
                     - /etc
                     - /var/log/syslog*
+            repositories:
+                required: true
+                seq:
+                    - type: scalar
+                desc: |
+                    Paths to local or remote repositories (required). Tildes are expanded. Multiple
+                    repositories are backed up to in sequence. See ssh_command for SSH options like
+                    identity file or port.
+                example:
+                    - user@backupserver:sourcehostname.borg
             one_file_system:
                 type: bool
                 desc: Stay in same file system (do not cross mount points).
@@ -48,16 +58,6 @@ map:
                 type: scalar
                 desc: Alternate Borg remote executable. Defaults to "borg".
                 example: borg1
-            repositories:
-                required: true
-                seq:
-                    - type: scalar
-                desc: |
-                    Paths to local or remote repositories (required). Tildes are expanded. Multiple
-                    repositories are backed up to in sequence. See ssh_command for SSH options like
-                    identity file or port.
-                example:
-                    - user@backupserver:sourcehostname.borg
             patterns:
                 seq:
                     - type: scalar
