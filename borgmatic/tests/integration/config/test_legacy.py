@@ -8,7 +8,7 @@ from borgmatic.config import legacy as module
 
 def test_parse_section_options_with_punctuation_should_return_section_options():
     parser = module.RawConfigParser()
-    parser.readfp(StringIO('[section]\nfoo: {}\n'.format(string.punctuation)))
+    parser.read_file(StringIO('[section]\nfoo: {}\n'.format(string.punctuation)))
 
     section_format = module.Section_format(
         'section',

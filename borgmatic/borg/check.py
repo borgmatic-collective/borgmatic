@@ -60,9 +60,9 @@ def _make_check_flags(checks, check_last=None, prefix=None):
         last_flags = ()
         prefix_flags = ()
         if check_last:
-            logger.warn('Ignoring check_last option, as "archives" is not in consistency checks.')
+            logger.warning('Ignoring check_last option, as "archives" is not in consistency checks.')
         if prefix:
-            logger.warn('Ignoring consistency prefix option, as "archives" is not in consistency checks.')
+            logger.warning('Ignoring consistency prefix option, as "archives" is not in consistency checks.')
         
     if set(DEFAULT_CHECKS).issubset(set(checks)):
         return last_flags + prefix_flags
