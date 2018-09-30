@@ -3,7 +3,7 @@ import logging
 from flexmock import flexmock
 
 from borgmatic.borg import info as module
-from borgmatic.tests.unit.test_verbosity import insert_logging_mock
+from ..test_verbosity import insert_logging_mock
 
 
 def insert_subprocess_mock(check_call_command, **kwargs):

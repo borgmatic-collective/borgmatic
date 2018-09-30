@@ -4,7 +4,7 @@ import os
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
-from borgmatic.tests.unit.test_verbosity import insert_logging_mock
+from ..test_verbosity import insert_logging_mock
 
 
 def test_initialize_environment_with_passcommand_should_set_environment():
