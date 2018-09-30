@@ -42,10 +42,7 @@ def _expand_directories(directories):
         return ()
 
     return tuple(
-        itertools.chain.from_iterable(
-            _expand_directory(directory)
-            for directory in directories
-        )
+        itertools.chain.from_iterable(_expand_directory(directory) for directory in directories)
     )
 
 
@@ -75,8 +72,7 @@ def _make_pattern_flags(location_config, pattern_filename=None):
 
     return tuple(
         itertools.chain.from_iterable(
-            ('--patterns-from', pattern_filename)
-            for pattern_filename in pattern_filenames
+            ('--patterns-from', pattern_filename) for pattern_filename in pattern_filenames
         )
     )
 
@@ -91,8 +87,7 @@ def _make_exclude_flags(location_config, exclude_filename=None):
     )
     exclude_from_flags = tuple(
         itertools.chain.from_iterable(
-            ('--exclude-from', exclude_filename)
-            for exclude_filename in exclude_filenames
+            ('--exclude-from', exclude_filename) for exclude_filename in exclude_filenames
         )
     )
     caches_flag = ('--exclude-caches',) if location_config.get('exclude_caches') else ()
@@ -103,7 +98,14 @@ def _make_exclude_flags(location_config, exclude_filename=None):
 
 
 def create_archive(
-        dry_run, repository, location_config, storage_config, local_path='borg', remote_path=None, json=False):
+    dry_run,
+    repository,
+    location_config,
+    storage_config,
+    local_path='borg',
+    remote_path=None,
+    json=False,
+):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
     storage config dict, create a Borg archive.
@@ -123,21 +125,15 @@ def create_archive(
 
     full_command = (
         (
-            local_path, 'create',
+            local_path,
+            'create',
             '{repository}::{archive_name_format}'.format(
-                repository=repository,
-                archive_name_format=archive_name_format,
+                repository=repository, archive_name_format=archive_name_format
             ),
         )
         + sources
-        + _make_pattern_flags(
-            location_config,
-            pattern_file.name if pattern_file else None,
-        )
-        + _make_exclude_flags(
-            location_config,
-            exclude_file.name if exclude_file else None,
-        )
+        + _make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
+        + _make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--compression', compression) if compression else ())
         + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
@@ -148,8 +144,8 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AME',) if logger.isEnabledFor(logging.INFO) else ())
-        + (( '--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--list', '--filter', 'AME') if logger.isEnabledFor(logging.INFO) else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())

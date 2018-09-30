@@ -25,17 +25,9 @@ def test_validate_configuration_format_with_valid_config_should_not_raise():
     parser.should_receive('options').with_args('other').and_return(('such',))
     config_format = (
         module.Section_format(
-            'section',
-            options=(
-                module.Config_option('stuff', str, required=True),
-            ),
+            'section', options=(module.Config_option('stuff', str, required=True),)
         ),
-        module.Section_format(
-            'other',
-            options=(
-                module.Config_option('such', str, required=True),
-            ),
-        ),
+        module.Section_format('other', options=(module.Config_option('such', str, required=True),)),
     )
 
     module.validate_configuration_format(parser, config_format)
@@ -46,10 +38,7 @@ def test_validate_configuration_format_with_missing_required_section_should_rais
     parser.should_receive('sections').and_return(('section',))
     config_format = (
         module.Section_format(
-            'section',
-            options=(
-                module.Config_option('stuff', str, required=True),
-            ),
+            'section', options=(module.Config_option('stuff', str, required=True),)
         ),
         # At least one option in this section is required, so the section is required.
         module.Section_format(
@@ -71,10 +60,7 @@ def test_validate_configuration_format_with_missing_optional_section_should_not_
     parser.should_receive('options').with_args('section').and_return(('stuff',))
     config_format = (
         module.Section_format(
-            'section',
-            options=(
-                module.Config_option('stuff', str, required=True),
-            ),
+            'section', options=(module.Config_option('stuff', str, required=True),)
         ),
         # No options in the section are required, so the section is optional.
         module.Section_format(
@@ -92,9 +78,7 @@ def test_validate_configuration_format_with_missing_optional_section_should_not_
 def test_validate_configuration_format_with_unknown_section_should_raise():
     parser = flexmock()
     parser.should_receive('sections').and_return(('section', 'extra'))
-    config_format = (
-        module.Section_format('section', options=()),
-    )
+    config_format = (module.Section_format('section', options=()),)
 
     with pytest.raises(ValueError):
         module.validate_configuration_format(parser, config_format)
@@ -141,8 +125,7 @@ def test_validate_configuration_format_with_extra_option_should_raise():
     parser.should_receive('options').with_args('section').and_return(('option', 'extra'))
     config_format = (
         module.Section_format(
-            'section',
-            options=(module.Config_option('option', str, required=True),),
+            'section', options=(module.Config_option('option', str, required=True),)
         ),
     )
 
@@ -168,12 +151,7 @@ def test_parse_section_options_should_return_section_options():
 
     config = module.parse_section_options(parser, section_format)
 
-    assert config == OrderedDict(
-        (
-            ('foo', 'value'),
-            ('bar', 1),
-        )
-    )
+    assert config == OrderedDict((('foo', 'value'), ('bar', 1)))
 
 
 def test_parse_section_options_for_missing_section_should_return_empty_dict():
@@ -210,13 +188,13 @@ def test_parse_configuration_should_return_section_configs():
     config_format = (flexmock(name='items'), flexmock(name='things'))
     mock_module = flexmock(module)
     mock_module.should_receive('validate_configuration_format').with_args(
-        parser, config_format,
+        parser, config_format
     ).once()
     mock_section_configs = (flexmock(), flexmock())
 
     for section_format, section_config in zip(config_format, mock_section_configs):
         mock_module.should_receive('parse_section_options').with_args(
-            parser, section_format,
+            parser, section_format
         ).and_return(section_config).once()
 
     parsed_config = module.parse_configuration('filename', config_format)

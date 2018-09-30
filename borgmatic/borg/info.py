@@ -5,7 +5,9 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-def display_archives_info(repository, storage_config, local_path='borg', remote_path=None, json=False):
+def display_archives_info(
+    repository, storage_config, local_path='borg', remote_path=None, json=False
+):
     '''
     Given a local or remote repository path, and a storage config dict,
     display summary information for Borg archives in the repository.
@@ -16,7 +18,7 @@ def display_archives_info(repository, storage_config, local_path='borg', remote_
         (local_path, 'info', repository)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--info',)  if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--json',) if json else ())
     )

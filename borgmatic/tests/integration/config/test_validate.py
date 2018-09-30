@@ -10,7 +10,7 @@ from borgmatic.config import validate as module
 
 
 def test_schema_filename_returns_plausable_path():
-    schema_path = module.schema_filename()    
+    schema_path = module.schema_filename()
 
     assert schema_path.endswith('/schema.yaml')
 
@@ -75,7 +75,9 @@ def test_parse_configuration_passes_through_quoted_punctuation():
 
             repositories:
                 - "{}.borg"
-        '''.format(escaped_punctuation)
+        '''.format(
+            escaped_punctuation
+        )
     )
 
     result = module.parse_configuration('config.yaml', 'schema.yaml')
@@ -84,7 +86,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
         'location': {
             'source_directories': ['/home'],
             'repositories': ['{}.borg'.format(string.punctuation)],
-        },
+        }
     }
 
 
@@ -111,7 +113,7 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
                         required: true
                         seq:
                             - type: scalar
-        '''
+        ''',
     )
 
     module.parse_configuration('config.yaml', 'schema.yaml')

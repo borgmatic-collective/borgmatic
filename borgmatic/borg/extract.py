@@ -18,13 +18,13 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         verbosity_flags = ('--debug', '--show-rc')
     elif logger.isEnabledFor(logging.INFO):
         verbosity_flags = ('--info',)
-    
 
     full_list_command = (
-        local_path, 'list',
-        '--short',
-        repository,
-    ) + remote_path_flags + lock_wait_flags + verbosity_flags
+        (local_path, 'list', '--short', repository)
+        + remote_path_flags
+        + lock_wait_flags
+        + verbosity_flags
+    )
 
     list_output = subprocess.check_output(full_list_command).decode(sys.stdout.encoding)
 
@@ -34,13 +34,19 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
     full_extract_command = (
-        local_path, 'extract',
-        '--dry-run',
-        '{repository}::{last_archive_name}'.format(
-            repository=repository,
-            last_archive_name=last_archive_name,
-        ),
-    ) + remote_path_flags + lock_wait_flags + verbosity_flags + list_flag
+        (
+            local_path,
+            'extract',
+            '--dry-run',
+            '{repository}::{last_archive_name}'.format(
+                repository=repository, last_archive_name=last_archive_name
+            ),
+        )
+        + remote_path_flags
+        + lock_wait_flags
+        + verbosity_flags
+        + list_flag
+    )
 
     logger.debug(' '.join(full_extract_command))
     subprocess.check_call(full_extract_command)

@@ -7,8 +7,8 @@ def get_default_config_paths():
     default configuration paths. This includes both system-wide configuration and configuration in
     the current user's home directory.
     '''
-    user_config_directory = (
-        os.getenv('XDG_CONFIG_HOME') or os.path.expandvars(os.path.join('$HOME', '.config'))
+    user_config_directory = os.getenv('XDG_CONFIG_HOME') or os.path.expandvars(
+        os.path.join('$HOME', '.config')
     )
 
     return [

@@ -24,6 +24,7 @@ class Validation_error(ValueError):
     A collection of error message strings generated when attempting to validate a particular
     configurartion file.
     '''
+
     def __init__(self, config_filename, error_messages):
         self.config_filename = config_filename
         self.error_messages = error_messages
@@ -48,15 +49,16 @@ def apply_logical_validation(config_filename, parsed_configuration):
 
     if archive_name_format and not prefix:
         raise Validation_error(
-            config_filename, (
-                'If you provide an archive_name_format, you must also specify a retention prefix.',
-            )
+            config_filename,
+            ('If you provide an archive_name_format, you must also specify a retention prefix.',),
         )
 
     consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
     if archive_name_format and not consistency_prefix:
-        logger.warning('Since version 1.1.16, if you provide `archive_name_format`, you should also'
-                       ' specify `consistency.prefix`.')
+        logger.warning(
+            'Since version 1.1.16, if you provide `archive_name_format`, you should also'
+            ' specify `consistency.prefix`.'
+        )
 
 
 def parse_configuration(config_filename, schema_filename):

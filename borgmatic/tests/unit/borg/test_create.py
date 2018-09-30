@@ -71,8 +71,12 @@ def test_expand_directory_with_glob_expands():
 
 
 def test_expand_directories_flattens_expanded_directories():
-    flexmock(module).should_receive('_expand_directory').with_args('~/foo').and_return(['/root/foo'])
-    flexmock(module).should_receive('_expand_directory').with_args('bar*').and_return(['bar', 'barf'])
+    flexmock(module).should_receive('_expand_directory').with_args('~/foo').and_return(
+        ['/root/foo']
+    )
+    flexmock(module).should_receive('_expand_directory').with_args('bar*').and_return(
+        ['bar', 'barf']
+    )
 
     paths = module._expand_directories(('~/foo', 'bar*'))
 
@@ -86,11 +90,7 @@ def test_expand_directories_considers_none_as_no_directories():
 
 
 def test_write_pattern_file_does_not_raise():
-    temporary_file = flexmock(
-        name='filename',
-        write=lambda mode: None,
-        flush=lambda: None,
-    )
+    temporary_file = flexmock(name='filename', write=lambda mode: None, flush=lambda: None)
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
 
     module._write_pattern_file(['exclude'])
@@ -107,8 +107,7 @@ def insert_subprocess_mock(check_call_command, **kwargs):
 
 def test_make_pattern_flags_includes_pattern_filename_when_given():
     pattern_flags = module._make_pattern_flags(
-        location_config={'patterns': ['R /', '- /var']},
-        pattern_filename='/tmp/patterns',
+        location_config={'patterns': ['R /', '- /var']}, pattern_filename='/tmp/patterns'
     )
 
     assert pattern_flags == ('--patterns-from', '/tmp/patterns')
@@ -116,7 +115,7 @@ def test_make_pattern_flags_includes_pattern_filename_when_given():
 
 def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
     pattern_flags = module._make_pattern_flags(
-        location_config={'patterns_from': ['patterns', 'other']},
+        location_config={'patterns_from': ['patterns', 'other']}
     )
 
     assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', 'other')
@@ -124,25 +123,21 @@ def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
 
 def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patterns_from_in_config():
     pattern_flags = module._make_pattern_flags(
-        location_config={'patterns_from': ['patterns']},
-        pattern_filename='/tmp/patterns',
+        location_config={'patterns_from': ['patterns']}, pattern_filename='/tmp/patterns'
     )
 
     assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', '/tmp/patterns')
 
 
 def test_make_pattern_flags_considers_none_patterns_from_filenames_as_empty():
-    pattern_flags = module._make_pattern_flags(
-        location_config={'patterns_from': None},
-    )
+    pattern_flags = module._make_pattern_flags(location_config={'patterns_from': None})
 
     assert pattern_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
     exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_patterns': ['*.pyc', '/var']},
-        exclude_filename='/tmp/excludes',
+        location_config={'exclude_patterns': ['*.pyc', '/var']}, exclude_filename='/tmp/excludes'
     )
 
     assert exclude_flags == ('--exclude-from', '/tmp/excludes')
@@ -151,7 +146,7 @@ def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
 def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
 
     exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_from': ['excludes', 'other']},
+        location_config={'exclude_from': ['excludes', 'other']}
     )
 
     assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', 'other')
@@ -159,41 +154,32 @@ def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
 
 def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_exclude_from_in_config():
     exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_from': ['excludes']},
-        exclude_filename='/tmp/excludes',
+        location_config={'exclude_from': ['excludes']}, exclude_filename='/tmp/excludes'
     )
 
     assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', '/tmp/excludes')
 
 
 def test_make_exclude_flags_considers_none_exclude_from_filenames_as_empty():
-    exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_from': None},
-    )
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_from': None})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
-    exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_caches': True},
-    )
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_caches': True})
 
     assert exclude_flags == ('--exclude-caches',)
 
 
 def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config():
-    exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_caches': False},
-    )
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_caches': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
-    exclude_flags = module._make_exclude_flags(
-        location_config={'exclude_if_present': 'exclude_me'},
-    )
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_if_present': 'exclude_me'})
 
     assert exclude_flags == ('--exclude-if-present', 'exclude_me')
 
@@ -230,7 +216,9 @@ def test_create_archive_calls_borg_with_parameters():
 def test_create_archive_with_patterns_calls_borg_with_patterns():
     pattern_flags = ('--patterns-from', 'patterns')
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(flexmock(name='/tmp/patterns')).and_return(None)
+    flexmock(module).should_receive('_write_pattern_file').and_return(
+        flexmock(name='/tmp/patterns')
+    ).and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(pattern_flags)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(CREATE_COMMAND + pattern_flags)
@@ -249,8 +237,12 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
 
 def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     exclude_flags = ('--exclude-from', 'excludes')
-    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(('exclude',))
-    flexmock(module).should_receive('_write_pattern_file').and_return(None).and_return(flexmock(name='/tmp/excludes'))
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(
+        ('exclude',)
+    )
+    flexmock(module).should_receive('_write_pattern_file').and_return(None).and_return(
+        flexmock(name='/tmp/excludes')
+    )
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(exclude_flags)
     insert_subprocess_mock(CREATE_COMMAND + exclude_flags)
@@ -273,9 +265,9 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--stats',))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--stats'))
     insert_logging_mock(logging.INFO)
-    
+
     module.create_archive(
         dry_run=False,
         repository='repo',
@@ -293,7 +285,9 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME','--stats', '--debug', '--show-rc'))
+    insert_subprocess_mock(
+        CREATE_COMMAND + ('--list', '--filter', 'AME', '--stats', '--debug', '--show-rc')
+    )
     insert_logging_mock(logging.DEBUG)
 
     module.create_archive(
@@ -359,7 +353,9 @@ def test_create_archive_with_dry_run_and_log_debug_calls_borg_without_stats_para
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--debug', '--show-rc', '--dry-run'))
+    insert_subprocess_mock(
+        CREATE_COMMAND + ('--list', '--filter', 'AME', '--debug', '--show-rc', '--dry-run')
+    )
     insert_logging_mock(logging.DEBUG)
 
     module.create_archive(
@@ -625,16 +621,20 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
             'exclude_patterns': None,
         },
         storage_config={},
-        json=True
+        json=True,
     )
 
 
 def test_create_archive_with_source_directories_glob_expands():
-    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'food')).and_return(())
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'food')).and_return(
+        ()
+    )
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
+    insert_subprocess_mock(
+        ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food')
+    )
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
     module.create_archive(
@@ -670,11 +670,15 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
 
 
 def test_create_archive_with_glob_calls_borg_with_expanded_directories():
-    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'food')).and_return(())
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'food')).and_return(
+        ()
+    )
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'))
+    insert_subprocess_mock(
+        ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food')
+    )
 
     module.create_archive(
         dry_run=False,
@@ -703,9 +707,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={
-            'archive_name_format': 'ARCHIVE_NAME',
-        },
+        storage_config={'archive_name_format': 'ARCHIVE_NAME'},
     )
 
 
@@ -724,7 +726,5 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={
-            'archive_name_format': 'Documents_{hostname}-{now}',
-        },
+        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},
     )

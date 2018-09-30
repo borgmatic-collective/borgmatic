@@ -13,7 +13,11 @@ def execute_hook(commands, config_filename, description):
     if len(commands) == 1:
         logger.info('{}: Running command for {} hook'.format(config_filename, description))
     else:
-        logger.info('{}: Running {} commands for {} hook'.format(config_filename, len(commands), description))
+        logger.info(
+            '{}: Running {} commands for {} hook'.format(
+                config_filename, len(commands), description
+            )
+        )
 
     for command in commands:
         logger.debug('{}: Hook command: {}'.format(config_filename, command))

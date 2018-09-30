@@ -45,12 +45,8 @@ CONFIG_FORMAT = (
         ),
     ),
     Section_format(
-        'consistency',
-        (
-            option('checks', required=False),
-            option('check_last', required=False),
-        ),
-    )
+        'consistency', (option('checks', required=False), option('check_last', required=False))
+    ),
 )
 
 
@@ -66,7 +62,8 @@ def validate_configuration_format(parser, config_format):
     '''
     section_names = set(parser.sections())
     required_section_names = tuple(
-        section.name for section in config_format
+        section.name
+        for section in config_format
         if any(option.required for option in section.options)
     )
 
@@ -80,9 +77,7 @@ def validate_configuration_format(parser, config_format):
 
     missing_section_names = set(required_section_names) - section_names
     if missing_section_names:
-        raise ValueError(
-            'Missing config sections: {}'.format(', '.join(missing_section_names))
-        )
+        raise ValueError('Missing config sections: {}'.format(', '.join(missing_section_names)))
 
     for section_format in config_format:
         if section_format.name not in section_names:
@@ -91,26 +86,28 @@ def validate_configuration_format(parser, config_format):
         option_names = parser.options(section_format.name)
         expected_options = section_format.options
 
-        unexpected_option_names = set(option_names) - set(option.name for option in expected_options)
+        unexpected_option_names = set(option_names) - set(
+            option.name for option in expected_options
+        )
 
         if unexpected_option_names:
             raise ValueError(
                 'Unexpected options found in config section {}: {}'.format(
-                    section_format.name,
-                    ', '.join(sorted(unexpected_option_names)),
+                    section_format.name, ', '.join(sorted(unexpected_option_names))
                 )
             )
 
         missing_option_names = tuple(
-            option.name for option in expected_options if option.required
+            option.name
+            for option in expected_options
+            if option.required
             if option.name not in option_names
         )
 
         if missing_option_names:
             raise ValueError(
                 'Required options missing from config section {}: {}'.format(
-                    section_format.name,
-                    ', '.join(missing_option_names)
+                    section_format.name, ', '.join(missing_option_names)
                 )
             )
 
@@ -123,11 +120,7 @@ def parse_section_options(parser, section_format):
 
     Raise ValueError if any option values cannot be coerced to the expected Python data type.
     '''
-    type_getter = {
-        str: parser.get,
-        int: parser.getint,
-        bool: parser.getboolean,
-    }
+    type_getter = {str: parser.get, int: parser.getint, bool: parser.getboolean}
 
     return OrderedDict(
         (option.name, type_getter[option.value_type](section_format.name, option.name))
@@ -151,11 +144,10 @@ def parse_configuration(config_filename, config_format):
 
     # Describes a parsed configuration, where each attribute is the name of a configuration file
     # section and each value is a dict of that section's parsed options.
-    Parsed_config = namedtuple('Parsed_config', (section_format.name for section_format in config_format))
+    Parsed_config = namedtuple(
+        'Parsed_config', (section_format.name for section_format in config_format)
+    )
 
     return Parsed_config(
-        *(
-            parse_section_options(parser, section_format)
-            for section_format in config_format
-        )
+        *(parse_section_options(parser, section_format) for section_format in config_format)
     )

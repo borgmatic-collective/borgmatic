@@ -1,3 +1,6 @@
+1.2.7.dev0
+ * Use Black code formatter as part of running automated tests.
+
 1.2.6
  * Fix generated configuration to also include a "keep_daily" value so pruning works out of the
    box.

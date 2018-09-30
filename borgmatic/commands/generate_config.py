@@ -16,10 +16,13 @@ def parse_arguments(*arguments):
     '''
     parser = ArgumentParser(description='Generate a sample borgmatic YAML configuration file.')
     parser.add_argument(
-        '-d', '--destination',
+        '-d',
+        '--destination',
         dest='destination_filename',
         default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help='Destination YAML configuration filename. Default: {}'.format(DEFAULT_DESTINATION_CONFIG_FILENAME),
+        help='Destination YAML configuration filename. Default: {}'.format(
+            DEFAULT_DESTINATION_CONFIG_FILENAME
+        ),
     )
 
     return parser.parse_args(arguments)
@@ -29,7 +32,9 @@ def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
 
-        generate.generate_sample_configuration(args.destination_filename, validate.schema_filename())
+        generate.generate_sample_configuration(
+            args.destination_filename, validate.schema_filename()
+        )
 
         print('Generated a sample configuration file at {}.'.format(args.destination_filename))
         print()

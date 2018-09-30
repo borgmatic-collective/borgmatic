@@ -26,22 +26,31 @@ def parse_arguments(*arguments):
         '''
     )
     parser.add_argument(
-        '-s', '--source-config',
+        '-s',
+        '--source-config',
         dest='source_config_filename',
         default=DEFAULT_SOURCE_CONFIG_FILENAME,
-        help='Source INI-style configuration filename. Default: {}'.format(DEFAULT_SOURCE_CONFIG_FILENAME),
+        help='Source INI-style configuration filename. Default: {}'.format(
+            DEFAULT_SOURCE_CONFIG_FILENAME
+        ),
     )
     parser.add_argument(
-        '-e', '--source-excludes',
+        '-e',
+        '--source-excludes',
         dest='source_excludes_filename',
-        default=DEFAULT_SOURCE_EXCLUDES_FILENAME if os.path.exists(DEFAULT_SOURCE_EXCLUDES_FILENAME) else None,
+        default=DEFAULT_SOURCE_EXCLUDES_FILENAME
+        if os.path.exists(DEFAULT_SOURCE_EXCLUDES_FILENAME)
+        else None,
         help='Excludes filename',
     )
     parser.add_argument(
-        '-d', '--destination-config',
+        '-d',
+        '--destination-config',
         dest='destination_config_filename',
         default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help='Destination YAML configuration filename. Default: {}'.format(DEFAULT_DESTINATION_CONFIG_FILENAME),
+        help='Destination YAML configuration filename. Default: {}'.format(
+            DEFAULT_DESTINATION_CONFIG_FILENAME
+        ),
     )
 
     return parser.parse_args(arguments)
@@ -57,11 +66,13 @@ def display_result(args):  # pragma: no cover
         ),
         TEXT_WRAP_CHARACTERS,
     )
-    
+
     delete_lines = textwrap.wrap(
         'Once you are satisfied, you can safely delete {}{}.'.format(
             args.source_config_filename,
-            ' and {}'.format(args.source_excludes_filename) if args.source_excludes_filename else '',
+            ' and {}'.format(args.source_excludes_filename)
+            if args.source_excludes_filename
+            else '',
         ),
         TEXT_WRAP_CHARACTERS,
     )
@@ -75,7 +86,9 @@ def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
         schema = yaml.round_trip_load(open(validate.schema_filename()).read())
-        source_config = legacy.parse_configuration(args.source_config_filename, legacy.CONFIG_FORMAT)
+        source_config = legacy.parse_configuration(
+            args.source_config_filename, legacy.CONFIG_FORMAT
+        )
         source_config_file_mode = os.stat(args.source_config_filename).st_mode
         source_excludes = (
             open(args.source_excludes_filename).read().splitlines()
@@ -83,12 +96,12 @@ def main():  # pragma: no cover
             else []
         )
 
-        destination_config = convert.convert_legacy_parsed_config(source_config, source_excludes, schema)
+        destination_config = convert.convert_legacy_parsed_config(
+            source_config, source_excludes, schema
+        )
 
         generate.write_configuration(
-            args.destination_config_filename,
-            destination_config,
-            mode=source_config_file_mode,
+            args.destination_config_filename, destination_config, mode=source_config_file_mode
         )
 
         display_result(args)

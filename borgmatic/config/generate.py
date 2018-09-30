@@ -13,8 +13,7 @@ def _insert_newline_before_comment(config, field_name):
     field and its comments.
     '''
     config.ca.items[field_name][1].insert(
-        0,
-        yaml.tokens.CommentToken('\n', yaml.error.CommentMark(0), None),
+        0, yaml.tokens.CommentToken('\n', yaml.error.CommentMark(0), None)
     )
 
 
@@ -27,13 +26,12 @@ def _schema_to_sample_configuration(schema, level=0):
     if example is not None:
         return example
 
-    config = yaml.comments.CommentedMap([
-        (
-            section_name,
-            _schema_to_sample_configuration(section_schema, level + 1),
-        )
-        for section_name, section_schema in schema['map'].items()
-    ])
+    config = yaml.comments.CommentedMap(
+        [
+            (section_name, _schema_to_sample_configuration(section_schema, level + 1))
+            for section_name, section_schema in schema['map'].items()
+        ]
+    )
 
     add_comments_to_configuration(config, schema, indent=(level * INDENT))
 
@@ -130,11 +128,7 @@ def add_comments_to_configuration(config, schema, indent=0):
         if not field_schema or not description:
             continue
 
-        config.yaml_set_comment_before_after_key(
-            key=field_name,
-            before=description,
-            indent=indent,
-        )
+        config.yaml_set_comment_before_after_key(key=field_name, before=description, indent=indent)
         if index > 0:
             _insert_newline_before_comment(config, field_name)
 
@@ -148,6 +142,5 @@ def generate_sample_configuration(config_filename, schema_filename):
     config = _schema_to_sample_configuration(schema)
 
     write_configuration(
-        config_filename,
-        _comment_out_optional_configuration(_render_configuration(config))
+        config_filename, _comment_out_optional_configuration(_render_configuration(config))
     )

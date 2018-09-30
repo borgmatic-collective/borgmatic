@@ -382,6 +382,10 @@ the following deviations from it:
  * Within multiline constructs, use standard four-space indentation. Don't align
    indentation with an opening delimeter.
 
+borgmatic code uses the [Black](https://github.com/ambv/black) code formatter,
+so some additional code style requirements will be enforced as well. See the
+Black documentation for more information.
+
 
 ### Development
 
@@ -431,6 +435,17 @@ Finally, to actually run tests, run:
 ```bash
 cd borgmatic
 tox
+```
+
+Note that while running borgmatic itself only requires Python 3+, running
+borgmatic's tests require Python 3.6+.
+
+If when running tests, you get an error from the
+[Black](https://github.com/ambv/black) code formatter about files that would
+be reformatted, you can ask Black to format them for you via the following:
+
+```bash
+tox -e black
 ```
 
 

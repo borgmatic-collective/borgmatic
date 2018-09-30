@@ -24,6 +24,7 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
             },
         )
 
+
 def test_apply_logical_validation_raises_if_archive_name_format_present_without_retention_prefix():
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
@@ -31,7 +32,7 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
             {
                 'storage': {'archive_name_format': '{hostname}-{now}'},
                 'retention': {'keep_daily': 7},
-                'consistency': {'prefix': '{hostname}-'}
+                'consistency': {'prefix': '{hostname}-'},
             },
         )
 
@@ -59,15 +60,10 @@ def test_apply_logical_validation_does_not_raise_or_warn_if_archive_name_format_
         {
             'storage': {'archive_name_format': '{hostname}-{now}'},
             'retention': {'prefix': '{hostname}-'},
-            'consistency': {'prefix': '{hostname}-'}
+            'consistency': {'prefix': '{hostname}-'},
         },
     )
 
 
 def test_apply_logical_validation_does_not_raise_otherwise():
-    module.apply_logical_validation(
-        'config.yaml',
-        {
-            'retention': {'keep_secondly': 1000},
-        },
-    )
+    module.apply_logical_validation('config.yaml', {'retention': {'keep_secondly': 1000}})

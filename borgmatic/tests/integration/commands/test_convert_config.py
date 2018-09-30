@@ -20,9 +20,12 @@ def test_parse_arguments_with_filename_arguments_overrides_defaults():
     flexmock(os.path).should_receive('exists').and_return(True)
 
     parser = module.parse_arguments(
-        '--source-config', 'config',
-        '--source-excludes', 'excludes',
-        '--destination-config', 'config.yaml',
+        '--source-config',
+        'config',
+        '--source-excludes',
+        'excludes',
+        '--destination-config',
+        'config.yaml',
     )
 
     assert parser.source_config_filename == 'config'

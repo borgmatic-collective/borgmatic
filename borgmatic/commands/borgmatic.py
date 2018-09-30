@@ -5,8 +5,13 @@ import os
 from subprocess import CalledProcessError
 import sys
 
-from borgmatic.borg import check as borg_check, create as borg_create, prune as borg_prune, \
-     list as borg_list, info as borg_info
+from borgmatic.borg import (
+    check as borg_check,
+    create as borg_create,
+    prune as borg_prune,
+    list as borg_list,
+    info as borg_info,
+)
 from borgmatic.commands import hook
 from borgmatic.config import collect, convert, validate
 from borgmatic.signals import configure_signals
@@ -27,19 +32,21 @@ def parse_arguments(*arguments):
     config_paths = collect.get_default_config_paths()
 
     parser = ArgumentParser(
-        description=
-            '''
+        description='''
             A simple wrapper script for the Borg backup software that creates and prunes backups.
             If none of the --prune, --create, or --check options are given, then borgmatic defaults
             to all three: prune, create, and check archives.
             '''
     )
     parser.add_argument(
-        '-c', '--config',
+        '-c',
+        '--config',
         nargs='+',
         dest='config_paths',
         default=config_paths,
-        help='Configuration filenames or directories, defaults to: {}'.format(' '.join(config_paths)),
+        help='Configuration filenames or directories, defaults to: {}'.format(
+            ' '.join(config_paths)
+        ),
     )
     parser.add_argument(
         '--excludes',
@@ -47,31 +54,26 @@ def parse_arguments(*arguments):
         help='Deprecated in favor of exclude_patterns within configuration',
     )
     parser.add_argument(
-        '-p', '--prune',
+        '-p',
+        '--prune',
         dest='prune',
         action='store_true',
         help='Prune archives according to the retention policy',
     )
     parser.add_argument(
-        '-C', '--create',
+        '-C',
+        '--create',
         dest='create',
         action='store_true',
         help='Create archives (actually perform backups)',
     )
     parser.add_argument(
-        '-k', '--check',
-        dest='check',
-        action='store_true',
-        help='Check archives for consistency',
+        '-k', '--check', dest='check', action='store_true', help='Check archives for consistency'
     )
+    parser.add_argument('-l', '--list', dest='list', action='store_true', help='List archives')
     parser.add_argument(
-        '-l', '--list',
-        dest='list',
-        action='store_true',
-        help='List archives',
-    )
-    parser.add_argument(
-        '-i', '--info',
+        '-i',
+        '--info',
         dest='info',
         action='store_true',
         help='Display summary information on archives',
@@ -84,15 +86,17 @@ def parse_arguments(*arguments):
         help='Output results from the --create, --list, or --info options as json',
     )
     parser.add_argument(
-        '-n', '--dry-run',
+        '-n',
+        '--dry-run',
         dest='dry_run',
         action='store_true',
         help='Go through the motions, but do not actually write to any repositories',
     )
     parser.add_argument(
-        '-v', '--verbosity',
+        '-v',
+        '--verbosity',
         type=int,
-        choices=range(0,3),
+        choices=range(0, 3),
         default=0,
         help='Display verbose progress (1 for some, 2 for lots)',
     )
@@ -100,7 +104,9 @@ def parse_arguments(*arguments):
     args = parser.parse_args(arguments)
 
     if args.json and not (args.create or args.list or args.info):
-        raise ValueError('The --json option can only be used with the --create, --list, or --info options')
+        raise ValueError(
+            'The --json option can only be used with the --create, --list, or --info options'
+        )
 
     if args.json and args.list and args.info:
         raise ValueError(
@@ -151,7 +157,14 @@ def _run_commands(args, consistency, local_path, location, remote_path, retentio
     json_results = []
     for unexpanded_repository in location['repositories']:
         _run_commands_on_repository(
-            args, consistency, json_results, local_path, location, remote_path, retention, storage,
+            args,
+            consistency,
+            json_results,
+            local_path,
+            location,
+            remote_path,
+            retention,
+            storage,
             unexpanded_repository,
         )
     if args.json:
@@ -159,8 +172,15 @@ def _run_commands(args, consistency, local_path, location, remote_path, retentio
 
 
 def _run_commands_on_repository(
-    args, consistency, json_results, local_path, location, remote_path,
-    retention, storage, unexpanded_repository,
+    args,
+    consistency,
+    json_results,
+    local_path,
+    location,
+    remote_path,
+    retention,
+    storage,
+    unexpanded_repository,
 ):  # pragma: no cover
     repository = os.path.expanduser(unexpanded_repository)
     dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
@@ -187,20 +207,12 @@ def _run_commands_on_repository(
     if args.check:
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
-            repository,
-            storage,
-            consistency,
-            local_path=local_path,
-            remote_path=remote_path
+            repository, storage, consistency, local_path=local_path, remote_path=remote_path
         )
     if args.list:
         logger.info('{}: Listing archives'.format(repository))
         output = borg_list.list_archives(
-            repository,
-            storage,
-            local_path=local_path,
-            remote_path=remote_path,
-            json=args.json,
+            repository, storage, local_path=local_path, remote_path=remote_path, json=args.json
         )
         if args.json:
             json_results.append(json.loads(output))
@@ -209,11 +221,7 @@ def _run_commands_on_repository(
     if args.info:
         logger.info('{}: Displaying summary info for archives'.format(repository))
         output = borg_info.display_archives_info(
-            repository,
-            storage,
-            local_path=local_path,
-            remote_path=remote_path,
-            json=args.json,
+            repository, storage, local_path=local_path, remote_path=remote_path, json=args.json
         )
         if args.json:
             json_results.append(json.loads(output))
@@ -232,7 +240,9 @@ def main():  # pragma: no cover
         convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
         if len(config_filenames) == 0:
-            raise ValueError('Error: No configuration files found in: {}'.format(' '.join(args.config_paths)))
+            raise ValueError(
+                'Error: No configuration files found in: {}'.format(' '.join(args.config_paths))
+            )
 
         for config_filename in config_filenames:
             run_configuration(config_filename, args)

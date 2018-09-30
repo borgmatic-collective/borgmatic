@@ -33,25 +33,31 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
 
     destination_config = module.convert_legacy_parsed_config(source_config, source_excludes, schema)
 
-    assert destination_config == OrderedDict([
-        (
-            'location',
-            OrderedDict([
-                ('source_directories', ['/home']),
-                ('repositories', ['hostname.borg']),
-                ('exclude_patterns', ['/var']),
-            ]),
-        ),
-        ('storage', OrderedDict([('encryption_passphrase', 'supersecret')])),
-        ('retention', OrderedDict([('keep_daily', 7)])),
-        ('consistency', OrderedDict([('checks', ['repository'])])),
-    ])
+    assert destination_config == OrderedDict(
+        [
+            (
+                'location',
+                OrderedDict(
+                    [
+                        ('source_directories', ['/home']),
+                        ('repositories', ['hostname.borg']),
+                        ('exclude_patterns', ['/var']),
+                    ]
+                ),
+            ),
+            ('storage', OrderedDict([('encryption_passphrase', 'supersecret')])),
+            ('retention', OrderedDict([('keep_daily', 7)])),
+            ('consistency', OrderedDict([('checks', ['repository'])])),
+        ]
+    )
 
 
 def test_convert_legacy_parsed_config_splits_space_separated_values():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
     source_config = Parsed_config(
-        location=OrderedDict([('source_directories', '/home /etc'), ('repository', 'hostname.borg')]),
+        location=OrderedDict(
+            [('source_directories', '/home /etc'), ('repository', 'hostname.borg')]
+        ),
         storage=OrderedDict(),
         retention=OrderedDict(),
         consistency=OrderedDict([('checks', 'repository archives')]),
@@ -59,21 +65,25 @@ def test_convert_legacy_parsed_config_splits_space_separated_values():
     source_excludes = ['/var']
     schema = {'map': defaultdict(lambda: {'map': {}})}
 
-    destination_config = module.convert_legacy_parsed_config(source_config, source_excludes, schema) 
+    destination_config = module.convert_legacy_parsed_config(source_config, source_excludes, schema)
 
-    assert destination_config == OrderedDict([
-        (
-            'location',
-            OrderedDict([
-                ('source_directories', ['/home', '/etc']),
-                ('repositories', ['hostname.borg']),
-                ('exclude_patterns', ['/var']),
-            ]),
-        ),
-        ('storage', OrderedDict()),
-        ('retention', OrderedDict()),
-        ('consistency', OrderedDict([('checks', ['repository', 'archives'])])),
-    ])
+    assert destination_config == OrderedDict(
+        [
+            (
+                'location',
+                OrderedDict(
+                    [
+                        ('source_directories', ['/home', '/etc']),
+                        ('repositories', ['hostname.borg']),
+                        ('exclude_patterns', ['/var']),
+                    ]
+                ),
+            ),
+            ('storage', OrderedDict()),
+            ('retention', OrderedDict()),
+            ('consistency', OrderedDict([('checks', ['repository', 'archives'])])),
+        ]
+    )
 
 
 def test_guard_configuration_upgraded_raises_when_only_source_config_present():

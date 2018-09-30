@@ -31,7 +31,9 @@ def _parse_checks(consistency_config):
     if checks == ['disabled']:
         return ()
 
-    return tuple(check for check in checks if check.lower() not in ('disabled', '')) or DEFAULT_CHECKS
+    return (
+        tuple(check for check in checks if check.lower() not in ('disabled', '')) or DEFAULT_CHECKS
+    )
 
 
 def _make_check_flags(checks, check_last=None, prefix=None):
@@ -60,20 +62,27 @@ def _make_check_flags(checks, check_last=None, prefix=None):
         last_flags = ()
         prefix_flags = ()
         if check_last:
-            logger.warning('Ignoring check_last option, as "archives" is not in consistency checks.')
+            logger.warning(
+                'Ignoring check_last option, as "archives" is not in consistency checks.'
+            )
         if prefix:
-            logger.warning('Ignoring consistency prefix option, as "archives" is not in consistency checks.')
-        
+            logger.warning(
+                'Ignoring consistency prefix option, as "archives" is not in consistency checks.'
+            )
+
     if set(DEFAULT_CHECKS).issubset(set(checks)):
         return last_flags + prefix_flags
 
-    return tuple(
-        '--{}-only'.format(check) for check in checks
-        if check in DEFAULT_CHECKS
-    ) + last_flags + prefix_flags
+    return (
+        tuple('--{}-only'.format(check) for check in checks if check in DEFAULT_CHECKS)
+        + last_flags
+        + prefix_flags
+    )
 
 
-def check_archives(repository, storage_config, consistency_config, local_path='borg', remote_path=None):
+def check_archives(
+    repository, storage_config, consistency_config, local_path='borg', remote_path=None
+):
     '''
     Given a local or remote repository path, a storage config dict, a consistency config dict, 
     and a local/remote commands to run, check the contained Borg archives for consistency.
@@ -98,9 +107,12 @@ def check_archives(repository, storage_config, consistency_config, local_path='b
         prefix = consistency_config.get('prefix')
 
         full_command = (
-            local_path, 'check',
-            repository,
-        ) + _make_check_flags(checks, check_last, prefix) + remote_path_flags + lock_wait_flags + verbosity_flags
+            (local_path, 'check', repository)
+            + _make_check_flags(checks, check_last, prefix)
+            + remote_path_flags
+            + lock_wait_flags
+            + verbosity_flags
+        )
 
         # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
         stdout = None if verbosity_flags else open(os.devnull, 'w')

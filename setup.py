@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-VERSION = '1.2.6'
+VERSION = '1.2.7.dev0'
 
 
 setup(
@@ -28,17 +28,8 @@ setup(
             'generate-borgmatic-config = borgmatic.commands.generate_config:main',
         ]
     },
-    obsoletes=[
-        'atticmatic',
-    ],
-    install_requires=(
-        'pykwalify>=1.6.0,<14.06',
-        'ruamel.yaml>0.15.0,<0.16.0',
-        'setuptools',
-    ),
-    tests_require=(
-        'flexmock',
-        'pytest',
-    ),
+    obsoletes=['atticmatic'],
+    install_requires=('pykwalify>=1.6.0,<14.06', 'ruamel.yaml>0.15.0,<0.16.0', 'setuptools'),
+    tests_require=('flexmock', 'pytest'),
     include_package_data=True,
 )

@@ -12,14 +12,17 @@ def _convert_section(source_section_config, section_schema):
 
     Where integer types exist in the given section schema, convert their values to integers.
     '''
-    destination_section_config = yaml.comments.CommentedMap([
-        (
-            option_name,
-            int(option_value)
-                if section_schema['map'].get(option_name, {}).get('type') == 'int' else option_value
-        )
-        for option_name, option_value in source_section_config.items()
-    ])
+    destination_section_config = yaml.comments.CommentedMap(
+        [
+            (
+                option_name,
+                int(option_value)
+                if section_schema['map'].get(option_name, {}).get('type') == 'int'
+                else option_value,
+            )
+            for option_name, option_value in source_section_config.items()
+        ]
+    )
 
     return destination_section_config
 
@@ -33,10 +36,12 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
     Additionally, use the given schema as a source of helpful comments to include within the
     returned CommentedMap.
     '''
-    destination_config = yaml.comments.CommentedMap([
-        (section_name, _convert_section(section_config, schema['map'][section_name]))
-        for section_name, section_config in source_config._asdict().items()
-    ])
+    destination_config = yaml.comments.CommentedMap(
+        [
+            (section_name, _convert_section(section_config, schema['map'][section_name]))
+            for section_name, section_config in source_config._asdict().items()
+        ]
+    )
 
     # Split space-seperated values into actual lists, make "repository" into a list, and merge in
     # excludes.
@@ -53,9 +58,7 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
 
     for section_name, section_config in destination_config.items():
         generate.add_comments_to_configuration(
-            section_config,
-            schema['map'][section_name],
-            indent=generate.INDENT,
+            section_config, schema['map'][section_name], indent=generate.INDENT
         )
 
     return destination_config
@@ -85,8 +88,7 @@ def guard_configuration_upgraded(source_config_filename, destination_config_file
     The idea is that we want to alert the user about upgrading their config if they haven't already.
     '''
     destination_config_exists = any(
-        os.path.exists(filename)
-        for filename in destination_config_filenames
+        os.path.exists(filename) for filename in destination_config_filenames
     )
 
     if os.path.exists(source_config_filename) and not destination_config_exists:
