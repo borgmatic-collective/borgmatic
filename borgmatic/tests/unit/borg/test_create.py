@@ -1,4 +1,5 @@
-import logging, os
+import logging
+import os
 
 from flexmock import flexmock
 
@@ -45,9 +46,9 @@ def test_initialize_environment_without_configuration_should_not_set_environment
     try:
         os.environ = {}
         module.initialize_environment({})
-        assert os.environ.get('BORG_PASSCOMMAND') == None
-        assert os.environ.get('BORG_PASSPHRASE') == None
-        assert os.environ.get('BORG_RSH') == None
+        assert os.environ.get('BORG_PASSCOMMAND') is None
+        assert os.environ.get('BORG_PASSPHRASE') is None
+        assert os.environ.get('BORG_RSH') is None
     finally:
         os.environ = orig_environ
 

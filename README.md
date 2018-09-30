@@ -383,8 +383,9 @@ the following deviations from it:
    indentation with an opening delimeter.
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
-formatter, so some additional code style requirements will be enforced as
-well. See the Black documentation for more information.
+formatter and [Flake8](http://flake8.pycqa.org/en/latest/) code checker, so
+certain code style requirements will be enforced when running automated tests.
+See the Black and Flake8 documentation for more information.
 
 
 ### Development

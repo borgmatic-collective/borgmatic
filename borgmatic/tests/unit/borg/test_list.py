@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 from flexmock import flexmock
 

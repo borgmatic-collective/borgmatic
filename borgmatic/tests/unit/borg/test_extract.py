@@ -1,9 +1,9 @@
-import logging, sys
+import logging
+import sys
 
 from flexmock import flexmock
 
 from borgmatic.borg import extract as module
-from borgmatic.verbosity import VERBOSITY_SOME, VERBOSITY_LOTS
 from borgmatic.tests.unit.test_verbosity import insert_logging_mock
 
 

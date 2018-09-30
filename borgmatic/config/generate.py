@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import os
 
 from ruamel import yaml

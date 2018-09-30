@@ -2,7 +2,6 @@ import json
 import sys
 
 from flexmock import flexmock
-import pytest
 
 from borgmatic.commands import borgmatic
 

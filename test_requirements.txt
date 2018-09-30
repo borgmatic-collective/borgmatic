@@ -1,4 +1,5 @@
 black==18.9b0
+flake8==3.5.0
 flexmock==0.10.2
 pykwalify==1.6.1
 pytest==3.8.1

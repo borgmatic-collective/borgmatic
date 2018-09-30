@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
 import os
-from subprocess import CalledProcessError
 import sys
 import textwrap
 

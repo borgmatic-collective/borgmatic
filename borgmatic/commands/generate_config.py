@@ -1,9 +1,7 @@
 from argparse import ArgumentParser
-import os
-from subprocess import CalledProcessError
 import sys
 
-from borgmatic.config import convert, generate, validate
+from borgmatic.config import generate, validate
 
 
 DEFAULT_DESTINATION_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'

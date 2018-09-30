@@ -1,5 +1,3 @@
-import os
-
 from flexmock import flexmock
 import pytest
 
@@ -13,7 +11,7 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     parser = module.parse_arguments()
 
     assert parser.config_paths == config_paths
-    assert parser.excludes_filename == None
+    assert parser.excludes_filename is None
     assert parser.verbosity is 0
     assert parser.json is False
 
@@ -44,7 +42,7 @@ def test_parse_arguments_with_verbosity_flag_overrides_default():
     parser = module.parse_arguments('--verbosity', '1')
 
     assert parser.config_paths == config_paths
-    assert parser.excludes_filename == None
+    assert parser.excludes_filename is None
     assert parser.verbosity == 1
 
 

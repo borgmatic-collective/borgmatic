@@ -1,5 +1,6 @@
 from subprocess import STDOUT
-import logging, sys
+import logging
+import sys
 
 from flexmock import flexmock
 import pytest

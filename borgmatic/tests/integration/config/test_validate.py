@@ -1,7 +1,6 @@
 import io
 import string
 import sys
-import os
 
 from flexmock import flexmock
 import pytest

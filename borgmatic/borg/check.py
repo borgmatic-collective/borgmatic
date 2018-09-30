@@ -84,7 +84,7 @@ def check_archives(
     repository, storage_config, consistency_config, local_path='borg', remote_path=None
 ):
     '''
-    Given a local or remote repository path, a storage config dict, a consistency config dict, 
+    Given a local or remote repository path, a storage config dict, a consistency config dict,
     and a local/remote commands to run, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.

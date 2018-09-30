@@ -1,6 +1,4 @@
 import logging
-import sys
-import warnings
 
 import pkg_resources
 import pykwalify.core

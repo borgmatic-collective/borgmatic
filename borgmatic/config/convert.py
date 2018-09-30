@@ -109,5 +109,5 @@ Please remove the "--excludes" argument and run borgmatic again.'''
 
 
 def guard_excludes_filename_omitted(excludes_filename):
-    if excludes_filename != None:
+    if excludes_filename is not None:
         raise LegacyExcludesFilenamePresent()
