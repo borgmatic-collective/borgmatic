@@ -1,7 +1,7 @@
 1.2.7.dev0
  * Use Black code formatter and Flake8 code checker as part of running automated tests.
  * Add an end-to-end automated test that actually integrates with Borg.
- * Set up continuous integration for automated tests on projects.evoworx.org.
+ * Set up continuous integration for borgmatic automated tests on projects.evoworx.org.
 
 1.2.6
  * Fix generated configuration to also include a "keep_daily" value so pruning works out of the
