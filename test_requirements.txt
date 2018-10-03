@@ -1,7 +1,7 @@
 black==18.9b0
 flake8==3.5.0
 flexmock==0.10.2
-pykwalify==1.6.1
+pykwalify==1.7.0
 pytest==3.8.1
 pytest-cov==2.6.0
 ruamel.yaml>0.15.0,<0.16.0
