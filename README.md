@@ -457,15 +457,12 @@ tox -e black
 
 borgmatic additionally includes some end-to-end tests that integration test
 with Borg for a few representative scenarios. These tests don't run by default
-because they're slow and require Docker. If you would like to run them, first
-install Docker, and make sure that it's executable by the current user. Then:
+because they're relatively slow and depend on Borg. If you would like to run
+them:
 
 ```bash
 tox -e end-to-end
 ```
-
-That builds a test container with your local borgmatic source, and runs
-end-to-end tests within it.
 
 ## Troubleshooting
 

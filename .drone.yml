@@ -5,3 +5,5 @@ pipeline:
     commands:
       - pip install tox
       - tox
+      - apk add --no-cache borgbackup
+      - tox -e end-to-end

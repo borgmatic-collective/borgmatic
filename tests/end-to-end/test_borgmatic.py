@@ -1,39 +1,53 @@
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 
 
-def generate_configuration():
-    subprocess.check_call('generate-borgmatic-config --destination test.yaml'.split(' '))
+def generate_configuration(config_path, repository_path):
+    '''
+    Generate borgmatic configuration into a file at the config path, and update the defaults so as
+    to work for testing (including injecting the given repository path).
+    '''
+    subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
     config = (
-        open('test.yaml')
+        open(config_path)
         .read()
-        .replace('user@backupserver:sourcehostname.borg', 'test.borg')
-        .replace('- /etc', '- /app')
+        .replace('user@backupserver:sourcehostname.borg', repository_path)
+        .replace('- /home', f'- {config_path}')
+        .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
     )
-    config_file = open('test.yaml', 'w')
+    config_file = open(config_path, 'w')
     config_file.write(config)
     config_file.close()
 
 
 def test_borgmatic_command():
     # Create a Borg repository.
-    subprocess.check_call(
-        'borg init --encryption repokey test.borg'.split(' '),
-        env={'BORG_PASSPHRASE': '', **os.environ},
-    )
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
 
-    # Generate borgmatic configuration, and update the defaults so as to work for this test.
-    generate_configuration()
+    try:
+        subprocess.check_call(
+            f'borg init --encryption repokey {repository_path}'.split(' '),
+            env={'BORG_PASSPHRASE': '', **os.environ},
+        )
 
-    # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
-    subprocess.check_call('borgmatic --config test.yaml'.split(' '))
-    output = subprocess.check_output(
-        'borgmatic --config test.yaml --list --json'.split(' '), encoding=sys.stdout.encoding
-    )
-    parsed_output = json.loads(output)
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        generate_configuration(config_path, repository_path)
 
-    assert len(parsed_output) == 1
-    assert len(parsed_output[0]['archives']) == 1
+        # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
+        subprocess.check_call(f'borgmatic --config {config_path}'.split(' '))
+        output = subprocess.check_output(
+            f'borgmatic --config {config_path} --list --json'.split(' '),
+            encoding=sys.stdout.encoding,
+        )
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert len(parsed_output[0]['archives']) == 1
+    finally:
+        shutil.rmtree(temporary_directory)
