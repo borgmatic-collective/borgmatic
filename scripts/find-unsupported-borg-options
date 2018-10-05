@@ -6,8 +6,10 @@ set -o nounset
 # appear to support yet. This script isn't terribly robust. It's intended as a basic tool to ferret
 # out unsupported Borg options so that they can be considered for addition to borgmatic.
 
-# Generate a sample borgmatic configuration with all options set.
+# Generate a sample borgmatic configuration with all options set, and uncomment all options.
 generate-borgmatic-config --destination temp.yaml
+cat temp.yaml | sed -e 's/# \S.*$//' | sed -e 's/#//' > temp.yaml.uncommented
+mv temp.yaml.uncommented temp.yaml
 
 # For each sub-command (prune, create, and check), collect the Borg command-line flags that result
 # from running borgmatic with the generated configuration. Then, collect the full set of available
@@ -33,6 +35,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--error$' \
             | grep -v '^--help$' \
             | grep -v '^--info$' \
+            | grep -v '^--json$' \
             | grep -v '^--list$' \
             | grep -v '^--nobsdflags$' \
             | grep -v '^--pattern$' \
