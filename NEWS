@@ -1,4 +1,5 @@
-1.2.7.dev0
+1.2.7
+ * #98: Support for Borg --keep-secondly prune option.
  * Use Black code formatter and Flake8 code checker as part of running automated tests.
  * Add an end-to-end automated test that actually integrates with Borg.
  * Set up continuous integration for borgmatic automated tests on projects.evoworx.org.

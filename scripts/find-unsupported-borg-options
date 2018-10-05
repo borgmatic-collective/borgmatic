@@ -36,6 +36,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--help$' \
             | grep -v '^--info$' \
             | grep -v '^--json$' \
+            | grep -v '^--keep-last$' \
             | grep -v '^--list$' \
             | grep -v '^--nobsdflags$' \
             | grep -v '^--pattern$' \
