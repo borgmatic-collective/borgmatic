@@ -478,7 +478,7 @@ consistency:
 ```
 
 This error can be caused by an ssh timeout, which you can rectify by adding
-the following to the ~/.ssh/config file on the client:
+the following to the `~/.ssh/config` file on the client:
 
 ```text
     Host *
