@@ -2,6 +2,17 @@
 
 set -e
 
+github_token=${1:-}
+
+if [[ -z $github_token ]]; then
+    echo "Usage: $0 [github-token]"
+    exit 1
+fi
+if [[ ! -f NEWS ]]; then
+    echo "Missing NEWS file. Try running from root of repository."
+    exit 1
+fi
+
 version=$(head --lines=1 NEWS)
 git tag $version
 git push origin $version
@@ -12,3 +23,6 @@ python3 setup.py bdist_wheel
 python3 setup.py sdist
 twine upload -r pypi dist/borgmatic-*.tar.gz
 twine upload -r pypi dist/borgmatic-*-py3-none-any.whl
+
+github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" \
+    --name="borgmatic $version" --body="$(sed '/^$/q' NEWS |grep '^\s*\*')"
