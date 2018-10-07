@@ -2,10 +2,11 @@
 
 set -e
 
-github_token=${1:-}
+projects_token=${1:-}
+github_token=${2:-}
 
 if [[ -z $github_token ]]; then
-    echo "Usage: $0 [github-token]"
+    echo "Usage: $0 [projects-token] [github-token]"
     exit 1
 fi
 if [[ ! -f NEWS ]]; then
@@ -18,11 +19,21 @@ git tag $version
 git push origin $version
 git push github $version
 
+# Build borgmatic and publish to pypi.
 rm -fr dist
 python3 setup.py bdist_wheel
 python3 setup.py sdist
 twine upload -r pypi dist/borgmatic-*.tar.gz
 twine upload -r pypi dist/borgmatic-*-py3-none-any.whl
 
+# Set release changelogs on projects.evoworx.org and GitHub.
+release_changelog=$(sed '/^$/q' NEWS |grep '^\s*\*')
+escaped_release_changelog=$(echo $release_changelog | sed -z 's/\n/\\n/g')
+curl --request POST --verbose \
+    "https://projects.torsion.org/api/v1/repos/witten/borgmatic/releases?access_token=$projects_token" \
+    --header "Accept: application/json" \
+    --header "Content-Type: application/json" \
+    --data "{\"body\": \"$escaped_release_changelog\", \"draft\": false, \"name\": \"borgmatic $version\", \"prerelease\": false, \"tag_name\": \"$version\"}"
+
 github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" \
-    --name="borgmatic $version" --body="$(sed '/^$/q' NEWS |grep '^\s*\*')"
+    --name="borgmatic $version" --body="$release_changelog"
