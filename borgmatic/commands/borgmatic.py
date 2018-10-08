@@ -248,4 +248,6 @@ def main():  # pragma: no cover
             run_configuration(config_filename, args)
     except (ValueError, OSError, CalledProcessError) as error:
         print(error, file=sys.stderr)
+        print(file=sys.stderr)
+        print('Need some help? https://torsion.org/borgmatic/#issues', file=sys.stderr)
         sys.exit(1)

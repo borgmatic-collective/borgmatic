@@ -38,6 +38,8 @@ def main():  # pragma: no cover
         print()
         print('Please edit the file to suit your needs. The values are just representative.')
         print('All fields are optional except where indicated.')
+        print()
+        print('If you ever need help: https://torsion.org/borgmatic/#issues')
     except (ValueError, OSError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)
