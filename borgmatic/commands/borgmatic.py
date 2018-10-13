@@ -144,7 +144,15 @@ def run_configuration(config_filename, args):  # pragma: no cover
         if args.create:
             hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
-        _run_commands(args, consistency, local_path, location, remote_path, retention, storage)
+        _run_commands(
+            args=args,
+            consistency=consistency,
+            local_pagh=local_path,
+            location=location,
+            remote_path=remote_path,
+            retention=retention,
+            storage=storage,
+        )
 
         if args.create:
             hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
@@ -153,25 +161,26 @@ def run_configuration(config_filename, args):  # pragma: no cover
         raise
 
 
-def _run_commands(args, consistency, local_path, location, remote_path, retention, storage):
+def _run_commands(*, args, consistency, local_path, location, remote_path, retention, storage):
     json_results = []
     for unexpanded_repository in location['repositories']:
         _run_commands_on_repository(
-            args,
-            consistency,
-            json_results,
-            local_path,
-            location,
-            remote_path,
-            retention,
-            storage,
-            unexpanded_repository,
+            args=args,
+            consistency=consistency,
+            json_results=json_results,
+            local_path=local_path,
+            location=location,
+            remote_path=remote_path,
+            retention=retention,
+            storage=storage,
+            unexpanded_repository=unexpanded_repository,
         )
     if args.json:
         sys.stdout.write(json.dumps(json_results))
 
 
 def _run_commands_on_repository(
+    *,
     args,
     consistency,
     json_results,

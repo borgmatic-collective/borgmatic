@@ -6,7 +6,7 @@ from flexmock import flexmock
 from borgmatic.commands import borgmatic
 
 
-def test__run_commands_handles_multiple_json_outputs_in_array():
+def test_run_commands_handles_multiple_json_outputs_in_array():
     (
         flexmock(borgmatic)
         .should_receive('_run_commands_on_repository')
