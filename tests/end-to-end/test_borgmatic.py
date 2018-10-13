@@ -49,5 +49,15 @@ def test_borgmatic_command():
 
         assert len(parsed_output) == 1
         assert len(parsed_output[0]['archives']) == 1
+
+        # Also exercise the info flag.
+        output = subprocess.check_output(
+            f'borgmatic --config {config_path} --info --json'.split(' '),
+            encoding=sys.stdout.encoding,
+        )
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert 'repository' in parsed_output[0]
     finally:
         shutil.rmtree(temporary_directory)
