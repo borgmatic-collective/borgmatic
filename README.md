@@ -56,13 +56,17 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 
 ## Installation
 
-To get up and running, follow the [Borg Quick
+To get up and running, first [install
+Borg](https://borgbackup.readthedocs.io/en/latest/installation.html), at
+least version 1.1. Then, follow the [Borg Quick
 Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create
-a repository on a local or remote host. Note that if you plan to run borgmatic
-on a schedule with cron, and you encrypt your Borg repository with a
-passphrase instead of a key file, you'll either need to set the borgmatic
-`encryption_passphrase` configuration variable or set the `BORG_PASSPHRASE`
-environment variable. See the [repository encryption
+a repository on a local or remote host.
+
+Note that if you plan to run borgmatic on a schedule with cron, and you
+encrypt your Borg repository with a passphrase instead of a key file, you'll
+either need to set the borgmatic `encryption_passphrase` configuration
+variable or set the `BORG_PASSPHRASE` environment variable. See the
+[repository encryption
 section](https://borgbackup.readthedocs.io/en/latest/quickstart.html#repository-encryption)
 of the Quick Start for more info.
 
