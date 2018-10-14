@@ -51,6 +51,19 @@ def apply_logical_validation(config_filename, parsed_configuration):
             ('If you provide an archive_name_format, you must also specify a retention prefix.',),
         )
 
+    location_repositories = parsed_configuration.get('location', {}).get('repositories')
+    check_repositories = parsed_configuration.get('consistency', {}).get('check_repositories', [])
+    for repository in check_repositories:
+        if repository not in location_repositories:
+            raise Validation_error(
+                config_filename,
+                (
+                    'Unknown repository in the consistency section\'s check_repositories: {}'.format(
+                        repository
+                    ),
+                ),
+            )
+
     consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
     if archive_name_format and not consistency_prefix:
         logger.warning(

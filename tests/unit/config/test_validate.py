@@ -51,6 +51,29 @@ def test_apply_logical_validation_warns_if_archive_name_format_present_without_c
     )
 
 
+def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
+    with pytest.raises(module.Validation_error):
+        module.apply_logical_validation(
+            'config.yaml',
+            {
+                'location': {'repositories': ['repo.borg', 'other.borg']},
+                'retention': {'keep_secondly': 1000},
+                'consistency': {'check_repositories': ['repo.borg', 'unknown.borg']},
+            },
+        )
+
+
+def test_apply_locical_validation_does_not_raise_if_known_repository_in_check_repositories():
+    module.apply_logical_validation(
+        'config.yaml',
+        {
+            'location': {'repositories': ['repo.borg', 'other.borg']},
+            'retention': {'keep_secondly': 1000},
+            'consistency': {'check_repositories': ['repo.borg']},
+        },
+    )
+
+
 def test_apply_logical_validation_does_not_raise_or_warn_if_archive_name_format_and_prefix_present():
     logger = flexmock(module.logger)
     logger.should_receive('warning').never()

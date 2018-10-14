@@ -1,4 +1,6 @@
 1.2.8.dev0
+ * #73: Enable consistency checks for only certain repositories via "check_repositories" option in
+   borgmatic's consistency configuration. Handy for large repositories that take forever to check.
  * Include link to issue tracker within various command output.
  * Run continuous integration tests on a matrix of Python and Borg versions.
 

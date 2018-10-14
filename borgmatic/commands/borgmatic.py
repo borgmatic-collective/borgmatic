@@ -13,7 +13,7 @@ from borgmatic.borg import (
     info as borg_info,
 )
 from borgmatic.commands import hook
-from borgmatic.config import collect, convert, validate
+from borgmatic.config import checks, collect, convert, validate
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -147,7 +147,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
         _run_commands(
             args=args,
             consistency=consistency,
-            local_pagh=local_path,
+            local_path=local_path,
             location=location,
             remote_path=remote_path,
             retention=retention,
@@ -213,7 +213,7 @@ def _run_commands_on_repository(
             local_path=local_path,
             remote_path=remote_path,
         )
-    if args.check:
+    if args.check and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
             repository, storage, consistency, local_path=local_path, remote_path=remote_path
