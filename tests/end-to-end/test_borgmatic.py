@@ -11,12 +11,12 @@ def generate_configuration(config_path, repository_path):
     Generate borgmatic configuration into a file at the config path, and update the defaults so as
     to work for testing (including injecting the given repository path).
     '''
-    subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
+    subprocess.check_call('generate-borgmatic-config --destination {}'.format(config_path).split(' '))
     config = (
         open(config_path)
         .read()
         .replace('user@backupserver:sourcehostname.borg', repository_path)
-        .replace('- /home', f'- {config_path}')
+        .replace('- /home', '- {}'.format(config_path))
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
     )
@@ -32,7 +32,7 @@ def test_borgmatic_command():
 
     try:
         subprocess.check_call(
-            f'borg init --encryption repokey {repository_path}'.split(' '),
+            'borg init --encryption repokey {}'.format(repository_path).split(' '),
             env={'BORG_PASSPHRASE': '', **os.environ},
         )
 
@@ -40,9 +40,9 @@ def test_borgmatic_command():
         generate_configuration(config_path, repository_path)
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
-        subprocess.check_call(f'borgmatic --config {config_path}'.split(' '))
+        subprocess.check_call('borgmatic --config {}'.format(config_path).split(' '))
         output = subprocess.check_output(
-            f'borgmatic --config {config_path} --list --json'.split(' '),
+            'borgmatic --config {} --list --json'.format(config_path).split(' '),
             encoding=sys.stdout.encoding,
         )
         parsed_output = json.loads(output)
@@ -52,7 +52,7 @@ def test_borgmatic_command():
 
         # Also exercise the info flag.
         output = subprocess.check_output(
-            f'borgmatic --config {config_path} --info --json'.split(' '),
+            'borgmatic --config {} --info --json'.format(config_path).split(' '),
             encoding=sys.stdout.encoding,
         )
         parsed_output = json.loads(output)
