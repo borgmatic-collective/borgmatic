@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-set -e
-
-python_version=$(python --version)
-
-if [[ "$python_version" =~ "Python 3.5." ]]; then
-    echo "Skipping black due to lack of support for $python_version."
-elif [[ "$python_version" =~ "Python 3.4." ]]; then
-    echo "Skipping black due to lack of support for $python_version."
-else
+if which black; then
     black --skip-string-normalization --line-length 100 --check .
+else
+    echo "Skipping black due to not being installed."
 fi
