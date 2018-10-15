@@ -1,3 +1,6 @@
+1.2.9
+ * #102: Fix for syntax error that occurred in Python 3.5 and below.
+
 1.2.8
  * #73: Enable consistency checks for only certain repositories via "check_repositories" option in
    borgmatic's consistency configuration. Handy for large repositories that take forever to check.

@@ -189,7 +189,7 @@ def _run_commands_on_repository(
     remote_path,
     retention,
     storage,
-    unexpanded_repository,
+    unexpanded_repository
 ):  # pragma: no cover
     repository = os.path.expanduser(unexpanded_repository)
     dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
