@@ -445,9 +445,6 @@ cd borgmatic
 tox
 ```
 
-Note that while running borgmatic itself only requires Python 3+, running
-borgmatic's tests require Python 3.6+.
-
 If when running tests, you get an error from the
 [Black](https://black.readthedocs.io/en/stable/) code formatter about files
 that would be reformatted, you can ask Black to format them for you via the

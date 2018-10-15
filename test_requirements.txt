@@ -1,7 +1,7 @@
 appdirs==1.4.3
 atomicwrites==1.2.1
 attrs==18.2.0
-black==18.9b0
+black==18.9b0; python_version >= '3.6'
 Click==7.0
 coverage==4.5.1
 docopt==0.6.2

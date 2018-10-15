@@ -30,6 +30,5 @@ setup(
     },
     obsoletes=['atticmatic'],
     install_requires=('pykwalify>=1.6.0,<14.06', 'ruamel.yaml>0.15.0,<0.16.0', 'setuptools'),
-    tests_require=('flexmock', 'pytest'),
     include_package_data=True,
 )

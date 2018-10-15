@@ -1,5 +1,6 @@
 1.2.9
  * #102: Fix for syntax error that occurred in Python 3.5 and below.
+ * Make automated tests support running in Python 3.5.
 
 1.2.8
  * #73: Enable consistency checks for only certain repositories via "check_repositories" option in
