@@ -138,6 +138,13 @@ map:
                     https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there
                     for details. Defaults to checkpoints every 1800 seconds (30 minutes).
                 example: 1800
+            chunker_params:
+                type: scalar
+                desc: |
+                    Specify the parameters passed to then chunker (CHUNK_MIN_EXP, CHUNK_MAX_EXP,
+                    HASH_MASK_BITS, HASH_WINDOW_SIZE). See https://borgbackup.readthedocs.io/en/stable/internals.html
+                    for details.
+                example: 19,23,21,4095
             compression:
                 type: scalar
                 desc: |

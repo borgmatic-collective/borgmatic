@@ -390,6 +390,25 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     )
 
 
+def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_parameters():
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    insert_subprocess_mock(CREATE_COMMAND + ('--chunker-params', '1,2,3,4'))
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={'chunker_params': '1,2,3,4'},
+    )
+
+
 def test_create_archive_with_compression_calls_borg_with_compression_parameters():
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar')).and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
