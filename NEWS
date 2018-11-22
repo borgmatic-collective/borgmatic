@@ -1,3 +1,6 @@
+1.2.11
+ * #108: Support for Borg create --progress via borgmatic command-line flag.
+
 1.2.10
  * #105: Support for Borg --chunker-params create option via "chunker_params" in borgmatic's storage
    section.

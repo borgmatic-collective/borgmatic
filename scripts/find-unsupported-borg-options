@@ -40,6 +40,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--list$' \
             | grep -v '^--nobsdflags$' \
             | grep -v '^--pattern$' \
+            | grep -v '^--progress$' \
             | grep -v '^--read-special$' \
             | grep -v '^--repository-only$' \
             | grep -v '^--show-rc$' \

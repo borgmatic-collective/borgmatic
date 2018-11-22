@@ -79,6 +79,13 @@ def parse_arguments(*arguments):
         help='Display summary information on archives',
     )
     parser.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress with --create option for each file as it is backed up',
+    )
+    parser.add_argument(
         '--json',
         dest='json',
         default=False,
@@ -102,6 +109,9 @@ def parse_arguments(*arguments):
     )
 
     args = parser.parse_args(arguments)
+
+    if args.progress and not args.create:
+        raise ValueError('The --progress option can only be used with the --create option')
 
     if args.json and not (args.create or args.list or args.info):
         raise ValueError(
@@ -212,6 +222,7 @@ def _run_commands_on_repository(
             storage,
             local_path=local_path,
             remote_path=remote_path,
+            progress=args.progress,
         )
     if args.check and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
