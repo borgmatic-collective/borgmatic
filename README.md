@@ -90,10 +90,10 @@ you're using Python 3, as borgmatic does not support Python 2.
 
 ### Other ways to install
 
- * [A borgmatic Docker image](https://hub.docker.com/r/b3vis/borgmatic/) based
+ * [A borgmatic Docker image](https://hub.docker.com/r/monachus/borgmatic/) based
    on Alpine Linux.
- * [Another borgmatic Docker image](https://hub.docker.com/r/coaxial/borgmatic/) based
-   on Alpine Linux, updated automatically whenever the Alpine image updates.
+ * [Another borgmatic Docker image](https://hub.docker.com/r/b3vis/borgmatic/) based
+   on Alpine Linux.
  * [A borgmatic package for
    Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic).
  * [A borgmatic package for Arch
