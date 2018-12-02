@@ -1,3 +1,6 @@
+1.2.12.dev0
+ * #111: Update Borg create --filter values so a dry run lists files to back up.
+
 1.2.11
  * #108: Support for Borg create --progress via borgmatic command-line flag.
 

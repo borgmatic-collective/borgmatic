@@ -147,7 +147,7 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AME') if logger.isEnabledFor(logging.INFO) else ())
+        + (('--list', '--filter', 'AME-') if logger.isEnabledFor(logging.INFO) else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())

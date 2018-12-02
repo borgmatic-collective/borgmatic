@@ -266,7 +266,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--stats'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME-', '--info', '--stats'))
     insert_logging_mock(logging.INFO)
 
     module.create_archive(
@@ -287,7 +287,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(
-        CREATE_COMMAND + ('--list', '--filter', 'AME', '--stats', '--debug', '--show-rc')
+        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--stats', '--debug', '--show-rc')
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -331,7 +331,7 @@ def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_param
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME', '--info', '--dry-run'))
+    insert_subprocess_mock(CREATE_COMMAND + ('--list', '--filter', 'AME-', '--info', '--dry-run'))
     insert_logging_mock(logging.INFO)
 
     module.create_archive(
@@ -355,7 +355,7 @@ def test_create_archive_with_dry_run_and_log_debug_calls_borg_without_stats_para
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     insert_subprocess_mock(
-        CREATE_COMMAND + ('--list', '--filter', 'AME', '--debug', '--show-rc', '--dry-run')
+        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--debug', '--show-rc', '--dry-run')
     )
     insert_logging_mock(logging.DEBUG)
 
