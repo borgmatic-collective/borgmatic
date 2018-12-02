@@ -88,6 +88,15 @@ def test_parse_arguments_with_invalid_arguments_exits():
         module.parse_arguments('--posix-me-harder')
 
 
+def test_parse_arguments_with_progress_and_create_flags_does_not_raise():
+    module.parse_arguments('--progress', '--create', '--list')
+
+
+def test_parse_arguments_with_progress_flag_but_no_create_flag_raises_value_error():
+    with pytest.raises(ValueError):
+        module.parse_arguments('--progress', '--list')
+
+
 def test_parse_arguments_with_json_flag_with_list_or_info_flag_does_not_raise_any_error():
     module.parse_arguments('--list', '--json')
     module.parse_arguments('--info', '--json')
