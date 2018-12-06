@@ -143,6 +143,19 @@ def test_parse_arguments_disallows_progress_without_create():
         module.parse_arguments('--progress', '--list')
 
 
+def test_parse_arguments_with_stats_and_create_flags_does_not_raise():
+    module.parse_arguments('--stats', '--create', '--list')
+
+
+def test_parse_arguments_with_stats_and_prune_flags_does_not_raise():
+    module.parse_arguments('--stats', '--prune', '--list')
+
+
+def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_value_error():
+    with pytest.raises(ValueError):
+        module.parse_arguments('--stats', '--list')
+
+
 def test_parse_arguments_allows_json_with_list_or_info():
     module.parse_arguments('--list', '--json')
     module.parse_arguments('--info', '--json')

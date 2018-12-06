@@ -91,6 +91,7 @@ def create_archive(
     local_path='borg',
     remote_path=None,
     progress=False,
+    stats=False,
     json=False,
 ):
     '''
@@ -139,6 +140,7 @@ def create_archive(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
+        + (('--stats',) if stats else ())
         + (('--json',) if json else ())
     )
 
