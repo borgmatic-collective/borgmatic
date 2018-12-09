@@ -16,14 +16,11 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert parser.json is False
 
 
-def test_parse_arguments_with_path_arguments_overrides_defaults():
+def test_parse_arguments_disallows_deprecated_excludes_option():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    parser = module.parse_arguments('--config', 'myconfig', '--excludes', 'myexcludes')
-
-    assert parser.config_paths == ['myconfig']
-    assert parser.excludes_filename == 'myexcludes'
-    assert parser.verbosity is 0
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--excludes', 'myexcludes')
 
 
 def test_parse_arguments_with_multiple_config_paths_parses_as_list():
