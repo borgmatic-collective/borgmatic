@@ -110,6 +110,9 @@ def parse_arguments(*arguments):
 
     args = parser.parse_args(arguments)
 
+    if args.excludes_filename:
+        raise ValueError('The --excludes option has been replaced with exclude_patterns in configuration')
+
     if args.progress and not args.create:
         raise ValueError('The --progress option can only be used with the --create option')
 
