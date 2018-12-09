@@ -11,7 +11,7 @@ setup(
     author='Dan Helfman',
     author_email='witten@torsion.org',
     url='https://torsion.org/borgmatic',
-    classifiers=(
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: System Administrators',
@@ -19,7 +19,7 @@ setup(
         'Programming Language :: Python',
         'Topic :: Security :: Cryptography',
         'Topic :: System :: Archiving :: Backup',
-    ),
+    ],
     packages=find_packages(),
     entry_points={
         'console_scripts': [
