@@ -112,7 +112,7 @@ def parse_arguments(*arguments):
         dest='stats',
         default=False,
         action='store_true',
-        help='Display status with --create or --prune option for each file as it is backed up',
+        help='Display statistics of archive with --create or --prune option',
     )
     parser.add_argument(
         '--json',
@@ -160,7 +160,9 @@ def parse_arguments(*arguments):
         raise ValueError('The --progress option can only be used with the --create option')
 
     if args.stats and not (args.create or args.prune):
-        raise ValueError('The --stats option can only be used with the --create, or --prune options')
+        raise ValueError(
+            'The --stats option can only be used with the --create, or --prune options'
+        )
 
     if args.json and not (args.create or args.list or args.info):
         raise ValueError(
