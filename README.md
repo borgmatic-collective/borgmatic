@@ -58,28 +58,9 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 
 To get up and running, first [install
 Borg](https://borgbackup.readthedocs.io/en/latest/installation.html), at
-least version 1.1. Then, follow the [Borg Quick
-Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) to create
-a repository on a local or remote host.
+least version 1.1.
 
-Note that if you plan to run borgmatic on a schedule with cron, and you
-encrypt your Borg repository with a passphrase instead of a key file, you'll
-either need to set the borgmatic `encryption_passphrase` configuration
-variable or set the `BORG_PASSPHRASE` environment variable. See the
-[repository encryption
-section](https://borgbackup.readthedocs.io/en/latest/quickstart.html#repository-encryption)
-of the Quick Start for more info.
-
-Alternatively, the passphrase can be specified programatically by setting
-either the borgmatic `encryption_passcommand` configuration variable or the
-`BORG_PASSCOMMAND` environment variable. See the [Borg Security
-FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)
-for more info.
-
-If the repository is on a remote host, make sure that your local root user has
-key-based ssh access to the desired user account on the remote host.
-
-To install borgmatic, run the following command to download and install it:
+Then, run the following command to download and install borgmatic:
 
 ```bash
 sudo pip3 install --upgrade borgmatic
@@ -87,6 +68,7 @@ sudo pip3 install --upgrade borgmatic
 
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
+
 
 ### Other ways to install
 
@@ -100,6 +82,7 @@ you're using Python 3, as borgmatic does not support Python 2.
    Linux](https://aur.archlinux.org/packages/borgmatic/).
  * [A borgmatic package for OpenBSD](http://ports.su/sysutils/borgmatic).
 <br><br>
+
 
 ## Configuration
 
@@ -123,6 +106,161 @@ for the authoritative set of all configuration options. This is handy if
 borgmatic has added new options since you originally created your
 configuration file.
 
+
+### Encryption
+
+Note that if you plan to run borgmatic on a schedule with cron, and you
+encrypt your Borg repository with a passphrase instead of a key file, you'll
+either need to set the borgmatic `encryption_passphrase` configuration
+variable or set the `BORG_PASSPHRASE` environment variable. See the
+[repository encryption
+section](https://borgbackup.readthedocs.io/en/latest/quickstart.html#repository-encryption)
+of the Quick Start for more info.
+
+Alternatively, the passphrase can be specified programatically by setting
+either the borgmatic `encryption_passcommand` configuration variable or the
+`BORG_PASSCOMMAND` environment variable. See the [Borg Security
+FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)
+for more info.
+
+
+## Usage
+
+### Initialization
+
+Before you can create backups with borgmatic, you first need to initialize a
+Borg repository so you have a destination for your backup archives. (But skip
+this step if you already have a Borg repository.) To create a repository, run
+a command like the following:
+
+```bash
+borgmatic --init --encryption repokey
+```
+
+This uses the borgmatic configuration file you created above to determine
+which local or remote repository to create, and encrypts it with the
+encryption passphrase specified there if one is provided. Read about [Borg
+encryption
+modes](https://borgbackup.readthedocs.io/en/latest/usage/init.html#encryption-modes)
+for the menu of available encryption modes.
+
+Also, optionally check out the [Borg Quick
+Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) for more
+background about repository initialization.
+
+If the repository is on a remote host, make sure that your local user has
+key-based SSH access to the desired user account on the remote host.
+
+
+### Backups
+
+You can run borgmatic and start a backup simply by invoking it without
+arguments:
+
+```bash
+borgmatic
+```
+
+This will also prune any old backups as per the configured retention policy,
+and check backups for consistency problems due to things like file damage.
+
+If you'd like to see the available command-line arguments, view the help:
+
+```bash
+borgmatic --help
+```
+
+Note that borgmatic prunes archives *before* creating an archive, so as to
+free up space for archiving. This means that when a borgmatic run finishes,
+there may still be prune-able archives. Not to worry, as they will get cleaned
+up at the start of the next run.
+
+
+### Verbosity
+
+By default, the backup will proceed silently except in the case of errors. But
+if you'd like to to get additional information about the progress of the
+backup as it proceeds, use the verbosity option:
+
+```bash
+borgmatic --verbosity 1
+```
+
+Or, for even more progress spew:
+
+```bash
+borgmatic --verbosity 2
+```
+
+### À la carte
+
+If you want to run borgmatic with only pruning, creating, or checking enabled,
+the following optional flags are available:
+
+```bash
+borgmatic --prune
+borgmatic --create
+borgmatic --check
+```
+
+You can run with only one of these flags provided, or you can mix and match
+any number of them. This supports use cases like running consistency checks
+from a different cron job with a different frequency, or running pruning with
+a different verbosity level.
+
+Additionally, borgmatic provides convenient flags for Borg's
+[list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
+[info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
+functionality:
+
+
+```bash
+borgmatic --list
+borgmatic --info
+```
+
+You can include an optional `--json` flag with `--create`, `--list`, or
+`--info` to get the output formatted as JSON.
+
+
+## Autopilot
+
+If you want to run borgmatic automatically, say once a day, the you can
+configure a job runner to invoke it periodically.
+
+### cron
+
+If you're using cron, download the [sample cron
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/cron/borgmatic).
+Then, from the directory where you downloaded it:
+
+```bash
+sudo mv borgmatic /etc/cron.d/borgmatic
+sudo chmod +x /etc/cron.d/borgmatic
+```
+
+You can modify the cron file if you'd like to run borgmatic more or less frequently.
+
+### systemd
+
+If you're using systemd instead of cron to run jobs, download the [sample
+systemd service
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.service)
+and the [sample systemd timer
+file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.timer).
+Then, from the directory where you downloaded them:
+
+```bash
+sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
+sudo systemctl enable borgmatic.timer
+sudo systemctl start borgmatic.timer
+```
+
+Feel free to modify the timer file based on how frequently you'd like
+borgmatic to run.
+
+
+## Advanced configuration
 
 ### Multiple configuration files
 
@@ -245,113 +383,6 @@ sudo pip3 install borgmatic
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
-
-
-## Usage
-
-You can run borgmatic and start a backup simply by invoking it without
-arguments:
-
-```bash
-borgmatic
-```
-
-This will also prune any old backups as per the configured retention policy,
-and check backups for consistency problems due to things like file damage.
-
-If you'd like to see the available command-line arguments, view the help:
-
-```bash
-borgmatic --help
-```
-
-Note that borgmatic prunes archives *before* creating an archive, so as to
-free up space for archiving. This means that when a borgmatic run finishes,
-there may still be prune-able archives. Not to worry, as they will get cleaned
-up at the start of the next run.
-
-### Verbosity
-
-By default, the backup will proceed silently except in the case of errors. But
-if you'd like to to get additional information about the progress of the
-backup as it proceeds, use the verbosity option:
-
-```bash
-borgmatic --verbosity 1
-```
-
-Or, for even more progress spew:
-
-```bash
-borgmatic --verbosity 2
-```
-
-### À la carte
-
-If you want to run borgmatic with only pruning, creating, or checking enabled,
-the following optional flags are available:
-
-```bash
-borgmatic --prune
-borgmatic --create
-borgmatic --check
-```
-
-You can run with only one of these flags provided, or you can mix and match
-any number of them. This supports use cases like running consistency checks
-from a different cron job with a different frequency, or running pruning with
-a different verbosity level.
-
-Additionally, borgmatic provides convenient flags for Borg's
-[list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
-[info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
-functionality:
-
-
-```bash
-borgmatic --list
-borgmatic --info
-```
-
-You can include an optional `--json` flag with `--create`, `--list`, or
-`--info` to get the output formatted as JSON.
-
-
-## Autopilot
-
-If you want to run borgmatic automatically, say once a day, the you can
-configure a job runner to invoke it periodically.
-
-### cron
-
-If you're using cron, download the [sample cron
-file](https://projects.torsion.org/witten/borgmatic/src/master/sample/cron/borgmatic).
-Then, from the directory where you downloaded it:
-
-```bash
-sudo mv borgmatic /etc/cron.d/borgmatic
-sudo chmod +x /etc/cron.d/borgmatic
-```
-
-You can modify the cron file if you'd like to run borgmatic more or less frequently.
-
-### systemd
-
-If you're using systemd instead of cron to run jobs, download the [sample
-systemd service
-file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.service)
-and the [sample systemd timer
-file](https://projects.torsion.org/witten/borgmatic/src/master/sample/systemd/borgmatic.timer).
-Then, from the directory where you downloaded them:
-
-```bash
-sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
-sudo systemctl enable borgmatic.timer
-sudo systemctl start borgmatic.timer
-```
-
-Feel free to modify the timer file based on how frequently you'd like
-borgmatic to run.
 
 
 ## Support and contributing

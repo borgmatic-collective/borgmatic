@@ -1,56 +1,9 @@
 import logging
-import os
 
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
 from ..test_verbosity import insert_logging_mock
-
-
-def test_initialize_environment_with_passcommand_should_set_environment():
-    orig_environ = os.environ
-
-    try:
-        os.environ = {}
-        module.initialize_environment({'encryption_passcommand': 'command'})
-        assert os.environ.get('BORG_PASSCOMMAND') == 'command'
-    finally:
-        os.environ = orig_environ
-
-
-def test_initialize_environment_with_passphrase_should_set_environment():
-    orig_environ = os.environ
-
-    try:
-        os.environ = {}
-        module.initialize_environment({'encryption_passphrase': 'pass'})
-        assert os.environ.get('BORG_PASSPHRASE') == 'pass'
-    finally:
-        os.environ = orig_environ
-
-
-def test_initialize_environment_with_ssh_command_should_set_environment():
-    orig_environ = os.environ
-
-    try:
-        os.environ = {}
-        module.initialize_environment({'ssh_command': 'ssh -C'})
-        assert os.environ.get('BORG_RSH') == 'ssh -C'
-    finally:
-        os.environ = orig_environ
-
-
-def test_initialize_environment_without_configuration_should_not_set_environment():
-    orig_environ = os.environ
-
-    try:
-        os.environ = {}
-        module.initialize_environment({})
-        assert os.environ.get('BORG_PASSCOMMAND') is None
-        assert os.environ.get('BORG_PASSPHRASE') is None
-        assert os.environ.get('BORG_RSH') is None
-    finally:
-        os.environ = orig_environ
 
 
 def test_expand_directory_with_basic_path_passes_it_through():

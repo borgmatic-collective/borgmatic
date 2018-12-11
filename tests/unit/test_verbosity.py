@@ -6,9 +6,11 @@ from borgmatic import verbosity as module
 
 
 def insert_logging_mock(log_level):
-    """ Mocks the isEnabledFor from python logging. """
+    '''
+    Mock the isEnabledFor from Python logging.
+    '''
     logging = flexmock(module.logging.Logger)
-    logging.should_receive('isEnabledFor').replace_with(lambda lvl: lvl >= log_level)
+    logging.should_receive('isEnabledFor').replace_with(lambda level: level >= log_level)
     logging.should_receive('getEffectiveLevel').replace_with(lambda: log_level)
 
 

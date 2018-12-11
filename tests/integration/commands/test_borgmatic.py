@@ -16,13 +16,6 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert parser.json is False
 
 
-def test_parse_arguments_disallows_deprecated_excludes_option():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments('--config', 'myconfig', '--excludes', 'myexcludes')
-
-
 def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -32,7 +25,7 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     assert parser.verbosity is 0
 
 
-def test_parse_arguments_with_verbosity_flag_overrides_default():
+def test_parse_arguments_with_verbosity_overrides_default():
     config_paths = ['default']
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
 
@@ -43,7 +36,7 @@ def test_parse_arguments_with_verbosity_flag_overrides_default():
     assert parser.verbosity == 1
 
 
-def test_parse_arguments_with_json_flag_overrides_default():
+def test_parse_arguments_with_json_overrides_default():
     parser = module.parse_arguments('--list', '--json')
     assert parser.json is True
 
@@ -85,25 +78,81 @@ def test_parse_arguments_with_invalid_arguments_exits():
         module.parse_arguments('--posix-me-harder')
 
 
-def test_parse_arguments_with_progress_and_create_flags_does_not_raise():
+def test_parse_arguments_disallows_deprecated_excludes_option():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--excludes', 'myexcludes')
+
+
+def test_parse_arguments_disallows_encryption_mode_without_init():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--encryption', 'repokey')
+
+
+def test_parse_arguments_requires_encryption_mode_with_init():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--init')
+
+
+def test_parse_arguments_disallows_append_only_without_init():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--append-only')
+
+
+def test_parse_arguments_disallows_storage_quota_without_init():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--storage-quota', '5G')
+
+
+def test_parse_arguments_disallows_init_and_prune():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--init', '--prune')
+
+
+def test_parse_arguments_disallows_init_and_create():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--init', '--create')
+
+
+def test_parse_arguments_disallows_init_and_dry_run():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--init', '--dry-run')
+
+
+def test_parse_arguments_allows_progress_and_create():
     module.parse_arguments('--progress', '--create', '--list')
 
 
-def test_parse_arguments_with_progress_flag_but_no_create_flag_raises_value_error():
+def test_parse_arguments_disallows_progress_without_create():
     with pytest.raises(ValueError):
         module.parse_arguments('--progress', '--list')
 
 
-def test_parse_arguments_with_json_flag_with_list_or_info_flag_does_not_raise_any_error():
+def test_parse_arguments_allows_json_with_list_or_info():
     module.parse_arguments('--list', '--json')
     module.parse_arguments('--info', '--json')
 
 
-def test_parse_arguments_with_json_flag_but_no_list_or_info_flag_raises_value_error():
+def test_parse_arguments_disallows_json_without_list_or_info():
     with pytest.raises(ValueError):
         module.parse_arguments('--json')
 
 
-def test_parse_arguments_with_json_flag_and_both_list_and_info_flag_raises_value_error():
+def test_parse_arguments_disallows_json_with_both_list_and_info():
     with pytest.raises(ValueError):
         module.parse_arguments('--list', '--info', '--json')

@@ -8,9 +8,11 @@ import sys
 from borgmatic.borg import (
     check as borg_check,
     create as borg_create,
+    environment as borg_environment,
     prune as borg_prune,
     list as borg_list,
     info as borg_info,
+    init as borg_init,
 )
 from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
@@ -52,6 +54,26 @@ def parse_arguments(*arguments):
         '--excludes',
         dest='excludes_filename',
         help='Deprecated in favor of exclude_patterns within configuration',
+    )
+    parser.add_argument(
+        '-I', '--init', dest='init', action='store_true', help='Initialize an empty Borg repository'
+    )
+    parser.add_argument(
+        '-e',
+        '--encryption',
+        dest='encryption_mode',
+        help='Borg repository encryption mode (for use with --init)',
+    )
+    parser.add_argument(
+        '--append-only',
+        dest='append_only',
+        action='store_true',
+        help='Create an append-only repository (for use with --init)',
+    )
+    parser.add_argument(
+        '--storage-quota',
+        dest='storage_quota',
+        help='Create a repository with a fixed storage quota (for use with --init)',
     )
     parser.add_argument(
         '-p',
@@ -111,7 +133,21 @@ def parse_arguments(*arguments):
     args = parser.parse_args(arguments)
 
     if args.excludes_filename:
-        raise ValueError('The --excludes option has been replaced with exclude_patterns in configuration')
+        raise ValueError(
+            'The --excludes option has been replaced with exclude_patterns in configuration'
+        )
+
+    if (args.encryption_mode or args.append_only or args.storage_quota) and not args.init:
+        raise ValueError(
+            'The --encryption, --append-only, and --storage-quota options can only be used with the --init option'
+        )
+
+    if args.init and (args.prune or args.create or args.dry_run):
+        raise ValueError(
+            'The --init option cannot be used with the --prune, --create, or --dry-run options'
+        )
+    if args.init and not args.encryption_mode:
+        raise ValueError('The --encryption option is required with the --init option')
 
     if args.progress and not args.create:
         raise ValueError('The --progress option can only be used with the --create option')
@@ -128,7 +164,7 @@ def parse_arguments(*arguments):
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
-    if args.prune or args.create or args.check or args.list or args.info:
+    if args.init or args.prune or args.create or args.check or args.list or args.info:
         return args
 
     args.prune = True
@@ -152,7 +188,7 @@ def run_configuration(config_filename, args):  # pragma: no cover
     try:
         local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
-        borg_create.initialize_environment(storage)
+        borg_environment.initialize(storage)
 
         if args.create:
             hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
@@ -206,6 +242,16 @@ def _run_commands_on_repository(
 ):  # pragma: no cover
     repository = os.path.expanduser(unexpanded_repository)
     dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
+    if args.init:
+        logger.info('{}: Initializing repository'.format(repository))
+        borg_init.initialize_repository(
+            repository,
+            args.encryption_mode,
+            args.append_only,
+            args.storage_quota,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
     if args.prune:
         logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
         borg_prune.prune_archives(

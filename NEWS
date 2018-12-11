@@ -1,7 +1,9 @@
-1.2.12.dev0
+1.2.12
+ * #110: Support for Borg repository initialization via borgmatic --init command-line flag.
  * #111: Update Borg create --filter values so a dry run lists files to back up.
  * #113: Update README with link to a new/forked Docker image.
- * Error when deprecated --excludes command-line option is used.
+ * Prevent deprecated --excludes command-line option from being used.
+ * Refactor README a bit to flow better for first-time users.
 
 1.2.11
  * #108: Support for Borg create --progress via borgmatic command-line flag.
