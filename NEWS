@@ -4,6 +4,7 @@
  * #113: Update README with link to a new/forked Docker image.
  * Prevent deprecated --excludes command-line option from being used.
  * Refactor README a bit to flow better for first-time users.
+ * Update README with a few additional borgmatic packages (Debian and Ubuntu).
 
 1.2.11
  * #108: Support for Borg create --progress via borgmatic command-line flag.
