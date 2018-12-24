@@ -31,7 +31,13 @@ def _make_prune_flags(retention_config):
 
 
 def prune_archives(
-    dry_run, repository, storage_config, retention_config, local_path='borg', remote_path=None
+    dry_run,
+    repository,
+    storage_config,
+    retention_config,
+    local_path='borg',
+    remote_path=None,
+    stats=False,
 ):
     '''
     Given dry-run flag, a local or remote repository path, a storage config dict, and a
@@ -51,6 +57,7 @@ def prune_archives(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
+        + (('--stats',) if stats else ())
     )
 
     logger.debug(' '.join(full_command))

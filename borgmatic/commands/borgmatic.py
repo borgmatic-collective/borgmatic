@@ -108,6 +108,13 @@ def parse_arguments(*arguments):
         help='Display progress with --create option for each file as it is backed up',
     )
     parser.add_argument(
+        '--stats',
+        dest='stats',
+        default=False,
+        action='store_true',
+        help='Display statistics of archive with --create or --prune option',
+    )
+    parser.add_argument(
         '--json',
         dest='json',
         default=False,
@@ -151,6 +158,11 @@ def parse_arguments(*arguments):
 
     if args.progress and not args.create:
         raise ValueError('The --progress option can only be used with the --create option')
+
+    if args.stats and not (args.create or args.prune):
+        raise ValueError(
+            'The --stats option can only be used with the --create, or --prune options'
+        )
 
     if args.json and not (args.create or args.list or args.info):
         raise ValueError(
@@ -261,6 +273,7 @@ def _run_commands_on_repository(
             retention,
             local_path=local_path,
             remote_path=remote_path,
+            stats=args.stats,
         )
     if args.create:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
@@ -272,6 +285,7 @@ def _run_commands_on_repository(
             local_path=local_path,
             remote_path=remote_path,
             progress=args.progress,
+            stats=args.stats,
         )
     if args.check and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))

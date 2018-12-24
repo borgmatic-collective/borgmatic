@@ -91,6 +91,7 @@ def create_archive(
     local_path='borg',
     remote_path=None,
     progress=False,
+    stats=False,
     json=False,
 ):
     '''
@@ -135,7 +136,7 @@ def create_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--list', '--filter', 'AME-') if logger.isEnabledFor(logging.INFO) else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
+        + (('--stats',) if not dry_run and (logger.isEnabledFor(logging.INFO) or stats) else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
