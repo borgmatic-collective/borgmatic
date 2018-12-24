@@ -1,3 +1,6 @@
+1.2.13.dev0
+ * #100: Support for --stats command-line flag independent of --verbosity.
+
 1.2.12
  * #110: Support for Borg repository initialization via borgmatic --init command-line flag.
  * #111: Update Borg create --filter values so a dry run lists files to back up.

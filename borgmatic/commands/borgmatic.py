@@ -161,7 +161,7 @@ def parse_arguments(*arguments):
 
     if args.stats and not (args.create or args.prune):
         raise ValueError(
-            'The --stats option can only be used with the --create, or --prune options'
+            'The --stats option can only be used with the --create or --prune options'
         )
 
     if args.json and not (args.create or args.list or args.info):
