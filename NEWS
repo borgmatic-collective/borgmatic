@@ -1,3 +1,7 @@
+1.2.14.dev0
+ * #116: When running multiple configuration files, attempt all configuration files even if one of
+   them errors. Log a summary of results at the end.
+
 1.2.13
  * #100: Support for --stats command-line flag independent of --verbosity.
  * #117: With borgmatic --init command-line flag, proceed without erroring if a repository already

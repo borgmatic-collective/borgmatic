@@ -29,7 +29,7 @@ LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 def parse_arguments(*arguments):
     '''
     Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as an ArgumentParser instance.
+    them as an argparse.ArgumentParser instance.
     '''
     config_paths = collect.get_default_config_paths()
 
@@ -308,25 +308,53 @@ def _run_commands_on_repository(
             sys.stdout.write(output)
 
 
-def main():  # pragma: no cover
-    try:
-        configure_signals()
-        args = parse_arguments(*sys.argv[1:])
-        logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
-
-        config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
-        logger.debug('Ensuring legacy configuration is upgraded')
-        convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
-
-        if len(config_filenames) == 0:
-            raise ValueError(
-                'Error: No configuration files found in: {}'.format(' '.join(args.config_paths))
-            )
-
-        for config_filename in config_filenames:
+def collect_configuration_run_summary_logs(config_filenames, args):
+    '''
+    Given a sequence of configuration filenames and parsed command-line arguments as an
+    argparse.ArgumentParser instance, run each configuration file and yield a series of
+    logging.LogRecord instances containing summary information about each run.
+    '''
+    for config_filename in config_filenames:
+        try:
             run_configuration(config_filename, args)
-    except (ValueError, OSError, CalledProcessError) as error:
-        print(error, file=sys.stderr)
-        print(file=sys.stderr)
-        print('Need some help? https://torsion.org/borgmatic/#issues', file=sys.stderr)
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.INFO,
+                    msg='{}: Successfully ran configuration file'.format(config_filename),
+                )
+            )
+        except (ValueError, OSError, CalledProcessError) as error:
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.CRITICAL,
+                    msg='{}: Error running configuration file'.format(config_filename),
+                )
+            )
+            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+
+    if not config_filenames:
+        yield logging.makeLogRecord(
+            dict(
+                levelno=logging.CRITICAL,
+                msg='{}: No configuration files found'.format(' '.join(args.config_paths)),
+            )
+        )
+
+
+def main():  # pragma: no cover
+    configure_signals()
+    args = parse_arguments(*sys.argv[1:])
+    logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
+
+    config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
+    logger.debug('Ensuring legacy configuration is upgraded')
+    convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
+
+    summary_logs = tuple(collect_configuration_run_summary_logs(config_filenames, args))
+
+    logger.info('\nsummary:')
+    [logger.handle(log) for log in summary_logs if log.levelno >= logger.getEffectiveLevel()]
+
+    if any(log.levelno == logging.CRITICAL for log in summary_logs):
+        logger.critical('\nNeed some help? https://torsion.org/borgmatic/#issues')
         sys.exit(1)
