@@ -149,10 +149,8 @@ def parse_arguments(*arguments):
             'The --encryption, --append-only, and --storage-quota options can only be used with the --init option'
         )
 
-    if args.init and (args.prune or args.create or args.dry_run):
-        raise ValueError(
-            'The --init option cannot be used with the --prune, --create, or --dry-run options'
-        )
+    if args.init and args.dry_run:
+        raise ValueError('The --init option cannot be used with the --dry-run option')
     if args.init and not args.encryption_mode:
         raise ValueError('The --encryption option is required with the --init option')
 

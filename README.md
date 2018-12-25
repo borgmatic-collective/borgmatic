@@ -146,6 +146,10 @@ Also, optionally check out the [Borg Quick
 Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) for more
 background about repository initialization.
 
+Note that borgmatic skips repository initialization if the repository already
+exists. This supports use cases like ensuring a repository exists prior to
+performing a backup.
+
 If the repository is on a remote host, make sure that your local user has
 key-based SSH access to the desired user account on the remote host.
 

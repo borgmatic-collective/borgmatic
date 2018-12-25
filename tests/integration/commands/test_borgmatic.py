@@ -113,25 +113,25 @@ def test_parse_arguments_disallows_storage_quota_without_init():
         module.parse_arguments('--config', 'myconfig', '--storage-quota', '5G')
 
 
-def test_parse_arguments_disallows_init_and_prune():
+def test_parse_arguments_allows_init_and_prune():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(ValueError):
-        module.parse_arguments('--config', 'myconfig', '--init', '--prune')
+    module.parse_arguments('--config', 'myconfig', '--init', '--encryption', 'repokey', '--prune')
 
 
-def test_parse_arguments_disallows_init_and_create():
+def test_parse_arguments_allows_init_and_create():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(ValueError):
-        module.parse_arguments('--config', 'myconfig', '--init', '--create')
+    module.parse_arguments('--config', 'myconfig', '--init', '--encryption', 'repokey', '--create')
 
 
 def test_parse_arguments_disallows_init_and_dry_run():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('--config', 'myconfig', '--init', '--dry-run')
+        module.parse_arguments(
+            '--config', 'myconfig', '--init', '--encryption', 'repokey', '--dry-run'
+        )
 
 
 def test_parse_arguments_allows_progress_and_create():
