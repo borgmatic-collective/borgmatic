@@ -161,7 +161,7 @@ map:
             ssh_command:
                 type: scalar
                 desc: |
-                    Command to use instead of just "ssh". This can be used to specify ssh options.
+                    Command to use instead of "ssh". This can be used to specify ssh options.
                     Defaults to not set.
                 example: ssh -i /path/to/private/key
             umask:
@@ -243,7 +243,7 @@ map:
                     "extract". Defaults to "repository" and "archives". Set to "disabled" to disable
                     all consistency checks. "repository" checks the consistency of the repository,
                     "archive" checks all of the archives, and "extract" does an extraction dry-run
-                    of just the most recent archive.
+                    of the most recent archive.
                 example:
                     - repository
                     - archives

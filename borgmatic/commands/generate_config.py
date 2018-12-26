@@ -36,7 +36,7 @@ def main():  # pragma: no cover
 
         print('Generated a sample configuration file at {}.'.format(args.destination_filename))
         print()
-        print('Please edit the file to suit your needs. The values are just representative.')
+        print('Please edit the file to suit your needs. The values are representative.')
         print('All fields are optional except where indicated.')
         print()
         print('If you ever need help: https://torsion.org/borgmatic/#issues')

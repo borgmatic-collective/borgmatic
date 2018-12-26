@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', remote_path=None):
     '''
-    Perform an extraction dry-run of just the most recent archive. If there are no archives, skip
-    the dry-run.
+    Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
+    dry-run.
     '''
     remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
     lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()

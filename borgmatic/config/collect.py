@@ -20,10 +20,10 @@ def get_default_config_paths():
 
 def collect_config_filenames(config_paths):
     '''
-    Given a sequence of config paths, both filenames and directories, resolve that to just an
-    iterable of files. Accomplish this by listing any given directories looking for contained config
-    files (ending with the ".yaml" extension). This is non-recursive, so any directories within the
-    given directories are ignored.
+    Given a sequence of config paths, both filenames and directories, resolve that to an iterable
+    of files. Accomplish this by listing any given directories looking for contained config files
+    (ending with the ".yaml" extension). This is non-recursive, so any directories within the given
+    directories are ignored.
 
     Return paths even if they don't exist on disk, so the user can find out about missing
     configuration paths. However, skip a default config path if it's missing, so the user doesn't

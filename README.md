@@ -94,7 +94,7 @@ If that command is not found, then it may be installed in a location that's
 not in your system `PATH`. Try looking in `/usr/local/bin/`.
 
 This generates a sample configuration file at /etc/borgmatic/config.yaml (by
-default). You should edit the file to suit your needs, as the values are just
+default). You should edit the file to suit your needs, as the values are
 representative. All fields are optional except where indicated, so feel free
 to ignore anything you don't need.
 
@@ -156,8 +156,7 @@ key-based SSH access to the desired user account on the remote host.
 
 ### Backups
 
-You can run borgmatic and start a backup simply by invoking it without
-arguments:
+You can run borgmatic and start a backup by invoking it without arguments:
 
 ```bash
 borgmatic
@@ -292,7 +291,7 @@ See `borgmatic --help` for more information.
 ### Hooks
 
 If you find yourself performing prepraration tasks before your backup runs, or
-cleanup work afterwards, borgmatic hooks may be of interest. They're simply
+cleanup work afterwards, borgmatic hooks may be of interest. Hooks are
 shell commands that borgmatic executes for you at various points, and they're
 configured in the `hooks` section of your configuration file.
 
@@ -323,7 +322,7 @@ following:
 sudo pip3 install --upgrade borgmatic
 ```
 
-However, see below about special cases.
+See below about special cases.
 
 
 ### Upgrading from borgmatic 1.0.x
@@ -334,7 +333,7 @@ to express lists of values. To upgrade your existing configuration, first
 upgrade to the new version of borgmatic.
 
 As of version 1.1.0, borgmatic no longer supports Python 2. If you were
-already running borgmatic with Python 3, then you can simply upgrade borgmatic
+already running borgmatic with Python 3, then you can upgrade borgmatic
 in-place:
 
 ```bash
@@ -375,8 +374,8 @@ command](https://borgbackup.readthedocs.io/en/stable/usage.html#borg-upgrade)
 for more information. Then, follow the instructions above about setting up
 your borgmatic configuration files.
 
-If you were already using Borg with atticmatic, then you can easily upgrade
-from atticmatic to borgmatic. Simply run the following commands:
+If you were already using Borg with atticmatic, then you can upgrade
+from atticmatic to borgmatic by running the following commands:
 
 ```bash
 sudo pip3 uninstall atticmatic
@@ -444,7 +443,7 @@ git clone ssh://git@projects.torsion.org:3022/witten/borgmatic.git
 
 Then, install borgmatic
 "[editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)"
-so that you can easily run borgmatic commands while you're hacking on them to
+so that you can run borgmatic commands while you're hacking on them to
 make sure your changes work.
 
 ```bash

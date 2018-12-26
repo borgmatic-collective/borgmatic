@@ -93,7 +93,7 @@ def parse_configuration(config_filename, schema_filename):
         raise Validation_error(config_filename, (str(error),))
 
     # pykwalify gets angry if the example field is not a string. So rather than bend to its will,
-    # simply remove all examples before passing the schema to pykwalify.
+    # remove all examples before passing the schema to pykwalify.
     for section_name, section_schema in schema['map'].items():
         for field_name, field_schema in section_schema['map'].items():
             field_schema.pop('example', None)
