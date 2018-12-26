@@ -30,14 +30,14 @@ map:
                     - user@backupserver:sourcehostname.borg
             one_file_system:
                 type: bool
-                desc: Stay in same file system (do not cross mount points).
+                desc: Stay in same file system (do not cross mount points). Defaults to false.
                 example: true
             read_special:
                 type: bool
                 desc: |
                     Use Borg's --read-special flag to allow backup of block and other special
                     devices. Use with caution, as it will lead to problems if used when
-                    backing up special devices such as /dev/zero.
+                    backing up special devices such as /dev/zero. Defaults to false.
                 example: false
             bsd_flags:
                 type: bool
@@ -48,7 +48,7 @@ map:
                 desc: |
                     Mode in which to operate the files cache. See
                     https://borgbackup.readthedocs.io/en/stable/usage/create.html#description for
-                    details.
+                    details. Defaults to "ctime,size,inode".
                 example: ctime,size,inode
             local_path:
                 type: scalar
@@ -102,11 +102,13 @@ map:
                 type: bool
                 desc: |
                     Exclude directories that contain a CACHEDIR.TAG file. See
-                    http://www.brynosaurus.com/cachedir/spec.html for details.
+                    http://www.brynosaurus.com/cachedir/spec.html for details. Defaults to false.
                 example: true
             exclude_if_present:
                 type: scalar
-                desc: Exclude directories that contain a file with the given filename.
+                desc: |
+                    Exclude directories that contain a file with the given filename. Defaults to not
+                    set.
                 example: .nobackup
     storage:
         desc: |
@@ -121,7 +123,7 @@ map:
                     The standard output of this command is used to unlock the encryption key. Only
                     use on repositories that were initialized with passcommand/repokey encryption.
                     Note that if both encryption_passcommand and encryption_passphrase are set,
-                    then encryption_passphrase takes precedence.
+                    then encryption_passphrase takes precedence. Defaults to not set.
                 example: "secret-tool lookup borg-repository repo-name"
             encryption_passphrase:
                 type: scalar
@@ -129,7 +131,7 @@ map:
                     Passphrase to unlock the encryption key with. Only use on repositories that were
                     initialized with passphrase/repokey encryption. Quote the value if it contains
                     punctuation, so it parses correctly. And backslash any quote or backslash
-                    literals as well.
+                    literals as well. Defaults to not set.
                 example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
             checkpoint_interval:
                 type: int
@@ -143,7 +145,7 @@ map:
                 desc: |
                     Specify the parameters passed to then chunker (CHUNK_MIN_EXP, CHUNK_MAX_EXP,
                     HASH_MASK_BITS, HASH_WINDOW_SIZE). See https://borgbackup.readthedocs.io/en/stable/internals.html
-                    for details.
+                    for details. Defaults to "19,23,21,4095".
                 example: 19,23,21,4095
             compression:
                 type: scalar
@@ -154,25 +156,27 @@ map:
                 example: lz4
             remote_rate_limit:
                 type: int
-                desc: Remote network upload rate limit in kiBytes/second.
+                desc: Remote network upload rate limit in kiBytes/second. Defaults to unlimited.
                 example: 100
             ssh_command:
                 type: scalar
-                desc: Command to use instead of just "ssh". This can be used to specify ssh options.
+                desc: |
+                    Command to use instead of just "ssh". This can be used to specify ssh options.
+                    Defaults to not set.
                 example: ssh -i /path/to/private/key
             umask:
                 type: scalar
-                desc: Umask to be used for borg create.
+                desc: Umask to be used for borg create. Defaults to 0077.
                 example: 0077
             lock_wait:
                 type: int
-                desc: Maximum seconds to wait for acquiring a repository/cache lock.
+                desc: Maximum seconds to wait for acquiring a repository/cache lock. Defaults to 1.
                 example: 5
             archive_name_format:
                 type: scalar
                 desc: |
                     Name of the archive. Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. Default is
+                    "borg help placeholders" for details. Defaults to
                     "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this option, you must
                     also specify a prefix in the retention section to avoid accidental pruning of
                     archives with a different archive name format. And you should also specify a
@@ -221,7 +225,7 @@ map:
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
                     Borg placeholders can be used. See the output of "borg help placeholders" for
-                    details. Default is "{hostname}-".
+                    details. Defaults to "{hostname}-".
                 example: sourcehostname
     consistency:
         desc: |
@@ -256,14 +260,14 @@ map:
             check_last:
                 type: int
                 desc: Restrict the number of checked archives to the last n. Applies only to the
-                      "archives" check.
+                      "archives" check. Defaults to checking all archives.
                 example: 3
             prefix:
                 type: scalar
                 desc: |
                     When performing the "archives" check, only consider archive names starting with
                     this prefix. Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. Default is "{hostname}-".
+                    "borg help placeholders" for details. Defaults to "{hostname}-".
                 example: sourcehostname
     hooks:
         desc: |
