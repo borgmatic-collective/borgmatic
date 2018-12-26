@@ -5,6 +5,8 @@ import os
 from subprocess import CalledProcessError
 import sys
 
+import pkg_resources
+
 from borgmatic.borg import (
     check as borg_check,
     create as borg_create,
@@ -135,6 +137,13 @@ def parse_arguments(*arguments):
         choices=range(0, 3),
         default=0,
         help='Display verbose progress (1 for some, 2 for lots)',
+    )
+    parser.add_argument(
+        '--version',
+        dest='version',
+        default=False,
+        action='store_true',
+        help='Display installed version number of borgmatic and exit',
     )
 
     args = parser.parse_args(arguments)
@@ -345,6 +354,10 @@ def main():  # pragma: no cover
     configure_signals()
     args = parse_arguments(*sys.argv[1:])
     logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
+
+    if args.version:
+        print(pkg_resources.require('borgmatic')[0].version)
+        sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
     logger.debug('Ensuring legacy configuration is upgraded')

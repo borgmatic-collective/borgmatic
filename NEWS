@@ -1,8 +1,9 @@
-1.2.14.dev0
+1.2.14
  * #103: When generating sample configuration with generate-borgmatic-config, document the defaults
    for each option.
  * #116: When running multiple configuration files, attempt all configuration files even if one of
    them errors. Log a summary of results at the end.
+ * Add borgmatic --version command-line flag to get the current installed version number.
 
 1.2.13
  * #100: Support for --stats command-line flag independent of --verbosity.

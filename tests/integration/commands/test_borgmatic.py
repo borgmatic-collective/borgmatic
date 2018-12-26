@@ -1,3 +1,5 @@
+import subprocess
+
 from flexmock import flexmock
 import pytest
 
@@ -169,3 +171,10 @@ def test_parse_arguments_disallows_json_without_list_or_info():
 def test_parse_arguments_disallows_json_with_both_list_and_info():
     with pytest.raises(ValueError):
         module.parse_arguments('--list', '--info', '--json')
+
+
+def test_borgmatic_version_matches_news_version():
+    borgmatic_version = subprocess.check_output(('borgmatic', '--version')).decode('ascii')
+    news_version = open('NEWS').readline()
+
+    assert borgmatic_version == news_version
