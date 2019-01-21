@@ -79,6 +79,8 @@ you're using Python 3, as borgmatic does not support Python 2.
  * [Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
  * [Arch Linux](https://aur.archlinux.org/packages/borgmatic/)
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
+ * [openSUSE](https://software.opensuse.org/package/borgmatic)
+
 <br><br>
 
 
