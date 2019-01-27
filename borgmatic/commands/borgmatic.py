@@ -166,9 +166,6 @@ def parse_arguments(*arguments):
     if args.progress and not args.create:
         raise ValueError('The --progress option can only be used with the --create option')
 
-    if args.stats and not (args.create or args.prune):
-        raise ValueError('The --stats option can only be used with the --create or --prune options')
-
     if args.json and not (args.create or args.list or args.info):
         raise ValueError(
             'The --json option can only be used with the --create, --list, or --info options'
@@ -181,12 +178,21 @@ def parse_arguments(*arguments):
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
-    if args.init or args.prune or args.create or args.check or args.list or args.info:
-        return args
+    if (
+        not args.init
+        and not args.prune
+        and not args.create
+        and not args.check
+        and not args.list
+        and not args.info
+    ):
+        args.prune = True
+        args.create = True
+        args.check = True
 
-    args.prune = True
-    args.create = True
-    args.check = True
+    if args.stats and not (args.create or args.prune):
+        raise ValueError('The --stats option can only be used when creating or pruning archives')
+
     return args
 
 

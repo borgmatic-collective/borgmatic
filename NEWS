@@ -1,5 +1,6 @@
 1.2.15.dev0
  * #136: Handle and format validation errors raised during argument parsing.
+ * #139: Allow use of --stats flag when --create or --prune flags are implied.
 
 1.2.14
  * #103: When generating sample configuration with generate-borgmatic-config, document the defaults

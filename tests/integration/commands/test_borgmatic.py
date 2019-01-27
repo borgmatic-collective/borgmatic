@@ -158,6 +158,10 @@ def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_valu
         module.parse_arguments('--stats', '--list')
 
 
+def test_parse_arguments_with_just_stats_flag_does_not_raise():
+    module.parse_arguments('--stats')
+
+
 def test_parse_arguments_allows_json_with_list_or_info():
     module.parse_arguments('--list', '--json')
     module.parse_arguments('--info', '--json')
