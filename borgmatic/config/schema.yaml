@@ -281,16 +281,16 @@ map:
                     - type: scalar
                 desc: List of one or more shell commands or scripts to execute before creating a backup.
                 example:
-                    - echo "`date` - Starting a backup job."
+                    - echo "Starting a backup job."
             after_backup:
                 seq:
                     - type: scalar
                 desc: List of one or more shell commands or scripts to execute after creating a backup.
                 example:
-                    - echo "`date` - Backup created."
+                    - echo "Backup created."
             on_error:
                 seq:
                     - type: scalar
                 desc: List of one or more shell commands or scripts to execute in case an exception has occurred.
                 example:
-                    - echo "`date` - Error while creating a backup."
+                    - echo "Error while creating a backup."

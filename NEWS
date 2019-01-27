@@ -1,4 +1,5 @@
 1.2.15.dev0
+ * #127: Remove date echo from schema example, as it's not a substitute for real logging.
  * #136: Handle and format validation errors raised during argument parsing.
  * #139: Allow use of --stats flag when --create or --prune flags are implied.
 
