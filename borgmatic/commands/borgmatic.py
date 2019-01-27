@@ -350,9 +350,24 @@ def collect_configuration_run_summary_logs(config_filenames, args):
         )
 
 
+def exit_with_help_link():  # pragma: no cover
+    '''
+    Display a link to get help and exit with an error code.
+    '''
+    logger.critical('\nNeed some help? https://torsion.org/borgmatic/#issues')
+    sys.exit(1)
+
+
 def main():  # pragma: no cover
     configure_signals()
-    args = parse_arguments(*sys.argv[1:])
+
+    try:
+        args = parse_arguments(*sys.argv[1:])
+    except ValueError as error:
+        logging.basicConfig(level=logging.CRITICAL, format='%(message)s')
+        logger.critical(error)
+        exit_with_help_link()
+
     logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
 
     if args.version:
@@ -369,5 +384,4 @@ def main():  # pragma: no cover
     [logger.handle(log) for log in summary_logs if log.levelno >= logger.getEffectiveLevel()]
 
     if any(log.levelno == logging.CRITICAL for log in summary_logs):
-        logger.critical('\nNeed some help? https://torsion.org/borgmatic/#issues')
-        sys.exit(1)
+        exit_with_help_link()
