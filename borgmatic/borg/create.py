@@ -32,6 +32,17 @@ def _expand_directories(directories):
     )
 
 
+def _expand_home_directories(directories):
+    '''
+    Given a sequence of directory paths, expand tildes in each one. Do not perform any globbing.
+    Return the results as a tuple.
+    '''
+    if directories is None:
+        return ()
+
+    return tuple(os.path.expanduser(directory) for directory in directories)
+
+
 def _write_pattern_file(patterns=None):
     '''
     Given a sequence of patterns, write them to a named temporary file and return it. Return None
@@ -101,7 +112,9 @@ def create_archive(
     sources = _expand_directories(location_config['source_directories'])
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
-    exclude_file = _write_pattern_file(_expand_directories(location_config.get('exclude_patterns')))
+    exclude_file = _write_pattern_file(
+        _expand_home_directories(location_config.get('exclude_patterns'))
+    )
     checkpoint_interval = storage_config.get('checkpoint_interval', None)
     chunker_params = storage_config.get('chunker_params', None)
     compression = storage_config.get('compression', None)
