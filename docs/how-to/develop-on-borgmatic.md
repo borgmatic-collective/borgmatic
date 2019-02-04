@@ -96,4 +96,4 @@ See the Black and Flake8 documentation for more information.
 
  * [How to inspect your backups](../../docs/how-to/inspect-your-backups.md)
  * [Support and contributing](../../#support-and-contributing)
- * [borgmatic README](../../)
+ * [borgmatic README](../../../../)

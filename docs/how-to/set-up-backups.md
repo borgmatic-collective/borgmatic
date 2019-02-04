@@ -164,4 +164,4 @@ borgmatic to run.
  * [How to make per-application backups](../../docs/how-to/make-per-application-backups.md)
  * [How to deal with very large backups](../../docs/how-to/deal-with-very-large-backups.md)
  * [How to inspect your backups](../../docs/how-to/inspect-your-backups.md)
- * [borgmatic README](../../)
+ * [borgmatic README](../../../../)

@@ -43,4 +43,4 @@ output formatted as JSON.
 ## Related documentation
 
  * [How to set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
- * [borgmatic README](../../)
+ * [borgmatic README](../../../../)
