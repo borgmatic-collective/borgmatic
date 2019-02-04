@@ -48,5 +48,4 @@ injection or privilege escalation, do not forget to set secure permissions
 ## Related documentation
 
  * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
- * [How to make per-application backups](../../docs/how-to/make-per-application-backups.md)
- * [borgmatic README](../../../../)
+ * [Make per-application backups](../../docs/how-to/make-per-application-backups.md)

@@ -67,5 +67,4 @@ consistency:
 
 ## Related documentation
 
- * [How to set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
- * [borgmatic README](../../../../)
+ * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)

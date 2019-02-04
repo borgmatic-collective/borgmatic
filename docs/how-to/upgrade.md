@@ -77,4 +77,3 @@ files.
 ## Related documentation
 
  * [Develop on borgmatic](../../docs/how-to/develop-on-borgmatic.md)
- * [borgmatic README](../../../../)
