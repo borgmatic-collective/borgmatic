@@ -65,6 +65,32 @@ consistency:
         - path/of/repository_to_check.borg
 ```
 
+
+## Troubleshooting
+
+### Broken pipe with remote repository
+
+When running borgmatic on a large remote repository, you may receive errors
+like the following, particularly while "borg check" is validating backups for
+consistency:
+
+```text
+    Write failed: Broken pipe
+    borg: Error: Connection closed by remote host
+```
+
+This error can be caused by an ssh timeout, which you can rectify by adding
+the following to the `~/.ssh/config` file on the client:
+
+```text
+    Host *
+        ServerAliveInterval 120
+```
+
+This should make the client keep the connection alive while validating
+backups.
+
+
 ## Related documentation
 
  * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)

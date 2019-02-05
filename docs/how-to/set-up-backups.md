@@ -159,6 +159,19 @@ Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
 
 
+## Troubleshooting
+
+### libyaml compilation errors
+
+borgmatic depends on a Python YAML library (ruamel.yaml) that will optionally
+use a C YAML library (libyaml) if present. But if it's not installed, then
+when installing or upgrading borgmatic, you may see errors about compiling the
+YAML library. If so, not to worry. borgmatic should install and function
+correctly even without the C YAML library. And borgmatic won't be any faster
+with the C library present, so you don't need to go out of your way to install
+it.
+
+
 ## Related documentation
 
  * [Make per-application backups](../../docs/how-to/make-per-application-backups.md)
