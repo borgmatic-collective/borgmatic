@@ -48,11 +48,10 @@ default). You should edit the file to suit your needs, as the values are
 representative. All fields are optional except where indicated, so feel free
 to ignore anything you don't need.
 
-You can also have a look at the [full configuration
-schema](https://projects.torsion.org/witten/borgmatic/src/master/borgmatic/config/schema.yaml)
-for the authoritative set of all configuration options. This is handy if
-borgmatic has added new options since you originally created your
-configuration file.
+You can also get the same sample configuration file from the [configuration
+reference](../../docs/reference/configuration.md), the authoritative set of
+all configuration options. This is handy if borgmatic has added new options
+since you originally created your configuration file.
 
 
 ### Encryption
@@ -177,3 +176,4 @@ it.
  * [Make per-application backups](../../docs/how-to/make-per-application-backups.md)
  * [Deal with very large backups](../../docs/how-to/deal-with-very-large-backups.md)
  * [Inspect your backups](../../docs/how-to/inspect-your-backups.md)
+ * [borgmatic configuration reference](../../docs/reference/configuration.md)

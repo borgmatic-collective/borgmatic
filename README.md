@@ -56,13 +56,18 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 
 ## How-to guides
 
- * [Set up backups with borgmatic](docs/how-to/set-up-backups.md) \<-- *Start here!*
+ * [Set up backups with borgmatic](docs/how-to/set-up-backups.md) ⬅ *Start here!*
  * [Make per-application backups](docs/how-to/make-per-application-backups.md)
  * [Deal with very large backups](docs/how-to/deal-with-very-large-backups.md)
  * [Inspect your backups](docs/how-to/inspect-your-backups.md)
  * [Run preparation steps before backups](docs/how-to/run-preparation-steps-before-backups.md)
  * [Upgrade borgmatic](docs/how-to/upgrade.md)
  * [Develop on borgmatic](docs/how-to/develop-on-borgmatic.md)
+
+
+## Reference guides
+
+ * [borgmatic configuration reference](docs/reference/configuration.md)
 
 
 ## Support and contributing
