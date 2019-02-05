@@ -16,3 +16,4 @@ file](../../docs/reference/config.yaml) for use locally.
 ## Related documentation
 
  * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
+ * [borgmatic command-line reference](../../docs/reference/command-line.md)

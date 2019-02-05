@@ -177,3 +177,4 @@ it.
  * [Deal with very large backups](../../docs/how-to/deal-with-very-large-backups.md)
  * [Inspect your backups](../../docs/how-to/inspect-your-backups.md)
  * [borgmatic configuration reference](../../docs/reference/configuration.md)
+ * [borgmatic command-line reference](../../docs/reference/command-line.md)

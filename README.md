@@ -68,6 +68,7 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 ## Reference guides
 
  * [borgmatic configuration reference](docs/reference/configuration.md)
+ * [borgmatic command-line reference](docs/reference/command-line.md)
 
 
 ## Support and contributing
