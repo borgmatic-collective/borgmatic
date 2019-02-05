@@ -4,10 +4,10 @@ title: How to deal with very large backups
 ## Biggish data
 
 Borg itself is great for efficiently de-duplicating data across successive
-backup archives, even when dealing with very large repositories. However, you
-may find that while borgmatic's default mode of "prune, create, and check"
-works well on small repositories, it's not so great on larger ones. That's
-because running the default consistency checks just takes a long time on large
+backup archives, even when dealing with very large repositories. But you may
+find that while borgmatic's default mode of "prune, create, and check" works
+well on small repositories, it's not so great on larger ones. That's because
+running the default consistency checks takes a long time on large
 repositories.
 
 ### A la carte actions
@@ -34,7 +34,7 @@ Another option is to customize your consistency checks. The default
 consistency checks run both full-repository checks and per-archive checks
 within each repository.
 
-But if you find that archive checks are just too slow, for example, you can
+But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
 `consistency` section of borgmatic configuration:
 
