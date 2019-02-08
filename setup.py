@@ -20,7 +20,7 @@ setup(
         'Topic :: Security :: Cryptography',
         'Topic :: System :: Archiving :: Backup',
     ],
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests*']),
     entry_points={
         'console_scripts': [
             'borgmatic = borgmatic.commands.borgmatic:main',
