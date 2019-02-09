@@ -1,5 +1,6 @@
 1.2.16.dev0
  * Refactor documentation into multiple separate pages for clarity and findability.
+ * Exclude tests from distribution packages.
  * #119: Include a sample borgmatic configuration file in the documentation.
 
 1.2.15
