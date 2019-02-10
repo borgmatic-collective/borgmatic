@@ -93,21 +93,3 @@ def guard_configuration_upgraded(source_config_filename, destination_config_file
 
     if os.path.exists(source_config_filename) and not destination_config_exists:
         raise LegacyConfigurationNotUpgraded()
-
-
-class LegacyExcludesFilenamePresent(FileNotFoundError):
-    def __init__(self):
-        super(LegacyExcludesFilenamePresent, self).__init__(
-            '''borgmatic changed its configuration file format in version 1.1.0 from INI-style
-to YAML. This better supports validation, and has a more natural way to express
-lists of values. The new configuration file incorporates excludes, so you no
-longer need to provide an excludes filename on the command-line with an
-"--excludes" argument.
-
-Please remove the "--excludes" argument and run borgmatic again.'''
-        )
-
-
-def guard_excludes_filename_omitted(excludes_filename):
-    if excludes_filename is not None:
-        raise LegacyExcludesFilenamePresent()
