@@ -38,11 +38,71 @@ def parse_arguments(*arguments):
     parser = ArgumentParser(
         description='''
             A simple wrapper script for the Borg backup software that creates and prunes backups.
-            If none of the --prune, --create, or --check options are given, then borgmatic defaults
-            to all three: prune, create, and check archives.
-            '''
+            If none of the action options are given, then borgmatic defaults to: prune, create, and
+            check archives.
+            ''',
+        add_help=False,
     )
-    parser.add_argument(
+
+    actions_group = parser.add_argument_group('actions')
+    actions_group.add_argument(
+        '-I', '--init', dest='init', action='store_true', help='Initialize an empty Borg repository'
+    )
+    actions_group.add_argument(
+        '-p',
+        '--prune',
+        dest='prune',
+        action='store_true',
+        help='Prune archives according to the retention policy',
+    )
+    actions_group.add_argument(
+        '-C',
+        '--create',
+        dest='create',
+        action='store_true',
+        help='Create archives (actually perform backups)',
+    )
+    actions_group.add_argument(
+        '-k', '--check', dest='check', action='store_true', help='Check archives for consistency'
+    )
+    actions_group.add_argument(
+        '-l', '--list', dest='list', action='store_true', help='List archives'
+    )
+    actions_group.add_argument(
+        '-i',
+        '--info',
+        dest='info',
+        action='store_true',
+        help='Display summary information on archives',
+    )
+
+    init_group = parser.add_argument_group('options for --init')
+    init_group.add_argument(
+        '-e', '--encryption', dest='encryption_mode', help='Borg repository encryption mode'
+    )
+    init_group.add_argument(
+        '--append-only',
+        dest='append_only',
+        action='store_true',
+        help='Create an append-only repository',
+    )
+    init_group.add_argument(
+        '--storage-quota',
+        dest='storage_quota',
+        help='Create a repository with a fixed storage quota',
+    )
+
+    create_group = parser.add_argument_group('options for --create')
+    create_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress for each file as it is backed up',
+    )
+
+    common_group = parser.add_argument_group('common options')
+    common_group.add_argument(
         '-c',
         '--config',
         nargs='+',
@@ -52,85 +112,33 @@ def parse_arguments(*arguments):
             ' '.join(config_paths)
         ),
     )
-    parser.add_argument(
+    common_group.add_argument(
         '--excludes',
         dest='excludes_filename',
         help='Deprecated in favor of exclude_patterns within configuration',
     )
-    parser.add_argument(
-        '-I', '--init', dest='init', action='store_true', help='Initialize an empty Borg repository'
-    )
-    parser.add_argument(
-        '-e',
-        '--encryption',
-        dest='encryption_mode',
-        help='Borg repository encryption mode (for use with --init)',
-    )
-    parser.add_argument(
-        '--append-only',
-        dest='append_only',
-        action='store_true',
-        help='Create an append-only repository (for use with --init)',
-    )
-    parser.add_argument(
-        '--storage-quota',
-        dest='storage_quota',
-        help='Create a repository with a fixed storage quota (for use with --init)',
-    )
-    parser.add_argument(
-        '-p',
-        '--prune',
-        dest='prune',
-        action='store_true',
-        help='Prune archives according to the retention policy',
-    )
-    parser.add_argument(
-        '-C',
-        '--create',
-        dest='create',
-        action='store_true',
-        help='Create archives (actually perform backups)',
-    )
-    parser.add_argument(
-        '-k', '--check', dest='check', action='store_true', help='Check archives for consistency'
-    )
-    parser.add_argument('-l', '--list', dest='list', action='store_true', help='List archives')
-    parser.add_argument(
-        '-i',
-        '--info',
-        dest='info',
-        action='store_true',
-        help='Display summary information on archives',
-    )
-    parser.add_argument(
-        '--progress',
-        dest='progress',
-        default=False,
-        action='store_true',
-        help='Display progress with --create option for each file as it is backed up',
-    )
-    parser.add_argument(
+    common_group.add_argument(
         '--stats',
         dest='stats',
         default=False,
         action='store_true',
         help='Display statistics of archive with --create or --prune option',
     )
-    parser.add_argument(
+    common_group.add_argument(
         '--json',
         dest='json',
         default=False,
         action='store_true',
         help='Output results from the --create, --list, or --info options as json',
     )
-    parser.add_argument(
+    common_group.add_argument(
         '-n',
         '--dry-run',
         dest='dry_run',
         action='store_true',
         help='Go through the motions, but do not actually write to any repositories',
     )
-    parser.add_argument(
+    common_group.add_argument(
         '-v',
         '--verbosity',
         type=int,
@@ -138,13 +146,14 @@ def parse_arguments(*arguments):
         default=0,
         help='Display verbose progress (1 for some, 2 for lots)',
     )
-    parser.add_argument(
+    common_group.add_argument(
         '--version',
         dest='version',
         default=False,
         action='store_true',
         help='Display installed version number of borgmatic and exit',
     )
+    common_group.add_argument('--help', action='help', help='Show this help information and exit')
 
     args = parser.parse_args(arguments)
 
