@@ -357,6 +357,7 @@ def _run_commands_on_repository(
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,
+                progress=args.progress,
             )
     if args.list:
         logger.info('{}: Listing archives'.format(repository))
