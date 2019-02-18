@@ -114,10 +114,27 @@ def guard_configuration_contains_repository(repository, configurations):
     Given a repository path and a dict mapping from config filename to corresponding parsed config
     dict, ensure that the repository is declared exactly once in all of the configurations.
 
+    If no repository is given, then error if there are multiple configured repositories.
+
     Raise ValueError if the repository is not found in a configuration, or is declared multiple
     times.
     '''
     if not repository:
+        count = len(
+            tuple(
+                config_repository
+                for config in configurations.values()
+                for config_repository in config['repositories']
+            )
+        )
+
+        if count > 1:
+            raise ValueError(
+                'Can\'t determine which repository to extract. Use --repository option to disambiguate'.format(
+                    repository
+                )
+            )
+
         return
 
     count = len(

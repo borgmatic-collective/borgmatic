@@ -104,6 +104,13 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
 
+def test_guard_configuration_contains_repository_errors_when_repository_assumed_to_match_config_twice():
+    with pytest.raises(ValueError):
+        module.guard_configuration_contains_repository(
+            repository=None, configurations={'config.yaml': {'repositories': ['repo', 'repo2']}}
+        )
+
+
 def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
