@@ -90,3 +90,33 @@ def test_apply_logical_validation_does_not_raise_or_warn_if_archive_name_format_
 
 def test_apply_logical_validation_does_not_raise_otherwise():
     module.apply_logical_validation('config.yaml', {'retention': {'keep_secondly': 1000}})
+
+
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_in_config():
+    module.guard_configuration_contains_repository(
+        repository='repo', configurations={'config.yaml': {'repositories': ['repo']}}
+    )
+
+
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
+    module.guard_configuration_contains_repository(
+        repository=None, configurations={'config.yaml': {'repositories': ['repo']}}
+    )
+
+
+def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
+    with pytest.raises(ValueError):
+        module.guard_configuration_contains_repository(
+            repository='nope', configurations={'config.yaml': {'repositories': ['repo', 'repo2']}}
+        )
+
+
+def test_guard_configuration_contains_repository_errors_when_repository_matches_config_twice():
+    with pytest.raises(ValueError):
+        module.guard_configuration_contains_repository(
+            repository='repo',
+            configurations={
+                'config.yaml': {'repositories': ['repo', 'repo2']},
+                'other.yaml': {'repositories': ['repo']},
+            },
+        )

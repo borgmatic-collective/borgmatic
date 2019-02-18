@@ -403,8 +403,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             )
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
 
-    # TODO: What to do if the given repository doesn't match any configured repositories (across all config
-    # files)? Where to validate and error on that?
+    validate.guard_configuration_contains_repository(args.repository, configs)
 
     for config_filename, config in configs.items():
         try:

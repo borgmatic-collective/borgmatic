@@ -107,3 +107,29 @@ def parse_configuration(config_filename, schema_filename):
     apply_logical_validation(config_filename, parsed_result)
 
     return parsed_result
+
+
+def guard_configuration_contains_repository(repository, configurations):
+    '''
+    Given a repository path and a dict mapping from config filename to corresponding parsed config
+    dict, ensure that the repository is declared exactly once in all of the configurations.
+
+    Raise ValueError if the repository is not found in a configuration, or is declared multiple
+    times.
+    '''
+    if not repository:
+        return
+
+    count = len(
+        tuple(
+            config_repository
+            for config in configurations.values()
+            for config_repository in config['repositories']
+            if repository == config_repository
+        )
+    )
+
+    if count == 0:
+        raise ValueError('Repository {} not found in configuration files'.format(repository))
+    if count > 1:
+        raise ValueError('Repository {} found in multiple configuration files'.format(repository))

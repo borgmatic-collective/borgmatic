@@ -49,38 +49,42 @@ def test_run_commands_handles_multiple_json_outputs_in_array():
 
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration')
+    args = flexmock(repository=None)
 
-    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=()))
+    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=args))
 
     assert any(log for log in logs if log.levelno == module.logging.INFO)
 
 
 def test_collect_configuration_run_summary_logs_critical_for_parse_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(ValueError)
-    flexmock(module).should_receive('run_configuration')
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    args = flexmock(repository=None)
 
-    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=()))
+    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=args))
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
 
 def test_collect_configuration_run_summary_logs_critical_for_run_error():
     flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_raise(ValueError)
+    args = flexmock(repository=None)
 
-    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=()))
+    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=args))
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
 
 def test_collect_configuration_run_summary_logs_critical_for_missing_configs():
     flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module).should_receive('run_configuration')
+    args = flexmock(config_paths=(), repository=None)
 
-    logs = tuple(
-        module.collect_configuration_run_summary_logs(
-            config_filenames=(), args=flexmock(config_paths=())
-        )
-    )
+    logs = tuple(module.collect_configuration_run_summary_logs(config_filenames=(), args=args))
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
