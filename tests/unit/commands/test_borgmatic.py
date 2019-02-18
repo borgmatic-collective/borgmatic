@@ -48,6 +48,7 @@ def test_run_commands_handles_multiple_json_outputs_in_array():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success():
+    flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
     flexmock(module).should_receive('run_configuration')
 
     logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=()))
@@ -56,6 +57,7 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 
 def test_collect_configuration_run_summary_logs_critical_for_error():
+    flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
     flexmock(module).should_receive('run_configuration').and_raise(ValueError)
 
     logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=()))
@@ -64,6 +66,8 @@ def test_collect_configuration_run_summary_logs_critical_for_error():
 
 
 def test_collect_configuration_run_summary_logs_critical_for_missing_configs():
+    flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
+
     logs = tuple(
         module.collect_configuration_run_summary_logs(
             config_filenames=(), args=flexmock(config_paths=())

@@ -50,3 +50,36 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
 
     logger.debug(' '.join(full_extract_command))
     subprocess.check_call(full_extract_command)
+
+
+def extract_archive(
+    dry_run,
+    repository,
+    archive,
+    restore_paths,
+    location_config,
+    storage_config,
+    local_path=None,
+    remote_path=None,
+):
+    '''
+    Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
+    restore from the archive, a location configuration dict, and a storage configuration dict,
+    extract the archive into the current directory.
+    '''
+    umask = storage_config.get('umask', None)
+    lock_wait = storage_config.get('lock_wait', None)
+
+    full_command = (
+        (local_path, 'extract', '::'.join(repository, archive))
+        + restore_paths
+        + (('--remote-path', remote_path) if remote_path else ())
+        + (('--umask', str(umask)) if umask else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--dry-run',) if dry_run else ())
+    )
+
+    logger.debug(' '.join(full_command))
+    subprocess.check_call(full_command)

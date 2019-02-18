@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import collections
 import json
 import logging
 import os
@@ -12,6 +13,7 @@ from borgmatic.borg import (
     create as borg_create,
     environment as borg_environment,
     prune as borg_prune,
+    extract as borg_extract,
     list as borg_list,
     info as borg_info,
     init as borg_init,
@@ -65,6 +67,14 @@ def parse_arguments(*arguments):
     actions_group.add_argument(
         '-k', '--check', dest='check', action='store_true', help='Check archives for consistency'
     )
+
+    actions_group.add_argument(
+        '-x',
+        '--extract',
+        dest='extract',
+        action='store_true',
+        help='Extract a named archive to the current directory',
+    )
     actions_group.add_argument(
         '-l', '--list', dest='list', action='store_true', help='List archives'
     )
@@ -99,6 +109,19 @@ def parse_arguments(*arguments):
         default=False,
         action='store_true',
         help='Display progress for each file as it is backed up',
+    )
+
+    extract_group = parser.add_argument_group('options for --extract')
+    extract_group.add_argument(
+        '--repository',
+        help='Path of repository to restore from, defaults to the configured repository if there is only one',
+    )
+    extract_group.add_argument('--archive', help='Name of archive to restore')
+    extract_group.add_argument(
+        '--restore-path',
+        nargs='+',
+        dest='restore_paths',
+        help='Paths to restore from archive, defaults to the entire archive',
     )
 
     common_group = parser.add_argument_group('common options')
@@ -172,8 +195,18 @@ def parse_arguments(*arguments):
     if args.init and not args.encryption_mode:
         raise ValueError('The --encryption option is required with the --init option')
 
-    if args.progress and not args.create:
-        raise ValueError('The --progress option can only be used with the --create option')
+    if not args.extract:
+        if args.repository:
+            raise ValueError('The --repository option can only be used with the --extract option')
+        if args.archive:
+            raise ValueError('The --archive option can only be used with the --extract option')
+        if args.restore_paths:
+            raise ValueError('The --restore-path option can only be used with the --extract option')
+
+    if args.progress and not (args.create or args.extract):
+        raise ValueError(
+            'The --progress option can only be used with the --create and --extract options'
+        )
 
     if args.json and not (args.create or args.list or args.info):
         raise ValueError(
@@ -192,6 +225,7 @@ def parse_arguments(*arguments):
         and not args.prune
         and not args.create
         and not args.check
+        and not args.extract
         and not args.list
         and not args.info
     ):
@@ -205,13 +239,11 @@ def parse_arguments(*arguments):
     return args
 
 
-def run_configuration(config_filename, args):  # pragma: no cover
+def run_configuration(config_filename, config, args):  # pragma: no cover
     '''
-    Parse a single configuration file, and execute its defined pruning, backups, and/or consistency
-    checks.
+    Given a config filename and the corresponding parsed config dict, execute its defined pruning,
+    backups, consistency checks, and/or other actions.
     '''
-    logger.info('{}: Parsing configuration file'.format(config_filename))
-    config = validate.parse_configuration(config_filename, validate.schema_filename())
     (location, storage, retention, consistency, hooks) = (
         config.get(section_name, {})
         for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
@@ -312,6 +344,18 @@ def _run_commands_on_repository(
         borg_check.check_archives(
             repository, storage, consistency, local_path=local_path, remote_path=remote_path
         )
+    if args.extract:
+        if repository == args.repository:
+            logger.info('{}: Extracting archive {}'.format(repository, args.archive))
+            borg_extract.extract_archive(
+                args.dry_run,
+                repository,
+                args.archive,
+                args.restore_paths,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
     if args.list:
         logger.info('{}: Listing archives'.format(repository))
         output = borg_list.list_archives(
@@ -338,9 +382,30 @@ def collect_configuration_run_summary_logs(config_filenames, args):
     argparse.ArgumentParser instance, run each configuration file and yield a series of
     logging.LogRecord instances containing summary information about each run.
     '''
+    # Dict mapping from config filename to corresponding parsed config dict.
+    configs = collections.OrderedDict()
+
     for config_filename in config_filenames:
         try:
-            run_configuration(config_filename, args)
+            logger.info('{}: Parsing configuration file'.format(config_filename))
+            configs[config_filename] = validate.parse_configuration(
+                config_filename, validate.schema_filename()
+            )
+        except (ValueError, OSError, validate.Validation_error) as error:
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.CRITICAL,
+                    msg='{}: Error parsing configuration file'.format(config_filename),
+                )
+            )
+            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+
+    # TODO: What to do if the given repository doesn't match any configured repositories (across all config
+    # files)? Where to validate and error on that?
+
+    for config_filename, config in configs.items():
+        try:
+            run_configuration(config_filename, config, args)
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
