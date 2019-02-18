@@ -2,5 +2,7 @@
 
 set -e
 
-git push -u origin master
-git push -u github master
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+git push -u github "$branch_name"
+git push -u origin "$branch_name"
