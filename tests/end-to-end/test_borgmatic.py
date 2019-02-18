@@ -33,6 +33,11 @@ def test_borgmatic_command():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
+    extract_path = os.path.join(temporary_directory, 'extract')
+
+    original_working_directory = os.getcwd()
+    os.mkdir(extract_path)
+    os.chdir(extract_path)
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
@@ -51,8 +56,19 @@ def test_borgmatic_command():
 
         assert len(parsed_output) == 1
         assert len(parsed_output[0]['archives']) == 1
+        archive_name = parsed_output[0]['archives'][0]['archive']
 
-        # Also exercise the info flag.
+        # Extract the created archive into the current (temporary) directory, and confirm that the
+        # extracted file looks right.
+        output = subprocess.check_output(
+            'borgmatic --config {} --extract --archive {}'.format(config_path, archive_name).split(
+                ' '
+            )
+        ).decode(sys.stdout.encoding)
+        extracted_config_path = os.path.join(extract_path, config_path)
+        assert open(extracted_config_path).read() == open(config_path).read()
+
+        # Exercise the info flag.
         output = subprocess.check_output(
             'borgmatic --config {} --info --json'.format(config_path).split(' ')
         ).decode(sys.stdout.encoding)
@@ -61,4 +77,5 @@ def test_borgmatic_command():
         assert len(parsed_output) == 1
         assert 'repository' in parsed_output[0]
     finally:
+        os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)

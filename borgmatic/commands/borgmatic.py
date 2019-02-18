@@ -347,7 +347,7 @@ def _run_commands_on_repository(
             repository, storage, consistency, local_path=local_path, remote_path=remote_path
         )
     if args.extract:
-        if repository == args.repository:
+        if args.repository is None or repository == args.repository:
             logger.info('{}: Extracting archive {}'.format(repository, args.archive))
             borg_extract.extract_archive(
                 args.dry_run,
