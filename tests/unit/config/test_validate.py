@@ -94,27 +94,29 @@ def test_apply_logical_validation_does_not_raise_otherwise():
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_in_config():
     module.guard_configuration_contains_repository(
-        repository='repo', configurations={'config.yaml': {'repositories': ['repo']}}
+        repository='repo', configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
     )
 
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
     module.guard_configuration_contains_repository(
-        repository=None, configurations={'config.yaml': {'repositories': ['repo']}}
+        repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
     )
 
 
 def test_guard_configuration_contains_repository_errors_when_repository_assumed_to_match_config_twice():
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
-            repository=None, configurations={'config.yaml': {'repositories': ['repo', 'repo2']}}
+            repository=None,
+            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
         )
 
 
 def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
-            repository='nope', configurations={'config.yaml': {'repositories': ['repo', 'repo2']}}
+            repository='nope',
+            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
         )
 
 
@@ -123,7 +125,7 @@ def test_guard_configuration_contains_repository_errors_when_repository_matches_
         module.guard_configuration_contains_repository(
             repository='repo',
             configurations={
-                'config.yaml': {'repositories': ['repo', 'repo2']},
-                'other.yaml': {'repositories': ['repo']},
+                'config.yaml': {'location': {'repositories': ['repo', 'repo2']}},
+                'other.yaml': {'location': {'repositories': ['repo']}},
             },
         )

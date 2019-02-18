@@ -124,7 +124,7 @@ def guard_configuration_contains_repository(repository, configurations):
             tuple(
                 config_repository
                 for config in configurations.values()
-                for config_repository in config['repositories']
+                for config_repository in config['location']['repositories']
             )
         )
 
@@ -141,7 +141,7 @@ def guard_configuration_contains_repository(repository, configurations):
         tuple(
             config_repository
             for config in configurations.values()
-            for config_repository in config['repositories']
+            for config_repository in config['location']['repositories']
             if repository == config_repository
         )
     )
