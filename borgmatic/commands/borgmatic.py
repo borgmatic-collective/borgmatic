@@ -202,6 +202,8 @@ def parse_arguments(*arguments):
             raise ValueError('The --archive option can only be used with the --extract option')
         if args.restore_paths:
             raise ValueError('The --restore-path option can only be used with the --extract option')
+    if args.extract and not args.archive:
+        raise ValueError('The --archive option is required with the --extract option')
 
     if args.progress and not (args.create or args.extract):
         raise ValueError(

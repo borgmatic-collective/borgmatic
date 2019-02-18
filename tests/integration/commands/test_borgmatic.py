@@ -94,6 +94,12 @@ def test_parse_arguments_disallows_encryption_mode_without_init():
         module.parse_arguments('--config', 'myconfig', '--encryption', 'repokey')
 
 
+def test_parse_arguments_allows_encryption_mode_with_init():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--config', 'myconfig', '--init', '--encryption', 'repokey')
+
+
 def test_parse_arguments_requires_encryption_mode_with_init():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -136,8 +142,46 @@ def test_parse_arguments_disallows_init_and_dry_run():
         )
 
 
+def test_parse_arguments_disallows_repository_without_extract():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--repository', 'test.borg')
+
+
+def test_parse_arguments_disallows_archive_without_extract():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--archive', 'test')
+
+
+def test_parse_arguments_disallows_restore_paths_without_extract():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--restore-path', 'test')
+
+
+def test_parse_arguments_allows_archive_with_extract():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--config', 'myconfig', '--extract', '--archive', 'test')
+
+
+def test_parse_arguments_requires_archive_with_extract():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--config', 'myconfig', '--extract')
+
+
 def test_parse_arguments_allows_progress_and_create():
     module.parse_arguments('--progress', '--create', '--list')
+
+
+def test_parse_arguments_allows_progress_and_extract():
+    module.parse_arguments('--progress', '--extract', '--archive', 'test', '--list')
 
 
 def test_parse_arguments_disallows_progress_without_create():
