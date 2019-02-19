@@ -72,7 +72,7 @@ def extract_archive(
 
     full_command = (
         (local_path, 'extract', '::'.join((repository, archive)))
-        + (restore_paths if restore_paths else ())
+        + (tuple(restore_paths) if restore_paths else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

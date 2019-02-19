@@ -103,6 +103,18 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
     module.extract_last_archive_dry_run(repository='repo', lock_wait=5)
 
 
+def test_extract_archive_calls_borg_with_restore_path_parameters():
+    insert_subprocess_mock(('borg', 'extract', 'repo::archive', 'path1', 'path2'))
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        restore_paths=['path1', 'path2'],
+        storage_config={},
+    )
+
+
 def test_extract_archive_calls_borg_with_remote_path_parameters():
     insert_subprocess_mock(('borg', 'extract', 'repo::archive', '--remote-path', 'borg1'))
 
