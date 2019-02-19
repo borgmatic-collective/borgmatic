@@ -1,9 +1,9 @@
-1.2.16.dev0
+1.2.16
+ * #119: Include a sample borgmatic configuration file in the documentation.
+ * #123: Support for Borg archive restoration via borgmatic --extract command-line flag.
  * Refactor documentation into multiple separate pages for clarity and findability.
  * Organize options within command-line help into logical groups.
  * Exclude tests from distribution packages.
- * #119: Include a sample borgmatic configuration file in the documentation.
- * #123: Support for Borg archive restoration via borgmatic --extract command-line flag.
 
 1.2.15
  * #127: Remove date echo from schema example, as it's not a substitute for real logging.
