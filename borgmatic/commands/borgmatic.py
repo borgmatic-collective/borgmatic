@@ -404,7 +404,11 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
 
     if args.extract:
-        validate.guard_configuration_contains_repository(args.repository, configs)
+        try:
+            validate.guard_configuration_contains_repository(args.repository, configs)
+        except ValueError as error:
+            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+            return
 
     for config_filename, config in configs.items():
         try:

@@ -57,7 +57,7 @@ def test_collect_configuration_run_summary_logs_info_for_success():
     assert any(log for log in logs if log.levelno == module.logging.INFO)
 
 
-def test_collect_configuration_run_summary_still_succeeds_when_extract_true():
+def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration')
@@ -66,6 +66,18 @@ def test_collect_configuration_run_summary_still_succeeds_when_extract_true():
     logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=args))
 
     assert any(log for log in logs if log.levelno == module.logging.INFO)
+
+
+def test_collect_configuration_run_summary_logs_critical_for_extract_with_repository_error():
+    flexmock(module.validate).should_receive('parse_configuration').and_return({'test.yaml': {}})
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository').and_raise(
+        ValueError
+    )
+    args = flexmock(extract=True, repository='repo')
+
+    logs = tuple(module.collect_configuration_run_summary_logs(('test.yaml',), args=args))
+
+    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
 
 def test_collect_configuration_run_summary_logs_critical_for_parse_error():
