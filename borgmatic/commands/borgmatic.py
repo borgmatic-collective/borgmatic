@@ -403,7 +403,8 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             )
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
 
-    validate.guard_configuration_contains_repository(args.repository, configs)
+    if args.extract:
+        validate.guard_configuration_contains_repository(args.repository, configs)
 
     for config_filename, config in configs.items():
         try:
