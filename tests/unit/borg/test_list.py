@@ -34,10 +34,18 @@ def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
     module.list_archives(repository='repo', storage_config={})
 
 
-def test_list_archives_with_json_calls_borg_with_json_parameter():
-    insert_subprocess_mock(LIST_COMMAND + ('--json',))
+def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    storage_config = {'lock_wait': 5}
+    insert_subprocess_mock(LIST_COMMAND + ('--lock-wait', '5'))
 
-    module.list_archives(repository='repo', storage_config={}, json=True)
+    module.list_archives(repository='repo', storage_config=storage_config)
+
+
+def test_list_archives_with_archive_calls_borg_with_archive_parameter():
+    storage_config = {}
+    insert_subprocess_mock(('borg', 'list', 'repo::archive'))
+
+    module.list_archives(repository='repo', storage_config=storage_config, archive='archive')
 
 
 def test_list_archives_with_local_path_calls_borg_via_local_path():
@@ -52,8 +60,7 @@ def test_list_archives_with_remote_path_calls_borg_with_remote_path_parameters()
     module.list_archives(repository='repo', storage_config={}, remote_path='borg1')
 
 
-def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
-    storage_config = {'lock_wait': 5}
-    insert_subprocess_mock(LIST_COMMAND + ('--lock-wait', '5'))
+def test_list_archives_with_json_calls_borg_with_json_parameter():
+    insert_subprocess_mock(LIST_COMMAND + ('--json',))
 
-    module.list_archives(repository='repo', storage_config=storage_config)
+    module.list_archives(repository='repo', storage_config={}, json=True)

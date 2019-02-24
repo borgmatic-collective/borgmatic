@@ -130,7 +130,7 @@ def guard_configuration_contains_repository(repository, configurations):
 
         if count > 1:
             raise ValueError(
-                'Can\'t determine which repository to extract. Use --repository option to disambiguate'.format(
+                'Can\'t determine which repository to use. Use --repository option to disambiguate'.format(
                     repository
                 )
             )

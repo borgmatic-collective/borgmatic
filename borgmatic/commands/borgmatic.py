@@ -102,27 +102,49 @@ def parse_arguments(*arguments):
         help='Create a repository with a fixed storage quota',
     )
 
+    prune_group = parser.add_argument_group('options for --prune')
+    stats_argument = prune_group.add_argument(
+        '--stats',
+        dest='stats',
+        default=False,
+        action='store_true',
+        help='Display statistics of archive',
+    )
+
     create_group = parser.add_argument_group('options for --create')
-    create_group.add_argument(
+    progress_argument = create_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
         action='store_true',
-        help='Display progress for each file as it is backed up',
+        help='Display progress for each file as it is processed',
+    )
+    create_group._group_actions.append(stats_argument)
+    json_argument = create_group.add_argument(
+        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
 
     extract_group = parser.add_argument_group('options for --extract')
-    extract_group.add_argument(
+    repository_argument = extract_group.add_argument(
         '--repository',
-        help='Path of repository to restore from, defaults to the configured repository if there is only one',
+        help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    extract_group.add_argument('--archive', help='Name of archive to restore')
+    archive_argument = extract_group.add_argument('--archive', help='Name of archive to operate on')
     extract_group.add_argument(
         '--restore-path',
         nargs='+',
         dest='restore_paths',
         help='Paths to restore from archive, defaults to the entire archive',
     )
+    extract_group._group_actions.append(progress_argument)
+
+    list_group = parser.add_argument_group('options for --list')
+    list_group._group_actions.append(repository_argument)
+    list_group._group_actions.append(archive_argument)
+    list_group._group_actions.append(json_argument)
+
+    info_group = parser.add_argument_group('options for --info')
+    info_group._group_actions.append(json_argument)
 
     common_group = parser.add_argument_group('common options')
     common_group.add_argument(
@@ -139,20 +161,6 @@ def parse_arguments(*arguments):
         '--excludes',
         dest='excludes_filename',
         help='Deprecated in favor of exclude_patterns within configuration',
-    )
-    common_group.add_argument(
-        '--stats',
-        dest='stats',
-        default=False,
-        action='store_true',
-        help='Display statistics of archive with --create or --prune option',
-    )
-    common_group.add_argument(
-        '--json',
-        dest='json',
-        default=False,
-        action='store_true',
-        help='Output results from the --create, --list, or --info options as json',
     )
     common_group.add_argument(
         '-n',
@@ -196,10 +204,15 @@ def parse_arguments(*arguments):
         raise ValueError('The --encryption option is required with the --init option')
 
     if not args.extract:
-        if args.repository:
-            raise ValueError('The --repository option can only be used with the --extract option')
-        if args.archive:
-            raise ValueError('The --archive option can only be used with the --extract option')
+        if not args.list:
+            if args.repository:
+                raise ValueError(
+                    'The --repository option can only be used with the --extract and --list options'
+                )
+            if args.archive:
+                raise ValueError(
+                    'The --archive option can only be used with the --extract and --list options'
+                )
         if args.restore_paths:
             raise ValueError('The --restore-path option can only be used with the --extract option')
     if args.extract and not args.archive:
@@ -360,14 +373,20 @@ def _run_commands_on_repository(
                 progress=args.progress,
             )
     if args.list:
-        logger.info('{}: Listing archives'.format(repository))
-        output = borg_list.list_archives(
-            repository, storage, local_path=local_path, remote_path=remote_path, json=args.json
-        )
-        if args.json:
-            json_results.append(json.loads(output))
-        else:
-            sys.stdout.write(output)
+        if args.repository is None or repository == args.repository:
+            logger.info('{}: Listing archives'.format(repository))
+            output = borg_list.list_archives(
+                repository,
+                storage,
+                args.archive,
+                local_path=local_path,
+                remote_path=remote_path,
+                json=args.json,
+            )
+            if args.json:
+                json_results.append(json.loads(output))
+            else:
+                sys.stdout.write(output)
     if args.info:
         logger.info('{}: Displaying summary info for archives'.format(repository))
         output = borg_info.display_archives_info(
@@ -388,6 +407,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
 
+    # Parse and load each configuration file.
     for config_filename in config_filenames:
         try:
             logger.info('{}: Parsing configuration file'.format(config_filename))
@@ -403,13 +423,15 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             )
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
 
-    if args.extract:
+    # Run cross-file validation checks.
+    if args.extract or (args.list and args.archive):
         try:
             validate.guard_configuration_contains_repository(args.repository, configs)
         except ValueError as error:
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
             return
 
+    # Execute the actions corresponding to each configuration file.
     for config_filename, config in configs.items():
         try:
             run_configuration(config_filename, config, args)
