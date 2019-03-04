@@ -45,8 +45,13 @@ not in your system `PATH`. Try looking in `/usr/local/bin/`.
 
 This generates a sample configuration file at /etc/borgmatic/config.yaml (by
 default). You should edit the file to suit your needs, as the values are
-representative. All fields are optional except where indicated, so feel free
+representative. All options are optional except where indicated, so feel free
 to ignore anything you don't need.
+
+Note that the configuration file is organized into distinct sections, each
+with a section name like `location:` or `storage:`. So take care that if you
+uncomment a particular option, also uncomment its containing section name, or
+else borgmatic won't recognize the option.
 
 You can also get the same sample configuration file from the [configuration
 reference](../../docs/reference/configuration.md), the authoritative set of
@@ -69,6 +74,9 @@ either the borgmatic `encryption_passcommand` configuration variable or the
 `BORG_PASSCOMMAND` environment variable. See the [Borg Security
 FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)
 for more info.
+
+
+###
 
 
 ## Initialization
