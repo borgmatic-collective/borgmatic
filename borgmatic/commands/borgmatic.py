@@ -367,6 +367,7 @@ def _run_commands_on_repository(
                 repository,
                 args.archive,
                 args.restore_paths,
+                location,
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,

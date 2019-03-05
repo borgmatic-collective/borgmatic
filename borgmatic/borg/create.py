@@ -141,6 +141,7 @@ def create_archive(
         + (('--compression', compression) if compression else ())
         + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
         + (('--one-file-system',) if location_config.get('one_file_system') else ())
+        + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
         + (('--read-special',) if location_config.get('read_special') else ())
         + (('--nobsdflags',) if location_config.get('bsd_flags') is False else ())
         + (('--files-cache', files_cache) if files_cache else ())

@@ -32,6 +32,10 @@ map:
                 type: bool
                 desc: Stay in same file system (do not cross mount points). Defaults to false.
                 example: true
+            numeric_owner:
+                type: bool
+                desc: Only store/extract numeric user and group identifiers. Defaults to false.
+                example: true
             read_special:
                 type: bool
                 desc: |

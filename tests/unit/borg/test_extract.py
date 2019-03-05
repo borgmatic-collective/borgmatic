@@ -111,6 +111,7 @@ def test_extract_archive_calls_borg_with_restore_path_parameters():
         repository='repo',
         archive='archive',
         restore_paths=['path1', 'path2'],
+        location_config={},
         storage_config={},
     )
 
@@ -123,8 +124,22 @@ def test_extract_archive_calls_borg_with_remote_path_parameters():
         repository='repo',
         archive='archive',
         restore_paths=None,
+        location_config={},
         storage_config={},
         remote_path='borg1',
+    )
+
+
+def test_extract_archive_calls_borg_with_numeric_owner_parameter():
+    insert_subprocess_mock(('borg', 'extract', 'repo::archive', '--numeric-owner'))
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        restore_paths=None,
+        location_config={'numeric_owner': True},
+        storage_config={},
     )
 
 
@@ -136,6 +151,7 @@ def test_extract_archive_calls_borg_with_umask_parameters():
         repository='repo',
         archive='archive',
         restore_paths=None,
+        location_config={},
         storage_config={'umask': '0770'},
     )
 
@@ -148,6 +164,7 @@ def test_extract_archive_calls_borg_with_lock_wait_parameters():
         repository='repo',
         archive='archive',
         restore_paths=None,
+        location_config={},
         storage_config={'lock_wait': '5'},
     )
 
@@ -157,7 +174,12 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
     insert_logging_mock(logging.INFO)
 
     module.extract_archive(
-        dry_run=False, repository='repo', archive='archive', restore_paths=None, storage_config={}
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        restore_paths=None,
+        location_config={},
+        storage_config={},
     )
 
 
@@ -166,7 +188,12 @@ def test_extract_archive_with_log_debug_calls_borg_with_debug_parameters():
     insert_logging_mock(logging.DEBUG)
 
     module.extract_archive(
-        dry_run=False, repository='repo', archive='archive', restore_paths=None, storage_config={}
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        restore_paths=None,
+        location_config={},
+        storage_config={},
     )
 
 
@@ -174,7 +201,12 @@ def test_extract_archive_calls_borg_with_dry_run_parameter():
     insert_subprocess_mock(('borg', 'extract', 'repo::archive', '--dry-run'))
 
     module.extract_archive(
-        dry_run=True, repository='repo', archive='archive', restore_paths=None, storage_config={}
+        dry_run=True,
+        repository='repo',
+        archive='archive',
+        restore_paths=None,
+        location_config={},
+        storage_config={},
     )
 
 
@@ -186,6 +218,7 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         repository='repo',
         archive='archive',
         restore_paths=None,
+        location_config={},
         storage_config={},
         progress=True,
     )

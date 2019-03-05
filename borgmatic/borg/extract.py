@@ -57,6 +57,7 @@ def extract_archive(
     repository,
     archive,
     restore_paths,
+    location_config,
     storage_config,
     local_path='borg',
     remote_path=None,
@@ -64,8 +65,8 @@ def extract_archive(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    restore from the archive, and a storage configuration dict, extract the archive into the current
-    directory.
+    restore from the archive, and location/storage configuration dicts, extract the archive into the
+    current directory.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -74,6 +75,7 @@ def extract_archive(
         (local_path, 'extract', '::'.join((repository, archive)))
         + (tuple(restore_paths) if restore_paths else ())
         + (('--remote-path', remote_path) if remote_path else ())
+        + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())

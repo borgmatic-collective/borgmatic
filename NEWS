@@ -1,3 +1,7 @@
+1.2.18
+ * #147: Support for Borg create/extract --numeric-owner flag via "numeric_owner" option in
+   borgmatic's location section.
+
 1.2.17
  * #140: List the files within an archive via --list --archive option.
 
@@ -39,8 +43,8 @@
  * #108: Support for Borg create --progress via borgmatic command-line flag.
 
 1.2.10
- * #105: Support for Borg --chunker-params create option via "chunker_params" in borgmatic's storage
-   section.
+ * #105: Support for Borg --chunker-params create option via "chunker_params" option in borgmatic's
+   storage section.
 
 1.2.9
  * #102: Fix for syntax error that occurred in Python 3.5 and below.
