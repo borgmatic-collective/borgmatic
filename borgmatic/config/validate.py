@@ -3,7 +3,9 @@ import logging
 import pkg_resources
 import pykwalify.core
 import pykwalify.errors
-from ruamel import yaml
+import ruamel.yaml
+
+from borgmatic.config import load
 
 
 logger = logging.getLogger(__name__)
@@ -87,9 +89,9 @@ def parse_configuration(config_filename, schema_filename):
     logging.getLogger('pykwalify').setLevel(logging.ERROR)
 
     try:
-        config = yaml.safe_load(open(config_filename))
-        schema = yaml.safe_load(open(schema_filename))
-    except yaml.error.YAMLError as error:
+        config = load.load_configuration(config_filename)
+        schema = load.load_configuration(schema_filename)
+    except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
     # pykwalify gets angry if the example field is not a string. So rather than bend to its will,

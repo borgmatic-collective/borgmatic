@@ -118,6 +118,67 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
     module.parse_configuration('config.yaml', 'schema.yaml')
 
 
+def test_parse_configuration_inlines_include():
+    mock_config_and_schema(
+        '''
+        location:
+            source_directories:
+                - /home
+
+            repositories:
+                - hostname.borg
+
+        retention:
+            !include include.yaml
+        '''
+    )
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('include.yaml').and_return(
+        '''
+        keep_daily: 7
+        keep_hourly: 24
+        '''
+    )
+
+    result = module.parse_configuration('config.yaml', 'schema.yaml')
+
+    assert result == {
+        'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
+        'retention': {'keep_daily': 7, 'keep_hourly': 24},
+    }
+
+
+def test_parse_configuration_merges_include():
+    mock_config_and_schema(
+        '''
+        location:
+            source_directories:
+                - /home
+
+            repositories:
+                - hostname.borg
+
+        retention:
+            keep_daily: 1
+            <<: !include include.yaml
+        '''
+    )
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('include.yaml').and_return(
+        '''
+        keep_daily: 7
+        keep_hourly: 24
+        '''
+    )
+
+    result = module.parse_configuration('config.yaml', 'schema.yaml')
+
+    assert result == {
+        'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
+        'retention': {'keep_daily': 1, 'keep_hourly': 24},
+    }
+
+
 def test_parse_configuration_raises_for_missing_config_file():
     with pytest.raises(FileNotFoundError):
         module.parse_configuration('config.yaml', 'schema.yaml')
