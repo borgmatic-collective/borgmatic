@@ -22,8 +22,8 @@ you're using Python 3, as borgmatic does not support Python 2.
 Along with the above process, you have several other options for installing
 borgmatic:
 
- * [Docker image](https://hub.docker.com/r/monachus/borgmatic/)
- * [Another Docker image](https://hub.docker.com/r/b3vis/borgmatic/)
+ * [Docker base image](https://hub.docker.com/r/monachus/borgmatic/)
+ * [Docker image with support for scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/)
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
