@@ -1,3 +1,5 @@
+import sys
+
 from flexmock import flexmock
 
 from borgmatic.config import collect as module
@@ -37,7 +39,10 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/bar').and_return(True)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/baz.yaml').and_return(False)
-    flexmock(module.os).should_receive('listdir').and_return(['foo.yaml', 'bar', 'baz.yaml'])
+    flexmock(module.os).should_receive('listdir')
+    flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
+        ['foo.yaml', 'bar', 'baz.yaml']
+    )
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
@@ -56,7 +61,10 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/bar.yaml~').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/baz.txt').and_return(False)
-    flexmock(module.os).should_receive('listdir').and_return(['foo.yaml', 'bar.yaml~', 'baz.txt'])
+    flexmock(module.os).should_receive('listdir')
+    flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
+        ['foo.yaml', 'bar.yaml~', 'baz.txt']
+    )
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 

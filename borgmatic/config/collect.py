@@ -41,7 +41,7 @@ def collect_config_filenames(config_paths):
             yield path
             continue
 
-        for filename in os.listdir(path):
+        for filename in sorted(os.listdir(path)):
             full_filename = os.path.join(path, filename)
             if full_filename.endswith('.yaml') and not os.path.isdir(full_filename):
                 yield full_filename
