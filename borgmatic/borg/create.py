@@ -2,8 +2,9 @@ import glob
 import itertools
 import logging
 import os
-import subprocess
 import tempfile
+
+from borgmatic.borg.execute import execute_command
 
 
 logger = logging.getLogger(__name__)
@@ -107,7 +108,7 @@ def create_archive(
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
-    storage config dict, create a Borg archive.
+    storage config dict, create a Borg archive and return Borg's JSON output (if any).
     '''
     sources = _expand_directories(location_config['source_directories'])
 
@@ -157,5 +158,4 @@ def create_archive(
         + (('--json',) if json else ())
     )
 
-    logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+    return execute_command(full_command, capture_output=json)

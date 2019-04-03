@@ -258,6 +258,8 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
     '''
     Given a config filename and the corresponding parsed config dict, execute its defined pruning,
     backups, consistency checks, and/or other actions.
+
+    Yield JSON output strings from executing any actions that produce JSON.
     '''
     (location, storage, retention, consistency, hooks) = (
         config.get(section_name, {})
@@ -272,15 +274,17 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
         if args.create:
             hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
 
-        _run_commands(
-            args=args,
-            consistency=consistency,
-            local_path=local_path,
-            location=location,
-            remote_path=remote_path,
-            retention=retention,
-            storage=storage,
-        )
+        for repository_path in location['repositories']:
+            yield from run_actions(
+                args=args,
+                location=location,
+                storage=storage,
+                retention=retention,
+                consistency=consistency,
+                local_path=local_path,
+                remote_path=remote_path,
+                repository_path=repository_path,
+            )
 
         if args.create:
             hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
@@ -289,37 +293,17 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
         raise
 
 
-def _run_commands(*, args, consistency, local_path, location, remote_path, retention, storage):
-    json_results = []
-    for unexpanded_repository in location['repositories']:
-        _run_commands_on_repository(
-            args=args,
-            consistency=consistency,
-            json_results=json_results,
-            local_path=local_path,
-            location=location,
-            remote_path=remote_path,
-            retention=retention,
-            storage=storage,
-            unexpanded_repository=unexpanded_repository,
-        )
-    if args.json:
-        sys.stdout.write(json.dumps(json_results))
-
-
-def _run_commands_on_repository(
-    *,
-    args,
-    consistency,
-    json_results,
-    local_path,
-    location,
-    remote_path,
-    retention,
-    storage,
-    unexpanded_repository
+def run_actions(
+    *, args, location, storage, retention, consistency, local_path, remote_path, repository_path
 ):  # pragma: no cover
-    repository = os.path.expanduser(unexpanded_repository)
+    '''
+    Given parsed command-line arguments as an argparse.ArgumentParser instance, several different
+    configuration dicts, local and remote paths to Borg, and a repository name, run all actions
+    from the command-line arguments on the given repository.
+
+    Yield JSON output strings from executing any actions that produce JSON.
+    '''
+    repository = os.path.expanduser(repository_path)
     dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
     if args.init:
         logger.info('{}: Initializing repository'.format(repository))
@@ -344,7 +328,7 @@ def _run_commands_on_repository(
         )
     if args.create:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
-        borg_create.create_archive(
+        json_output = borg_create.create_archive(
             args.dry_run,
             repository,
             location,
@@ -353,7 +337,10 @@ def _run_commands_on_repository(
             remote_path=remote_path,
             progress=args.progress,
             stats=args.stats,
+            json=args.json,
         )
+        if json_output:
+            yield json.loads(json_output)
     if args.check and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
@@ -376,7 +363,7 @@ def _run_commands_on_repository(
     if args.list:
         if args.repository is None or repository == args.repository:
             logger.info('{}: Listing archives'.format(repository))
-            output = borg_list.list_archives(
+            json_output = borg_list.list_archives(
                 repository,
                 storage,
                 args.archive,
@@ -384,19 +371,15 @@ def _run_commands_on_repository(
                 remote_path=remote_path,
                 json=args.json,
             )
-            if args.json:
-                json_results.append(json.loads(output))
-            else:
-                sys.stdout.write(output)
+            if json_output:
+                yield json.loads(json_output)
     if args.info:
         logger.info('{}: Displaying summary info for archives'.format(repository))
-        output = borg_info.display_archives_info(
+        json_output = borg_info.display_archives_info(
             repository, storage, local_path=local_path, remote_path=remote_path, json=args.json
         )
-        if args.json:
-            json_results.append(json.loads(output))
-        else:
-            sys.stdout.write(output)
+        if json_output:
+            yield json.loads(json_output)
 
 
 def collect_configuration_run_summary_logs(config_filenames, args):
@@ -404,6 +387,9 @@ def collect_configuration_run_summary_logs(config_filenames, args):
     Given a sequence of configuration filenames and parsed command-line arguments as an
     argparse.ArgumentParser instance, run each configuration file and yield a series of
     logging.LogRecord instances containing summary information about each run.
+
+    As a side effect of running through these configuration files, output their JSON results, if
+    any, to stdout.
     '''
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
@@ -433,9 +419,10 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             return
 
     # Execute the actions corresponding to each configuration file.
+    json_results = []
     for config_filename, config in configs.items():
         try:
-            run_configuration(config_filename, config, args)
+            json_results.extend(list(run_configuration(config_filename, config, args)))
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
@@ -450,6 +437,9 @@ def collect_configuration_run_summary_logs(config_filenames, args):
                 )
             )
             yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+
+    if json_results:
+        sys.stdout.write(json.dumps(json_results))
 
     if not config_filenames:
         yield logging.makeLogRecord(

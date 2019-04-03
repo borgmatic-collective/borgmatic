@@ -1,5 +1,6 @@
 import logging
-import subprocess
+
+from borgmatic.borg.execute import execute_command
 
 
 logger = logging.getLogger(__name__)
@@ -9,8 +10,8 @@ def display_archives_info(
     repository, storage_config, local_path='borg', remote_path=None, json=False
 ):
     '''
-    Given a local or remote repository path, and a storage config dict,
-    display summary information for Borg archives in the repository.
+    Given a local or remote repository path, and a storage config dict, display summary information
+    for Borg archives in the repository or return JSON summary information.
     '''
     lock_wait = storage_config.get('lock_wait', None)
 
@@ -23,7 +24,4 @@ def display_archives_info(
         + (('--json',) if json else ())
     )
 
-    logger.debug(' '.join(full_command))
-
-    output = subprocess.check_output(full_command)
-    return output.decode() if output is not None else None
+    return execute_command(full_command, capture_output=json)

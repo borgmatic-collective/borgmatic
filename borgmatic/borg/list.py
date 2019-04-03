@@ -1,5 +1,6 @@
 import logging
-import subprocess
+
+from borgmatic.borg.execute import execute_command
 
 
 logger = logging.getLogger(__name__)
@@ -9,8 +10,9 @@ def list_archives(
     repository, storage_config, archive=None, local_path='borg', remote_path=None, json=False
 ):
     '''
-    Given a local or remote repository path and a storage config dict, list Borg archives in the
-    repository. Or, if an archive name is given, list the files in that archive.
+    Given a local or remote repository path and a storage config dict, display the output of listing
+    Borg archives in the repository or return JSON output. Or, if an archive name is given, listing
+    the files in that archive.
     '''
     lock_wait = storage_config.get('lock_wait', None)
 
@@ -22,7 +24,5 @@ def list_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--json',) if json else ())
     )
-    logger.debug(' '.join(full_command))
 
-    output = subprocess.check_output(full_command)
-    return output.decode() if output is not None else None
+    return execute_command(full_command, capture_output=json)
