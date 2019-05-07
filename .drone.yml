@@ -11,7 +11,7 @@ pipeline:
 matrix:
   ALPINE_VERSION:
     - 3.7
-    - 3.8
+    - 3.9
   PYTHON_VERSION:
     - 3.5
     - 3.6
