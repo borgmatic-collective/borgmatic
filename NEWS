@@ -1,3 +1,6 @@
+1.3.2
+ * #160: Fix for hooks executing when using --dry-run. Now hooks are skipped during a dry run.
+
 1.3.1
  * #155: Fix for invalid JSON output when using multiple borgmatic configuration files.
  * #157: Fix for seemingly random filename ordering when running through a directory of

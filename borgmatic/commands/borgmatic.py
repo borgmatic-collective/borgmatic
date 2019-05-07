@@ -272,7 +272,9 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
         borg_environment.initialize(storage)
 
         if args.create:
-            hook.execute_hook(hooks.get('before_backup'), config_filename, 'pre-backup')
+            hook.execute_hook(
+                hooks.get('before_backup'), config_filename, 'pre-backup', args.dry_run
+            )
 
         for repository_path in location['repositories']:
             yield from run_actions(
@@ -287,9 +289,11 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
             )
 
         if args.create:
-            hook.execute_hook(hooks.get('after_backup'), config_filename, 'post-backup')
+            hook.execute_hook(
+                hooks.get('after_backup'), config_filename, 'post-backup', args.dry_run
+            )
     except (OSError, CalledProcessError):
-        hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error')
+        hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error', args.dry_run)
         raise
 
 
