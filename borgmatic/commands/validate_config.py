@@ -42,9 +42,7 @@ def main():  # pragma: no cover
     found_issues = False
     for config_filename in config_filenames:
         try:
-            validate.parse_configuration(
-                config_filename, validate.schema_filename()
-            )
+            validate.parse_configuration(config_filename, validate.schema_filename())
         except (ValueError, OSError, validate.Validation_error) as error:
             logging.critical('{}: Error parsing configuration file'.format(config_filename))
             logging.critical(error)
@@ -53,4 +51,6 @@ def main():  # pragma: no cover
     if found_issues:
         sys.exit(1)
     else:
-        logger.info('All given configuration files are valid: {}'.format(config_filenames))
+        logger.info(
+            'All given configuration files are valid: {}'.format(', '.join(config_filenames))
+        )

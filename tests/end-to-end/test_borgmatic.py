@@ -29,36 +29,6 @@ def generate_configuration(config_path, repository_path):
     config_file.close()
 
 
-def validate_valid_configuration(config_path):
-    '''
-    Validate borgmatic configuration which is valid.
-    '''
-    subprocess.check_call(
-        'validate-borgmatic-config --config {}'.format(config_path).split(' ')
-    )
-
-
-def validate_invalid_configuration(config_path):
-    '''
-    Validate borgmatic configuration which is invalid.
-    '''
-
-    config = (
-        open(config_path)
-        .read()
-        .replace('keep_daily: 7', 'keep_daily: "7"')
-    )
-    config_file = open(config_path, 'w')
-    config_file.write(config)
-    config_file.close()
-
-    exit_code = subprocess.call(
-        'validate-borgmatic-config --config {}'.format(config_path).split(' ')
-    )
-
-    assert exit_code == 1
-
-
 def test_borgmatic_command():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
@@ -71,11 +41,7 @@ def test_borgmatic_command():
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
-        invalid_config_path = os.path.join(temporary_directory, 'test_invalid.yaml')
         generate_configuration(config_path, repository_path)
-        generate_configuration(invalid_config_path, repository_path)
-        validate_valid_configuration(config_path)
-        validate_invalid_configuration(invalid_config_path)
 
         subprocess.check_call(
             'borgmatic -v 2 --config {} --init --encryption repokey'.format(config_path).split(' ')
