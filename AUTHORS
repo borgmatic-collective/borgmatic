@@ -7,6 +7,6 @@ Johannes Feichtner: Support for user hooks
 Michele Lazzeri: Custom archive names
 Nick Whyte: Support prefix filtering for archive consistency checks
 newtonne: Read encryption password from external file
-Robin `ypid` Schneider: Support additional options of Borg
+Robin `ypid` Schneider: Support additional options of Borg and add validate-borgmatic-config command
 Scott Squires: Custom archive names
 Thomas LÉVEIL: Support for a keep_minutely prune option. Support for the --json option
