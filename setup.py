@@ -30,6 +30,11 @@ setup(
         ]
     },
     obsoletes=['atticmatic'],
-    install_requires=('pykwalify>=1.6.0,<14.06', 'ruamel.yaml>0.15.0,<0.16.0', 'setuptools'),
+    install_requires=(
+        'pykwalify>=1.6.0,<14.06',
+        'ruamel.yaml>0.15.0,<0.16.0',
+        'setuptools',
+        'colorama>=0.4.1,<0.5',
+    ),
     include_package_data=True,
 )
