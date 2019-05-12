@@ -3,8 +3,9 @@ import sys
 import logging
 
 from borgmatic.config import collect, validate
+from borgmatic.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def parse_arguments(*arguments):

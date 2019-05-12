@@ -3,13 +3,14 @@ import os
 import subprocess
 
 from borgmatic.borg import extract
+from borgmatic.logger import get_logger
 
 
 DEFAULT_CHECKS = ('repository', 'archives')
 DEFAULT_PREFIX = '{hostname}-'
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _parse_checks(consistency_config):

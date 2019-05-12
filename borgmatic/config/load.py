@@ -1,10 +1,11 @@
 import os
-import logging
 
 import ruamel.yaml
 
+from borgmatic.logger import get_logger
 
-logger = logging.getLogger(__name__)
+
+logger = get_logger(__name__)
 
 
 def load_configuration(filename):

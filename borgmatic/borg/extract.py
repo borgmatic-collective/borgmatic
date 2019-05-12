@@ -2,8 +2,10 @@ import logging
 import sys
 import subprocess
 
+from borgmatic.logger import get_logger
 
-logger = logging.getLogger(__name__)
+
+logger = get_logger(__name__)
 
 
 def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', remote_path=None):

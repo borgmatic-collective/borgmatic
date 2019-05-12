@@ -1,9 +1,10 @@
 import logging
 
 from borgmatic.borg.execute import execute_command
+from borgmatic.logger import get_logger
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def display_archives_info(
