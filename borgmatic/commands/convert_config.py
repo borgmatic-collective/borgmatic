@@ -1,12 +1,11 @@
-from argparse import ArgumentParser
 import os
 import sys
 import textwrap
+from argparse import ArgumentParser
 
 from ruamel import yaml
 
 from borgmatic.config import convert, generate, legacy, validate
-
 
 DEFAULT_SOURCE_CONFIG_FILENAME = '/etc/borgmatic/config'
 DEFAULT_SOURCE_EXCLUDES_FILENAME = '/etc/borgmatic/excludes'

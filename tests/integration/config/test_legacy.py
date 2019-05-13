@@ -1,7 +1,6 @@
-from io import StringIO
-
-from collections import OrderedDict
 import string
+from collections import OrderedDict
+from io import StringIO
 
 from borgmatic.config import legacy as module
 

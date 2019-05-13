@@ -1,11 +1,10 @@
-from collections import defaultdict, OrderedDict, namedtuple
 import os
+from collections import OrderedDict, defaultdict, namedtuple
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import convert as module
-
 
 Parsed_config = namedtuple('Parsed_config', ('location', 'storage', 'retention', 'consistency'))
 

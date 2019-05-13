@@ -4,7 +4,6 @@ import ruamel.yaml
 
 from borgmatic.logger import get_logger
 
-
 logger = get_logger(__name__)
 
 

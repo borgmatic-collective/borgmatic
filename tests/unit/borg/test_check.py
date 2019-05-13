@@ -1,11 +1,12 @@
-from subprocess import STDOUT
 import logging
 import sys
+from subprocess import STDOUT
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.borg import check as module
+
 from ..test_verbosity import insert_logging_mock
 
 

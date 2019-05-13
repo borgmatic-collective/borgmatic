@@ -4,6 +4,7 @@ from collections import OrderedDict
 from flexmock import flexmock
 
 from borgmatic.borg import prune as module
+
 from ..test_verbosity import insert_logging_mock
 
 

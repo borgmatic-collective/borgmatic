@@ -3,6 +3,7 @@ import logging
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
+
 from ..test_verbosity import insert_logging_mock
 
 

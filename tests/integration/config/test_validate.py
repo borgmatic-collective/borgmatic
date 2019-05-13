@@ -2,8 +2,8 @@ import io
 import string
 import sys
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import validate as module
 

@@ -5,7 +5,6 @@ import subprocess
 from borgmatic.borg import extract
 from borgmatic.logger import get_logger
 
-
 DEFAULT_CHECKS = ('repository', 'archives')
 DEFAULT_PREFIX = '{hostname}-'
 

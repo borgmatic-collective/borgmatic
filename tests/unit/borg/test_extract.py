@@ -4,6 +4,7 @@ import sys
 from flexmock import flexmock
 
 from borgmatic.borg import extract as module
+
 from ..test_verbosity import insert_logging_mock
 
 

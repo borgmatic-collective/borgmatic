@@ -1,9 +1,8 @@
 import logging
-import sys
 import subprocess
+import sys
 
 from borgmatic.logger import get_logger
-
 
 logger = get_logger(__name__)
 

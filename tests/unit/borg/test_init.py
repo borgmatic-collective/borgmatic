@@ -3,8 +3,8 @@ import logging
 from flexmock import flexmock
 
 from borgmatic.borg import init as module
-from ..test_verbosity import insert_logging_mock
 
+from ..test_verbosity import insert_logging_mock
 
 INFO_REPOSITORY_EXISTS_RESPONSE_CODE = 0
 INFO_REPOSITORY_NOT_FOUND_RESPONSE_CODE = 2

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import legacy as module
 

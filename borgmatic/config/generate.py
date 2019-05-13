@@ -2,7 +2,6 @@ import os
 
 from ruamel import yaml
 
-
 INDENT = 4
 
 
