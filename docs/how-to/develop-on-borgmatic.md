@@ -93,9 +93,10 @@ See the Black and Flake8 documentation for more information.
 
 ## Continuous integration
 
-Each pull request will trigger a continuous integration build which will run
-the test suite. These builds can be seen on
-[build.torsion.org](https://build.torsion.org/witten/borgmatic).
+Each pull request triggers a continuous integration build which runs the test
+suite. You can view these builds on
+[build.torsion.org](https://build.torsion.org/witten/borgmatic), and they're
+also linked from the commits list on each pull request.
 
 ## Related documentation
 
