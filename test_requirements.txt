@@ -3,6 +3,7 @@ atomicwrites==1.2.1
 attrs==18.2.0
 black==18.9b0; python_version >= '3.6'
 Click==7.0
+colorama==0.4.1
 coverage==4.5.1
 docopt==0.6.2
 flake8==3.5.0

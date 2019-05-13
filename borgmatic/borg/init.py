@@ -1,8 +1,9 @@
 import logging
 import subprocess
 
+from borgmatic.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def initialize_repository(

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import collections
+import colorama
 import json
 import logging
 import os
@@ -20,12 +21,12 @@ from borgmatic.borg import (
 )
 from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
+from borgmatic.logger import should_do_markup, get_logger
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
 
-logger = logging.getLogger(__name__)
-
+logger = get_logger(__name__)
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 
@@ -168,6 +169,9 @@ def parse_arguments(*arguments):
         dest='dry_run',
         action='store_true',
         help='Go through the motions, but do not actually write to any repositories',
+    )
+    common_group.add_argument(
+        '-nc', '--no-color', dest='no_color', action='store_true', help='Disable colored output'
     )
     common_group.add_argument(
         '-v',
@@ -471,6 +475,8 @@ def main():  # pragma: no cover
         logging.basicConfig(level=logging.CRITICAL, format='%(message)s')
         logger.critical(error)
         exit_with_help_link()
+
+    colorama.init(autoreset=True, strip=not should_do_markup(args.no_color))
 
     logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
 

@@ -187,6 +187,12 @@ sudo systemctl start borgmatic.timer
 Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
 
+## Colored Output
+
+Borgmatic uses [colorama](https://pypi.org/project/colorama/) to produce
+colored terminal output by default. It is disabled when a non-interactive
+terminal is detected (like a cron job). Otherwise, it can be disabled by
+passing `--no-color` or by setting the environment variable `PY_COLORS=False`.
 
 ## Troubleshooting
 
