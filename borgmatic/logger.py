@@ -36,26 +36,42 @@ def should_do_markup(no_colour):
     return sys.stdout.isatty() and os.environ.get('TERM') != 'dumb'
 
 
+LOG_LEVEL_TO_COLOR = {
+    logging.CRITICAL: colorama.Fore.RED,
+    logging.WARN: colorama.Fore.YELLOW,
+    logging.INFO: colorama.Fore.GREEN,
+    logging.DEBUG: colorama.Fore.CYAN,
+}
+
+
 class BorgmaticLogger(logging.Logger):
+    def critical(self, msg, *args, **kwargs):
+        color = LOG_LEVEL_TO_COLOR.get(logging.CRITICAL)
+
+        return super(BorgmaticLogger, self).critical(color_text(color, msg), *args, **kwargs)
+
     def warn(self, msg, *args, **kwargs):
-        return super(BorgmaticLogger, self).warn(
-            color_text(colorama.Fore.YELLOW, msg), *args, **kwargs
-        )
+        color = LOG_LEVEL_TO_COLOR.get(logging.WARN)
+
+        return super(BorgmaticLogger, self).warn(color_text(color, msg), *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
-        return super(BorgmaticLogger, self).info(
-            color_text(colorama.Fore.GREEN, msg), *args, **kwargs
-        )
+        color = LOG_LEVEL_TO_COLOR.get(logging.INFO)
+
+        return super(BorgmaticLogger, self).info(color_text(color, msg), *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        return super(BorgmaticLogger, self).debug(
-            color_text(colorama.Fore.CYAN, msg), *args, **kwargs
+        color = LOG_LEVEL_TO_COLOR.get(logging.DEBUG)
+
+        return super(BorgmaticLogger, self).debug(color_text(color, msg), *args, **kwargs)
+
+    def handle(self, record):
+        color = LOG_LEVEL_TO_COLOR.get(record.levelno)
+        colored_record = logging.makeLogRecord(
+            dict(levelno=record.levelno, msg=color_text(color, record.msg))
         )
 
-    def critical(self, msg, *args, **kwargs):
-        return super(BorgmaticLogger, self).critical(
-            color_text(colorama.Fore.RED, msg), *args, **kwargs
-        )
+        return super(BorgmaticLogger, self).handle(colored_record)
 
 
 def get_logger(name=None):
@@ -68,8 +84,11 @@ def get_logger(name=None):
     return logger
 
 
-def color_text(color, msg):
+def color_text(color, message):
     '''
     Give colored text.
     '''
-    return '{}{}{}'.format(color, msg, colorama.Style.RESET_ALL)
+    if not color:
+        return message
+
+    return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
