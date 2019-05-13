@@ -91,6 +91,11 @@ formatter and [Flake8](http://flake8.pycqa.org/en/latest/) code checker, so
 certain code style requirements will be enforced when running automated tests.
 See the Black and Flake8 documentation for more information.
 
+## Continuous integration
+
+Each pull request will trigger a continuous integration build which will run
+the test suite. These builds can be seen on
+[build.torsion.org](https://build.torsion.org/witten/borgmatic).
 
 ## Related documentation
 
