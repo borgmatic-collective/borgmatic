@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+isort --recursive --check-only --settings-path setup.cfg .
