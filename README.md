@@ -2,6 +2,8 @@
 title: borgmatic
 permalink: borgmatic/index.html
 ---
+![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg)
+
 ## Overview
 
 <img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
