@@ -41,7 +41,7 @@ you're in the `borgmatic/` working copy, install tox, which is used for
 setting up testing environments:
 
 ```bash
-sudo pip3 install tox
+pip3 install --user tox
 ```
 
 Finally, to actually run tests, run:

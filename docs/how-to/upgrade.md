@@ -7,7 +7,7 @@ In general, all you should need to do to upgrade borgmatic is run the
 following:
 
 ```bash
-sudo pip3 install --upgrade borgmatic
+sudo pip3 install --user --upgrade borgmatic
 ```
 
 See below about special cases.
@@ -25,14 +25,14 @@ already running borgmatic with Python 3, then you can upgrade borgmatic
 in-place:
 
 ```bash
-sudo pip3 install --upgrade borgmatic
+sudo pip3 install --user --upgrade borgmatic
 ```
 
 But if you were running borgmatic with Python 2, uninstall and reinstall instead:
 
 ```bash
 sudo pip uninstall borgmatic
-sudo pip3 install borgmatic
+sudo pip3 install --user borgmatic
 ```
 
 The pip binary names for different versions of Python can differ, so the above
@@ -67,7 +67,7 @@ from atticmatic to borgmatic by running the following commands:
 
 ```bash
 sudo pip3 uninstall atticmatic
-sudo pip3 install borgmatic
+sudo pip3 install --user borgmatic
 ```
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration

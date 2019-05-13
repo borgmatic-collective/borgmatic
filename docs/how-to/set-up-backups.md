@@ -7,15 +7,23 @@ To get up and running, first [install
 Borg](https://borgbackup.readthedocs.io/en/latest/installation.html), at
 least version 1.1.
 
-Then, run the following command to download and install borgmatic:
+Borgmatic consumes configurations in `/etc/borgmatic/` and `/etc/borgmatic.d/`
+by default. Therefore, we show how to install borgmatic for the root user which
+will have access permissions for these locations by default.
+
+Run the following commands to download and install borgmatic:
 
 ```bash
-sudo pip3 install --upgrade borgmatic
+sudo pip3 install --user --upgrade borgmatic
 ```
+
+This is a [recommended user site
+installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site).
+You will need to ensure that `/root/.local/bin` is available on your `$PATH` so
+that the borgmatic executable is available.
 
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
-
 
 ### Other ways to install
 
