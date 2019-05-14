@@ -1,7 +1,7 @@
 import subprocess
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.commands import borgmatic as module
 

@@ -1,30 +1,27 @@
-from argparse import ArgumentParser
 import collections
-import colorama
 import json
 import logging
 import os
-from subprocess import CalledProcessError
 import sys
+from argparse import ArgumentParser
+from subprocess import CalledProcessError
 
+import colorama
 import pkg_resources
 
-from borgmatic.borg import (
-    check as borg_check,
-    create as borg_create,
-    environment as borg_environment,
-    prune as borg_prune,
-    extract as borg_extract,
-    list as borg_list,
-    info as borg_info,
-    init as borg_init,
-)
+from borgmatic.borg import check as borg_check
+from borgmatic.borg import create as borg_create
+from borgmatic.borg import environment as borg_environment
+from borgmatic.borg import extract as borg_extract
+from borgmatic.borg import info as borg_info
+from borgmatic.borg import init as borg_init
+from borgmatic.borg import list as borg_list
+from borgmatic.borg import prune as borg_prune
 from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.logger import should_do_markup, get_logger
+from borgmatic.logger import get_logger, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
-
 
 logger = get_logger(__name__)
 

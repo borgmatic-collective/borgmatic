@@ -3,8 +3,8 @@ import logging
 from flexmock import flexmock
 
 from borgmatic.borg import info as module
-from ..test_verbosity import insert_logging_mock
 
+from ..test_verbosity import insert_logging_mock
 
 INFO_COMMAND = ('borg', 'info', 'repo')
 

@@ -1,7 +1,6 @@
 from collections import OrderedDict, namedtuple
 from configparser import RawConfigParser
 
-
 Section_format = namedtuple('Section_format', ('name', 'options'))
 Config_option = namedtuple('Config_option', ('name', 'value_type', 'required'))
 

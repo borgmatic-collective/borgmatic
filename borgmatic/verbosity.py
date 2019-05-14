@@ -1,6 +1,5 @@
 import logging
 
-
 VERBOSITY_WARNING = 0
 VERBOSITY_SOME = 1
 VERBOSITY_LOTS = 2

@@ -1,6 +1,6 @@
-from argparse import ArgumentParser
-import sys
 import logging
+import sys
+from argparse import ArgumentParser
 
 from borgmatic.config import collect, validate
 from borgmatic.logger import get_logger

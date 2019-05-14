@@ -1,7 +1,7 @@
 import os
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.commands import convert_config as module
 

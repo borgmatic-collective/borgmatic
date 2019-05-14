@@ -1,9 +1,9 @@
-from io import StringIO
 import os
 import sys
+from io import StringIO
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import generate as module
 

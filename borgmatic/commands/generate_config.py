@@ -1,8 +1,7 @@
-from argparse import ArgumentParser
 import sys
+from argparse import ArgumentParser
 
 from borgmatic.config import generate, validate
-
 
 DEFAULT_DESTINATION_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
 
