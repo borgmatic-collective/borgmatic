@@ -2,11 +2,11 @@
 title: borgmatic
 permalink: borgmatic/index.html
 ---
-![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg)
+<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg)</a>
 
 ## Overview
 
-<img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" width="150px" style="float: right; padding-left: 1em;">
+<img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic is a simple Python wrapper script for the
 [Borg](https://www.borgbackup.org/) backup software that initiates a backup,
