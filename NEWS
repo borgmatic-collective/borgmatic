@@ -1,5 +1,6 @@
 1.3.4.dev0
  * Part of #125: Color borgmatic (but not Borg) output when using an interactive terminal.
+ # #166: Run tests for all installed versions of Python.
  * #168: Update README with continuous integration badge.
  * #169: Automatically sort Python imports in code.
  * Document installing borgmatic with pip install --user instead of a system Python install.

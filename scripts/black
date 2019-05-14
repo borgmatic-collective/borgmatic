@@ -1,7 +1,0 @@
-#!/usr/bin/env sh
-
-if which black; then
-    black --skip-string-normalization --line-length 100 --check .
-else
-    echo "Skipping black due to not being installed."
-fi
