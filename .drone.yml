@@ -3,7 +3,7 @@ pipeline:
     image: python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
     pull: true
     commands:
-      - pip install tox
+      - pip install tox==3.10.0
       - tox
       - apk add --no-cache borgbackup
       - tox -e end-to-end
