@@ -21,11 +21,11 @@ def to_bool(arg):
     return False
 
 
-def should_do_markup(no_colour):
+def should_do_markup(no_color):
     '''
     Determine if we should enable colorama marking up.
     '''
-    if no_colour:
+    if no_color:
         return False
 
     py_colors = os.environ.get('PY_COLORS', None)
