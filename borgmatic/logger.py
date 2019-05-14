@@ -38,32 +38,38 @@ def should_do_markup(no_color):
 
 LOG_LEVEL_TO_COLOR = {
     logging.CRITICAL: colorama.Fore.RED,
+    logging.ERROR: colorama.Fore.RED,
     logging.WARN: colorama.Fore.YELLOW,
     logging.INFO: colorama.Fore.GREEN,
     logging.DEBUG: colorama.Fore.CYAN,
 }
 
 
-class BorgmaticLogger(logging.Logger):
+class Borgmatic_logger(logging.Logger):
     def critical(self, msg, *args, **kwargs):
         color = LOG_LEVEL_TO_COLOR.get(logging.CRITICAL)
 
-        return super(BorgmaticLogger, self).critical(color_text(color, msg), *args, **kwargs)
+        return super(Borgmatic_logger, self).critical(color_text(color, msg), *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        color = LOG_LEVEL_TO_COLOR.get(logging.ERROR)
+
+        return super(Borgmatic_logger, self).error(color_text(color, msg), *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
         color = LOG_LEVEL_TO_COLOR.get(logging.WARN)
 
-        return super(BorgmaticLogger, self).warn(color_text(color, msg), *args, **kwargs)
+        return super(Borgmatic_logger, self).warn(color_text(color, msg), *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         color = LOG_LEVEL_TO_COLOR.get(logging.INFO)
 
-        return super(BorgmaticLogger, self).info(color_text(color, msg), *args, **kwargs)
+        return super(Borgmatic_logger, self).info(color_text(color, msg), *args, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
         color = LOG_LEVEL_TO_COLOR.get(logging.DEBUG)
 
-        return super(BorgmaticLogger, self).debug(color_text(color, msg), *args, **kwargs)
+        return super(Borgmatic_logger, self).debug(color_text(color, msg), *args, **kwargs)
 
     def handle(self, record):
         color = LOG_LEVEL_TO_COLOR.get(record.levelno)
@@ -71,14 +77,14 @@ class BorgmaticLogger(logging.Logger):
             dict(levelno=record.levelno, msg=color_text(color, record.msg))
         )
 
-        return super(BorgmaticLogger, self).handle(colored_record)
+        return super(Borgmatic_logger, self).handle(colored_record)
 
 
 def get_logger(name=None):
     '''
     Build a logger with the given name.
     '''
-    logging.setLoggerClass(BorgmaticLogger)
+    logging.setLoggerClass(Borgmatic_logger)
     logger = logging.getLogger(name)
     logger.propagate = False
     return logger

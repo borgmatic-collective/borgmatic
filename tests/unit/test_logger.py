@@ -47,3 +47,28 @@ def test_should_do_markup_prefers_PY_COLORS_to_stdout_tty_value():
     flexmock(module).should_receive('to_bool').and_return(True)
 
     assert module.should_do_markup(no_color=False) is True
+
+
+@pytest.mark.parametrize('method_name', ('critical', 'error', 'warn', 'info', 'debug'))
+def test_borgmatic_logger_log_method_does_not_raise(method_name):
+    flexmock(module).should_receive('color_text')
+    flexmock(module.logging.Logger).should_receive(method_name)
+
+    getattr(module.Borgmatic_logger('test'), method_name)(msg='hi')
+
+
+def test_borgmatic_logger_handle_does_not_raise():
+    flexmock(module).should_receive('color_text')
+    flexmock(module.logging.Logger).should_receive('handle')
+
+    module.Borgmatic_logger('test').handle(
+        module.logging.makeLogRecord(dict(levelno=module.logging.CRITICAL, msg='hi'))
+    )
+
+
+def test_color_text_does_not_raise():
+    module.color_text(module.colorama.Fore.RED, 'hi')
+
+
+def test_color_text_without_color_does_not_raise():
+    module.color_text(None, 'hi')

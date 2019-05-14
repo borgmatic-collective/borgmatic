@@ -64,9 +64,9 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
     return destination_config
 
 
-class LegacyConfigurationNotUpgraded(FileNotFoundError):
+class Legacy_configuration_not_upgraded(FileNotFoundError):
     def __init__(self):
-        super(LegacyConfigurationNotUpgraded, self).__init__(
+        super(Legacy_configuration_not_upgraded, self).__init__(
             '''borgmatic changed its configuration file format in version 1.1.0 from INI-style
 to YAML. This better supports validation, and has a more natural way to express
 lists of values. To upgrade your existing configuration, run:
@@ -83,7 +83,7 @@ instead of the old one.'''
 def guard_configuration_upgraded(source_config_filename, destination_config_filenames):
     '''
     If legacy source configuration exists but no destination upgraded configs do, raise
-    LegacyConfigurationNotUpgraded.
+    Legacy_configuration_not_upgraded.
 
     The idea is that we want to alert the user about upgrading their config if they haven't already.
     '''
@@ -92,4 +92,4 @@ def guard_configuration_upgraded(source_config_filename, destination_config_file
     )
 
     if os.path.exists(source_config_filename) and not destination_config_exists:
-        raise LegacyConfigurationNotUpgraded()
+        raise Legacy_configuration_not_upgraded()
