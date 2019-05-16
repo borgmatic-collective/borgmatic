@@ -1,6 +1,7 @@
-1.3.5.dev0
+1.3.5
  * #153: Support for various Borg directory environment variables (BORG_CONFIG_DIR, BORG_CACHE_DIR,
    etc.) via options in borgmatic's storage configuration.
+ * #177: Fix for regression with missing verbose log entries.
 
 1.3.4
  * Part of #125: Color borgmatic (but not Borg) output when using an interactive terminal.

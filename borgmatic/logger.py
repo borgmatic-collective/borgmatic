@@ -86,7 +86,6 @@ def get_logger(name=None):
     '''
     logging.setLoggerClass(Borgmatic_logger)
     logger = logging.getLogger(name)
-    logger.propagate = False
     return logger
 
 
