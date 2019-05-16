@@ -42,8 +42,7 @@ def test_initialize_without_configuration_should_not_set_environment():
     try:
         os.environ = {}
         module.initialize({})
-        assert os.environ.get('BORG_PASSCOMMAND') is None
-        assert os.environ.get('BORG_PASSPHRASE') is None
-        assert os.environ.get('BORG_RSH') is None
+
+        assert sum(1 for key in os.environ.keys() if key.startswith('BORG_')) == 0
     finally:
         os.environ = orig_environ

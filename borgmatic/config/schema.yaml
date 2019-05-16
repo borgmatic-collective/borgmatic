@@ -168,6 +168,32 @@ map:
                     Command to use instead of "ssh". This can be used to specify ssh options.
                     Defaults to not set.
                 example: ssh -i /path/to/private/key
+            borg_base_directory:
+                type: scalar
+                desc: |
+                    Base path used for various Borg directories. Defaults to $HOME, ~$USER, or ~.
+                    See https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables for details.
+                example: /path/to/base
+            borg_config_directory:
+                type: scalar
+                desc: |
+                    Path for Borg configuration files. Defaults to $borg_base_directory/.config/borg
+                example: /path/to/base/config
+            borg_cache_directory:
+                type: scalar
+                desc: |
+                    Path for Borg cache files. Defaults to $borg_base_directory/.cache/borg
+                example: /path/to/base/cache
+            borg_security_directory:
+                type: scalar
+                desc: |
+                    Path for Borg security and encryption nonce files. Defaults to $borg_base_directory/.config/borg/security
+                example: /path/to/base/config/security
+            borg_keys_directory:
+                type: scalar
+                desc: |
+                    Path for Borg encryption key files. Defaults to $borg_base_directory/.config/borg/keys
+                example: /path/to/base/config/keys
             umask:
                 type: scalar
                 desc: Umask to be used for borg create. Defaults to 0077.
