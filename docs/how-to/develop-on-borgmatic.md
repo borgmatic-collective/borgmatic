@@ -62,6 +62,14 @@ following:
 tox -e black
 ```
 
+And if you get a complaint from the
+[isort](https://github.com/timothycrosley/isort) Python import orderer, you
+can ask isort to order your imports for you:
+
+```bash
+tox -e isort
+```
+
 ### End-to-end tests
 
 borgmatic additionally includes some end-to-end tests that integration test
@@ -87,9 +95,10 @@ the following deviations from it:
    indentation with an opening delimeter.
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
-formatter and [Flake8](http://flake8.pycqa.org/en/latest/) code checker, so
+formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
+the [isort](https://github.com/timothycrosley/isort) import orderer, so
 certain code style requirements will be enforced when running automated tests.
-See the Black and Flake8 documentation for more information.
+See the Black, Flake8, and isort documentation for more information.
 
 ## Continuous integration
 
