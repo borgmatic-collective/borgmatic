@@ -40,6 +40,17 @@ borgmatic:
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
 
 
+## Hosting providers
+
+Need somewhere to store your encrypted offsite backups? The following hosting
+providers include specific support for Borg/borgmatic. Using these links and
+services helps support borgmatic development and hosting. (These are referral
+links, but without any tracking scripts or cookies.)
+
+ * [BorgBase](https://www.borgbase.com?source=borgmatic): Borg hosting service
+   with support for monitoring, 2FA, and append-only repos.
+
+
 ## Configuration
 
 After you install borgmatic, generate a sample configuration file:

@@ -74,6 +74,17 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
  * [borgmatic command-line reference](docs/reference/command-line.md)
 
 
+## Hosting providers
+
+Need somewhere to store your encrypted offsite backups? The following hosting
+providers include specific support for Borg/borgmatic. Using these links and
+services helps support borgmatic development and hosting. (These are referral
+links, but without any tracking scripts or cookies.)
+
+ * [BorgBase](https://www.borgbase.com?source=borgmatic): Borg hosting service
+   with support for monitoring, 2FA, and append-only repos.
+
+
 ## Support and contributing
 
 ### Issues
