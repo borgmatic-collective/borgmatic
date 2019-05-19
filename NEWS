@@ -1,6 +1,7 @@
 1.3.6.dev0
  * #178: Look for .yml configuration file extension in addition to .yaml.
  * Remove Python cache files before each Tox run.
+ * Add #borgmatic Freenode IRC channel to documentation.
  * Add Borg/borgmatic hosting providers section to documentation.
 
 1.3.5
