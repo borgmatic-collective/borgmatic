@@ -22,7 +22,7 @@ def collect_config_filenames(config_paths):
     '''
     Given a sequence of config paths, both filenames and directories, resolve that to an iterable
     of files. Accomplish this by listing any given directories looking for contained config files
-    (ending with the ".yaml" extension). This is non-recursive, so any directories within the given
+    (ending with the ".yaml" or ".yml" extension). This is non-recursive, so any directories within the given
     directories are ignored.
 
     Return paths even if they don't exist on disk, so the user can find out about missing
@@ -43,5 +43,6 @@ def collect_config_filenames(config_paths):
 
         for filename in sorted(os.listdir(path)):
             full_filename = os.path.join(path, filename)
-            if full_filename.endswith('.yaml') and not os.path.isdir(full_filename):
+            matching_filetype = full_filename.endswith('.yaml') or full_filename.endswith('.yml')
+            if matching_filetype and not os.path.isdir(full_filename):
                 yield full_filename

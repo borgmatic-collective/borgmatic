@@ -30,6 +30,21 @@ def test_collect_config_filenames_collects_given_files():
     assert config_filenames == config_paths
 
 
+def test_collect_config_filenames_collects_yml_file_endings():
+    config_paths = ('config.yaml', '/etc/borgmatic.d')
+    mock_path = flexmock(module.os.path)
+    mock_path.should_receive('exists').and_return(True)
+    mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
+    mock_path.should_receive('isdir').with_args('/etc/borgmatic.d').and_return(True)
+    mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yml').and_return(False)
+    flexmock(module.os).should_receive('listdir')
+    flexmock(sys.modules['builtins']).should_receive('sorted').and_return(['foo.yml'])
+
+    config_filenames = tuple(module.collect_config_filenames(config_paths))
+
+    assert config_filenames == ('config.yaml', '/etc/borgmatic.d/foo.yml')
+
+
 def test_collect_config_filenames_collects_files_from_given_directories_and_ignores_sub_directories():
     config_paths = ('config.yaml', '/etc/borgmatic.d')
     mock_path = flexmock(module.os.path)
