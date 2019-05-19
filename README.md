@@ -97,8 +97,8 @@ an existing GitHub account if you prefer.
 
 If you'd like to chat with borgmatic developers or users, head on over to the
 `#borgmatic` IRC channel on Freenode, either via <a
-href="https://webchat.freenode.net">web chat</a> or a native <a
-href="irc://chat.freenode.net:6697">IRC client</a>.
+href="https://webchat.freenode.net/?channels=borgmatic">web chat</a> or a
+native <a href="irc://chat.freenode.net:6697">IRC client</a>.
 
 Other questions or comments? Contact <mailto:witten@torsion.org>.
 
