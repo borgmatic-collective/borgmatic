@@ -47,8 +47,8 @@ providers include specific support for Borg/borgmatic. Using these links and
 services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
 
- * [BorgBase](https://www.borgbase.com?source=borgmatic): Borg hosting service
-   with support for monitoring, 2FA, and append-only repos.
+ * [BorgBase](https://www.borgbase.com/?utm_source=borgmatic): Borg hosting
+   service with support for monitoring, 2FA, and append-only repos.
 
 
 ## Configuration
