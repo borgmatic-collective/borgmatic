@@ -120,7 +120,7 @@ this step if you already have a Borg repository.) To create a repository, run
 a command like the following:
 
 ```bash
-borgmatic --init --encryption repokey
+borgmatic init --encryption repokey
 ```
 
 This uses the borgmatic configuration file you created above to determine
