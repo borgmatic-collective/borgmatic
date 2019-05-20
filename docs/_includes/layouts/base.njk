@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"{% if templateClass %} class="{{ templateClass }}"{% endif %}>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>{{ subtitle + ' - ' if subtitle}}{{ title }}</title>
+{%- set css %}
+{% include 'index.css' %}
+{% include 'components/lists.css' %}
+{% include 'components/external-links.css' %}
+{% include 'components/minilink.css' %}
+{% include 'components/toc.css' %}
+{% include 'components/info-blocks.css' %}
+{% include 'prism-theme.css' %}
+{% include 'asciinema.css' %}
+{% endset %}
+		<style>{{ css | safe }}</style>
+{% if feedTitle and feedUrl %}
+		<link rel="alternate" href="{{ feedUrl }}" title="{{ feedTitle }}" type="application/atom+xml">
+{% endif %}
+	</head>
+	<body>
+
+		{{ content | safe }}
+
+	</body>
+</html>

@@ -1,0 +1,12 @@
+/* External links */
+a[href^="http://"]:not(.minilink):not(.elv-externalexempt),
+a[href^="https://"]:not(.minilink):not(.elv-externalexempt), 
+a[href^="//"]:not(.minilink):not(.elv-externalexempt) {
+	text-decoration-color: inherit;
+}
+/* External link hovers */
+a[href^="http://"]:not(.minilink):not(.elv-externalexempt):hover,
+a[href^="https://"]:not(.minilink):not(.elv-externalexempt):hover, 
+a[href^="//"]:not(.minilink):not(.elv-externalexempt):hover {
+	text-decoration-color: #00bcd4;
+}

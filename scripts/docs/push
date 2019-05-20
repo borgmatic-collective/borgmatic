@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+. scripts/docs/build
+docker push witten/borgmatic-docs

@@ -1,0 +1,12 @@
+---
+layout: layouts/base.njk
+templateClass: elv-default
+headerClass: elv-header-default
+---
+{% include "header.njk" %}
+
+<main class="elv-layout{% if layoutClass %} {{ layoutClass }}{% endif %}">
+    <article>
+        {{ content | safe }}
+    </article>
+</main>

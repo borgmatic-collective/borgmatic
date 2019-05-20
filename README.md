@@ -1,6 +1,6 @@
 ---
 title: borgmatic
-permalink: borgmatic/index.html
+permalink: index.html
 ---
 <a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg)</a>
 
