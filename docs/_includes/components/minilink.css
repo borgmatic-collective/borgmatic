@@ -1,0 +1,40 @@
+/* Mini link */
+.minilink {
+	display: inline-block;
+	padding: .125em .375em;
+	text-transform: uppercase;
+	font-size: 0.875rem; /* 14px /16 */
+	text-decoration: none;
+	background-color: #ddd;
+	border-radius: 0.1875em; /* 3px /16 */
+	font-weight: 500;
+	margin: 0 0.4285714285714em 0.07142857142857em 0; /* 0 6px 1px 0 /14 */
+	line-height: 1.285714285714; /* 18px /14 */
+	font-family: system-ui, sans-serif;
+}
+.minilink[href] {
+	box-shadow: 0 1px 1px 0 rgba(0,0,0,.5);
+}
+.minilink[href]:hover,
+.minilink[href]:focus {
+	background-color: #bbb;
+}
+pre + .minilink {
+	color: #fff;
+	border-radius: 0 0 0.2857142857143em 0.2857142857143em; /* 4px /14 */
+	float: right;
+	background-color: #444;
+	color: #fff;
+}
+pre[class*=language-] + .minilink {
+	position: relative;
+	top: -0.7142857142857em; /* -10px /14 */
+}
+p.minilink {
+	float: right;
+	margin-left: 2em;
+	margin-bottom: 2em;
+}
+.minilink + pre[class*=language-] {
+	clear: both;
+}

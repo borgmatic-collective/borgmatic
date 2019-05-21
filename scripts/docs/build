@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+docker build --tag witten/borgmatic-docs --file docs/Dockerfile .
