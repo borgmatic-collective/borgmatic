@@ -7,7 +7,7 @@ steps:
   image: python:3.5-alpine3.9
   pull: always
   commands:
-    - scripts/run-tests
+    - ./scripts/run-tests
 ---
 kind: pipeline
 name: python-3-6-alpine-3-9
@@ -17,7 +17,7 @@ steps:
   image: python:3.6-alpine3.9
   pull: always
   commands:
-    - scripts/run-tests
+    - ./scripts/run-tests
 ---
 kind: pipeline
 name: python-3-7-alpine-3-9
@@ -27,7 +27,7 @@ steps:
   image: python:3.7-alpine3.9
   pull: always
   commands:
-    - scripts/run-tests
+    - ./scripts/run-tests
 ---
 kind: pipeline
 name: python-3-7-alpine-3-7
@@ -37,4 +37,4 @@ steps:
   image: python:3.7-alpine3.7
   pull: always
   commands:
-    - scripts/run-tests
+    - ./scripts/run-tests
