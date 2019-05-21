@@ -1,19 +1,23 @@
-pipeline:
-  build:
-    image: python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-    pull: true
-    commands:
-      - python -m pip install --upgrade pip==19.1.1
-      - pip install tox==3.10.0
-      - tox
-      - apk add --no-cache borgbackup
-      - tox -e end-to-end
+local Pipeline(python_version, alpine_version) = {
+    kind: "pipeline",
+    steps: [
+        {
+            name: "build",
+            image: "python:" + python_version + "-alpine" + alpine_version,
+            pull: "always",
+            commands: [
+                "python -m pip install --upgrade pip==19.1.1",
+                "pip install tox==3.10.0",
+                "tox",
+                "apk add --no-cache borgbackup",
+                "tox -e end-to-end"
+            ]
+        }
+    ]
 
-matrix:
-  ALPINE_VERSION:
-    - 3.7
-    - 3.9
-  PYTHON_VERSION:
-    - 3.5
-    - 3.6
-    - 3.7
+[
+    Pipeline("3.7", "3.7"),
+    Pipeline("3.5", "3.9"),
+    Pipeline("3.6", "3.9"),
+    Pipeline("3.7", "3.9"),
+]
