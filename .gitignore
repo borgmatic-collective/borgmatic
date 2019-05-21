@@ -5,5 +5,5 @@
 .coverage
 .pytest_cache
 .tox
-build
-dist
+build/
+dist/
