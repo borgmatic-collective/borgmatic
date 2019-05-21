@@ -14,6 +14,7 @@ local Pipeline(python_version, alpine_version) = {
             ]
         }
     ]
+};
 
 [
     Pipeline("3.5", "3.9"),
