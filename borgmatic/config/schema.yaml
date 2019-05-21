@@ -216,7 +216,9 @@ map:
         desc: |
             Retention policy for how many backups to keep in each category. See
             https://borgbackup.readthedocs.org/en/stable/usage.html#borg-prune for details.
-            At least one of the "keep" options is required for pruning to work.
+            At least one of the "keep" options is required for pruning to work. See
+            https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/
+            if you'd like to skip pruning entirely.
         map:
             keep_within:
                 type: scalar
