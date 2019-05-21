@@ -1,19 +1,40 @@
-pipeline:
-  build:
-    image: python:${PYTHON_VERSION}-alpine${ALPINE_VERSION}
-    pull: true
-    commands:
-      - python -m pip install --upgrade pip==19.1.1
-      - pip install tox==3.10.0
-      - tox
-      - apk add --no-cache borgbackup
-      - tox -e end-to-end
+---
+kind: pipeline
+name: python-3-5-alpine-3-9
 
-matrix:
-  ALPINE_VERSION:
-    - 3.7
-    - 3.9
-  PYTHON_VERSION:
-    - 3.5
-    - 3.6
-    - 3.7
+steps:
+- name: build
+  image: python:3.5-alpine3.9
+  pull: always
+  commands:
+    - scripts/run-tests
+---
+kind: pipeline
+name: python-3-6-alpine-3-9
+
+steps:
+- name: build
+  image: python:3.6-alpine3.9
+  pull: always
+  commands:
+    - scripts/run-tests
+---
+kind: pipeline
+name: python-3-7-alpine-3-9
+
+steps:
+- name: build
+  image: python:3.7-alpine3.9
+  pull: always
+  commands:
+    - scripts/run-tests
+---
+kind: pipeline
+name: python-3-7-alpine-3-7
+
+steps:
+- name: build
+  image: python:3.7-alpine3.7
+  pull: always
+  commands:
+    - scripts/run-tests
