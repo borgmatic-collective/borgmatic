@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # This script is intended to be run from the continuous integration build
 # server, and not on a developer machine. For that, see:
