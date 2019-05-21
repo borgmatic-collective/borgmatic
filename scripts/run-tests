@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# This script is intended to be run from the continuous integration build
+# server, and not on a developer machine. For that, see:
+# https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/
+
+set -e
+
+python -m pip install --upgrade pip==19.1.1
+pip install tox==3.10.0
+tox
+apk add --no-cache borgbackup
+tox -e end-to-end
+
