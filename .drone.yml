@@ -16,8 +16,8 @@ local Pipeline(python_version, alpine_version) = {
     ]
 
 [
-    Pipeline("3.7", "3.7"),
     Pipeline("3.5", "3.9"),
     Pipeline("3.6", "3.9"),
     Pipeline("3.7", "3.9"),
+    Pipeline("3.7", "3.7")
 ]
