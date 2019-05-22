@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+docker build --tag borgmatic-docs --file docs/Dockerfile .
+docker run --interactive --tty --publish 8080:80 --rm borgmatic-docs

@@ -5,6 +5,7 @@
  * Add Borg/borgmatic hosting providers section to documentation.
  * Add files for building documentation into a Docker image for web serving.
  * Upgrade project build server from Drone 0.8 to 1.1.
+ * Build borgmatic documentation during continuous integration.
 
 1.3.5
  * #153: Support for various Borg directory environment variables (BORG_CONFIG_DIR, BORG_CACHE_DIR,
