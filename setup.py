@@ -6,7 +6,7 @@ VERSION = '1.3.6.dev0'
 setup(
     name='borgmatic',
     version=VERSION,
-    description='A wrapper script for Borg backup software that creates and prunes backups',
+    description='Simple, configuration-driven backup software for servers and workstations',
     author='Dan Helfman',
     author_email='witten@torsion.org',
     url='https://torsion.org/borgmatic',
