@@ -58,20 +58,20 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 
 ## How-to guides
 
- * [Set up backups with borgmatic](docs/how-to/set-up-backups.md) ⬅ *Start here!*
- * [Make per-application backups](docs/how-to/make-per-application-backups.md)
- * [Deal with very large backups](docs/how-to/deal-with-very-large-backups.md)
- * [Inspect your backups](docs/how-to/inspect-your-backups.md)
- * [Restore a backup](docs/how-to/restore-a-backup.md)
- * [Run preparation steps before backups](docs/how-to/run-preparation-steps-before-backups.md)
- * [Upgrade borgmatic](docs/how-to/upgrade.md)
- * [Develop on borgmatic](docs/how-to/develop-on-borgmatic.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/) ⬅ *Start here!*
+ * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+ * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
+ * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
+ * [Run preparation steps before backups](https://torsion.org/borgmatic/docs/how-to/run-preparation-steps-before-backups/)
+ * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
+ * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
 
 
 ## Reference guides
 
- * [borgmatic configuration reference](docs/reference/configuration.md)
- * [borgmatic command-line reference](docs/reference/command-line.md)
+ * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration/)
+ * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line/)
 
 
 ## Hosting providers
@@ -112,5 +112,5 @@ to discuss your idea. We also accept Pull Requests on GitHub, if that's more
 your thing. In general, contributions are very welcome. We don't bite! 
 
 Also, please check out the [borgmatic development
-how-to](docs/how-to/develop-on-borgmatic.md) for info on cloning source code,
-running tests, etc.
+how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
+info on cloning source code, running tests, etc.
