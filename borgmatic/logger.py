@@ -74,7 +74,11 @@ class Borgmatic_logger(logging.Logger):
     def handle(self, record):
         color = LOG_LEVEL_TO_COLOR.get(record.levelno)
         colored_record = logging.makeLogRecord(
-            dict(levelno=record.levelno, msg=color_text(color, record.msg))
+            dict(
+                levelno=record.levelno,
+                levelname=record.levelname,
+                msg=color_text(color, record.msg),
+            )
         )
 
         return super(Borgmatic_logger, self).handle(colored_record)

@@ -410,17 +410,22 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.CRITICAL,
+                    levelname='CRITICAL',
                     msg='{}: Error parsing configuration file'.format(config_filename),
                 )
             )
-            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+            )
 
     # Run cross-file validation checks.
     if args.extract or (args.list and args.archive):
         try:
             validate.guard_configuration_contains_repository(args.repository, configs)
         except ValueError as error:
-            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+            )
             return
 
     # Execute the actions corresponding to each configuration file.
@@ -431,6 +436,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
+                    levelname='INFO',
                     msg='{}: Successfully ran configuration file'.format(config_filename),
                 )
             )
@@ -438,10 +444,13 @@ def collect_configuration_run_summary_logs(config_filenames, args):
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.CRITICAL,
+                    levelname='CRITICAL',
                     msg='{}: Error running configuration file'.format(config_filename),
                 )
             )
-            yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, msg=error))
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+            )
 
     if json_results:
         sys.stdout.write(json.dumps(json_results))
@@ -450,6 +459,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
         yield logging.makeLogRecord(
             dict(
                 levelno=logging.CRITICAL,
+                levelname='CRITICAL',
                 msg='{}: No configuration files found'.format(' '.join(args.config_paths)),
             )
         )
@@ -475,7 +485,13 @@ def main():  # pragma: no cover
 
     colorama.init(autoreset=True, strip=not should_do_markup(args.no_color))
 
-    logging.basicConfig(level=verbosity_to_log_level(args.verbosity), format='%(message)s')
+    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+    syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
+    logging.basicConfig(
+        level=verbosity_to_log_level(args.verbosity),
+        format='%(message)s',
+        handlers=(logging.StreamHandler(), syslog_handler),
+    )
 
     if args.version:
         print(pkg_resources.require('borgmatic')[0].version)
