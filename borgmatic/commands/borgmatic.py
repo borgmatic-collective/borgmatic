@@ -176,7 +176,14 @@ def parse_arguments(*arguments):
         type=int,
         choices=range(0, 3),
         default=0,
-        help='Display verbose progress (1 for some, 2 for lots)',
+        help='Display verbose progress to the console (from none to lots: 0, 1, or 2)',
+    )
+    common_group.add_argument(
+        '--syslog-verbosity',
+        type=int,
+        choices=range(0, 3),
+        default=2,
+        help='Display verbose progress to syslog (from none to lots: 0, 1, or 2)',
     )
     common_group.add_argument(
         '--version',
@@ -483,14 +490,18 @@ def main():  # pragma: no cover
         configure_logging(logging.CRITICAL)
         logger.critical(error)
         exit_with_help_link()
-    except SystemExit:
+    except SystemExit as error:
+        if error.code == 0:
+            raise error
         configure_logging(logging.CRITICAL)
         logger.critical('Error parsing arguments: {}'.format(' '.join(sys.argv)))
         exit_with_help_link()
 
     colorama.init(autoreset=True, strip=not should_do_markup(args.no_color))
 
-    configure_logging(verbosity_to_log_level(args.verbosity))
+    configure_logging(
+        verbosity_to_log_level(args.verbosity), verbosity_to_log_level(args.syslog_verbosity)
+    )
 
     if args.version:
         print(pkg_resources.require('borgmatic')[0].version)

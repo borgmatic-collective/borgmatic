@@ -103,14 +103,22 @@ def color_text(color, message):
     return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
 
 
-def configure_logging(log_level):
+def configure_logging(console_log_level, syslog_log_level=None):
     '''
-    Configure logging to go to both the console and syslog. Use the given log level for both.
+    Configure logging to go to both the console and syslog. Use the given log levels, respectively.
     '''
+    if syslog_log_level is None:
+        syslog_log_level = console_log_level
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter('%(message)s'))
+    console_handler.setLevel(console_log_level)
+
     syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
     syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
+    syslog_handler.setLevel(syslog_log_level)
+
     logging.basicConfig(
-        level=log_level,
-        format='%(message)s',
-        handlers=(logging.StreamHandler(), syslog_handler),
+        level=min(console_log_level, syslog_log_level),
+        handlers=(console_handler, syslog_handler),
     )
