@@ -19,7 +19,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.logger import get_logger, should_do_markup
+from borgmatic.logger import get_logger, should_do_markup, configure_logging
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -469,7 +469,8 @@ def exit_with_help_link():  # pragma: no cover
     '''
     Display a link to get help and exit with an error code.
     '''
-    logger.critical('\nNeed some help? https://torsion.org/borgmatic/#issues')
+    logger.critical('')
+    logger.critical('Need some help? https://torsion.org/borgmatic/#issues')
     sys.exit(1)
 
 
@@ -479,19 +480,17 @@ def main():  # pragma: no cover
     try:
         args = parse_arguments(*sys.argv[1:])
     except ValueError as error:
-        logging.basicConfig(level=logging.CRITICAL, format='%(message)s')
+        configure_logging(logging.CRITICAL)
         logger.critical(error)
+        exit_with_help_link()
+    except SystemExit:
+        configure_logging(logging.CRITICAL)
+        logger.critical('Error parsing arguments: {}'.format(' '.join(sys.argv)))
         exit_with_help_link()
 
     colorama.init(autoreset=True, strip=not should_do_markup(args.no_color))
 
-    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-    syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
-    logging.basicConfig(
-        level=verbosity_to_log_level(args.verbosity),
-        format='%(message)s',
-        handlers=(logging.StreamHandler(), syslog_handler),
-    )
+    configure_logging(verbosity_to_log_level(args.verbosity))
 
     if args.version:
         print(pkg_resources.require('borgmatic')[0].version)
@@ -503,7 +502,8 @@ def main():  # pragma: no cover
 
     summary_logs = tuple(collect_configuration_run_summary_logs(config_filenames, args))
 
-    logger.info('\nsummary:')
+    logger.info('')
+    logger.info('summary:')
     [logger.handle(log) for log in summary_logs if log.levelno >= logger.getEffectiveLevel()]
 
     if any(log.levelno == logging.CRITICAL for log in summary_logs):
