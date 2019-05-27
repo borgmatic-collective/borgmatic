@@ -19,7 +19,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.logger import get_logger, should_do_markup, configure_logging
+from borgmatic.logger import configure_logging, get_logger, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 

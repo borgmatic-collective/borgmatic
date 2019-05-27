@@ -119,6 +119,5 @@ def configure_logging(console_log_level, syslog_log_level=None):
     syslog_handler.setLevel(syslog_log_level)
 
     logging.basicConfig(
-        level=min(console_log_level, syslog_log_level),
-        handlers=(console_handler, syslog_handler),
+        level=min(console_log_level, syslog_log_level), handlers=(console_handler, syslog_handler)
     )
