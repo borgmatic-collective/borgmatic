@@ -42,5 +42,5 @@ output formatted as JSON.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
- * [Develop on borgmatic](../../docs/how-to/develop-on-borgmatic.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups.md)
+ * [Develop on borgmatic](https://torsion.org/borgmatic/how-to/develop-on-borgmatic.md)

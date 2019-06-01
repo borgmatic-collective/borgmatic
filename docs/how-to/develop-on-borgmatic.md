@@ -109,4 +109,4 @@ also linked from the commits list on each pull request.
 
 ## Related documentation
 
- * [Inspect your backups](../../docs/how-to/inspect-your-backups.md)
+ * [Inspect your backups](https://torsion.org/borgmatic/how-to/inspect-your-backups.md)
