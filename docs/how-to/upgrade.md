@@ -76,4 +76,4 @@ files.
 
 ## Related documentation
 
- * [Develop on borgmatic](https://torsion.org/borgmatic/how-to/develop-on-borgmatic.md)
+ * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic.md)

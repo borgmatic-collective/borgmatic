@@ -74,7 +74,7 @@ uncomment a particular option, also uncomment its containing section name, or
 else borgmatic won't recognize the option.
 
 You can also get the same sample configuration file from the [configuration
-reference](https://torsion.org/borgmatic/reference/configuration.md), the authoritative set of
+reference](https://torsion.org/borgmatic/docs/reference/configuration.md), the authoritative set of
 all configuration options. This is handy if borgmatic has added new options
 since you originally created your configuration file.
 
@@ -221,11 +221,11 @@ it.
 
 ## Related documentation
 
- * [Make per-application backups](https://torsion.org/borgmatic/how-to/make-per-application-backups.md)
- * [Deal with very large backups](https://torsion.org/borgmatic/how-to/deal-with-very-large-backups.md)
- * [Inspect your backups](https://torsion.org/borgmatic/how-to/inspect-your-backups.md)
- * [borgmatic configuration reference](https://torsion.org/borgmatic/reference/configuration.md)
- * [borgmatic command-line reference](https://torsion.org/borgmatic/reference/command-line.md)
+ * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)
+ * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups.md)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
+ * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration.md)
+ * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line.md)
 
 <script>
   var links = document.getElementsByClassName("referral");

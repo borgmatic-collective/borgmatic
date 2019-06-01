@@ -47,5 +47,5 @@ injection or privilege escalation, do not forget to set secure permissions
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups.md)
- * [Make per-application backups](https://torsion.org/borgmatic/how-to/make-per-application-backups.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
+ * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)

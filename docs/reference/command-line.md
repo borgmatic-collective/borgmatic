@@ -12,5 +12,5 @@ Here are all of the available borgmatic command-line options:
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/how-to/set-up-backups.md)
- * [borgmatic configuration reference](https://torsion.org/borgmatic/reference/configuration.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
+ * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration.md)
