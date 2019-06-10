@@ -82,9 +82,10 @@ providers include specific support for Borg/borgmatic. Using these links and
 services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
 
- * [BorgBase](https://www.borgbase.com/?utm_source=borgmatic): Borg hosting
-   service with support for monitoring, 2FA, and append-only repos.
-
+<ul>
+ <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
+ <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
+</ul>
 
 ## Support and contributing
 
@@ -115,3 +116,8 @@ your thing. In general, contributions are very welcome. We don't bite!
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
+
+<script>
+  var links = document.getElementsByClassName("referral");
+  links[Math.floor(Math.random() * links.length)].style.display = "none";
+</script>

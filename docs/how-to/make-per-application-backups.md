@@ -108,4 +108,4 @@ nested values.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](../../docs/how-to/set-up-backups.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
