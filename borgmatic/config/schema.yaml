@@ -156,7 +156,7 @@ map:
                 desc: |
                     Type of compression to use when creating archives. See
                     https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create for details.
-                    Defaults to no compression.
+                    Defaults to "lz4".
                 example: lz4
             remote_rate_limit:
                 type: int
