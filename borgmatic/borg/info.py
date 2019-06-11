@@ -19,8 +19,8 @@ def display_archives_info(
         (local_path, 'info', repository)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
         + (('--json',) if json else ())
     )
 

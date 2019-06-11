@@ -149,10 +149,14 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AME-') if logger.isEnabledFor(logging.INFO) else ())
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--stats',) if not dry_run and (logger.isEnabledFor(logging.INFO) or stats) else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--list', '--filter', 'AME-') if logger.isEnabledFor(logging.INFO) and not json else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
+        + (
+            ('--stats',)
+            if not dry_run and (logger.isEnabledFor(logging.INFO) or stats) and not json
+            else ()
+        )
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
         + (('--json',) if json else ())

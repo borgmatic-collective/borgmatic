@@ -33,11 +33,33 @@ borgmatic --list
 borgmatic --info
 ```
 
+## Logging
+
+By default, borgmatic logs to a local syslog-compatible daemon if one is
+present. You can customize the log level used for syslog logging with the
+`--syslog-verbosity` flag, and this is independent from the console logging
+`--verbosity` flag described above. For instance, to disable syslog logging
+except for errors:
+
+```bash
+borgmatic --syslog-verbosity 0
+```
+
+Or to increase syslog logging to include debug spew:
+
+```bash
+borgmatic --syslog-verbosity 2
+```
+
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an
 optional `--json` flag with `--create`, `--list`, or `--info` to get the
 output formatted as JSON.
+
+Note that when you specify the `--json` flag, Borg's other non-JSON output is
+suppressed so as not to interfere with the captured JSON. Also note that JSON
+output only shows up at the console, and not in syslog.
 
 
 ## Related documentation

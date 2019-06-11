@@ -114,10 +114,18 @@ def configure_logging(console_log_level, syslog_log_level=None):
     console_handler.setFormatter(logging.Formatter('%(message)s'))
     console_handler.setLevel(console_log_level)
 
-    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-    syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
-    syslog_handler.setLevel(syslog_log_level)
+    syslog_path = None
+    if os.path.exists('/dev/log'):
+        syslog_path = '/dev/log'
+    elif os.path.exists('/var/run/syslog'):
+        syslog_path = '/var/run/syslog'
 
-    logging.basicConfig(
-        level=min(console_log_level, syslog_log_level), handlers=(console_handler, syslog_handler)
-    )
+    if syslog_path:
+        syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
+        syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s \ufeff%(message)s'))
+        syslog_handler.setLevel(syslog_log_level)
+        handlers = (console_handler, syslog_handler)
+    else:
+        handlers = (console_handler,)
+
+    logging.basicConfig(level=min(console_log_level, syslog_log_level), handlers=handlers)
