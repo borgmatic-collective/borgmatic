@@ -25,4 +25,4 @@ def list_archives(
         + (('--json',) if json else ())
     )
 
-    return execute_command(full_command, capture_output=json)
+    return execute_command(full_command, output_log_level=None if json else logging.INFO)

@@ -1,3 +1,5 @@
+import logging
+
 from flexmock import flexmock
 
 from borgmatic.borg import execute as module
@@ -6,7 +8,7 @@ from borgmatic.borg import execute as module
 def test_execute_command_calls_full_command():
     full_command = ['foo', 'bar']
     flexmock(module).should_receive('execute_and_log_output').with_args(
-        full_command, output_as_warning=False
+        full_command, output_log_level=logging.INFO
     ).once()
 
     output = module.execute_command(full_command)
@@ -21,6 +23,6 @@ def test_execute_command_captures_output():
         flexmock(decode=lambda: expected_output)
     ).once()
 
-    output = module.execute_command(full_command, capture_output=True)
+    output = module.execute_command(full_command, output_log_level=None)
 
     assert output == expected_output
