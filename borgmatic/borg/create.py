@@ -162,4 +162,4 @@ def create_archive(
         + (('--json',) if json else ())
     )
 
-    return execute_command(full_command, capture_output=json)
+    return execute_command(full_command, capture_output=json, output_as_warning=stats and not json)

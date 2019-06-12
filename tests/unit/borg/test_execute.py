@@ -5,7 +5,9 @@ from borgmatic.borg import execute as module
 
 def test_execute_command_calls_full_command():
     full_command = ['foo', 'bar']
-    flexmock(module).should_receive('execute_and_log_output').with_args(full_command).once()
+    flexmock(module).should_receive('execute_and_log_output').with_args(
+        full_command, output_as_warning=False
+    ).once()
 
     output = module.execute_command(full_command)
 
