@@ -1,5 +1,6 @@
-import subprocess
+import logging
 
+from borgmatic import execute
 from borgmatic.logger import get_logger
 
 logger = get_logger(__name__)
@@ -7,7 +8,6 @@ logger = get_logger(__name__)
 
 def execute_hook(commands, config_filename, description, dry_run):
     '''
-
     Given a list of hook commands to execute, a config filename, a hook description, and whether
     this is a dry run, run the given commands. Or, don't run them if this is a dry run.
     '''
@@ -29,6 +29,5 @@ def execute_hook(commands, config_filename, description, dry_run):
         )
 
     for command in commands:
-        logger.debug('{}: Hook command: {}'.format(config_filename, command))
         if not dry_run:
-            subprocess.check_call(command, shell=True)
+            execute.execute_command([command], output_log_level=logging.WARNING, shell=True)

@@ -1,26 +1,31 @@
+import logging
+
 from flexmock import flexmock
 
 from borgmatic.commands import hook as module
 
 
 def test_execute_hook_invokes_each_command():
-    subprocess = flexmock(module.subprocess)
-    subprocess.should_receive('check_call').with_args(':', shell=True).once()
+    flexmock(module.execute).should_receive('execute_command').with_args(
+        [':'], output_log_level=logging.WARNING, shell=True
+    ).once()
 
     module.execute_hook([':'], 'config.yaml', 'pre-backup', dry_run=False)
 
 
 def test_execute_hook_with_multiple_commands_invokes_each_command():
-    subprocess = flexmock(module.subprocess)
-    subprocess.should_receive('check_call').with_args(':', shell=True).once()
-    subprocess.should_receive('check_call').with_args('true', shell=True).once()
+    flexmock(module.execute).should_receive('execute_command').with_args(
+        [':'], output_log_level=logging.WARNING, shell=True
+    ).once()
+    flexmock(module.execute).should_receive('execute_command').with_args(
+        ['true'], output_log_level=logging.WARNING, shell=True
+    ).once()
 
     module.execute_hook([':', 'true'], 'config.yaml', 'pre-backup', dry_run=False)
 
 
 def test_execute_hook_with_dry_run_skips_commands():
-    subprocess = flexmock(module.subprocess)
-    subprocess.should_receive('check_call').never()
+    flexmock(module.execute).should_receive('execute_command').never()
 
     module.execute_hook([':', 'true'], 'config.yaml', 'pre-backup', dry_run=True)
 

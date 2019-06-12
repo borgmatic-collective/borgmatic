@@ -36,6 +36,12 @@ hooks:
         - echo "Error while creating a backup."
 ```
 
+## Hook output
+
+Any output produced by your hooks shows up both at the console and in syslog.
+For more information, read about <a
+href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md">inspecting
+your backups</a>.
 
 ## Security
 
@@ -49,3 +55,4 @@ injection or privilege escalation, do not forget to set secure permissions
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
