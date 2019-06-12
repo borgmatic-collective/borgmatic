@@ -51,6 +51,19 @@ Or to increase syslog logging to include debug spew:
 borgmatic --syslog-verbosity 2
 ```
 
+### systemd journal
+
+If your local syslog daemon is systemd's journal, be aware that journald by
+default throttles the rate at which a particular program can log. So you may
+need to [change the journald rate
+limit](https://www.freedesktop.org/software/systemd/man/journald.conf.html#RateLimitIntervalSec=)
+in `/etc/systemd/journald.conf` if you're finding that borgmatic journald logs
+are missing.
+
+Note that the [sample borgmatic systemd service
+file](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#systemd)
+already has this rate limit disabled.
+
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an

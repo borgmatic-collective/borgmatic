@@ -4,3 +4,4 @@ Description=borgmatic backup
 [Service]
 Type=oneshot
 ExecStart=/root/.local/bin/borgmatic
+LogRateLimitIntervalSec=0
