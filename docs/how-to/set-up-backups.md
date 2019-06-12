@@ -109,8 +109,8 @@ This command's exit status (`$?` in Bash) is zero when configuration is valid
 and non-zero otherwise.
 
 Validating configuration can be useful if you generate your configuration
-files via configuration management, or you just want to double check that your
-hand edits are valid.
+files via configuration management, or you want to double check that your hand
+edits are valid.
 
 
 ## Initialization

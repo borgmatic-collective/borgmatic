@@ -36,7 +36,11 @@ borgmatic --info
 ## Logging
 
 By default, borgmatic logs to a local syslog-compatible daemon if one is
-present. You can customize the log level used for syslog logging with the
+present. Where those logs show up depends on your particular system. If you're
+using systemd, try running `journalctl -xe`. Otherwise, try viewing
+`/var/log/syslog` or similiar.
+
+You can customize the log level used for syslog logging with the
 `--syslog-verbosity` flag, and this is independent from the console logging
 `--verbosity` flag described above. For instance, to disable syslog logging
 except for errors:
