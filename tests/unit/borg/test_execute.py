@@ -2,7 +2,7 @@ import logging
 
 from flexmock import flexmock
 
-from borgmatic.borg import execute as module
+from borgmatic import execute as module
 
 
 def test_execute_command_calls_full_command():

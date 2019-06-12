@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg.execute import execute_command
+from borgmatic.execute import execute_command
 from borgmatic.logger import get_logger
 
 logger = get_logger(__name__)
