@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from flexmock import flexmock
 
@@ -72,3 +74,50 @@ def test_color_text_does_not_raise():
 
 def test_color_text_without_color_does_not_raise():
     module.color_text(None, 'hi')
+
+
+def test_configure_logging_probes_for_log_socket_on_linux():
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
+    syslog_handler = logging.handlers.SysLogHandler()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
+        address='/dev/log'
+    ).and_return(syslog_handler).once()
+
+    module.configure_logging(logging.INFO)
+
+
+def test_configure_logging_probes_for_log_socket_on_macos():
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(True)
+    syslog_handler = logging.handlers.SysLogHandler()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
+        address='/var/run/syslog'
+    ).and_return(syslog_handler).once()
+
+    module.configure_logging(logging.INFO)
+
+
+def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.DEBUG, handlers=tuple
+    ).once()
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    module.configure_logging(console_log_level=logging.INFO, syslog_log_level=logging.DEBUG)
+
+
+def test_configure_logging_skips_syslog_if_not_found():
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+
+    module.configure_logging(console_log_level=logging.INFO)
