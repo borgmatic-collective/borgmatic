@@ -24,4 +24,4 @@ def display_archives_info(
         + (('--json',) if json else ())
     )
 
-    return execute_command(full_command, output_log_level=None if json else logging.INFO)
+    return execute_command(full_command, output_log_level=None if json else logging.WARNING)

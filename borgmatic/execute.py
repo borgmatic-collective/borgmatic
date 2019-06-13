@@ -13,6 +13,9 @@ def execute_and_log_output(full_command, output_log_level, shell):
 
     while process.poll() is None:
         line = process.stdout.readline().rstrip().decode()
+        if not line:
+            continue
+
         if line.startswith('borg: error:'):
             logger.error(line)
         else:

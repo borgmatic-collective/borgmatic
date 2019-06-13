@@ -1,7 +1,6 @@
 import logging
-import subprocess
-import sys
 
+from borgmatic.execute import execute_command
 from borgmatic.logger import get_logger
 
 logger = get_logger(__name__)
@@ -27,10 +26,11 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         + verbosity_flags
     )
 
-    list_output = subprocess.check_output(full_list_command).decode(sys.stdout.encoding)
+    list_output = execute_command(full_list_command, output_log_level=None)
 
-    last_archive_name = list_output.strip().split('\n')[-1]
-    if not last_archive_name:
+    try:
+        last_archive_name = list_output.strip().splitlines()[-1]
+    except IndexError:
         return
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
@@ -49,8 +49,7 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         + list_flag
     )
 
-    logger.debug(' '.join(full_extract_command))
-    subprocess.check_call(full_extract_command)
+    execute_command(full_extract_command)
 
 
 def extract_archive(
@@ -85,5 +84,4 @@ def extract_archive(
         + (('--progress',) if progress else ())
     )
 
-    logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+    execute_command(full_command)

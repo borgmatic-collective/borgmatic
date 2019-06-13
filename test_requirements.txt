@@ -7,7 +7,7 @@ colorama==0.4.1
 coverage==4.5.1
 docopt==0.6.2
 flake8==3.5.0
-flexmock==0.10.2
+flexmock==0.10.4
 isort==4.3.19
 mccabe==0.6.1
 more-itertools==4.3.0

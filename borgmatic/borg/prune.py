@@ -1,6 +1,6 @@
 import logging
-import subprocess
 
+from borgmatic.execute import execute_command
 from borgmatic.logger import get_logger
 
 logger = get_logger(__name__)
@@ -61,5 +61,4 @@ def prune_archives(
         + (('--stats',) if stats else ())
     )
 
-    logger.debug(' '.join(full_command))
-    subprocess.check_call(full_command)
+    execute_command(full_command)

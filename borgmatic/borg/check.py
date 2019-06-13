@@ -1,8 +1,7 @@
 import logging
-import os
-import subprocess
 
 from borgmatic.borg import extract
+from borgmatic.execute import execute_command
 from borgmatic.logger import get_logger
 
 DEFAULT_CHECKS = ('repository', 'archives')
@@ -114,11 +113,7 @@ def check_archives(
             + verbosity_flags
         )
 
-        # The check command spews to stdout/stderr even without the verbose flag. Suppress it.
-        stdout = None if verbosity_flags else open(os.devnull, 'w')
-
-        logger.debug(' '.join(full_command))
-        subprocess.check_call(full_command, stdout=stdout, stderr=subprocess.STDOUT)
+        execute_command(full_command)
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

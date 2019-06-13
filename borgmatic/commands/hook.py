@@ -30,4 +30,8 @@ def execute_hook(commands, config_filename, description, dry_run):
 
     for command in commands:
         if not dry_run:
-            execute.execute_command([command], output_log_level=logging.WARNING, shell=True)
+            execute.execute_command(
+                [command],
+                output_log_level=logging.ERROR if description == 'on-error' else logging.WARNING,
+                shell=True,
+            )
