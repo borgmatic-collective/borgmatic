@@ -26,6 +26,15 @@ def test_list_archives_with_log_info_calls_borg_with_info_parameter():
     module.list_archives(repository='repo', storage_config={})
 
 
+def test_list_archives_with_log_info_and_json_suppresses_most_borg_output():
+    flexmock(module).should_receive('execute_command').with_args(
+        LIST_COMMAND + ('--json',), output_log_level=None
+    )
+    insert_logging_mock(logging.INFO)
+
+    module.list_archives(repository='repo', storage_config={}, json=True)
+
+
 def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('execute_command').with_args(
         LIST_COMMAND + ('--debug', '--show-rc'), output_log_level=logging.WARNING
@@ -33,6 +42,15 @@ def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
     insert_logging_mock(logging.DEBUG)
 
     module.list_archives(repository='repo', storage_config={})
+
+
+def test_list_archives_with_log_debug_and_json_suppresses_most_borg_output():
+    flexmock(module).should_receive('execute_command').with_args(
+        LIST_COMMAND + ('--json',), output_log_level=None
+    )
+    insert_logging_mock(logging.DEBUG)
+
+    module.list_archives(repository='repo', storage_config={}, json=True)
 
 
 def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():

@@ -14,7 +14,8 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
 
     assert parser.config_paths == config_paths
     assert parser.excludes_filename is None
-    assert parser.verbosity is 0
+    assert parser.verbosity == 0
+    assert parser.syslog_verbosity == 1
     assert parser.json is False
 
 
@@ -24,7 +25,8 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     parser = module.parse_arguments('--config', 'myconfig', 'otherconfig')
 
     assert parser.config_paths == ['myconfig', 'otherconfig']
-    assert parser.verbosity is 0
+    assert parser.verbosity == 0
+    assert parser.syslog_verbosity == 1
 
 
 def test_parse_arguments_with_verbosity_overrides_default():
@@ -36,6 +38,19 @@ def test_parse_arguments_with_verbosity_overrides_default():
     assert parser.config_paths == config_paths
     assert parser.excludes_filename is None
     assert parser.verbosity == 1
+    assert parser.syslog_verbosity == 1
+
+
+def test_parse_arguments_with_syslog_verbosity_overrides_default():
+    config_paths = ['default']
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
+
+    parser = module.parse_arguments('--syslog-verbosity', '2')
+
+    assert parser.config_paths == config_paths
+    assert parser.excludes_filename is None
+    assert parser.verbosity == 0
+    assert parser.syslog_verbosity == 2
 
 
 def test_parse_arguments_with_json_overrides_default():

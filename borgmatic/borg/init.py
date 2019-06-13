@@ -7,6 +7,9 @@ from borgmatic.logger import get_logger
 logger = get_logger(__name__)
 
 
+INFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
+
+
 def initialize_repository(
     repository,
     encryption_mode,
@@ -28,7 +31,7 @@ def initialize_repository(
         logger.info('Repository already exists. Skipping initialization.')
         return
     except subprocess.CalledProcessError as error:
-        if error.returncode != 2:
+        if error.returncode != INFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
             raise
 
     init_command = (
