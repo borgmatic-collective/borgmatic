@@ -32,3 +32,11 @@ def test_execute_hook_with_dry_run_skips_commands():
 
 def test_execute_hook_with_empty_commands_does_not_raise():
     module.execute_hook([], 'config.yaml', 'post-backup', dry_run=False)
+
+
+def test_execute_hook_on_error_logs_as_error():
+    flexmock(module.execute).should_receive('execute_command').with_args(
+        [':'], output_log_level=logging.ERROR, shell=True
+    ).once()
+
+    module.execute_hook([':'], 'config.yaml', 'on-error', dry_run=False)

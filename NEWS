@@ -1,6 +1,7 @@
 1.3.6.dev0
  * #53: Log to syslog in addition to existing console logging. Add --syslog-verbosity flag to
-   customize the log level.
+   customize the log level. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/
  * #178: Look for .yml configuration file extension in addition to .yaml.
  * Remove Python cache files before each Tox run.
  * Add #borgmatic Freenode IRC channel to documentation.
