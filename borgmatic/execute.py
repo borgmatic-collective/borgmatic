@@ -23,7 +23,7 @@ def execute_and_log_output(full_command, output_log_level, shell):
 
     remaining_output = process.stdout.read().rstrip().decode()
     if remaining_output:
-        logger.info(remaining_output)
+        logger.log(output_log_level, remaining_output)
 
     exit_code = process.poll()
     if exit_code != 0:
