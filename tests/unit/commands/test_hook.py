@@ -2,7 +2,7 @@ import logging
 
 from flexmock import flexmock
 
-from borgmatic.commands import hook as module
+from borgmatic import hook as module
 
 
 def test_execute_hook_invokes_each_command():

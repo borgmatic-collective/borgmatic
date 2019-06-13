@@ -9,6 +9,7 @@ from subprocess import CalledProcessError
 import colorama
 import pkg_resources
 
+from borgmatic import hook
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
@@ -17,7 +18,6 @@ from borgmatic.borg import info as borg_info
 from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
-from borgmatic.commands import hook
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.logger import configure_logging, get_logger, should_do_markup
 from borgmatic.signals import configure_signals
