@@ -22,7 +22,7 @@ def execute_and_log_output(full_command, output_log_level, shell):
             logger.log(output_log_level, line)
 
     remaining_output = process.stdout.read().rstrip().decode()
-    if remaining_output:
+    if remaining_output:  # pragma: no cover
         logger.log(output_log_level, remaining_output)
 
     exit_code = process.poll()
