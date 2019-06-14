@@ -3,6 +3,7 @@
    customize the log level. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/
  * #178: Look for .yml configuration file extension in addition to .yaml.
+ * #189: Set umask used when executing hooks via "umask" option in borgmatic hooks section.
  * Remove Python cache files before each Tox run.
  * Add #borgmatic Freenode IRC channel to documentation.
  * Add Borg/borgmatic hosting providers section to documentation.

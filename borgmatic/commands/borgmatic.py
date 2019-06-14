@@ -281,7 +281,11 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
 
         if args.create:
             hook.execute_hook(
-                hooks.get('before_backup'), config_filename, 'pre-backup', args.dry_run
+                hooks.get('before_backup'),
+                hooks.get('umask'),
+                config_filename,
+                'pre-backup',
+                args.dry_run,
             )
 
         for repository_path in location['repositories']:
@@ -298,10 +302,16 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
 
         if args.create:
             hook.execute_hook(
-                hooks.get('after_backup'), config_filename, 'post-backup', args.dry_run
+                hooks.get('after_backup'),
+                hooks.get('umask'),
+                config_filename,
+                'post-backup',
+                args.dry_run,
             )
     except (OSError, CalledProcessError):
-        hook.execute_hook(hooks.get('on_error'), config_filename, 'on-error', args.dry_run)
+        hook.execute_hook(
+            hooks.get('on_error'), hooks.get('umask'), config_filename, 'on-error', args.dry_run
+        )
         raise
 
 
