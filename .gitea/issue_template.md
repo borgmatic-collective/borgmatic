@@ -2,6 +2,8 @@
 
 #### Steps to reproduce (if a bug)
 
+Include (sanitized) borgmatic configuration files if applicable.
+
 #### Actual behavior (if a bug)
 
 Include (sanitized) `--verbosity 2` output if applicable.
