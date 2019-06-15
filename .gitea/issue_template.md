@@ -4,6 +4,8 @@
 
 #### Actual behavior (if a bug)
 
+Include (sanitized) `--verbosity 2` output if applicable.
+
 #### Expected behavior (if a bug)
 
 #### Other notes / implementation ideas
