@@ -51,21 +51,14 @@ def test_should_do_markup_prefers_PY_COLORS_to_stdout_tty_value():
     assert module.should_do_markup(no_color=False) is True
 
 
-@pytest.mark.parametrize('method_name', ('critical', 'error', 'warn', 'info', 'debug'))
-def test_borgmatic_logger_log_method_does_not_raise(method_name):
-    flexmock(module).should_receive('color_text')
-    flexmock(module.logging.Logger).should_receive(method_name)
+def test_console_color_formatter_format_includes_log_message():
+    plain_message = 'uh oh'
+    record = flexmock(levelno=logging.CRITICAL, msg=plain_message)
 
-    getattr(module.Borgmatic_logger('test'), method_name)(msg='hi')
+    colored_message = module.Console_color_formatter().format(record)
 
-
-def test_borgmatic_logger_handle_does_not_raise():
-    flexmock(module).should_receive('color_text')
-    flexmock(module.logging.Logger).should_receive('handle')
-
-    module.Borgmatic_logger('test').handle(
-        module.logging.makeLogRecord(dict(levelno=module.logging.CRITICAL, msg='hi'))
-    )
+    assert colored_message != plain_message
+    assert plain_message in colored_message
 
 
 def test_color_text_does_not_raise():
@@ -77,6 +70,7 @@ def test_color_text_without_color_does_not_raise():
 
 
 def test_configure_logging_probes_for_log_socket_on_linux():
+    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )
@@ -91,6 +85,7 @@ def test_configure_logging_probes_for_log_socket_on_linux():
 
 
 def test_configure_logging_probes_for_log_socket_on_macos():
+    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )
@@ -105,6 +100,7 @@ def test_configure_logging_probes_for_log_socket_on_macos():
 
 
 def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
+    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=tuple
     ).once()
@@ -114,6 +110,7 @@ def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
 
 
 def test_configure_logging_skips_syslog_if_not_found():
+    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )

@@ -2,9 +2,8 @@ import logging
 import os
 
 from borgmatic import execute
-from borgmatic.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def execute_hook(commands, umask, config_filename, description, dry_run):

@@ -6,9 +6,8 @@ import pykwalify.errors
 import ruamel.yaml
 
 from borgmatic.config import load
-from borgmatic.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def schema_filename():

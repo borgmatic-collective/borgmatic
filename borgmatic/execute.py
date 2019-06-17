@@ -1,9 +1,7 @@
 import logging
 import subprocess
 
-from borgmatic.logger import get_logger
-
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def execute_and_log_output(full_command, output_log_level, shell):

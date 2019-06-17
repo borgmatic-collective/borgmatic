@@ -5,9 +5,8 @@ import os
 import tempfile
 
 from borgmatic.execute import execute_command
-from borgmatic.logger import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _expand_directory(directory):

@@ -19,11 +19,11 @@ from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.logger import configure_logging, get_logger, should_do_markup
+from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 

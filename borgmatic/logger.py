@@ -45,52 +45,10 @@ LOG_LEVEL_TO_COLOR = {
 }
 
 
-class Borgmatic_logger(logging.Logger):
-    def critical(self, msg, *args, **kwargs):
-        color = LOG_LEVEL_TO_COLOR.get(logging.CRITICAL)
-
-        return super(Borgmatic_logger, self).critical(color_text(color, msg), *args, **kwargs)
-
-    def error(self, msg, *args, **kwargs):
-        color = LOG_LEVEL_TO_COLOR.get(logging.ERROR)
-
-        return super(Borgmatic_logger, self).error(color_text(color, msg), *args, **kwargs)
-
-    def warn(self, msg, *args, **kwargs):
-        color = LOG_LEVEL_TO_COLOR.get(logging.WARN)
-
-        return super(Borgmatic_logger, self).warn(color_text(color, msg), *args, **kwargs)
-
-    def info(self, msg, *args, **kwargs):
-        color = LOG_LEVEL_TO_COLOR.get(logging.INFO)
-
-        return super(Borgmatic_logger, self).info(color_text(color, msg), *args, **kwargs)
-
-    def debug(self, msg, *args, **kwargs):
-        color = LOG_LEVEL_TO_COLOR.get(logging.DEBUG)
-
-        return super(Borgmatic_logger, self).debug(color_text(color, msg), *args, **kwargs)
-
-    def handle(self, record):
+class Console_color_formatter(logging.Formatter):
+    def format(self, record):
         color = LOG_LEVEL_TO_COLOR.get(record.levelno)
-        colored_record = logging.makeLogRecord(
-            dict(
-                levelno=record.levelno,
-                levelname=record.levelname,
-                msg=color_text(color, record.msg),
-            )
-        )
-
-        return super(Borgmatic_logger, self).handle(colored_record)
-
-
-def get_logger(name=None):
-    '''
-    Build a logger with the given name.
-    '''
-    logging.setLoggerClass(Borgmatic_logger)
-    logger = logging.getLogger(name)
-    return logger
+        return color_text(color, record.msg)
 
 
 def color_text(color, message):
@@ -111,7 +69,7 @@ def configure_logging(console_log_level, syslog_log_level=None):
         syslog_log_level = console_log_level
 
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter('%(message)s'))
+    console_handler.setFormatter(Console_color_formatter())
     console_handler.setLevel(console_log_level)
 
     syslog_path = None
