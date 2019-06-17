@@ -1,3 +1,6 @@
+1.3.7.dev0
+ * #196: Fix for unclear error message for invalid YAML merge include.
+
 1.3.6
  * #53: Log to syslog in addition to existing console logging. Add --syslog-verbosity flag to
    customize the log level. See the documentation for more information:

@@ -54,9 +54,7 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
 
         for index, (key_node, value_node) in enumerate(node.value):
             if key_node.tag == u'tag:yaml.org,2002:merge' and value_node.tag == '!include':
-                included_value = representer.represent_mapping(
-                    tag='tag:yaml.org,2002:map', mapping=self.construct_object(value_node)
-                )
+                included_value = representer.represent_data(self.construct_object(value_node))
                 node.value[index] = (key_node, included_value)
 
         super(Include_constructor, self).flatten_mapping(node)

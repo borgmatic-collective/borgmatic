@@ -105,6 +105,10 @@ include, the local file's option takes precedent. And note that this is a
 shallow merge rather than a deep merge, so the merging does not descend into
 nested values.
 
+Note that this `<<` include merging syntax is only for merging in mappings
+(keys/values). If you'd like to include other types like scalars or lists
+directly, please see the section above about standard includes.
+
 
 ## Related documentation
 
