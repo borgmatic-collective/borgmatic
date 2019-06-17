@@ -52,7 +52,6 @@ steps:
       from_secret: docker_password
     repo: witten/borgmatic-docs
     dockerfile: docs/Dockerfile
-    purge: false
   when:
     branch:
       - master
