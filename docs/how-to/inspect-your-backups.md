@@ -42,11 +42,11 @@ using systemd, try running `journalctl -xe`. Otherwise, try viewing
 
 You can customize the log level used for syslog logging with the
 `--syslog-verbosity` flag, and this is independent from the console logging
-`--verbosity` flag described above. For instance, to disable syslog logging
-except for errors:
+`--verbosity` flag described above. For instance, to get additional
+information about the progress of the backup as it proceeds:
 
 ```bash
-borgmatic --syslog-verbosity 0
+borgmatic --syslog-verbosity 1
 ```
 
 Or to increase syslog logging to include debug spew:

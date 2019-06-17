@@ -182,7 +182,7 @@ def parse_arguments(*arguments):
         '--syslog-verbosity',
         type=int,
         choices=range(0, 3),
-        default=1,
+        default=0,
         help='Display verbose progress to syslog (from none to lots: 0, 1, or 2)',
     )
     common_group.add_argument(
