@@ -15,7 +15,7 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert parser.config_paths == config_paths
     assert parser.excludes_filename is None
     assert parser.verbosity == 0
-    assert parser.syslog_verbosity == 1
+    assert parser.syslog_verbosity == 0
     assert parser.json is False
 
 
@@ -26,7 +26,7 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
 
     assert parser.config_paths == ['myconfig', 'otherconfig']
     assert parser.verbosity == 0
-    assert parser.syslog_verbosity == 1
+    assert parser.syslog_verbosity == 0
 
 
 def test_parse_arguments_with_verbosity_overrides_default():
@@ -38,7 +38,7 @@ def test_parse_arguments_with_verbosity_overrides_default():
     assert parser.config_paths == config_paths
     assert parser.excludes_filename is None
     assert parser.verbosity == 1
-    assert parser.syslog_verbosity == 1
+    assert parser.syslog_verbosity == 0
 
 
 def test_parse_arguments_with_syslog_verbosity_overrides_default():
