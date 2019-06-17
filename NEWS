@@ -1,4 +1,4 @@
-1.3.7.dev0
+1.3.7
  * #196: Fix for unclear error message for invalid YAML merge include.
  * #197: Don't color syslog output.
  * Change default syslog verbosity to show errors only.
