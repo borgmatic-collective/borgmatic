@@ -419,7 +419,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         try:
-            logger.info('{}: Parsing configuration file'.format(config_filename))
+            logger.debug('{}: Parsing configuration file'.format(config_filename))
             configs[config_filename] = validate.parse_configuration(
                 config_filename, validate.schema_filename()
             )
