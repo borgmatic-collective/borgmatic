@@ -21,34 +21,71 @@ def test_to_bool_passes_none_through():
 
 
 def test_should_do_markup_respects_no_color_value():
-    assert module.should_do_markup(no_color=True) is False
+    assert module.should_do_markup(no_color=True, configs={}) is False
+
+
+def test_should_do_markup_respects_config_value():
+    assert (
+        module.should_do_markup(no_color=False, configs={'foo.yaml': {'output': {'color': False}}})
+        is False
+    )
+
+
+def test_should_do_markup_prefers_any_false_config_value():
+    assert (
+        module.should_do_markup(
+            no_color=False,
+            configs={
+                'foo.yaml': {'output': {'color': True}},
+                'bar.yaml': {'output': {'color': False}},
+            },
+        )
+        is False
+    )
 
 
 def test_should_do_markup_respects_PY_COLORS_environment_variable():
     flexmock(module.os.environ).should_receive('get').and_return('True')
     flexmock(module).should_receive('to_bool').and_return(True)
 
-    assert module.should_do_markup(no_color=False) is True
+    assert module.should_do_markup(no_color=False, configs={}) is True
+
+
+def test_should_do_markup_prefers_no_color_value_to_config_value():
+    assert (
+        module.should_do_markup(no_color=True, configs={'foo.yaml': {'output': {'color': True}}})
+        is False
+    )
+
+
+def test_should_do_markup_prefers_config_value_to_PY_COLORS():
+    flexmock(module.os.environ).should_receive('get').and_return('True')
+    flexmock(module).should_receive('to_bool').and_return(True)
+
+    assert (
+        module.should_do_markup(no_color=False, configs={'foo.yaml': {'output': {'color': False}}})
+        is False
+    )
 
 
 def test_should_do_markup_prefers_no_color_value_to_PY_COLORS():
     flexmock(module.os.environ).should_receive('get').and_return('True')
     flexmock(module).should_receive('to_bool').and_return(True)
 
-    assert module.should_do_markup(no_color=True) is False
+    assert module.should_do_markup(no_color=True, configs={}) is False
 
 
 def test_should_do_markup_respects_stdout_tty_value():
     flexmock(module.os.environ).should_receive('get').and_return(None)
 
-    assert module.should_do_markup(no_color=False) is False
+    assert module.should_do_markup(no_color=False, configs={}) is False
 
 
 def test_should_do_markup_prefers_PY_COLORS_to_stdout_tty_value():
     flexmock(module.os.environ).should_receive('get').and_return('True')
     flexmock(module).should_receive('to_bool').and_return(True)
 
-    assert module.should_do_markup(no_color=False) is True
+    assert module.should_do_markup(no_color=False, configs={}) is True
 
 
 def test_console_color_formatter_format_includes_log_message():

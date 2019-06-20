@@ -21,11 +21,15 @@ def to_bool(arg):
     return False
 
 
-def should_do_markup(no_color):
+def should_do_markup(no_color, configs):
     '''
-    Determine if we should enable colorama marking up.
+    Given the value of the command-line no-color argument, and a dict of configuration filename to
+    corresponding parsed configuration, determine if we should enable colorama marking up.
     '''
     if no_color:
+        return False
+
+    if any(config.get('output', {}).get('color') is False for config in configs.values()):
         return False
 
     py_colors = os.environ.get('PY_COLORS', None)

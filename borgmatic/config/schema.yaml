@@ -301,6 +301,16 @@ map:
                     this prefix. Borg placeholders can be used. See the output of
                     "borg help placeholders" for details. Defaults to "{hostname}-".
                 example: sourcehostname
+    output:
+        desc: |
+            Options for customizing borgmatic's own output and logging.
+        map:
+            color:
+                type: bool
+                desc: |
+                    Apply color to console output. Can be overridden with --no-color command-line
+                    flag. Defaults to true.
+                example: false
     hooks:
         desc: |
             Shell commands or scripts to execute before and after a backup or if an error has occurred.

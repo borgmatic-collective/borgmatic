@@ -1,5 +1,4 @@
 import pytest
-from flexmock import flexmock
 
 from borgmatic.config import validate as module
 
@@ -37,20 +36,6 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
         )
 
 
-def test_apply_logical_validation_warns_if_archive_name_format_present_without_consistency_prefix():
-    logger = flexmock(module.logger)
-    logger.should_receive('warning').once()
-
-    module.apply_logical_validation(
-        'config.yaml',
-        {
-            'storage': {'archive_name_format': '{hostname}-{now}'},
-            'retention': {'prefix': '{hostname}-'},
-            'consistency': {},
-        },
-    )
-
-
 def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
@@ -74,10 +59,7 @@ def test_apply_locical_validation_does_not_raise_if_known_repository_in_check_re
     )
 
 
-def test_apply_logical_validation_does_not_raise_or_warn_if_archive_name_format_and_prefix_present():
-    logger = flexmock(module.logger)
-    logger.should_receive('warning').never()
-
+def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_prefix_present():
     module.apply_logical_validation(
         'config.yaml',
         {

@@ -7,8 +7,6 @@ import ruamel.yaml
 
 from borgmatic.config import load
 
-logger = logging.getLogger(__name__)
-
 
 def schema_filename():
     '''
@@ -64,13 +62,6 @@ def apply_logical_validation(config_filename, parsed_configuration):
                     ),
                 ),
             )
-
-    consistency_prefix = parsed_configuration.get('consistency', {}).get('prefix')
-    if archive_name_format and not consistency_prefix:
-        logger.warning(
-            'Since version 1.1.16, if you provide `archive_name_format`, you should also'
-            ' specify `consistency.prefix`.'
-        )
 
 
 def parse_configuration(config_filename, schema_filename):

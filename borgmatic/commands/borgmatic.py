@@ -404,37 +404,50 @@ def run_actions(
             yield json.loads(json_output)
 
 
-def collect_configuration_run_summary_logs(config_filenames, args):
+def load_configurations(config_filenames):
     '''
-    Given a sequence of configuration filenames and parsed command-line arguments as an
-    argparse.ArgumentParser instance, run each configuration file and yield a series of
-    logging.LogRecord instances containing summary information about each run.
-
-    As a side effect of running through these configuration files, output their JSON results, if
-    any, to stdout.
+    Given a sequence of configuration filenames, load and validate each configuration file. Return
+    the results as a tuple of: dict of configuration filename to corresponding parsed configuration,
+    and sequence of logging.LogRecord instances containing any parse errors.
     '''
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
+    logs = []
 
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         try:
-            logger.debug('{}: Parsing configuration file'.format(config_filename))
             configs[config_filename] = validate.parse_configuration(
                 config_filename, validate.schema_filename()
             )
         except (ValueError, OSError, validate.Validation_error) as error:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.CRITICAL,
-                    levelname='CRITICAL',
-                    msg='{}: Error parsing configuration file'.format(config_filename),
-                )
-            )
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+            logs.extend(
+                [
+                    logging.makeLogRecord(
+                        dict(
+                            levelno=logging.CRITICAL,
+                            levelname='CRITICAL',
+                            msg='{}: Error parsing configuration file'.format(config_filename),
+                        )
+                    ),
+                    logging.makeLogRecord(
+                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+                    ),
+                ]
             )
 
+    return (configs, logs)
+
+
+def collect_configuration_run_summary_logs(configs, args):
+    '''
+    Given a dict of configuration filename to corresponding parsed configuration, and parsed
+    command-line arguments as an argparse.ArgumentParser instance, run each configuration file and
+    yield a series of logging.LogRecord instances containing summary information about each run.
+
+    As a side effect of running through these configuration files, output their JSON results, if
+    any, to stdout.
+    '''
     # Run cross-file validation checks.
     if args.extract or (args.list and args.archive):
         try:
@@ -472,7 +485,7 @@ def collect_configuration_run_summary_logs(config_filenames, args):
     if json_results:
         sys.stdout.write(json.dumps(json_results))
 
-    if not config_filenames:
+    if not configs:
         yield logging.makeLogRecord(
             dict(
                 levelno=logging.CRITICAL,
@@ -507,25 +520,30 @@ def main():  # pragma: no cover
         logger.critical('Error parsing arguments: {}'.format(' '.join(sys.argv)))
         exit_with_help_link()
 
-    colorama.init(autoreset=True, strip=not should_do_markup(args.no_color))
-
-    configure_logging(
-        verbosity_to_log_level(args.verbosity), verbosity_to_log_level(args.syslog_verbosity)
-    )
-
     if args.version:
         print(pkg_resources.require('borgmatic')[0].version)
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
+    configs, parse_logs = load_configurations(config_filenames)
+
+    colorama.init(autoreset=True, strip=not should_do_markup(args.no_color, configs))
+    configure_logging(
+        verbosity_to_log_level(args.verbosity), verbosity_to_log_level(args.syslog_verbosity)
+    )
+
     logger.debug('Ensuring legacy configuration is upgraded')
     convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
-    summary_logs = tuple(collect_configuration_run_summary_logs(config_filenames, args))
+    summary_logs = list(collect_configuration_run_summary_logs(configs, args))
 
     logger.info('')
     logger.info('summary:')
-    [logger.handle(log) for log in summary_logs if log.levelno >= logger.getEffectiveLevel()]
+    [
+        logger.handle(log)
+        for log in parse_logs + summary_logs
+        if log.levelno >= logger.getEffectiveLevel()
+    ]
 
     if any(log.levelno == logging.CRITICAL for log in summary_logs):
         exit_with_help_link()
