@@ -37,61 +37,41 @@ SUBPARSER_ALIASES = {
 }
 
 
-def split_arguments_by_subparser(arguments, subparsers):
+def parse_subparser_arguments(arguments, top_level_parser, subparsers):
     '''
-    Parse out the arguments destined for each subparser. Also parse out global arguments not
-    destined for a particular subparser.
-
-    More specifically, given a sequence of arguments and a subparsers object as returned by
-    argparse.ArgumentParser().add_subparsers(), split the arguments on subparser names. Return the
-    result as a dict mapping from subparser name to the arguments for that subparser. This includes
-    a special subparser named "global" for global arguments.
-    '''
-    subparser_arguments = collections.defaultdict(list)
-    subparser_name = 'global'
-
-    for argument in arguments:
-        subparser = subparsers.choices.get(argument)
-
-        if subparser is None:
-            subparser_arguments[subparser_name].append(argument)
-        else:
-            subparser_name = argument
-            subparser_arguments[subparser_name] = []
-
-    return subparser_arguments
-
-
-def parse_subparser_arguments(subparser_arguments, top_level_parser, subparsers):
-    '''
-    Given a dict mapping from subparser name to the arguments for that subparser, a top-level parser
-    (containing subparsers), and a subparsers object as returned by
-    argparse.ArgumentParser().add_subparsers(), ask each subparser to parse its own arguments and
-    the top-level parser to parse any remaining arguments.
+    Given a sequence of arguments, a top-level parser (containing subparsers), and a subparsers
+    object as returned by argparse.ArgumentParser().add_subparsers(), ask each subparser to parse
+    its own arguments and the top-level parser to parse any remaining arguments.
 
     Return the result as a dict mapping from subparser name (or "global") to a parsed namespace of
     arguments.
     '''
     parsed_arguments = collections.OrderedDict()
-    global_arguments = subparser_arguments['global']
+    remaining_arguments = list(arguments)
     alias_to_subparser_name = {
         alias: subparser_name
         for subparser_name, aliases in SUBPARSER_ALIASES.items()
         for alias in aliases
     }
 
-    for subparser_name, arguments in subparser_arguments.items():
-        if subparser_name == 'global':
+    # Give each subparser a shot at parsing all arguments.
+    for subparser_name, subparser in subparsers.choices.items():
+        if subparser_name not in arguments:
             continue
 
+        remaining_arguments.remove(subparser_name)
         canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
-        subparser = subparsers.choices.get(canonical_name)
 
         parsed, remaining = subparser.parse_known_args(arguments)
         parsed_arguments[canonical_name] = parsed
-        global_arguments.extend(remaining)
 
-    parsed_arguments['global'] = top_level_parser.parse_args(global_arguments)
+    # Then ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
+    # are global arguments.
+    for subparser_name in parsed_arguments.keys():
+        subparser = subparsers.choices[subparser_name]
+        parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
+
+    parsed_arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
     return parsed_arguments
 
@@ -99,7 +79,7 @@ def parse_subparser_arguments(subparser_arguments, top_level_parser, subparsers)
 def parse_arguments(*arguments):
     '''
     Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as an argparse.ArgumentParser instance.
+    them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
     '''
     config_paths = collect.get_default_config_paths()
 
@@ -317,8 +297,7 @@ def parse_arguments(*arguments):
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
-    subparser_arguments = split_arguments_by_subparser(arguments, subparsers)
-    parsed_arguments = parse_subparser_arguments(subparser_arguments, top_level_parser, subparsers)
+    parsed_arguments = parse_subparser_arguments(arguments, top_level_parser, subparsers)
 
     if parsed_arguments.excludes_filename:
         raise ValueError(
@@ -328,40 +307,19 @@ def parse_arguments(*arguments):
     if 'init' in parsed_arguments and parsed_arguments['global'].dry_run:
         raise ValueError('The init action cannot be used with the --dry-run option')
 
-    if args.progress and not (args.create or args.extract):
+    if 'list' in parsed_arguments and 'info' in parsed_arguments and parged_arguments['list'].json and parged_arguments['info'].json:
         raise ValueError(
-            'The --progress option can only be used with the --create and --extract options'
-        )
-
-    if args.json and not (args.create or args.list or args.info):
-        raise ValueError(
-            'The --json option can only be used with the --create, --list, or --info options'
-        )
-
-    if args.json and args.list and args.info:
-        raise ValueError(
-            'With the --json option, options --list and --info cannot be used together'
+            'With the --json option, list and info actions cannot be used together'
         )
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
-    if (
-        not args.init
-        and not args.prune
-        and not args.create
-        and not args.check
-        and not args.extract
-        and not args.list
-        and not args.info
-    ):
-        args.prune = True
-        args.create = True
-        args.check = True
+    if set(parsed_arguments) == {'global'}:
+        parsed_arguments['prune'] = prune_parser.parse_known_args(arguments)
+        parsed_arguments['create'] = create_parser.parse_known_args(arguments)
+        parsed_arguments['check'] = check_parser.parse_known_args(arguments)
 
-    if args.stats and not (args.create or args.prune):
-        raise ValueError('The --stats option can only be used when creating or pruning archives')
-
-    return args
+    return parsed_arguments
 
 
 def run_configuration(config_filename, config, args):  # pragma: no cover
