@@ -37,7 +37,7 @@ SUBPARSER_ALIASES = {
 }
 
 
-def parse_subparser_arguments(arguments, top_level_parser, subparsers):
+def parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers):
     '''
     Given a sequence of arguments, a top-level parser (containing subparsers), and a subparsers
     object as returned by argparse.ArgumentParser().add_subparsers(), ask each subparser to parse
@@ -46,8 +46,8 @@ def parse_subparser_arguments(arguments, top_level_parser, subparsers):
     Return the result as a dict mapping from subparser name (or "global") to a parsed namespace of
     arguments.
     '''
-    parsed_arguments = collections.OrderedDict()
-    remaining_arguments = list(arguments)
+    arguments = collections.OrderedDict()
+    remaining_arguments = list(unparsed_arguments)
     alias_to_subparser_name = {
         alias: subparser_name
         for subparser_name, aliases in SUBPARSER_ALIASES.items()
@@ -56,27 +56,27 @@ def parse_subparser_arguments(arguments, top_level_parser, subparsers):
 
     # Give each subparser a shot at parsing all arguments.
     for subparser_name, subparser in subparsers.choices.items():
-        if subparser_name not in arguments:
+        if subparser_name not in unparsed_arguments:
             continue
 
         remaining_arguments.remove(subparser_name)
         canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
 
-        parsed, remaining = subparser.parse_known_args(arguments)
-        parsed_arguments[canonical_name] = parsed
+        parsed, remaining = subparser.parse_known_args(unparsed_arguments)
+        arguments[canonical_name] = parsed
 
     # Then ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
     # are global arguments.
-    for subparser_name in parsed_arguments.keys():
+    for subparser_name in arguments.keys():
         subparser = subparsers.choices[subparser_name]
         parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
 
-    parsed_arguments['global'] = top_level_parser.parse_args(remaining_arguments)
+    arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
-    return parsed_arguments
+    return arguments
 
 
-def parse_arguments(*arguments):
+def parse_arguments(*unparsed_arguments):
     '''
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
@@ -153,7 +153,10 @@ def parse_arguments(*arguments):
     )
     init_group = init_parser.add_argument_group('init arguments')
     init_group.add_argument(
-        '-e', '--encryption', dest='encryption_mode', help='Borg repository encryption mode',
+        '-e',
+        '--encryption',
+        dest='encryption_mode',
+        help='Borg repository encryption mode',
         required=True,
     )
     init_group.add_argument(
@@ -167,9 +170,7 @@ def parse_arguments(*arguments):
         dest='storage_quota',
         help='Create a repository with a fixed storage quota',
     )
-    init_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    init_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     prune_parser = subparsers.add_parser(
         'prune',
@@ -186,9 +187,7 @@ def parse_arguments(*arguments):
         action='store_true',
         help='Display statistics of archive',
     )
-    prune_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     create_parser = subparsers.add_parser(
         'create',
@@ -215,9 +214,7 @@ def parse_arguments(*arguments):
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
-    create_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    create_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     check_parser = subparsers.add_parser(
         'check',
@@ -227,9 +224,7 @@ def parse_arguments(*arguments):
         add_help=False,
     )
     check_group = check_parser.add_argument_group('check arguments')
-    check_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    check_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     extract_parser = subparsers.add_parser(
         'extract',
@@ -243,9 +238,7 @@ def parse_arguments(*arguments):
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    extract_group.add_argument(
-        '--archive', help='Name of archive to operate on', required=True,
-    )
+    extract_group.add_argument('--archive', help='Name of archive to operate on', required=True)
     extract_group.add_argument(
         '--restore-path',
         nargs='+',
@@ -264,7 +257,10 @@ def parse_arguments(*arguments):
     )
 
     list_parser = subparsers.add_parser(
-        'list', aliases=SUBPARSER_ALIASES['list'], help='List archives', description='List archives',
+        'list',
+        aliases=SUBPARSER_ALIASES['list'],
+        help='List archives',
+        description='List archives',
         add_help=False,
     )
     list_group = list_parser.add_argument_group('list arguments')
@@ -272,15 +268,11 @@ def parse_arguments(*arguments):
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    list_group.add_argument(
-        '--archive', help='Name of archive to operate on'
-    )
+    list_group.add_argument('--archive', help='Name of archive to operate on')
     list_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
-    list_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    list_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     info_parser = subparsers.add_parser(
         'info',
@@ -293,38 +285,40 @@ def parse_arguments(*arguments):
     info_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
-    info_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    parsed_arguments = parse_subparser_arguments(arguments, top_level_parser, subparsers)
+    arguments = parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers)
 
-    if parsed_arguments.excludes_filename:
+    if arguments['global'].excludes_filename:
         raise ValueError(
             'The --excludes option has been replaced with exclude_patterns in configuration'
         )
 
-    if 'init' in parsed_arguments and parsed_arguments['global'].dry_run:
+    if 'init' in arguments and arguments['global'].dry_run:
         raise ValueError('The init action cannot be used with the --dry-run option')
 
-    if 'list' in parsed_arguments and 'info' in parsed_arguments and parged_arguments['list'].json and parged_arguments['info'].json:
-        raise ValueError(
-            'With the --json option, list and info actions cannot be used together'
-        )
+    if (
+        'list' in arguments
+        and 'info' in arguments
+        and parged_arguments['list'].json
+        and parged_arguments['info'].json
+    ):
+        raise ValueError('With the --json option, list and info actions cannot be used together')
 
     # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
     # defaults: Mutate the given arguments to enable the default actions.
-    if set(parsed_arguments) == {'global'}:
-        parsed_arguments['prune'] = prune_parser.parse_known_args(arguments)
-        parsed_arguments['create'] = create_parser.parse_known_args(arguments)
-        parsed_arguments['check'] = check_parser.parse_known_args(arguments)
+    if set(arguments) == {'global'}:
+        arguments['prune'], remaining = prune_parser.parse_known_args(unparsed_arguments)
+        arguments['create'], remaining = create_parser.parse_known_args(unparsed_arguments)
+        arguments['check'], remaining = check_parser.parse_known_args(unparsed_arguments)
 
-    return parsed_arguments
+    return arguments
 
 
-def run_configuration(config_filename, config, args):  # pragma: no cover
+def run_configuration(config_filename, config, arguments):  # pragma: no cover
     '''
-    Given a config filename and the corresponding parsed config dict, execute its defined pruning,
+    Given a config filename, the corresponding parsed config dict, and command-line arguments as a
+    dict from subparser name to a namespace of parsed arguments, execute its defined pruning,
     backups, consistency checks, and/or other actions.
 
     Yield JSON output strings from executing any actions that produce JSON.
@@ -333,24 +327,25 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
         config.get(section_name, {})
         for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
     )
+    global_arguments = arguments['global']
 
     try:
         local_path = location.get('local_path', 'borg')
         remote_path = location.get('remote_path')
         borg_environment.initialize(storage)
 
-        if args.create:
+        if 'create' in arguments:
             hook.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
                 config_filename,
                 'pre-backup',
-                args.dry_run,
+                global_arguments.dry_run,
             )
 
         for repository_path in location['repositories']:
             yield from run_actions(
-                args=args,
+                arguments=arguments,
                 location=location,
                 storage=storage,
                 retention=retention,
@@ -360,23 +355,35 @@ def run_configuration(config_filename, config, args):  # pragma: no cover
                 repository_path=repository_path,
             )
 
-        if args.create:
+        if 'create' in arguments:
             hook.execute_hook(
                 hooks.get('after_backup'),
                 hooks.get('umask'),
                 config_filename,
                 'post-backup',
-                args.dry_run,
+                global_arguments.dry_run,
             )
     except (OSError, CalledProcessError):
         hook.execute_hook(
-            hooks.get('on_error'), hooks.get('umask'), config_filename, 'on-error', args.dry_run
+            hooks.get('on_error'),
+            hooks.get('umask'),
+            config_filename,
+            'on-error',
+            global_arguments.dry_run,
         )
         raise
 
 
 def run_actions(
-    *, args, location, storage, retention, consistency, local_path, remote_path, repository_path
+    *,
+    arguments,
+    location,
+    storage,
+    retention,
+    consistency,
+    local_path,
+    remote_path,
+    repository_path
 ):  # pragma: no cover
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, several different
@@ -386,79 +393,94 @@ def run_actions(
     Yield JSON output strings from executing any actions that produce JSON.
     '''
     repository = os.path.expanduser(repository_path)
-    dry_run_label = ' (dry run; not making any changes)' if args.dry_run else ''
-    if args.init:
+    global_arguments = arguments['global']
+    dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
+    if 'init' in arguments:
         logger.info('{}: Initializing repository'.format(repository))
         borg_init.initialize_repository(
             repository,
-            args.encryption_mode,
-            args.append_only,
-            args.storage_quota,
+            arguments['init'].encryption_mode,
+            arguments['init'].append_only,
+            arguments['init'].storage_quota,
             local_path=local_path,
             remote_path=remote_path,
         )
-    if args.prune:
+    if 'prune' in arguments:
         logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
         borg_prune.prune_archives(
-            args.dry_run,
+            global_arguments.dry_run,
             repository,
             storage,
             retention,
             local_path=local_path,
             remote_path=remote_path,
-            stats=args.stats,
+            stats=arguments['prune'].stats,
         )
-    if args.create:
+    if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
         json_output = borg_create.create_archive(
-            args.dry_run,
+            global_arguments.dry_run,
             repository,
             location,
             storage,
             local_path=local_path,
             remote_path=remote_path,
-            progress=args.progress,
-            stats=args.stats,
-            json=args.json,
+            progress=arguments['create'].progress,
+            stats=arguments['create'].stats,
+            json=arguments['create'].json,
         )
         if json_output:
             yield json.loads(json_output)
-    if args.check and checks.repository_enabled_for_checks(repository, consistency):
+    if 'check' in arguments and checks.repository_enabled_for_checks(
+        repository, consistency
+    ):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
             repository, storage, consistency, local_path=local_path, remote_path=remote_path
         )
-    if args.extract:
-        if args.repository is None or repository == args.repository:
-            logger.info('{}: Extracting archive {}'.format(repository, args.archive))
+    if 'extract' in arguments:
+        if (
+            arguments['extract'].repository is None
+            or repository == arguments['extract'].repository
+        ):
+            logger.info(
+                '{}: Extracting archive {}'.format(repository, arguments['extract'].archive)
+            )
             borg_extract.extract_archive(
-                args.dry_run,
+                global_arguments.dry_run,
                 repository,
-                args.archive,
-                args.restore_paths,
+                arguments['extract'].archive,
+                arguments['extract'].restore_paths,
                 location,
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,
-                progress=args.progress,
+                progress=arguments['extract'].progress,
             )
-    if args.list:
-        if args.repository is None or repository == args.repository:
+    if 'list' in arguments:
+        if (
+            arguments['list'].repository is None
+            or repository == arguments['list'].repository
+        ):
             logger.info('{}: Listing archives'.format(repository))
             json_output = borg_list.list_archives(
                 repository,
                 storage,
-                args.archive,
+                arguments['list'].archive,
                 local_path=local_path,
                 remote_path=remote_path,
-                json=args.json,
+                json=arguments['list'].json,
             )
             if json_output:
                 yield json.loads(json_output)
-    if args.info:
+    if 'info' in arguments:
         logger.info('{}: Displaying summary info for archives'.format(repository))
         json_output = borg_info.display_archives_info(
-            repository, storage, local_path=local_path, remote_path=remote_path, json=args.json
+            repository,
+            storage,
+            local_path=local_path,
+            remote_path=remote_path,
+            json=arguments['info'].json,
         )
         if json_output:
             yield json.loads(json_output)
@@ -499,19 +521,27 @@ def load_configurations(config_filenames):
     return (configs, logs)
 
 
-def collect_configuration_run_summary_logs(configs, args):
+def collect_configuration_run_summary_logs(configs, arguments):
     '''
     Given a dict of configuration filename to corresponding parsed configuration, and parsed
-    command-line arguments as an argparse.ArgumentParser instance, run each configuration file and
-    yield a series of logging.LogRecord instances containing summary information about each run.
+    command-line arguments as a dict from subparser name to a parsed namespace of arguments, run
+    each configuration file and yield a series of logging.LogRecord instances containing summary
+    information about each run.
 
     As a side effect of running through these configuration files, output their JSON results, if
     any, to stdout.
     '''
     # Run cross-file validation checks.
-    if args.extract or (args.list and args.archive):
+    if 'extract' in arguments:
+        repository = arguments['extract'].repository
+    elif 'list' in arguments and arguments['list'].archive:
+        repository = arguments['list'].repository
+    else:
+        repository = None
+
+    if repository:
         try:
-            validate.guard_configuration_contains_repository(args.repository, configs)
+            validate.guard_configuration_contains_repository(repository, configs)
         except ValueError as error:
             yield logging.makeLogRecord(
                 dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
@@ -522,7 +552,7 @@ def collect_configuration_run_summary_logs(configs, args):
     json_results = []
     for config_filename, config in configs.items():
         try:
-            json_results.extend(list(run_configuration(config_filename, config, args)))
+            json_results.extend(list(run_configuration(config_filename, config, arguments)))
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
@@ -550,7 +580,9 @@ def collect_configuration_run_summary_logs(configs, args):
             dict(
                 levelno=logging.CRITICAL,
                 levelname='CRITICAL',
-                msg='{}: No configuration files found'.format(' '.join(args.config_paths)),
+                msg='{}: No configuration files found'.format(
+                    ' '.join(arguments['global'].config_paths)
+                ),
             )
         )
 
@@ -568,7 +600,7 @@ def main():  # pragma: no cover
     configure_signals()
 
     try:
-        args = parse_arguments(*sys.argv[1:])
+        arguments = parse_arguments(*sys.argv[1:])
     except ValueError as error:
         configure_logging(logging.CRITICAL)
         logger.critical(error)
@@ -580,22 +612,24 @@ def main():  # pragma: no cover
         logger.critical('Error parsing arguments: {}'.format(' '.join(sys.argv)))
         exit_with_help_link()
 
-    if args.version:
+    global_arguments = arguments['global']
+    if global_arguments.version:
         print(pkg_resources.require('borgmatic')[0].version)
         sys.exit(0)
 
-    config_filenames = tuple(collect.collect_config_filenames(args.config_paths))
+    config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, parse_logs = load_configurations(config_filenames)
 
-    colorama.init(autoreset=True, strip=not should_do_markup(args.no_color, configs))
+    colorama.init(autoreset=True, strip=not should_do_markup(global_arguments.no_color, configs))
     configure_logging(
-        verbosity_to_log_level(args.verbosity), verbosity_to_log_level(args.syslog_verbosity)
+        verbosity_to_log_level(global_arguments.verbosity),
+        verbosity_to_log_level(global_arguments.syslog_verbosity),
     )
 
     logger.debug('Ensuring legacy configuration is upgraded')
     convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
-    summary_logs = list(collect_configuration_run_summary_logs(configs, args))
+    summary_logs = list(collect_configuration_run_summary_logs(configs, arguments))
 
     logger.info('')
     logger.info('summary:')
