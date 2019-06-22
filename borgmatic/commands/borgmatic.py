@@ -26,6 +26,74 @@ from borgmatic.verbosity import verbosity_to_log_level
 logger = logging.getLogger(__name__)
 
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
+SUBPARSER_ALIASES = {
+    'init': ['--init', '-I'],
+    'prune': ['--prune', '-p'],
+    'create': ['--create', '-C'],
+    'check': ['--check', '-k'],
+    'extract': ['--extract', '-x'],
+    'list': ['--list', '-l'],
+    'info': ['--info', '-i'],
+}
+
+
+def split_arguments_by_subparser(arguments, subparsers):
+    '''
+    Parse out the arguments destined for each subparser. Also parse out global arguments not
+    destined for a particular subparser.
+
+    More specifically, given a sequence of arguments and a subparsers object as returned by
+    argparse.ArgumentParser().add_subparsers(), split the arguments on subparser names. Return the
+    result as a dict mapping from subparser name to the arguments for that subparser. This includes
+    a special subparser named "global" for global arguments.
+    '''
+    subparser_arguments = collections.defaultdict(list)
+    subparser_name = 'global'
+
+    for argument in arguments:
+        subparser = subparsers.choices.get(argument)
+
+        if subparser is None:
+            subparser_arguments[subparser_name].append(argument)
+        else:
+            subparser_name = argument
+            subparser_arguments[subparser_name] = []
+
+    return subparser_arguments
+
+
+def parse_subparser_arguments(subparser_arguments, top_level_parser, subparsers):
+    '''
+    Given a dict mapping from subparser name to the arguments for that subparser, a top-level parser
+    (containing subparsers), and a subparsers object as returned by
+    argparse.ArgumentParser().add_subparsers(), ask each subparser to parse its own arguments and
+    the top-level parser to parse any remaining arguments.
+
+    Return the result as a dict mapping from subparser name (or "global") to a parsed namespace of
+    arguments.
+    '''
+    parsed_arguments = collections.OrderedDict()
+    global_arguments = subparser_arguments['global']
+    alias_to_subparser_name = {
+        alias: subparser_name
+        for subparser_name, aliases in SUBPARSER_ALIASES.items()
+        for alias in aliases
+    }
+
+    for subparser_name, arguments in subparser_arguments.items():
+        if subparser_name == 'global':
+            continue
+
+        canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
+        subparser = subparsers.choices.get(canonical_name)
+
+        parsed, remaining = subparser.parse_known_args(arguments)
+        parsed_arguments[canonical_name] = parsed
+        global_arguments.extend(remaining)
+
+    parsed_arguments['global'] = top_level_parser.parse_args(global_arguments)
+
+    return parsed_arguments
 
 
 def parse_arguments(*arguments):
@@ -35,58 +103,78 @@ def parse_arguments(*arguments):
     '''
     config_paths = collect.get_default_config_paths()
 
-    parser = ArgumentParser(
+    global_parser = ArgumentParser(add_help=False)
+    global_group = global_parser.add_argument_group('global arguments')
+
+    global_group.add_argument(
+        '-c',
+        '--config',
+        nargs='*',
+        dest='config_paths',
+        default=config_paths,
+        help='Configuration filenames or directories, defaults to: {}'.format(
+            ' '.join(config_paths)
+        ),
+    )
+    global_group.add_argument(
+        '--excludes',
+        dest='excludes_filename',
+        help='Deprecated in favor of exclude_patterns within configuration',
+    )
+    global_group.add_argument(
+        '-n',
+        '--dry-run',
+        dest='dry_run',
+        action='store_true',
+        help='Go through the motions, but do not actually write to any repositories',
+    )
+    global_group.add_argument(
+        '-nc', '--no-color', dest='no_color', action='store_true', help='Disable colored output'
+    )
+    global_group.add_argument(
+        '-v',
+        '--verbosity',
+        type=int,
+        choices=range(0, 3),
+        default=0,
+        help='Display verbose progress to the console (from none to lots: 0, 1, or 2)',
+    )
+    global_group.add_argument(
+        '--syslog-verbosity',
+        type=int,
+        choices=range(0, 3),
+        default=0,
+        help='Display verbose progress to syslog (from none to lots: 0, 1, or 2)',
+    )
+    global_group.add_argument(
+        '--version',
+        dest='version',
+        default=False,
+        action='store_true',
+        help='Display installed version number of borgmatic and exit',
+    )
+
+    top_level_parser = ArgumentParser(
         description='''
             A simple wrapper script for the Borg backup software that creates and prunes backups.
             If none of the action options are given, then borgmatic defaults to: prune, create, and
             check archives.
             ''',
+        parents=[global_parser],
+    )
+
+    subparsers = top_level_parser.add_subparsers(title='actions', metavar='')
+    init_parser = subparsers.add_parser(
+        'init',
+        aliases=SUBPARSER_ALIASES['init'],
+        help='Initialize an empty Borg repository',
+        description='Initialize an empty Borg repository',
         add_help=False,
     )
-
-    actions_group = parser.add_argument_group('actions')
-    actions_group.add_argument(
-        '-I', '--init', dest='init', action='store_true', help='Initialize an empty Borg repository'
-    )
-    actions_group.add_argument(
-        '-p',
-        '--prune',
-        dest='prune',
-        action='store_true',
-        help='Prune archives according to the retention policy',
-    )
-    actions_group.add_argument(
-        '-C',
-        '--create',
-        dest='create',
-        action='store_true',
-        help='Create archives (actually perform backups)',
-    )
-    actions_group.add_argument(
-        '-k', '--check', dest='check', action='store_true', help='Check archives for consistency'
-    )
-
-    actions_group.add_argument(
-        '-x',
-        '--extract',
-        dest='extract',
-        action='store_true',
-        help='Extract a named archive to the current directory',
-    )
-    actions_group.add_argument(
-        '-l', '--list', dest='list', action='store_true', help='List archives'
-    )
-    actions_group.add_argument(
-        '-i',
-        '--info',
-        dest='info',
-        action='store_true',
-        help='Display summary information on archives',
-    )
-
-    init_group = parser.add_argument_group('options for --init')
+    init_group = init_parser.add_argument_group('init arguments')
     init_group.add_argument(
-        '-e', '--encryption', dest='encryption_mode', help='Borg repository encryption mode'
+        '-e', '--encryption', dest='encryption_mode', help='Borg repository encryption mode',
+        required=True,
     )
     init_group.add_argument(
         '--append-only',
@@ -99,132 +187,146 @@ def parse_arguments(*arguments):
         dest='storage_quota',
         help='Create a repository with a fixed storage quota',
     )
+    init_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
-    prune_group = parser.add_argument_group('options for --prune')
-    stats_argument = prune_group.add_argument(
+    prune_parser = subparsers.add_parser(
+        'prune',
+        aliases=SUBPARSER_ALIASES['prune'],
+        help='Prune archives according to the retention policy',
+        description='Prune archives according to the retention policy',
+        add_help=False,
+    )
+    prune_group = prune_parser.add_argument_group('prune arguments')
+    prune_group.add_argument(
         '--stats',
         dest='stats',
         default=False,
         action='store_true',
         help='Display statistics of archive',
     )
+    prune_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
-    create_group = parser.add_argument_group('options for --create')
-    progress_argument = create_group.add_argument(
+    create_parser = subparsers.add_parser(
+        'create',
+        aliases=SUBPARSER_ALIASES['create'],
+        help='Create archives (actually perform backups)',
+        description='Create archives (actually perform backups)',
+        add_help=False,
+    )
+    create_group = create_parser.add_argument_group('create arguments')
+    create_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
         action='store_true',
         help='Display progress for each file as it is processed',
     )
-    create_group._group_actions.append(stats_argument)
-    json_argument = create_group.add_argument(
+    create_group.add_argument(
+        '--stats',
+        dest='stats',
+        default=False,
+        action='store_true',
+        help='Display statistics of archive',
+    )
+    create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
+    create_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
-    extract_group = parser.add_argument_group('options for --extract')
-    repository_argument = extract_group.add_argument(
+    check_parser = subparsers.add_parser(
+        'check',
+        aliases=SUBPARSER_ALIASES['check'],
+        help='Check archives for consistency',
+        description='Check archives for consistency',
+        add_help=False,
+    )
+    check_group = check_parser.add_argument_group('check arguments')
+    check_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    extract_parser = subparsers.add_parser(
+        'extract',
+        aliases=SUBPARSER_ALIASES['extract'],
+        help='Extract a named archive to the current directory',
+        description='Extract a named archive to the current directory',
+        add_help=False,
+    )
+    extract_group = extract_parser.add_argument_group('extract arguments')
+    extract_group.add_argument(
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    archive_argument = extract_group.add_argument('--archive', help='Name of archive to operate on')
+    extract_group.add_argument(
+        '--archive', help='Name of archive to operate on', required=True,
+    )
     extract_group.add_argument(
         '--restore-path',
         nargs='+',
         dest='restore_paths',
         help='Paths to restore from archive, defaults to the entire archive',
     )
-    extract_group._group_actions.append(progress_argument)
-
-    list_group = parser.add_argument_group('options for --list')
-    list_group._group_actions.append(repository_argument)
-    list_group._group_actions.append(archive_argument)
-    list_group._group_actions.append(json_argument)
-
-    info_group = parser.add_argument_group('options for --info')
-    info_group._group_actions.append(json_argument)
-
-    common_group = parser.add_argument_group('common options')
-    common_group.add_argument(
-        '-c',
-        '--config',
-        nargs='+',
-        dest='config_paths',
-        default=config_paths,
-        help='Configuration filenames or directories, defaults to: {}'.format(
-            ' '.join(config_paths)
-        ),
-    )
-    common_group.add_argument(
-        '--excludes',
-        dest='excludes_filename',
-        help='Deprecated in favor of exclude_patterns within configuration',
-    )
-    common_group.add_argument(
-        '-n',
-        '--dry-run',
-        dest='dry_run',
-        action='store_true',
-        help='Go through the motions, but do not actually write to any repositories',
-    )
-    common_group.add_argument(
-        '-nc', '--no-color', dest='no_color', action='store_true', help='Disable colored output'
-    )
-    common_group.add_argument(
-        '-v',
-        '--verbosity',
-        type=int,
-        choices=range(0, 3),
-        default=0,
-        help='Display verbose progress to the console (from none to lots: 0, 1, or 2)',
-    )
-    common_group.add_argument(
-        '--syslog-verbosity',
-        type=int,
-        choices=range(0, 3),
-        default=0,
-        help='Display verbose progress to syslog (from none to lots: 0, 1, or 2)',
-    )
-    common_group.add_argument(
-        '--version',
-        dest='version',
+    extract_group.add_argument(
+        '--progress',
+        dest='progress',
         default=False,
         action='store_true',
-        help='Display installed version number of borgmatic and exit',
+        help='Display progress for each file as it is processed',
     )
-    common_group.add_argument('--help', action='help', help='Show this help information and exit')
+    extract_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
-    args = parser.parse_args(arguments)
+    list_parser = subparsers.add_parser(
+        'list', aliases=SUBPARSER_ALIASES['list'], help='List archives', description='List archives',
+        add_help=False,
+    )
+    list_group = list_parser.add_argument_group('list arguments')
+    list_group.add_argument(
+        '--repository',
+        help='Path of repository to use, defaults to the configured repository if there is only one',
+    )
+    list_group.add_argument(
+        '--archive', help='Name of archive to operate on'
+    )
+    list_group.add_argument(
+        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+    )
+    list_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
-    if args.excludes_filename:
+    info_parser = subparsers.add_parser(
+        'info',
+        aliases=SUBPARSER_ALIASES['info'],
+        help='Display summary information on archives',
+        description='Display summary information on archives',
+        add_help=False,
+    )
+    info_group = info_parser.add_argument_group('info arguments')
+    info_group.add_argument(
+        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+    )
+    info_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    subparser_arguments = split_arguments_by_subparser(arguments, subparsers)
+    parsed_arguments = parse_subparser_arguments(subparser_arguments, top_level_parser, subparsers)
+
+    if parsed_arguments.excludes_filename:
         raise ValueError(
             'The --excludes option has been replaced with exclude_patterns in configuration'
         )
 
-    if (args.encryption_mode or args.append_only or args.storage_quota) and not args.init:
-        raise ValueError(
-            'The --encryption, --append-only, and --storage-quota options can only be used with the --init option'
-        )
-
-    if args.init and args.dry_run:
-        raise ValueError('The --init option cannot be used with the --dry-run option')
-    if args.init and not args.encryption_mode:
-        raise ValueError('The --encryption option is required with the --init option')
-
-    if not args.extract:
-        if not args.list:
-            if args.repository:
-                raise ValueError(
-                    'The --repository option can only be used with the --extract and --list options'
-                )
-            if args.archive:
-                raise ValueError(
-                    'The --archive option can only be used with the --extract and --list options'
-                )
-        if args.restore_paths:
-            raise ValueError('The --restore-path option can only be used with the --extract option')
-    if args.extract and not args.archive:
-        raise ValueError('The --archive option is required with the --extract option')
+    if 'init' in parsed_arguments and parsed_arguments['global'].dry_run:
+        raise ValueError('The init action cannot be used with the --dry-run option')
 
     if args.progress and not (args.create or args.extract):
         raise ValueError(
