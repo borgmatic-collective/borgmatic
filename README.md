@@ -2,7 +2,7 @@
 title: borgmatic
 permalink: index.html
 ---
-<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg)</a>
+<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg?ref=refs/heads/master)</a>
 
 ## Overview
 
