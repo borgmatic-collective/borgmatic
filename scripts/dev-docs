@@ -3,4 +3,8 @@
 set -e
 
 docker build --tag borgmatic-docs --file docs/Dockerfile .
+echo
+echo "You can view dev docs at http://localhost:8080"
+echo "Note that links within these docs will go to the online docs, so you will need to fiddle with URLs manually to stay in the dev docs."
+echo
 docker run --interactive --tty --publish 8080:80 --rm borgmatic-docs
