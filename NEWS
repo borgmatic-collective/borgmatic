@@ -1,5 +1,5 @@
-1.3.9.dev0
- * #195: Switch to command-like actions as more traditional sub-commands, e.g. "borgmatic create",
+1.3.9
+ * #195: Switch to command-line actions as more traditional sub-commands, e.g. "borgmatic create",
    "borgmatic prune", etc. However, the classic dashed options like "--create" still work!
 
 1.3.8

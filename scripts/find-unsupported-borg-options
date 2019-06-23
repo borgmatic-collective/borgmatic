@@ -18,7 +18,7 @@ mv temp.yaml.uncommented temp.yaml
 for sub_command in prune create check list info; do
     echo "********** borg $sub_command **********"
 
-    for line in $(borgmatic --config temp.yaml --$sub_command -v 2 2>&1 | grep "borg\w* $sub_command") ; do
+    for line in $(borgmatic --config temp.yaml $sub_command -v 2 2>&1 | grep "borg\w* $sub_command") ; do
         echo "$line" | grep '^-' >> borgmatic_borg_flags
     done
     sort borgmatic_borg_flags > borgmatic_borg_flags.sorted
