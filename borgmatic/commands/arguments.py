@@ -127,7 +127,11 @@ def parse_arguments(*unparsed_arguments):
         parents=[global_parser],
     )
 
-    subparsers = top_level_parser.add_subparsers(title='actions', metavar='')
+    subparsers = top_level_parser.add_subparsers(
+        title='actions',
+        metavar='',
+        help='Specify zero or more actions. Defaults to prune, create, and check. Use --help with action for details:',
+    )
     init_parser = subparsers.add_parser(
         'init',
         aliases=SUBPARSER_ALIASES['init'],
