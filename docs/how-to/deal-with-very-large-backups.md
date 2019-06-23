@@ -17,15 +17,15 @@ run borgmatic's pruning, creating, or checking actions separately. For
 instance, the the following optional flags are available:
 
 ```bash
-borgmatic --prune
-borgmatic --create
-borgmatic --check
+borgmatic prune
+borgmatic create
+borgmatic check
 ```
 
 You can run with only one of these flags provided, or you can mix and match
 any number of them in a single borgmatic run. This supports approaches like
-making backups with `--create` on a frequent schedule, while only running
-expensive consistency checks with `--check` on a much less frequent basis from
+making backups with `create` on a frequent schedule, while only running
+expensive consistency checks with `check` on a much less frequent basis from
 a separate cron job.
 
 ### Consistency check configuration

@@ -5,10 +5,10 @@ title: How to restore a backup
 
 When the worst happens—or you want to test your backups—the first step is
 to figure out which archive to restore. A good way to do that is to use the
-`--list` action:
+`list` action:
 
 ```bash
-borgmatic --list
+borgmatic list
 ```
 
 That should yield output looking something like:
@@ -22,7 +22,7 @@ Assuming that you want to restore the archive with the most up-to-date files
 and therefore the latest timestamp, run a command like:
 
 ```bash
-borgmatic --extract --archive host-2019-01-02T04:06:07.080910
+borgmatic extract --archive host-2019-01-02T04:06:07.080910
 ```
 
 The `--archive` value is the name of the archive to restore. This extracts the
@@ -33,13 +33,13 @@ in the right place before running the command.
 ## Repository selection
 
 If you have a single repository in your borgmatic configuration file(s), no
-problem: the `--extract` action figures out which repository to use.
+problem: the `extract` action figures out which repository to use.
 
 But if you have multiple repositories configured, then you'll need to specify
 the repository path containing the archive to extract. Here's an example:
 
 ```bash
-borgmatic --extract --repository repo.borg --archive host-2019-...
+borgmatic extract --repository repo.borg --archive host-2019-...
 ```
 
 ## Restore particular files
@@ -49,7 +49,7 @@ everything from an archive. To do that, tack on one or more `--restore-path`
 values. For instance:
 
 ```bash
-borgmatic --extract --archive host-2019-... --restore-path /path/1 /path/2
+borgmatic extract --archive host-2019-... --restore-path /path/1 /path/2
 ```
 
 Like a whole-archive restore, this also restores into the current directory.
