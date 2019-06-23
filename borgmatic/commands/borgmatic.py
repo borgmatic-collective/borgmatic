@@ -54,7 +54,7 @@ def parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers):
         for alias in aliases
     }
 
-    # Give each subparser a shot at parsing all arguments.
+    # Give each requested action's subparser a shot at parsing all arguments.
     for subparser_name, subparser in subparsers.choices.items():
         if subparser_name not in unparsed_arguments:
             continue
@@ -64,6 +64,13 @@ def parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers):
 
         parsed, remaining = subparser.parse_known_args(unparsed_arguments)
         arguments[canonical_name] = parsed
+
+    # If no actions are explicitly requested, assume defaults: prune, create, and check.
+    if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
+        for subparser_name in ('prune', 'create', 'check'):
+            subparser = subparsers.choices[subparser_name]
+            parsed, remaining = subparser.parse_known_args(unparsed_arguments)
+            arguments[subparser_name] = parsed
 
     # Then ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
     # are global arguments.
@@ -300,17 +307,10 @@ def parse_arguments(*unparsed_arguments):
     if (
         'list' in arguments
         and 'info' in arguments
-        and parged_arguments['list'].json
-        and parged_arguments['info'].json
+        and arguments['list'].json
+        and arguments['info'].json
     ):
         raise ValueError('With the --json option, list and info actions cannot be used together')
-
-    # If any of the action flags are explicitly requested, leave them as-is. Otherwise, assume
-    # defaults: Mutate the given arguments to enable the default actions.
-    if set(arguments) == {'global'}:
-        arguments['prune'], remaining = prune_parser.parse_known_args(unparsed_arguments)
-        arguments['create'], remaining = create_parser.parse_known_args(unparsed_arguments)
-        arguments['check'], remaining = check_parser.parse_known_args(unparsed_arguments)
 
     return arguments
 
@@ -431,18 +431,13 @@ def run_actions(
         )
         if json_output:
             yield json.loads(json_output)
-    if 'check' in arguments and checks.repository_enabled_for_checks(
-        repository, consistency
-    ):
+    if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
             repository, storage, consistency, local_path=local_path, remote_path=remote_path
         )
     if 'extract' in arguments:
-        if (
-            arguments['extract'].repository is None
-            or repository == arguments['extract'].repository
-        ):
+        if arguments['extract'].repository is None or repository == arguments['extract'].repository:
             logger.info(
                 '{}: Extracting archive {}'.format(repository, arguments['extract'].archive)
             )
@@ -458,10 +453,7 @@ def run_actions(
                 progress=arguments['extract'].progress,
             )
     if 'list' in arguments:
-        if (
-            arguments['list'].repository is None
-            or repository == arguments['list'].repository
-        ):
+        if arguments['list'].repository is None or repository == arguments['list'].repository:
             logger.info('{}: Listing archives'.format(repository))
             json_output = borg_list.list_archives(
                 repository,

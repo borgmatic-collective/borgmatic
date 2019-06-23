@@ -29,7 +29,9 @@ def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert all(log for log in logs if log.levelno == module.logging.INFO)
 
@@ -39,7 +41,9 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'extract': flexmock(repository='repo')}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert all(log for log in logs if log.levelno == module.logging.INFO)
 
@@ -50,7 +54,9 @@ def test_collect_configuration_run_summary_logs_critical_for_extract_with_reposi
     )
     arguments = {'extract': flexmock(repository='repo')}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
@@ -61,7 +67,9 @@ def test_collect_configuration_run_summary_logs_critical_for_list_with_archive_a
     )
     arguments = {'list': flexmock(repository='repo', archive='test')}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
@@ -70,7 +78,9 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_list():
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'list': flexmock(repository='repo', archive=None)}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert all(log for log in logs if log.levelno == module.logging.INFO)
 
@@ -80,7 +90,9 @@ def test_collect_configuration_run_summary_logs_critical_for_run_error():
     flexmock(module).should_receive('run_configuration').and_raise(ValueError)
     arguments = {}
 
-    logs = tuple(module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments))
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
 
