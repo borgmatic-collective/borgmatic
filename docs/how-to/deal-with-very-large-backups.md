@@ -22,6 +22,9 @@ borgmatic create
 borgmatic check
 ```
 
+(No borgmatic `prune`, `create`, or `check` actions? Try the old-style
+`--prune`, `--create`, or `--check`. Or upgrade borgmatic!)
+
 You can run with only one of these flags provided, or you can mix and match
 any number of them in a single borgmatic run. This supports approaches like
 making backups with `create` on a frequent schedule, while only running

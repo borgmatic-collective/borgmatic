@@ -11,6 +11,9 @@ to figure out which archive to restore. A good way to do that is to use the
 borgmatic list
 ```
 
+(No borgmatic `list` action? Try the old-style `--list`, or upgrade
+borgmatic!)
+
 That should yield output looking something like:
 
 ```text
@@ -24,6 +27,9 @@ and therefore the latest timestamp, run a command like:
 ```bash
 borgmatic extract --archive host-2019-01-02T04:06:07.080910
 ```
+
+(No borgmatic `extract` action? Try the old-style `--extract`, or upgrade
+borgmatic!)
 
 The `--archive` value is the name of the archive to restore. This extracts the
 entire contents of the archive to the current directory, so make sure you're

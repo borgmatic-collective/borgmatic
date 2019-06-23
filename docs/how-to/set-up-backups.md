@@ -124,6 +124,9 @@ a command like the following:
 borgmatic init --encryption repokey
 ```
 
+(No borgmatic `init` action? Try the old-style `--init` flag, or upgrade
+borgmatic!)
+
 This uses the borgmatic configuration file you created above to determine
 which local or remote repository to create, and encrypts it with the
 encryption passphrase specified there if one is provided. Read about [Borg

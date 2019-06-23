@@ -33,6 +33,9 @@ borgmatic list
 borgmatic info
 ```
 
+(No borgmatic `list` or `info` actions? Try the old-style `--list` or
+`--info`. Or upgrade borgmatic!)
+
 ## Logging
 
 By default, borgmatic logs to a local syslog-compatible daemon if one is
