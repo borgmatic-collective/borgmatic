@@ -4,7 +4,11 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
+ERROR_OUTPUT_MAX_LINE_COUNT = 25
+
+
 def execute_and_log_output(full_command, output_log_level, shell):
+    last_lines = []
     process = subprocess.Popen(
         full_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell
     )
@@ -14,10 +18,13 @@ def execute_and_log_output(full_command, output_log_level, shell):
         if not line:
             continue
 
-        if line.startswith('borg: error:'):
-            logger.error(line)
-        else:
-            logger.log(output_log_level, line)
+        # Keep the last few lines of output in case the command errors, and we need the output for
+        # the exception below.
+        last_lines.append(line)
+        if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
+            last_lines.pop(0)
+
+        logger.log(output_log_level, line)
 
     remaining_output = process.stdout.read().rstrip().decode()
     if remaining_output:  # pragma: no cover
@@ -25,7 +32,14 @@ def execute_and_log_output(full_command, output_log_level, shell):
 
     exit_code = process.poll()
     if exit_code != 0:
-        raise subprocess.CalledProcessError(exit_code, full_command)
+        # If an error occurs, include its output in the raised exception so that we don't
+        # inadvertently hide error output.
+        if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
+            last_lines.insert(0, '...')
+
+        raise subprocess.CalledProcessError(
+            exit_code, ' '.join(full_command), '\n'.join(last_lines)
+        )
 
 
 def execute_command(full_command, output_log_level=logging.INFO, shell=False):

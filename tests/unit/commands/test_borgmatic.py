@@ -1,3 +1,5 @@
+import subprocess
+
 from flexmock import flexmock
 
 from borgmatic.commands import borgmatic as module
@@ -85,7 +87,7 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_list():
     assert all(log for log in logs if log.levelno == module.logging.INFO)
 
 
-def test_collect_configuration_run_summary_logs_critical_for_run_error():
+def test_collect_configuration_run_summary_logs_critical_for_run_value_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_raise(ValueError)
     arguments = {}
@@ -95,6 +97,21 @@ def test_collect_configuration_run_summary_logs_critical_for_run_error():
     )
 
     assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+
+
+def test_collect_configuration_run_summary_logs_critical_including_output_for_run_process_error():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module).should_receive('run_configuration').and_raise(
+        subprocess.CalledProcessError(1, 'command', 'error output')
+    )
+    arguments = {}
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert any(log for log in logs if 'error output' in str(log))
 
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():

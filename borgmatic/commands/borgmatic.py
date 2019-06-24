@@ -265,7 +265,21 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     msg='{}: Successfully ran configuration file'.format(config_filename),
                 )
             )
-        except (ValueError, OSError, CalledProcessError) as error:
+        except CalledProcessError as error:
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.CRITICAL,
+                    levelname='CRITICAL',
+                    msg='{}: Error running configuration file'.format(config_filename),
+                )
+            )
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            )
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+            )
+        except (ValueError, OSError) as error:
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.CRITICAL,
