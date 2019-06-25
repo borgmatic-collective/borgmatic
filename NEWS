@@ -1,8 +1,10 @@
-1.3.11.dev0
+1.3.11
  * #193: Pass through several "borg list" and "borg info" flags like --short, --format, --sort-by,
    --first, --last, etc. via borgmatic command-line flags.
  * Add borgmatic info --repository and --archive command-line flags to display info for individual
    repositories or archives.
+ * Support for Borg --noatime, --noctime, and --nobirthtime flags via corresponding options in
+   borgmatic configuration location section.
 
 1.3.10
  * #198: Fix for Borg create error output not showing up at borgmatic verbosity level zero.

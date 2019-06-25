@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
@@ -563,7 +564,8 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
     )
 
 
-def test_create_archive_with_bsd_flags_true_calls_borg_without_nobsdflags_parameter():
+@pytest.mark.parametrize('option_name', ('atime', 'ctime', 'birthtime', 'bsd_flags'))
+def test_create_archive_with_option_true_calls_borg_without_corresponding_parameter(option_name):
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
@@ -579,21 +581,22 @@ def test_create_archive_with_bsd_flags_true_calls_borg_without_nobsdflags_parame
         location_config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'bsd_flags': True,
+            option_name: True,
             'exclude_patterns': None,
         },
         storage_config={},
     )
 
 
-def test_create_archive_with_bsd_flags_false_calls_borg_with_nobsdflags_parameter():
+@pytest.mark.parametrize('option_name', ('atime', 'ctime', 'birthtime', 'bsd_flags'))
+def test_create_archive_with_option_false_calls_borg_with_corresponding_parameter(option_name):
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--nobsdflags',), output_log_level=logging.INFO
+        CREATE_COMMAND + ('--no' + option_name.replace('_', ''),), output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -602,7 +605,7 @@ def test_create_archive_with_bsd_flags_false_calls_borg_with_nobsdflags_paramete
         location_config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'bsd_flags': False,
+            option_name: False,
             'exclude_patterns': None,
         },
         storage_config={},

@@ -36,6 +36,18 @@ map:
                 type: bool
                 desc: Only store/extract numeric user and group identifiers. Defaults to false.
                 example: true
+            atime:
+                type: bool
+                desc: Store atime into archive. Defaults to true.
+                example: false
+            ctime:
+                type: bool
+                desc: Store ctime into archive. Defaults to true.
+                example: false
+            birthtime:
+                type: bool
+                desc: Store birthtime (creation date) into archive. Defaults to true.
+                example: false
             read_special:
                 type: bool
                 desc: |
