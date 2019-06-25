@@ -178,16 +178,17 @@ def run_actions(
             if json_output:
                 yield json.loads(json_output)
     if 'info' in arguments:
-        logger.info('{}: Displaying summary info for archives'.format(repository))
-        json_output = borg_info.display_archives_info(
-            repository,
-            storage,
-            local_path=local_path,
-            remote_path=remote_path,
-            json=arguments['info'].json,
-        )
-        if json_output:
-            yield json.loads(json_output)
+        if arguments['info'].repository is None or repository == arguments['info'].repository:
+            logger.info('{}: Displaying summary info for archives'.format(repository))
+            json_output = borg_info.display_archives_info(
+                repository,
+                storage,
+                info_arguments=arguments['info'],
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            if json_output:
+                yield json.loads(json_output)
 
 
 def load_configurations(config_filenames):

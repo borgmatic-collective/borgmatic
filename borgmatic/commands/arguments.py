@@ -224,7 +224,7 @@ def parse_arguments(*unparsed_arguments):
     extract_group = extract_parser.add_argument_group('extract arguments')
     extract_group.add_argument(
         '--repository',
-        help='Path of repository to use, defaults to the configured repository if there is only one',
+        help='Path of repository to extract, defaults to the configured repository if there is only one',
     )
     extract_group.add_argument('--archive', help='Name of archive to operate on', required=True)
     extract_group.add_argument(
@@ -254,9 +254,9 @@ def parse_arguments(*unparsed_arguments):
     list_group = list_parser.add_argument_group('list arguments')
     list_group.add_argument(
         '--repository',
-        help='Path of repository to use, defaults to the configured repository if there is only one',
+        help='Path of repository to list, defaults to the configured repository if there is only one',
     )
-    list_group.add_argument('--archive', help='Name of archive to operate on')
+    list_group.add_argument('--archive', help='Name of archive to list')
     list_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive or path names'
     )
@@ -302,7 +302,32 @@ def parse_arguments(*unparsed_arguments):
     )
     info_group = info_parser.add_argument_group('info arguments')
     info_group.add_argument(
+        '--repository',
+        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+    )
+    info_group.add_argument('--archive', help='Name of archive to show info for')
+    info_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+    )
+    info_group.add_argument(
+        '-P', '--prefix', help='Only show info for archive names starting with this prefix'
+    )
+    info_group.add_argument(
+        '-a',
+        '--glob-archives',
+        metavar='GLOB',
+        help='Only show info for archive names matching this glob',
+    )
+    info_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    info_group.add_argument(
+        '--first',
+        metavar='N',
+        help='Show info for first N archives after other filters are applied',
+    )
+    info_group.add_argument(
+        '--last', metavar='N', help='Show info for first N archives after other filters are applied'
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 

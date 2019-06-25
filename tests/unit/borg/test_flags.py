@@ -30,7 +30,9 @@ def test_make_flags_from_arguments_flattens_multiple_arguments():
     )
     arguments = flexmock(foo='bar', baz='quux')
 
-    assert module.make_flags_from_arguments(arguments) == ('foo', 'bar', 'baz', 'quux')
+    assert sorted(module.make_flags_from_arguments(arguments)) == sorted(
+        ('foo', 'bar', 'baz', 'quux')
+    )
 
 
 def test_make_flags_from_arguments_excludes_underscored_argument_names():

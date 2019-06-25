@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import info as module
@@ -14,7 +15,9 @@ def test_display_archives_info_calls_borg_with_parameters():
         INFO_COMMAND, output_log_level=logging.WARNING
     )
 
-    module.display_archives_info(repository='repo', storage_config={})
+    module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=False)
+    )
 
 
 def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
@@ -22,7 +25,9 @@ def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
         INFO_COMMAND + ('--info',), output_log_level=logging.WARNING
     )
     insert_logging_mock(logging.INFO)
-    module.display_archives_info(repository='repo', storage_config={})
+    module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=False)
+    )
 
 
 def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_output():
@@ -31,7 +36,9 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
     ).and_return('[]')
 
     insert_logging_mock(logging.INFO)
-    json_output = module.display_archives_info(repository='repo', storage_config={}, json=True)
+    json_output = module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=True)
+    )
 
     assert json_output == '[]'
 
@@ -42,7 +49,9 @@ def test_display_archives_info_with_log_debug_calls_borg_with_debug_parameter():
     )
     insert_logging_mock(logging.DEBUG)
 
-    module.display_archives_info(repository='repo', storage_config={})
+    module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=False)
+    )
 
 
 def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_output():
@@ -51,7 +60,9 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
     ).and_return('[]')
 
     insert_logging_mock(logging.DEBUG)
-    json_output = module.display_archives_info(repository='repo', storage_config={}, json=True)
+    json_output = module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=True)
+    )
 
     assert json_output == '[]'
 
@@ -61,9 +72,21 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
         INFO_COMMAND + ('--json',), output_log_level=None
     ).and_return('[]')
 
-    json_output = module.display_archives_info(repository='repo', storage_config={}, json=True)
+    json_output = module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive=None, json=True)
+    )
 
     assert json_output == '[]'
+
+
+def test_display_archives_info_with_archive_calls_borg_with_archive_parameter():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'info', 'repo::archive'), output_log_level=logging.WARNING
+    )
+
+    module.display_archives_info(
+        repository='repo', storage_config={}, info_arguments=flexmock(archive='archive', json=False)
+    )
 
 
 def test_display_archives_info_with_local_path_calls_borg_via_local_path():
@@ -71,7 +94,12 @@ def test_display_archives_info_with_local_path_calls_borg_via_local_path():
         ('borg1',) + INFO_COMMAND[1:], output_log_level=logging.WARNING
     )
 
-    module.display_archives_info(repository='repo', storage_config={}, local_path='borg1')
+    module.display_archives_info(
+        repository='repo',
+        storage_config={},
+        info_arguments=flexmock(archive=None, json=False),
+        local_path='borg1',
+    )
 
 
 def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_parameters():
@@ -79,7 +107,12 @@ def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_para
         INFO_COMMAND + ('--remote-path', 'borg1'), output_log_level=logging.WARNING
     )
 
-    module.display_archives_info(repository='repo', storage_config={}, remote_path='borg1')
+    module.display_archives_info(
+        repository='repo',
+        storage_config={},
+        info_arguments=flexmock(archive=None, json=False),
+        remote_path='borg1',
+    )
 
 
 def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_parameters():
@@ -88,4 +121,22 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
         INFO_COMMAND + ('--lock-wait', '5'), output_log_level=logging.WARNING
     )
 
-    module.display_archives_info(repository='repo', storage_config=storage_config)
+    module.display_archives_info(
+        repository='repo',
+        storage_config=storage_config,
+        info_arguments=flexmock(archive=None, json=False),
+    )
+
+
+@pytest.mark.parametrize('argument_name', ('prefix', 'glob_archives', 'sort_by', 'first', 'last'))
+def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
+    flexmock(module).should_receive('execute_command').with_args(
+        INFO_COMMAND + ('--' + argument_name.replace('_', '-'), 'value'),
+        output_log_level=logging.WARNING,
+    )
+
+    module.display_archives_info(
+        repository='repo',
+        storage_config={},
+        info_arguments=flexmock(archive=None, json=False, **{argument_name: 'value'}),
+    )
