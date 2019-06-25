@@ -48,6 +48,17 @@ for sub_command in prune create check list info; do
             | grep -v '^--stats$' \
             | grep -v '^--verbose$' \
             | grep -v '^--warning$' \
+            | grep -v '^--exclude' \
+            | grep -v '^--exclude-from' \
+            | grep -v '^--first' \
+            | grep -v '^--format' \
+            | grep -v '^--glob-archives' \
+            | grep -v '^--last' \
+            | grep -v '^--list-format' \
+            | grep -v '^--patterns-from' \
+            | grep -v '^--prefix' \
+            | grep -v '^--short' \
+            | grep -v '^--sort-by' \
             | grep -v '^-h$' \
             >> all_borg_flags
     done

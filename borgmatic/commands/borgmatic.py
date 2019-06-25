@@ -171,10 +171,9 @@ def run_actions(
             json_output = borg_list.list_archives(
                 repository,
                 storage,
-                arguments['list'].archive,
+                list_arguments=arguments['list'],
                 local_path=local_path,
                 remote_path=remote_path,
-                json=arguments['list'].json,
             )
             if json_output:
                 yield json.loads(json_output)

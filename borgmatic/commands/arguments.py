@@ -248,7 +248,7 @@ def parse_arguments(*unparsed_arguments):
         'list',
         aliases=SUBPARSER_ALIASES['list'],
         help='List archives',
-        description='List archives',
+        description='List archives or the contents of an archive',
         add_help=False,
     )
     list_group = list_parser.add_argument_group('list arguments')
@@ -258,7 +258,38 @@ def parse_arguments(*unparsed_arguments):
     )
     list_group.add_argument('--archive', help='Name of archive to operate on')
     list_group.add_argument(
-        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+        '--short', default=False, action='store_true', help='Output only archive or path names'
+    )
+    list_group.add_argument('--format', help='Format for file listing')
+    list_group.add_argument(
+        '--json', default=False, action='store_true', help='Output results as JSON'
+    )
+    list_group.add_argument(
+        '-P', '--prefix', help='Only list archive names starting with this prefix'
+    )
+    list_group.add_argument(
+        '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
+    )
+    list_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    list_group.add_argument(
+        '--first', metavar='N', help='List first N archives after other filters are applied'
+    )
+    list_group.add_argument(
+        '--last', metavar='N', help='List first N archives after other filters are applied'
+    )
+    list_group.add_argument(
+        '-e', '--exclude', metavar='PATTERN', help='Exclude paths matching the pattern'
+    )
+    list_group.add_argument(
+        '--exclude-from', metavar='FILENAME', help='Exclude paths from exclude file, one per line'
+    )
+    list_group.add_argument('--pattern', help='Include or exclude paths matching a pattern')
+    list_group.add_argument(
+        '--pattern-from',
+        metavar='FILENAME',
+        help='Include or exclude paths matching patterns from pattern file, one per line',
     )
     list_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
