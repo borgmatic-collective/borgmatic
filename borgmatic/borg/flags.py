@@ -25,7 +25,7 @@ def make_flags_from_arguments(arguments, excludes=()):
     return tuple(
         itertools.chain.from_iterable(
             make_flags(name, value=getattr(arguments, name))
-            for name in vars(arguments)
+            for name in sorted(vars(arguments))
             if name not in excludes and not name.startswith('_')
         )
     )
