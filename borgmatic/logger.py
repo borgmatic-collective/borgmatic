@@ -84,7 +84,7 @@ def configure_logging(console_log_level, syslog_log_level=None):
 
     if syslog_path:
         syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
-        syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s \ufeff%(message)s'))
+        syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
     else:
