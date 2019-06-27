@@ -1,4 +1,4 @@
-FROM python:3.7.3-alpine3.9 as borgmatic
+FROM python:3.7.3-alpine3.10 as borgmatic
 
 COPY . /app
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
@@ -7,7 +7,7 @@ RUN borgmatic --help > /command-line.txt \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 
-FROM node:11.15.0-alpine as html
+FROM node:12.4.0-alpine as html
 
 WORKDIR /source
 
