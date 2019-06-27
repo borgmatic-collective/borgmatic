@@ -21,6 +21,14 @@ def to_bool(arg):
     return False
 
 
+def interactive_console():
+    '''
+    Return whether the current console is "interactive". Meaning: Capable of
+    user input and not just something like a cron job.
+    '''
+    return sys.stdout.isatty() and os.environ.get('TERM') != 'dumb'
+
+
 def should_do_markup(no_color, configs):
     '''
     Given the value of the command-line no-color argument, and a dict of configuration filename to
@@ -37,7 +45,7 @@ def should_do_markup(no_color, configs):
     if py_colors is not None:
         return to_bool(py_colors)
 
-    return sys.stdout.isatty() and os.environ.get('TERM') != 'dumb'
+    return interactive_console()
 
 
 LOG_LEVEL_TO_COLOR = {
@@ -82,7 +90,7 @@ def configure_logging(console_log_level, syslog_log_level=None):
     elif os.path.exists('/var/run/syslog'):
         syslog_path = '/var/run/syslog'
 
-    if syslog_path:
+    if syslog_path and not interactive_console():
         syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
         syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
         syslog_handler.setLevel(syslog_log_level)

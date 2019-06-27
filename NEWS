@@ -1,4 +1,5 @@
-1.3.12.dev0
+1.3.12
+ * Only log to syslog when run from a non-interactive console (e.g. a cron job).
  * Remove unicode byte order mark from syslog output so it doesn't show up as a literal in rsyslog
    output. See discussion on #197.
 

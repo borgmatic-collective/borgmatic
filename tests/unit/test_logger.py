@@ -20,6 +20,29 @@ def test_to_bool_passes_none_through():
     assert module.to_bool(None) is None
 
 
+def test_interactive_console_false_when_not_isatty(capsys):
+    with capsys.disabled():
+        flexmock(module.sys.stdout).should_receive('isatty').and_return(False)
+
+        assert module.interactive_console() is False
+
+
+def test_interactive_console_false_when_TERM_is_dumb(capsys):
+    with capsys.disabled():
+        flexmock(module.sys.stdout).should_receive('isatty').and_return(True)
+        flexmock(module.os.environ).should_receive('get').with_args('TERM').and_return('dumb')
+
+        assert module.interactive_console() is False
+
+
+def test_interactive_console_true_when_isatty_and_TERM_is_not_dumb(capsys):
+    with capsys.disabled():
+        flexmock(module.sys.stdout).should_receive('isatty').and_return(True)
+        flexmock(module.os.environ).should_receive('get').with_args('TERM').and_return('smart')
+
+        assert module.interactive_console() is True
+
+
 def test_should_do_markup_respects_no_color_value():
     assert module.should_do_markup(no_color=True, configs={}) is False
 
@@ -75,15 +98,17 @@ def test_should_do_markup_prefers_no_color_value_to_PY_COLORS():
     assert module.should_do_markup(no_color=True, configs={}) is False
 
 
-def test_should_do_markup_respects_stdout_tty_value():
+def test_should_do_markup_respects_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').and_return(None)
+    flexmock(module).should_receive('interactive_console').and_return(True)
 
-    assert module.should_do_markup(no_color=False, configs={}) is False
+    assert module.should_do_markup(no_color=False, configs={}) is True
 
 
-def test_should_do_markup_prefers_PY_COLORS_to_stdout_tty_value():
+def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').and_return('True')
     flexmock(module).should_receive('to_bool').and_return(True)
+    flexmock(module).should_receive('interactive_console').and_return(False)
 
     assert module.should_do_markup(no_color=False, configs={}) is True
 
@@ -108,11 +133,11 @@ def test_color_text_without_color_does_not_raise():
 
 def test_configure_logging_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('Console_color_formatter')
+    flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
-    flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
     syslog_handler = logging.handlers.SysLogHandler()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
         address='/dev/log'
@@ -123,6 +148,7 @@ def test_configure_logging_probes_for_log_socket_on_linux():
 
 def test_configure_logging_probes_for_log_socket_on_macos():
     flexmock(module).should_receive('Console_color_formatter')
+    flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )
@@ -152,6 +178,18 @@ def test_configure_logging_skips_syslog_if_not_found():
         level=logging.INFO, handlers=tuple
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+
+    module.configure_logging(console_log_level=logging.INFO)
+
+
+def test_configure_logging_skips_syslog_if_interactive_console():
+    flexmock(module).should_receive('Console_color_formatter')
+    flexmock(module).should_receive('interactive_console').and_return(True)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
 
     module.configure_logging(console_log_level=logging.INFO)

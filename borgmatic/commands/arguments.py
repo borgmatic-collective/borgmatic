@@ -108,7 +108,7 @@ def parse_arguments(*unparsed_arguments):
         type=int,
         choices=range(0, 3),
         default=0,
-        help='Display verbose progress to syslog (from none to lots: 0, 1, or 2)',
+        help='Display verbose progress to syslog (from none to lots: 0, 1, or 2). Ignored when console is interactive',
     )
     global_group.add_argument(
         '--version',
