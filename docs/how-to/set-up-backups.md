@@ -71,7 +71,8 @@ to ignore anything you don't need.
 Note that the configuration file is organized into distinct sections, each
 with a section name like `location:` or `storage:`. So take care that if you
 uncomment a particular option, also uncomment its containing section name, or
-else borgmatic won't recognize the option.
+else borgmatic won't recognize the option. Also be sure to use spaces rather
+than tabs for indentation; YAML does not allow tabs.
 
 You can also get the same sample configuration file from the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration.md), the authoritative set of
@@ -211,6 +212,22 @@ disable it by passing the `--no-color` flag, setting the environment variable
 section of configuration.
 
 ## Troubleshooting
+
+### "found character that cannot start any token" error
+
+If you run borgmatic and see an error looking something like this, it probably
+means you've used tabs instead of spaces:
+
+```console
+test.yaml: Error parsing configuration file
+An error occurred while parsing a configuration file at test.yaml:
+while scanning for the next token
+found character that cannot start any token
+  in "test.yaml", line 230, column 1
+```
+
+YAML does not allow tabs. So to fix this, simply replace any tabs in your
+configuration file with the requisite number of spaces.
 
 ### libyaml compilation errors
 
