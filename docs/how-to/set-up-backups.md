@@ -220,10 +220,10 @@ means you've used tabs instead of spaces:
 
 ```
 test.yaml: Error parsing configuration file
-An error occurred while parsing a configuration file at test.yaml:
+An error occurred while parsing a configuration file at config.yaml:
 while scanning for the next token
 found character that cannot start any token
-  in "test.yaml", line 230, column 1
+  in "config.yaml", line 230, column 1
 ```
 
 YAML does not allow tabs. So to fix this, simply replace any tabs in your
