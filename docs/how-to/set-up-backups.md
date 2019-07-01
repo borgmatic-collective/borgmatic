@@ -218,7 +218,7 @@ section of configuration.
 If you run borgmatic and see an error looking something like this, it probably
 means you've used tabs instead of spaces:
 
-```console
+```
 test.yaml: Error parsing configuration file
 An error occurred while parsing a configuration file at test.yaml:
 while scanning for the next token
