@@ -64,7 +64,7 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
- * [Add Preparation and Cleanup Steps to Backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
+ * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
  * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
 

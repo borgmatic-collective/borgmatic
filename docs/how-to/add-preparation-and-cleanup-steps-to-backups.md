@@ -1,5 +1,5 @@
 ---
-title: Add Preparation and Cleanup Steps to Backups
+title: Add preparation and cleanup steps to backups
 ---
 ## Preparation and cleanup hooks
 
