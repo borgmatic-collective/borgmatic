@@ -1,5 +1,5 @@
 ---
-title: How to run preparation steps before backups
+title: Adding Preparation and Cleanup Steps to Backups
 ---
 ## Preparation and cleanup hooks
 
