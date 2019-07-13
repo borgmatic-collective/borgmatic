@@ -38,6 +38,7 @@ borgmatic:
  * [Arch Linux](https://aur.archlinux.org/packages/borgmatic/)
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
+ * [stand-alone binary](https://github.com/cmarquardt/borgmatic-binary)
 
 
 ## Hosting providers
