@@ -345,9 +345,11 @@ map:
             on_error:
                 seq:
                     - type: scalar
-                desc: List of one or more shell commands or scripts to execute in case an exception has occurred.
+                desc: |
+                    List of one or more shell commands or scripts to execute when an exception occurs
+                    during a backup or when running a hook.
                 example:
-                    - echo "Error while creating a backup."
+                    - echo "Error while creating a backup or running a hook."
             umask:
                 type: scalar
                 desc: Umask used when executing hooks. Defaults to the umask that borgmatic is run with.

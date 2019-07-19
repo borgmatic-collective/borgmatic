@@ -27,13 +27,13 @@ not if an error occurs in a previous hook or in the backups themselves.
 
 ## Error hooks
 
-borgmatic also runs `on_error` hooks if an error occurs. Here's an example
-configuration:
+borgmatic also runs `on_error` hooks if an error occurs, either when creating
+a backup or running another hook. Here's an example configuration:
 
 ```yaml
 hooks:
     on_error:
-        - echo "Error while creating a backup."
+        - echo "Error while creating a backup or running a hook."
 ```
 
 ## Hook output
