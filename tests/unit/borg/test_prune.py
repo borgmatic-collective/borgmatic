@@ -33,6 +33,26 @@ def test_make_prune_flags_accepts_prefix_with_placeholders():
     assert tuple(result) == expected
 
 
+def test_make_prune_flags_treats_empty_prefix_as_no_prefix():
+    retention_config = OrderedDict((('keep_daily', 1), ('prefix', '')))
+
+    result = module._make_prune_flags(retention_config)
+
+    expected = (('--keep-daily', '1'),)
+
+    assert tuple(result) == expected
+
+
+def test_make_prune_flags_treats_none_prefix_as_no_prefix():
+    retention_config = OrderedDict((('keep_daily', 1), ('prefix', None)))
+
+    result = module._make_prune_flags(retention_config)
+
+    expected = (('--keep-daily', '1'),)
+
+    assert tuple(result) == expected
+
+
 PRUNE_COMMAND = (
     'borg',
     'prune',

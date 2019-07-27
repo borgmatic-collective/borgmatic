@@ -52,14 +52,14 @@ def test_make_check_flags_with_extract_omits_extract_flag():
     assert flags == ()
 
 
-def test_make_check_flags_with_default_checks_returns_default_flags():
-    flags = module._make_check_flags(module.DEFAULT_CHECKS)
+def test_make_check_flags_with_default_checks_and_default_prefix_returns_default_flags():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS, prefix=module.DEFAULT_PREFIX)
 
     assert flags == ('--prefix', module.DEFAULT_PREFIX)
 
 
-def test_make_check_flags_with_all_checks_returns_default_flags():
-    flags = module._make_check_flags(module.DEFAULT_CHECKS + ('extract',))
+def test_make_check_flags_with_all_checks_and_default_prefix_returns_default_flags():
+    flags = module._make_check_flags(module.DEFAULT_CHECKS + ('extract',), prefix=module.DEFAULT_PREFIX)
 
     assert flags == ('--prefix', module.DEFAULT_PREFIX)
 
@@ -67,7 +67,7 @@ def test_make_check_flags_with_all_checks_returns_default_flags():
 def test_make_check_flags_with_archives_check_and_last_includes_last_flag():
     flags = module._make_check_flags(('archives',), check_last=3)
 
-    assert flags == ('--archives-only', '--last', '3', '--prefix', module.DEFAULT_PREFIX)
+    assert flags == ('--archives-only', '--last', '3')
 
 
 def test_make_check_flags_with_repository_check_and_last_omits_last_flag():
@@ -79,13 +79,25 @@ def test_make_check_flags_with_repository_check_and_last_omits_last_flag():
 def test_make_check_flags_with_default_checks_and_last_includes_last_flag():
     flags = module._make_check_flags(module.DEFAULT_CHECKS, check_last=3)
 
-    assert flags == ('--last', '3', '--prefix', module.DEFAULT_PREFIX)
+    assert flags == ('--last', '3')
 
 
 def test_make_check_flags_with_archives_check_and_prefix_includes_prefix_flag():
     flags = module._make_check_flags(('archives',), prefix='foo-')
 
     assert flags == ('--archives-only', '--prefix', 'foo-')
+
+
+def test_make_check_flags_with_archives_check_and_empty_prefix_omits_prefix_flag():
+    flags = module._make_check_flags(('archives',), prefix='')
+
+    assert flags == ('--archives-only',)
+
+
+def test_make_check_flags_with_archives_check_and_none_prefix_omits_prefix_flag():
+    flags = module._make_check_flags(('archives',), prefix=None)
+
+    assert flags == ('--archives-only',)
 
 
 def test_make_check_flags_with_repository_check_and_prefix_omits_prefix_flag():
@@ -114,7 +126,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').with_args(
-        checks, check_last, None
+        checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     insert_execute_command_mock(('borg', 'check', 'repo'))
 
@@ -179,7 +191,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').with_args(
-        checks, check_last, None
+        checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     insert_execute_command_mock(('borg1', 'check', 'repo'))
 
@@ -197,7 +209,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').with_args(
-        checks, check_last, None
+        checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     insert_execute_command_mock(('borg', 'check', 'repo', '--remote-path', 'borg1'))
 
@@ -215,7 +227,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     consistency_config = {'check_last': check_last}
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').with_args(
-        checks, check_last, None
+        checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     insert_execute_command_mock(('borg', 'check', 'repo', '--lock-wait', '5'))
 

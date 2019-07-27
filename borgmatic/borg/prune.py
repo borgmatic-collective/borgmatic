@@ -21,12 +21,15 @@ def _make_prune_flags(retention_config):
             ('--keep-monthly', '6'),
         )
     '''
-    if not retention_config.get('prefix'):
-        retention_config['prefix'] = '{hostname}-'
+    config = dict(retention_config)
+
+    if 'prefix' not in config:
+        config['prefix'] = '{hostname}-'
+    elif not config['prefix']:
+        config.pop('prefix')
 
     return (
-        ('--' + option_name.replace('_', '-'), str(retention_config[option_name]))
-        for option_name, value in retention_config.items()
+        ('--' + option_name.replace('_', '-'), str(value)) for option_name, value in config.items()
     )
 
 

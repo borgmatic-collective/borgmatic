@@ -55,7 +55,7 @@ def _make_check_flags(checks, check_last=None, prefix=None):
     '''
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
-        prefix_flags = ('--prefix', prefix) if prefix else ('--prefix', DEFAULT_PREFIX)
+        prefix_flags = ('--prefix', prefix) if prefix else ()
     else:
         last_flags = ()
         prefix_flags = ()
@@ -102,7 +102,7 @@ def check_archives(
         if logger.isEnabledFor(logging.DEBUG):
             verbosity_flags = ('--debug', '--show-rc')
 
-        prefix = consistency_config.get('prefix')
+        prefix = consistency_config.get('prefix', DEFAULT_PREFIX)
 
         full_command = (
             (local_path, 'check', repository)

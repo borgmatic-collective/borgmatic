@@ -20,5 +20,5 @@ pytest==4.6.3
 pytest-cov==2.7.1
 python-dateutil==2.8.0
 PyYAML==5.1.1
-ruamel.yaml>0.15.0,<0.16.0
+ruamel.yaml>0.15.0,<0.17.0
 toml==0.10.0

@@ -269,7 +269,7 @@ map:
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
                     Borg placeholders can be used. See the output of "borg help placeholders" for
-                    details. Defaults to "{hostname}-".
+                    details. Defaults to "{hostname}-". Use an empty value to disable the default.
                 example: sourcehostname
     consistency:
         desc: |
@@ -311,7 +311,8 @@ map:
                 desc: |
                     When performing the "archives" check, only consider archive names starting with
                     this prefix. Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. Defaults to "{hostname}-".
+                    "borg help placeholders" for details. Defaults to "{hostname}-". Use an empty
+                    value to disable the default.
                 example: sourcehostname
     output:
         desc: |
