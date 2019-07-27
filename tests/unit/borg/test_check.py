@@ -59,7 +59,9 @@ def test_make_check_flags_with_default_checks_and_default_prefix_returns_default
 
 
 def test_make_check_flags_with_all_checks_and_default_prefix_returns_default_flags():
-    flags = module._make_check_flags(module.DEFAULT_CHECKS + ('extract',), prefix=module.DEFAULT_PREFIX)
+    flags = module._make_check_flags(
+        module.DEFAULT_CHECKS + ('extract',), prefix=module.DEFAULT_PREFIX
+    )
 
     assert flags == ('--prefix', module.DEFAULT_PREFIX)
 
