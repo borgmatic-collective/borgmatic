@@ -11,7 +11,7 @@ map:
             source_directories:
                 required: true
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     List of source directories to backup (required). Globs and tildes are expanded.
                 example:
@@ -21,7 +21,7 @@ map:
             repositories:
                 required: true
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Paths to local or remote repositories (required). Tildes are expanded. Multiple
                     repositories are backed up to in sequence. See ssh_command for SSH options like
@@ -60,23 +60,23 @@ map:
                 desc: Record bsdflags (e.g. NODUMP, IMMUTABLE) in archive. Defaults to true.
                 example: true
             files_cache:
-                type: scalar
+                type: str
                 desc: |
                     Mode in which to operate the files cache. See
                     https://borgbackup.readthedocs.io/en/stable/usage/create.html#description for
                     details. Defaults to "ctime,size,inode".
                 example: ctime,size,inode
             local_path:
-                type: scalar
+                type: str
                 desc: Alternate Borg local executable. Defaults to "borg".
                 example: borg1
             remote_path:
-                type: scalar
+                type: str
                 desc: Alternate Borg remote executable. Defaults to "borg".
                 example: borg1
             patterns:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Any paths matching these patterns are included/excluded from backups. Globs are
                     expanded. (Tildes are not.) Note that Borg considers this option experimental.
@@ -89,7 +89,7 @@ map:
                     - '- /home/*'
             patterns_from:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Read include/exclude patterns from one or more separate named files, one pattern
                     per line. Note that Borg considers this option experimental. See the output of
@@ -98,7 +98,7 @@ map:
                     - /etc/borgmatic/patterns
             exclude_patterns:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Any paths matching these patterns are excluded from backups. Globs and tildes
                     are expanded. See the output of "borg help patterns" for more details.
@@ -108,7 +108,7 @@ map:
                     - /etc/ssl
             exclude_from:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Read exclude patterns from one or more separate named files, one pattern per
                     line. See the output of "borg help patterns" for more details.
@@ -121,7 +121,7 @@ map:
                     http://www.brynosaurus.com/cachedir/spec.html for details. Defaults to false.
                 example: true
             exclude_if_present:
-                type: scalar
+                type: str
                 desc: |
                     Exclude directories that contain a file with the given filename. Defaults to not
                     set.
@@ -134,7 +134,7 @@ map:
             details.
         map:
             encryption_passcommand:
-                type: scalar
+                type: str
                 desc: |
                     The standard output of this command is used to unlock the encryption key. Only
                     use on repositories that were initialized with passcommand/repokey encryption.
@@ -142,7 +142,7 @@ map:
                     then encryption_passphrase takes precedence. Defaults to not set.
                 example: "secret-tool lookup borg-repository repo-name"
             encryption_passphrase:
-                type: scalar
+                type: str
                 desc: |
                     Passphrase to unlock the encryption key with. Only use on repositories that were
                     initialized with passphrase/repokey encryption. Quote the value if it contains
@@ -157,14 +157,14 @@ map:
                     for details. Defaults to checkpoints every 1800 seconds (30 minutes).
                 example: 1800
             chunker_params:
-                type: scalar
+                type: str
                 desc: |
                     Specify the parameters passed to then chunker (CHUNK_MIN_EXP, CHUNK_MAX_EXP,
                     HASH_MASK_BITS, HASH_WINDOW_SIZE). See https://borgbackup.readthedocs.io/en/stable/internals.html
                     for details. Defaults to "19,23,21,4095".
                 example: 19,23,21,4095
             compression:
-                type: scalar
+                type: str
                 desc: |
                     Type of compression to use when creating archives. See
                     https://borgbackup.readthedocs.org/en/stable/usage.html#borg-create for details.
@@ -175,34 +175,34 @@ map:
                 desc: Remote network upload rate limit in kiBytes/second. Defaults to unlimited.
                 example: 100
             ssh_command:
-                type: scalar
+                type: str
                 desc: |
                     Command to use instead of "ssh". This can be used to specify ssh options.
                     Defaults to not set.
                 example: ssh -i /path/to/private/key
             borg_base_directory:
-                type: scalar
+                type: str
                 desc: |
                     Base path used for various Borg directories. Defaults to $HOME, ~$USER, or ~.
                     See https://borgbackup.readthedocs.io/en/stable/usage/general.html#environment-variables for details.
                 example: /path/to/base
             borg_config_directory:
-                type: scalar
+                type: str
                 desc: |
                     Path for Borg configuration files. Defaults to $borg_base_directory/.config/borg
                 example: /path/to/base/config
             borg_cache_directory:
-                type: scalar
+                type: str
                 desc: |
                     Path for Borg cache files. Defaults to $borg_base_directory/.cache/borg
                 example: /path/to/base/cache
             borg_security_directory:
-                type: scalar
+                type: str
                 desc: |
                     Path for Borg security and encryption nonce files. Defaults to $borg_base_directory/.config/borg/security
                 example: /path/to/base/config/security
             borg_keys_directory:
-                type: scalar
+                type: str
                 desc: |
                     Path for Borg encryption key files. Defaults to $borg_base_directory/.config/borg/keys
                 example: /path/to/base/config/keys
@@ -215,7 +215,7 @@ map:
                 desc: Maximum seconds to wait for acquiring a repository/cache lock. Defaults to 1.
                 example: 5
             archive_name_format:
-                type: scalar
+                type: str
                 desc: |
                     Name of the archive. Borg placeholders can be used. See the output of
                     "borg help placeholders" for details. Defaults to
@@ -233,7 +233,7 @@ map:
             if you'd like to skip pruning entirely.
         map:
             keep_within:
-                type: scalar
+                type: str
                 desc: Keep all archives within this time interval.
                 example: 3H
             keep_secondly:
@@ -265,7 +265,7 @@ map:
                 desc: Number of yearly archives to keep.
                 example: 1
             prefix:
-                type: scalar
+                type: str
                 desc: |
                     When pruning, only consider archive names starting with this prefix.
                     Borg placeholders can be used. See the output of "borg help placeholders" for
@@ -293,7 +293,7 @@ map:
                     - archives
             check_repositories:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     Paths to a subset of the repositories in the location section on which to run
                     consistency checks. Handy in case some of your repositories are very large, and
@@ -307,7 +307,7 @@ map:
                       "archives" check. Defaults to checking all archives.
                 example: 3
             prefix:
-                type: scalar
+                type: str
                 desc: |
                     When performing the "archives" check, only consider archive names starting with
                     this prefix. Borg placeholders can be used. See the output of
@@ -333,19 +333,19 @@ map:
         map:
             before_backup:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: List of one or more shell commands or scripts to execute before creating a backup.
                 example:
                     - echo "Starting a backup job."
             after_backup:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: List of one or more shell commands or scripts to execute after creating a backup.
                 example:
                     - echo "Backup created."
             on_error:
                 seq:
-                    - type: scalar
+                    - type: str
                 desc: |
                     List of one or more shell commands or scripts to execute when an exception occurs
                     during a backup or when running a hook.
