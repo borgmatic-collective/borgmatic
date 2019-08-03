@@ -1,7 +1,7 @@
 import logging
 import subprocess
 
-from borgmatic.execute import execute_command
+from borgmatic.execute import BORG_ERROR_EXIT_CODE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -44,4 +44,8 @@ def initialize_repository(
     )
 
     # Don't use execute_command() here because it doesn't support interactive prompts.
-    subprocess.check_call(init_command)
+    try:
+        subprocess.check_call(init_command)
+    except subprocess.CalledProcessError as error:
+        if error.returncode >= BORG_ERROR_EXIT_CODE:
+            raise

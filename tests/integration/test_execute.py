@@ -15,7 +15,16 @@ def test_execute_and_log_output_logs_each_line_separately():
     module.execute_and_log_output(['echo', 'there'], output_log_level=logging.INFO, shell=False)
 
 
+def test_execute_and_log_output_with_borg_warning_does_not_raise():
+    flexmock(module.logger).should_receive('log')
+
+    # Borg's exit code 1 is a warning, not an error.
+    module.execute_and_log_output(['false'], output_log_level=logging.INFO, shell=False)
+
+
 def test_execute_and_log_output_includes_borg_error_output_in_exception():
+    flexmock(module.logger).should_receive('log')
+
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.execute_and_log_output(['grep'], output_log_level=logging.INFO, shell=False)
 
@@ -25,6 +34,7 @@ def test_execute_and_log_output_includes_borg_error_output_in_exception():
 
 def test_execute_and_log_output_truncates_long_borg_error_output():
     flexmock(module).ERROR_OUTPUT_MAX_LINE_COUNT = 0
+    flexmock(module.logger).should_receive('log')
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.execute_and_log_output(['grep'], output_log_level=logging.INFO, shell=False)
@@ -40,7 +50,7 @@ def test_execute_and_log_output_with_no_output_logs_nothing():
 
 
 def test_execute_and_log_output_with_error_exit_status_raises():
-    flexmock(module.logger).should_receive('log').never()
+    flexmock(module.logger).should_receive('log')
 
     with pytest.raises(subprocess.CalledProcessError):
-        module.execute_and_log_output(['false'], output_log_level=logging.INFO, shell=False)
+        module.execute_and_log_output(['grep'], output_log_level=logging.INFO, shell=False)

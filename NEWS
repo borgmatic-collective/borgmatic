@@ -1,4 +1,5 @@
 1.3.14
+ * #204: Do not treat Borg warnings (exit code 1) as failures.
  * When validating configuration files, require strings instead of allowing any scalar type.
 
 1.3.13

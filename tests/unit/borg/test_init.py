@@ -35,6 +35,25 @@ def test_initialize_repository_calls_borg_with_parameters():
     module.initialize_repository(repository='repo', encryption_mode='repokey')
 
 
+def test_initialize_repository_does_not_raise_for_borg_init_warning():
+    insert_info_command_not_found_mock()
+    flexmock(module.subprocess).should_receive('check_call').and_raise(
+        module.subprocess.CalledProcessError(1, 'borg init')
+    )
+
+    module.initialize_repository(repository='repo', encryption_mode='repokey')
+
+
+def test_initialize_repository_raises_for_borg_init_error():
+    insert_info_command_not_found_mock()
+    flexmock(module.subprocess).should_receive('check_call').and_raise(
+        module.subprocess.CalledProcessError(2, 'borg init')
+    )
+
+    with pytest.raises(subprocess.CalledProcessError):
+        module.initialize_repository(repository='repo', encryption_mode='repokey')
+
+
 def test_initialize_repository_skips_initialization_when_repository_already_exists():
     insert_info_command_found_mock()
     flexmock(module.subprocess).should_receive('check_call').never()

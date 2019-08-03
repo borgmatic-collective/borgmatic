@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 ERROR_OUTPUT_MAX_LINE_COUNT = 25
+BORG_ERROR_EXIT_CODE = 2
 
 
 def execute_and_log_output(full_command, output_log_level, shell):
@@ -31,7 +32,7 @@ def execute_and_log_output(full_command, output_log_level, shell):
         logger.log(output_log_level, remaining_output)
 
     exit_code = process.poll()
-    if exit_code != 0:
+    if exit_code >= BORG_ERROR_EXIT_CODE:
         # If an error occurs, include its output in the raised exception so that we don't
         # inadvertently hide error output.
         if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
