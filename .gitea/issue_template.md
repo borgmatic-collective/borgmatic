@@ -26,6 +26,6 @@ Use `sudo borg --version`
 
 **Python version:** [version here]
 
-Use `python --version`
+Use `python3 --version`
 
 **operating system and version:** [OS here]
