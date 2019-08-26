@@ -25,7 +25,7 @@ def _parse_checks(consistency_config):
     If no "checks" option is present, return the DEFAULT_CHECKS. If the checks value is the string
     "disabled", return an empty tuple, meaning that no checks should be run.
     '''
-    checks = consistency_config.get('checks', [])
+    checks = consistency_config.get('checks', []) or []
     if checks == ['disabled']:
         return ()
 

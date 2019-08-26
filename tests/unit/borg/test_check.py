@@ -34,6 +34,12 @@ def test_parse_checks_with_blank_value_returns_defaults():
     assert checks == module.DEFAULT_CHECKS
 
 
+def test_parse_checks_with_none_value_returns_defaults():
+    checks = module._parse_checks({'checks': None})
+
+    assert checks == module.DEFAULT_CHECKS
+
+
 def test_parse_checks_with_disabled_returns_no_checks():
     checks = module._parse_checks({'checks': ['disabled']})
 
