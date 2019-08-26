@@ -224,6 +224,16 @@ map:
                     archives with a different archive name format. And you should also specify a
                     prefix in the consistency section as well.
                 example: "{hostname}-documents-{now}"
+            relocated_repo_access_is_ok:
+                type: bool
+                desc: Bypass Borg error about a repository that has been moved. Defaults to false.
+                example: true
+            unknown_unencrypted_repo_access_is_ok:
+                type: bool
+                desc: |
+                    Bypass Borg error about a previously unknown unencrypted repository. Defaults to
+                    false.
+                example: true
     retention:
         desc: |
             Retention policy for how many backups to keep in each category. See

@@ -11,9 +11,21 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'ssh_command': 'BORG_RSH',
 }
 
+DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
+    'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
+    'unknown_unencrypted_repo_access_is_ok': 'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK',
+}
+
 
 def initialize(storage_config):
     for option_name, environment_variable_name in OPTION_TO_ENVIRONMENT_VARIABLE.items():
         value = storage_config.get(option_name)
         if value:
             os.environ[environment_variable_name] = value
+
+    for (
+        option_name,
+        environment_variable_name,
+    ) in DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE.items():
+        value = storage_config.get(option_name, False)
+        os.environ[environment_variable_name] = 'yes' if value else 'no'
