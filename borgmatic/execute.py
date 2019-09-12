@@ -32,7 +32,12 @@ def execute_and_log_output(full_command, output_log_level, shell):
         logger.log(output_log_level, remaining_output)
 
     exit_code = process.poll()
-    if exit_code >= BORG_ERROR_EXIT_CODE:
+
+    # If shell is True, assume we're running something other than Borg and should treat all non-zero
+    # exit codes as errors.
+    error = bool(exit_code != 0) if shell else bool(exit_code >= BORG_ERROR_EXIT_CODE)
+
+    if error:
         # If an error occurs, include its output in the raised exception so that we don't
         # inadvertently hide error output.
         if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
