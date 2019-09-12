@@ -34,9 +34,9 @@ def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
 
 def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_parameter():
     insert_execute_command_output_mock(
-        ('borg', 'list', '--short', 'repo', '--info'), result='archive1\narchive2\n'
+        ('borg', 'list', '--short', '--info', 'repo'), result='archive1\narchive2\n'
     )
-    insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive2', '--info'))
+    insert_execute_command_mock(('borg', 'extract', '--dry-run', '--info', 'repo::archive2'))
     insert_logging_mock(logging.INFO)
 
     module.extract_last_archive_dry_run(repository='repo', lock_wait=None)
@@ -44,10 +44,10 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
 
 def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_parameter():
     insert_execute_command_output_mock(
-        ('borg', 'list', '--short', 'repo', '--debug', '--show-rc'), result='archive1\narchive2\n'
+        ('borg', 'list', '--short', '--debug', '--show-rc', 'repo'), result='archive1\narchive2\n'
     )
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', 'repo::archive2', '--debug', '--show-rc', '--list')
+        ('borg', 'extract', '--dry-run', '--debug', '--show-rc', '--list', 'repo::archive2')
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -65,10 +65,10 @@ def test_extract_last_archive_dry_run_calls_borg_via_local_path():
 
 def test_extract_last_archive_dry_run_calls_borg_with_remote_path_parameters():
     insert_execute_command_output_mock(
-        ('borg', 'list', '--short', 'repo', '--remote-path', 'borg1'), result='archive1\narchive2\n'
+        ('borg', 'list', '--short', '--remote-path', 'borg1', 'repo'), result='archive1\narchive2\n'
     )
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', 'repo::archive2', '--remote-path', 'borg1')
+        ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', 'repo::archive2')
     )
 
     module.extract_last_archive_dry_run(repository='repo', lock_wait=None, remote_path='borg1')
@@ -76,10 +76,10 @@ def test_extract_last_archive_dry_run_calls_borg_with_remote_path_parameters():
 
 def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
     insert_execute_command_output_mock(
-        ('borg', 'list', '--short', 'repo', '--lock-wait', '5'), result='archive1\narchive2\n'
+        ('borg', 'list', '--short', '--lock-wait', '5', 'repo'), result='archive1\narchive2\n'
     )
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', 'repo::archive2', '--lock-wait', '5')
+        ('borg', 'extract', '--dry-run', '--lock-wait', '5', 'repo::archive2')
     )
 
     module.extract_last_archive_dry_run(repository='repo', lock_wait=5)
@@ -99,7 +99,7 @@ def test_extract_archive_calls_borg_with_restore_path_parameters():
 
 
 def test_extract_archive_calls_borg_with_remote_path_parameters():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--remote-path', 'borg1'))
+    insert_execute_command_mock(('borg', 'extract', '--remote-path', 'borg1', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
@@ -113,7 +113,7 @@ def test_extract_archive_calls_borg_with_remote_path_parameters():
 
 
 def test_extract_archive_calls_borg_with_numeric_owner_parameter():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--numeric-owner'))
+    insert_execute_command_mock(('borg', 'extract', '--numeric-owner', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
@@ -126,7 +126,7 @@ def test_extract_archive_calls_borg_with_numeric_owner_parameter():
 
 
 def test_extract_archive_calls_borg_with_umask_parameters():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--umask', '0770'))
+    insert_execute_command_mock(('borg', 'extract', '--umask', '0770', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
@@ -139,7 +139,7 @@ def test_extract_archive_calls_borg_with_umask_parameters():
 
 
 def test_extract_archive_calls_borg_with_lock_wait_parameters():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--lock-wait', '5'))
+    insert_execute_command_mock(('borg', 'extract', '--lock-wait', '5', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
@@ -152,7 +152,7 @@ def test_extract_archive_calls_borg_with_lock_wait_parameters():
 
 
 def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--info'))
+    insert_execute_command_mock(('borg', 'extract', '--info', 'repo::archive'))
     insert_logging_mock(logging.INFO)
 
     module.extract_archive(
@@ -167,7 +167,7 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
 
 def test_extract_archive_with_log_debug_calls_borg_with_debug_parameters():
     insert_execute_command_mock(
-        ('borg', 'extract', 'repo::archive', '--debug', '--list', '--show-rc')
+        ('borg', 'extract', '--debug', '--list', '--show-rc', 'repo::archive')
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -182,7 +182,7 @@ def test_extract_archive_with_log_debug_calls_borg_with_debug_parameters():
 
 
 def test_extract_archive_calls_borg_with_dry_run_parameter():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--dry-run'))
+    insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive'))
 
     module.extract_archive(
         dry_run=True,
@@ -195,7 +195,7 @@ def test_extract_archive_calls_borg_with_dry_run_parameter():
 
 
 def test_extract_archive_calls_borg_with_progress_parameter():
-    insert_execute_command_mock(('borg', 'extract', 'repo::archive', '--progress'))
+    insert_execute_command_mock(('borg', 'extract', '--progress', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,

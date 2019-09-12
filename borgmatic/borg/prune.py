@@ -51,7 +51,7 @@ def prune_archives(
     lock_wait = storage_config.get('lock_wait', None)
 
     full_command = (
-        (local_path, 'prune', repository)
+        (local_path, 'prune')
         + tuple(element for pair in _make_prune_flags(retention_config) for element in pair)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
@@ -61,6 +61,7 @@ def prune_archives(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--stats',) if stats else ())
+        + (repository,)
     )
 
     execute_command(full_command)

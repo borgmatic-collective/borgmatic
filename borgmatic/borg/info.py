@@ -17,13 +17,7 @@ def display_archives_info(
     lock_wait = storage_config.get('lock_wait', None)
 
     full_command = (
-        (
-            local_path,
-            'info',
-            '::'.join((repository, info_arguments.archive))
-            if info_arguments.archive
-            else repository,
-        )
+        (local_path, 'info')
         + (
             ('--info',)
             if logger.getEffectiveLevel() == logging.INFO and not info_arguments.json
@@ -37,6 +31,11 @@ def display_archives_info(
         + make_flags('remote-path', remote_path)
         + make_flags('lock-wait', lock_wait)
         + make_flags_from_arguments(info_arguments, excludes=('repository', 'archive'))
+        + (
+            '::'.join((repository, info_arguments.archive))
+            if info_arguments.archive
+            else repository,
+        )
     )
 
     return execute_command(

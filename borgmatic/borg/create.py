@@ -126,14 +126,7 @@ def create_archive(
     archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
 
     full_command = (
-        (
-            local_path,
-            'create',
-            '{repository}::{archive_name_format}'.format(
-                repository=repository, archive_name_format=archive_name_format
-            ),
-        )
-        + sources
+        (local_path, 'create')
         + _make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
         + _make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
@@ -162,6 +155,12 @@ def create_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
         + (('--json',) if json else ())
+        + (
+            '{repository}::{archive_name_format}'.format(
+                repository=repository, archive_name_format=archive_name_format
+            ),
+        )
+        + sources
     )
 
     if json:

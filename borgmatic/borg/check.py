@@ -105,11 +105,12 @@ def check_archives(
         prefix = consistency_config.get('prefix', DEFAULT_PREFIX)
 
         full_command = (
-            (local_path, 'check', repository)
+            (local_path, 'check')
             + _make_check_flags(checks, check_last, prefix)
             + remote_path_flags
             + lock_wait_flags
             + verbosity_flags
+            + (repository,)
         )
 
         execute_command(full_command)

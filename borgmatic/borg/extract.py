@@ -19,10 +19,11 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         verbosity_flags = ('--info',)
 
     full_list_command = (
-        (local_path, 'list', '--short', repository)
+        (local_path, 'list', '--short')
         + remote_path_flags
         + lock_wait_flags
         + verbosity_flags
+        + (repository,)
     )
 
     list_output = execute_command(full_list_command, output_log_level=None)
@@ -34,18 +35,16 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
     full_extract_command = (
-        (
-            local_path,
-            'extract',
-            '--dry-run',
-            '{repository}::{last_archive_name}'.format(
-                repository=repository, last_archive_name=last_archive_name
-            ),
-        )
+        (local_path, 'extract', '--dry-run')
         + remote_path_flags
         + lock_wait_flags
         + verbosity_flags
         + list_flag
+        + (
+            '{repository}::{last_archive_name}'.format(
+                repository=repository, last_archive_name=last_archive_name
+            ),
+        )
     )
 
     execute_command(full_extract_command)
@@ -71,8 +70,7 @@ def extract_archive(
     lock_wait = storage_config.get('lock_wait', None)
 
     full_command = (
-        (local_path, 'extract', '::'.join((repository, archive)))
-        + (tuple(restore_paths) if restore_paths else ())
+        (local_path, 'extract')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
         + (('--umask', str(umask)) if umask else ())
@@ -81,6 +79,8 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
+        + ('::'.join((repository, archive)),)
+        + (tuple(restore_paths) if restore_paths else ())
     )
 
     execute_command(full_command)

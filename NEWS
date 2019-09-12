@@ -2,6 +2,7 @@
  * #208: Fix for traceback when the "checks" option has an empty value.
  * #209: Bypass Borg error about a moved repository via "relocated_repo_access_is_ok" option in
    borgmatic storage configuration section.
+ * #213: Reorder arguments passed to Borg to fix duplicate directories when using Borg patterns.
 
 1.3.14
  * #204: Do not treat Borg warnings (exit code 1) as failures.

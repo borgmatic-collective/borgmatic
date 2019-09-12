@@ -15,13 +15,7 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
     lock_wait = storage_config.get('lock_wait', None)
 
     full_command = (
-        (
-            local_path,
-            'list',
-            '::'.join((repository, list_arguments.archive))
-            if list_arguments.archive
-            else repository,
-        )
+        (local_path, 'list')
         + (
             ('--info',)
             if logger.getEffectiveLevel() == logging.INFO and not list_arguments.json
@@ -35,6 +29,11 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
         + make_flags('remote-path', remote_path)
         + make_flags('lock-wait', lock_wait)
         + make_flags_from_arguments(list_arguments, excludes=('repository', 'archive'))
+        + (
+            '::'.join((repository, list_arguments.archive))
+            if list_arguments.archive
+            else repository,
+        )
     )
 
     return execute_command(

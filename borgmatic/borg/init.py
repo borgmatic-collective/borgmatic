@@ -34,13 +34,14 @@ def initialize_repository(
             raise
 
     init_command = (
-        (local_path, 'init', repository)
+        (local_path, 'init')
         + (('--encryption', encryption_mode) if encryption_mode else ())
         + (('--append-only',) if append_only else ())
         + (('--storage-quota', storage_quota) if storage_quota else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--remote-path', remote_path) if remote_path else ())
+        + (repository,)
     )
 
     # Don't use execute_command() here because it doesn't support interactive prompts.

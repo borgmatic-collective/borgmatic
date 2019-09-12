@@ -157,7 +157,7 @@ def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
 
 
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
-CREATE_COMMAND = ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'bar')
+ARCHIVE_WITH_PATHS = ('repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'bar')
 
 
 def test_create_archive_calls_borg_with_parameters():
@@ -167,7 +167,7 @@ def test_create_archive_calls_borg_with_parameters():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND, output_log_level=logging.INFO
+        ('borg', 'create') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -192,7 +192,7 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
     flexmock(module).should_receive('_make_pattern_flags').and_return(pattern_flags)
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + pattern_flags, output_log_level=logging.INFO
+        ('borg', 'create') + pattern_flags + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -217,7 +217,7 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(exclude_flags)
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + exclude_flags, output_log_level=logging.INFO
+        ('borg', 'create') + exclude_flags + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -240,7 +240,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--info', '--stats'),
+        ('borg', 'create', '--list', '--filter', 'AME-', '--info', '--stats') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
     )
     insert_logging_mock(logging.INFO)
@@ -265,7 +265,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--json',), output_log_level=None
+        ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS, output_log_level=None
     )
     insert_logging_mock(logging.INFO)
 
@@ -289,7 +289,8 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--stats', '--debug', '--show-rc'),
+        ('borg', 'create', '--list', '--filter', 'AME-', '--stats', '--debug', '--show-rc')
+        + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
     )
     insert_logging_mock(logging.DEBUG)
@@ -313,7 +314,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--json',), output_log_level=None
+        ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS, output_log_level=None
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -338,7 +339,7 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--dry-run',), output_log_level=logging.INFO
+        ('borg', 'create', '--dry-run') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -363,7 +364,8 @@ def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_param
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--info', '--dry-run'),
+        ('borg', 'create', '--list', '--filter', 'AME-', '--info', '--dry-run')
+        + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
     )
     insert_logging_mock(logging.INFO)
@@ -390,7 +392,8 @@ def test_create_archive_with_dry_run_and_log_debug_calls_borg_without_stats_para
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--list', '--filter', 'AME-', '--debug', '--show-rc', '--dry-run'),
+        ('borg', 'create', '--list', '--filter', 'AME-', '--debug', '--show-rc', '--dry-run')
+        + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
     )
     insert_logging_mock(logging.DEBUG)
@@ -414,7 +417,8 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--checkpoint-interval', '600'), output_log_level=logging.INFO
+        ('borg', 'create', '--checkpoint-interval', '600') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -436,7 +440,8 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--chunker-params', '1,2,3,4'), output_log_level=logging.INFO
+        ('borg', 'create', '--chunker-params', '1,2,3,4') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -458,7 +463,8 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--compression', 'rle'), output_log_level=logging.INFO
+        ('borg', 'create', '--compression', 'rle') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -480,7 +486,8 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--remote-ratelimit', '100'), output_log_level=logging.INFO
+        ('borg', 'create', '--remote-ratelimit', '100') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -502,7 +509,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--one-file-system',), output_log_level=logging.INFO
+        ('borg', 'create', '--one-file-system') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -525,7 +532,7 @@ def test_create_archive_with_numeric_owner_calls_borg_with_numeric_owner_paramet
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--numeric-owner',), output_log_level=logging.INFO
+        ('borg', 'create', '--numeric-owner') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -548,7 +555,7 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--read-special',), output_log_level=logging.INFO
+        ('borg', 'create', '--read-special') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -572,7 +579,7 @@ def test_create_archive_with_option_true_calls_borg_without_corresponding_parame
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND, output_log_level=logging.INFO
+        ('borg', 'create') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -596,7 +603,8 @@ def test_create_archive_with_option_false_calls_borg_with_corresponding_paramete
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--no' + option_name.replace('_', ''),), output_log_level=logging.INFO
+        ('borg', 'create', '--no' + option_name.replace('_', '')) + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -619,7 +627,8 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--files-cache', 'ctime,size'), output_log_level=logging.INFO
+        ('borg', 'create', '--files-cache', 'ctime,size') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -642,7 +651,7 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg1',) + CREATE_COMMAND[1:], output_log_level=logging.INFO
+        ('borg1', 'create') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -665,7 +674,8 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--remote-path', 'borg1'), output_log_level=logging.INFO
+        ('borg', 'create', '--remote-path', 'borg1') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
     )
 
     module.create_archive(
@@ -688,7 +698,7 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--umask', '740'), output_log_level=logging.INFO
+        ('borg', 'create', '--umask', '740') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -710,7 +720,7 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--lock-wait', '5'), output_log_level=logging.INFO
+        ('borg', 'create', '--lock-wait', '5') + ARCHIVE_WITH_PATHS, output_log_level=logging.INFO
     )
 
     module.create_archive(
@@ -732,7 +742,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--stats',), output_log_level=logging.WARNING
+        ('borg', 'create', '--stats') + ARCHIVE_WITH_PATHS, output_log_level=logging.WARNING
     )
 
     module.create_archive(
@@ -755,7 +765,7 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--json',), output_log_level=None
+        ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS, output_log_level=None
     ).and_return('[]')
 
     json_output = module.create_archive(
@@ -780,7 +790,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        CREATE_COMMAND + ('--json',), output_log_level=None
+        ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS, output_log_level=None
     ).and_return('[]')
 
     json_output = module.create_archive(
