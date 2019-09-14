@@ -4,7 +4,7 @@ title: How to set up backups with borgmatic
 ## Installation
 
 To get up and running, first [install
-Borg](https://borgbackup.readthedocs.io/en/latest/installation.html), at
+Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at
 least version 1.1.
 
 Borgmatic consumes configurations in `/etc/borgmatic/` and `/etc/borgmatic.d/`
@@ -88,7 +88,7 @@ encrypt your Borg repository with a passphrase instead of a key file, you'll
 either need to set the borgmatic `encryption_passphrase` configuration
 variable or set the `BORG_PASSPHRASE` environment variable. See the
 [repository encryption
-section](https://borgbackup.readthedocs.io/en/latest/quickstart.html#repository-encryption)
+section](https://borgbackup.readthedocs.io/en/stable/quickstart.html#repository-encryption)
 of the Borg Quick Start for more info.
 
 Alternatively, you can specify the passphrase programatically by setting
@@ -133,11 +133,11 @@ This uses the borgmatic configuration file you created above to determine
 which local or remote repository to create, and encrypts it with the
 encryption passphrase specified there if one is provided. Read about [Borg
 encryption
-modes](https://borgbackup.readthedocs.io/en/latest/usage/init.html#encryption-modes)
+modes](https://borgbackup.readthedocs.io/en/stable/usage/init.html#encryption-modes)
 for the menu of available encryption modes.
 
 Also, optionally check out the [Borg Quick
-Start](https://borgbackup.readthedocs.org/en/latest/quickstart.html) for more
+Start](https://borgbackup.readthedocs.org/en/stable/quickstart.html) for more
 background about repository initialization.
 
 Note that borgmatic skips repository initialization if the repository already
