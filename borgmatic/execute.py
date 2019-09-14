@@ -57,7 +57,7 @@ def execute_command(full_command, output_log_level=logging.INFO, shell=False):
     logger.debug(' '.join(full_command))
 
     if output_log_level is None:
-        output = subprocess.check_output(full_command, stderr=subprocess.STDOUT, shell=shell)
+        output = subprocess.check_output(full_command, shell=shell)
         return output.decode() if output is not None else None
     else:
         execute_and_log_output(full_command, output_log_level, shell=shell)
