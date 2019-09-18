@@ -45,10 +45,10 @@ def _comment_out_line(line):
     # Comment out the names of optional sections.
     one_indent = ' ' * INDENT
     if not line.startswith(one_indent):
-        return '#' + line
+        return '# ' + line
 
     # Otherwise, comment out the line, but insert the "#" after the first indent for aesthetics.
-    return '#'.join((one_indent, line[INDENT:]))
+    return '# '.join((one_indent, line[INDENT:]))
 
 
 REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
