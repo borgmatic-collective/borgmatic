@@ -31,17 +31,17 @@ def test_comment_out_line_skips_already_commented_out_line():
 def test_comment_out_line_comments_section_name():
     line = 'figgy-pudding:'
 
-    assert module._comment_out_line(line) == '#' + line
+    assert module._comment_out_line(line) == '# ' + line
 
 
 def test_comment_out_line_comments_indented_option():
     line = '    enabled: true'
 
-    assert module._comment_out_line(line) == '    #enabled: true'
+    assert module._comment_out_line(line) == '    # enabled: true'
 
 
 def test_comment_out_optional_configuration_comments_optional_config_only():
-    flexmock(module)._comment_out_line = lambda line: '#' + line
+    flexmock(module)._comment_out_line = lambda line: '# ' + line
     config = '''
 foo:
     bar:
@@ -57,17 +57,17 @@ location:
     '''
 
     expected_config = '''
-#foo:
-#    bar:
-#        - baz
-#        - quux
-#
+# foo:
+#     bar:
+#         - baz
+#         - quux
+# 
 location:
     repositories:
         - one
         - two
-#
-#    other: thing
+# 
+#     other: thing
     '''
 
     assert module._comment_out_optional_configuration(config.strip()) == expected_config.strip()
