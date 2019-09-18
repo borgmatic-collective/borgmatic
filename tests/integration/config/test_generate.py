@@ -56,6 +56,7 @@ location:
     other: thing
     '''
 
+    # flake8: noqa
     expected_config = '''
 # foo:
 #     bar:
