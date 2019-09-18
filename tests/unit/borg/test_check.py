@@ -46,10 +46,34 @@ def test_parse_checks_with_disabled_returns_no_checks():
     assert checks == ()
 
 
+def test_parse_checks_with_data_check_also_injects_archives():
+    checks = module._parse_checks({'checks': ['data']})
+
+    assert checks == ('data', 'archives')
+
+
+def test_parse_checks_with_data_check_passes_through_archives():
+    checks = module._parse_checks({'checks': ['data', 'archives']})
+
+    assert checks == ('data', 'archives')
+
+
 def test_make_check_flags_with_repository_check_returns_flag():
     flags = module._make_check_flags(('repository',))
 
     assert flags == ('--repository-only',)
+
+
+def test_make_check_flags_with_archives_check_returns_flag():
+    flags = module._make_check_flags(('archives',))
+
+    assert flags == ('--archives-only',)
+
+
+def test_make_check_flags_with_data_check_returns_flag():
+    flags = module._make_check_flags(('data',))
+
+    assert flags == ('--verify-data',)
 
 
 def test_make_check_flags_with_extract_omits_extract_flag():

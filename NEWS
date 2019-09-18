@@ -1,4 +1,5 @@
 1.3.16.dev0
+ * #210: Support for Borg check --verify-data flag via borgmatic "data" consistency check.
  * When generating sample configuration with generate-borgmatic-config, add a space after each "#"
    comment indicator.
 

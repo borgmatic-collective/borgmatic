@@ -24,14 +24,17 @@ def _parse_checks(consistency_config):
 
     If no "checks" option is present, return the DEFAULT_CHECKS. If the checks value is the string
     "disabled", return an empty tuple, meaning that no checks should be run.
+
+    If the "data" option is present, then make sure the "archives" option is included as well.
     '''
-    checks = consistency_config.get('checks', []) or []
+    checks = [check.lower() for check in (consistency_config.get('checks', []) or [])]
     if checks == ['disabled']:
         return ()
 
-    return (
-        tuple(check for check in checks if check.lower() not in ('disabled', '')) or DEFAULT_CHECKS
-    )
+    if 'data' in checks and 'archives' not in checks:
+        checks.append('archives')
+
+    return tuple(check for check in checks if check not in ('disabled', '')) or DEFAULT_CHECKS
 
 
 def _make_check_flags(checks, check_last=None, prefix=None):
@@ -68,13 +71,14 @@ def _make_check_flags(checks, check_last=None, prefix=None):
                 'Ignoring consistency prefix option, as "archives" is not in consistency checks.'
             )
 
+    common_flags = last_flags + prefix_flags + (('--verify-data',) if 'data' in checks else ())
+
     if set(DEFAULT_CHECKS).issubset(set(checks)):
-        return last_flags + prefix_flags
+        return common_flags
 
     return (
         tuple('--{}-only'.format(check) for check in checks if check in DEFAULT_CHECKS)
-        + last_flags
-        + prefix_flags
+        + common_flags
     )
 
 
@@ -91,7 +95,7 @@ def check_archives(
     check_last = consistency_config.get('check_last', None)
     lock_wait = None
 
-    if set(checks).intersection(set(DEFAULT_CHECKS)):
+    if set(checks).intersection(set(DEFAULT_CHECKS + ('data',))):
         remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
         lock_wait = storage_config.get('lock_wait', None)
         lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()

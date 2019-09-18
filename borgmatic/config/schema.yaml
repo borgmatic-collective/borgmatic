@@ -290,14 +290,15 @@ map:
             checks:
                 seq:
                     - type: str
-                      enum: ['repository', 'archives', 'extract', 'disabled']
+                      enum: ['repository', 'archives', 'data', 'extract', 'disabled']
                       unique: true
                 desc: |
-                    List of one or more consistency checks to run: "repository", "archives", and/or
-                    "extract". Defaults to "repository" and "archives". Set to "disabled" to disable
-                    all consistency checks. "repository" checks the consistency of the repository,
-                    "archive" checks all of the archives, and "extract" does an extraction dry-run
-                    of the most recent archive.
+                    List of one or more consistency checks to run: "repository", "archives", "data",
+                    and/or "extract". Defaults to "repository" and "archives". Set to "disabled" to
+                    disable all consistency checks. "repository" checks the consistency of the
+                    repository, "archives" checks all of the archives, "data" verifies the integrity
+                    of the data within the archives, and "extract" does an extraction dry-run of the
+                    most recent archive. Note that "data" implies "archives".
                 example:
                     - repository
                     - archives
