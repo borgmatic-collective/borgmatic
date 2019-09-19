@@ -68,6 +68,16 @@ consistency:
         - path/of/repository_to_check.borg
 ```
 
+Finally, you can override your configuration file's consistency checks, and
+run particular checks via the command-line. For instance:
+
+```bash
+borgmatic check --only data --only extract
+```
+
+This is useful for running slow consistency checks on an infrequent basis,
+separate from your regular checks.
+
 
 ## Troubleshooting
 
