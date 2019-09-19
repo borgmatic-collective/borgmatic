@@ -1,4 +1,4 @@
-FROM python:3.7.3-alpine3.10 as borgmatic
+FROM python:3.7.4-alpine3.10 as borgmatic
 
 COPY . /app
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
@@ -7,7 +7,7 @@ RUN borgmatic --help > /command-line.txt \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 
-FROM node:12.4.0-alpine as html
+FROM node:12.10.0-alpine as html
 
 WORKDIR /source
 
@@ -23,7 +23,7 @@ COPY . /source
 RUN npx eleventy --input=/source/docs --output=/output/docs \
   && mv /output/docs/index.html /output/index.html
 
-FROM nginx:1.16.0-alpine
+FROM nginx:1.16.1-alpine
 
 COPY --from=html /output /usr/share/nginx/html
 COPY --from=borgmatic /etc/borgmatic/config.yaml /usr/share/nginx/html/docs/reference/config.yaml
