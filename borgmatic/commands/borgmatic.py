@@ -147,7 +147,12 @@ def run_actions(
     if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
-            repository, storage, consistency, local_path=local_path, remote_path=remote_path
+            repository,
+            storage,
+            consistency,
+            local_path=local_path,
+            remote_path=remote_path,
+            only_checks=arguments['check'].only,
         )
     if 'extract' in arguments:
         if arguments['extract'].repository is None or repository == arguments['extract'].repository:

@@ -10,9 +10,10 @@ DEFAULT_PREFIX = '{hostname}-'
 logger = logging.getLogger(__name__)
 
 
-def _parse_checks(consistency_config):
+def _parse_checks(consistency_config, only_checks=None):
     '''
-    Given a consistency config with a "checks" list, transform it to a tuple of named checks to run.
+    Given a consistency config with a "checks" list, and an optional list of override checks,
+    transform them a tuple of named checks to run.
 
     For example, given a retention config of:
 
@@ -22,12 +23,14 @@ def _parse_checks(consistency_config):
 
         ('repository', 'archives')
 
-    If no "checks" option is present, return the DEFAULT_CHECKS. If the checks value is the string
-    "disabled", return an empty tuple, meaning that no checks should be run.
+    If no "checks" option is present in the config, return the DEFAULT_CHECKS. If the checks value
+    is the string "disabled", return an empty tuple, meaning that no checks should be run.
 
     If the "data" option is present, then make sure the "archives" option is included as well.
     '''
-    checks = [check.lower() for check in (consistency_config.get('checks', []) or [])]
+    checks = [
+        check.lower() for check in (only_checks or consistency_config.get('checks', []) or [])
+    ]
     if checks == ['disabled']:
         return ()
 
@@ -83,15 +86,21 @@ def _make_check_flags(checks, check_last=None, prefix=None):
 
 
 def check_archives(
-    repository, storage_config, consistency_config, local_path='borg', remote_path=None
+    repository,
+    storage_config,
+    consistency_config,
+    local_path='borg',
+    remote_path=None,
+    only_checks=None,
 ):
     '''
     Given a local or remote repository path, a storage config dict, a consistency config dict,
-    and a local/remote commands to run, check the contained Borg archives for consistency.
+    local/remote commands to run, and an optional list of checks to use instead of configured
+    checks, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
-    checks = _parse_checks(consistency_config)
+    checks = _parse_checks(consistency_config, only_checks)
     check_last = consistency_config.get('check_last', None)
     lock_wait = None
 

@@ -1,5 +1,6 @@
-1.3.16.dev0
+1.3.16
  * #210: Support for Borg check --verify-data flag via borgmatic "data" consistency check.
+ * #210: Override configured consistency checks via "borgmatic check --only" command-line flag.
  * When generating sample configuration with generate-borgmatic-config, add a space after each "#"
    comment indicator.
 

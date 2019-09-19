@@ -212,6 +212,14 @@ def parse_arguments(*unparsed_arguments):
         add_help=False,
     )
     check_group = check_parser.add_argument_group('check arguments')
+    check_group.add_argument(
+        '--only',
+        metavar='CHECK',
+        choices=('repository', 'archives', 'data', 'extract'),
+        dest='only',
+        action='append',
+        help='Run a particular consistency check instead of configured checks (can specify multiple times)',
+    )
     check_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     extract_parser = subparsers.add_parser(
