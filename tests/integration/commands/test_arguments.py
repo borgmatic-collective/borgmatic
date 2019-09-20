@@ -322,12 +322,6 @@ def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_valu
         module.parse_arguments('--stats', 'list')
 
 
-def test_parse_arguments_with_just_stats_flag_does_not_raise():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--stats')
-
-
 def test_parse_arguments_allows_json_with_list_or_info():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -346,3 +340,21 @@ def test_parse_arguments_disallows_json_with_both_list_and_info():
 
     with pytest.raises(ValueError):
         module.parse_arguments('list', 'info', '--json')
+
+
+def test_parse_arguments_check_only_extract_does_not_raise_extract_subparser_error():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('check', '--only', 'extract')
+
+
+def test_parse_arguments_extract_archive_check_does_not_raise_check_subparser_error():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('extract', '--archive', 'check')
+
+
+def test_parse_arguments_extract_with_check_only_extract_does_not_raise():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('extract', '--archive', 'name', 'check', '--only', 'extract')

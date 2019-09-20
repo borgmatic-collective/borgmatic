@@ -14,14 +14,14 @@ SUBPARSER_ALIASES = {
 }
 
 
-def parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers):
+def parse_subparser_arguments(unparsed_arguments, subparsers):
     '''
-    Given a sequence of arguments, a top-level parser (containing subparsers), and a subparsers
-    object as returned by argparse.ArgumentParser().add_subparsers(), ask each subparser to parse
-    its own arguments and the top-level parser to parse any remaining arguments.
+    Given a sequence of arguments, and a subparsers object as returned by
+    argparse.ArgumentParser().add_subparsers(), give each requested action's subparser a shot at
+    parsing all arguments. This allows common arguments like "--repository" to be shared across
+    multiple subparsers.
 
-    Return the result as a dict mapping from subparser name (or "global") to a parsed namespace of
-    arguments.
+    Return the result as a dict mapping from subparser name to a parsed namespace of arguments.
     '''
     arguments = collections.OrderedDict()
     remaining_arguments = list(unparsed_arguments)
@@ -31,33 +31,61 @@ def parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers):
         for alias in aliases
     }
 
-    # Give each requested action's subparser a shot at parsing all arguments.
     for subparser_name, subparser in subparsers.choices.items():
-        if subparser_name not in unparsed_arguments:
+        if subparser_name not in remaining_arguments:
             continue
 
-        remaining_arguments.remove(subparser_name)
         canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
 
-        parsed, remaining = subparser.parse_known_args(unparsed_arguments)
+        # If a parsed value happens to be the same as the name of a subparser, remove it from the
+        # remaining arguments. This prevents, for instance, "check --only extract" from triggering
+        # the "extract" subparser.
+        parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
+        for value in vars(parsed).values():
+            if isinstance(value, str):
+                if value in subparsers.choices:
+                    remaining_arguments.remove(value)
+            elif isinstance(value, list):
+                for item in value:
+                    if item in subparsers.choices:
+                        remaining_arguments.remove(item)
+
         arguments[canonical_name] = parsed
 
     # If no actions are explicitly requested, assume defaults: prune, create, and check.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
         for subparser_name in ('prune', 'create', 'check'):
             subparser = subparsers.choices[subparser_name]
-            parsed, remaining = subparser.parse_known_args(unparsed_arguments)
+            parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
             arguments[subparser_name] = parsed
 
-    # Then ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
-    # are global arguments.
-    for subparser_name in arguments.keys():
-        subparser = subparsers.choices[subparser_name]
-        parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
-
-    arguments['global'] = top_level_parser.parse_args(remaining_arguments)
-
     return arguments
+
+
+def parse_global_arguments(unparsed_arguments, top_level_parser, subparsers):
+    '''
+    Given a sequence of arguments, a top-level parser (containing subparsers), and a subparsers
+    object as returned by argparse.ArgumentParser().add_subparsers(), parse and return any global
+    arguments as a parsed argparse.Namespace instance.
+    '''
+    # Ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
+    # are global arguments.
+    remaining_arguments = list(unparsed_arguments)
+    present_subparser_names = set()
+
+    for subparser_name, subparser in subparsers.choices.items():
+        if subparser_name not in remaining_arguments:
+            continue
+
+        present_subparser_names.add(subparser_name)
+        unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
+
+    # Remove the subparser names themselves.
+    for subparser_name in present_subparser_names:
+        if subparser_name in remaining_arguments:
+            remaining_arguments.remove(subparser_name)
+
+    return top_level_parser.parse_args(remaining_arguments)
 
 
 def parse_arguments(*unparsed_arguments):
@@ -339,7 +367,8 @@ def parse_arguments(*unparsed_arguments):
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    arguments = parse_subparser_arguments(unparsed_arguments, top_level_parser, subparsers)
+    arguments = parse_subparser_arguments(unparsed_arguments, subparsers)
+    arguments['global'] = parse_global_arguments(unparsed_arguments, top_level_parser, subparsers)
 
     if arguments['global'].excludes_filename:
         raise ValueError(
