@@ -80,6 +80,16 @@ def parse_global_arguments(unparsed_arguments, top_level_parser, subparsers):
         present_subparser_names.add(subparser_name)
         unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
 
+    # If no actions are explicitly requested, assume defaults: prune, create, and check.
+    if (
+        not present_subparser_names
+        and '--help' not in unparsed_arguments
+        and '-h' not in unparsed_arguments
+    ):
+        for subparser_name in ('prune', 'create', 'check'):
+            subparser = subparsers.choices[subparser_name]
+            unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
+
     # Remove the subparser names themselves.
     for subparser_name in present_subparser_names:
         if subparser_name in remaining_arguments:

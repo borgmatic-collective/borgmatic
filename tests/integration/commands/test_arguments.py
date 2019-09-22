@@ -78,6 +78,18 @@ def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
     assert 'check' in arguments
 
 
+def test_parse_arguments_with_no_actions_passes_argument_to_relevant_actions():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('--stats')
+
+    assert 'prune' in arguments
+    assert arguments['prune'].stats
+    assert 'create' in arguments
+    assert arguments['create'].stats
+    assert 'check' in arguments
+
+
 def test_parse_arguments_with_help_and_no_actions_shows_global_help(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

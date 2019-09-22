@@ -1,3 +1,6 @@
+1.3.18
+ * #220: Fix regression of argument parsing for default actions.
+
 1.3.17
  * #217: Fix error with "borgmatic check --only" command-line flag with "extract" consistency check.
 
