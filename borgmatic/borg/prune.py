@@ -64,4 +64,4 @@ def prune_archives(
         + (repository,)
     )
 
-    execute_command(full_command)
+    execute_command(full_command, output_log_level=logging.WARNING if stats else logging.INFO)
