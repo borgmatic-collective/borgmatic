@@ -20,6 +20,16 @@ Or, for even more progress and debug spew:
 borgmatic --verbosity 2
 ```
 
+## Backup summary
+
+If you're less concerned with progress during a backup, and you just want to
+see the summary of archive statistics at the end, you can use the stats
+option:
+
+```bash
+borgmatic --stats
+```
+
 ## Existing backups
 
 Borgmatic provides convenient flags for Borg's
