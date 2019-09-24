@@ -1,3 +1,0 @@
-# You can drop this file into /etc/cron.d/ to run borgmatic nightly.
-
-0 3 * * * PATH=$PATH:/usr/bin /root/.local/bin/borgmatic --syslog-verbosity 1
