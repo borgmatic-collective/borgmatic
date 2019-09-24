@@ -2,6 +2,7 @@
 Description=borgmatic backup
 Wants=network-online.target
 After=network-online.target
+ConditionACPower=true
 
 [Service]
 Type=oneshot
