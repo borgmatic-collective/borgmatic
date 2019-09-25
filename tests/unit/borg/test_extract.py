@@ -195,7 +195,9 @@ def test_extract_archive_calls_borg_with_dry_run_parameter():
 
 
 def test_extract_archive_calls_borg_with_progress_parameter():
-    insert_execute_command_mock(('borg', 'extract', '--progress', 'repo::archive'))
+    flexmock(module).should_receive('execute_command_without_capture').with_args(
+        ('borg', 'extract', '--progress', 'repo::archive')
+    ).once()
 
     module.extract_archive(
         dry_run=False,

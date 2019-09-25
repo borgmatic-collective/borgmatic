@@ -4,7 +4,7 @@ import logging
 import os
 import tempfile
 
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_without_capture
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +162,12 @@ def create_archive(
         )
         + sources
     )
+
+    # The progress output isn't compatible with captured and logged output, as progress messes with
+    # the terminal directly.
+    if progress:
+        execute_command_without_capture(full_command)
+        return
 
     if json:
         output_log_level = None

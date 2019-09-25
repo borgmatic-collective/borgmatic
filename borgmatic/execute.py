@@ -61,3 +61,18 @@ def execute_command(full_command, output_log_level=logging.INFO, shell=False):
         return output.decode() if output is not None else None
     else:
         execute_and_log_output(full_command, output_log_level, shell=shell)
+
+
+def execute_command_without_capture(full_command):
+    '''
+    Execute the given command (a sequence of command/argument strings), but don't capture or log its
+    output in any way. This is necessary for commands that monkey with the terminal (e.g. progress
+    display) or provide interactive prompts.
+    '''
+    logger.debug(' '.join(full_command))
+
+    try:
+        subprocess.check_call(full_command)
+    except subprocess.CalledProcessError as error:
+        if error.returncode >= BORG_ERROR_EXIT_CODE:
+            raise

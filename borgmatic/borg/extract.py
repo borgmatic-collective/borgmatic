@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_without_capture
 
 logger = logging.getLogger(__name__)
 
@@ -82,5 +82,11 @@ def extract_archive(
         + ('::'.join((repository, archive)),)
         + (tuple(restore_paths) if restore_paths else ())
     )
+
+    # The progress output isn't compatible with captured and logged output, as progress messes with
+    # the terminal directly.
+    if progress:
+        execute_command_without_capture(full_command)
+        return
 
     execute_command(full_command)
