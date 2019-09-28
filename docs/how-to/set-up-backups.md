@@ -7,11 +7,11 @@ To get up and running, first [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at
 least version 1.1.
 
-Borgmatic consumes configurations in `/etc/borgmatic/` and `/etc/borgmatic.d/`
-by default. Therefore, we show how to install borgmatic for the root user which
-will have access permissions for these locations by default.
+By default, borgmatic looks for its configuration files in `/etc/borgmatic/`
+and `/etc/borgmatic.d/`, where the root user typically has read access.
 
-Run the following commands to download and install borgmatic:
+So, to download and install borgmatic as the root user, run the following
+commands:
 
 ```bash
 sudo pip3 install --user --upgrade borgmatic
@@ -39,6 +39,7 @@ borgmatic:
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [stand-alone binary](https://github.com/cmarquardt/borgmatic-binary)
+ * [virtualenv](https://virtualenv.pypa.io/en/stable/)
 
 
 ## Hosting providers

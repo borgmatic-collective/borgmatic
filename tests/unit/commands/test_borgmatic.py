@@ -24,10 +24,40 @@ def test_load_configurations_logs_critical_for_parse_error():
     configs, logs = tuple(module.load_configurations(('test.yaml',)))
 
     assert configs == {}
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+
+
+def test_make_error_log_records_generates_output_logs_for_called_process_error():
+    logs = tuple(
+        module.make_error_log_records(
+            subprocess.CalledProcessError(1, 'ls', 'error output'), 'Error'
+        )
+    )
+
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+    assert any(log for log in logs if 'error output' in str(log))
+
+
+def test_make_error_log_records_generates_logs_for_value_error():
+    logs = tuple(module.make_error_log_records(ValueError(), 'Error'))
+
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+
+
+def test_make_error_log_records_generates_logs_for_os_error():
+    logs = tuple(module.make_error_log_records(OSError(), 'Error'))
+
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+
+
+def test_make_error_log_records_generates_nothing_for_other_error():
+    logs = tuple(module.make_error_log_records(KeyError(), 'Error'))
+
+    assert logs == ()
 
 
 def test_collect_configuration_run_summary_logs_info_for_success():
+    flexmock(module.hook).should_receive('execute_hook').never()
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {}
 
@@ -35,7 +65,18 @@ def test_collect_configuration_run_summary_logs_info_for_success():
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert all(log for log in logs if log.levelno == module.logging.INFO)
+    assert {log.levelno for log in logs} == {module.logging.INFO}
+
+
+def test_collect_configuration_run_summary_executes_hooks_for_create():
+    flexmock(module).should_receive('run_configuration').and_return([])
+    arguments = {'create': flexmock(), 'global': flexmock(dry_run=False)}
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {module.logging.INFO}
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
@@ -47,7 +88,7 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert all(log for log in logs if log.levelno == module.logging.INFO)
+    assert {log.levelno for log in logs} == {module.logging.INFO}
 
 
 def test_collect_configuration_run_summary_logs_critical_for_extract_with_repository_error():
@@ -60,7 +101,30 @@ def test_collect_configuration_run_summary_logs_critical_for_extract_with_reposi
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+
+
+def test_collect_configuration_run_summary_logs_critical_for_pre_hook_error():
+    flexmock(module.hook).should_receive('execute_hook').and_raise(ValueError)
+    arguments = {'create': flexmock(), 'global': flexmock(dry_run=False)}
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
+
+
+def test_collect_configuration_run_summary_logs_critical_for_post_hook_error():
+    flexmock(module.hook).should_receive('execute_hook').and_return(None).and_raise(ValueError)
+    flexmock(module).should_receive('run_configuration').and_return([])
+    arguments = {'create': flexmock(), 'global': flexmock(dry_run=False)}
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {module.logging.INFO, module.logging.CRITICAL}
 
 
 def test_collect_configuration_run_summary_logs_critical_for_list_with_archive_and_repository_error():
@@ -73,7 +137,7 @@ def test_collect_configuration_run_summary_logs_critical_for_list_with_archive_a
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_list():
@@ -84,7 +148,7 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_list():
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert all(log for log in logs if log.levelno == module.logging.INFO)
+    assert {log.levelno for log in logs} == {module.logging.INFO}
 
 
 def test_collect_configuration_run_summary_logs_critical_for_run_value_error():
@@ -96,7 +160,7 @@ def test_collect_configuration_run_summary_logs_critical_for_run_value_error():
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
 
 
 def test_collect_configuration_run_summary_logs_critical_including_output_for_run_process_error():
@@ -110,7 +174,7 @@ def test_collect_configuration_run_summary_logs_critical_including_output_for_ru
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
 
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}
     assert any(log for log in logs if 'error output' in str(log))
 
 
@@ -134,4 +198,4 @@ def test_collect_configuration_run_summary_logs_critical_for_missing_configs():
 
     logs = tuple(module.collect_configuration_run_summary_logs({}, arguments=arguments))
 
-    assert any(log for log in logs if log.levelno == module.logging.CRITICAL)
+    assert {log.levelno for log in logs} == {module.logging.CRITICAL}

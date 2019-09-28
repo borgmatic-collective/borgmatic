@@ -53,6 +53,8 @@ def execute_command(full_command, output_log_level=logging.INFO, shell=False):
     Execute the given command (a sequence of command/argument strings) and log its output at the
     given log level. If output log level is None, instead capture and return the output. If
     shell is True, execute the command within a shell.
+
+    Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
     logger.debug(' '.join(full_command))
 

@@ -337,31 +337,52 @@ map:
                 example: false
     hooks:
         desc: |
-            Shell commands or scripts to execute before and after a backup or if an error has occurred.
-            IMPORTANT: All provided commands and scripts are executed with user permissions of borgmatic.
-            Do not forget to set secure permissions on this file as well as on any script listed (chmod 0700) to
-            prevent potential shell injection or privilege escalation.
+            Shell commands or scripts to execute at various points during a borgmatic run.
+            IMPORTANT: All provided commands and scripts are executed with user permissions of
+            borgmatic. Do not forget to set secure permissions on this configuration file (chmod
+            0600) as well as on any script called from a hook (chmod 0700) to prevent potential
+            shell injection or privilege escalation.
         map:
             before_backup:
                 seq:
                     - type: str
-                desc: List of one or more shell commands or scripts to execute before creating a backup.
+                desc: |
+                    List of one or more shell commands or scripts to execute before creating a
+                    backup, run once per configuration file.
                 example:
-                    - echo "Starting a backup job."
+                    - echo "Starting a backup."
             after_backup:
                 seq:
                     - type: str
-                desc: List of one or more shell commands or scripts to execute after creating a backup.
+                desc: |
+                    List of one or more shell commands or scripts to execute after creating a
+                    backup, run once per configuration file.
                 example:
-                    - echo "Backup created."
+                    - echo "Created a backup."
             on_error:
                 seq:
                     - type: str
                 desc: |
                     List of one or more shell commands or scripts to execute when an exception occurs
-                    during a backup or when running a hook.
+                    during a backup or when running a before_backup or after_backup hook.
                 example:
-                    - echo "Error while creating a backup or running a hook."
+                    - echo "Error while creating a backup or running a backup hook."
+            before_everything:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute before running all
+                    actions (if one of them is "create"), run once before all configuration files.
+                example:
+                    - echo "Starting actions."
+            after_everything:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute after running all
+                    actions (if one of them is "create"), run once after all configuration files.
+                example:
+                    - echo "Completed actions."
             umask:
                 type: scalar
                 desc: Umask used when executing hooks. Defaults to the umask that borgmatic is run with.

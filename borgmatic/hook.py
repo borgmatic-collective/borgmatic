@@ -13,6 +13,7 @@ def execute_hook(commands, umask, config_filename, description, dry_run):
     if this is a dry run.
 
     Raise ValueError if the umask cannot be parsed.
+    Raise subprocesses.CalledProcessError if an error occurs in a hook.
     '''
     if not commands:
         logger.debug('{}: No commands to run for {} hook'.format(config_filename, description))

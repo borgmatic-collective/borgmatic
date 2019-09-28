@@ -1,3 +1,8 @@
+1.3.21
+ * #192: User-defined hooks for global setup or cleanup that run before/after all actions. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
+
 1.3.20
  * #205: More robust sample systemd service: boot delay, network dependency, lowered CPU/IO
    priority, etc.

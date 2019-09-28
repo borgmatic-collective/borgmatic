@@ -231,6 +231,32 @@ def load_configurations(config_filenames):
     return (configs, logs)
 
 
+def make_error_log_records(error, message):
+    '''
+    Given an exception object and error message text, yield a series of logging.LogRecord instances
+    with error summary information.
+    '''
+    try:
+        raise error
+    except CalledProcessError as error:
+        yield logging.makeLogRecord(
+            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        )
+        yield logging.makeLogRecord(
+            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+        )
+        yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
+    except (ValueError, OSError) as error:
+        yield logging.makeLogRecord(
+            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        )
+        yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
+    except:  # noqa: E722
+        # Raising above only as a means of determining the error type. Swallow the exception here
+        # because we don't want the exception to propagate out of this function.
+        pass
+
+
 def collect_configuration_run_summary_logs(configs, arguments):
     '''
     Given a dict of configuration filename to corresponding parsed configuration, and parsed
@@ -258,6 +284,33 @@ def collect_configuration_run_summary_logs(configs, arguments):
             )
             return
 
+    if not configs:
+        yield logging.makeLogRecord(
+            dict(
+                levelno=logging.CRITICAL,
+                levelname='CRITICAL',
+                msg='{}: No configuration files found'.format(
+                    ' '.join(arguments['global'].config_paths)
+                ),
+            )
+        )
+        return
+
+    try:
+        if 'create' in arguments:
+            for config_filename, config in configs.items():
+                hooks = config.get('hooks', {})
+                hook.execute_hook(
+                    hooks.get('before_everything'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'pre-everything',
+                    arguments['global'].dry_run,
+                )
+    except (CalledProcessError, ValueError, OSError) as error:
+        yield from make_error_log_records(error, 'Error running pre-everything hook')
+        return
+
     # Execute the actions corresponding to each configuration file.
     json_results = []
     for config_filename, config in configs.items():
@@ -270,45 +323,27 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     msg='{}: Successfully ran configuration file'.format(config_filename),
                 )
             )
-        except CalledProcessError as error:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.CRITICAL,
-                    levelname='CRITICAL',
-                    msg='{}: Error running configuration file'.format(config_filename),
-                )
-            )
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
-            )
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
-            )
-        except (ValueError, OSError) as error:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.CRITICAL,
-                    levelname='CRITICAL',
-                    msg='{}: Error running configuration file'.format(config_filename),
-                )
-            )
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+        except (CalledProcessError, ValueError, OSError) as error:
+            yield from make_error_log_records(
+                error, '{}: Error running configuration file'.format(config_filename)
             )
 
     if json_results:
         sys.stdout.write(json.dumps(json_results))
 
-    if not configs:
-        yield logging.makeLogRecord(
-            dict(
-                levelno=logging.CRITICAL,
-                levelname='CRITICAL',
-                msg='{}: No configuration files found'.format(
-                    ' '.join(arguments['global'].config_paths)
-                ),
-            )
-        )
+    try:
+        if 'create' in arguments:
+            for config_filename, config in configs.items():
+                hooks = config.get('hooks', {})
+                hook.execute_hook(
+                    hooks.get('after_everything'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-everything',
+                    arguments['global'].dry_run,
+                )
+    except (CalledProcessError, ValueError, OSError) as error:
+        yield from make_error_log_records(error, 'Error running post-everything hook')
 
 
 def exit_with_help_link():  # pragma: no cover
