@@ -28,13 +28,16 @@ logger = logging.getLogger(__name__)
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 
 
-def run_configuration(config_filename, config, arguments):  # pragma: no cover
+def run_configuration(config_filename, config, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, and command-line arguments as a
     dict from subparser name to a namespace of parsed arguments, execute its defined pruning,
     backups, consistency checks, and/or other actions.
 
-    Yield JSON output strings from executing any actions that produce JSON.
+    Yield a combination of:
+
+      * JSON output strings from successfully executing any actions that produce JSON
+      * logging.LogRecord instances containing errors from any actions or backup hooks that fail
     '''
     (location, storage, retention, consistency, hooks) = (
         config.get(section_name, {})
@@ -42,12 +45,13 @@ def run_configuration(config_filename, config, arguments):  # pragma: no cover
     )
     global_arguments = arguments['global']
 
-    try:
-        local_path = location.get('local_path', 'borg')
-        remote_path = location.get('remote_path')
-        borg_environment.initialize(storage)
+    local_path = location.get('local_path', 'borg')
+    remote_path = location.get('remote_path')
+    borg_environment.initialize(storage)
+    encountered_error = False
 
-        if 'create' in arguments:
+    if 'create' in arguments:
+        try:
             hook.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
@@ -55,20 +59,33 @@ def run_configuration(config_filename, config, arguments):  # pragma: no cover
                 'pre-backup',
                 global_arguments.dry_run,
             )
-
-        for repository_path in location['repositories']:
-            yield from run_actions(
-                arguments=arguments,
-                location=location,
-                storage=storage,
-                retention=retention,
-                consistency=consistency,
-                local_path=local_path,
-                remote_path=remote_path,
-                repository_path=repository_path,
+        except (OSError, CalledProcessError) as error:
+            encountered_error = True
+            yield from make_error_log_records(
+                '{}: Error running pre-backup hook'.format(config_filename), error
             )
 
-        if 'create' in arguments:
+    if not encountered_error:
+        for repository_path in location['repositories']:
+            try:
+                yield from run_actions(
+                    arguments=arguments,
+                    location=location,
+                    storage=storage,
+                    retention=retention,
+                    consistency=consistency,
+                    local_path=local_path,
+                    remote_path=remote_path,
+                    repository_path=repository_path,
+                )
+            except (OSError, CalledProcessError) as error:
+                encountered_error = True
+                yield from make_error_log_records(
+                    '{}: Error running actions for repository'.format(repository_path), error
+                )
+
+    if 'create' in arguments and not encountered_error:
+        try:
             hook.execute_hook(
                 hooks.get('after_backup'),
                 hooks.get('umask'),
@@ -76,15 +93,25 @@ def run_configuration(config_filename, config, arguments):  # pragma: no cover
                 'post-backup',
                 global_arguments.dry_run,
             )
-    except (OSError, CalledProcessError):
-        hook.execute_hook(
-            hooks.get('on_error'),
-            hooks.get('umask'),
-            config_filename,
-            'on-error',
-            global_arguments.dry_run,
-        )
-        raise
+        except (OSError, CalledProcessError) as error:
+            encountered_error = True
+            yield from make_error_log_records(
+                '{}: Error running post-backup hook'.format(config_filename), error
+            )
+
+    if encountered_error:
+        try:
+            hook.execute_hook(
+                hooks.get('on_error'),
+                hooks.get('umask'),
+                config_filename,
+                'on-error',
+                global_arguments.dry_run,
+            )
+        except (OSError, CalledProcessError) as error:
+            yield from make_error_log_records(
+                '{}: Error running on-error hook'.format(config_filename), error
+            )
 
 
 def run_actions(
@@ -231,11 +258,17 @@ def load_configurations(config_filenames):
     return (configs, logs)
 
 
-def make_error_log_records(error, message):
+def make_error_log_records(message, error=None):
     '''
-    Given an exception object and error message text, yield a series of logging.LogRecord instances
-    with error summary information.
+    Given error message text and an optional exception object, yield a series of logging.LogRecord
+    instances with error summary information.
     '''
+    if not error:
+        yield logging.makeLogRecord(
+            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        )
+        return
+
     try:
         raise error
     except CalledProcessError as error:
@@ -279,25 +312,17 @@ def collect_configuration_run_summary_logs(configs, arguments):
         try:
             validate.guard_configuration_contains_repository(repository, configs)
         except ValueError as error:
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
-            )
+            yield from make_error_log_records(str(error))
             return
 
     if not configs:
-        yield logging.makeLogRecord(
-            dict(
-                levelno=logging.CRITICAL,
-                levelname='CRITICAL',
-                msg='{}: No configuration files found'.format(
-                    ' '.join(arguments['global'].config_paths)
-                ),
-            )
+        yield from make_error_log_records(
+            '{}: No configuration files found'.format(' '.join(arguments['global'].config_paths))
         )
         return
 
-    try:
-        if 'create' in arguments:
+    if 'create' in arguments:
+        try:
             for config_filename, config in configs.items():
                 hooks = config.get('hooks', {})
                 hook.execute_hook(
@@ -307,15 +332,22 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     'pre-everything',
                     arguments['global'].dry_run,
                 )
-    except (CalledProcessError, ValueError, OSError) as error:
-        yield from make_error_log_records(error, 'Error running pre-everything hook')
-        return
+        except (CalledProcessError, ValueError, OSError) as error:
+            yield from make_error_log_records('Error running pre-everything hook', error)
+            return
 
     # Execute the actions corresponding to each configuration file.
     json_results = []
     for config_filename, config in configs.items():
-        try:
-            json_results.extend(list(run_configuration(config_filename, config, arguments)))
+        results = list(run_configuration(config_filename, config, arguments))
+        error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
+
+        if error_logs:
+            yield from make_error_log_records(
+                '{}: Error running configuration file'.format(config_filename)
+            )
+            yield from error_logs
+        else:
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
@@ -323,16 +355,14 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     msg='{}: Successfully ran configuration file'.format(config_filename),
                 )
             )
-        except (CalledProcessError, ValueError, OSError) as error:
-            yield from make_error_log_records(
-                error, '{}: Error running configuration file'.format(config_filename)
-            )
+            if results:
+                json_results.extend(results)
 
     if json_results:
         sys.stdout.write(json.dumps(json_results))
 
-    try:
-        if 'create' in arguments:
+    if 'create' in arguments:
+        try:
             for config_filename, config in configs.items():
                 hooks = config.get('hooks', {})
                 hook.execute_hook(
@@ -342,8 +372,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     'post-everything',
                     arguments['global'].dry_run,
                 )
-    except (CalledProcessError, ValueError, OSError) as error:
-        yield from make_error_log_records(error, 'Error running post-everything hook')
+        except (CalledProcessError, ValueError, OSError) as error:
+            yield from make_error_log_records('Error running post-everything hook', error)
 
 
 def exit_with_help_link():  # pragma: no cover
