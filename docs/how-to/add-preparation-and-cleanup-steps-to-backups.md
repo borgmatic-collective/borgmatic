@@ -47,19 +47,10 @@ but only if there is a `create` action. It runs even if an error occurs during
 a backup or a backup hook, but not if an error occurs during a
 `before_everything` hook.
 
-## Error hooks
-
 borgmatic also runs `on_error` hooks if an error occurs, either when creating
-a backup or running a backup hook. Here's an example configuration:
-
-```yaml
-hooks:
-    on_error:
-        - echo "Error while creating a backup or running a backup hook."
-```
-
-Note however that borgmatic does not run `on_error` hooks if an error occurs
-within a `before_everything` or `after_everything` hook.
+a backup or running a backup hook. See the [error alerting
+documentation](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
+for more information.
 
 ## Hook output
 

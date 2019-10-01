@@ -6,11 +6,25 @@ from borgmatic import execute
 logger = logging.getLogger(__name__)
 
 
-def execute_hook(commands, umask, config_filename, description, dry_run):
+def interpolate_context(command, context):
+    '''
+    Given a single hook command and a dict of context names/values, interpolate the values by
+    "{name}" into the command and return the result.
+    '''
+    for name, value in context.items():
+        command = command.replace('{%s}' % name, str(value))
+
+    return command
+
+
+def execute_hook(commands, umask, config_filename, description, dry_run, **context):
     '''
     Given a list of hook commands to execute, a umask to execute with (or None), a config filename,
     a hook description, and whether this is a dry run, run the given commands. Or, don't run them
     if this is a dry run.
+
+    The context contains optional values interpolated by name into the hook commands. Currently,
+    this only applies to the on_error hook.
 
     Raise ValueError if the umask cannot be parsed.
     Raise subprocesses.CalledProcessError if an error occurs in a hook.
@@ -20,6 +34,9 @@ def execute_hook(commands, umask, config_filename, description, dry_run):
         return
 
     dry_run_label = ' (dry run; not actually running hooks)' if dry_run else ''
+
+    context['configuration_filename'] = config_filename
+    commands = [interpolate_context(command, context) for command in commands]
 
     if len(commands) == 1:
         logger.info(

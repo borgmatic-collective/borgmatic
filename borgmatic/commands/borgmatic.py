@@ -48,7 +48,8 @@ def run_configuration(config_filename, config, arguments):
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
     borg_environment.initialize(storage)
-    encountered_error = False
+    encountered_error = None
+    error_repository = ''
 
     if 'create' in arguments:
         try:
@@ -60,7 +61,7 @@ def run_configuration(config_filename, config, arguments):
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
-            encountered_error = True
+            encountered_error = error
             yield from make_error_log_records(
                 '{}: Error running pre-backup hook'.format(config_filename), error
             )
@@ -79,7 +80,8 @@ def run_configuration(config_filename, config, arguments):
                     repository_path=repository_path,
                 )
             except (OSError, CalledProcessError) as error:
-                encountered_error = True
+                encountered_error = error
+                error_repository = repository_path
                 yield from make_error_log_records(
                     '{}: Error running actions for repository'.format(repository_path), error
                 )
@@ -94,7 +96,7 @@ def run_configuration(config_filename, config, arguments):
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
-            encountered_error = True
+            encountered_error = error
             yield from make_error_log_records(
                 '{}: Error running post-backup hook'.format(config_filename), error
             )
@@ -107,6 +109,9 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'on-error',
                 global_arguments.dry_run,
+                repository=error_repository,
+                error=encountered_error,
+                output=getattr(encountered_error, 'output', ''),
             )
         except (OSError, CalledProcessError) as error:
             yield from make_error_log_records(
