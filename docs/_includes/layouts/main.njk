@@ -8,5 +8,7 @@ headerClass: elv-header-default
 <main class="elv-layout{% if layoutClass %} {{ layoutClass }}{% endif %}">
     <article>
         {{ content | safe }}
+
+        {% include 'components/suggestion-form.html' %}
     </article>
 </main>
