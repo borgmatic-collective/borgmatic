@@ -32,7 +32,7 @@ borgmatic --stats
 
 ## Existing backups
 
-Borgmatic provides convenient flags for Borg's
+Borgmatic provides convenient actions for Borg's
 [list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
 [info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
 functionality:
