@@ -35,7 +35,6 @@ borgmatic:
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
- * [Arch Linux](https://aur.archlinux.org/packages/borgmatic/)
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [stand-alone binary](https://github.com/cmarquardt/borgmatic-binary)
