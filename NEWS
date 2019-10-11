@@ -1,7 +1,7 @@
 1.3.24.dev0
  * Add a suggestion form to all documentation pages, so users can submit ideas for improving the
    documentation.
- * Update documentation link to community AUR (Arch Linux) borgmatic package.
+ * Update documentation link to community Arch Linux borgmatic package.
 
 1.3.23
  * #174: More detailed error alerting via runtime context available in "on_error" hook.
