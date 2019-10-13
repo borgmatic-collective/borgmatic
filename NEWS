@@ -1,4 +1,5 @@
-1.3.24.dev0
+1.3.24
+ * #86: Add "borgmatic list --successful" flag to only list successful (non-checkpoint) archives.
  * Add a suggestion form to all documentation pages, so users can submit ideas for improving the
    documentation.
  * Update documentation link to community Arch Linux borgmatic package.

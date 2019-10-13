@@ -32,7 +32,7 @@ borgmatic --stats
 
 ## Existing backups
 
-Borgmatic provides convenient actions for Borg's
+borgmatic provides convenient actions for Borg's
 [list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
 [info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
 functionality:
@@ -45,6 +45,7 @@ borgmatic info
 
 (No borgmatic `list` or `info` actions? Try the old-style `--list` or
 `--info`. Or upgrade borgmatic!)
+
 
 ## Logging
 
@@ -134,6 +135,22 @@ formatted as JSON.
 Note that when you specify the `--json` flag, Borg's other non-JSON output is
 suppressed so as not to interfere with the captured JSON. Also note that JSON
 output only shows up at the console, and not in syslog.
+
+### Successful backups
+
+`borgmatic list` includes support for a `--successful` flag that only lists
+successful (non-checkpoint) backups. Combined with a built-in Borg flag like
+`--last`, you can list the last successful backup for use in your monitoring
+scripts. Here's an example combined with `--json`:
+
+```bash
+borgmatic list --successful --last 1 --json
+```
+
+Note that this particular combination will only work if you've got a single
+backup "series" in your repository. If you're instead backing up, say, from
+multiple different hosts into a single repository, then you'll need to get
+fancier with your archive listing. See `borg list --help` for more flags.
 
 
 ## Related documentation

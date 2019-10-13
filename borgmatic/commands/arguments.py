@@ -317,6 +317,12 @@ def parse_arguments(*unparsed_arguments):
         '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
     )
     list_group.add_argument(
+        '--successful',
+        default=False,
+        action='store_true',
+        help='Only list archive names of successful (non-checkpoint) backups',
+    )
+    list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
     )
     list_group.add_argument(
@@ -387,6 +393,9 @@ def parse_arguments(*unparsed_arguments):
 
     if 'init' in arguments and arguments['global'].dry_run:
         raise ValueError('The init action cannot be used with the --dry-run option')
+
+    if 'list' in arguments and arguments['list'].glob_archives and arguments['list'].successful:
+        raise ValueError('The --glob-archives and --successful options cannot be used together')
 
     if (
         'list' in arguments
