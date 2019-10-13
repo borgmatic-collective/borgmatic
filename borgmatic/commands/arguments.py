@@ -323,7 +323,7 @@ def parse_arguments(*unparsed_arguments):
         '--first', metavar='N', help='List first N archives after other filters are applied'
     )
     list_group.add_argument(
-        '--last', metavar='N', help='List first N archives after other filters are applied'
+        '--last', metavar='N', help='List last N archives after other filters are applied'
     )
     list_group.add_argument(
         '-e', '--exclude', metavar='PATTERN', help='Exclude paths matching the pattern'
