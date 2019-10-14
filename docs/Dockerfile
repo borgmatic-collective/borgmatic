@@ -9,6 +9,8 @@ RUN borgmatic --help > /command-line.txt \
 
 FROM node:12.10.0-alpine as html
 
+ARG ENVIRONMENT=production
+
 WORKDIR /source
 
 RUN npm install @11ty/eleventy \
@@ -20,7 +22,7 @@ RUN npm install @11ty/eleventy \
 COPY --from=borgmatic /etc/borgmatic/config.yaml /source/docs/_includes/borgmatic/config.yaml
 COPY --from=borgmatic /command-line.txt /source/docs/_includes/borgmatic/command-line.txt
 COPY . /source
-RUN npx eleventy --input=/source/docs --output=/output/docs \
+RUN NODE_ENV=${ENVIRONMENT} npx eleventy --input=/source/docs --output=/output/docs \
   && mv /output/docs/index.html /output/index.html
 
 FROM nginx:1.16.1-alpine
