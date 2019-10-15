@@ -60,6 +60,9 @@ def run_configuration(config_filename, config, arguments):
                 'pre-backup',
                 global_arguments.dry_run,
             )
+            hook.ping_healthchecks(
+                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
+            )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
             yield from make_error_log_records(
@@ -95,6 +98,9 @@ def run_configuration(config_filename, config, arguments):
                 'post-backup',
                 global_arguments.dry_run,
             )
+            hook.ping_healthchecks(
+                hooks.get('healthchecks'), config_filename, global_arguments.dry_run
+            )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
             yield from make_error_log_records(
@@ -112,6 +118,9 @@ def run_configuration(config_filename, config, arguments):
                 repository=error_repository,
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
+            )
+            hook.ping_healthchecks(
+                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'fail'
             )
         except (OSError, CalledProcessError) as error:
             yield from make_error_log_records(

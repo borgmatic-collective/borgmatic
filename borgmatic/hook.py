@@ -1,6 +1,8 @@
 import logging
 import os
 
+import requests
+
 from borgmatic import execute
 
 logger = logging.getLogger(__name__)
@@ -69,3 +71,34 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     finally:
         if original_umask:
             os.umask(original_umask)
+
+
+def ping_healthchecks(ping_url_or_uuid, config_filename, dry_run, append=None):
+    '''
+    Ping the given healthchecks.io URL or UUID, appending the append string if any. Use the given
+    configuration filename in any log entries. If this is a dry run, then don't actually ping
+    anything.
+    '''
+    if not ping_url_or_uuid:
+        logger.debug('{}: No healthchecks hook set'.format(config_filename))
+        return
+
+    ping_url = (
+        ping_url_or_uuid
+        if ping_url_or_uuid.startswith('http')
+        else 'https://hc-ping.com/{}'.format(ping_url_or_uuid)
+    )
+    dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
+
+    if append:
+        ping_url = '{}/{}'.format(ping_url, append)
+
+    logger.info(
+        '{}: Pinging healthchecks.io{}{}'.format(
+            config_filename, ' ' + append if append else '', dry_run_label
+        )
+    )
+    logger.debug('{}: Using healthchecks.io ping URL {}'.format(config_filename, ping_url))
+
+    logging.getLogger('urllib3').setLevel(logging.ERROR)
+    requests.get(ping_url)

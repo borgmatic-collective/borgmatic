@@ -228,7 +228,7 @@ found character that cannot start any token
   in "config.yaml", line 230, column 1
 ```
 
-YAML does not allow tabs. So to fix this, simply replace any tabs in your
+YAML does not allow tabs. So to fix this, replace any tabs in your
 configuration file with the requisite number of spaces.
 
 ### libyaml compilation errors
@@ -247,10 +247,6 @@ it.
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups.md)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
  * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration.md)
  * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line.md)
-
-<script>
-  var links = document.getElementsByClassName("referral");
-  links[Math.floor(Math.random() * links.length)].style.display = "none";
-</script>

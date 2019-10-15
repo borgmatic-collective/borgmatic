@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = '1.3.24'
+VERSION = '1.3.25'
 
 
 setup(
@@ -31,6 +31,7 @@ setup(
     obsoletes=['atticmatic'],
     install_requires=(
         'pykwalify>=1.6.0,<14.06',
+        'requests',
         'ruamel.yaml>0.15.0,<0.17.0',
         'setuptools',
         'colorama>=0.4.1,<0.5',

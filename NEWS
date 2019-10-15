@@ -1,3 +1,11 @@
+1.3.25
+ * #223: Dead man's switch to detect when backups start failing silently, implemented via
+   healthchecks.io hook integration. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook
+ * Documentation on monitoring and alerting options for borgmatic backups:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/
+ * Automatically rewrite links when developing on documentation locally.
+
 1.3.24
  * #86: Add "borgmatic list --successful" flag to only list successful (non-checkpoint) archives.
  * Add a suggestion form to all documentation pages, so users can submit ideas for improving the

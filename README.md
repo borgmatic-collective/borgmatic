@@ -63,6 +63,7 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
  * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
  * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
@@ -116,8 +117,3 @@ your thing. In general, contributions are very welcome. We don't bite!
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
-
-<script>
-  var links = document.getElementsByClassName("referral");
-  links[Math.floor(Math.random() * links.length)].style.display = "none";
-</script>

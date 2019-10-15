@@ -22,7 +22,7 @@ borgmatic --verbosity 2
 
 ## Backup summary
 
-If you're less concerned with progress during a backup, and you just want to
+If you're less concerned with progress during a backup, and you only want to
 see the summary of archive statistics at the end, you can use the stats
 option when performing a backup:
 
@@ -83,78 +83,10 @@ Note that the [sample borgmatic systemd service
 file](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#systemd)
 already has this rate limit disabled.
 
-## Error alerting
-
-When an error occurs during a backup, borgmatic can run configurable shell
-commands to fire off custom error notifications or take other actions, so you
-can get alerted as soon as something goes wrong. Here's a not-so-useful
-example:
-
-```yaml
-hooks:
-    on_error:
-        - echo "Error while creating a backup or running a backup hook."
-```
-
-The `on_error` hook supports interpolating particular runtime variables into
-the hook command. Here's an example that assumes you provide a separate shell
-script to handle the alerting:
-
-```yaml
-hooks:
-    on_error:
-        - send-text-message.sh "{configuration_filename}" "{repository}"
-```
-
-In this example, when the error occurs, borgmatic interpolates a few runtime
-values into the hook command: the borgmatic configuration filename, and the
-path of the repository. Here's the full set of supported variables you can use
-here:
-
- * `configuration_filename`: borgmatic configuration filename in which the
-   error occurred
- * `repository`: path of the repository in which the error occurred (may be
-   blank if the error occurs in a hook)
- * `error`: the error message itself
- * `output`: output of the command that failed (may be blank if an error
-   occurred without running a command)
-
-Note that borgmatic does not run `on_error` hooks if an error occurs within a
-`before_everything` or `after_everything` hook. For more about hooks, see the
-[borgmatic hooks
-documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups.md),
-especially the security information.
-
-
-## Scripting borgmatic
-
-To consume the output of borgmatic in other software, you can include an
-optional `--json` flag with `create`, `list`, or `info` to get the output
-formatted as JSON.
-
-Note that when you specify the `--json` flag, Borg's other non-JSON output is
-suppressed so as not to interfere with the captured JSON. Also note that JSON
-output only shows up at the console, and not in syslog.
-
-### Successful backups
-
-`borgmatic list` includes support for a `--successful` flag that only lists
-successful (non-checkpoint) backups. Combined with a built-in Borg flag like
-`--last`, you can list the last successful backup for use in your monitoring
-scripts. Here's an example combined with `--json`:
-
-```bash
-borgmatic list --successful --last 1 --json
-```
-
-Note that this particular combination will only work if you've got a single
-backup "series" in your repository. If you're instead backing up, say, from
-multiple different hosts into a single repository, then you'll need to get
-fancier with your archive listing. See `borg list --help` for more flags.
-
 
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups.md)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic.md)

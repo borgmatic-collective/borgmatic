@@ -337,8 +337,8 @@ map:
                 example: false
     hooks:
         desc: |
-            Shell commands or scripts to execute at various points during a borgmatic run.
-            IMPORTANT: All provided commands and scripts are executed with user permissions of
+            Shell commands, scripts, or integrations to execute at various points during a borgmatic
+            run. IMPORTANT: All provided commands and scripts are executed with user permissions of
             borgmatic. Do not forget to set secure permissions on this configuration file (chmod
             0600) as well as on any script called from a hook (chmod 0700) to prevent potential
             shell injection or privilege escalation.
@@ -363,10 +363,17 @@ map:
                 seq:
                     - type: str
                 desc: |
-                    List of one or more shell commands or scripts to execute when an exception occurs
-                    during a backup or when running a before_backup or after_backup hook.
+                    List of one or more shell commands or scripts to execute when an exception
+                    occurs during a backup or when running a before_backup or after_backup hook.
                 example:
                     - echo "Error while creating a backup or running a backup hook."
+            healthchecks:
+                type: str
+                desc: |
+                    Healthchecks ping URL or UUID to notify when a backup begins, ends, or errors.
+                    Create an account at https://healthchecks.io if you'd like to use this service.
+                example:
+                    https://hc-ping.com/your-uuid-here
             before_everything:
                 seq:
                     - type: str

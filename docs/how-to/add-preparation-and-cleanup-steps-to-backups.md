@@ -48,8 +48,8 @@ a backup or a backup hook, but not if an error occurs during a
 `before_everything` hook.
 
 borgmatic also runs `on_error` hooks if an error occurs, either when creating
-a backup or running a backup hook. See the [error alerting
-documentation](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
+a backup or running a backup hook. See the [monitoring and alerting
+documentation](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
 for more information.
 
 ## Hook output
@@ -73,3 +73,4 @@ invoked by hooks.
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
