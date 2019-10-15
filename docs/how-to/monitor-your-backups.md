@@ -29,10 +29,10 @@ below for how to configure this.
 4. **borgmatic Healthchecks hook**: This feature integrates with the
 [Healthchecks](https://healthchecks.io/) service, and pings Healthchecks
 whenever borgmatic runs. That way, Healthchecks can alert you when something
-goes wrong or it doesn't hear from borgmatic for a configured interval. (See
+goes wrong or it doesn't hear from borgmatic for a configured interval. See
 [Healthchecks
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
-below for how to configure this.)
+below for how to configure this.
 3. **Third-party monitoring software**: You can use traditional monitoring
 software to consume borgmatic JSON output and track when the last
 successful backup occurred. See [scripting
