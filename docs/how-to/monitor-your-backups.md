@@ -129,9 +129,15 @@ output only shows up at the console, and not in syslog.
 ### Successful backups
 
 `borgmatic list` includes support for a `--successful` flag that only lists
-successful (non-checkpoint) backups. Combined with a built-in Borg flag like
-`--last`, you can list the last successful backup for use in your monitoring
-scripts. Here's an example combined with `--json`:
+successful (non-checkpoint) backups. This flag works via a basic heuristic: It
+assumes that non-checkpoint archive names end with a digit (e.g. from a
+timestamp), while checkpoint archive names do not. This means that if you're
+using custom archive names that do not end in a digit, the `--successful` flag
+will not work as expected.
+
+Combined with a built-in Borg flag like `--last`, you can list the last
+successful backup for use in your monitoring scripts. Here's an example
+combined with `--json`:
 
 ```bash
 borgmatic list --successful --last 1 --json

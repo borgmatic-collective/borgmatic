@@ -1,3 +1,7 @@
+1.3.26
+ * #224: Fix "borgmatic list --successful" with a slightly better heuristic for listing successful
+   (non-checkpoint) archives.
+
 1.3.25
  * #223: Dead man's switch to detect when backups start failing silently, implemented via
    healthchecks.io hook integration. See the documentation for more information:
