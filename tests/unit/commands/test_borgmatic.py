@@ -22,7 +22,7 @@ def test_run_configuration_runs_actions_for_each_repository():
 
 def test_run_configuration_executes_hooks_for_create_action():
     flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.hook).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module).should_receive('run_actions').and_return([])
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(dry_run=False), 'create': flexmock()}
@@ -32,7 +32,7 @@ def test_run_configuration_executes_hooks_for_create_action():
 
 def test_run_configuration_logs_actions_error():
     flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.hook).should_receive('execute_hook')
+    flexmock(module.command).should_receive('execute_hook')
     expected_results = [flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').and_raise(OSError)
@@ -46,7 +46,7 @@ def test_run_configuration_logs_actions_error():
 
 def test_run_configuration_logs_pre_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.hook).should_receive('execute_hook').and_raise(OSError).and_return(None)
+    flexmock(module.command).should_receive('execute_hook').and_raise(OSError).and_return(None)
     expected_results = [flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').never()
@@ -60,7 +60,7 @@ def test_run_configuration_logs_pre_hook_error():
 
 def test_run_configuration_logs_post_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.hook).should_receive('execute_hook').and_return(None).and_raise(
+    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(
         OSError
     ).and_return(None)
     expected_results = [flexmock()]
@@ -76,7 +76,7 @@ def test_run_configuration_logs_post_hook_error():
 
 def test_run_configuration_logs_on_error_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.hook).should_receive('execute_hook').and_raise(OSError)
+    flexmock(module.command).should_receive('execute_hook').and_raise(OSError)
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(
         expected_results[:1]
@@ -148,7 +148,7 @@ def test_make_error_log_records_generates_nothing_for_other_error():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success():
-    flexmock(module.hook).should_receive('execute_hook').never()
+    flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {}
 
@@ -208,7 +208,7 @@ def test_collect_configuration_run_summary_logs_missing_configs_error():
 
 
 def test_collect_configuration_run_summary_logs_pre_hook_error():
-    flexmock(module.hook).should_receive('execute_hook').and_raise(ValueError)
+    flexmock(module.command).should_receive('execute_hook').and_raise(ValueError)
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('make_error_log_records').and_return(expected_logs)
     arguments = {'create': flexmock(), 'global': flexmock(dry_run=False)}
@@ -221,7 +221,7 @@ def test_collect_configuration_run_summary_logs_pre_hook_error():
 
 
 def test_collect_configuration_run_summary_logs_post_hook_error():
-    flexmock(module.hook).should_receive('execute_hook').and_return(None).and_raise(ValueError)
+    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(ValueError)
     flexmock(module).should_receive('run_configuration').and_return([])
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('make_error_log_records').and_return(expected_logs)

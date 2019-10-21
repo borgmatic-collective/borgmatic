@@ -8,7 +8,6 @@ from subprocess import CalledProcessError
 import colorama
 import pkg_resources
 
-from borgmatic import hook
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
@@ -19,6 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
+from borgmatic.hooks import command, healthchecks
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -53,14 +53,14 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments:
         try:
-            hook.execute_hook(
+            command.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
                 config_filename,
                 'pre-backup',
                 global_arguments.dry_run,
             )
-            hook.ping_healthchecks(
+            healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
             )
         except (OSError, CalledProcessError) as error:
@@ -91,14 +91,14 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments and not encountered_error:
         try:
-            hook.execute_hook(
+            command.execute_hook(
                 hooks.get('after_backup'),
                 hooks.get('umask'),
                 config_filename,
                 'post-backup',
                 global_arguments.dry_run,
             )
-            hook.ping_healthchecks(
+            healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run
             )
         except (OSError, CalledProcessError) as error:
@@ -109,7 +109,7 @@ def run_configuration(config_filename, config, arguments):
 
     if encountered_error:
         try:
-            hook.execute_hook(
+            command.execute_hook(
                 hooks.get('on_error'),
                 hooks.get('umask'),
                 config_filename,
@@ -119,7 +119,7 @@ def run_configuration(config_filename, config, arguments):
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
             )
-            hook.ping_healthchecks(
+            healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'fail'
             )
         except (OSError, CalledProcessError) as error:
@@ -339,7 +339,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         try:
             for config_filename, config in configs.items():
                 hooks = config.get('hooks', {})
-                hook.execute_hook(
+                command.execute_hook(
                     hooks.get('before_everything'),
                     hooks.get('umask'),
                     config_filename,
@@ -379,7 +379,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         try:
             for config_filename, config in configs.items():
                 hooks = config.get('hooks', {})
-                hook.execute_hook(
+                command.execute_hook(
                     hooks.get('after_everything'),
                     hooks.get('umask'),
                     config_filename,
