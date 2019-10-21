@@ -54,10 +54,10 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
         destination_config['consistency']['checks'] = source_config.consistency['checks'].split(' ')
 
     # Add comments to each section, and then add comments to the fields in each section.
-    generate.add_comments_to_configuration(destination_config, schema)
+    generate.add_comments_to_configuration_map(destination_config, schema)
 
     for section_name, section_config in destination_config.items():
-        generate.add_comments_to_configuration(
+        generate.add_comments_to_configuration_map(
             section_config, schema['map'][section_name], indent=generate.INDENT
         )
 

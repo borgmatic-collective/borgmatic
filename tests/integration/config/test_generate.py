@@ -40,6 +40,12 @@ def test_comment_out_line_comments_indented_option():
     assert module._comment_out_line(line) == '    # enabled: true'
 
 
+def test_comment_out_line_comments_twice_indented_option():
+    line = '        - item'
+
+    assert module._comment_out_line(line) == '        # - item'
+
+
 def test_comment_out_optional_configuration_comments_optional_config_only():
     flexmock(module)._comment_out_line = lambda line: '# ' + line
     config = '''
@@ -74,10 +80,10 @@ location:
     assert module._comment_out_optional_configuration(config.strip()) == expected_config.strip()
 
 
-def test_render_configuration_does_not_raise():
-    flexmock(module.yaml).should_receive('round_trip_dump')
+def test_render_configuration_converts_configuration_to_yaml_string():
+    yaml_string = module._render_configuration({'foo': 'bar'})
 
-    module._render_configuration({})
+    assert yaml_string == 'foo: bar\n'
 
 
 def test_write_configuration_does_not_raise():
@@ -107,12 +113,33 @@ def test_write_configuration_with_already_existing_directory_does_not_raise():
     module.write_configuration('config.yaml', 'config: yaml')
 
 
-def test_add_comments_to_configuration_does_not_raise():
+def test_add_comments_to_configuration_sequence_of_strings_does_not_raise():
+    config = module.yaml.comments.CommentedSeq(['foo', 'bar'])
+    schema = {'seq': [{'type': 'str'}]}
+
+    module.add_comments_to_configuration_sequence(config, schema)
+
+
+def test_add_comments_to_configuration_sequence_of_maps_does_not_raise():
+    config = module.yaml.comments.CommentedSeq([module.yaml.comments.CommentedMap([('foo', 'yo')])])
+    schema = {'seq': [{'map': {'foo': {'desc': 'yo'}}}]}
+
+    module.add_comments_to_configuration_sequence(config, schema)
+
+
+def test_add_comments_to_configuration_sequence_of_maps_without_description_does_not_raise():
+    config = module.yaml.comments.CommentedSeq([module.yaml.comments.CommentedMap([('foo', 'yo')])])
+    schema = {'seq': [{'map': {'foo': {}}}]}
+
+    module.add_comments_to_configuration_sequence(config, schema)
+
+
+def test_add_comments_to_configuration_map_does_not_raise():
     # Ensure that it can deal with fields both in the schema and missing from the schema.
     config = module.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
     schema = {'map': {'foo': {'desc': 'Foo'}, 'bar': {'desc': 'Bar'}}}
 
-    module.add_comments_to_configuration(config, schema)
+    module.add_comments_to_configuration_map(config, schema)
 
 
 def test_generate_sample_configuration_does_not_raise():

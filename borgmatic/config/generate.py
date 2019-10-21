@@ -1,8 +1,11 @@
+import io
 import os
+import re
 
 from ruamel import yaml
 
 INDENT = 4
+SEQUENCE_INDENT = 2
 
 
 def _insert_newline_before_comment(config, field_name):
@@ -15,7 +18,7 @@ def _insert_newline_before_comment(config, field_name):
     )
 
 
-def _schema_to_sample_configuration(schema, level=0):
+def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema, generate and return sample config for it. Include comments
     for each section based on the schema "desc" description.
@@ -24,14 +27,29 @@ def _schema_to_sample_configuration(schema, level=0):
     if example is not None:
         return example
 
-    config = yaml.comments.CommentedMap(
-        [
-            (section_name, _schema_to_sample_configuration(section_schema, level + 1))
-            for section_name, section_schema in schema['map'].items()
-        ]
-    )
-
-    add_comments_to_configuration(config, schema, indent=(level * INDENT))
+    if 'seq' in schema:
+        config = yaml.comments.CommentedSeq(
+            [
+                _schema_to_sample_configuration(item_schema, level, parent_is_sequence=True)
+                for item_schema in schema['seq']
+            ]
+        )
+        add_comments_to_configuration_sequence(
+            config, schema, indent=(level * INDENT) + SEQUENCE_INDENT
+        )
+    elif 'map' in schema:
+        config = yaml.comments.CommentedMap(
+            [
+                (section_name, _schema_to_sample_configuration(section_schema, level + 1))
+                for section_name, section_schema in schema['map'].items()
+            ]
+        )
+        indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
+        add_comments_to_configuration_map(
+            config, schema, indent=indent, skip_first=parent_is_sequence
+        )
+    else:
+        raise ValueError('Schema at level {} is unsupported: {}'.format(level, schema))
 
     return config
 
@@ -42,13 +60,12 @@ def _comment_out_line(line):
     if not stripped_line or stripped_line.startswith('#'):
         return line
 
-    # Comment out the names of optional sections.
-    one_indent = ' ' * INDENT
-    if not line.startswith(one_indent):
-        return '# ' + line
+    # Comment out the names of optional sections, inserting the '#' after any indent for aesthetics.
+    matches = re.match(r'(\s*)', line)
+    indent_spaces = matches.group(0) if matches else ''
+    count_indent_spaces = len(indent_spaces)
 
-    # Otherwise, comment out the line, but insert the "#" after the first indent for aesthetics.
-    return '# '.join((one_indent, line[INDENT:]))
+    return '# '.join((indent_spaces, line[count_indent_spaces:]))
 
 
 REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
@@ -90,7 +107,12 @@ def _render_configuration(config):
     '''
     Given a config data structure of nested OrderedDicts, render the config as YAML and return it.
     '''
-    return yaml.round_trip_dump(config, indent=INDENT, block_seq_indent=INDENT)
+    dumper = yaml.YAML()
+    dumper.indent(mapping=INDENT, sequence=INDENT + SEQUENCE_INDENT, offset=INDENT)
+    rendered = io.StringIO()
+    dumper.dump(config, rendered)
+
+    return rendered.getvalue()
 
 
 def write_configuration(config_filename, rendered_config, mode=0o600):
@@ -112,13 +134,49 @@ def write_configuration(config_filename, rendered_config, mode=0o600):
     os.chmod(config_filename, mode)
 
 
-def add_comments_to_configuration(config, schema, indent=0):
+def add_comments_to_configuration_sequence(config, schema, indent=0):
+    '''
+    If the given config sequence's items are maps, then mine the schema for the description of the
+    map's first item, and slap that atop the sequence. Indent the comment the given number of
+    characters.
+
+    Doing this for sequences of maps results in nice comments that look like:
+
+    ```
+    things:
+          # First key description. Added by this function.
+        - key: foo
+          # Second key description. Added by add_comments_to_configuration_map().
+          other: bar
+    ```
+    '''
+    if 'map' not in schema['seq'][0]:
+        return
+
+    for field_name in config[0].keys():
+        field_schema = schema['seq'][0]['map'].get(field_name, {})
+        description = field_schema.get('desc')
+
+        # No description to use? Skip it.
+        if not field_schema or not description:
+            return
+
+        config[0].yaml_set_start_comment(description, indent=indent)
+
+        # We only want the first key's description here, as the rest of the keys get commented by
+        # add_comments_to_configuration_map().
+        return
+
+
+def add_comments_to_configuration_map(config, schema, indent=0, skip_first=False):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
-    config before each field. This function only adds comments for the top-most config map level.
-    Indent the comment the given number of characters.
+    config mapping, before each field. Indent the comment the given number of characters.
     '''
     for index, field_name in enumerate(config.keys()):
+        if skip_first and index == 0:
+            continue
+
         field_schema = schema['map'].get(field_name, {})
         description = field_schema.get('desc')
 
@@ -127,6 +185,7 @@ def add_comments_to_configuration(config, schema, indent=0):
             continue
 
         config.yaml_set_comment_before_after_key(key=field_name, before=description, indent=indent)
+
         if index > 0:
             _insert_newline_before_comment(config, field_name)
 
