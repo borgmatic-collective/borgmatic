@@ -1,5 +1,6 @@
 1.3.27.dev0
- * #225: Database dump/restore hooks for PostgreSQL (incomplete as of right now).
+ * #225: Database dump hooks for PostgreSQL, so you can easily dump your databases before backups
+   run.
 
 1.3.26
  * #224: Fix "borgmatic list --successful" with a slightly better heuristic for listing successful
