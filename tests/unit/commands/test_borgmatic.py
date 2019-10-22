@@ -23,6 +23,9 @@ def test_run_configuration_runs_actions_for_each_repository():
 def test_run_configuration_executes_hooks_for_create_action():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.postgresql).should_receive('dump_databases').once()
+    flexmock(module.healthchecks).should_receive('ping_healthchecks').twice()
+    flexmock(module.postgresql).should_receive('remove_database_dumps').once()
     flexmock(module).should_receive('run_actions').and_return([])
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(dry_run=False), 'create': flexmock()}
@@ -33,6 +36,8 @@ def test_run_configuration_executes_hooks_for_create_action():
 def test_run_configuration_logs_actions_error():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.postgresql).should_receive('dump_databases')
+    flexmock(module.healthchecks).should_receive('ping_healthchecks')
     expected_results = [flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').and_raise(OSError)

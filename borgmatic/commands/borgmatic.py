@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, healthchecks
+from borgmatic.hooks import command, healthchecks, postgresql
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -60,6 +60,9 @@ def run_configuration(config_filename, config, arguments):
                 'pre-backup',
                 global_arguments.dry_run,
             )
+            postgresql.dump_databases(
+                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
+            )
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
             )
@@ -97,6 +100,9 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'post-backup',
                 global_arguments.dry_run,
+            )
+            postgresql.remove_database_dumps(
+                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
             )
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run

@@ -64,6 +64,23 @@ def apply_logical_validation(config_filename, parsed_configuration):
             )
 
 
+def remove_examples(schema):
+    '''
+    pykwalify gets angry if the example field is not a string. So rather than bend to its will,
+    remove all examples from the given schema before passing the schema to pykwalify.
+    '''
+    if 'map' in schema:
+        for item_name, item_schema in schema['map'].items():
+            item_schema.pop('example', None)
+            remove_examples(item_schema)
+    elif 'seq' in schema:
+        for item_schema in schema['seq']:
+            item_schema.pop('example', None)
+            remove_examples(item_schema)
+
+    return schema
+
+
 def parse_configuration(config_filename, schema_filename):
     '''
     Given the path to a config filename in YAML format and the path to a schema filename in
@@ -84,13 +101,7 @@ def parse_configuration(config_filename, schema_filename):
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
-    # pykwalify gets angry if the example field is not a string. So rather than bend to its will,
-    # remove all examples before passing the schema to pykwalify.
-    for section_name, section_schema in schema['map'].items():
-        for field_name, field_schema in section_schema['map'].items():
-            field_schema.pop('example', None)
-
-    validator = pykwalify.core.Core(source_data=config, schema_data=schema)
+    validator = pykwalify.core.Core(source_data=config, schema_data=remove_examples(schema))
     parsed_result = validator.validate(raise_exception=False)
 
     if validator.validation_errors:

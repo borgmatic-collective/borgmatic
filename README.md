@@ -41,10 +41,18 @@ retention:
     keep_monthly: 6
 
 consistency:
-    # List of consistency checks to run: "repository", "archives", or both.
+    # List of consistency checks to run: "repository", "archives", etc.
     checks:
         - repository
         - archives
+
+hooks:
+    # Preparation scripts to run, databases to dump, and monitoring to perform.
+    before_backup:
+        - prepare-for-backup.sh
+    postgresql_databases:
+        - name: users
+    healthchecks: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
 ```
 
 borgmatic is hosted at <https://torsion.org/borgmatic> with [source code

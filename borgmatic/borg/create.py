@@ -94,6 +94,20 @@ def _make_exclude_flags(location_config, exclude_filename=None):
     return exclude_from_flags + caches_flag + if_present_flags
 
 
+BORGMATIC_SOURCE_DIRECTORY = '~/.borgmatic'
+
+
+def borgmatic_source_directories():
+    '''
+    Return a list of borgmatic-specific source directories used for state like database backups.
+    '''
+    return (
+        [BORGMATIC_SOURCE_DIRECTORY]
+        if os.path.exists(os.path.expanduser(BORGMATIC_SOURCE_DIRECTORY))
+        else []
+    )
+
+
 def create_archive(
     dry_run,
     repository,
@@ -109,7 +123,9 @@ def create_archive(
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
     storage config dict, create a Borg archive and return Borg's JSON output (if any).
     '''
-    sources = _expand_directories(location_config['source_directories'])
+    sources = _expand_directories(
+        location_config['source_directories'] + borgmatic_source_directories()
+    )
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
     exclude_file = _write_pattern_file(

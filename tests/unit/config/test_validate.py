@@ -74,6 +74,27 @@ def test_apply_logical_validation_does_not_raise_otherwise():
     module.apply_logical_validation('config.yaml', {'retention': {'keep_secondly': 1000}})
 
 
+def test_remove_examples_strips_examples_from_map():
+    schema = {
+        'map': {
+            'foo': {'desc': 'thing1', 'example': 'bar'},
+            'baz': {'desc': 'thing2', 'example': 'quux'},
+        }
+    }
+
+    module.remove_examples(schema)
+
+    assert schema == {'map': {'foo': {'desc': 'thing1'}, 'baz': {'desc': 'thing2'}}}
+
+
+def test_remove_examples_strips_examples_from_sequence_of_maps():
+    schema = {'seq': [{'map': {'foo': {'desc': 'thing', 'example': 'bar'}}, 'example': 'stuff'}]}
+
+    module.remove_examples(schema)
+
+    assert schema == {'seq': [{'map': {'foo': {'desc': 'thing'}}}]}
+
+
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_in_config():
     module.guard_configuration_contains_repository(
         repository='repo', configurations={'config.yaml': {'location': {'repositories': ['repo']}}}

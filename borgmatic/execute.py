@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -8,10 +9,17 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE = 2
 
 
-def execute_and_log_output(full_command, output_log_level, shell):
+def borg_command(full_command):
+    '''
+    Return True if this is a Borg command, or False if it's some other command.
+    '''
+    return 'borg' in full_command[0]
+
+
+def execute_and_log_output(full_command, output_log_level, shell, environment):
     last_lines = []
     process = subprocess.Popen(
-        full_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell
+        full_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=shell, env=environment
     )
 
     while process.poll() is None:
@@ -33,9 +41,11 @@ def execute_and_log_output(full_command, output_log_level, shell):
 
     exit_code = process.poll()
 
-    # If shell is True, assume we're running something other than Borg and should treat all non-zero
-    # exit codes as errors.
-    error = bool(exit_code != 0) if shell else bool(exit_code >= BORG_ERROR_EXIT_CODE)
+    # If we're running something other than Borg, treat all non-zero exit codes as errors.
+    if borg_command(full_command):
+        error = bool(exit_code >= BORG_ERROR_EXIT_CODE)
+    else:
+        error = bool(exit_code != 0)
 
     if error:
         # If an error occurs, include its output in the raised exception so that we don't
@@ -48,21 +58,25 @@ def execute_and_log_output(full_command, output_log_level, shell):
         )
 
 
-def execute_command(full_command, output_log_level=logging.INFO, shell=False):
+def execute_command(
+    full_command, output_log_level=logging.INFO, shell=False, extra_environment=None
+):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
     given log level. If output log level is None, instead capture and return the output. If
-    shell is True, execute the command within a shell.
+    shell is True, execute the command within a shell. If an extra environment dict is given, then
+    use it to augment the current environment, and pass the result into the command.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
     logger.debug(' '.join(full_command))
+    environment = {**os.environ, **extra_environment} if extra_environment else None
 
     if output_log_level is None:
-        output = subprocess.check_output(full_command, shell=shell)
+        output = subprocess.check_output(full_command, shell=shell, env=environment)
         return output.decode() if output is not None else None
     else:
-        execute_and_log_output(full_command, output_log_level, shell=shell)
+        execute_and_log_output(full_command, output_log_level, shell=shell, environment=environment)
 
 
 def execute_command_without_capture(full_command):

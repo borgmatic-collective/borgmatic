@@ -367,6 +367,62 @@ map:
                     occurs during a backup or when running a before_backup or after_backup hook.
                 example:
                     - echo "Error while creating a backup or running a backup hook."
+            postgresql_databases:
+                seq:
+                    - map:
+                        name:
+                            required: true
+                            type: str
+                            desc: |
+                                Database name (required if using this hook). Or "all" to dump all
+                                databases on the host.
+                            example: users
+                        hostname:
+                            type: str
+                            desc: |
+                                Database hostname to connect to. Defaults to connecting via local
+                                Unix socket.
+                            example: database.example.org
+                        port:
+                            type: int
+                            desc: Port to connect to. Defaults to 5432.
+                            example: 5433
+                        username:
+                            type: str
+                            desc: |
+                                Username with which to connect to the database. Defaults to the
+                                username of the current user. You probably want to specify the
+                                "postgres" superuser here when the database name is "all".
+                            example: dbuser
+                        password:
+                            type: str
+                            desc: |
+                                Password with which to connect to the database. Omitting a password
+                                will only work if PostgreSQL is configured to trust the configured
+                                username without a password, or you create a ~/.pgpass file.
+                            example: trustsome1
+                        format:
+                            type: str
+                            enum: ['plain', 'custom', 'directory', 'tar']
+                            desc: |
+                                Database dump output format. One of "plain", "custom", "directory",
+                                or "tar". Defaults to "custom" (unlike raw pg_dump). See
+                                https://www.postgresql.org/docs/current/app-pgdump.html for details.
+                                Note that format is ignored when the database name is "all".
+                            example: directory
+                        options:
+                            type: str
+                            desc: |
+                                Additional pg_dump/pg_dumpall options to pass directly to the dump
+                                command, without performing any validation on them. See
+                                https://www.postgresql.org/docs/current/app-pgdump.html for details.
+                            example: --role=someone
+                desc: |
+                    List of one or more PostgreSQL databases to dump before creating a backup,
+                    run once per configuration file. The database dumps are added to your source
+                    directories at runtime, backed up, and then removed afterwards. Requires
+                    pg_dump/pg_dumpall/pg_restore commands. See
+                    https://www.postgresql.org/docs/current/app-pgdump.html for details.
             healthchecks:
                 type: str
                 desc: |
