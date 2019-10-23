@@ -153,3 +153,35 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
     ).once()
 
     module.dump_databases(databases, 'test.yaml', dry_run=False)
+
+
+def test_remove_database_dumps_removes_dump_for_each_database():
+    databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module.os.path).should_receive('expanduser').and_return('databases')
+    flexmock(module.os).should_receive('listdir').and_return([])
+    flexmock(module.os).should_receive('rmdir')
+
+    for name in ('foo', 'bar'):
+        flexmock(module.os).should_receive('remove').with_args(
+            'databases/localhost/{}'.format(name)
+        ).once()
+
+    module.remove_database_dumps(databases, 'test.yaml', dry_run=False)
+
+
+def test_remove_database_dumps_with_dry_run_skips_removal():
+    databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module.os).should_receive('remove').never()
+
+    module.remove_database_dumps(databases, 'test.yaml', dry_run=True)
+
+
+def test_remove_database_dumps_without_databases_does_not_raise():
+    module.remove_database_dumps([], 'test.yaml', dry_run=False)
+
+
+def test_remove_database_dumps_with_invalid_database_name_raises():
+    databases = [{'name': 'heehee/../../etc/passwd'}]
+
+    with pytest.raises(ValueError):
+        module.remove_database_dumps(databases, 'test.yaml', dry_run=True)
