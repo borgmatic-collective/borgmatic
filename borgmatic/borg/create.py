@@ -60,8 +60,8 @@ def _write_pattern_file(patterns=None):
 
 def _make_pattern_flags(location_config, pattern_filename=None):
     '''
-    Given a location config dict with a potential pattern_from option, and a filename containing any
-    additional patterns, return the corresponding Borg flags for those files as a tuple.
+    Given a location config dict with a potential patterns_from option, and a filename containing
+    any additional patterns, return the corresponding Borg flags for those files as a tuple.
     '''
     pattern_filenames = tuple(location_config.get('patterns_from') or ()) + (
         (pattern_filename,) if pattern_filename else ()

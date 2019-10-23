@@ -147,7 +147,7 @@ def test_list_archives_with_short_calls_borg_with_short_parameter():
         'exclude',
         'exclude_from',
         'pattern',
-        'pattern_from',
+        'patterns_from',
     ),
 )
 def test_list_archives_passes_through_arguments_to_borg(argument_name):

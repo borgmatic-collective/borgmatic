@@ -339,7 +339,7 @@ def parse_arguments(*unparsed_arguments):
     )
     list_group.add_argument('--pattern', help='Include or exclude paths matching a pattern')
     list_group.add_argument(
-        '--pattern-from',
+        '--patterns-from',
         metavar='FILENAME',
         help='Include or exclude paths matching patterns from pattern file, one per line',
     )
