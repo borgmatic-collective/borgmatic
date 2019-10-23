@@ -1,23 +1,26 @@
 ---
-title: Add preparation and cleanup steps to backups
+title: How to add preparation and cleanup steps to backups
 ---
 ## Preparation and cleanup hooks
 
 If you find yourself performing prepraration tasks before your backup runs, or
-cleanup work afterwards, borgmatic hooks may be of interest. Hooks are
-shell commands that borgmatic executes for you at various points, and they're
-configured in the `hooks` section of your configuration file.
+cleanup work afterwards, borgmatic hooks may be of interest. Hooks are shell
+commands that borgmatic executes for you at various points, and they're
+configured in the `hooks` section of your configuration file. But if you're
+looking to backup a database, it's probably easier to use the [database backup
+feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
+instead.
 
-For instance, you can specify `before_backup` hooks to dump a database to file
-before backing it up, and specify `after_backup` hooks to delete the temporary
-file afterwards. Here's an example:
+You can specify `before_backup` hooks to perform preparation steps before
+running backups, and specify `after_backup` hooks to perform cleanup steps
+afterwards. Here's an example:
 
 ```yaml
 hooks:
     before_backup:
-        - dump-a-database /to/file.sql
+        - mount /some/filesystem
     after_backup:
-        - rm /to/file.sql
+        - umount /some/filesystem
 ```
 
 The `before_backup` and `after_backup` hooks each run once per configuration
@@ -49,14 +52,14 @@ a backup or a backup hook, but not if an error occurs during a
 
 borgmatic also runs `on_error` hooks if an error occurs, either when creating
 a backup or running a backup hook. See the [monitoring and alerting
-documentation](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
+documentation](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
 for more information.
 
 ## Hook output
 
 Any output produced by your hooks shows up both at the console and in syslog
 (when run in a non-interactive console). For more information, read about <a
-href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md">inspecting
+href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/">inspecting
 your backups</a>.
 
 ## Security
@@ -70,7 +73,7 @@ invoked by hooks.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
- * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups.md)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)

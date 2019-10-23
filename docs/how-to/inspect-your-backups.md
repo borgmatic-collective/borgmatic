@@ -86,7 +86,7 @@ already has this rate limit disabled.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups.md)
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
+ * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
+ * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

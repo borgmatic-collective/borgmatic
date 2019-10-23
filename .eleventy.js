@@ -13,11 +13,7 @@ module.exports = function(eleventyConfig) {
         html: true,
         breaks: false,
         linkify: true,
-        // Replace links to .md files with links to directories. This allows unparsed Markdown links
-        // to work on GitHub, while rendered links elsewhere also work.
         replaceLink: function (link, env) {
-            link = link.replace(/\.md$/, '/');
-
             if (process.env.NODE_ENV == "production") {
                 return link;
             }

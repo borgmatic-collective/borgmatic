@@ -1,4 +1,4 @@
-1.3.27.dev0
+1.4.0
  * #225: Database dump hooks for PostgreSQL, so you can easily dump your databases before backups
    run.
  * #230: Rename "borgmatic list --pattern-from" flag to "--patterns-from" to match Borg.

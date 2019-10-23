@@ -90,7 +90,7 @@ here:
 Note that borgmatic does not run `on_error` hooks if an error occurs within a
 `before_everything` or `after_everything` hook. For more about hooks, see the
 [borgmatic hooks
-documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups.md),
+documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
 especially the security information.
 
 
@@ -151,8 +151,8 @@ fancier with your archive listing. See `borg list --help` for more flags.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups.md)
- * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup.md)
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
+ * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
+ * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
+ * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

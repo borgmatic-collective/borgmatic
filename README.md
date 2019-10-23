@@ -73,6 +73,7 @@ href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
  * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
+ * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
  * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

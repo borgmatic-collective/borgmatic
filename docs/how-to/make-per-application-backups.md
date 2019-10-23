@@ -112,4 +112,4 @@ directly, please see the section above about standard includes.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)

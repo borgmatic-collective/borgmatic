@@ -13,5 +13,5 @@ each action sub-command:
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
- * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration/)

@@ -63,6 +63,6 @@ Like a whole-archive restore, this also restores into the current directory.
 
 ## Related documentation
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups.md)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups.md)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups.md)
+ * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
+ * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
