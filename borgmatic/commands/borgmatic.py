@@ -53,6 +53,9 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments:
         try:
+            healthchecks.ping_healthchecks(
+                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
+            )
             command.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
@@ -62,9 +65,6 @@ def run_configuration(config_filename, config, arguments):
             )
             postgresql.dump_databases(
                 hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
-            )
-            healthchecks.ping_healthchecks(
-                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
             )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
@@ -94,15 +94,15 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments and not encountered_error:
         try:
+            postgresql.remove_database_dumps(
+                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
+            )
             command.execute_hook(
                 hooks.get('after_backup'),
                 hooks.get('umask'),
                 config_filename,
                 'post-backup',
                 global_arguments.dry_run,
-            )
-            postgresql.remove_database_dumps(
-                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
             )
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run
