@@ -55,10 +55,13 @@ everything from an archive. To do that, tack on one or more `--restore-path`
 values. For instance:
 
 ```bash
-borgmatic extract --archive host-2019-... --restore-path /path/1 /path/2
+borgmatic extract --archive host-2019-... --restore-path path/1 path/2
 ```
 
-Like a whole-archive restore, this also restores into the current directory.
+Note that the specified restore paths should not have a leading slash. Like a
+whole-archive restore, this also restores into the current directory. So for
+example, if you happen to be in the directory `/var` and you run the `extract`
+command above, borgmatic will restore `/var/path/1` and `/var/path/2`.
 
 
 ## Related documentation
