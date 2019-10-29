@@ -68,10 +68,10 @@ a database manually after restoring a dump file in the `~/.borgmatic` path.
 
 If this database integration is too limited for needs, borgmatic also supports
 general-purpose [preparation and cleanup
-hooks](https://torsion.org/borgmatic/docs/how-to/set-up-backups/). These
-hooks allows you to trigger arbitrary commands or scripts before and after
-backups. So if necessary, you can use these hooks to create database dumps
-with any database system.
+hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/).
+These hooks allows you to trigger arbitrary commands or scripts before and
+after backups. So if necessary, you can use these hooks to create database
+dumps with any database system.
 
 ## Related documentation
 
