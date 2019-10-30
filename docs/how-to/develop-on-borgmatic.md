@@ -107,6 +107,29 @@ suite. You can view these builds on
 [build.torsion.org](https://build.torsion.org/witten/borgmatic), and they're
 also linked from the commits list on each pull request.
 
+## Documentation development
+
+Updates to borgmatic's documentation are welcome. It's formatted in Markdown
+and located in the `docs/` directory in borgmatic's source, plus the
+`README.md` file at the root.
+
+To build and view a copy of the documentation with your local changes, just
+run the following from the root of borgmatic's source code:
+
+```bash
+sudo scripts/dev-docs
+```
+
+This requires Docker to be installed on your system. You may not need to use
+sudo if your non-root user has permissions to run Docker.
+
+After you run the script, you can point your web browser at
+http://localhost:8080 to view the documentation with your changes.
+
+To close the documentation server, ctrl-C the script. Note that it does not
+currently auto-reload, so you'll need to stop it and re-run it for any
+additional documentation changes to take effect.
+
 ## Related documentation
 
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
