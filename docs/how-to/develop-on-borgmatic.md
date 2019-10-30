@@ -113,8 +113,8 @@ Updates to borgmatic's documentation are welcome. It's formatted in Markdown
 and located in the `docs/` directory in borgmatic's source, plus the
 `README.md` file at the root.
 
-To build and view a copy of the documentation with your local changes, just
-run the following from the root of borgmatic's source code:
+To build and view a copy of the documentation with your local changes, run the
+following from the root of borgmatic's source code:
 
 ```bash
 sudo scripts/dev-docs
