@@ -81,11 +81,12 @@ def run_configuration(config_filename, config, arguments):
                     storage=storage,
                     retention=retention,
                     consistency=consistency,
+                    hooks=hooks,
                     local_path=local_path,
                     remote_path=remote_path,
                     repository_path=repository_path,
                 )
-            except (OSError, CalledProcessError) as error:
+            except (OSError, CalledProcessError, ValueError) as error:
                 encountered_error = error
                 error_repository = repository_path
                 yield from make_error_log_records(
@@ -141,6 +142,7 @@ def run_actions(
     storage,
     retention,
     consistency,
+    hooks,
     local_path,
     remote_path,
     repository_path
@@ -151,6 +153,9 @@ def run_actions(
     from the command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
+
+    Raise OSError or subprocess.CalledProcessError if an error occurs running a command for an
+    action. Raise ValueError if the arguments or configuration passed to action are invalid.
     '''
     repository = os.path.expanduser(repository_path)
     global_arguments = arguments['global']
@@ -215,8 +220,47 @@ def run_actions(
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,
+                destination_path=None,
                 progress=arguments['extract'].progress,
             )
+    if 'restore' in arguments:
+        if arguments['restore'].repository is None or repository == arguments['restore'].repository:
+            logger.info(
+                '{}: Restoring databases from archive {}'.format(
+                    repository, arguments['restore'].archive
+                )
+            )
+
+            restore_names = arguments['restore'].databases or []
+            if 'all' in restore_names:
+                restore_names = []
+
+            # Extract dumps for the named databases from the archive.
+            dump_patterns = postgresql.make_database_dump_patterns(restore_names)
+            borg_extract.extract_archive(
+                global_arguments.dry_run,
+                repository,
+                arguments['restore'].archive,
+                postgresql.convert_glob_patterns_to_borg_patterns(dump_patterns),
+                location,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+                destination_path='/',
+                progress=arguments['restore'].progress,
+            )
+
+            # Map the restore names to the corresponding database configurations.
+            databases = list(
+                postgresql.get_database_configurations(
+                    hooks.get('postgresql_databases'),
+                    restore_names or postgresql.get_database_names_from_dumps(dump_patterns),
+                )
+            )
+
+            # Finally, restore the databases and cleanup the dumps.
+            postgresql.restore_database_dumps(databases, repository, global_arguments.dry_run)
+            postgresql.remove_database_dumps(databases, repository, global_arguments.dry_run)
     if 'list' in arguments:
         if arguments['list'].repository is None or repository == arguments['list'].repository:
             logger.info('{}: Listing archives'.format(repository))
@@ -295,9 +339,10 @@ def make_error_log_records(message, error=None):
         yield logging.makeLogRecord(
             dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         )
-        yield logging.makeLogRecord(
-            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
-        )
+        if error.output:
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            )
         yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
     except (ValueError, OSError) as error:
         yield logging.makeLogRecord(

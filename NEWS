@@ -1,4 +1,5 @@
 1.4.1.dev0
+ * #229: Restore backed up PostgreSQL databases via "borgmatic restore" sub-command.
  * Documentation on how to develop borgmatic's documentation:
    https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/#documentation-development
 

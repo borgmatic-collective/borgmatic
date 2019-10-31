@@ -260,7 +260,7 @@ def test_parse_arguments_allows_repository_with_list():
     module.parse_arguments('--config', 'myconfig', 'list', '--repository', 'test.borg')
 
 
-def test_parse_arguments_disallows_archive_without_extract_or_list():
+def test_parse_arguments_disallows_archive_without_extract_restore_or_list():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
@@ -286,6 +286,18 @@ def test_parse_arguments_allows_archive_with_dashed_extract():
     module.parse_arguments('--config', 'myconfig', '--extract', '--archive', 'test')
 
 
+def test_parse_arguments_allows_archive_with_restore():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--config', 'myconfig', 'restore', '--archive', 'test')
+
+
+def test_parse_arguments_allows_archive_with_dashed_restore():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--config', 'myconfig', '--restore', '--archive', 'test')
+
+
 def test_parse_arguments_allows_archive_with_list():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -297,6 +309,13 @@ def test_parse_arguments_requires_archive_with_extract():
 
     with pytest.raises(SystemExit):
         module.parse_arguments('--config', 'myconfig', 'extract')
+
+
+def test_parse_arguments_requires_archive_with_restore():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit):
+        module.parse_arguments('--config', 'myconfig', 'restore')
 
 
 def test_parse_arguments_allows_progress_before_create():
@@ -315,6 +334,12 @@ def test_parse_arguments_allows_progress_and_extract():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--progress', 'extract', '--archive', 'test', 'list')
+
+
+def test_parse_arguments_allows_progress_and_restore():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--progress', 'restore', '--archive', 'test', 'list')
 
 
 def test_parse_arguments_disallows_progress_without_create():
