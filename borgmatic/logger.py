@@ -73,15 +73,19 @@ def color_text(color, message):
     return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
 
 
-def configure_logging(console_log_level, syslog_log_level=None):
+def configure_logging(console_log_level, syslog_log_level=None, log_file=None):
     '''
     Configure logging to go to both the console and syslog. Use the given log levels, respectively.
     '''
     if syslog_log_level is None:
         syslog_log_level = console_log_level
 
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(Console_color_formatter())
+    if log_file is None:
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(Console_color_formatter())
+    else:
+        console_handler = logging.FileHandler(log_file)
+        console_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
     console_handler.setLevel(console_log_level)
 
     syslog_path = None
@@ -90,7 +94,7 @@ def configure_logging(console_log_level, syslog_log_level=None):
     elif os.path.exists('/var/run/syslog'):
         syslog_path = '/var/run/syslog'
 
-    if syslog_path and not interactive_console():
+    if syslog_path and not interactive_console() and log_file is None:
         syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
         syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
         syslog_handler.setLevel(syslog_log_level)
