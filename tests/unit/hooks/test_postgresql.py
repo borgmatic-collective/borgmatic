@@ -63,13 +63,6 @@ def test_dump_databases_without_databases_does_not_raise():
     module.dump_databases([], 'test.yaml', dry_run=False)
 
 
-def test_dump_databases_with_invalid_database_name_raises():
-    databases = [{'name': 'heehee/../../etc/passwd'}]
-
-    with pytest.raises(ValueError):
-        module.dump_databases(databases, 'test.yaml', dry_run=True)
-
-
 def test_dump_databases_runs_pg_dump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     flexmock(module).should_receive('make_database_dump_filename').and_return(
@@ -215,13 +208,6 @@ def test_remove_database_dumps_without_databases_does_not_raise():
     module.remove_database_dumps([], 'test.yaml', dry_run=False)
 
 
-def test_remove_database_dumps_with_invalid_database_name_raises():
-    databases = [{'name': 'heehee/../../etc/passwd'}]
-
-    with pytest.raises(ValueError):
-        module.remove_database_dumps(databases, 'test.yaml', dry_run=True)
-
-
 def test_make_database_dump_patterns_converts_names_to_glob_paths():
     flexmock(module).should_receive('make_database_dump_filename').and_return(
         'databases/*/foo'
@@ -253,3 +239,150 @@ def test_get_database_names_from_dumps_gets_names_from_filenames_matching_globs(
     assert module.get_database_names_from_dumps(
         ('databases/*/foo', 'databases/*/bar', 'databases/*/baz')
     ) == ['foo', 'bar']
+
+
+def test_get_database_configurations_only_produces_named_databases():
+    databases = [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'bar', 'hostname': 'example.com'},
+        {'name': 'baz', 'hostname': 'example.org'},
+    ]
+
+    assert list(module.get_database_configurations(databases, ('foo', 'baz'))) == [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'baz', 'hostname': 'example.org'},
+    ]
+
+
+def test_get_database_configurations_matches_all_database():
+    databases = [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'all', 'hostname': 'example.com'},
+    ]
+
+    assert list(module.get_database_configurations(databases, ('foo', 'bar', 'baz'))) == [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'bar', 'hostname': 'example.com'},
+        {'name': 'baz', 'hostname': 'example.com'},
+    ]
+
+
+def test_get_database_configurations_with_unknown_database_name_raises():
+    databases = [{'name': 'foo', 'hostname': 'example.org'}]
+
+    with pytest.raises(ValueError):
+        list(module.get_database_configurations(databases, ('foo', 'bar')))
+
+
+def test_restore_database_dumps_restores_each_database():
+    databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/foo'
+    ).and_return('databases/localhost/bar')
+
+    for name in ('foo', 'bar'):
+        flexmock(module).should_receive('execute_command').with_args(
+            (
+                'pg_restore',
+                '--no-password',
+                '--clean',
+                '--if-exists',
+                '--exit-on-error',
+                '--dbname',
+                name,
+                'databases/localhost/{}'.format(name),
+            ),
+            extra_environment=None,
+        ).once()
+        flexmock(module).should_receive('execute_command').with_args(
+            ('psql', '--no-password', '--quiet', '--dbname', name, '--command', 'ANALYZE'),
+            extra_environment=None,
+        ).once()
+
+    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
+
+
+def test_restore_database_dumps_without_databases_does_not_raise():
+    module.restore_database_dumps({}, 'test.yaml', dry_run=False)
+
+
+def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
+    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    flexmock(module).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/foo'
+    ).and_return('databases/localhost/bar')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'pg_restore',
+            '--no-password',
+            '--clean',
+            '--if-exists',
+            '--exit-on-error',
+            '--host',
+            'database.example.org',
+            '--port',
+            '5433',
+            '--dbname',
+            'foo',
+            'databases/localhost/foo',
+        ),
+        extra_environment=None,
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'psql',
+            '--no-password',
+            '--quiet',
+            '--host',
+            'database.example.org',
+            '--port',
+            '5433',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
+        extra_environment=None,
+    ).once()
+
+    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
+
+
+def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
+    databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
+    flexmock(module).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/foo'
+    ).and_return('databases/localhost/bar')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'pg_restore',
+            '--no-password',
+            '--clean',
+            '--if-exists',
+            '--exit-on-error',
+            '--username',
+            'postgres',
+            '--dbname',
+            'foo',
+            'databases/localhost/foo',
+        ),
+        extra_environment={'PGPASSWORD': 'trustsome1'},
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'psql',
+            '--no-password',
+            '--quiet',
+            '--username',
+            'postgres',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
+        extra_environment={'PGPASSWORD': 'trustsome1'},
+    ).once()
+
+    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)

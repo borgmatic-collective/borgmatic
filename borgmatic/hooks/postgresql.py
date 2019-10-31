@@ -166,12 +166,11 @@ def restore_database_dumps(databases, log_prefix, dry_run):
         )
         extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
         analyze_command = (
-            ('psql', '--no-password')
+            ('psql', '--no-password', '--quiet')
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
             + ('--dbname', database['name'])
-            + ('--quiet',)
             + ('--command', 'ANALYZE')
         )
 
