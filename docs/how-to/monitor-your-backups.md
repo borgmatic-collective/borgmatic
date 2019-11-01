@@ -47,8 +47,8 @@ from borgmatic for a configured interval.
 really want confidence that your backups are not only running but are
 restorable as well, you can configure particular [consistency
 checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)
-or even script full [restore
-tests](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/).
+or even script full [extract
+tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
 
 
 ## Error hooks
@@ -154,5 +154,5 @@ fancier with your archive listing. See `borg list --help` for more flags.
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
+ * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
