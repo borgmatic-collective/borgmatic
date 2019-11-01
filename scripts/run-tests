@@ -6,7 +6,7 @@
 
 set -e
 
-python -m pip install --upgrade pip==19.1.1
+python -m pip install --upgrade pip==19.3.1
 pip install tox==3.14.0
 tox
 apk add --no-cache borgbackup

@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, healthchecks, postgresql
+from borgmatic.hooks import command, cronitor, healthchecks, postgresql
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -56,6 +56,9 @@ def run_configuration(config_filename, config, arguments):
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
             )
+            cronitor.ping_cronitor(
+                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'run'
+            )
             command.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
@@ -81,11 +84,12 @@ def run_configuration(config_filename, config, arguments):
                     storage=storage,
                     retention=retention,
                     consistency=consistency,
+                    hooks=hooks,
                     local_path=local_path,
                     remote_path=remote_path,
                     repository_path=repository_path,
                 )
-            except (OSError, CalledProcessError) as error:
+            except (OSError, CalledProcessError, ValueError) as error:
                 encountered_error = error
                 error_repository = repository_path
                 yield from make_error_log_records(
@@ -106,6 +110,9 @@ def run_configuration(config_filename, config, arguments):
             )
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run
+            )
+            cronitor.ping_cronitor(
+                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'complete'
             )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
@@ -128,6 +135,9 @@ def run_configuration(config_filename, config, arguments):
             healthchecks.ping_healthchecks(
                 hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'fail'
             )
+            cronitor.ping_cronitor(
+                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'fail'
+            )
         except (OSError, CalledProcessError) as error:
             yield from make_error_log_records(
                 '{}: Error running on-error hook'.format(config_filename), error
@@ -141,6 +151,7 @@ def run_actions(
     storage,
     retention,
     consistency,
+    hooks,
     local_path,
     remote_path,
     repository_path
@@ -151,6 +162,9 @@ def run_actions(
     from the command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
+
+    Raise OSError or subprocess.CalledProcessError if an error occurs running a command for an
+    action. Raise ValueError if the arguments or configuration passed to action are invalid.
     '''
     repository = os.path.expanduser(repository_path)
     global_arguments = arguments['global']
@@ -210,13 +224,52 @@ def run_actions(
                 global_arguments.dry_run,
                 repository,
                 arguments['extract'].archive,
-                arguments['extract'].restore_paths,
+                arguments['extract'].paths,
                 location,
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,
+                destination_path=arguments['extract'].destination,
                 progress=arguments['extract'].progress,
             )
+    if 'restore' in arguments:
+        if arguments['restore'].repository is None or repository == arguments['restore'].repository:
+            logger.info(
+                '{}: Restoring databases from archive {}'.format(
+                    repository, arguments['restore'].archive
+                )
+            )
+
+            restore_names = arguments['restore'].databases or []
+            if 'all' in restore_names:
+                restore_names = []
+
+            # Extract dumps for the named databases from the archive.
+            dump_patterns = postgresql.make_database_dump_patterns(restore_names)
+            borg_extract.extract_archive(
+                global_arguments.dry_run,
+                repository,
+                arguments['restore'].archive,
+                postgresql.convert_glob_patterns_to_borg_patterns(dump_patterns),
+                location,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+                destination_path='/',
+                progress=arguments['restore'].progress,
+            )
+
+            # Map the restore names to the corresponding database configurations.
+            databases = list(
+                postgresql.get_database_configurations(
+                    hooks.get('postgresql_databases'),
+                    restore_names or postgresql.get_database_names_from_dumps(dump_patterns),
+                )
+            )
+
+            # Finally, restore the databases and cleanup the dumps.
+            postgresql.restore_database_dumps(databases, repository, global_arguments.dry_run)
+            postgresql.remove_database_dumps(databases, repository, global_arguments.dry_run)
     if 'list' in arguments:
         if arguments['list'].repository is None or repository == arguments['list'].repository:
             logger.info('{}: Listing archives'.format(repository))
@@ -295,9 +348,10 @@ def make_error_log_records(message, error=None):
         yield logging.makeLogRecord(
             dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         )
-        yield logging.makeLogRecord(
-            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
-        )
+        if error.output:
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            )
         yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
     except (ValueError, OSError) as error:
         yield logging.makeLogRecord(

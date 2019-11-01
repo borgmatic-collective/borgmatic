@@ -9,6 +9,7 @@ SUBPARSER_ALIASES = {
     'create': ['--create', '-C'],
     'check': ['--check', '-k'],
     'extract': ['--extract', '-x'],
+    'restore': ['--restore', '-r'],
     'list': ['--list', '-l'],
     'info': ['--info', '-i'],
 }
@@ -269,7 +270,7 @@ def parse_arguments(*unparsed_arguments):
     extract_parser = subparsers.add_parser(
         'extract',
         aliases=SUBPARSER_ALIASES['extract'],
-        help='Extract a named archive to the current directory',
+        help='Extract files from a named archive to the current directory',
         description='Extract a named archive to the current directory',
         add_help=False,
     )
@@ -278,12 +279,20 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to extract, defaults to the configured repository if there is only one',
     )
-    extract_group.add_argument('--archive', help='Name of archive to operate on', required=True)
+    extract_group.add_argument('--archive', help='Name of archive to extract', required=True)
     extract_group.add_argument(
+        '--path',
         '--restore-path',
+        metavar='PATH',
         nargs='+',
-        dest='restore_paths',
-        help='Paths to restore from archive, defaults to the entire archive',
+        dest='paths',
+        help='Paths to extract from archive, defaults to the entire archive',
+    )
+    extract_group.add_argument(
+        '--destination',
+        metavar='PATH',
+        dest='destination',
+        help='Directory to extract files into, defaults to the current directory',
     )
     extract_group.add_argument(
         '--progress',
@@ -293,6 +302,37 @@ def parse_arguments(*unparsed_arguments):
         help='Display progress for each file as it is processed',
     )
     extract_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    restore_parser = subparsers.add_parser(
+        'restore',
+        aliases=SUBPARSER_ALIASES['restore'],
+        help='Restore database dumps from a named archive',
+        description='Restore database dumps from a named archive. (To extract files instead, use "borgmatic extract".)',
+        add_help=False,
+    )
+    restore_group = restore_parser.add_argument_group('restore arguments')
+    restore_group.add_argument(
+        '--repository',
+        help='Path of repository to restore from, defaults to the configured repository if there is only one',
+    )
+    restore_group.add_argument('--archive', help='Name of archive to restore from', required=True)
+    restore_group.add_argument(
+        '--database',
+        metavar='NAME',
+        nargs='+',
+        dest='databases',
+        help='Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress for each database dump file as it is extracted from archive',
+    )
+    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

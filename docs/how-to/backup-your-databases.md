@@ -49,6 +49,16 @@ hooks:
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work.
 
+
+### Configuration backups
+
+An important note about this database configuration: You'll need the
+configuration to be present in order for borgmatic to restore a database. So
+to prepare for this situation, it's a good idea to include borgmatic's own
+configuration files as part of your regular backups. That way, you can always
+bring back any missing configuration files in order to restore a database.
+
+
 ## Supported databases
 
 As of now, borgmatic only supports PostgreSQL databases directly. But see
@@ -57,12 +67,89 @@ with other database systems. Also, please [file a
 ticket](https://torsion.org/borgmatic/#issues) for additional database systems
 that you'd like supported.
 
+
 ## Database restoration
 
-borgmatic does not yet perform integrated database restoration when you
-[restore a backup](http://localhost:8080/docs/how-to/restore-a-backup/), but
-that feature is coming in a future release. In the meantime, you can restore
-a database manually after restoring a dump file in the `~/.borgmatic` path.
+To restore a database dump from an archive, use the `borgmatic restore`
+action. But the first step is to figure out which archive to restore from. A
+good way to do that is to use the `list` action:
+
+```bash
+borgmatic list
+```
+
+(No borgmatic `list` action? Try the old-style `--list`, or upgrade
+borgmatic!)
+
+That should yield output looking something like:
+
+```text
+host-2019-01-01T04:05:06.070809      Tue, 2019-01-01 04:05:06 [...]
+host-2019-01-02T04:06:07.080910      Wed, 2019-01-02 04:06:07 [...]
+```
+
+Assuming that you want to restore all database dumps from the archive with the
+most up-to-date files and therefore the latest timestamp, run a command like:
+
+```bash
+borgmatic restore --archive host-2019-01-02T04:06:07.080910
+```
+
+(No borgmatic `restore` action? Upgrade borgmatic!)
+
+The `--archive` value is the name of the archive to restore from. This
+restores all databases dumps that borgmatic originally backed up to that
+archive.
+
+This is a destructive action! `borgmatic restore` replaces live databases by
+restoring dumps from the selected archive. So be very careful when and where
+you run it.
+
+
+### Repository selection
+
+If you have a single repository in your borgmatic configuration file(s), no
+problem: the `restore` action figures out which repository to use.
+
+But if you have multiple repositories configured, then you'll need to specify
+the repository path containing the archive to restore. Here's an example:
+
+```bash
+borgmatic restore --repository repo.borg --archive host-2019-...
+```
+
+### Restore particular databases
+
+If you've backed up multiple databases into an archive, and you'd only like to
+restore one of them, use the `--database` flag to select one or more
+databases. For instance:
+
+```bash
+borgmatic restore --archive host-2019-... --database users
+```
+
+### Limitations
+
+There are a few important limitations with borgmatic's current database
+restoration feature that you should know about:
+
+1. You must restore as the same Unix user that created the archive containing
+the database dump. That's because the user's home directory path is encoded
+into the path of the database dump within the archive.
+2. As mentioned above, borgmatic can only restore a database that's defined in
+borgmatic's own configuration file. So include your configuration file in
+backups to avoid getting caught without a way to restore a database.
+3. borgmatic does not currently support backing up or restoring multiple
+databases that share the exact same name on different hosts.
+
+
+### Manual restoration
+
+If you prefer to restore a database without the help of borgmatic, first
+[extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
+archive containing a database dump, and then manually restore the dump file
+found within the extracted `~/.borgmatic/` path (e.g. with `pg_restore`).
+
 
 ## Preparation and cleanup hooks
 
@@ -73,9 +160,10 @@ These hooks allows you to trigger arbitrary commands or scripts before and
 after backups. So if necessary, you can use these hooks to create database
 dumps with any database system.
 
+
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Restore a backup](http://localhost:8080/docs/how-to/restore-a-backup/)
+ * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)

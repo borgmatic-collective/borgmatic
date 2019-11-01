@@ -1,4 +1,5 @@
 import logging
+import os
 
 from borgmatic.execute import execute_command, execute_command_without_capture
 
@@ -47,24 +48,26 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         )
     )
 
-    execute_command(full_extract_command)
+    execute_command(full_extract_command, working_directory=None, error_on_warnings=True)
 
 
 def extract_archive(
     dry_run,
     repository,
     archive,
-    restore_paths,
+    paths,
     location_config,
     storage_config,
     local_path='borg',
     remote_path=None,
+    destination_path=None,
     progress=False,
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    restore from the archive, and location/storage configuration dicts, extract the archive into the
-    current directory.
+    restore from the archive, location/storage configuration dicts, optional local and remote Borg
+    paths, and an optional destination path to extract to, extract the archive into the current
+    directory.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -79,14 +82,18 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
-        + ('::'.join((repository, archive)),)
-        + (tuple(restore_paths) if restore_paths else ())
+        + ('::'.join((os.path.abspath(repository), archive)),)
+        + (tuple(paths) if paths else ())
     )
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if progress:
-        execute_command_without_capture(full_command)
+        execute_command_without_capture(
+            full_command, working_directory=destination_path, error_on_warnings=True
+        )
         return
 
-    execute_command(full_command)
+    # Error on warnings, as Borg only gives a warning if the restore paths don't exist in the
+    # archive!
+    execute_command(full_command, working_directory=destination_path, error_on_warnings=True)

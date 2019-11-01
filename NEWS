@@ -1,4 +1,16 @@
-1.4.1.dev0
+1.4.3
+ * Monitor backups with Cronitor hook integration. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook
+
+1.4.2
+ * Extract files to a particular directory via "borgmatic extract --destination" flag.
+ * Rename "borgmatic extract --restore-path" flag to "--path" to reduce confusion with the separate
+   "borgmatic restore" action. Any uses of "--restore-path" will continue working.
+
+1.4.1
+ * #229: Restore backed up PostgreSQL databases via "borgmatic restore" action. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/
  * Documentation on how to develop borgmatic's documentation:
    https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/#documentation-development
 

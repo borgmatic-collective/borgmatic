@@ -7,8 +7,10 @@ from borgmatic.borg import extract as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(command):
-    flexmock(module).should_receive('execute_command').with_args(command).once()
+def insert_execute_command_mock(command, working_directory=None, error_on_warnings=True):
+    flexmock(module).should_receive('execute_command').with_args(
+        command, working_directory=working_directory, error_on_warnings=error_on_warnings
+    ).once()
 
 
 def insert_execute_command_output_mock(command, result):
@@ -86,26 +88,28 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
 
 
 def test_extract_archive_calls_borg_with_restore_path_parameters():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', 'repo::archive', 'path1', 'path2'))
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=['path1', 'path2'],
+        paths=['path1', 'path2'],
         location_config={},
         storage_config={},
     )
 
 
 def test_extract_archive_calls_borg_with_remote_path_parameters():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--remote-path', 'borg1', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={},
         remote_path='borg1',
@@ -113,45 +117,49 @@ def test_extract_archive_calls_borg_with_remote_path_parameters():
 
 
 def test_extract_archive_calls_borg_with_numeric_owner_parameter():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--numeric-owner', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={'numeric_owner': True},
         storage_config={},
     )
 
 
 def test_extract_archive_calls_borg_with_umask_parameters():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--umask', '0770', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={'umask': '0770'},
     )
 
 
 def test_extract_archive_calls_borg_with_lock_wait_parameters():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--lock-wait', '5', 'repo::archive'))
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={'lock_wait': '5'},
     )
 
 
 def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--info', 'repo::archive'))
     insert_logging_mock(logging.INFO)
 
@@ -159,13 +167,14 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={},
     )
 
 
 def test_extract_archive_with_log_debug_calls_borg_with_debug_parameters():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(
         ('borg', 'extract', '--debug', '--list', '--show-rc', 'repo::archive')
     )
@@ -175,35 +184,54 @@ def test_extract_archive_with_log_debug_calls_borg_with_debug_parameters():
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={},
     )
 
 
 def test_extract_archive_calls_borg_with_dry_run_parameter():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive'))
 
     module.extract_archive(
         dry_run=True,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={},
     )
 
 
+def test_extract_archive_calls_borg_with_destination_path():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    insert_execute_command_mock(('borg', 'extract', 'repo::archive'), working_directory='/dest')
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        paths=None,
+        location_config={},
+        storage_config={},
+        destination_path='/dest',
+    )
+
+
 def test_extract_archive_calls_borg_with_progress_parameter():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module).should_receive('execute_command_without_capture').with_args(
-        ('borg', 'extract', '--progress', 'repo::archive')
+        ('borg', 'extract', '--progress', 'repo::archive'),
+        working_directory=None,
+        error_on_warnings=True,
     ).once()
 
     module.extract_archive(
         dry_run=False,
         repository='repo',
         archive='archive',
-        restore_paths=None,
+        paths=None,
         location_config={},
         storage_config={},
         progress=True,

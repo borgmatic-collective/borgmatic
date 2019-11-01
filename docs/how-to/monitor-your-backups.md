@@ -26,12 +26,15 @@ alert. But note that if borgmatic doesn't actually run, this alert won't fire.
 See [error
 hooks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks)
 below for how to configure this.
-4. **borgmatic Healthchecks hook**: This feature integrates with the
-[Healthchecks](https://healthchecks.io/) service, and pings Healthchecks
-whenever borgmatic runs. That way, Healthchecks can alert you when something
-goes wrong or it doesn't hear from borgmatic for a configured interval. See
+4. **borgmatic monitoring hooks**: This feature integrates with monitoring
+services like [Healthchecks](https://healthchecks.io/) and
+[Cronitor](https://cronitor.io), and pings these services whenever borgmatic
+runs. That way, you'll receive an alert when something goes wrong or the
+service doesn't hear from borgmatic for a configured interval. See
 [Healthchecks
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
+and [Cronitor
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
 below for how to configure this.
 3. **Third-party monitoring software**: You can use traditional monitoring
 software to consume borgmatic JSON output and track when the last
@@ -47,8 +50,8 @@ from borgmatic for a configured interval.
 really want confidence that your backups are not only running but are
 restorable as well, you can configure particular [consistency
 checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)
-or even script full [restore
-tests](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/).
+or even script full [extract
+tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
 
 
 ## Error hooks
@@ -115,6 +118,27 @@ mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
 
 
+## Cronitor hook
+
+[Cronitor](https://cronitor.io/) provides "Cron monitoring and uptime healthchecks
+for websites, services and APIs", and borgmatic has built-in
+integration with it. Once you create a Cronitor account and cron job monitor on
+their site, all you need to do is configure borgmatic with the unique "Ping
+API URL" for your monitor. Here's an example:
+
+
+```yaml
+hooks:
+    cronitor: https://cronitor.link/d3x0c1
+```
+
+With this hook in place, borgmatic will ping your Cronitor monitor when a
+backup begins, ends, or errors. Then you can configure Cronitor to notify you
+by a [variety of
+mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups
+fail or it doesn't hear from borgmatic for a certain period of time.
+
+
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an
@@ -154,5 +178,5 @@ fancier with your archive listing. See `borg list --help` for more flags.
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Restore a backup](https://torsion.org/borgmatic/docs/how-to/restore-a-backup/)
+ * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
