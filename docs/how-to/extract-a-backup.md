@@ -51,17 +51,30 @@ borgmatic extract --repository repo.borg --archive host-2019-...
 ## Extract particular files
 
 Sometimes, you want to extract a single deleted file, rather than extracting
-everything from an archive. To do that, tack on one or more `--restore-path`
-values. For instance:
+everything from an archive. To do that, tack on one or more `--path` values.
+For instance:
 
 ```bash
-borgmatic extract --archive host-2019-... --restore-path path/1 path/2
+borgmatic extract --archive host-2019-... --path path/1 path/2
 ```
 
 Note that the specified restore paths should not have a leading slash. Like a
 whole-archive extract, this also extracts into the current directory. So for
 example, if you happen to be in the directory `/var` and you run the `extract`
 command above, borgmatic will extract `/var/path/1` and `/var/path/2`.
+
+## Extract to a particular destination
+
+By default, borgmatic extracts files into the current directory. To instead
+extract files to a particular destination directory, use the `--destination`
+flag:
+
+```bash
+borgmatic extract --archive host-2019-... --destination /tmp
+```
+
+When using the `--destination` flag, be careful not to overwrite your system's
+files with extracted files unless that is your intent.
 
 
 ## Database restoration

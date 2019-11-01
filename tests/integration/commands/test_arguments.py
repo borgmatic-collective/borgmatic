@@ -267,11 +267,11 @@ def test_parse_arguments_disallows_archive_without_extract_restore_or_list():
         module.parse_arguments('--config', 'myconfig', '--archive', 'test')
 
 
-def test_parse_arguments_disallows_restore_paths_without_extract():
+def test_parse_arguments_disallows_paths_without_extract():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
-        module.parse_arguments('--config', 'myconfig', '--restore-path', 'test')
+        module.parse_arguments('--config', 'myconfig', '--path', 'test')
 
 
 def test_parse_arguments_allows_archive_with_extract():

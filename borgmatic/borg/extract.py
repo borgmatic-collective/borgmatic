@@ -55,7 +55,7 @@ def extract_archive(
     dry_run,
     repository,
     archive,
-    restore_paths,
+    paths,
     location_config,
     storage_config,
     local_path='borg',
@@ -83,7 +83,7 @@ def extract_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
         + ('::'.join((os.path.abspath(repository), archive)),)
-        + (tuple(restore_paths) if restore_paths else ())
+        + (tuple(paths) if paths else ())
     )
 
     # The progress output isn't compatible with captured and logged output, as progress messes with

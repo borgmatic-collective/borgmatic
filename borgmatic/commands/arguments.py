@@ -275,11 +275,18 @@ def parse_arguments(*unparsed_arguments):
     )
     extract_group.add_argument('--archive', help='Name of archive to operate on', required=True)
     extract_group.add_argument(
+        '--path',
         '--restore-path',
         metavar='PATH',
         nargs='+',
-        dest='restore_paths',
-        help='Paths to restore from archive, defaults to the entire archive',
+        dest='paths',
+        help='Paths to extract from archive, defaults to the entire archive',
+    )
+    extract_group.add_argument(
+        '--destination',
+        metavar='PATH',
+        dest='destination',
+        help='Directory to extract files into, defaults to the current directory',
     )
     extract_group.add_argument(
         '--progress',

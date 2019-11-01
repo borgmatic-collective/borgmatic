@@ -1,3 +1,8 @@
+1.4.2
+ * Extract files to a particular directory via "borgmatic extract --destination" flag.
+ * Rename "borgmatic extract --restore-path" flag to "--path" to reduce confusion with the separate
+   "borgmatic restore" action. Any uses of "--restore-path" will continue working.
+
 1.4.1
  * #229: Restore backed up PostgreSQL databases via "borgmatic restore" action. See the
    documentation for more information:

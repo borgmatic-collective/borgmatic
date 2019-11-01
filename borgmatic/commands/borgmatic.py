@@ -215,12 +215,12 @@ def run_actions(
                 global_arguments.dry_run,
                 repository,
                 arguments['extract'].archive,
-                arguments['extract'].restore_paths,
+                arguments['extract'].paths,
                 location,
                 storage,
                 local_path=local_path,
                 remote_path=remote_path,
-                destination_path=None,
+                destination_path=arguments['extract'].destination,
                 progress=arguments['extract'].progress,
             )
     if 'restore' in arguments:
