@@ -150,6 +150,30 @@ def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
     assert exclude_flags == ('--exclude-if-present', 'exclude_me')
 
 
+def test_make_exclude_flags_includes_keep_exclude_tags_when_true_in_config():
+    exclude_flags = module._make_exclude_flags(location_config={'keep_exclude_tags': True})
+
+    assert exclude_flags == ('--keep-exclude-tags',)
+
+
+def test_make_exclude_flags_does_not_include_keep_exclude_tags_when_false_in_config():
+    exclude_flags = module._make_exclude_flags(location_config={'keep_exclude_tags': False})
+
+    assert exclude_flags == ()
+
+
+def test_make_exclude_flags_includes_exclude_nodump_when_true_in_config():
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_nodump': True})
+
+    assert exclude_flags == ('--exclude-nodump',)
+
+
+def test_make_exclude_flags_does_not_include_exclude_nodump_when_false_in_config():
+    exclude_flags = module._make_exclude_flags(location_config={'exclude_nodump': False})
+
+    assert exclude_flags == ()
+
+
 def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
     exclude_flags = module._make_exclude_flags(location_config={})
 

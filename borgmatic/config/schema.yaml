@@ -126,6 +126,17 @@ map:
                     Exclude directories that contain a file with the given filename. Defaults to not
                     set.
                 example: .nobackup
+            keep_exclude_tags:
+                type: bool
+                desc: |
+                    If true, the exclude_if_present filename is included in backups. Defaults to
+                    false, meaning that the exclude_if_present filename is omitted from backups.
+                example: true
+            exclude_nodump:
+                type: bool
+                desc: |
+                    Exclude files with the NODUMP flag. Defaults to false.
+                example: true
     storage:
         desc: |
             Repository storage options. See

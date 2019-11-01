@@ -1,3 +1,6 @@
+1.4.4
+ * #234: Support for Borg --keep-exclude-tags and --exclude-nodump options.
+
 1.4.3
  * Monitor backups with Cronitor hook integration. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook

@@ -90,8 +90,18 @@ def _make_exclude_flags(location_config, exclude_filename=None):
     caches_flag = ('--exclude-caches',) if location_config.get('exclude_caches') else ()
     if_present = location_config.get('exclude_if_present')
     if_present_flags = ('--exclude-if-present', if_present) if if_present else ()
+    keep_exclude_tags_flags = (
+        ('--keep-exclude-tags',) if location_config.get('keep_exclude_tags') else ()
+    )
+    exclude_nodump_flags = ('--exclude-nodump',) if location_config.get('exclude_nodump') else ()
 
-    return exclude_from_flags + caches_flag + if_present_flags
+    return (
+        exclude_from_flags
+        + caches_flag
+        + if_present_flags
+        + keep_exclude_tags_flags
+        + exclude_nodump_flags
+    )
 
 
 BORGMATIC_SOURCE_DIRECTORY = '~/.borgmatic'
