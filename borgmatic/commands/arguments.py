@@ -273,7 +273,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to extract, defaults to the configured repository if there is only one',
     )
-    extract_group.add_argument('--archive', help='Name of archive to extract, required=True)
+    extract_group.add_argument('--archive', help='Name of archive to extract', required=True)
     extract_group.add_argument(
         '--path',
         '--restore-path',
@@ -311,7 +311,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to restore from, defaults to the configured repository if there is only one',
     )
-    restore_group.add_argument('--archive', help='Name of archive to restore from, required=True)
+    restore_group.add_argument('--archive', help='Name of archive to restore from', required=True)
     restore_group.add_argument(
         '--database',
         metavar='NAME',
