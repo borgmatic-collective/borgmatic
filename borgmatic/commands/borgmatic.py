@@ -487,6 +487,7 @@ def main():  # pragma: no cover
     configure_logging(
         verbosity_to_log_level(global_arguments.verbosity),
         verbosity_to_log_level(global_arguments.syslog_verbosity),
+        global_arguments.log_file,
     )
 
     logger.debug('Ensuring legacy configuration is upgraded')

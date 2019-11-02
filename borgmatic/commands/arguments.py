@@ -150,6 +150,12 @@ def parse_arguments(*unparsed_arguments):
         help='Display verbose progress to syslog (from none to lots: 0, 1, or 2). Ignored when console is interactive',
     )
     global_group.add_argument(
+        '--log-file',
+        type=str,
+        default=None,
+        help='Write log messages to this file instead of concole and syslog',
+    )
+    global_group.add_argument(
         '--version',
         dest='version',
         default=False,
