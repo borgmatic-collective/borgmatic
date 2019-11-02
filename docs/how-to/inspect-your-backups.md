@@ -80,7 +80,7 @@ borgmatic --log-file /path/to/file.log
 ```
 
 Note that if you use the `--log-file` flag, you are responsible for rotating
-the log file so it doesn't grow too large. Also, there is also
+the log file so it doesn't grow too large. Also, there is a
 `--log-file-verbosity` flag to customize the log file's log level.
 
 
