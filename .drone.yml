@@ -40,6 +40,16 @@ steps:
     - scripts/run-tests
 ---
 kind: pipeline
+name: python-3-8-alpine-3-10
+
+steps:
+- name: build
+  image: python:3.8-alpine3.10
+  pull: always
+  commands:
+    - scripts/run-tests
+---
+kind: pipeline
 name: documentation
 
 steps:
