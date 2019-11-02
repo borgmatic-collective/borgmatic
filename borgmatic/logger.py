@@ -73,12 +73,19 @@ def color_text(color, message):
     return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
 
 
-def configure_logging(console_log_level, syslog_log_level=None, log_file=None):
+def configure_logging(
+    console_log_level, syslog_log_level=None, log_file_log_level=None, log_file=None
+):
     '''
-    Configure logging to go to both the console and syslog. Use the given log levels, respectively.
+    Configure logging to go to both the console and (syslog or log file). Use the given log levels,
+    respectively.
+
+    Raise FileNotFoundError or PermissionError if the log file could not be opened for writing.
     '''
     if syslog_log_level is None:
         syslog_log_level = console_log_level
+    if log_file_log_level is None:
+        log_file_log_level = console_log_level
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(Console_color_formatter())
@@ -97,18 +104,13 @@ def configure_logging(console_log_level, syslog_log_level=None, log_file=None):
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
     elif log_file:
-        try:
-            file_handler = logging.FileHandler(log_file)
-        except FileNotFoundError:
-            print("ERROR: Path to log-file doesn't exist: {}".format(log_file))
-            sys.exit(1)
-        except PermissionError:
-            print("ERROR: No write access to log-file: {}".format(log_file))
-            sys.exit(1)
+        file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
-        file_handler.setLevel(syslog_log_level)
+        file_handler.setLevel(log_file_log_level)
         handlers = (console_handler, file_handler)
     else:
         handlers = (console_handler,)
 
-    logging.basicConfig(level=min(console_log_level, syslog_log_level), handlers=handlers)
+    logging.basicConfig(
+        level=min(console_log_level, syslog_log_level, log_file_log_level), handlers=handlers
+    )

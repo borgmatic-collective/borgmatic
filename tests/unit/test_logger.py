@@ -195,11 +195,11 @@ def test_configure_logging_skips_syslog_if_interactive_console():
     module.configure_logging(console_log_level=logging.INFO)
 
 
-def test_configure_logging_to_logfile_instead_syslog():
+def test_configure_logging_to_logfile_instead_of_syslog():
     # syslog skipped in non-interactive console if --log-file argument provided
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.INFO, handlers=tuple
+        level=logging.DEBUG, handlers=tuple
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
@@ -208,7 +208,9 @@ def test_configure_logging_to_logfile_instead_syslog():
         file_handler
     ).once()
 
-    module.configure_logging(console_log_level=logging.INFO, log_file='/tmp/logfile')
+    module.configure_logging(
+        console_log_level=logging.INFO, log_file_log_level=logging.DEBUG, log_file='/tmp/logfile'
+    )
 
 
 def test_configure_logging_skips_logfile_if_argument_is_none():

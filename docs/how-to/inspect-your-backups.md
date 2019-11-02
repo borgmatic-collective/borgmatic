@@ -70,6 +70,20 @@ Or to increase syslog logging to include debug spew:
 borgmatic --syslog-verbosity 2
 ```
 
+### Logging to file
+
+If you don't want to use syslog, and you'd rather borgmatic log to a plain
+file, use the `--log-file` flag:
+
+```bash
+borgmatic --log-file /path/to/file.log
+```
+
+Note that if you use the `--log-file` flag, you are responsible for rotating
+the log file so it doesn't grow too large. Also, there is also
+`--log-file-verbosity` flag to customize the log file's log level.
+
+
 ### systemd journal
 
 If your local syslog daemon is systemd's journal, be aware that journald by

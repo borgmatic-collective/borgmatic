@@ -484,11 +484,17 @@ def main():  # pragma: no cover
     configs, parse_logs = load_configurations(config_filenames)
 
     colorama.init(autoreset=True, strip=not should_do_markup(global_arguments.no_color, configs))
-    configure_logging(
-        verbosity_to_log_level(global_arguments.verbosity),
-        verbosity_to_log_level(global_arguments.syslog_verbosity),
-        global_arguments.log_file,
-    )
+    try:
+        configure_logging(
+            verbosity_to_log_level(global_arguments.verbosity),
+            verbosity_to_log_level(global_arguments.syslog_verbosity),
+            verbosity_to_log_level(global_arguments.log_file_verbosity),
+            global_arguments.log_file,
+        )
+    except (FileNotFoundError, PermissionError) as error:
+        configure_logging(logging.CRITICAL)
+        logger.critical('Error configuring logging: {}'.format(error))
+        exit_with_help_link()
 
     logger.debug('Ensuring legacy configuration is upgraded')
     convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
