@@ -193,3 +193,31 @@ def test_configure_logging_skips_syslog_if_interactive_console():
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
 
     module.configure_logging(console_log_level=logging.INFO)
+
+
+def test_configure_logging_to_logfile_instead_syslog():
+    # syslog skipped in non-interactive console if --log-file argument provided
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+    file_handler = logging.FileHandler('/tmp/logfile')
+    flexmock(module.logging).should_receive('FileHandler').with_args('/tmp/logfile').and_return(
+        file_handler
+    ).once()
+
+    module.configure_logging(console_log_level=logging.INFO, log_file='/tmp/logfile')
+
+
+def test_configure_logging_skips_logfile_if_argument_is_none():
+    # No FileHandler added if argument --log-file is None
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.logging).should_receive('FileHandler').never()
+
+    module.configure_logging(console_log_level=logging.INFO, log_file=None)

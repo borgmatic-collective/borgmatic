@@ -9,3 +9,7 @@ __pycache__
 build/
 dist/
 pip-wheel-metadata/
+
+
+.vscode
+.venv
