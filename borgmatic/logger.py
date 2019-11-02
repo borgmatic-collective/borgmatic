@@ -97,7 +97,14 @@ def configure_logging(console_log_level, syslog_log_level=None, log_file=None):
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
     elif log_file:
-        file_handler = logging.FileHandler(log_file)
+        try:
+            file_handler = logging.FileHandler(log_file)
+        except FileNotFoundError:
+            print("ERROR: Path to log-file doesn't exist: {}".format(log_file))
+            sys.exit(1)
+        except PermissionError:
+            print("ERROR: No write access to log-file: {}".format(log_file))
+            sys.exit(1)
         file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
         file_handler.setLevel(syslog_log_level)
         handlers = (console_handler, file_handler)
