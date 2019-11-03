@@ -62,6 +62,8 @@ following:
 tox -e black
 ```
 
+Note that Black requires at minimum Python 3.6.
+
 And if you get a complaint from the
 [isort](https://github.com/timothycrosley/isort) Python import orderer, you
 can ask isort to order your imports for you:
