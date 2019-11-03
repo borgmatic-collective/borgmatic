@@ -17,6 +17,7 @@ def insert_logging_mock(log_level):
 def test_verbosity_to_log_level_maps_known_verbosity_to_log_level():
     assert module.verbosity_to_log_level(module.VERBOSITY_SOME) == logging.INFO
     assert module.verbosity_to_log_level(module.VERBOSITY_LOTS) == logging.DEBUG
+    assert module.verbosity_to_log_level(module.VERBOSITY_ERROR) == logging.ERROR
 
 
 def test_verbosity_to_log_level_maps_unknown_verbosity_to_warning_level():

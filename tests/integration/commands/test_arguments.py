@@ -15,6 +15,7 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 0
+    assert global_arguments.log_file_verbosity == 0
 
 
 def test_parse_arguments_with_multiple_config_paths_parses_as_list():
@@ -26,6 +27,7 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     assert global_arguments.config_paths == ['myconfig', 'otherconfig']
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 0
+    assert global_arguments.log_file_verbosity == 0
 
 
 def test_parse_arguments_with_verbosity_overrides_default():
@@ -39,6 +41,7 @@ def test_parse_arguments_with_verbosity_overrides_default():
     assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 1
     assert global_arguments.syslog_verbosity == 0
+    assert global_arguments.log_file_verbosity == 0
 
 
 def test_parse_arguments_with_syslog_verbosity_overrides_default():
@@ -52,6 +55,20 @@ def test_parse_arguments_with_syslog_verbosity_overrides_default():
     assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 2
+
+
+def test_parse_arguments_with_log_file_verbosity_overrides_default():
+    config_paths = ['default']
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
+
+    arguments = module.parse_arguments('--log-file-verbosity', '-1')
+
+    global_arguments = arguments['global']
+    assert global_arguments.config_paths == config_paths
+    assert global_arguments.excludes_filename is None
+    assert global_arguments.verbosity == 0
+    assert global_arguments.syslog_verbosity == 0
+    assert global_arguments.log_file_verbosity == -1
 
 
 def test_parse_arguments_with_list_json_overrides_default():
