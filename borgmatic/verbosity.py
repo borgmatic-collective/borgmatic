@@ -1,5 +1,6 @@
 import logging
 
+VERBOSITY_ERROR = -1
 VERBOSITY_WARNING = 0
 VERBOSITY_SOME = 1
 VERBOSITY_LOTS = 2
@@ -10,6 +11,7 @@ def verbosity_to_log_level(verbosity):
     Given a borgmatic verbosity value, return the corresponding Python log level.
     '''
     return {
+        VERBOSITY_ERROR: logging.ERROR,
         VERBOSITY_WARNING: logging.WARNING,
         VERBOSITY_SOME: logging.INFO,
         VERBOSITY_LOTS: logging.DEBUG,
