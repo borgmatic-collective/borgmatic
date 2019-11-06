@@ -439,13 +439,17 @@ map:
                 desc: |
                     Healthchecks ping URL or UUID to notify when a backup begins, ends, or errors.
                     Create an account at https://healthchecks.io if you'd like to use this service.
+                    See http://localhost:8080/docs/how-to/monitor-your-backups/#healthchecks-hook
+                    for details.
                 example:
                     https://hc-ping.com/your-uuid-here
             cronitor:
                 type: str
                 desc: |
                     Cronitor ping URL to notify when a backup begins, ends, or errors. Create an
-                    account at https://cronitor.io if you'd like to use this service.
+                    account at https://cronitor.io if you'd like to use this service. See
+                    http://localhost:8080/docs/how-to/monitor-your-backups/#cronitor-hook for
+                    details.
                 example:
                     https://cronitor.link/d3x0c1
             before_everything:

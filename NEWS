@@ -1,4 +1,5 @@
 1.4.7
+ * #238: In documentation, clarify when Healthchecks/Cronitor hooks fire in relation to other hooks.
  * #239: Upgrade your borgmatic configuration to get new options and comments via
    "generate-borgmatic-config --source". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration

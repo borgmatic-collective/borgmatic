@@ -111,9 +111,15 @@ hooks:
     healthchecks: https://hc-ping.com/addffa72-da17-40ae-be9c-ff591afb942a
 ```
 
-With this hook in place, borgmatic will ping your Healthchecks project when a
-backup begins, ends, or errors. Then you can configure Healthchecks to notify
-you by a [variety of
+With this hook in place, borgmatic pings your Healthchecks project when a
+backup begins, ends, or errors. Specifically, before the <a
+href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
+hooks</a> run, borgmatic lets Healthchecks know that a backup has started.
+Then, if the backup completes successfully, borgmatic notifies Healthchecks of
+the success after the `after_backup` hooks run. And if an error occurs during
+the backup, borgmatic notifies Healthchecks after the `on_error` hooks run.
+
+You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
 
@@ -132,11 +138,17 @@ hooks:
     cronitor: https://cronitor.link/d3x0c1
 ```
 
-With this hook in place, borgmatic will ping your Cronitor monitor when a
-backup begins, ends, or errors. Then you can configure Cronitor to notify you
-by a [variety of
-mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups
-fail or it doesn't hear from borgmatic for a certain period of time.
+With this hook in place, borgmatic pings your Cronitor monitor when a backup
+begins, ends, or errors. Specifically, before the <a
+href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
+hooks</a> run, borgmatic lets Cronitor know that a backup has started. Then,
+if the backup completes successfully, borgmatic notifies Cronitor of the
+success after the `after_backup` hooks run. And if an error occurs during the
+backup, borgmatic notifies Cronitor after the `on_error` hooks run.
+
+You can configure Cronitor to notify you by a [variety of
+mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups fail
+or it doesn't hear from borgmatic for a certain period of time.
 
 
 ## Scripting borgmatic
