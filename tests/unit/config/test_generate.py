@@ -123,3 +123,12 @@ def test_merge_source_configuration_into_destination_inserts_sequence_of_maps():
         'foo': [{'first': 'source1', 'second': 'dest2'}, {'other': 'source2'}],
         'bar': 'dest3',
     }
+
+
+def test_merge_source_configuration_into_destination_without_source_does_nothing():
+    original_destination_config = {'foo': 'dest1', 'bar': 'dest2'}
+    destination_config = dict(original_destination_config)
+
+    module.merge_source_configuration_into_destination(destination_config, None)
+
+    assert destination_config == original_destination_config
