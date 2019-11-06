@@ -21,6 +21,7 @@ def test_convert_section_generates_integer_value_for_integer_type_in_schema():
 
 def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
+    flexmock(module.generate).should_receive('add_comments_to_configuration_map')
     source_config = Parsed_config(
         location=OrderedDict([('source_directories', '/home'), ('repository', 'hostname.borg')]),
         storage=OrderedDict([('encryption_passphrase', 'supersecret')]),
@@ -53,6 +54,7 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
 
 def test_convert_legacy_parsed_config_splits_space_separated_values():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
+    flexmock(module.generate).should_receive('add_comments_to_configuration_map')
     source_config = Parsed_config(
         location=OrderedDict(
             [('source_directories', '/home /etc'), ('repository', 'hostname.borg')]

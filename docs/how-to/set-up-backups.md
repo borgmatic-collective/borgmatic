@@ -77,9 +77,12 @@ else borgmatic won't recognize the option. Also be sure to use spaces rather
 than tabs for indentation; YAML does not allow tabs.
 
 You can also get the same sample configuration file from the [configuration
-reference](https://torsion.org/borgmatic/docs/reference/configuration/), the authoritative set of
-all configuration options. This is handy if borgmatic has added new options
-since you originally created your configuration file.
+reference](https://torsion.org/borgmatic/docs/reference/configuration/), the
+authoritative set of all configuration options. This is handy if borgmatic has
+added new options
+since you originally created your configuration file. Also check out how to
+[upgrade your
+configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration).
 
 
 ### Encryption
@@ -248,5 +251,6 @@ it.
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
+ * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
  * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration/)
  * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line/)

@@ -1,3 +1,8 @@
+1.4.7
+ * #239: Upgrade your borgmatic configuration to get new options and comments via
+   "generate-borgmatic-config --source". See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration
+
 1.4.6
  * Verbosity level "-1" for even quieter output: Errors only (#236).
 

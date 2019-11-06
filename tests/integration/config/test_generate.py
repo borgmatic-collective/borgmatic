@@ -47,9 +47,13 @@ def test_comment_out_line_comments_twice_indented_option():
 
 
 def test_comment_out_optional_configuration_comments_optional_config_only():
+    # The "# COMMENT_OUT" comment is a sentinel used to express that the following key is optional.
+    # It's stripped out of the final output.
     flexmock(module)._comment_out_line = lambda line: '# ' + line
     config = '''
+# COMMENT_OUT
 foo:
+    # COMMENT_OUT
     bar:
         - baz
         - quux
@@ -59,6 +63,8 @@ location:
         - one
         - two
 
+    # This comment should be kept.
+    # COMMENT_OUT
     other: thing
     '''
 
@@ -68,12 +74,13 @@ location:
 #     bar:
 #         - baz
 #         - quux
-# 
+
 location:
     repositories:
         - one
         - two
-# 
+
+    # This comment should be kept.
 #     other: thing
     '''
 
@@ -142,12 +149,67 @@ def test_add_comments_to_configuration_map_does_not_raise():
     module.add_comments_to_configuration_map(config, schema)
 
 
+def test_add_comments_to_configuration_map_with_skip_first_does_not_raise():
+    config = module.yaml.comments.CommentedMap([('foo', 33)])
+    schema = {'map': {'foo': {'desc': 'Foo'}}}
+
+    module.add_comments_to_configuration_map(config, schema, skip_first=True)
+
+
+def test_remove_commented_out_sentinel_keeps_other_comments():
+    field_name = 'foo'
+    config = module.yaml.comments.CommentedMap([(field_name, 33)])
+    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.\nCOMMENT_OUT')
+
+    module.remove_commented_out_sentinel(config, field_name)
+
+    comments = config.ca.items[field_name][module.RUAMEL_YAML_COMMENTS_INDEX]
+    assert len(comments) == 1
+    assert comments[0].value == '# Actual comment.\n'
+
+
+def test_remove_commented_out_sentinel_without_sentinel_keeps_other_comments():
+    field_name = 'foo'
+    config = module.yaml.comments.CommentedMap([(field_name, 33)])
+    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.')
+
+    module.remove_commented_out_sentinel(config, field_name)
+
+    comments = config.ca.items[field_name][module.RUAMEL_YAML_COMMENTS_INDEX]
+    assert len(comments) == 1
+    assert comments[0].value == '# Actual comment.\n'
+
+
+def test_remove_commented_out_sentinel_on_unknown_field_does_not_raise():
+    field_name = 'foo'
+    config = module.yaml.comments.CommentedMap([(field_name, 33)])
+    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.')
+
+    module.remove_commented_out_sentinel(config, 'unknown')
+
+
 def test_generate_sample_configuration_does_not_raise():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    flexmock(module.yaml).should_receive('round_trip_load')
     flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('_render_configuration')
     flexmock(module).should_receive('_comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
-    module.generate_sample_configuration('config.yaml', 'schema.yaml')
+    module.generate_sample_configuration(None, 'dest.yaml', 'schema.yaml')
+
+
+def test_generate_sample_configuration_with_source_filename_does_not_raise():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    flexmock(module.yaml).should_receive('round_trip_load')
+    flexmock(module.load).should_receive('load_configuration')
+    flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module).should_receive('_render_configuration')
+    flexmock(module).should_receive('_comment_out_optional_configuration')
+    flexmock(module).should_receive('write_configuration')
+
+    module.generate_sample_configuration('source.yaml', 'dest.yaml', 'schema.yaml')
