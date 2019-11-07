@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, cronitor, healthchecks, postgresql
+from borgmatic.hooks import command, cronhub, cronitor, healthchecks, postgresql
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -58,6 +58,9 @@ def run_configuration(config_filename, config, arguments):
             )
             cronitor.ping_cronitor(
                 hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'run'
+            )
+            cronhub.ping_cronhub(
+                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'start'
             )
             command.execute_hook(
                 hooks.get('before_backup'),
@@ -114,6 +117,9 @@ def run_configuration(config_filename, config, arguments):
             cronitor.ping_cronitor(
                 hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'complete'
             )
+            cronhub.ping_cronhub(
+                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'finish'
+            )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
             yield from make_error_log_records(
@@ -137,6 +143,9 @@ def run_configuration(config_filename, config, arguments):
             )
             cronitor.ping_cronitor(
                 hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'fail'
+            )
+            cronhub.ping_cronhub(
+                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'fail'
             )
         except (OSError, CalledProcessError) as error:
             yield from make_error_log_records(

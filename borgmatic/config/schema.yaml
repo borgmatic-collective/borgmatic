@@ -439,7 +439,8 @@ map:
                 desc: |
                     Healthchecks ping URL or UUID to notify when a backup begins, ends, or errors.
                     Create an account at https://healthchecks.io if you'd like to use this service.
-                    See http://localhost:8080/docs/how-to/monitor-your-backups/#healthchecks-hook
+                    See
+                    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook
                     for details.
                 example:
                     https://hc-ping.com/your-uuid-here
@@ -448,10 +449,19 @@ map:
                 desc: |
                     Cronitor ping URL to notify when a backup begins, ends, or errors. Create an
                     account at https://cronitor.io if you'd like to use this service. See
-                    http://localhost:8080/docs/how-to/monitor-your-backups/#cronitor-hook for
-                    details.
+                    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook
+                    for details.
                 example:
                     https://cronitor.link/d3x0c1
+            cronhub:
+                type: str
+                desc: |
+                    Cronhub ping URL to notify when a backup begins, ends, or errors. Create an
+                    account at https://cronhub.io if you'd like to use this service. See
+                    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook for
+                    details.
+                example:
+                    https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
             before_everything:
                 seq:
                     - type: str

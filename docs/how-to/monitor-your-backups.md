@@ -27,14 +27,15 @@ See [error
 hooks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks)
 below for how to configure this.
 4. **borgmatic monitoring hooks**: This feature integrates with monitoring
-services like [Healthchecks](https://healthchecks.io/) and
-[Cronitor](https://cronitor.io), and pings these services whenever borgmatic
-runs. That way, you'll receive an alert when something goes wrong or the
-service doesn't hear from borgmatic for a configured interval. See
+   services like [Healthchecks](https://healthchecks.io/),
+[Cronitor](https://cronitor.io), and [Cronhub](https://cronhub.io), and pings
+these services whenever borgmatic runs. That way, you'll receive an alert when
+something goes wrong or the service doesn't hear from borgmatic for a
+configured interval. See
 [Healthchecks
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
-and [Cronitor
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook), [Cronitor
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook), and [Cronhub
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
 below for how to configure this.
 3. **Third-party monitoring software**: You can use traditional monitoring
 software to consume borgmatic JSON output and track when the last
@@ -148,6 +149,37 @@ backup, borgmatic notifies Cronitor after the `on_error` hooks run.
 
 You can configure Cronitor to notify you by a [variety of
 mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups fail
+or it doesn't hear from borgmatic for a certain period of time.
+
+
+## Cronhub hook
+
+[Cronhub](https://cronhub.io/) provides "instant alerts when any of your
+background jobs fail silently or run longer than expected", and borgmatic has
+built-in integration with it. Once you create a Cronhub account and monitor on
+their site, all you need to do is configure borgmatic with the unique "Ping
+URL" for your monitor. Here's an example:
+
+
+```yaml
+hooks:
+    cronhub: https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
+```
+
+With this hook in place, borgmatic pings your Cronhub monitor when a backup
+begins, ends, or errors. Specifically, before the <a
+href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
+hooks</a> run, borgmatic lets Cronhub know that a backup has started. Then,
+if the backup completes successfully, borgmatic notifies Cronhub of the
+success after the `after_backup` hooks run. And if an error occurs during the
+backup, borgmatic notifies Cronhub after the `on_error` hooks run.
+
+Note that even though you configure borgmatic with the "start" variant of the
+ping URL, borgmatic substitutes the correct state into the URL when pinging
+Cronhub ("start", "finish", or "fail").
+
+You can configure Cronhub to notify you by a [variety of
+mechanisms](https://docs.cronhub.io/integrations.html) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
 
 

@@ -1,3 +1,8 @@
+1.4.8
+ * Monitor backups with Cronhub hook integration. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook
+ * Fix Healthchecks/Cronitor hooks to skip actions when the borgmatic "--dry-run" flag is used.
+
 1.4.7
  * #238: In documentation, clarify when Healthchecks/Cronitor hooks fire in relation to other hooks.
  * #239: Upgrade your borgmatic configuration to get new options and comments via

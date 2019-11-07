@@ -20,5 +20,6 @@ def ping_cronitor(ping_url, config_filename, dry_run, append):
     logger.info('{}: Pinging Cronitor {}{}'.format(config_filename, append, dry_run_label))
     logger.debug('{}: Using Cronitor ping URL {}'.format(config_filename, ping_url))
 
-    logging.getLogger('urllib3').setLevel(logging.ERROR)
-    requests.get(ping_url)
+    if not dry_run:
+        logging.getLogger('urllib3').setLevel(logging.ERROR)
+        requests.get(ping_url)

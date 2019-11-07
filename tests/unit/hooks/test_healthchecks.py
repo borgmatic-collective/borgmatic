@@ -31,3 +31,10 @@ def test_ping_healthchecks_hits_ping_url_with_append():
     flexmock(module.requests).should_receive('get').with_args('{}/{}'.format(ping_url, append))
 
     module.ping_healthchecks(ping_url, 'config.yaml', dry_run=False, append=append)
+
+
+def test_ping_healthchecks_dry_run_does_not_hit_ping_url():
+    ping_url = 'https://example.com'
+    flexmock(module.requests).should_receive('get').never()
+
+    module.ping_healthchecks(ping_url, 'config.yaml', dry_run=True)

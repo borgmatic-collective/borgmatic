@@ -32,5 +32,6 @@ def ping_healthchecks(ping_url_or_uuid, config_filename, dry_run, append=None):
     )
     logger.debug('{}: Using Healthchecks ping URL {}'.format(config_filename, ping_url))
 
-    logging.getLogger('urllib3').setLevel(logging.ERROR)
-    requests.get(ping_url)
+    if not dry_run:
+        logging.getLogger('urllib3').setLevel(logging.ERROR)
+        requests.get(ping_url)
