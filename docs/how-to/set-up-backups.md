@@ -69,7 +69,7 @@ sudo generate-borgmatic-config
 ```
 
 If that command is not found, then it may be installed in a location that's
-not in your system `PATH`. Try looking in `/usr/local/bin/`.
+not in your system `PATH` (see above). Try looking in `~/.local/bin/`.
 
 This generates a sample configuration file at /etc/borgmatic/config.yaml (by
 default). You should edit the file to suit your needs, as the values are
