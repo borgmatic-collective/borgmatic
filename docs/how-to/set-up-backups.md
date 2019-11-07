@@ -19,8 +19,14 @@ sudo pip3 install --user --upgrade borgmatic
 
 This is a [recommended user site
 installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site).
-You will need to ensure that `/root/.local/bin` is available on your `$PATH` so
-that the borgmatic executable is available.
+You will need to ensure that `/root/.local/bin` is available on your `$PATH`
+so
+that the borgmatic executable is available. For instance, adding this to
+root's `~/.profile` or `~/.bash_profile` may do the trick:
+
+```bash
+export PATH="$PATH:~/.local/bin"
+```
 
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
