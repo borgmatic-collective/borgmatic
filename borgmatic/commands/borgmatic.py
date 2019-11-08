@@ -107,6 +107,9 @@ def run_configuration(config_filename, config, arguments):
             postgresql.remove_database_dumps(
                 hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
             )
+            mysql.remove_database_dumps(
+                hooks.get('mysql_databases'), config_filename, global_arguments.dry_run
+            )
             command.execute_hook(
                 hooks.get('after_backup'),
                 hooks.get('umask'),

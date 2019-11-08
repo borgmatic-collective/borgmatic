@@ -8,7 +8,7 @@ from borgmatic.hooks import mysql as module
 def test_dump_databases_runs_mysqldump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     output_file = flexmock()
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
     flexmock(module.os).should_receive('makedirs')
@@ -26,7 +26,7 @@ def test_dump_databases_runs_mysqldump_for_each_database():
 
 def test_dump_databases_with_dry_run_skips_mysqldump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
     flexmock(module.os).should_receive('makedirs').never()
@@ -42,7 +42,7 @@ def test_dump_databases_without_databases_does_not_raise():
 def test_dump_databases_runs_mysqldump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     output_file = flexmock()
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/database.example.org/foo'
     )
     flexmock(module.os).should_receive('makedirs')
@@ -71,7 +71,7 @@ def test_dump_databases_runs_mysqldump_with_hostname_and_port():
 def test_dump_databases_runs_mysqldump_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
     output_file = flexmock()
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
     flexmock(module.os).should_receive('makedirs')
@@ -89,7 +89,7 @@ def test_dump_databases_runs_mysqldump_with_username_and_password():
 def test_dump_databases_runs_mysqldump_with_options():
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
     output_file = flexmock()
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
     flexmock(module.os).should_receive('makedirs')
@@ -107,7 +107,7 @@ def test_dump_databases_runs_mysqldump_with_options():
 def test_dump_databases_runs_mysqldump_for_all_databases():
     databases = [{'name': 'all'}]
     output_file = flexmock()
-    flexmock(module).should_receive('make_database_dump_filename').and_return(
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
     )
     flexmock(module.os).should_receive('makedirs')

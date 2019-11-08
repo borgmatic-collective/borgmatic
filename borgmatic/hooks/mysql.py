@@ -2,7 +2,7 @@ import logging
 import os
 
 from borgmatic.execute import execute_command
-from borgmatic.hooks.database import make_database_dump_filename
+from borgmatic.hooks import dump
 
 DUMP_PATH = '~/.borgmatic/mysql_databases'
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def dump_databases(databases, log_prefix, dry_run):
 
     for database in databases:
         name = database['name']
-        dump_filename = make_database_dump_filename(DUMP_PATH, name, database.get('hostname'))
+        dump_filename = dump.make_database_dump_filename(DUMP_PATH, name, database.get('hostname'))
         command = (
             ('mysqldump', '--add-drop-database')
             + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -46,3 +46,12 @@ def dump_databases(databases, log_prefix, dry_run):
             execute_command(
                 command, output_file=open(dump_filename, 'w'), extra_environment=extra_environment
             )
+
+
+def remove_database_dumps(databases, log_prefix, dry_run):
+    '''
+    Remove the database dumps for the given databases. The databases are supplied as a sequence of
+    dicts, one dict describing each database as per the configuration schema. Use the log prefix in
+    any log entries. If this is a dry run, then don't actually remove anything.
+    '''
+    dump.remove_database_dumps(DUMP_PATH, databases, 'MySQL', log_prefix, dry_run)
