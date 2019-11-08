@@ -3,21 +3,10 @@ import logging
 import os
 
 from borgmatic.execute import execute_command
+from borgmatic.hooks.database import make_database_dump_filename
 
 DUMP_PATH = '~/.borgmatic/postgresql_databases'
 logger = logging.getLogger(__name__)
-
-
-def make_database_dump_filename(name, hostname=None):
-    '''
-    Based on the given database name and hostname, return a filename to use for the database dump.
-
-    Raise ValueError if the database name is invalid.
-    '''
-    if os.path.sep in name:
-        raise ValueError('Invalid database name {}'.format(name))
-
-    return os.path.join(os.path.expanduser(DUMP_PATH), hostname or 'localhost', name)
 
 
 def dump_databases(databases, log_prefix, dry_run):
@@ -36,7 +25,7 @@ def dump_databases(databases, log_prefix, dry_run):
 
     for database in databases:
         name = database['name']
-        dump_filename = make_database_dump_filename(name, database.get('hostname'))
+        dump_filename = make_database_dump_filename(DUMP_PATH, name, database.get('hostname'))
         all_databases = bool(name == 'all')
         command = (
             ('pg_dumpall' if all_databases else 'pg_dump', '--no-password', '--clean')
@@ -50,7 +39,11 @@ def dump_databases(databases, log_prefix, dry_run):
         )
         extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
 
-        logger.debug('{}: Dumping PostgreSQL database {}{}'.format(log_prefix, name, dry_run_label))
+        logger.debug(
+            '{}: Dumping PostgreSQL database {} to {}{}'.format(
+                log_prefix, name, dump_filename, dry_run_label
+            )
+        )
         if not dry_run:
             os.makedirs(os.path.dirname(dump_filename), mode=0o700, exist_ok=True)
             execute_command(command, extra_environment=extra_environment)
@@ -71,7 +64,9 @@ def remove_database_dumps(databases, log_prefix, dry_run):
     logger.info('{}: Removing PostgreSQL database dumps{}'.format(log_prefix, dry_run_label))
 
     for database in databases:
-        dump_filename = make_database_dump_filename(database['name'], database.get('hostname'))
+        dump_filename = make_database_dump_filename(
+            DUMP_PATH, database['name'], database.get('hostname')
+        )
 
         logger.debug(
             '{}: Removing PostgreSQL database dump {} from {}{}'.format(
@@ -94,7 +89,7 @@ def make_database_dump_patterns(names):
     dumps in an archive. An empty sequence of names indicates that the patterns should match all
     dumps.
     '''
-    return [make_database_dump_filename(name, hostname='*') for name in (names or ['*'])]
+    return [make_database_dump_filename(DUMP_PATH, name, hostname='*') for name in (names or ['*'])]
 
 
 def convert_glob_patterns_to_borg_patterns(patterns):
@@ -155,7 +150,9 @@ def restore_database_dumps(databases, log_prefix, dry_run):
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
     for database in databases:
-        dump_filename = make_database_dump_filename(database['name'], database.get('hostname'))
+        dump_filename = make_database_dump_filename(
+            DUMP_PATH, database['name'], database.get('hostname')
+        )
         restore_command = (
             ('pg_restore', '--no-password', '--clean', '--if-exists', '--exit-on-error')
             + (('--host', database['hostname']) if 'hostname' in database else ())

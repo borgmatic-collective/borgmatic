@@ -20,21 +20,17 @@ def exit_code_indicates_error(command, exit_code, error_on_warnings=False):
     return bool(exit_code != 0)
 
 
-def execute_and_log_output(
-    full_command, output_log_level, shell, environment, working_directory, error_on_warnings
-):
+def log_output(command, process, output_buffer, output_log_level, error_on_warnings):
+    '''
+    Given a command already executed, its process opened by subprocess.Popen(), and the process'
+    relevant output buffer (stderr or stdout), log its output with the requested log level.
+    Additionally, raise a CalledProcessException if the process exits with an error (or a warning,
+    if error on warnings is True).
+    '''
     last_lines = []
-    process = subprocess.Popen(
-        full_command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        shell=shell,
-        env=environment,
-        cwd=working_directory,
-    )
 
     while process.poll() is None:
-        line = process.stdout.readline().rstrip().decode()
+        line = output_buffer.readline().rstrip().decode()
         if not line:
             continue
 
@@ -46,26 +42,25 @@ def execute_and_log_output(
 
         logger.log(output_log_level, line)
 
-    remaining_output = process.stdout.read().rstrip().decode()
+    remaining_output = output_buffer.read().rstrip().decode()
     if remaining_output:  # pragma: no cover
         logger.log(output_log_level, remaining_output)
 
     exit_code = process.poll()
 
-    if exit_code_indicates_error(full_command, exit_code, error_on_warnings):
+    if exit_code_indicates_error(command, exit_code, error_on_warnings):
         # If an error occurs, include its output in the raised exception so that we don't
         # inadvertently hide error output.
         if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
             last_lines.insert(0, '...')
 
-        raise subprocess.CalledProcessError(
-            exit_code, ' '.join(full_command), '\n'.join(last_lines)
-        )
+        raise subprocess.CalledProcessError(exit_code, ' '.join(command), '\n'.join(last_lines))
 
 
 def execute_command(
     full_command,
     output_log_level=logging.INFO,
+    output_file=None,
     shell=False,
     extra_environment=None,
     working_directory=None,
@@ -73,10 +68,12 @@ def execute_command(
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
-    given log level. If output log level is None, instead capture and return the output. If
-    shell is True, execute the command within a shell. If an extra environment dict is given, then
-    use it to augment the current environment, and pass the result into the command. If a working
-    directory is given, use that as the present working directory when running the command.
+    given log level. If output log level is None, instead capture and return the output. If an
+    open output file object is given, then write stdout to the file and only log stderr (but only
+    if an output log level is set). If shell is True, execute the command within a shell. If an
+    extra environment dict is given, then use it to augment the current environment, and pass the
+    result into the command. If a working directory is given, use that as the present working
+    directory when running the command.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -89,13 +86,20 @@ def execute_command(
         )
         return output.decode() if output is not None else None
     else:
-        execute_and_log_output(
+        process = subprocess.Popen(
             full_command,
-            output_log_level,
+            stdout=output_file or subprocess.PIPE,
+            stderr=subprocess.PIPE if output_file else subprocess.STDOUT,
             shell=shell,
-            environment=environment,
-            working_directory=working_directory,
-            error_on_warnings=error_on_warnings,
+            env=environment,
+            cwd=working_directory,
+        )
+        log_output(
+            full_command,
+            process,
+            process.stderr if output_file else process.stdout,
+            output_log_level,
+            error_on_warnings,
         )
 
 

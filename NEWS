@@ -1,3 +1,7 @@
+1.4.9.dev0
+ * #228: Database dump hooks for MySQL/MariaDB, so you can easily dump your databases before backups
+   run.
+
 1.4.8
  * Monitor backups with Cronhub hook integration. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook

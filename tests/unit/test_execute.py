@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 from flexmock import flexmock
 
@@ -47,16 +45,36 @@ def test_exit_code_indicates_error_with_non_borg_success_is_false():
 def test_execute_command_calls_full_command():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
-    flexmock(module).should_receive('execute_and_log_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
-        output_log_level=logging.INFO,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
         shell=False,
-        environment=None,
-        working_directory=None,
-        error_on_warnings=False,
-    ).once()
+        env=None,
+        cwd=None,
+    ).and_return(flexmock(stdout=None)).once()
+    flexmock(module).should_receive('log_output')
 
     output = module.execute_command(full_command)
+
+    assert output is None
+
+
+def test_execute_command_calls_full_command_with_output_file():
+    full_command = ['foo', 'bar']
+    output_file = flexmock()
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdout=output_file,
+        stderr=module.subprocess.PIPE,
+        shell=False,
+        env=None,
+        cwd=None,
+    ).and_return(flexmock(stderr=None)).once()
+    flexmock(module).should_receive('log_output')
+
+    output = module.execute_command(full_command, output_file=output_file)
 
     assert output is None
 
@@ -64,14 +82,15 @@ def test_execute_command_calls_full_command():
 def test_execute_command_calls_full_command_with_shell():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
-    flexmock(module).should_receive('execute_and_log_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
-        output_log_level=logging.INFO,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
         shell=True,
-        environment=None,
-        working_directory=None,
-        error_on_warnings=False,
-    ).once()
+        env=None,
+        cwd=None,
+    ).and_return(flexmock(stdout=None)).once()
+    flexmock(module).should_receive('log_output')
 
     output = module.execute_command(full_command, shell=True)
 
@@ -81,14 +100,15 @@ def test_execute_command_calls_full_command_with_shell():
 def test_execute_command_calls_full_command_with_extra_environment():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
-    flexmock(module).should_receive('execute_and_log_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
-        output_log_level=logging.INFO,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
         shell=False,
-        environment={'a': 'b', 'c': 'd'},
-        working_directory=None,
-        error_on_warnings=False,
-    ).once()
+        env={'a': 'b', 'c': 'd'},
+        cwd=None,
+    ).and_return(flexmock(stdout=None)).once()
+    flexmock(module).should_receive('log_output')
 
     output = module.execute_command(full_command, extra_environment={'c': 'd'})
 
@@ -98,33 +118,17 @@ def test_execute_command_calls_full_command_with_extra_environment():
 def test_execute_command_calls_full_command_with_working_directory():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
-    flexmock(module).should_receive('execute_and_log_output').with_args(
+    flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
-        output_log_level=logging.INFO,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
         shell=False,
-        environment=None,
-        working_directory='/working',
-        error_on_warnings=False,
-    ).once()
+        env=None,
+        cwd='/working',
+    ).and_return(flexmock(stdout=None)).once()
+    flexmock(module).should_receive('log_output')
 
     output = module.execute_command(full_command, working_directory='/working')
-
-    assert output is None
-
-
-def test_execute_command_calls_full_command_with_error_on_warnings():
-    full_command = ['foo', 'bar']
-    flexmock(module.os, environ={'a': 'b'})
-    flexmock(module).should_receive('execute_and_log_output').with_args(
-        full_command,
-        output_log_level=logging.INFO,
-        shell=False,
-        environment=None,
-        working_directory=None,
-        error_on_warnings=True,
-    ).once()
-
-    output = module.execute_command(full_command, error_on_warnings=True)
 
     assert output is None
 

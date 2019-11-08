@@ -434,6 +434,54 @@ map:
                     directories at runtime, backed up, and then removed afterwards. Requires
                     pg_dump/pg_dumpall/pg_restore commands. See
                     https://www.postgresql.org/docs/current/app-pgdump.html for details.
+            mysql_databases:
+                seq:
+                    - map:
+                        name:
+                            required: true
+                            type: str
+                            desc: |
+                                Database name (required if using this hook). Or "all" to dump all
+                                databases on the host.
+                            example: users
+                        hostname:
+                            type: str
+                            desc: |
+                                Database hostname to connect to. Defaults to connecting via local
+                                Unix socket.
+                            example: database.example.org
+                        port:
+                            type: int
+                            desc: Port to connect to. Defaults to 3306.
+                            example: 3307
+                        username:
+                            type: str
+                            desc: |
+                                Username with which to connect to the database. Defaults to the
+                                username of the current user.
+                            example: dbuser
+                        password:
+                            type: str
+                            desc: |
+                                Password with which to connect to the database. Omitting a password
+                                will only work if MySQL is configured to trust the configured
+                                username without a password.
+                            example: trustsome1
+                        options:
+                            type: str
+                            desc: |
+                                Additional mysqldump options to pass directly to the dump command,
+                                without performing any validation on them. See
+                                https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html or
+                                https://mariadb.com/kb/en/library/mysqldump/ for details.
+                            example: --skip-comments
+                desc: |
+                    List of one or more MySQL/MariaDB databases to dump before creating a backup,
+                    run once per configuration file. The database dumps are added to your source
+                    directories at runtime, backed up, and then removed afterwards. Requires
+                    mysqldump/mysql commands (from either MySQL or MariaDB). See
+                    https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html or
+                    https://mariadb.com/kb/en/library/mysqldump/ for details.
             healthchecks:
                 type: str
                 desc: |

@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, cronhub, cronitor, healthchecks, postgresql
+from borgmatic.hooks import command, cronhub, cronitor, healthchecks, mysql, postgresql
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -71,6 +71,9 @@ def run_configuration(config_filename, config, arguments):
             )
             postgresql.dump_databases(
                 hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
+            )
+            mysql.dump_databases(
+                hooks.get('mysql_databases'), config_filename, global_arguments.dry_run
             )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
