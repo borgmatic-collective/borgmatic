@@ -10,3 +10,5 @@ newtonne: Read encryption password from external file
 Robin `ypid` Schneider: Support additional options of Borg and add validate-borgmatic-config command
 Scott Squires: Custom archive names
 Thomas LÉVEIL: Support for a keep_minutely prune option. Support for the --json option
+
+Any many others! See the output of "git log".
