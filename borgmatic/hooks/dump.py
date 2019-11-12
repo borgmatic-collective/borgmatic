@@ -79,9 +79,6 @@ def get_database_configurations(databases, names):
     database names, filter down and yield the configuration for just the named databases.
     Additionally, if a database configuration is named "all", project out that configuration for
     each named database.
-
-    Raise ValueError if one of the database names cannot be matched to a database in borgmatic's
-    database configuration.
     '''
     named_databases = {database['name']: database for database in databases}
 
@@ -94,12 +91,6 @@ def get_database_configurations(databases, names):
         if 'all' in named_databases:
             yield {**named_databases['all'], **{'name': name}}
             continue
-
-        raise ValueError(
-            'Cannot restore database "{}", as it is not defined in borgmatic\'s configuration'.format(
-                name
-            )
-        )
 
 
 def get_per_hook_database_configurations(hooks, names, dump_patterns):
@@ -119,7 +110,7 @@ def get_per_hook_database_configurations(hooks, names, dump_patterns):
     database configuration.
     '''
     # TODO: Need to filter names by database type? Maybe take a database --type argument to disambiguate.
-    return {
+    hook_databases = {
         hook_name: list(
             get_database_configurations(
                 hooks.get(hook_name),
@@ -129,3 +120,19 @@ def get_per_hook_database_configurations(hooks, names, dump_patterns):
         for hook_name in DATABASE_HOOK_NAMES
         if hook_name in hooks
     }
+
+    if not names or 'all' in names:
+        return hook_databases
+
+    found_names = {
+        database['name'] for databases in hook_databases.values() for database in databases
+    }
+    missing_names = sorted(set(names) - found_names)
+    if missing_names:
+        raise ValueError(
+            'Cannot restore database(s) {} missing from borgmatic\'s configuration'.format(
+                ', '.join(missing_names)
+            )
+        )
+
+    return hook_databases
