@@ -70,6 +70,21 @@ Or to increase syslog logging to include debug spew:
 borgmatic --syslog-verbosity 2
 ```
 
+### Rate limiting
+
+If you are using rsyslog or systemd's journal, be aware that by default they
+both throttle the rate at which logging occurs. So you may need to change
+either [the global rate
+limit](https://www.rootusers.com/how-to-change-log-rate-limiting-in-linux/) or
+[the per-service rate
+limit](https://www.freedesktop.org/software/systemd/man/journald.conf.html#RateLimitIntervalSec=)
+if you're finding that borgmatic logs are missing.
+
+Note that the [sample borgmatic systemd service
+file](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#systemd)
+already has this rate limit disabled for systemd's journal.
+
+
 ### Logging to file
 
 If you don't want to use syslog, and you'd rather borgmatic log to a plain
@@ -82,20 +97,6 @@ borgmatic --log-file /path/to/file.log
 Note that if you use the `--log-file` flag, you are responsible for rotating
 the log file so it doesn't grow too large. Also, there is a
 `--log-file-verbosity` flag to customize the log file's log level.
-
-
-### systemd journal
-
-If your local syslog daemon is systemd's journal, be aware that journald by
-default throttles the rate at which a particular program can log. So you may
-need to [change the journald rate
-limit](https://www.freedesktop.org/software/systemd/man/journald.conf.html#RateLimitIntervalSec=)
-in `/etc/systemd/journald.conf` if you're finding that borgmatic journald logs
-are missing.
-
-Note that the [sample borgmatic systemd service
-file](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#systemd)
-already has this rate limit disabled.
 
 
 ## Related documentation

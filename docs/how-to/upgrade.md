@@ -39,9 +39,9 @@ generate-borgmatic-config --source config.yaml --destination config-new.yaml
 New options start as commented out, so you can edit the file and decide
 whether you want to use each one.
 
-There are a few caveats to this process, however. First, when generating the
-new configuration file, `generate-borgmatic-config` replaces any comments
-you've written in your original configuration file with the newest generated
+There are a few caveats to this process. First, when generating the new
+configuration file, `generate-borgmatic-config` replaces any comments you've
+written in your original configuration file with the newest generated
 comments. Second, the script adds back any options you had originally deleted,
 although it does so with the options commented out. And finally, any YAML
 includes you've used in the source configuration get flattened out into a
