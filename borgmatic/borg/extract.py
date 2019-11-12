@@ -62,6 +62,7 @@ def extract_archive(
     remote_path=None,
     destination_path=None,
     progress=False,
+    error_on_warnings=True,
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
@@ -90,10 +91,12 @@ def extract_archive(
     # the terminal directly.
     if progress:
         execute_command_without_capture(
-            full_command, working_directory=destination_path, error_on_warnings=True
+            full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
         )
         return
 
     # Error on warnings, as Borg only gives a warning if the restore paths don't exist in the
     # archive!
-    execute_command(full_command, working_directory=destination_path, error_on_warnings=True)
+    execute_command(
+        full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
+    )

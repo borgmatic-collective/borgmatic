@@ -282,6 +282,8 @@ def run_actions(
                 remote_path=remote_path,
                 destination_path='/',
                 progress=arguments['restore'].progress,
+                # We don't want glob patterns that don't match to error.
+                error_on_warnings=False,
             )
 
             # Map the restore names or detected dumps to the corresponding database configurations.
