@@ -61,6 +61,7 @@ def execute_command(
     full_command,
     output_log_level=logging.INFO,
     output_file=None,
+    input_file=None,
     shell=False,
     extra_environment=None,
     working_directory=None,
@@ -70,10 +71,11 @@ def execute_command(
     Execute the given command (a sequence of command/argument strings) and log its output at the
     given log level. If output log level is None, instead capture and return the output. If an
     open output file object is given, then write stdout to the file and only log stderr (but only
-    if an output log level is set). If shell is True, execute the command within a shell. If an
-    extra environment dict is given, then use it to augment the current environment, and pass the
-    result into the command. If a working directory is given, use that as the present working
-    directory when running the command.
+    if an output log level is set). If an open input file object is given, then read stdin from the
+    file. If shell is True, execute the command within a shell. If an extra environment dict is
+    given, then use it to augment the current environment, and pass the result into the command. If
+    a working directory is given, use that as the present working directory when running the
+    command.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -88,6 +90,7 @@ def execute_command(
     else:
         process = subprocess.Popen(
             full_command,
+            stdin=input_file,
             stdout=output_file or subprocess.PIPE,
             stderr=subprocess.PIPE if output_file else subprocess.STDOUT,
             shell=shell,

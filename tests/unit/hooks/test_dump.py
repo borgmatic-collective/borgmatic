@@ -52,3 +52,50 @@ def test_remove_database_dumps_with_dry_run_skips_removal():
 
 def test_remove_database_dumps_without_databases_does_not_raise():
     module.remove_database_dumps('databases', [], 'SuperDB', 'test.yaml', dry_run=False)
+
+
+def test_convert_glob_patterns_to_borg_patterns_removes_leading_slash():
+    assert module.convert_glob_patterns_to_borg_patterns(('/etc/foo/bar',)) == ['sh:etc/foo/bar']
+
+
+def test_get_database_names_from_dumps_gets_names_from_filenames_matching_globs():
+    flexmock(module.glob).should_receive('glob').and_return(
+        ('databases/localhost/foo',)
+    ).and_return(('databases/localhost/bar',)).and_return(())
+
+    assert module.get_database_names_from_dumps(
+        ('databases/*/foo', 'databases/*/bar', 'databases/*/baz')
+    ) == ['foo', 'bar']
+
+
+def test_get_database_configurations_only_produces_named_databases():
+    databases = [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'bar', 'hostname': 'example.com'},
+        {'name': 'baz', 'hostname': 'example.org'},
+    ]
+
+    assert list(module.get_database_configurations(databases, ('foo', 'baz'))) == [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'baz', 'hostname': 'example.org'},
+    ]
+
+
+def test_get_database_configurations_matches_all_database():
+    databases = [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'all', 'hostname': 'example.com'},
+    ]
+
+    assert list(module.get_database_configurations(databases, ('foo', 'bar', 'baz'))) == [
+        {'name': 'foo', 'hostname': 'example.org'},
+        {'name': 'bar', 'hostname': 'example.com'},
+        {'name': 'baz', 'hostname': 'example.com'},
+    ]
+
+
+def test_get_database_configurations_with_unknown_database_name_raises():
+    databases = [{'name': 'foo', 'hostname': 'example.org'}]
+
+    with pytest.raises(ValueError):
+        list(module.get_database_configurations(databases, ('foo', 'bar')))

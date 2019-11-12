@@ -47,6 +47,7 @@ def test_execute_command_calls_full_command():
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
+        stdin=None,
         stdout=module.subprocess.PIPE,
         stderr=module.subprocess.STDOUT,
         shell=False,
@@ -66,6 +67,7 @@ def test_execute_command_calls_full_command_with_output_file():
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
+        stdin=None,
         stdout=output_file,
         stderr=module.subprocess.PIPE,
         shell=False,
@@ -79,11 +81,32 @@ def test_execute_command_calls_full_command_with_output_file():
     assert output is None
 
 
+def test_execute_command_calls_full_command_with_input_file():
+    full_command = ['foo', 'bar']
+    input_file = flexmock()
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdin=input_file,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
+        shell=False,
+        env=None,
+        cwd=None,
+    ).and_return(flexmock(stdout=None)).once()
+    flexmock(module).should_receive('log_output')
+
+    output = module.execute_command(full_command, input_file=input_file)
+
+    assert output is None
+
+
 def test_execute_command_calls_full_command_with_shell():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
+        stdin=None,
         stdout=module.subprocess.PIPE,
         stderr=module.subprocess.STDOUT,
         shell=True,
@@ -102,6 +125,7 @@ def test_execute_command_calls_full_command_with_extra_environment():
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
+        stdin=None,
         stdout=module.subprocess.PIPE,
         stderr=module.subprocess.STDOUT,
         shell=False,
@@ -120,6 +144,7 @@ def test_execute_command_calls_full_command_with_working_directory():
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
+        stdin=None,
         stdout=module.subprocess.PIPE,
         stderr=module.subprocess.STDOUT,
         shell=False,

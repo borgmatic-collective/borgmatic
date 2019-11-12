@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, cronhub, cronitor, healthchecks, mysql, postgresql
+from borgmatic.hooks import command, cronhub, cronitor, dispatch, dump, healthchecks
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -69,11 +69,12 @@ def run_configuration(config_filename, config, arguments):
                 'pre-backup',
                 global_arguments.dry_run,
             )
-            postgresql.dump_databases(
-                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
-            )
-            mysql.dump_databases(
-                hooks.get('mysql_databases'), config_filename, global_arguments.dry_run
+            dispatch.call_hooks(
+                'dump_databases',
+                hooks,
+                config_filename,
+                dump.DATABASE_HOOK_NAMES,
+                global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
@@ -104,11 +105,12 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments and not encountered_error:
         try:
-            postgresql.remove_database_dumps(
-                hooks.get('postgresql_databases'), config_filename, global_arguments.dry_run
-            )
-            mysql.remove_database_dumps(
-                hooks.get('mysql_databases'), config_filename, global_arguments.dry_run
+            dispatch.call_hooks(
+                'remove_database_dumps',
+                hooks,
+                config_filename,
+                dump.DATABASE_HOOK_NAMES,
+                global_arguments.dry_run,
             )
             command.execute_hook(
                 hooks.get('after_backup'),
@@ -260,12 +262,20 @@ def run_actions(
                 restore_names = []
 
             # Extract dumps for the named databases from the archive.
-            dump_patterns = postgresql.make_database_dump_patterns(restore_names)
+            dump_patterns = dispatch.call_hooks(
+                'make_database_dump_patterns',
+                hooks,
+                repository,
+                dump.DATABASE_HOOK_NAMES,
+                restore_names,
+            )
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
                 arguments['restore'].archive,
-                postgresql.convert_glob_patterns_to_borg_patterns(dump_patterns),
+                dump.convert_glob_patterns_to_borg_patterns(
+                    [pattern for patterns in dump_patterns.values() for pattern in patterns]
+                ),
                 location,
                 storage,
                 local_path=local_path,
@@ -274,17 +284,35 @@ def run_actions(
                 progress=arguments['restore'].progress,
             )
 
-            # Map the restore names to the corresponding database configurations.
-            databases = list(
-                postgresql.get_database_configurations(
-                    hooks.get('postgresql_databases'),
-                    restore_names or postgresql.get_database_names_from_dumps(dump_patterns),
+            # Map the restore names or detected dumps to the corresponding database configurations.
+            # TODO: Need to filter restore_names by database type? Maybe take a database --type argument to disambiguate.
+            restore_databases = {
+                hook_name: list(
+                    dump.get_database_configurations(
+                        hooks.get(hook_name),
+                        restore_names
+                        or dump.get_database_names_from_dumps(dump_patterns['hook_name']),
+                    )
                 )
-            )
+                for hook_name in dump.DATABASE_HOOK_NAMES
+                if hook_name in hooks
+            }
 
             # Finally, restore the databases and cleanup the dumps.
-            postgresql.restore_database_dumps(databases, repository, global_arguments.dry_run)
-            postgresql.remove_database_dumps(databases, repository, global_arguments.dry_run)
+            dispatch.call_hooks(
+                'restore_database_dumps',
+                restore_databases,
+                repository,
+                dump.DATABASE_HOOK_NAMES,
+                global_arguments.dry_run,
+            )
+            dispatch.call_hooks(
+                'remove_database_dumps',
+                restore_databases,
+                repository,
+                dump.DATABASE_HOOK_NAMES,
+                global_arguments.dry_run,
+            )
     if 'list' in arguments:
         if arguments['list'].repository is None or repository == arguments['list'].repository:
             logger.info('{}: Listing archives'.format(repository))

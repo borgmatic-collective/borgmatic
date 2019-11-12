@@ -1,4 +1,3 @@
-import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks import postgresql as module
@@ -38,10 +37,6 @@ def test_dump_databases_with_dry_run_skips_pg_dump():
     flexmock(module).should_receive('execute_command').never()
 
     module.dump_databases(databases, 'test.yaml', dry_run=True)
-
-
-def test_dump_databases_without_databases_does_not_raise():
-    module.dump_databases([], 'test.yaml', dry_run=False)
 
 
 def test_dump_databases_runs_pg_dump_with_hostname_and_port():
@@ -167,7 +162,7 @@ def test_make_database_dump_patterns_converts_names_to_glob_paths():
         'databases/*/foo'
     ).and_return('databases/*/bar')
 
-    assert module.make_database_dump_patterns(('foo', 'bar')) == [
+    assert module.make_database_dump_patterns(flexmock(), flexmock(), ('foo', 'bar')) == [
         'databases/*/foo',
         'databases/*/bar',
     ]
@@ -178,54 +173,7 @@ def test_make_database_dump_patterns_treats_empty_names_as_matching_all_database
         module.DUMP_PATH, '*', '*'
     ).and_return('databases/*/*')
 
-    assert module.make_database_dump_patterns(()) == ['databases/*/*']
-
-
-def test_convert_glob_patterns_to_borg_patterns_removes_leading_slash():
-    assert module.convert_glob_patterns_to_borg_patterns(('/etc/foo/bar',)) == ['sh:etc/foo/bar']
-
-
-def test_get_database_names_from_dumps_gets_names_from_filenames_matching_globs():
-    flexmock(module.glob).should_receive('glob').and_return(
-        ('databases/localhost/foo',)
-    ).and_return(('databases/localhost/bar',)).and_return(())
-
-    assert module.get_database_names_from_dumps(
-        ('databases/*/foo', 'databases/*/bar', 'databases/*/baz')
-    ) == ['foo', 'bar']
-
-
-def test_get_database_configurations_only_produces_named_databases():
-    databases = [
-        {'name': 'foo', 'hostname': 'example.org'},
-        {'name': 'bar', 'hostname': 'example.com'},
-        {'name': 'baz', 'hostname': 'example.org'},
-    ]
-
-    assert list(module.get_database_configurations(databases, ('foo', 'baz'))) == [
-        {'name': 'foo', 'hostname': 'example.org'},
-        {'name': 'baz', 'hostname': 'example.org'},
-    ]
-
-
-def test_get_database_configurations_matches_all_database():
-    databases = [
-        {'name': 'foo', 'hostname': 'example.org'},
-        {'name': 'all', 'hostname': 'example.com'},
-    ]
-
-    assert list(module.get_database_configurations(databases, ('foo', 'bar', 'baz'))) == [
-        {'name': 'foo', 'hostname': 'example.org'},
-        {'name': 'bar', 'hostname': 'example.com'},
-        {'name': 'baz', 'hostname': 'example.com'},
-    ]
-
-
-def test_get_database_configurations_with_unknown_database_name_raises():
-    databases = [{'name': 'foo', 'hostname': 'example.org'}]
-
-    with pytest.raises(ValueError):
-        list(module.get_database_configurations(databases, ('foo', 'bar')))
+    assert module.make_database_dump_patterns(flexmock(), flexmock(), ()) == ['databases/*/*']
 
 
 def test_restore_database_dumps_restores_each_database():
@@ -254,10 +202,6 @@ def test_restore_database_dumps_restores_each_database():
         ).once()
 
     module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
-
-
-def test_restore_database_dumps_without_databases_does_not_raise():
-    module.restore_database_dumps({}, 'test.yaml', dry_run=False)
 
 
 def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():

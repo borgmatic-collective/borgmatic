@@ -35,10 +35,6 @@ def test_dump_databases_with_dry_run_skips_mysqldump():
     module.dump_databases(databases, 'test.yaml', dry_run=True)
 
 
-def test_dump_databases_without_databases_does_not_raise():
-    module.dump_databases([], 'test.yaml', dry_run=False)
-
-
 def test_dump_databases_runs_mysqldump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     output_file = flexmock()

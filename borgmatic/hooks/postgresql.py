@@ -1,4 +1,3 @@
-import glob
 import logging
 import os
 
@@ -15,10 +14,6 @@ def dump_databases(databases, log_prefix, dry_run):
     one dict describing each database as per the configuration schema. Use the given log prefix in
     any log entries. If this is a dry run, then don't actually dump anything.
     '''
-    if not databases:
-        logger.debug('{}: No PostgreSQL databases configured'.format(log_prefix))
-        return
-
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
     logger.info('{}: Dumping PostgreSQL databases{}'.format(log_prefix, dry_run_label))
@@ -49,7 +44,7 @@ def dump_databases(databases, log_prefix, dry_run):
             execute_command(command, extra_environment=extra_environment)
 
 
-def remove_database_dumps(databases, log_prefix, dry_run):
+def remove_database_dumps(databases, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove the database dumps for the given databases. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the log prefix in
@@ -58,60 +53,15 @@ def remove_database_dumps(databases, log_prefix, dry_run):
     dump.remove_database_dumps(DUMP_PATH, databases, 'PostgreSQL', log_prefix, dry_run)
 
 
-def make_database_dump_patterns(names):
+def make_database_dump_patterns(databases, log_prefix, names):
     '''
-    Given a sequence of database names, return the corresponding glob patterns to match the database
-    dumps in an archive. An empty sequence of names indicates that the patterns should match all
-    dumps.
+    Given a sequence of configurations dicts, a prefix to log with, and a sequence of database
+    names to match, return the corresponding glob patterns to match the database dumps in an
+    archive. An empty sequence of names indicates that the patterns should match all dumps.
     '''
     return [
         dump.make_database_dump_filename(DUMP_PATH, name, hostname='*') for name in (names or ['*'])
     ]
-
-
-def convert_glob_patterns_to_borg_patterns(patterns):
-    '''
-    Convert a sequence of shell glob patterns like "/etc/*" to the corresponding Borg archive
-    patterns like "sh:etc/*".
-    '''
-    return ['sh:{}'.format(pattern.lstrip(os.path.sep)) for pattern in patterns]
-
-
-def get_database_names_from_dumps(patterns):
-    '''
-    Given a sequence of database dump patterns, find the corresponding database dumps on disk and
-    return the database names from their filenames.
-    '''
-    return [os.path.basename(dump_path) for pattern in patterns for dump_path in glob.glob(pattern)]
-
-
-def get_database_configurations(databases, names):
-    '''
-    Given the full database configuration dicts as per the configuration schema, and a sequence of
-    database names, filter down and yield the configuration for just the named databases.
-    Additionally, if a database configuration is named "all", project out that configuration for
-    each named database.
-
-    Raise ValueError if one of the database names cannot be matched to a database in borgmatic's
-    database configuration.
-    '''
-    named_databases = {database['name']: database for database in databases}
-
-    for name in names:
-        database = named_databases.get(name)
-        if database:
-            yield database
-            continue
-
-        if 'all' in named_databases:
-            yield {**named_databases['all'], **{'name': name}}
-            continue
-
-        raise ValueError(
-            'Cannot restore database "{}", as it is not defined in borgmatic\'s configuration'.format(
-                name
-            )
-        )
 
 
 def restore_database_dumps(databases, log_prefix, dry_run):
@@ -120,10 +70,6 @@ def restore_database_dumps(databases, log_prefix, dry_run):
     dicts, one dict describing each database as per the configuration schema. Use the given log
     prefix in any log entries. If this is a dry run, then don't actually restore anything.
     '''
-    if not databases:
-        logger.debug('{}: No PostgreSQL databases configured'.format(log_prefix))
-        return
-
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
     for database in databases:
