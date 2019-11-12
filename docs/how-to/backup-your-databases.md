@@ -11,31 +11,40 @@ consistent snapshot that is more suited for backups.
 
 Fortunately, borgmatic includes built-in support for creating database dumps
 prior to running backups. For example, here is everything you need to dump and
-backup a couple of local PostgreSQL databases:
+backup a couple of local PostgreSQL databases and a MySQL/MariaDB database:
 
 ```yaml
 hooks:
     postgresql_databases:
         - name: users
         - name: orders
+    mysql_databases:
+        - name: posts
 ```
 
 Prior to each backup, borgmatic dumps each configured database to a file
 (located in `~/.borgmatic/`) and includes it in the backup. After the backup
 completes, borgmatic removes the database dump files to recover disk space.
 
-Here's a more involved example that connects to a remote database:
+Here's a more involved example that connects to remote databases:
 
 ```yaml
 hooks:
     postgresql_databases:
         - name: users
-          hostname: database.example.org
+          hostname: database1.example.org
           port: 5433
-          username: dbuser
+          username: postgres
           password: trustsome1
           format: tar
           options: "--role=someone"
+    mysql_databases:
+        - name: posts
+          hostname: database2.example.org
+          port: 3307
+          username: root
+          password: trustsome1
+          options: "--skip-comments"
 ```
 
 If you want to dump all databases on a host, use `all` for the database name:
@@ -44,10 +53,12 @@ If you want to dump all databases on a host, use `all` for the database name:
 hooks:
     postgresql_databases:
         - name: all
+    mysql_databases:
+        - name: all
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for
-this to work.
+this to work with PostgreSQL.
 
 
 ### Configuration backups
@@ -61,9 +72,9 @@ bring back any missing configuration files in order to restore a database.
 
 ## Supported databases
 
-As of now, borgmatic only supports PostgreSQL databases directly. But see
-below about general-purpose preparation and cleanup hooks as a work-around
-with other database systems. Also, please [file a
+As of now, borgmatic supports PostgreSQL and MySQL/MariaDB databases
+directly. But see below about general-purpose preparation and cleanup hooks as
+a work-around with other database systems. Also, please [file a
 ticket](https://torsion.org/borgmatic/#issues) for additional database systems
 that you'd like supported.
 
@@ -148,7 +159,8 @@ databases that share the exact same name on different hosts.
 If you prefer to restore a database without the help of borgmatic, first
 [extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
 archive containing a database dump, and then manually restore the dump file
-found within the extracted `~/.borgmatic/` path (e.g. with `pg_restore`).
+found within the extracted `~/.borgmatic/` path (e.g. with `pg_restore` or
+`mysql` commands).
 
 
 ## Preparation and cleanup hooks
