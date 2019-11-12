@@ -236,3 +236,19 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         storage_config={},
         progress=True,
     )
+
+
+def test_extract_archive_skips_abspath_for_remote_repository():
+    flexmock(module.os.path).should_receive('abspath').never()
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'extract', 'server:repo::archive'), working_directory=None, error_on_warnings=True
+    ).once()
+
+    module.extract_archive(
+        dry_run=False,
+        repository='server:repo',
+        archive='archive',
+        paths=None,
+        location_config={},
+        storage_config={},
+    )

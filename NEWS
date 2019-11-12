@@ -1,6 +1,7 @@
 1.4.9.dev0
  * #228: Database dump hooks for MySQL/MariaDB, so you can easily dump your databases before backups
    run.
+ * #243: Fix repository does not exist error with "borgmatic extract" when repository is remote.
 
 1.4.8
  * Monitor backups with Cronhub hook integration. See the documentation for more information:

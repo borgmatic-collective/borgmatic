@@ -83,7 +83,7 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
-        + ('::'.join((os.path.abspath(repository), archive)),)
+        + ('::'.join((repository if ':' in repository else os.path.abspath(repository), archive)),)
         + (tuple(paths) if paths else ())
     )
 
@@ -95,8 +95,8 @@ def extract_archive(
         )
         return
 
-    # Error on warnings, as Borg only gives a warning if the restore paths don't exist in the
-    # archive!
+    # Error on warnings by default, as Borg only gives a warning if the restore paths don't exist in
+    # the archive!
     execute_command(
         full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
     )
