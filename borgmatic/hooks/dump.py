@@ -109,7 +109,6 @@ def get_per_hook_database_configurations(hooks, names, dump_patterns):
     Raise ValueError if one of the database names cannot be matched to a database in borgmatic's
     database configuration.
     '''
-    # TODO: Need to filter names by database type? Maybe take a database --type argument to disambiguate.
     hook_databases = {
         hook_name: list(
             get_database_configurations(

@@ -18,7 +18,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import prune as borg_prune
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, cronhub, cronitor, dispatch, dump, healthchecks
+from borgmatic.hooks import command, dispatch, dump, monitor
 from borgmatic.logger import configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -53,14 +53,13 @@ def run_configuration(config_filename, config, arguments):
 
     if 'create' in arguments:
         try:
-            healthchecks.ping_healthchecks(
-                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'start'
-            )
-            cronitor.ping_cronitor(
-                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'run'
-            )
-            cronhub.ping_cronhub(
-                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'start'
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.START,
+                global_arguments.dry_run,
             )
             command.execute_hook(
                 hooks.get('before_backup'),
@@ -119,14 +118,13 @@ def run_configuration(config_filename, config, arguments):
                 'post-backup',
                 global_arguments.dry_run,
             )
-            healthchecks.ping_healthchecks(
-                hooks.get('healthchecks'), config_filename, global_arguments.dry_run
-            )
-            cronitor.ping_cronitor(
-                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'complete'
-            )
-            cronhub.ping_cronhub(
-                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'finish'
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.FINISH,
+                global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
@@ -146,14 +144,13 @@ def run_configuration(config_filename, config, arguments):
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
             )
-            healthchecks.ping_healthchecks(
-                hooks.get('healthchecks'), config_filename, global_arguments.dry_run, 'fail'
-            )
-            cronitor.ping_cronitor(
-                hooks.get('cronitor'), config_filename, global_arguments.dry_run, 'fail'
-            )
-            cronhub.ping_cronhub(
-                hooks.get('cronhub'), config_filename, global_arguments.dry_run, 'fail'
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.FAIL,
+                global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
             yield from make_error_log_records(

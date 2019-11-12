@@ -3,30 +3,36 @@ from flexmock import flexmock
 from borgmatic.hooks import cronhub as module
 
 
-def test_ping_cronhub_hits_ping_url_with_start_state():
+def test_ping_monitor_rewrites_ping_url_for_start_state():
     ping_url = 'https://example.com/start/abcdef'
-    state = 'bork'
-    flexmock(module.requests).should_receive('get').with_args('https://example.com/bork/abcdef')
+    flexmock(module.requests).should_receive('get').with_args('https://example.com/start/abcdef')
 
-    module.ping_cronhub(ping_url, 'config.yaml', dry_run=False, state=state)
+    module.ping_monitor(ping_url, 'config.yaml', module.monitor.State.START, dry_run=False)
 
 
-def test_ping_cronhub_hits_ping_url_with_ping_state():
+def test_ping_monitor_rewrites_ping_url_and_state_for_start_state():
     ping_url = 'https://example.com/ping/abcdef'
-    state = 'bork'
-    flexmock(module.requests).should_receive('get').with_args('https://example.com/bork/abcdef')
+    flexmock(module.requests).should_receive('get').with_args('https://example.com/start/abcdef')
 
-    module.ping_cronhub(ping_url, 'config.yaml', dry_run=False, state=state)
-
-
-def test_ping_cronhub_without_ping_url_does_not_raise():
-    flexmock(module.requests).should_receive('get').never()
-
-    module.ping_cronhub(ping_url=None, config_filename='config.yaml', dry_run=False, state='oops')
+    module.ping_monitor(ping_url, 'config.yaml', module.monitor.State.START, dry_run=False)
 
 
-def test_ping_cronhub_dry_run_does_not_hit_ping_url():
+def test_ping_monitor_rewrites_ping_url_for_finish_state():
+    ping_url = 'https://example.com/start/abcdef'
+    flexmock(module.requests).should_receive('get').with_args('https://example.com/finish/abcdef')
+
+    module.ping_monitor(ping_url, 'config.yaml', module.monitor.State.FINISH, dry_run=False)
+
+
+def test_ping_monitor_rewrites_ping_url_for_fail_state():
+    ping_url = 'https://example.com/start/abcdef'
+    flexmock(module.requests).should_receive('get').with_args('https://example.com/fail/abcdef')
+
+    module.ping_monitor(ping_url, 'config.yaml', module.monitor.State.FAIL, dry_run=False)
+
+
+def test_ping_monitor_dry_run_does_not_hit_ping_url():
     ping_url = 'https://example.com'
     flexmock(module.requests).should_receive('get').never()
 
-    module.ping_cronhub(ping_url, 'config.yaml', dry_run=True, state='yay')
+    module.ping_monitor(ping_url, 'config.yaml', module.monitor.State.START, dry_run=True)

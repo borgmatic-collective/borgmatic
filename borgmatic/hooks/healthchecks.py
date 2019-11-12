@@ -2,19 +2,23 @@ import logging
 
 import requests
 
+from borgmatic.hooks import monitor
+
 logger = logging.getLogger(__name__)
 
+MONITOR_STATE_TO_HEALTHCHECKS = {
+    monitor.State.START: 'start',
+    monitor.State.FINISH: None,  # Healthchecks doesn't append to the URL for the finished state.
+    monitor.State.FAIL: 'fail',
+}
 
-def ping_healthchecks(ping_url_or_uuid, config_filename, dry_run, append=None):
+
+def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
     '''
-    Ping the given Healthchecks URL or UUID, appending the append string if any. Use the given
+    Ping the given Healthchecks URL or UUID, modified with the monitor.State. Use the given
     configuration filename in any log entries. If this is a dry run, then don't actually ping
     anything.
     '''
-    if not ping_url_or_uuid:
-        logger.debug('{}: No Healthchecks hook set'.format(config_filename))
-        return
-
     ping_url = (
         ping_url_or_uuid
         if ping_url_or_uuid.startswith('http')
@@ -22,13 +26,12 @@ def ping_healthchecks(ping_url_or_uuid, config_filename, dry_run, append=None):
     )
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
-    if append:
-        ping_url = '{}/{}'.format(ping_url, append)
+    healthchecks_state = MONITOR_STATE_TO_HEALTHCHECKS.get(state)
+    if healthchecks_state:
+        ping_url = '{}/{}'.format(ping_url, healthchecks_state)
 
     logger.info(
-        '{}: Pinging Healthchecks{}{}'.format(
-            config_filename, ' ' + append if append else '', dry_run_label
-        )
+        '{}: Pinging Healthchecks {}{}'.format(config_filename, state.name.lower(), dry_run_label)
     )
     logger.debug('{}: Using Healthchecks ping URL {}'.format(config_filename, ping_url))
 
