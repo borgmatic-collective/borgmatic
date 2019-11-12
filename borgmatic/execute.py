@@ -79,7 +79,11 @@ def execute_command(
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    logger.debug(' '.join(full_command))
+    logger.debug(
+        ' '.join(full_command)
+        + (' < {}'.format(input_file.name) if input_file else '')
+        + (' > {}'.format(output_file.name) if output_file else '')
+    )
     environment = {**os.environ, **extra_environment} if extra_environment else None
 
     if output_log_level is None:

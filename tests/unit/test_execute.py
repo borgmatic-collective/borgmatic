@@ -63,7 +63,7 @@ def test_execute_command_calls_full_command():
 
 def test_execute_command_calls_full_command_with_output_file():
     full_command = ['foo', 'bar']
-    output_file = flexmock()
+    output_file = flexmock(name='test')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -83,7 +83,7 @@ def test_execute_command_calls_full_command_with_output_file():
 
 def test_execute_command_calls_full_command_with_input_file():
     full_command = ['foo', 'bar']
-    input_file = flexmock()
+    input_file = flexmock(name='test')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,

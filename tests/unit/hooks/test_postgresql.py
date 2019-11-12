@@ -208,7 +208,7 @@ def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
-    ).and_return('databases/localhost/bar')
+    )
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -251,7 +251,7 @@ def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
-    ).and_return('databases/localhost/bar')
+    )
 
     flexmock(module).should_receive('execute_command').with_args(
         (
