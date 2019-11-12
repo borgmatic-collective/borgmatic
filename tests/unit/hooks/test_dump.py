@@ -99,3 +99,33 @@ def test_get_database_configurations_with_unknown_database_name_raises():
 
     with pytest.raises(ValueError):
         list(module.get_database_configurations(databases, ('foo', 'bar')))
+
+
+def test_get_per_hook_database_configurations_partitions_by_hook():
+    hooks = {'postgresql_databases': [flexmock()]}
+    names = ('foo', 'bar')
+    dump_patterns = flexmock()
+    expected_config = {'postgresql_databases': [flexmock()]}
+    flexmock(module).should_receive('get_database_configurations').with_args(
+        hooks['postgresql_databases'], names
+    ).and_return(expected_config['postgresql_databases'])
+
+    config = module.get_per_hook_database_configurations(hooks, names, dump_patterns)
+
+    assert config == expected_config
+
+
+def test_get_per_hook_database_configurations_defaults_to_detected_database_names():
+    hooks = {'postgresql_databases': [flexmock()]}
+    names = ()
+    detected_names = flexmock()
+    dump_patterns = {'postgresql_databases': [flexmock()]}
+    expected_config = {'postgresql_databases': [flexmock()]}
+    flexmock(module).should_receive('get_database_names_from_dumps').and_return(detected_names)
+    flexmock(module).should_receive('get_database_configurations').with_args(
+        hooks['postgresql_databases'], detected_names
+    ).and_return(expected_config['postgresql_databases'])
+
+    config = module.get_per_hook_database_configurations(hooks, names, dump_patterns)
+
+    assert config == expected_config

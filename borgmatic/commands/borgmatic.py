@@ -285,18 +285,9 @@ def run_actions(
             )
 
             # Map the restore names or detected dumps to the corresponding database configurations.
-            # TODO: Need to filter restore_names by database type? Maybe take a database --type argument to disambiguate.
-            restore_databases = {
-                hook_name: list(
-                    dump.get_database_configurations(
-                        hooks.get(hook_name),
-                        restore_names
-                        or dump.get_database_names_from_dumps(dump_patterns['hook_name']),
-                    )
-                )
-                for hook_name in dump.DATABASE_HOOK_NAMES
-                if hook_name in hooks
-            }
+            restore_databases = dump.get_per_hook_database_configurations(
+                hooks, restore_names, dump_patterns
+            )
 
             # Finally, restore the databases and cleanup the dumps.
             dispatch.call_hooks(

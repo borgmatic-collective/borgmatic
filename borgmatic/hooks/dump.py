@@ -100,3 +100,32 @@ def get_database_configurations(databases, names):
                 name
             )
         )
+
+
+def get_per_hook_database_configurations(hooks, names, dump_patterns):
+    '''
+    Given the hooks configuration dict as per the configuration schema, a sequence of database
+    names to restore, and a dict from database hook name to glob patterns for matching dumps,
+    filter down the configuration for just the named databases.
+
+    If there are no named databases given, then find the corresponding database dumps on disk and
+    use the database names from their filenames. Additionally, if a database configuration is named
+    "all", project out that configuration for each named database.
+
+    Return the results as a dict from database hook name to a sequence of database configuration
+    dicts for that database type.
+
+    Raise ValueError if one of the database names cannot be matched to a database in borgmatic's
+    database configuration.
+    '''
+    # TODO: Need to filter names by database type? Maybe take a database --type argument to disambiguate.
+    return {
+        hook_name: list(
+            get_database_configurations(
+                hooks.get(hook_name),
+                names or get_database_names_from_dumps(dump_patterns[hook_name]),
+            )
+        )
+        for hook_name in DATABASE_HOOK_NAMES
+        if hook_name in hooks
+    }
