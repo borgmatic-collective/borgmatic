@@ -1,4 +1,7 @@
-1.4.10.dev0
+1.4.10
+ * #246: Fix for "borgmatic restore" showing success and incorrectly extracting archive files, even
+   when no databases are configured to restore. As this can overwrite files from the archive and
+   lead to data loss, please upgrade to get the fix before using "borgmatic restore".
  * Reopen the file given by "--log-file" flag if an external program rotates the log file while
    borgmatic is running.
 

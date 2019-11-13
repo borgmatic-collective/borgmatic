@@ -266,12 +266,13 @@ def run_actions(
                 dump.DATABASE_HOOK_NAMES,
                 restore_names,
             )
+
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
                 arguments['restore'].archive,
                 dump.convert_glob_patterns_to_borg_patterns(
-                    [pattern for patterns in dump_patterns.values() for pattern in patterns]
+                    dump.flatten_dump_patterns(dump_patterns, restore_names)
                 ),
                 location,
                 storage,

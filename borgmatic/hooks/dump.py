@@ -20,6 +20,26 @@ def make_database_dump_filename(dump_path, name, hostname=None):
     return os.path.join(os.path.expanduser(dump_path), hostname or 'localhost', name)
 
 
+def flatten_dump_patterns(dump_patterns, names):
+    '''
+    Given a dict from a database hook name to glob patterns matching the dumps for the named
+    databases, flatten out all the glob patterns into a single sequence, and return it.
+
+    Raise ValueError if there are no resulting glob patterns, which indicates that databases are not
+    configured in borgmatic's configuration.
+    '''
+    flattened = [pattern for patterns in dump_patterns.values() for pattern in patterns]
+
+    if not flattened:
+        raise ValueError(
+            'Cannot restore database(s) {} missing from borgmatic\'s configuration'.format(
+                ', '.join(names) or '"all"'
+            )
+        )
+
+    return flattened
+
+
 def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, dry_run):
     '''
     Remove the database dumps for the given databases in the dump directory path. The databases are
@@ -121,6 +141,11 @@ def get_per_hook_database_configurations(hooks, names, dump_patterns):
     }
 
     if not names or 'all' in names:
+        if not any(hook_databases.values()):
+            raise ValueError(
+                'Cannot restore database "all", as there are no database dumps in the archive'
+            )
+
         return hook_databases
 
     found_names = {

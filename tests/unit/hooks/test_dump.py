@@ -26,6 +26,27 @@ def test_make_database_dump_filename_with_invalid_name_raises():
         module.make_database_dump_filename('databases', 'invalid/name')
 
 
+def test_flatten_dump_patterns_produces_list_of_all_patterns():
+    dump_patterns = {'postgresql_databases': ['*/glob', 'glob/*'], 'mysql_databases': ['*/*/*']}
+    expected_patterns = dump_patterns['postgresql_databases'] + dump_patterns['mysql_databases']
+
+    assert module.flatten_dump_patterns(dump_patterns, ('bob',)) == expected_patterns
+
+
+def test_flatten_dump_patterns_with_no_patterns_errors():
+    dump_patterns = {'postgresql_databases': [], 'mysql_databases': []}
+
+    with pytest.raises(ValueError):
+        assert module.flatten_dump_patterns(dump_patterns, ('bob',))
+
+
+def test_flatten_dump_patterns_with_no_hooks_errors():
+    dump_patterns = {}
+
+    with pytest.raises(ValueError):
+        assert module.flatten_dump_patterns(dump_patterns, ('bob',))
+
+
 def test_remove_database_dumps_removes_dump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_database_dump_filename').and_return(
@@ -127,6 +148,18 @@ def test_get_per_hook_database_configurations_defaults_to_detected_database_name
 def test_get_per_hook_database_configurations_with_unknown_database_name_raises():
     hooks = {'postgresql_databases': [flexmock()]}
     names = ('foo', 'bar')
+    dump_patterns = flexmock()
+    flexmock(module).should_receive('get_database_configurations').with_args(
+        hooks['postgresql_databases'], names
+    ).and_return([])
+
+    with pytest.raises(ValueError):
+        module.get_per_hook_database_configurations(hooks, names, dump_patterns)
+
+
+def test_get_per_hook_database_configurations_with_all_and_no_archive_dumps_raises():
+    hooks = {'postgresql_databases': [flexmock()]}
+    names = ('foo', 'all')
     dump_patterns = flexmock()
     flexmock(module).should_receive('get_database_configurations').with_args(
         hooks['postgresql_databases'], names
