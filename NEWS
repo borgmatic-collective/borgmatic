@@ -1,5 +1,6 @@
 1.4.10.dev0
- *
+ * Reopen the file given by "--log-file" flag if an external program rotates the log file while
+   borgmatic is running.
 
 1.4.9
  * #228: Database dump hooks for MySQL/MariaDB, so you can easily dump your databases before backups

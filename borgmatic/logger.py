@@ -104,7 +104,7 @@ def configure_logging(
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
     elif log_file:
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
         file_handler.setLevel(log_file_log_level)
         handlers = (console_handler, file_handler)
