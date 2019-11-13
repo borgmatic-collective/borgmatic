@@ -28,4 +28,8 @@ Use `sudo borg --version`
 
 Use `python3 --version`
 
+**Database version (if applicable):** [version here]
+
+Use `psql --version` or `mysql --version` on client and server.
+
 **operating system and version:** [OS here]
