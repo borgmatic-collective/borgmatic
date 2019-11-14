@@ -28,9 +28,11 @@ def test_make_database_dump_filename_with_invalid_name_raises():
 
 def test_flatten_dump_patterns_produces_list_of_all_patterns():
     dump_patterns = {'postgresql_databases': ['*/glob', 'glob/*'], 'mysql_databases': ['*/*/*']}
-    expected_patterns = dump_patterns['postgresql_databases'] + dump_patterns['mysql_databases']
+    expected_patterns = sorted(
+        dump_patterns['postgresql_databases'] + dump_patterns['mysql_databases']
+    )
 
-    assert module.flatten_dump_patterns(dump_patterns, ('bob',)) == expected_patterns
+    assert sorted(module.flatten_dump_patterns(dump_patterns, ('bob',))) == expected_patterns
 
 
 def test_flatten_dump_patterns_with_no_patterns_errors():
