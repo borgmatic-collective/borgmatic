@@ -2,67 +2,70 @@
 title: borgmatic
 permalink: index.html
 ---
-<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg?ref=refs/heads/master)</a>
 
-## Overview
+## It's your data. Keep it that way.
 
-<img src="https://projects.torsion.org/witten/borgmatic/raw/branch/master/static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
+<img src="docs/static/borgmatic.png" alt="borgmatic logo" width="150px" style="float: right; padding-left: 1em;">
 
 borgmatic is simple, configuration-driven backup software for servers and
-workstations. Backup all of your machines from the command-line or scheduled
-jobs. No GUI required. Built atop [Borg Backup](https://www.borgbackup.org/),
-borgmatic initiates a backup, prunes any old backups according to a retention
-policy, and validates backups for consistency. borgmatic supports specifying
-your settings in a declarative configuration file, rather than having to put
-them all on the command-line, and handles common errors.
+workstations. Protect your files with client-side encryption. Backup your
+databases too. Monitor it all with integrated third-party services.
 
-Here's an example config file:
+Here's an example configuration file:
 
 ```yaml
 location:
-    # List of source directories to backup. Globs are expanded.
+    # List of source directories to backup.
     source_directories:
         - /home
         - /etc
-        - /var/log/syslog*
 
     # Paths to local or remote repositories.
     repositories:
         - user@backupserver:sourcehostname.borg
 
-    # Any paths matching these patterns are excluded from backups.
-    exclude_patterns:
-        - /home/*/.cache
-
 retention:
-    # Retention policy for how many backups to keep in each category.
+    # Retention policy for how many backups to keep.
     keep_daily: 7
     keep_weekly: 4
     keep_monthly: 6
 
 consistency:
-    # List of consistency checks to run: "repository", "archives", etc.
+    # List of checks to run to validate your backups.
     checks:
         - repository
         - archives
 
 hooks:
-    # Preparation scripts to run, databases to dump, and monitoring to perform.
+    # Custom preparation scripts to run.
     before_backup:
         - prepare-for-backup.sh
+
+    # Databases to dump and include in backups.
     postgresql_databases:
         - name: users
+
+    # Third-party services to notify you if backups aren't happening.
     healthchecks: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
 ```
-
-borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
-available](https://projects.torsion.org/witten/borgmatic). It's also mirrored
-on [GitHub](https://github.com/witten/borgmatic) for convenience.
 
 Want to see borgmatic in action? Check out the <a
 href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
 
 <script src="https://asciinema.org/a/203761.js" id="asciicast-203761" async></script>
+
+borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
+
+## Integrations
+
+<a href="https://www.postgresql.org/"><img src="docs/static/postgresql.png" alt="PostgreSQL" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://www.mysql.com/"><img src="docs/static/mysql.png" alt="MySQL" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://mariadb.com/"><img src="docs/static/mariadb.png" alt="MariaDB" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://healthchecks.io/"><img src="docs/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://cronitor.io/"><img src="docs/static/cronitor.png" alt="Cronitor" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://cronhub.io/"><img src="docs/static/cronhub.png" alt="Cronhub" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic"><img src="docs/static/rsyncnet.png" alt="rsync.net" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
+<a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-right:30px;margin-bottom:20px;"></a>
 
 
 ## How-to guides
@@ -117,6 +120,10 @@ Other questions or comments? Contact <mailto:witten@torsion.org>.
 
 ### Contributing
 
+borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
+available](https://projects.torsion.org/witten/borgmatic). It's also mirrored
+on [GitHub](https://github.com/witten/borgmatic) for convenience.
+
 If you'd like to contribute to borgmatic development, please feel free to
 submit a [Pull Request](https://projects.torsion.org/witten/borgmatic/pulls)
 or open an [issue](https://projects.torsion.org/witten/borgmatic/issues) first
@@ -126,3 +133,6 @@ your thing. In general, contributions are very welcome. We don't bite!
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
+
+<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg?ref=refs/heads/master)</a>
+

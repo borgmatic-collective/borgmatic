@@ -32,6 +32,8 @@ module.exports = function(eleventyConfig) {
             .use(markdownItReplaceLink)
     );
 
+    eleventyConfig.addPassthroughCopy({"docs/static": "static"});
+
     return {
         templateFormats: [
           "md",
