@@ -173,6 +173,24 @@ after backups. So if necessary, you can use these hooks to create database
 dumps with any database system.
 
 
+## Troubleshooting
+
+### MySQL table lock errors
+
+If you encounter table lock errors during a database dump with MySQL/MariaDB,
+you may need to [use a
+transaction](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html#option_mysqldump_single-transaction).
+You can add any additional flags to the `options:` in your database
+configuration. Here's an example:
+
+```yaml
+hooks:
+    mysql_databases:
+        - name: posts
+          options: "--single-transaction --quick"
+```
+
+
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
