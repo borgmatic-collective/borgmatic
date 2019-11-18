@@ -115,36 +115,50 @@ def test_load_configurations_logs_critical_for_parse_error():
     assert {log.levelno for log in logs} == {logging.CRITICAL}
 
 
+def test_log_record_does_not_raise():
+    module.log_record(levelno=1, foo='bar', baz='quux')
+
+
 def test_make_error_log_records_generates_output_logs_for_message_only():
+    flexmock(module).should_receive('log_record').replace_with(dict)
+
     logs = tuple(module.make_error_log_records('Error'))
 
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
 
 
 def test_make_error_log_records_generates_output_logs_for_called_process_error():
+    flexmock(module).should_receive('log_record').replace_with(dict)
+
     logs = tuple(
         module.make_error_log_records(
             'Error', subprocess.CalledProcessError(1, 'ls', 'error output')
         )
     )
 
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
     assert any(log for log in logs if 'error output' in str(log))
 
 
 def test_make_error_log_records_generates_logs_for_value_error():
+    flexmock(module).should_receive('log_record').replace_with(dict)
+
     logs = tuple(module.make_error_log_records('Error', ValueError()))
 
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
 
 
 def test_make_error_log_records_generates_logs_for_os_error():
+    flexmock(module).should_receive('log_record').replace_with(dict)
+
     logs = tuple(module.make_error_log_records('Error', OSError()))
 
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
 
 
 def test_make_error_log_records_generates_nothing_for_other_error():
+    flexmock(module).should_receive('log_record').replace_with(dict)
+
     logs = tuple(module.make_error_log_records('Error', KeyError()))
 
     assert logs == ()
@@ -268,6 +282,7 @@ def test_collect_configuration_run_summary_logs_run_configuration_error():
     flexmock(module).should_receive('run_configuration').and_return(
         [logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg='Error'))]
     )
+    flexmock(module).should_receive('make_error_log_records').and_return([])
     arguments = {}
 
     logs = tuple(

@@ -1,3 +1,10 @@
+1.4.11
+ * #241: When using the Healthchecks monitoring hook, include borgmatic logs in the payloads for
+   completion and failure pings.
+ * With --verbosity level 1 or 2, show error logs both inline when they occur and in the summary
+   logs at the bottom. With lower verbosity levels, suppress the summary and show error logs when
+   they occur.
+
 1.4.10
  * #246: Fix for "borgmatic restore" showing success and incorrectly extracting archive files, even
    when no databases are configured to restore. As this can overwrite files from the archive and

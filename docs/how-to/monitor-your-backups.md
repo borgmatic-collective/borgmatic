@@ -116,9 +116,19 @@ With this hook in place, borgmatic pings your Healthchecks project when a
 backup begins, ends, or errors. Specifically, before the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Healthchecks know that a backup has started.
+
 Then, if the backup completes successfully, borgmatic notifies Healthchecks of
-the success after the `after_backup` hooks run. And if an error occurs during
-the backup, borgmatic notifies Healthchecks after the `on_error` hooks run.
+the success after the `after_backup` hooks run, and includes borgmatic logs in
+the payload data sent to Healthchecks. This means that borgmatic logs show up
+in the Healthchecks UI, although be aware that Healthchecks currently has a
+10-kilobyte limit for the logs in each ping.
+
+If an error occurs during the backup, borgmatic notifies Healthchecks after
+the `on_error` hooks run, also tacking on logs including the error itself.
+
+Note that borgmatic sends logs to Healthchecks by applying the maximum of any
+other borgmatic verbosity level (`--verbosity`, `--syslog-verbosity`, etc.),
+as there is not currently a dedicated Healthchecks verbosity setting.
 
 You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail

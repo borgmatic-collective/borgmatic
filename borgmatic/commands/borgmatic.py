@@ -365,33 +365,36 @@ def load_configurations(config_filenames):
     return (configs, logs)
 
 
+def log_record(**kwargs):
+    '''
+    Create a log record based on the given makeLogRecord() arguments, one of which must be
+    named "levelno". Log the record and return it.
+    '''
+    record = logging.makeLogRecord(kwargs)
+    logger.handle(record)
+
+    return record
+
+
 def make_error_log_records(message, error=None):
     '''
     Given error message text and an optional exception object, yield a series of logging.LogRecord
-    instances with error summary information.
+    instances with error summary information. As a side effect, log each record.
     '''
     if not error:
-        yield logging.makeLogRecord(
-            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
-        )
+        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         return
 
     try:
         raise error
     except CalledProcessError as error:
-        yield logging.makeLogRecord(
-            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
-        )
+        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         if error.output:
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
-            )
-        yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
+            yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
     except (ValueError, OSError) as error:
-        yield logging.makeLogRecord(
-            dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
-        )
-        yield logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error))
+        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
     except:  # noqa: E722
         # Raising above only as a means of determining the error type. Swallow the exception here
         # because we don't want the exception to propagate out of this function.
@@ -535,13 +538,14 @@ def main():  # pragma: no cover
 
     summary_logs = list(collect_configuration_run_summary_logs(configs, arguments))
 
-    logger.info('')
-    logger.info('summary:')
-    [
-        logger.handle(log)
-        for log in parse_logs + summary_logs
-        if log.levelno >= logger.getEffectiveLevel()
-    ]
+    if logger.getEffectiveLevel() < logging.WARNING:
+        logger.info('')
+        logger.info('summary:')
+        [
+            logger.handle(log)
+            for log in parse_logs + summary_logs
+            if log.levelno >= logger.getEffectiveLevel()
+        ]
 
     if any(log.levelno == logging.CRITICAL for log in summary_logs):
         exit_with_help_link()

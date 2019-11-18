@@ -12,6 +12,58 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
     monitor.State.FAIL: 'fail',
 }
 
+PAYLOAD_TRUNCATION_INDICATOR = '...\n'
+PAYLOAD_LIMIT_BYTES = 10 * 1024 - len(PAYLOAD_TRUNCATION_INDICATOR)
+
+
+class Forgetful_buffering_handler(logging.Handler):
+    '''
+    A buffering log handler that stores log messages in memory, and throws away messages (oldest
+    first) once a particular capacity in bytes is reached.
+    '''
+
+    def __init__(self, byte_capacity):
+        super().__init__()
+
+        self.byte_capacity = byte_capacity
+        self.byte_count = 0
+        self.buffer = []
+        self.forgot = False
+
+    def emit(self, record):
+        message = record.getMessage() + '\n'
+        self.byte_count += len(message)
+        self.buffer.append(message)
+
+        while self.byte_count > self.byte_capacity and self.buffer:
+            self.byte_count -= len(self.buffer[0])
+            self.buffer.pop(0)
+            self.forgot = True
+
+
+def format_buffered_logs_for_payload():
+    '''
+    Get the handler previously added to the root logger, and slurp buffered logs out of it to
+    send to Healthchecks.
+    '''
+    try:
+        buffering_handler = next(
+            handler
+            for handler in logging.getLogger().handlers
+            if isinstance(handler, Forgetful_buffering_handler)
+        )
+    except StopIteration:
+        payload = 'Cannot find the log handler for sending logs to Healthchecks'
+        logger.warning(payload)
+        return payload
+
+    payload = ''.join(message for message in buffering_handler.buffer)
+
+    if buffering_handler.forgot:
+        return PAYLOAD_TRUNCATION_INDICATOR + payload
+
+    return payload
+
 
 def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
     '''
@@ -19,6 +71,12 @@ def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
     configuration filename in any log entries. If this is a dry run, then don't actually ping
     anything.
     '''
+    if state is monitor.State.START:
+        # Add a handler to the root logger that stores in memory the most recent logs emitted. That
+        # way, we can send them all to Healthchecks upon a finish or failure state.
+        logging.getLogger().addHandler(Forgetful_buffering_handler(PAYLOAD_LIMIT_BYTES))
+        payload = ''
+
     ping_url = (
         ping_url_or_uuid
         if ping_url_or_uuid.startswith('http')
@@ -35,6 +93,9 @@ def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
     )
     logger.debug('{}: Using Healthchecks ping URL {}'.format(config_filename, ping_url))
 
+    if state in (monitor.State.FINISH, monitor.State.FAIL):
+        payload = format_buffered_logs_for_payload()
+
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
-        requests.get(ping_url)
+        requests.post(ping_url, data=payload)
