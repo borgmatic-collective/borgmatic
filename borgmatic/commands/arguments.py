@@ -172,9 +172,9 @@ def parse_arguments(*unparsed_arguments):
 
     top_level_parser = ArgumentParser(
         description='''
-            A simple wrapper script for the Borg backup software that creates and prunes backups.
-            If none of the action options are given, then borgmatic defaults to: prune, create, and
-            check archives.
+            Simple, configuration-driven backup software for servers and workstations. If none of
+            the action options are given, then borgmatic defaults to: prune, create, and check
+            archives.
             ''',
         parents=[global_parser],
     )
