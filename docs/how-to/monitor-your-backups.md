@@ -125,7 +125,9 @@ in the Healthchecks UI, although be aware that Healthchecks currently has a
 10-kilobyte limit for the logs in each ping.
 
 If an error occurs during the backup, borgmatic notifies Healthchecks after
-the `on_error` hooks run, also tacking on logs including the error itself.
+the `on_error` hooks run, also tacking on logs including the error itself. But
+the logs are only included for errors that occur within the borgmatic `create`
+action (and not other actions).
 
 Note that borgmatic sends logs to Healthchecks by applying the maximum of any
 other borgmatic verbosity level (`--verbosity`, `--syslog-verbosity`, etc.),
