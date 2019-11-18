@@ -1,3 +1,8 @@
+1.4.12
+ * #247: With "borgmatic check", consider Borg warnings as errors.
+ * Dial back the display of inline error logs a bit, so failed command output doesn't appear
+   multiple times in the logs (well, except for the summary).
+
 1.4.11
  * #241: When using the Healthchecks monitoring hook, include borgmatic logs in the payloads for
    completion and failure pings.

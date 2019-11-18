@@ -126,7 +126,7 @@ def check_archives(
             + (repository,)
         )
 
-        execute_command(full_command)
+        execute_command(full_command, error_on_warnings=True)
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

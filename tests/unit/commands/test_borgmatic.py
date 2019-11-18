@@ -129,6 +129,7 @@ def test_make_error_log_records_generates_output_logs_for_message_only():
 
 def test_make_error_log_records_generates_output_logs_for_called_process_error():
     flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module.logging).should_receive('makeLogRecord').replace_with(dict)
 
     logs = tuple(
         module.make_error_log_records(

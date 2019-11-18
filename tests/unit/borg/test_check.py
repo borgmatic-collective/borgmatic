@@ -9,7 +9,9 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(command):
-    flexmock(module).should_receive('execute_command').with_args(command).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        command, error_on_warnings=True
+    ).once()
 
 
 def insert_execute_command_never():

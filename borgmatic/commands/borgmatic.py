@@ -390,7 +390,9 @@ def make_error_log_records(message, error=None):
     except CalledProcessError as error:
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         if error.output:
-            yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            yield logging.makeLogRecord(
+                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            )
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
     except (ValueError, OSError) as error:
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
