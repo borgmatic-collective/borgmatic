@@ -140,21 +140,21 @@ def parse_arguments(*unparsed_arguments):
         type=int,
         choices=range(-1, 3),
         default=0,
-        help='Display verbose progress to the console (from none to lots: 0, 1, or 2) or only errors (-1)',
+        help='Display verbose progress to the console (from only errors to very verbose: -1, 0, 1, or 2)',
     )
     global_group.add_argument(
         '--syslog-verbosity',
         type=int,
         choices=range(-1, 3),
         default=0,
-        help='Log verbose progress to syslog (from none to lots: 0, 1, or 2) or only errors (-1). Ignored when console is interactive or --log-file is given',
+        help='Log verbose progress to syslog (from only errors to very verbose: -1, 0, 1, or 2). Ignored when console is interactive or --log-file is given',
     )
     global_group.add_argument(
         '--log-file-verbosity',
         type=int,
         choices=range(-1, 3),
         default=0,
-        help='Log verbose progress to log file (from none to lots: 0, 1, or 2) or only errors (-1). Only used when --log-file is given',
+        help='Log verbose progress to log file (from only errors to very verbose: -1, 0, 1, or 2). Only used when --log-file is given',
     )
     global_group.add_argument(
         '--log-file',
