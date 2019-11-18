@@ -53,9 +53,8 @@ def format_buffered_logs_for_payload():
             if isinstance(handler, Forgetful_buffering_handler)
         )
     except StopIteration:
-        payload = 'Cannot find the log handler for sending logs to Healthchecks'
-        logger.warning(payload)
-        return payload
+        # No handler means no payload.
+        return ''
 
     payload = ''.join(message for message in buffering_handler.buffer)
 

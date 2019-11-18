@@ -46,14 +46,14 @@ def test_format_buffered_logs_for_payload_inserts_truncation_indicator_when_logs
     assert payload == '...\nfoo\nbar\n'
 
 
-def test_format_buffered_logs_for_payload_without_handler_produces_payload_anyway():
+def test_format_buffered_logs_for_payload_without_handler_produces_empty_payload():
     flexmock(module.logging).should_receive('getLogger').and_return(
         flexmock(handlers=[module.logging.Handler()])
     )
 
     payload = module.format_buffered_logs_for_payload()
 
-    assert payload
+    assert payload == ''
 
 
 def test_ping_monitor_hits_ping_url_for_start_state():
