@@ -365,14 +365,16 @@ def load_configurations(config_filenames):
     return (configs, logs)
 
 
-def log_record(**kwargs):
+def log_record(suppress_log=False, **kwargs):
     '''
     Create a log record based on the given makeLogRecord() arguments, one of which must be
-    named "levelno". Log the record and return it.
+    named "levelno". Log the record (unless suppress log is set) and return it.
     '''
     record = logging.makeLogRecord(kwargs)
-    logger.handle(record)
+    if suppress_log:
+        return record
 
+    logger.handle(record)
     return record
 
 
@@ -390,8 +392,11 @@ def make_error_log_records(message, error=None):
     except CalledProcessError as error:
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         if error.output:
-            yield logging.makeLogRecord(
-                dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output)
+            yield log_record(
+                levelno=logging.CRITICAL,
+                levelname='CRITICAL',
+                msg=error.output,
+                suppress_log=bool(logger.getEffectiveLevel() < logging.WARNING),
             )
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
     except (ValueError, OSError) as error:

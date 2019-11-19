@@ -1,3 +1,7 @@
+1.4.13
+ * Show full error logs at "--verbosity 0" so you can see command output without upping the
+   verbosity level.
+
 1.4.12
  * #247: With "borgmatic check", consider Borg warnings as errors.
  * Dial back the display of inline error logs a bit, so failed command output doesn't appear
