@@ -87,7 +87,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
     module.extract_last_archive_dry_run(repository='repo', lock_wait=5)
 
 
-def test_extract_archive_calls_borg_with_restore_path_parameters():
+def test_extract_archive_calls_borg_with_path_parameters():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     insert_execute_command_mock(('borg', 'extract', 'repo::archive', 'path1', 'path2'))
 

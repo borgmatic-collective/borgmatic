@@ -15,7 +15,9 @@ from borgmatic.borg import extract as borg_extract
 from borgmatic.borg import info as borg_info
 from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
+from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
+from borgmatic.borg import umount as borg_umount
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.hooks import command, dispatch, dump, monitor
@@ -246,6 +248,27 @@ def run_actions(
                 destination_path=arguments['extract'].destination,
                 progress=arguments['extract'].progress,
             )
+    if 'mount' in arguments:
+        if arguments['mount'].repository is None or repository == arguments['mount'].repository:
+            logger.info('{}: Mounting archive {}'.format(repository, arguments['mount'].archive))
+            borg_mount.mount_archive(
+                repository,
+                arguments['mount'].archive,
+                arguments['mount'].mount_point,
+                arguments['mount'].paths,
+                arguments['mount'].foreground,
+                arguments['mount'].options,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+    if 'umount' in arguments:
+        logger.info(
+            '{}: Unmounting mount point {}'.format(repository, arguments['umount'].mount_point)
+        )
+        borg_umount.unmount_archive(
+            mount_point=arguments['umount'].mount_point, local_path=local_path
+        )
     if 'restore' in arguments:
         if arguments['restore'].repository is None or repository == arguments['restore'].repository:
             logger.info(
@@ -421,6 +444,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
         repository = arguments['extract'].repository
     elif 'list' in arguments and arguments['list'].archive:
         repository = arguments['list'].repository
+    elif 'mount' in arguments:
+        repository = arguments['mount'].repository
     else:
         repository = None
 

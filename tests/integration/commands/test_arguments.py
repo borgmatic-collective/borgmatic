@@ -256,7 +256,7 @@ def test_parse_arguments_disallows_glob_archives_with_successful():
         )
 
 
-def test_parse_arguments_disallows_repository_without_extract_or_list():
+def test_parse_arguments_disallows_repository_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
@@ -271,20 +271,36 @@ def test_parse_arguments_allows_repository_with_extract():
     )
 
 
+def test_parse_arguments_allows_repository_with_mount():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments(
+        '--config',
+        'myconfig',
+        'mount',
+        '--repository',
+        'test.borg',
+        '--archive',
+        'test',
+        '--mount-point',
+        '/mnt',
+    )
+
+
 def test_parse_arguments_allows_repository_with_list():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--config', 'myconfig', 'list', '--repository', 'test.borg')
 
 
-def test_parse_arguments_disallows_archive_without_extract_restore_or_list():
+def test_parse_arguments_disallows_archive_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
         module.parse_arguments('--config', 'myconfig', '--archive', 'test')
 
 
-def test_parse_arguments_disallows_paths_without_extract():
+def test_parse_arguments_disallows_paths_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
@@ -295,6 +311,14 @@ def test_parse_arguments_allows_archive_with_extract():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--config', 'myconfig', 'extract', '--archive', 'test')
+
+
+def test_parse_arguments_allows_archive_with_mount():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments(
+        '--config', 'myconfig', 'mount', '--archive', 'test', '--mount-point', '/mnt'
+    )
 
 
 def test_parse_arguments_allows_archive_with_dashed_extract():
@@ -328,11 +352,32 @@ def test_parse_arguments_requires_archive_with_extract():
         module.parse_arguments('--config', 'myconfig', 'extract')
 
 
+def test_parse_arguments_requires_archive_with_mount():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit):
+        module.parse_arguments('--config', 'myconfig', 'mount', '--mount-point', '/mnt')
+
+
 def test_parse_arguments_requires_archive_with_restore():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
         module.parse_arguments('--config', 'myconfig', 'restore')
+
+
+def test_parse_arguments_requires_mount_point_with_mount():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit):
+        module.parse_arguments('--config', 'myconfig', 'mount', '--archive', 'test')
+
+
+def test_parse_arguments_requires_mount_point_with_umount():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit):
+        module.parse_arguments('--config', 'myconfig', 'umount')
 
 
 def test_parse_arguments_allows_progress_before_create():

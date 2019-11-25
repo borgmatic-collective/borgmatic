@@ -9,6 +9,8 @@ SUBPARSER_ALIASES = {
     'create': ['--create', '-C'],
     'check': ['--check', '-k'],
     'extract': ['--extract', '-x'],
+    'mount': ['--mount', '-m'],
+    'umount': ['--umount', '-u'],
     'restore': ['--restore', '-r'],
     'list': ['--list', '-l'],
     'info': ['--info', '-i'],
@@ -311,6 +313,60 @@ def parse_arguments(*unparsed_arguments):
     extract_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
+
+    mount_parser = subparsers.add_parser(
+        'mount',
+        aliases=SUBPARSER_ALIASES['mount'],
+        help='Mount files from a named archive as a FUSE filesystem',
+        description='Mount a named archive as a FUSE filesystem',
+        add_help=False,
+    )
+    mount_group = mount_parser.add_argument_group('mount arguments')
+    mount_group.add_argument(
+        '--repository',
+        help='Path of repository to use, defaults to the configured repository if there is only one',
+    )
+    mount_group.add_argument('--archive', help='Name of archive to mount', required=True)
+    mount_group.add_argument(
+        '--mount-point',
+        metavar='PATH',
+        dest='mount_point',
+        help='Path where filesystem is to be mounted',
+        required=True,
+    )
+    mount_group.add_argument(
+        '--path',
+        metavar='PATH',
+        nargs='+',
+        dest='paths',
+        help='Paths to mount from archive, defaults to the entire archive',
+    )
+    mount_group.add_argument(
+        '--foreground',
+        dest='foreground',
+        default=False,
+        action='store_true',
+        help='Stay in foreground until ctrl-C is pressed',
+    )
+    mount_group.add_argument('--options', dest='options', help='Extra Borg mount options')
+    mount_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    umount_parser = subparsers.add_parser(
+        'umount',
+        aliases=SUBPARSER_ALIASES['umount'],
+        help='Unmount a FUSE filesystem that was mounted with "borgmatic mount"',
+        description='Unmount a mounted FUSE filesystem',
+        add_help=False,
+    )
+    umount_group = umount_parser.add_argument_group('umount arguments')
+    umount_group.add_argument(
+        '--mount-point',
+        metavar='PATH',
+        dest='mount_point',
+        help='Path of filesystem to unmount',
+        required=True,
+    )
+    umount_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     restore_parser = subparsers.add_parser(
         'restore',

@@ -87,6 +87,35 @@ so that you can extract files from your archive without impacting your live
 databases.
 
 
+## Mount a filesystem
+
+If instead of extracting files, you'd like to explore the files from an
+archive as a [FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)
+filesystem, you can use the `borgmatic mount` action. Here's an example:
+
+```bash
+borgmatic mount --archive host-2019-... --mount-point /mnt
+```
+
+This mounts the entire archive on the given mount point `/mnt`, so that you
+can look in there for your files.
+
+If you'd like to restrict the mounted filesystem to only particular paths from
+your archive, use the `--path` flag, similar to the `extract` action above.
+For instance:
+
+```bash
+borgmatic mount --archive host-2019-... --mount-point /mnt --path var/lib
+```
+
+When you're all done exploring your files, unmount your mount point. No
+`--archive` flag is needed:
+
+```bash
+borgmatic umount --mount-point /mnt
+```
+
+
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)

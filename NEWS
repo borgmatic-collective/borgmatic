@@ -1,3 +1,8 @@
+1.4.15
+ * #123: Support for mounting an archive as a FUSE filesystem via "borgmatic mount" action, and
+   unmounting via "borgmatic umount". See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#mount-a-filesystem
+
 1.4.14
  * Show summary log errors regardless of verbosity level, and log the "summary:" header with a log
    level based on the contained summary logs.
