@@ -392,11 +392,9 @@ def make_error_log_records(message, error=None):
     except CalledProcessError as error:
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
         if error.output:
+            # Suppress these logs for now and save full error output for the log summary at the end.
             yield log_record(
-                levelno=logging.CRITICAL,
-                levelname='CRITICAL',
-                msg=error.output,
-                suppress_log=bool(logger.getEffectiveLevel() < logging.WARNING),
+                levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output, suppress_log=True
             )
         yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
     except (ValueError, OSError) as error:
@@ -543,16 +541,18 @@ def main():  # pragma: no cover
     logger.debug('Ensuring legacy configuration is upgraded')
     convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
-    summary_logs = list(collect_configuration_run_summary_logs(configs, arguments))
+    summary_logs = parse_logs + list(collect_configuration_run_summary_logs(configs, arguments))
+    summary_logs_max_level = max(log.levelno for log in summary_logs)
 
-    if logger.getEffectiveLevel() < logging.WARNING:
-        logger.info('')
-        logger.info('summary:')
-        [
-            logger.handle(log)
-            for log in parse_logs + summary_logs
-            if log.levelno >= logger.getEffectiveLevel()
-        ]
+    for message in ('', 'summary:'):
+        log_record(
+            levelno=summary_logs_max_level,
+            levelname=logging.getLevelName(summary_logs_max_level),
+            msg=message,
+        )
 
-    if any(log.levelno == logging.CRITICAL for log in summary_logs):
+    for log in summary_logs:
+        logger.handle(log)
+
+    if summary_logs_max_level >= logging.CRITICAL:
         exit_with_help_link()

@@ -119,6 +119,10 @@ def test_log_record_does_not_raise():
     module.log_record(levelno=1, foo='bar', baz='quux')
 
 
+def test_log_record_with_suppress_does_not_raise():
+    module.log_record(levelno=1, foo='bar', baz='quux', suppress_log=True)
+
+
 def test_make_error_log_records_generates_output_logs_for_message_only():
     flexmock(module).should_receive('log_record').replace_with(dict)
 

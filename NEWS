@@ -1,3 +1,7 @@
+1.4.14
+ * Show summary log errors regardless of verbosity level, and log the "summary:" header with a log
+   level based on the contained summary logs.
+
 1.4.13
  * Show full error logs at "--verbosity 0" so you can see command output without upping the
    verbosity level.
