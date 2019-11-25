@@ -71,10 +71,10 @@ def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, 
             continue
 
         os.remove(dump_filename)
-        dump_path = os.path.dirname(dump_filename)
+        dump_file_dir = os.path.dirname(dump_filename)
 
-        if len(os.listdir(dump_path)) == 0:
-            os.rmdir(dump_path)
+        if len(os.listdir(dump_file_dir)) == 0:
+            os.rmdir(dump_file_dir)
 
 
 def convert_glob_patterns_to_borg_patterns(patterns):

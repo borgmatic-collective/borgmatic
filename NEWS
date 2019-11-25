@@ -1,4 +1,5 @@
 1.4.15
+ * Fix for database dump removal incorrectly skipping some database dumps.
  * #123: Support for mounting an archive as a FUSE filesystem via "borgmatic mount" action, and
    unmounting via "borgmatic umount". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#mount-a-filesystem
