@@ -1,3 +1,6 @@
+1.4.16
+ * Fix for missing Healthchecks monitoring payload or HTTP 500 due to incorrect unicode encoding.
+
 1.4.15
  * Fix for database dump removal incorrectly skipping some database dumps.
  * #123: Support for mounting an archive as a FUSE filesystem via "borgmatic mount" action, and

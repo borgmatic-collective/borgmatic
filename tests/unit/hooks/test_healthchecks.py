@@ -60,7 +60,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
     flexmock(module).should_receive('Forgetful_buffering_handler')
     ping_url = 'https://example.com'
     flexmock(module.requests).should_receive('post').with_args(
-        '{}/{}'.format(ping_url, 'start'), data=''
+        '{}/{}'.format(ping_url, 'start'), data=''.encode('utf-8')
     )
 
     module.ping_monitor(ping_url, 'config.yaml', state=module.monitor.State.START, dry_run=False)
@@ -68,19 +68,21 @@ def test_ping_monitor_hits_ping_url_for_start_state():
 
 def test_ping_monitor_hits_ping_url_for_finish_state():
     ping_url = 'https://example.com'
-    payload = flexmock()
+    payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
-    flexmock(module.requests).should_receive('post').with_args(ping_url, data=payload)
+    flexmock(module.requests).should_receive('post').with_args(
+        ping_url, data=payload.encode('utf-8')
+    )
 
     module.ping_monitor(ping_url, 'config.yaml', state=module.monitor.State.FINISH, dry_run=False)
 
 
 def test_ping_monitor_hits_ping_url_for_fail_state():
     ping_url = 'https://example.com'
-    payload = flexmock()
+    payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        '{}/{}'.format(ping_url, 'fail'), data=payload
+        '{}/{}'.format(ping_url, 'fail'), data=payload.encode('utf')
     )
 
     module.ping_monitor(ping_url, 'config.yaml', state=module.monitor.State.FAIL, dry_run=False)
@@ -88,10 +90,10 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
 
 def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
     ping_uuid = 'abcd-efgh-ijkl-mnop'
-    payload = flexmock()
+    payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://hc-ping.com/{}'.format(ping_uuid), data=payload
+        'https://hc-ping.com/{}'.format(ping_uuid), data=payload.encode('utf-8')
     )
 
     module.ping_monitor(ping_uuid, 'config.yaml', state=module.monitor.State.FINISH, dry_run=False)

@@ -97,4 +97,4 @@ def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
-        requests.post(ping_url, data=payload)
+        requests.post(ping_url, data=payload.encode('utf-8'))
