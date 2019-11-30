@@ -821,6 +821,31 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter():
     )
 
 
+def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_parameter_and_no_list():
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command_without_capture').with_args(
+        ('borg', 'create', '--info', '--stats', '--progress') + ARCHIVE_WITH_PATHS
+    )
+    insert_logging_mock(logging.INFO)
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        progress=True,
+    )
+
+
 def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))

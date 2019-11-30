@@ -1,5 +1,8 @@
 1.4.16
- * Fix for missing Healthchecks monitoring payload or HTTP 500 due to incorrect unicode encoding.
+ * #257: Fix for garbled Borg file listing when using "borgmatic create --progress" with
+   verbosity level 1 or 2.
+ * #260: Fix for missing Healthchecks monitoring payload or HTTP 500 due to incorrect unicode
+   encoding.
 
 1.4.15
  * Fix for database dump removal incorrectly skipping some database dumps.
