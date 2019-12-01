@@ -4,42 +4,26 @@ from flexmock import flexmock
 from borgmatic import execute as module
 
 
-def test_exit_code_indicates_error_with_borg_error_is_true():
-    assert module.exit_code_indicates_error(('/usr/bin/borg1', 'init'), 2)
-
-
-def test_exit_code_indicates_error_with_borg_warning_is_false():
-    assert not module.exit_code_indicates_error(('/usr/bin/borg1', 'init'), 1)
-
-
-def test_exit_code_indicates_error_with_borg_success_is_false():
-    assert not module.exit_code_indicates_error(('/usr/bin/borg1', 'init'), 0)
-
-
-def test_exit_code_indicates_error_with_borg_error_and_error_on_warnings_is_true():
-    assert module.exit_code_indicates_error(('/usr/bin/borg1', 'init'), 2, error_on_warnings=True)
-
-
-def test_exit_code_indicates_error_with_borg_warning_and_error_on_warnings_is_true():
-    assert module.exit_code_indicates_error(('/usr/bin/borg1', 'init'), 1, error_on_warnings=True)
-
-
-def test_exit_code_indicates_error_with_borg_success_and_error_on_warnings_is_false():
-    assert not module.exit_code_indicates_error(
-        ('/usr/bin/borg1', 'init'), 0, error_on_warnings=True
+@pytest.mark.parametrize(
+    'exit_code,error_on_warnings,expected_result',
+    (
+        (2, True, True),
+        (2, False, True),
+        (1, True, True),
+        (1, False, False),
+        (0, True, False),
+        (0, False, False),
+    ),
+)
+def test_exit_code_indicates_error_respects_exit_code_and_error_on_warnings(
+    exit_code, error_on_warnings, expected_result
+):
+    assert (
+        module.exit_code_indicates_error(
+            ('command',), exit_code, error_on_warnings=error_on_warnings
+        )
+        is expected_result
     )
-
-
-def test_exit_code_indicates_error_with_non_borg_error_is_true():
-    assert module.exit_code_indicates_error(('/usr/bin/command',), 2)
-
-
-def test_exit_code_indicates_error_with_non_borg_warning_is_true():
-    assert module.exit_code_indicates_error(('/usr/bin/command',), 1)
-
-
-def test_exit_code_indicates_error_with_non_borg_success_is_false():
-    assert not module.exit_code_indicates_error(('/usr/bin/command',), 0)
 
 
 def test_execute_command_calls_full_command():

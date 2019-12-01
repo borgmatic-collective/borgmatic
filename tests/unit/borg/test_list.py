@@ -10,7 +10,7 @@ from ..test_verbosity import insert_logging_mock
 
 def test_list_archives_calls_borg_with_parameters():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', 'repo'), output_log_level=logging.WARNING, error_on_warnings=False
     )
 
     module.list_archives(
@@ -22,7 +22,9 @@ def test_list_archives_calls_borg_with_parameters():
 
 def test_list_archives_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--info', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', '--info', 'repo'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
     )
     insert_logging_mock(logging.INFO)
 
@@ -35,7 +37,7 @@ def test_list_archives_with_log_info_calls_borg_with_info_parameter():
 
 def test_list_archives_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--json', 'repo'), output_log_level=None
+        ('borg', 'list', '--json', 'repo'), output_log_level=None, error_on_warnings=False
     )
     insert_logging_mock(logging.INFO)
 
@@ -48,7 +50,9 @@ def test_list_archives_with_log_info_and_json_suppresses_most_borg_output():
 
 def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--debug', '--show-rc', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', '--debug', '--show-rc', 'repo'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -61,7 +65,7 @@ def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
 
 def test_list_archives_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--json', 'repo'), output_log_level=None
+        ('borg', 'list', '--json', 'repo'), output_log_level=None, error_on_warnings=False
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -75,7 +79,9 @@ def test_list_archives_with_log_debug_and_json_suppresses_most_borg_output():
 def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     storage_config = {'lock_wait': 5}
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--lock-wait', '5', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', '--lock-wait', '5', 'repo'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
     )
 
     module.list_archives(
@@ -88,7 +94,7 @@ def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 def test_list_archives_with_archive_calls_borg_with_archive_parameter():
     storage_config = {}
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'), output_log_level=logging.WARNING
+        ('borg', 'list', 'repo::archive'), output_log_level=logging.WARNING, error_on_warnings=False
     )
 
     module.list_archives(
@@ -100,7 +106,7 @@ def test_list_archives_with_archive_calls_borg_with_archive_parameter():
 
 def test_list_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg1', 'list', 'repo'), output_log_level=logging.WARNING
+        ('borg1', 'list', 'repo'), output_log_level=logging.WARNING, error_on_warnings=False
     )
 
     module.list_archives(
@@ -113,7 +119,9 @@ def test_list_archives_with_local_path_calls_borg_via_local_path():
 
 def test_list_archives_with_remote_path_calls_borg_with_remote_path_parameters():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--remote-path', 'borg1', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', '--remote-path', 'borg1', 'repo'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
     )
 
     module.list_archives(
@@ -126,7 +134,9 @@ def test_list_archives_with_remote_path_calls_borg_with_remote_path_parameters()
 
 def test_list_archives_with_short_calls_borg_with_short_parameter():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--short', 'repo'), output_log_level=logging.WARNING
+        ('borg', 'list', '--short', 'repo'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
     ).and_return('[]')
 
     module.list_archives(
@@ -154,6 +164,7 @@ def test_list_archives_passes_through_arguments_to_borg(argument_name):
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--' + argument_name.replace('_', '-'), 'value', 'repo'),
         output_log_level=logging.WARNING,
+        error_on_warnings=False,
     ).and_return('[]')
 
     module.list_archives(
@@ -169,6 +180,7 @@ def test_list_archives_with_successful_calls_borg_to_exclude_checkpoints():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--glob-archives', module.BORG_EXCLUDE_CHECKPOINTS_GLOB, 'repo'),
         output_log_level=logging.WARNING,
+        error_on_warnings=False,
     ).and_return('[]')
 
     module.list_archives(
@@ -180,7 +192,7 @@ def test_list_archives_with_successful_calls_borg_to_exclude_checkpoints():
 
 def test_list_archives_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--json', 'repo'), output_log_level=None
+        ('borg', 'list', '--json', 'repo'), output_log_level=None, error_on_warnings=False
     ).and_return('[]')
 
     json_output = module.list_archives(

@@ -15,7 +15,7 @@ def insert_execute_command_mock(command, working_directory=None, error_on_warnin
 
 def insert_execute_command_output_mock(command, result):
     flexmock(module).should_receive('execute_command').with_args(
-        command, output_log_level=None
+        command, output_log_level=None, error_on_warnings=False
     ).and_return(result).once()
 
 

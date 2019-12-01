@@ -24,7 +24,7 @@ def insert_info_command_not_found_mock():
 
 def insert_init_command_mock(init_command, **kwargs):
     flexmock(module).should_receive('execute_command_without_capture').with_args(
-        init_command
+        init_command, error_on_warnings=False
     ).once()
 
 

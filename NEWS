@@ -1,4 +1,6 @@
 1.4.16
+ * #256: Fix for "before_backup" hook not triggering an error when the command contains "borg" and
+   has an exit code of 1.
  * #257: Fix for garbled Borg file listing when using "borgmatic create --progress" with
    verbosity level 1 or 2.
  * #260: Fix for missing Healthchecks monitoring payload or HTTP 500 due to incorrect unicode

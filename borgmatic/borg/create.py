@@ -196,7 +196,7 @@ def create_archive(
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if progress:
-        execute_command_without_capture(full_command)
+        execute_command_without_capture(full_command, error_on_warnings=False)
         return
 
     if json:
@@ -206,4 +206,4 @@ def create_archive(
     else:
         output_log_level = logging.INFO
 
-    return execute_command(full_command, output_log_level)
+    return execute_command(full_command, output_log_level, error_on_warnings=False)

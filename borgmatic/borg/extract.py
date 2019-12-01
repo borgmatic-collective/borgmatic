@@ -27,7 +27,7 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         + (repository,)
     )
 
-    list_output = execute_command(full_list_command, output_log_level=None)
+    list_output = execute_command(full_list_command, output_log_level=None, error_on_warnings=False)
 
     try:
         last_archive_name = list_output.strip().splitlines()[-1]

@@ -9,15 +9,15 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE = 2
 
 
-def exit_code_indicates_error(command, exit_code, error_on_warnings=False):
+def exit_code_indicates_error(command, exit_code, error_on_warnings=True):
     '''
     Return True if the given exit code from running the command corresponds to an error.
+    If error on warnings is False, then treat exit code 1 as a warning instead of an error.
     '''
-    # If we're running something other than Borg, treat all non-zero exit codes as errors.
-    if 'borg' in command[0] and not error_on_warnings:
-        return bool(exit_code >= BORG_ERROR_EXIT_CODE)
+    if error_on_warnings:
+        return bool(exit_code != 0)
 
-    return bool(exit_code != 0)
+    return bool(exit_code >= BORG_ERROR_EXIT_CODE)
 
 
 def log_output(command, process, output_buffer, output_log_level, error_on_warnings):
@@ -65,7 +65,7 @@ def execute_command(
     shell=False,
     extra_environment=None,
     working_directory=None,
-    error_on_warnings=False,
+    error_on_warnings=True,
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
@@ -75,7 +75,7 @@ def execute_command(
     file. If shell is True, execute the command within a shell. If an extra environment dict is
     given, then use it to augment the current environment, and pass the result into the command. If
     a working directory is given, use that as the present working directory when running the
-    command.
+    command. If error on warnings is False, then treat exit code 1 as a warning instead of an error.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -110,14 +110,14 @@ def execute_command(
         )
 
 
-def execute_command_without_capture(full_command, working_directory=None, error_on_warnings=False):
+def execute_command_without_capture(full_command, working_directory=None, error_on_warnings=True):
     '''
     Execute the given command (a sequence of command/argument strings), but don't capture or log its
     output in any way. This is necessary for commands that monkey with the terminal (e.g. progress
     display) or provide interactive prompts.
 
     If a working directory is given, use that as the present working directory when running the
-    command.
+    command. If error on warnings is False, then treat exit code 1 as a warning instead of an error.
     '''
     logger.debug(' '.join(full_command))
 

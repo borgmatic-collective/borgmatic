@@ -45,4 +45,4 @@ def initialize_repository(
     )
 
     # Don't use execute_command() here because it doesn't support interactive prompts.
-    execute_command_without_capture(init_command)
+    execute_command_without_capture(init_command, error_on_warnings=False)
