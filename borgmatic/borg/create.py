@@ -150,6 +150,7 @@ def create_archive(
     files_cache = location_config.get('files_cache')
     default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
     archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
+    extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
 
     full_command = (
         (local_path, 'create')
@@ -185,6 +186,7 @@ def create_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
         + (('--json',) if json else ())
+        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (
             '{repository}::{archive_name_format}'.format(
                 repository=repository, archive_name_format=archive_name_format

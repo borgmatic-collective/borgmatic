@@ -11,6 +11,7 @@ INFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
 
 def initialize_repository(
     repository,
+    storage_config,
     encryption_mode,
     append_only=None,
     storage_quota=None,
@@ -18,9 +19,9 @@ def initialize_repository(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a Borg encryption mode, whether the repository should
-    be append-only, and the storage quota to use, initialize the repository. If the repository
-    already exists, then log and skip initialization.
+    Given a local or remote repository path, a storage configuration dict, a Borg encryption mode,
+    whether the repository should be append-only, and the storage quota to use, initialize the
+    repository. If the repository already exists, then log and skip initialization.
     '''
     info_command = (local_path, 'info', repository)
     logger.debug(' '.join(info_command))
@@ -33,6 +34,8 @@ def initialize_repository(
         if error.returncode != INFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
             raise
 
+    extra_borg_options = storage_config.get('extra_borg_options', {}).get('init', '')
+
     init_command = (
         (local_path, 'init')
         + (('--encryption', encryption_mode) if encryption_mode else ())
@@ -41,6 +44,7 @@ def initialize_repository(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--remote-path', remote_path) if remote_path else ())
+        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (repository,)
     )
 

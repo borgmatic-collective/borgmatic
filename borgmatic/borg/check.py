@@ -103,6 +103,7 @@ def check_archives(
     checks = _parse_checks(consistency_config, only_checks)
     check_last = consistency_config.get('check_last', None)
     lock_wait = None
+    extra_borg_options = storage_config.get('extra_borg_options', {}).get('check', '')
 
     if set(checks).intersection(set(DEFAULT_CHECKS + ('data',))):
         remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
@@ -123,6 +124,7 @@ def check_archives(
             + remote_path_flags
             + lock_wait_flags
             + verbosity_flags
+            + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
             + (repository,)
         )
 

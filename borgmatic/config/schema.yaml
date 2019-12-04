@@ -245,6 +245,29 @@ map:
                     Bypass Borg error about a previously unknown unencrypted repository. Defaults to
                     false.
                 example: true
+            extra_borg_options:
+                map:
+                    init:
+                        type: str
+                        desc: Extra command-line options to pass to "borg init".
+                        example: "--make-parent-dirs"
+                    prune:
+                        type: str
+                        desc: Extra command-line options to pass to "borg prune".
+                        example: "--save-space"
+                    create:
+                        type: str
+                        desc: Extra command-line options to pass to "borg create".
+                        example: "--no-files-cache"
+                    check:
+                        type: str
+                        desc: Extra command-line options to pass to "borg check".
+                        example: "--save-space"
+                desc: |
+                    Additional options to pass directly to particular Borg commands, handy for Borg
+                    options that borgmatic does not yet support natively. Note that borgmatic does
+                    not perform any validation on these options. Running borgmatic with
+                    "--verbosity 2" shows the exact Borg command-line invocation.
     retention:
         desc: |
             Retention policy for how many backups to keep in each category. See

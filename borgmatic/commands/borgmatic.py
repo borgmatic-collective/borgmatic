@@ -189,6 +189,7 @@ def run_actions(
         logger.info('{}: Initializing repository'.format(repository))
         borg_init.initialize_repository(
             repository,
+            storage,
             arguments['init'].encryption_mode,
             arguments['init'].append_only,
             arguments['init'].storage_quota,

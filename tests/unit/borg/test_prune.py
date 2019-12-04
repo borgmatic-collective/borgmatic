@@ -188,3 +188,18 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
         storage_config=storage_config,
         retention_config=retention_config,
     )
+
+
+def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS
+    )
+    insert_execute_command_mock(PRUNE_COMMAND + ('--extra', '--options', 'repo'), logging.INFO)
+
+    module.prune_archives(
+        dry_run=False,
+        repository='repo',
+        storage_config={'extra_borg_options': {'prune': '--extra --options'}},
+        retention_config=retention_config,
+    )

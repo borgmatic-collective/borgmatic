@@ -296,3 +296,17 @@ def test_check_archives_with_retention_prefix():
     module.check_archives(
         repository='repo', storage_config={}, consistency_config=consistency_config
     )
+
+
+def test_check_archives_with_extra_borg_options_calls_borg_with_extra_options():
+    checks = ('repository',)
+    consistency_config = {'check_last': None}
+    flexmock(module).should_receive('_parse_checks').and_return(checks)
+    flexmock(module).should_receive('_make_check_flags').and_return(())
+    insert_execute_command_mock(('borg', 'check', '--extra', '--options', 'repo'))
+
+    module.check_archives(
+        repository='repo',
+        storage_config={'extra_borg_options': {'check': '--extra --options'}},
+        consistency_config=consistency_config,
+    )

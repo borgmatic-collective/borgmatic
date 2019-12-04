@@ -49,6 +49,7 @@ def prune_archives(
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
+    extra_borg_options = storage_config.get('extra_borg_options', {}).get('prune', '')
 
     full_command = (
         (local_path, 'prune')
@@ -61,6 +62,7 @@ def prune_archives(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--stats',) if stats else ())
+        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (repository,)
     )
 
