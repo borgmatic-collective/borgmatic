@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import extract
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_without_capture
 
 DEFAULT_CHECKS = ('repository', 'archives')
 DEFAULT_PREFIX = '{hostname}-'
@@ -91,12 +91,13 @@ def check_archives(
     consistency_config,
     local_path='borg',
     remote_path=None,
+    repair=None,
     only_checks=None,
 ):
     '''
     Given a local or remote repository path, a storage config dict, a consistency config dict,
-    local/remote commands to run, and an optional list of checks to use instead of configured
-    checks, check the contained Borg archives for consistency.
+    local/remote commands to run, whether to attempt a repair, and an optional list of checks
+    to use instead of configured checks, check the contained Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
@@ -106,9 +107,7 @@ def check_archives(
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('check', '')
 
     if set(checks).intersection(set(DEFAULT_CHECKS + ('data',))):
-        remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
         lock_wait = storage_config.get('lock_wait', None)
-        lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
 
         verbosity_flags = ()
         if logger.isEnabledFor(logging.INFO):
@@ -120,13 +119,20 @@ def check_archives(
 
         full_command = (
             (local_path, 'check')
+            + (('--repair',) if repair else ())
             + _make_check_flags(checks, check_last, prefix)
-            + remote_path_flags
-            + lock_wait_flags
+            + (('--remote-path', remote_path) if remote_path else ())
+            + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
             + (repository,)
         )
+
+        # The Borg repair option trigger an interactive prompt, which won't work when output is
+        # captured.
+        if repair:
+            execute_command_without_capture(full_command, error_on_warnings=True)
+            return
 
         execute_command(full_command, error_on_warnings=True)
 

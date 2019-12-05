@@ -230,6 +230,7 @@ def run_actions(
             consistency,
             local_path=local_path,
             remote_path=remote_path,
+            repair=arguments['check'].repair,
             only_checks=arguments['check'].only,
         )
     if 'extract' in arguments:

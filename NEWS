@@ -2,6 +2,8 @@
  * #235: Pass extra options directly to particular Borg commands, handy for Borg options that
    borgmatic does not yet support natively. Use "extra_borg_options" in the storage configuration
    section.
+ * #266: Attempt to repair any inconsistencies found during a consistency check via
+   "borgmatic check --repair" flag.
 
 1.4.16
  * #256: Fix for "before_backup" hook not triggering an error when the command contains "borg" and

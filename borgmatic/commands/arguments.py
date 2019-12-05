@@ -267,6 +267,13 @@ def parse_arguments(*unparsed_arguments):
     )
     check_group = check_parser.add_argument_group('check arguments')
     check_group.add_argument(
+        '--repair',
+        dest='repair',
+        default=False,
+        action='store_true',
+        help='Attempt to repair any inconsistencies found (experimental and only for interactive use)',
+    )
+    check_group.add_argument(
         '--only',
         metavar='CHECK',
         choices=('repository', 'archives', 'data', 'extract'),
