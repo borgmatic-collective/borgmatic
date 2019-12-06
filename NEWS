@@ -1,3 +1,6 @@
+1.4.18
+ * #253: Mount whole repositories via "borgmatic mount" without any "--archive" flag.
+
 1.4.17
  * #235: Pass extra options directly to particular Borg commands, handy for Borg options that
    borgmatic does not yet support natively. Use "extra_borg_options" in the storage configuration

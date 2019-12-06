@@ -100,6 +100,12 @@ borgmatic mount --archive host-2019-... --mount-point /mnt
 This mounts the entire archive on the given mount point `/mnt`, so that you
 can look in there for your files.
 
+Omit the `--archive` flag to mount all archives (lazy-loaded):
+
+```bash
+borgmatic mount --mount-point /mnt
+```
+
 If you'd like to restrict the mounted filesystem to only particular paths from
 your archive, use the `--path` flag, similar to the `extract` action above.
 For instance:

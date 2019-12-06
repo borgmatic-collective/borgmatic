@@ -252,7 +252,13 @@ def run_actions(
             )
     if 'mount' in arguments:
         if arguments['mount'].repository is None or repository == arguments['mount'].repository:
-            logger.info('{}: Mounting archive {}'.format(repository, arguments['mount'].archive))
+            if arguments['mount'].archive:
+                logger.info(
+                    '{}: Mounting archive {}'.format(repository, arguments['mount'].archive)
+                )
+            else:
+                logger.info('{}: Mounting repository'.format(repository))
+
             borg_mount.mount_archive(
                 repository,
                 arguments['mount'].archive,

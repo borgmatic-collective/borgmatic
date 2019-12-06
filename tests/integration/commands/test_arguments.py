@@ -352,13 +352,6 @@ def test_parse_arguments_requires_archive_with_extract():
         module.parse_arguments('--config', 'myconfig', 'extract')
 
 
-def test_parse_arguments_requires_archive_with_mount():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(SystemExit):
-        module.parse_arguments('--config', 'myconfig', 'mount', '--mount-point', '/mnt')
-
-
 def test_parse_arguments_requires_archive_with_restore():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

@@ -333,7 +333,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    mount_group.add_argument('--archive', help='Name of archive to mount', required=True)
+    mount_group.add_argument('--archive', help='Name of archive to mount')
     mount_group.add_argument(
         '--mount-point',
         metavar='PATH',
