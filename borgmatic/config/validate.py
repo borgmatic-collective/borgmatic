@@ -1,4 +1,5 @@
 import logging
+import os
 
 import pkg_resources
 import pykwalify.core
@@ -112,6 +113,24 @@ def parse_configuration(config_filename, schema_filename):
     return parsed_result
 
 
+def normalize_repository_path(repository):
+    '''
+    Given a repository path, return the absolute path of it (for local repositories).
+    '''
+    # A colon in the repository indicates it's a remote repository. Bail.
+    if ':' in repository:
+        return repository
+
+    return os.path.abspath(repository)
+
+
+def repositories_match(first, second):
+    '''
+    Given two repository paths (relative and/or absolute), return whether they match.
+    '''
+    return normalize_repository_path(first) == normalize_repository_path(second)
+
+
 def guard_configuration_contains_repository(repository, configurations):
     '''
     Given a repository path and a dict mapping from config filename to corresponding parsed config
@@ -133,9 +152,7 @@ def guard_configuration_contains_repository(repository, configurations):
 
         if count > 1:
             raise ValueError(
-                'Can\'t determine which repository to use. Use --repository option to disambiguate'.format(
-                    repository
-                )
+                'Can\'t determine which repository to use. Use --repository option to disambiguate'
             )
 
         return
@@ -145,7 +162,7 @@ def guard_configuration_contains_repository(repository, configurations):
             config_repository
             for config in configurations.values()
             for config_repository in config['location']['repositories']
-            if repository == config_repository
+            if repositories_match(repository, config_repository)
         )
     )
 

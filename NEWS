@@ -1,4 +1,5 @@
 1.4.18
+ * Fix "--repository" flag to accept relative paths.
  * #253: Mount whole repositories via "borgmatic mount" without any "--archive" flag.
 
 1.4.17

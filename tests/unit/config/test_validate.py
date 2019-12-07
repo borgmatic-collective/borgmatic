@@ -1,4 +1,5 @@
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import validate as module
 
@@ -95,7 +96,38 @@ def test_remove_examples_strips_examples_from_sequence_of_maps():
     assert schema == {'seq': [{'map': {'foo': {'desc': 'thing'}}}]}
 
 
+def test_normalize_repository_path_passes_through_remote_repository():
+    repository = 'example.org:test.borg'
+
+    module.normalize_repository_path(repository) == repository
+
+
+def test_normalize_repository_path_passes_through_absolute_repository():
+    repository = '/foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').and_return(repository)
+
+    module.normalize_repository_path(repository) == repository
+
+
+def test_normalize_repository_path_resolves_relative_repository():
+    repository = 'test.borg'
+    absolute = '/foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').and_return(absolute)
+
+    module.normalize_repository_path(repository) == absolute
+
+
+def test_repositories_match_does_not_raise():
+    flexmock(module).should_receive('normalize_repository_path')
+
+    module.repositories_match('foo', 'bar')
+
+
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_in_config():
+    flexmock(module).should_receive('repositories_match').replace_with(
+        lambda first, second: first == second
+    )
+
     module.guard_configuration_contains_repository(
         repository='repo', configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
     )
@@ -116,6 +148,10 @@ def test_guard_configuration_contains_repository_errors_when_repository_assumed_
 
 
 def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
+    flexmock(module).should_receive('repositories_match').replace_with(
+        lambda first, second: first == second
+    )
+
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
             repository='nope',
@@ -124,6 +160,10 @@ def test_guard_configuration_contains_repository_errors_when_repository_missing_
 
 
 def test_guard_configuration_contains_repository_errors_when_repository_matches_config_twice():
+    flexmock(module).should_receive('repositories_match').replace_with(
+        lambda first, second: first == second
+    )
+
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
             repository='repo',

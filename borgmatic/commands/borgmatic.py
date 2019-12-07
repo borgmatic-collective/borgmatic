@@ -234,7 +234,9 @@ def run_actions(
             only_checks=arguments['check'].only,
         )
     if 'extract' in arguments:
-        if arguments['extract'].repository is None or repository == arguments['extract'].repository:
+        if arguments['extract'].repository is None or validate.repositories_match(
+            repository, arguments['extract'].repository
+        ):
             logger.info(
                 '{}: Extracting archive {}'.format(repository, arguments['extract'].archive)
             )
@@ -251,7 +253,9 @@ def run_actions(
                 progress=arguments['extract'].progress,
             )
     if 'mount' in arguments:
-        if arguments['mount'].repository is None or repository == arguments['mount'].repository:
+        if arguments['mount'].repository is None or validate.repositories_match(
+            repository, arguments['mount'].repository
+        ):
             if arguments['mount'].archive:
                 logger.info(
                     '{}: Mounting archive {}'.format(repository, arguments['mount'].archive)
@@ -278,7 +282,9 @@ def run_actions(
             mount_point=arguments['umount'].mount_point, local_path=local_path
         )
     if 'restore' in arguments:
-        if arguments['restore'].repository is None or repository == arguments['restore'].repository:
+        if arguments['restore'].repository is None or validate.repositories_match(
+            repository, arguments['restore'].repository
+        ):
             logger.info(
                 '{}: Restoring databases from archive {}'.format(
                     repository, arguments['restore'].archive
@@ -336,7 +342,9 @@ def run_actions(
                 global_arguments.dry_run,
             )
     if 'list' in arguments:
-        if arguments['list'].repository is None or repository == arguments['list'].repository:
+        if arguments['list'].repository is None or validate.repositories_match(
+            repository, arguments['list'].repository
+        ):
             logger.info('{}: Listing archives'.format(repository))
             json_output = borg_list.list_archives(
                 repository,
@@ -348,7 +356,9 @@ def run_actions(
             if json_output:
                 yield json.loads(json_output)
     if 'info' in arguments:
-        if arguments['info'].repository is None or repository == arguments['info'].repository:
+        if arguments['info'].repository is None or validate.repositories_match(
+            repository, arguments['info'].repository
+        ):
             logger.info('{}: Displaying summary info for archives'.format(repository))
             json_output = borg_info.display_archives_info(
                 repository,
