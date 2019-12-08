@@ -3,6 +3,7 @@
  * Fix "borgmatic umount" so it only runs Borg once instead of once per repository / configuration
    file.
  * #253: Mount whole repositories via "borgmatic mount" without any "--archive" flag.
+ * #269: Filter listed paths via "borgmatic list --path" flag.
 
 1.4.17
  * #235: Pass extra options directly to particular Borg commands, handy for Borg options that

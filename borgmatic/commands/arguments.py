@@ -420,6 +420,13 @@ def parse_arguments(*unparsed_arguments):
     )
     list_group.add_argument('--archive', help='Name of archive to list')
     list_group.add_argument(
+        '--path',
+        metavar='PATH',
+        nargs='+',
+        dest='paths',
+        help='Paths to list from archive, defaults to the entire archive',
+    )
+    list_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive or path names'
     )
     list_group.add_argument('--format', help='Format for file listing')

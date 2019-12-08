@@ -16,7 +16,7 @@ def test_list_archives_calls_borg_with_parameters():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
     )
 
 
@@ -31,7 +31,7 @@ def test_list_archives_with_log_info_calls_borg_with_info_parameter():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
     )
 
 
@@ -44,7 +44,7 @@ def test_list_archives_with_log_info_and_json_suppresses_most_borg_output():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=True, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=True, successful=False),
     )
 
 
@@ -59,7 +59,7 @@ def test_list_archives_with_log_debug_calls_borg_with_debug_parameter():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
     )
 
 
@@ -72,7 +72,7 @@ def test_list_archives_with_log_debug_and_json_suppresses_most_borg_output():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=True, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=True, successful=False),
     )
 
 
@@ -87,7 +87,7 @@ def test_list_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     module.list_archives(
         repository='repo',
         storage_config=storage_config,
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
     )
 
 
@@ -100,7 +100,22 @@ def test_list_archives_with_archive_calls_borg_with_archive_parameter():
     module.list_archives(
         repository='repo',
         storage_config=storage_config,
-        list_arguments=flexmock(archive='archive', json=False, successful=False),
+        list_arguments=flexmock(archive='archive', paths=None, json=False, successful=False),
+    )
+
+
+def test_list_archives_with_path_calls_borg_with_path_parameter():
+    storage_config = {}
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', 'repo::archive', 'var/lib'),
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
+    )
+
+    module.list_archives(
+        repository='repo',
+        storage_config=storage_config,
+        list_arguments=flexmock(archive='archive', paths=['var/lib'], json=False, successful=False),
     )
 
 
@@ -112,7 +127,7 @@ def test_list_archives_with_local_path_calls_borg_via_local_path():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
         local_path='borg1',
     )
 
@@ -127,7 +142,7 @@ def test_list_archives_with_remote_path_calls_borg_with_remote_path_parameters()
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False),
         remote_path='borg1',
     )
 
@@ -142,7 +157,7 @@ def test_list_archives_with_short_calls_borg_with_short_parameter():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=False, short=True),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=False, short=True),
     )
 
 
@@ -171,7 +186,7 @@ def test_list_archives_passes_through_arguments_to_borg(argument_name):
         repository='repo',
         storage_config={},
         list_arguments=flexmock(
-            archive=None, json=False, successful=False, **{argument_name: 'value'}
+            archive=None, paths=None, json=False, successful=False, **{argument_name: 'value'}
         ),
     )
 
@@ -186,7 +201,7 @@ def test_list_archives_with_successful_calls_borg_to_exclude_checkpoints():
     module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=False, successful=True),
+        list_arguments=flexmock(archive=None, paths=None, json=False, successful=True),
     )
 
 
@@ -198,7 +213,7 @@ def test_list_archives_with_json_calls_borg_with_json_parameter():
     json_output = module.list_archives(
         repository='repo',
         storage_config={},
-        list_arguments=flexmock(archive=None, json=True, successful=False),
+        list_arguments=flexmock(archive=None, paths=None, json=True, successful=False),
     )
 
     assert json_output == '[]'
