@@ -274,13 +274,6 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
             )
-    if 'umount' in arguments:
-        logger.info(
-            '{}: Unmounting mount point {}'.format(repository, arguments['umount'].mount_point)
-        )
-        borg_umount.unmount_archive(
-            mount_point=arguments['umount'].mount_point, local_path=local_path
-        )
     if 'restore' in arguments:
         if arguments['restore'].repository is None or validate.repositories_match(
             repository, arguments['restore'].repository
@@ -447,6 +440,14 @@ def make_error_log_records(message, error=None):
         pass
 
 
+def get_local_path(configs):
+    '''
+    Arbitrarily return the local path from the first configuration dict. Default to "borg" if not
+    set.
+    '''
+    return next(iter(configs.values())).get('location', {}).get('local_path', 'borg')
+
+
 def collect_configuration_run_summary_logs(configs, arguments):
     '''
     Given a dict of configuration filename to corresponding parsed configuration, and parsed
@@ -516,6 +517,15 @@ def collect_configuration_run_summary_logs(configs, arguments):
             )
             if results:
                 json_results.extend(results)
+
+    if 'umount' in arguments:
+        logger.info('Unmounting mount point {}'.format(arguments['umount'].mount_point))
+        try:
+            borg_umount.unmount_archive(
+                mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs)
+            )
+        except (CalledProcessError, OSError) as error:
+            yield from make_error_log_records('Error unmounting mount point', error)
 
     if json_results:
         sys.stdout.write(json.dumps(json_results))

@@ -169,6 +169,18 @@ def test_make_error_log_records_generates_nothing_for_other_error():
     assert logs == ()
 
 
+def test_get_local_path_uses_configuration_value():
+    assert module.get_local_path({'test.yaml': {'location': {'local_path': 'borg1'}}}) == 'borg1'
+
+
+def test_get_local_path_without_location_defaults_to_borg():
+    assert module.get_local_path({'test.yaml': {}}) == 'borg'
+
+
+def test_get_local_path_without_local_path_defaults_to_borg():
+    assert module.get_local_path({'test.yaml': {'location': {}}}) == 'borg'
+
+
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -322,6 +334,22 @@ def test_collect_configuration_run_summary_logs_run_configuration_error():
     )
 
     assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_configuration_run_summary_logs_run_umount_error():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module).should_receive('run_configuration').and_return([])
+    flexmock(module.borg_umount).should_receive('unmount_archive').and_raise(OSError)
+    flexmock(module).should_receive('make_error_log_records').and_return(
+        [logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg='Error'))]
+    )
+    arguments = {'umount': flexmock(mount_point='/mnt')}
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {logging.INFO, logging.CRITICAL}
 
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
