@@ -2,6 +2,15 @@
 kind: pipeline
 name: python-3-5-alpine-3-10
 
+services:
+  database:
+    image: postgres:11.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+
 steps:
 - name: build
   image: python:3.5-alpine3.10
@@ -11,6 +20,15 @@ steps:
 ---
 kind: pipeline
 name: python-3-6-alpine-3-10
+
+services:
+  database:
+    image: postgres:11.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
 
 steps:
 - name: build
@@ -22,6 +40,15 @@ steps:
 kind: pipeline
 name: python-3-7-alpine-3-10
 
+services:
+  database:
+    image: postgres:11.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+
 steps:
 - name: build
   image: python:3.7-alpine3.10
@@ -32,6 +59,15 @@ steps:
 kind: pipeline
 name: python-3-7-alpine-3-7
 
+services:
+  database:
+    image: postgres:11.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+
 steps:
 - name: build
   image: python:3.7-alpine3.7
@@ -41,6 +77,15 @@ steps:
 ---
 kind: pipeline
 name: python-3-8-alpine-3-10
+
+services:
+  database:
+    image: postgres:11.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
 
 steps:
 - name: build

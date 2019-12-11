@@ -44,13 +44,13 @@ def test_borgmatic_command():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            'borgmatic -v 2 --config {} --init --encryption repokey'.format(config_path).split(' ')
+            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
         subprocess.check_call('borgmatic --config {}'.format(config_path).split(' '))
         output = subprocess.check_output(
-            'borgmatic --config {} --list --json'.format(config_path).split(' ')
+            'borgmatic --config {} list --json'.format(config_path).split(' ')
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -61,7 +61,7 @@ def test_borgmatic_command():
         # Extract the created archive into the current (temporary) directory, and confirm that the
         # extracted file looks right.
         output = subprocess.check_output(
-            'borgmatic --config {} --extract --archive {}'.format(config_path, archive_name).split(
+            'borgmatic --config {} extract --archive {}'.format(config_path, archive_name).split(
                 ' '
             )
         ).decode(sys.stdout.encoding)
@@ -70,7 +70,7 @@ def test_borgmatic_command():
 
         # Exercise the info flag.
         output = subprocess.check_output(
-            'borgmatic --config {} --info --json'.format(config_path).split(' ')
+            'borgmatic --config {} info --json'.format(config_path).split(' ')
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
