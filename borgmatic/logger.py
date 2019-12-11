@@ -26,7 +26,7 @@ def interactive_console():
     Return whether the current console is "interactive". Meaning: Capable of
     user input and not just something like a cron job.
     '''
-    return sys.stdout.isatty() and os.environ.get('TERM') != 'dumb'
+    return sys.stderr.isatty() and os.environ.get('TERM') != 'dumb'
 
 
 def should_do_markup(no_color, configs):
@@ -46,6 +46,42 @@ def should_do_markup(no_color, configs):
         return to_bool(py_colors)
 
     return interactive_console()
+
+
+class Multi_stream_handler(logging.Handler):
+    '''
+    A logging handler that dispatches each log record to one of multiple stream handlers depending
+    on the record's log level.
+    '''
+
+    def __init__(self, log_level_to_stream_handler):
+        super(Multi_stream_handler, self).__init__()
+        self.log_level_to_handler = log_level_to_stream_handler
+        self.handlers = set(self.log_level_to_handler.values())
+
+    def flush(self):  # pragma: no cover
+        super(Multi_stream_handler, self).flush()
+
+        for handler in self.handlers:
+            handler.flush()
+
+    def emit(self, record):
+        '''
+        Dispatch the log record to the approriate stream handler for the record's log level.
+        '''
+        self.log_level_to_handler[record.levelno].emit(record)
+
+    def setFormatter(self, formatter):  # pragma: no cover
+        super(Multi_stream_handler, self).setFormatter(formatter)
+
+        for handler in self.handlers:
+            handler.setFormatter(formatter)
+
+    def setLevel(self, level):  # pragma: no cover
+        super(Multi_stream_handler, self).setLevel(level)
+
+        for handler in self.handlers:
+            handler.setLevel(level)
 
 
 LOG_LEVEL_TO_COLOR = {
@@ -87,7 +123,19 @@ def configure_logging(
     if log_file_log_level is None:
         log_file_log_level = console_log_level
 
-    console_handler = logging.StreamHandler()
+    # Log certain log levels to console stderr and others to stdout. This supports use cases like
+    # grepping (non-error) output.
+    console_error_handler = logging.StreamHandler(sys.stderr)
+    console_standard_handler = logging.StreamHandler(sys.stdout)
+    console_handler = Multi_stream_handler(
+        {
+            logging.CRITICAL: console_error_handler,
+            logging.ERROR: console_error_handler,
+            logging.WARN: console_standard_handler,
+            logging.INFO: console_standard_handler,
+            logging.DEBUG: console_standard_handler,
+        }
+    )
     console_handler.setFormatter(Console_color_formatter())
     console_handler.setLevel(console_log_level)
 

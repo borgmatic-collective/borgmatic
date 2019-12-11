@@ -1,6 +1,9 @@
 1.4.19
  * #259: Optionally change the internal database dump path via "borgmatic_source_directory" option
    in location configuration section.
+ * #271: Support piping "borgmatic list" output to grep by logging certain log levels to console
+   stdout and others to stderr.
+ * Retain colored output when piping or redirecting output in an interactive terminal.
 
 1.4.18
  * Fix "--repository" flag to accept relative paths.

@@ -22,14 +22,14 @@ def test_to_bool_passes_none_through():
 
 def test_interactive_console_false_when_not_isatty(capsys):
     with capsys.disabled():
-        flexmock(module.sys.stdout).should_receive('isatty').and_return(False)
+        flexmock(module.sys.stderr).should_receive('isatty').and_return(False)
 
         assert module.interactive_console() is False
 
 
 def test_interactive_console_false_when_TERM_is_dumb(capsys):
     with capsys.disabled():
-        flexmock(module.sys.stdout).should_receive('isatty').and_return(True)
+        flexmock(module.sys.stderr).should_receive('isatty').and_return(True)
         flexmock(module.os.environ).should_receive('get').with_args('TERM').and_return('dumb')
 
         assert module.interactive_console() is False
@@ -37,7 +37,7 @@ def test_interactive_console_false_when_TERM_is_dumb(capsys):
 
 def test_interactive_console_true_when_isatty_and_TERM_is_not_dumb(capsys):
     with capsys.disabled():
-        flexmock(module.sys.stdout).should_receive('isatty').and_return(True)
+        flexmock(module.sys.stderr).should_receive('isatty').and_return(True)
         flexmock(module.os.environ).should_receive('get').with_args('TERM').and_return('smart')
 
         assert module.interactive_console() is True
@@ -113,6 +113,17 @@ def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
     assert module.should_do_markup(no_color=False, configs={}) is True
 
 
+def test_multi_stream_handler_logs_to_handler_for_log_level():
+    error_handler = flexmock()
+    error_handler.should_receive('emit').once()
+    info_handler = flexmock()
+
+    multi_handler = module.Multi_stream_handler(
+        {module.logging.ERROR: error_handler, module.logging.INFO: info_handler}
+    )
+    multi_handler.emit(flexmock(levelno=module.logging.ERROR))
+
+
 def test_console_color_formatter_format_includes_log_message():
     plain_message = 'uh oh'
     record = flexmock(levelno=logging.CRITICAL, msg=plain_message)
@@ -132,6 +143,9 @@ def test_color_text_without_color_does_not_raise():
 
 
 def test_configure_logging_probes_for_log_socket_on_linux():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
     flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -147,6 +161,9 @@ def test_configure_logging_probes_for_log_socket_on_linux():
 
 
 def test_configure_logging_probes_for_log_socket_on_macos():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
     flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -163,6 +180,9 @@ def test_configure_logging_probes_for_log_socket_on_macos():
 
 
 def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
     flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=tuple
@@ -173,6 +193,9 @@ def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
 
 
 def test_configure_logging_skips_syslog_if_not_found():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
     flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
@@ -184,6 +207,9 @@ def test_configure_logging_skips_syslog_if_not_found():
 
 
 def test_configure_logging_skips_syslog_if_interactive_console():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
     flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(True)
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -196,6 +222,10 @@ def test_configure_logging_skips_syslog_if_interactive_console():
 
 
 def test_configure_logging_to_logfile_instead_of_syslog():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+
     # syslog skipped in non-interactive console if --log-file argument provided
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -214,6 +244,10 @@ def test_configure_logging_to_logfile_instead_of_syslog():
 
 
 def test_configure_logging_skips_logfile_if_argument_is_none():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+
     # No WatchedFileHandler added if argument --log-file is None
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
