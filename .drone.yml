@@ -3,7 +3,7 @@ kind: pipeline
 name: python-3-5-alpine-3-10
 
 services:
-  database:
+  - name: postgresql
     image: postgres:11.5
     ports:
       - "5432:5432"
@@ -22,7 +22,7 @@ kind: pipeline
 name: python-3-6-alpine-3-10
 
 services:
-  database:
+  - name: postgresql
     image: postgres:11.5
     ports:
       - "5432:5432"
@@ -41,7 +41,7 @@ kind: pipeline
 name: python-3-7-alpine-3-10
 
 services:
-  database:
+  - name: postgresql
     image: postgres:11.5
     ports:
       - "5432:5432"
@@ -60,7 +60,7 @@ kind: pipeline
 name: python-3-7-alpine-3-7
 
 services:
-  database:
+  - name: postgresql
     image: postgres:11.5
     ports:
       - "5432:5432"
@@ -79,7 +79,7 @@ kind: pipeline
 name: python-3-8-alpine-3-10
 
 services:
-  database:
+  - name: postgresql
     image: postgres:11.5
     ports:
       - "5432:5432"

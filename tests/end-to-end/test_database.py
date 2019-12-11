@@ -26,7 +26,7 @@ storage:
 hooks:
     postgresql_databases:
         - name: test
-          hostname: localhost
+          hostname: postgresql
           username: postgres
           password: test
 '''.format(config_path, repository_path, borgmatic_source_directory)
