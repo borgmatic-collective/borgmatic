@@ -1,6 +1,7 @@
 1.4.19
  * #259: Optionally change the internal database dump path via "borgmatic_source_directory" option
    in location configuration section.
+ * Add end-to-end tests for database dump and restore.
 
 1.4.18
  * Fix "--repository" flag to accept relative paths.
