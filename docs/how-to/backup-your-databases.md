@@ -23,8 +23,12 @@ hooks:
 ```
 
 Prior to each backup, borgmatic dumps each configured database to a file
-(located in `~/.borgmatic/`) and includes it in the backup. After the backup
-completes, borgmatic removes the database dump files to recover disk space.
+and includes it in the backup. After the backup completes, borgmatic removes
+the database dump files to recover disk space.
+
+borgmatic creates these temporary dump files in `~/.borgmatic` by default. To
+customize this path, set the `borgmatic_source_directory` option in the
+`location` section of borgmatic's configuration.
 
 Here's a more involved example that connects to remote databases:
 

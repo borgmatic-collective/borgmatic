@@ -184,14 +184,21 @@ def test_borgmatic_source_directories_set_when_directory_exists():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.os.path).should_receive('expanduser')
 
-    assert module.borgmatic_source_directories() == [module.BORGMATIC_SOURCE_DIRECTORY]
+    assert module.borgmatic_source_directories('/tmp') == ['/tmp']
 
 
 def test_borgmatic_source_directories_empty_when_directory_does_not_exist():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os.path).should_receive('expanduser')
 
-    assert module.borgmatic_source_directories() == []
+    assert module.borgmatic_source_directories('/tmp') == []
+
+
+def test_borgmatic_source_directories_defaults_when_directory_not_given():
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('expanduser')
+
+    assert module.borgmatic_source_directories(None) == [module.DEFAULT_BORGMATIC_SOURCE_DIRECTORY]
 
 
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'

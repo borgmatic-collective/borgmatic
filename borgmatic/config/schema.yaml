@@ -137,6 +137,14 @@ map:
                 desc: |
                     Exclude files with the NODUMP flag. Defaults to false.
                 example: true
+            borgmatic_source_directory:
+                type: str
+                desc: |
+                    Path for additional source files used for temporary internal state like
+                    borgmatic database dumps. Note that changing this path prevents "borgmatic
+                    restore" from finding any database dumps created before the change. Defaults
+                    to ~/.borgmatic
+                example: /tmp/borgmatic
     storage:
         desc: |
             Repository storage options. See

@@ -2,9 +2,22 @@ import glob
 import logging
 import os
 
+from borgmatic.borg.create import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+
 logger = logging.getLogger(__name__)
 
 DATABASE_HOOK_NAMES = ('postgresql_databases', 'mysql_databases')
+
+
+def make_database_dump_path(borgmatic_source_directory, database_hook_name):
+    '''
+    Given a borgmatic source directory (or None) and a database hook name, construct a database dump
+    path.
+    '''
+    if not borgmatic_source_directory:
+        borgmatic_source_directory = DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+
+    return os.path.join(borgmatic_source_directory, database_hook_name)
 
 
 def make_database_dump_filename(dump_path, name, hostname=None):

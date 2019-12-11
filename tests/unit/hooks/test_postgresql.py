@@ -5,6 +5,7 @@ from borgmatic.hooks import postgresql as module
 
 def test_dump_databases_runs_pg_dump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
@@ -25,22 +26,24 @@ def test_dump_databases_runs_pg_dump_for_each_database():
             extra_environment=None,
         ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_dump_databases_with_dry_run_skips_pg_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module).should_receive('execute_command').never()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=True)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=True)
 
 
 def test_dump_databases_runs_pg_dump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/database.example.org/foo'
     )
@@ -64,11 +67,12 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
         extra_environment=None,
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_dump_databases_runs_pg_dump_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
@@ -90,11 +94,12 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
         extra_environment={'PGPASSWORD': 'trustsome1'},
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_dump_databases_runs_pg_dump_with_format():
     databases = [{'name': 'foo', 'format': 'tar'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
@@ -114,11 +119,12 @@ def test_dump_databases_runs_pg_dump_with_format():
         extra_environment=None,
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_dump_databases_runs_pg_dump_with_options():
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
@@ -139,11 +145,12 @@ def test_dump_databases_runs_pg_dump_with_options():
         extra_environment=None,
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_dump_databases_runs_pg_dumpall_for_all_databases():
     databases = [{'name': 'all'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
     )
@@ -154,30 +161,33 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
         extra_environment=None,
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', dry_run=False)
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_make_database_dump_patterns_converts_names_to_glob_paths():
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/*/foo'
     ).and_return('databases/*/bar')
 
-    assert module.make_database_dump_patterns(flexmock(), flexmock(), ('foo', 'bar')) == [
+    assert module.make_database_dump_patterns(flexmock(), flexmock(), {}, ('foo', 'bar')) == [
         'databases/*/foo',
         'databases/*/bar',
     ]
 
 
 def test_make_database_dump_patterns_treats_empty_names_as_matching_all_databases():
+    flexmock(module).should_receive('make_dump_path').and_return('/dump/path')
     flexmock(module.dump).should_receive('make_database_dump_filename').with_args(
-        module.DUMP_PATH, '*', '*'
+        '/dump/path', '*', '*'
     ).and_return('databases/*/*')
 
-    assert module.make_database_dump_patterns(flexmock(), flexmock(), ()) == ['databases/*/*']
+    assert module.make_database_dump_patterns(flexmock(), flexmock(), {}, ()) == ['databases/*/*']
 
 
 def test_restore_database_dumps_restores_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
@@ -201,11 +211,12 @@ def test_restore_database_dumps_restores_each_database():
             extra_environment=None,
         ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
+    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
@@ -244,11 +255,12 @@ def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
         extra_environment=None,
     ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
+    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
 
 
 def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
@@ -283,4 +295,4 @@ def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
         extra_environment={'PGPASSWORD': 'trustsome1'},
     ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', dry_run=False)
+    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)

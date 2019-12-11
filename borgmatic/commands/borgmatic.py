@@ -75,6 +75,7 @@ def run_configuration(config_filename, config, arguments):
                 hooks,
                 config_filename,
                 dump.DATABASE_HOOK_NAMES,
+                location,
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
@@ -111,6 +112,7 @@ def run_configuration(config_filename, config, arguments):
                 hooks,
                 config_filename,
                 dump.DATABASE_HOOK_NAMES,
+                location,
                 global_arguments.dry_run,
             )
             command.execute_hook(
@@ -294,6 +296,7 @@ def run_actions(
                 hooks,
                 repository,
                 dump.DATABASE_HOOK_NAMES,
+                location,
                 restore_names,
             )
 
@@ -325,6 +328,7 @@ def run_actions(
                 restore_databases,
                 repository,
                 dump.DATABASE_HOOK_NAMES,
+                location,
                 global_arguments.dry_run,
             )
             dispatch.call_hooks(
@@ -332,6 +336,7 @@ def run_actions(
                 restore_databases,
                 repository,
                 dump.DATABASE_HOOK_NAMES,
+                location,
                 global_arguments.dry_run,
             )
     if 'list' in arguments:

@@ -4,6 +4,14 @@ from flexmock import flexmock
 from borgmatic.hooks import dump as module
 
 
+def test_make_database_dump_path_joins_arguments():
+    assert module.make_database_dump_path('/tmp', 'super_databases') == '/tmp/super_databases'
+
+
+def test_make_database_dump_path_defaults_without_source_directory():
+    assert module.make_database_dump_path(None, 'super_databases') == '~/.borgmatic/super_databases'
+
+
 def test_make_database_dump_filename_uses_name_and_hostname():
     flexmock(module.os.path).should_receive('expanduser').and_return('databases')
 
