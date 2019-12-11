@@ -29,7 +29,9 @@ hooks:
           hostname: postgresql
           username: postgres
           password: test
-'''.format(config_path, repository_path, borgmatic_source_directory)
+'''.format(
+        config_path, repository_path, borgmatic_source_directory
+    )
 
     config_file = open(config_path, 'w')
     config_file.write(config)
