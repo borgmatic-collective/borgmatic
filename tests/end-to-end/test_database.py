@@ -29,6 +29,11 @@ hooks:
           hostname: postgresql
           username: postgres
           password: test
+    mysql_databases:
+        - name: test
+          hostname: mysql
+          username: root
+          password: test
 '''.format(
         config_path, repository_path, borgmatic_source_directory
     )

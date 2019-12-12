@@ -1,0 +1,23 @@
+version: '3'
+services:
+  postgresql:
+    image: postgres:11.6-alpine
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+  mysql:
+    image: mariadb:10.4
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
+  tests:
+    image: python:3.7-alpine3.10
+    volumes:
+      - "../..:/app"
+    tty: true
+    working_dir: /app
+    command:
+      - /app/scripts/run-full-tests
+    depends_on:
+      - postgresql
+      - mysql

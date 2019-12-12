@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# This script installs test dependencies and runs all tests, including end-to-end tests. It
+# is designed to run inside a test container, and presumes that other test infrastructure like
+# databases are already running. Therefore, on a developer machine, you should not run this script
+# directly. Instead, run scripts/run-full-dev-tests
+#
+# For more information, see:
+# https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/
+
+set -e
+
+python -m pip install --upgrade pip==19.3.1
+pip install tox==3.14.0
+tox
+apk add --no-cache borgbackup postgresql-client mariadb-client
+working_directory="$PWD"
+adduser --disabled-password tests
+su - tests --command "cd $working_directory && tox --workdir /tmp -e end-to-end"

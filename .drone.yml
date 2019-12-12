@@ -8,13 +8,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  - name: mysql
+    image: mariadb:10.3
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
 
 steps:
 - name: build
   image: python:3.5-alpine3.10
   pull: always
   commands:
-    - scripts/run-tests
+    - scripts/run-full-tests
 ---
 kind: pipeline
 name: python-3-6-alpine-3-10
@@ -25,13 +30,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  - name: mysql
+    image: mariadb:10.3
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
 
 steps:
 - name: build
   image: python:3.6-alpine3.10
   pull: always
   commands:
-    - scripts/run-tests
+    - scripts/run-full-tests
 ---
 kind: pipeline
 name: python-3-7-alpine-3-10
@@ -42,13 +52,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  - name: mysql
+    image: mariadb:10.3
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
 
 steps:
 - name: build
   image: python:3.7-alpine3.10
   pull: always
   commands:
-    - scripts/run-tests
+    - scripts/run-full-tests
 ---
 kind: pipeline
 name: python-3-7-alpine-3-7
@@ -59,13 +74,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  - name: mysql
+    image: mariadb:10.1
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
 
 steps:
 - name: build
   image: python:3.7-alpine3.7
   pull: always
   commands:
-    - scripts/run-tests
+    - scripts/run-full-tests
 ---
 kind: pipeline
 name: python-3-8-alpine-3-10
@@ -76,13 +96,18 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  - name: mysql
+    image: mariadb:10.3
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
 
 steps:
 - name: build
   image: python:3.8-alpine3.10
   pull: always
   commands:
-    - scripts/run-tests
+    - scripts/run-full-tests
 ---
 kind: pipeline
 name: documentation

@@ -75,13 +75,21 @@ tox -e isort
 ### End-to-end tests
 
 borgmatic additionally includes some end-to-end tests that integration test
-with Borg for a few representative scenarios. These tests don't run by default
-because they're relatively slow and depend on Borg. If you would like to run
-them:
+with Borg and supported databases for a few representative scenarios. These
+tests don't run by default when running `tox`, because they're relatively slow
+and depend on Docker containers for runtime dependencies. These tests tests do
+run on the continuous integration (CI) server, and running them on your
+developer machine is the closest thing to CI test parity.
+
+If you would like to run the full test suite, first install Docker and [Docker
+Compose](https://docs.docker.com/compose/install/). Then run:
 
 ```bash
-tox -e end-to-end
+scripts/run-full-dev-tests
 ```
+
+Note that this scripts assumes you have permission to run Docker. If you
+don't, then you may need to run with `sudo`.
 
 ## Code style
 

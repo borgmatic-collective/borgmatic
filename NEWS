@@ -3,8 +3,9 @@
    in location configuration section.
  * #271: Support piping "borgmatic list" output to grep by logging certain log levels to console
    stdout and others to stderr.
- * Retain colored output when piping or redirecting output in an interactive terminal.
- * Add end-to-end tests for database dump and restore.
+ * Retain colored output when piping or redirecting in an interactive terminal.
+ * Add end-to-end tests for database dump and restore. These are run on developer machines with
+   Docker Compose for approximate parity with continuous integration tests.
 
 1.4.18
  * Fix "--repository" flag to accept relative paths.
