@@ -10,4 +10,5 @@
 
 set -e
 
-docker-compose --file tests/end-to-end/docker-compose.yaml up --abort-on-container-exit
+docker-compose --file tests/end-to-end/docker-compose.yaml up --force-recreate \
+    --abort-on-container-exit

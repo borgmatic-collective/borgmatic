@@ -13,7 +13,9 @@ services:
   tests:
     image: python:3.7-alpine3.10
     volumes:
-      - "../..:/app"
+      - "../..:/app:ro"
+    tmpfs:
+      - "/app/borgmatic.egg-info"
     tty: true
     working_dir: /app
     command:

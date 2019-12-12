@@ -11,7 +11,8 @@
 set -e
 
 python -m pip install --upgrade pip==19.3.1
-pip install tox==3.14.0
-tox
+pip install tox==3.14.1
+export COVERAGE_FILE=/tmp/.coverage
+tox --workdir /tmp/.tox
 apk add --no-cache borgbackup postgresql-client mariadb-client
-tox --workdir /tmp -e end-to-end
+tox --workdir /tmp/.tox -e end-to-end
