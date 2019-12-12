@@ -16,4 +16,4 @@ tox
 apk add --no-cache borgbackup postgresql-client mariadb-client
 working_directory="$PWD"
 adduser --disabled-password tests
-su - tests --command "cd $working_directory && tox --workdir /tmp -e end-to-end"
+su - tests -c "cd $working_directory && tox --workdir /tmp -e end-to-end"
