@@ -23,7 +23,13 @@ def initialize_repository(
     whether the repository should be append-only, and the storage quota to use, initialize the
     repository. If the repository already exists, then log and skip initialization.
     '''
-    info_command = (local_path, 'info', repository)
+    info_command = (
+        (local_path, 'info')
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--remote-path', remote_path) if remote_path else ())
+        + (repository,)
+    )
     logger.debug(' '.join(info_command))
 
     try:
