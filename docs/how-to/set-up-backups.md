@@ -3,15 +3,11 @@ title: How to set up backups with borgmatic
 ---
 ## Installation
 
-To get up and running, first [install
-Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at
-least version 1.1.
+First, [install
+Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
+version 1.1.
 
-By default, borgmatic looks for its configuration files in `/etc/borgmatic/`
-and `/etc/borgmatic.d/`, where the root user typically has read access.
-
-So, to download and install borgmatic as the root user, run the following
-commands:
+Then, download and install borgmatic by running the following command:
 
 ```bash
 sudo pip3 install --user --upgrade borgmatic

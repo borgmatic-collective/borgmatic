@@ -22,6 +22,11 @@ When you set up multiple configuration files like this, borgmatic will run
 each one in turn from a single borgmatic invocation. This includes, by
 default, the traditional `/etc/borgmatic/config.yaml` as well.
 
+Each configuration file is interpreted independently, as if you ran borgmatic
+for each configuration file one at a time. In other words, borgmatic does not
+perform any merging of configuration files by default. If you'd like borgmatic
+to merge your configuration files, see below about configuration includes.
+
 And if you need even more customizability, you can specify alternate
 configuration paths on the command-line with borgmatic's `--config` option.
 See `borgmatic --help` for more information.
