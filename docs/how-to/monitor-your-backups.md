@@ -116,21 +116,22 @@ hooks:
 With this hook in place, borgmatic pings your Healthchecks project when a
 backup begins, ends, or errors. Specifically, before the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Healthchecks know that a backup has started.
+hooks</a> run, borgmatic lets Healthchecks know that it has started if any of
+the `prune`, `create`, or `check` actions are run.
 
-Then, if the backup completes successfully, borgmatic notifies Healthchecks of
+Then, if the actions complete successfully, borgmatic notifies Healthchecks of
 the success after the `after_backup` hooks run, and includes borgmatic logs in
 the payload data sent to Healthchecks. This means that borgmatic logs show up
 in the Healthchecks UI, although be aware that Healthchecks currently has a
 10-kilobyte limit for the logs in each ping.
 
-If an error occurs during the backup, borgmatic notifies Healthchecks after
+If an error occurs during any action, borgmatic notifies Healthchecks after
 the `on_error` hooks run, also tacking on logs including the error itself. But
-the logs are only included for errors that occur within the borgmatic `create`
-action (and not other actions).
+the logs are only included for errors that occur when a `prune`, `create`, or
+`check` action is run.
 
 Note that borgmatic sends logs to Healthchecks by applying the maximum of any
-other borgmatic verbosity level (`--verbosity`, `--syslog-verbosity`, etc.),
+other borgmatic verbosity levels (`--verbosity`, `--syslog-verbosity`, etc.),
 as there is not currently a dedicated Healthchecks verbosity setting.
 
 You can configure Healthchecks to notify you by a [variety of
@@ -155,10 +156,11 @@ hooks:
 With this hook in place, borgmatic pings your Cronitor monitor when a backup
 begins, ends, or errors. Specifically, before the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Cronitor know that a backup has started. Then,
-if the backup completes successfully, borgmatic notifies Cronitor of the
-success after the `after_backup` hooks run. And if an error occurs during the
-backup, borgmatic notifies Cronitor after the `on_error` hooks run.
+hooks</a> run, borgmatic lets Cronitor know that it has started if any of the
+`prune`, `create`, or `check` actions are run. Then, if the actions complete
+successfully, borgmatic notifies Cronitor of the success after the
+`after_backup` hooks run. And if an error occurs during any action, borgmatic
+notifies Cronitor after the `on_error` hooks run.
 
 You can configure Cronitor to notify you by a [variety of
 mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups fail
@@ -182,10 +184,11 @@ hooks:
 With this hook in place, borgmatic pings your Cronhub monitor when a backup
 begins, ends, or errors. Specifically, before the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Cronhub know that a backup has started. Then,
-if the backup completes successfully, borgmatic notifies Cronhub of the
-success after the `after_backup` hooks run. And if an error occurs during the
-backup, borgmatic notifies Cronhub after the `on_error` hooks run.
+hooks</a> run, borgmatic lets Cronhub know that it has started if any of the
+`prune`, `create`, or `check` actions are run. Then, if the actions complete
+successfully, borgmatic notifies Cronhub of the success after the
+`after_backup` hooks run. And if an error occurs during any action, borgmatic
+notifies Cronhub after the `on_error` hooks run.
 
 Note that even though you configure borgmatic with the "start" variant of the
 ping URL, borgmatic substitutes the correct state into the URL when pinging

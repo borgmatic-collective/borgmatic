@@ -20,13 +20,46 @@ def test_run_configuration_runs_actions_for_each_repository():
     assert results == expected_results
 
 
-def test_run_configuration_executes_hooks_for_create_action():
+def test_run_configuration_calls_hooks_for_prune_action():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(dry_run=False), 'prune': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
+def test_run_configuration_executes_and_calls_hooks_for_create_action():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
     flexmock(module).should_receive('run_actions').and_return([])
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(dry_run=False), 'create': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
+def test_run_configuration_calls_hooks_for_check_action():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(dry_run=False), 'check': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
+def test_run_configuration_does_not_trigger_hooks_for_list_action():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(dry_run=False), 'list': flexmock()}
 
     list(module.run_configuration('test.yaml', config, arguments))
 

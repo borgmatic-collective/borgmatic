@@ -53,8 +53,8 @@ def run_configuration(config_filename, config, arguments):
     encountered_error = None
     error_repository = ''
 
-    if 'create' in arguments:
-        try:
+    try:
+        if {'prune', 'create', 'check'}.intersection(arguments):
             dispatch.call_hooks(
                 'ping_monitor',
                 hooks,
@@ -63,6 +63,7 @@ def run_configuration(config_filename, config, arguments):
                 monitor.State.START,
                 global_arguments.dry_run,
             )
+        if 'create' in arguments:
             command.execute_hook(
                 hooks.get('before_backup'),
                 hooks.get('umask'),
@@ -78,11 +79,11 @@ def run_configuration(config_filename, config, arguments):
                 location,
                 global_arguments.dry_run,
             )
-        except (OSError, CalledProcessError) as error:
-            encountered_error = error
-            yield from make_error_log_records(
-                '{}: Error running pre-backup hook'.format(config_filename), error
-            )
+    except (OSError, CalledProcessError) as error:
+        encountered_error = error
+        yield from make_error_log_records(
+            '{}: Error running pre-backup hook'.format(config_filename), error
+        )
 
     if not encountered_error:
         for repository_path in location['repositories']:
@@ -105,31 +106,33 @@ def run_configuration(config_filename, config, arguments):
                     '{}: Error running actions for repository'.format(repository_path), error
                 )
 
-    if 'create' in arguments and not encountered_error:
+    if not encountered_error:
         try:
-            dispatch.call_hooks(
-                'remove_database_dumps',
-                hooks,
-                config_filename,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
-            command.execute_hook(
-                hooks.get('after_backup'),
-                hooks.get('umask'),
-                config_filename,
-                'post-backup',
-                global_arguments.dry_run,
-            )
-            dispatch.call_hooks(
-                'ping_monitor',
-                hooks,
-                config_filename,
-                monitor.MONITOR_HOOK_NAMES,
-                monitor.State.FINISH,
-                global_arguments.dry_run,
-            )
+            if 'create' in arguments:
+                dispatch.call_hooks(
+                    'remove_database_dumps',
+                    hooks,
+                    config_filename,
+                    dump.DATABASE_HOOK_NAMES,
+                    location,
+                    global_arguments.dry_run,
+                )
+                command.execute_hook(
+                    hooks.get('after_backup'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-backup',
+                    global_arguments.dry_run,
+                )
+            if {'prune', 'create', 'check'}.intersection(arguments):
+                dispatch.call_hooks(
+                    'ping_monitor',
+                    hooks,
+                    config_filename,
+                    monitor.MONITOR_HOOK_NAMES,
+                    monitor.State.FINISH,
+                    global_arguments.dry_run,
+                )
         except (OSError, CalledProcessError) as error:
             encountered_error = error
             yield from make_error_log_records(

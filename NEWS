@@ -1,5 +1,7 @@
 1.4.20
  * Fix repository probing during "borgmatic init" to respect verbosity flag and remote_path option.
+ * #249: Update Healthchecks/Cronitor/Cronhub monitoring integrations to fire for "check" and
+   "prune" actions, not just "create".
 
 1.4.19
  * #259: Optionally change the internal database dump path via "borgmatic_source_directory" option
