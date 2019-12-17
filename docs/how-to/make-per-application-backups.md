@@ -115,6 +115,40 @@ Note that this `<<` include merging syntax is only for merging in mappings
 directly, please see the section above about standard includes.
 
 
+## Configuration overrides
+
+In more complex multi-application setups, you may want to override particular
+borgmatic configuration file options at the time you run borgmatic. For
+instance, you could reuse a common configuration file for multiple
+applications, but then set the repository for each application at runtime. Or
+you might want to try a variant of an option for testing purposes without
+actually touching your configuration file.
+
+Whatever the reason, you can override borgmatic configuration options at the
+command-line via the `--override` flag. Here's an example:
+
+```bash
+borgmatic create --override location.remote_path=borg1
+```
+
+What this does is load your configuration files, and for each one, disregard
+the configured value for the `remote_path` option in the `location` section,
+and use the value of `borg1` instead.
+
+Note that the value is parsed as an actual YAML string, so you can even set
+list values by using brackets. For instance:
+
+```bash
+borgmatic create --override location.repositories=[test1.borg,test2.borg]
+```
+
+There is not currently a way to override a single element of a list without
+replacing the whole list.
+
+Be sure to quote your overrides if they contain spaces or other characters
+that your shell may interpret.
+
+
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)

@@ -165,6 +165,13 @@ def parse_arguments(*unparsed_arguments):
         help='Write log messages to this file instead of syslog',
     )
     global_group.add_argument(
+        '--override',
+        metavar='SECTION.OPTION=VALUE',
+        nargs='+',
+        dest='overrides',
+        help='One or more configuration file options to override with specified values',
+    )
+    global_group.add_argument(
         '--version',
         dest='version',
         default=False,

@@ -212,3 +212,30 @@ def test_parse_configuration_raises_for_validation_error():
 
     with pytest.raises(module.Validation_error):
         module.parse_configuration('config.yaml', 'schema.yaml')
+
+
+def test_parse_configuration_applies_overrides():
+    mock_config_and_schema(
+        '''
+        location:
+            source_directories:
+                - /home
+
+            repositories:
+                - hostname.borg
+
+            local_path: borg1
+        '''
+    )
+
+    result = module.parse_configuration(
+        'config.yaml', 'schema.yaml', overrides=['location.local_path=borg2']
+    )
+
+    assert result == {
+        'location': {
+            'source_directories': ['/home'],
+            'repositories': ['hostname.borg'],
+            'local_path': 'borg2',
+        }
+    }

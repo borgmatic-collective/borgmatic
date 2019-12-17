@@ -6,7 +6,7 @@ import pykwalify.core
 import pykwalify.errors
 import ruamel.yaml
 
-from borgmatic.config import load
+from borgmatic.config import load, override
 
 
 def schema_filename():
@@ -82,11 +82,12 @@ def remove_examples(schema):
     return schema
 
 
-def parse_configuration(config_filename, schema_filename):
+def parse_configuration(config_filename, schema_filename, overrides=None):
     '''
-    Given the path to a config filename in YAML format and the path to a schema filename in
-    pykwalify YAML schema format, return the parsed configuration as a data structure of nested
-    dicts and lists corresponding to the schema. Example return value:
+    Given the path to a config filename in YAML format, the path to a schema filename in pykwalify
+    YAML schema format, a sequence of configuration file override strings in the form of
+    "section.option=value", return the parsed configuration as a data structure of nested dicts and
+    lists corresponding to the schema. Example return value:
 
        {'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
        'retention': {'keep_daily': 7}, 'consistency': {'checks': ['repository', 'archives']}}
@@ -101,6 +102,8 @@ def parse_configuration(config_filename, schema_filename):
         schema = load.load_configuration(schema_filename)
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
+
+    override.apply_overrides(config, overrides)
 
     validator = pykwalify.core.Core(source_data=config, schema_data=remove_examples(schema))
     parsed_result = validator.validate(raise_exception=False)

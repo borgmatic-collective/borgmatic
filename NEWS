@@ -1,3 +1,8 @@
+1.4.21.dev0
+ * #268: Override particular configuration options from the command-line via "--override" flag. See
+   the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides
+
 1.4.20
  * Fix repository probing during "borgmatic init" to respect verbosity flag and remote_path option.
  * #249: Update Healthchecks/Cronitor/Cronhub monitoring integrations to fire for "check" and

@@ -372,7 +372,7 @@ def run_actions(
                 yield json.loads(json_output)
 
 
-def load_configurations(config_filenames):
+def load_configurations(config_filenames, overrides=None):
     '''
     Given a sequence of configuration filenames, load and validate each configuration file. Return
     the results as a tuple of: dict of configuration filename to corresponding parsed configuration,
@@ -386,7 +386,7 @@ def load_configurations(config_filenames):
     for config_filename in config_filenames:
         try:
             configs[config_filename] = validate.parse_configuration(
-                config_filename, validate.schema_filename()
+                config_filename, validate.schema_filename(), overrides
             )
         except (ValueError, OSError, validate.Validation_error) as error:
             logs.extend(
@@ -584,7 +584,7 @@ def main():  # pragma: no cover
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
-    configs, parse_logs = load_configurations(config_filenames)
+    configs, parse_logs = load_configurations(config_filenames, global_arguments.overrides)
 
     colorama.init(autoreset=True, strip=not should_do_markup(global_arguments.no_color, configs))
     try:
