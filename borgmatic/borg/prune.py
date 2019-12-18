@@ -58,7 +58,7 @@ def prune_archives(
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--info', '--list') if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--stats',) if stats else ())
