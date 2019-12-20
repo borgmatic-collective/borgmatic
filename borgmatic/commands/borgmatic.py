@@ -52,9 +52,10 @@ def run_configuration(config_filename, config, arguments):
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
+    prune_create_or_check = {'prune', 'create', 'check'}.intersection(arguments)
 
     try:
-        if {'prune', 'create', 'check'}.intersection(arguments):
+        if prune_create_or_check:
             dispatch.call_hooks(
                 'ping_monitor',
                 hooks,
@@ -139,7 +140,7 @@ def run_configuration(config_filename, config, arguments):
                 '{}: Error running post-backup hook'.format(config_filename), error
             )
 
-    if encountered_error:
+    if encountered_error and prune_create_or_check:
         try:
             command.execute_hook(
                 hooks.get('on_error'),

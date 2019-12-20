@@ -119,7 +119,7 @@ def test_run_configuration_logs_on_error_hook_error():
     ).and_return(expected_results[1:])
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(dry_run=False)}
+    arguments = {'global': flexmock(dry_run=False), 'create': flexmock()}
 
     results = list(module.run_configuration('test.yaml', config, arguments))
 

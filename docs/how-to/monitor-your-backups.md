@@ -57,10 +57,10 @@ tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
 
 ## Error hooks
 
-When an error occurs during a backup or another action, borgmatic can run
-configurable shell commands to fire off custom error notifications or take
-other actions, so you can get alerted as soon as something goes wrong. Here's
-a not-so-useful example:
+When an error occurs during a `prune`, `create`, or `check` action, borgmatic
+can run configurable shell commands to fire off custom error notifications or
+take other actions, so you can get alerted as soon as something goes wrong.
+Here's a not-so-useful example:
 
 ```yaml
 hooks:
@@ -91,10 +91,11 @@ here:
  * `output`: output of the command that failed (may be blank if an error
    occurred without running a command)
 
-Note that borgmatic runs the `on_error` hooks for any action in which an error
-occurs, not just the `create` action. But borgmatic does not run `on_error`
-hooks if an error occurs within a `before_everything` or `after_everything`
-hook. For more about hooks, see the [borgmatic hooks
+Note that borgmatic runs the `on_error` hooks only for `prune`, `create`, or
+`check` actions or hooks in which an error occurs, and not other actions. 
+borgmatic does not run `on_error` hooks if an error occurs within a
+`before_everything` or `after_everything` hook. For more about hooks, see the
+[borgmatic hooks
 documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
 especially the security information.
 
