@@ -15,6 +15,8 @@ IOSchedulingPriority=7
 IOWeight=100
 
 Restart=no
+# Prevent rate limiting of borgmatic log events. If you are using an older version of systemd that
+# doesn't support this (pre-240 or so), you may have to remove this option.
 LogRateLimitIntervalSec=0
 
 # Delay start to prevent backups running during boot.
