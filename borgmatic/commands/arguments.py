@@ -106,7 +106,8 @@ def parse_arguments(*unparsed_arguments):
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
     '''
-    config_paths = collect.get_default_config_paths()
+    config_paths = collect.get_default_config_paths(expand_home=True)
+    unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
     global_parser = ArgumentParser(add_help=False)
     global_group = global_parser.add_argument_group('global arguments')
@@ -118,7 +119,7 @@ def parse_arguments(*unparsed_arguments):
         dest='config_paths',
         default=config_paths,
         help='Configuration filenames or directories, defaults to: {}'.format(
-            ' '.join(config_paths)
+            ' '.join(unexpanded_config_paths)
         ),
     )
     global_group.add_argument(

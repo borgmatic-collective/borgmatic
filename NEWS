@@ -1,3 +1,6 @@
+1.4.22.dev0
+ * In "borgmatic --help", don't expand $HOME in listing of default "--config" paths.
+
 1.4.21
  * #268: Override particular configuration options from the command-line via "--override" flag. See
    the documentation for more information:

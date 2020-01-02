@@ -1,15 +1,17 @@
 import os
 
 
-def get_default_config_paths():
+def get_default_config_paths(expand_home=True):
     '''
     Based on the value of the XDG_CONFIG_HOME and HOME environment variables, return a list of
     default configuration paths. This includes both system-wide configuration and configuration in
     the current user's home directory.
+
+    Don't expand the home directory ($HOME) if the expand home flag is False.
     '''
-    user_config_directory = os.getenv('XDG_CONFIG_HOME') or os.path.expandvars(
-        os.path.join('$HOME', '.config')
-    )
+    user_config_directory = os.getenv('XDG_CONFIG_HOME') or os.path.join('$HOME', '.config')
+    if expand_home:
+        user_config_directory = os.path.expandvars(user_config_directory)
 
     return [
         '/etc/borgmatic/config.yaml',
