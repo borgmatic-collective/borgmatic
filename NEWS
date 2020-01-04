@@ -1,4 +1,5 @@
 1.4.22.dev0
+ * #276: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.
  * In "borgmatic --help", don't expand $HOME in listing of default "--config" paths.
 
 1.4.21

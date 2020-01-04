@@ -587,7 +587,13 @@ def main():  # pragma: no cover
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, parse_logs = load_configurations(config_filenames, global_arguments.overrides)
 
-    colorama.init(autoreset=True, strip=not should_do_markup(global_arguments.no_color, configs))
+    any_json_flags = any(
+        getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
+    )
+    colorama.init(
+        autoreset=True,
+        strip=not should_do_markup(global_arguments.no_color or any_json_flags, configs),
+    )
     try:
         configure_logging(
             verbosity_to_log_level(global_arguments.verbosity),
