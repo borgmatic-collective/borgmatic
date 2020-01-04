@@ -204,8 +204,7 @@ Then, from the directory where you downloaded them:
 
 ```bash
 sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
-sudo systemctl enable borgmatic.timer
-sudo systemctl start borgmatic.timer
+sudo systemctl enable --now borgmatic.timer
 ```
 
 Feel free to modify the timer file based on how frequently you'd like
