@@ -295,7 +295,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-', '--info', '--stats') + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--info') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         error_on_warnings=False,
     )
@@ -432,8 +432,7 @@ def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_param
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-', '--info', '--dry-run')
-        + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--info', '--dry-run') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         error_on_warnings=False,
     )
@@ -875,8 +874,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command_without_capture').with_args(
-        ('borg', 'create', '--info', '--stats', '--progress') + ARCHIVE_WITH_PATHS,
-        error_on_warnings=False,
+        ('borg', 'create', '--info', '--progress') + ARCHIVE_WITH_PATHS, error_on_warnings=False
     )
     insert_logging_mock(logging.INFO)
 

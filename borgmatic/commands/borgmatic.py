@@ -212,6 +212,7 @@ def run_actions(
             local_path=local_path,
             remote_path=remote_path,
             stats=arguments['prune'].stats,
+            files=arguments['prune'].files,
         )
     if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
@@ -225,6 +226,7 @@ def run_actions(
             progress=arguments['create'].progress,
             stats=arguments['create'].stats,
             json=arguments['create'].json,
+            files=arguments['create'].files,
         )
         if json_output:
             yield json.loads(json_output)

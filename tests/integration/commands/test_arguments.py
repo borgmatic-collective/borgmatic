@@ -98,12 +98,14 @@ def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
 def test_parse_arguments_with_no_actions_passes_argument_to_relevant_actions():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    arguments = module.parse_arguments('--stats')
+    arguments = module.parse_arguments('--stats', '--files')
 
     assert 'prune' in arguments
     assert arguments['prune'].stats
+    assert arguments['prune'].files
     assert 'create' in arguments
     assert arguments['create'].stats
+    assert arguments['create'].files
     assert 'check' in arguments
 
 
@@ -421,6 +423,25 @@ def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_valu
 
     with pytest.raises(SystemExit):
         module.parse_arguments('--stats', 'list')
+
+
+def test_parse_arguments_with_files_and_create_flags_does_not_raise():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--files', 'create', 'list')
+
+
+def test_parse_arguments_with_files_and_prune_flags_does_not_raise():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--files', 'prune', 'list')
+
+
+def test_parse_arguments_with_files_flag_but_no_create_or_prune_or_restore_flag_raises_value_error():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit):
+        module.parse_arguments('--files', 'list')
 
 
 def test_parse_arguments_allows_json_with_list_or_info():

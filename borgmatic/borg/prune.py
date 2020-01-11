@@ -41,6 +41,7 @@ def prune_archives(
     local_path='borg',
     remote_path=None,
     stats=False,
+    files=False,
 ):
     '''
     Given dry-run flag, a local or remote repository path, a storage config dict, and a
@@ -57,11 +58,18 @@ def prune_archives(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--stats',) if not dry_run and logger.isEnabledFor(logging.INFO) else ())
-        + (('--info', '--list') if logger.getEffectiveLevel() == logging.INFO else ())
+        + (
+            ('--stats',)
+            if not dry_run
+            and (logger.isEnabledFor(logging.INFO) and files)
+            or logger.getEffectiveLevel() == logging.DEBUG
+            or stats
+            else ()
+        )
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--list',) if logger.getEffectiveLevel() == logging.INFO and files else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
-        + (('--stats',) if stats else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (repository,)
     )

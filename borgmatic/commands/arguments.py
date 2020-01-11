@@ -237,6 +237,13 @@ def parse_arguments(*unparsed_arguments):
         action='store_true',
         help='Display statistics of archive',
     )
+    prune_group.add_argument(
+        '--files',
+        dest='files',
+        default=False,
+        action='store_true',
+        help='Show file details and stats at verbosity 1',
+    )
     prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     create_parser = subparsers.add_parser(
@@ -260,6 +267,13 @@ def parse_arguments(*unparsed_arguments):
         default=False,
         action='store_true',
         help='Display statistics of archive',
+    )
+    create_group.add_argument(
+        '--files',
+        dest='files',
+        default=False,
+        action='store_true',
+        help='Show file details and stats at verbosity 1',
     )
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
