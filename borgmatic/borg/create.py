@@ -187,13 +187,7 @@ def create_archive(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (
             ('--stats',)
-            if not dry_run
-            and (
-                (logger.isEnabledFor(logging.INFO) and files)
-                or logger.isEnabledFor(logging.DEBUG)
-                or stats
-            )
-            and not json
+            if not dry_run and (logger.isEnabledFor(logging.DEBUG) or stats) and not json
             else ()
         )
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
@@ -217,7 +211,7 @@ def create_archive(
 
     if json:
         output_log_level = None
-    elif stats:
+    elif stats and logger.getEffectiveLevel() == logging.WARNING:
         output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO

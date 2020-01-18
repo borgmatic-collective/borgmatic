@@ -60,10 +60,7 @@ def prune_archives(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--stats',)
-            if not dry_run
-            and (logger.isEnabledFor(logging.INFO) and files)
-            or logger.getEffectiveLevel() == logging.DEBUG
-            or stats
+            if not dry_run and logger.getEffectiveLevel() == logging.DEBUG or stats
             else ()
         )
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -76,6 +73,8 @@ def prune_archives(
 
     execute_command(
         full_command,
-        output_log_level=logging.WARNING if stats else logging.INFO,
+        output_log_level=logging.WARNING
+        if (stats and logger.getEffectiveLevel() == logging.WARNING)
+        else logging.INFO,
         error_on_warnings=False,
     )
