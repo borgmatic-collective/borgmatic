@@ -1,4 +1,4 @@
-1.4.22.dev0
+1.4.22
  * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.
  * After a backup of a database dump in directory format, properly remove the dump directory.
  * In "borgmatic --help", don't expand $HOME in listing of default "--config" paths.
