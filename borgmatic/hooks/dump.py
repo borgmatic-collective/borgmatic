@@ -1,6 +1,7 @@
 import glob
 import logging
 import os
+import shutil
 
 from borgmatic.borg.create import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
@@ -83,7 +84,10 @@ def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, 
         if dry_run:
             continue
 
-        os.remove(dump_filename)
+        if os.path.isdir(dump_filename):
+            shutil.rmtree(dump_filename)
+        else:
+            os.remove(dump_filename)
         dump_file_dir = os.path.dirname(dump_filename)
 
         if len(os.listdir(dump_file_dir)) == 0:
