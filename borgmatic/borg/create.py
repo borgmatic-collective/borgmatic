@@ -208,6 +208,8 @@ def create_archive(
 
     if json:
         output_log_level = None
+    elif (stats or files) and logger.getEffectiveLevel() == logging.WARNING:
+        output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO
 

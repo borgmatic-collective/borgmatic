@@ -142,12 +142,12 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     )
 
 
-def test_prune_archives_with_stats_calls_borg_with_stats_parameter():
+def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_warning_output_log_level():
     retention_config = flexmock()
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS
     )
-    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), logging.INFO)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), logging.WARNING)
 
     module.prune_archives(
         dry_run=False,
@@ -155,6 +155,56 @@ def test_prune_archives_with_stats_calls_borg_with_stats_parameter():
         storage_config={},
         retention_config=retention_config,
         stats=True,
+    )
+
+
+def test_prune_archives_with_stats_and_log_info_calls_borg_with_stats_parameter_and_info_output_log_level():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS
+    )
+    insert_logging_mock(logging.INFO)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', '--info', 'repo'), logging.INFO)
+
+    module.prune_archives(
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        retention_config=retention_config,
+        stats=True,
+    )
+
+
+def test_prune_archives_with_files_calls_borg_with_list_parameter_and_warning_output_log_level():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS
+    )
+    insert_execute_command_mock(PRUNE_COMMAND + ('--list', 'repo'), logging.WARNING)
+
+    module.prune_archives(
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        retention_config=retention_config,
+        files=True,
+    )
+
+
+def test_prune_archives_with_files_and_log_info_calls_borg_with_list_parameter_and_info_output_log_level():
+    retention_config = flexmock()
+    flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
+        BASE_PRUNE_FLAGS
+    )
+    insert_logging_mock(logging.INFO)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--info', '--list', 'repo'), logging.INFO)
+
+    module.prune_archives(
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        retention_config=retention_config,
+        files=True,
     )
 
 

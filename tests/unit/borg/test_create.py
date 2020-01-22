@@ -840,7 +840,7 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     )
 
 
-def test_create_archive_with_stats_calls_borg_with_stats_parameter():
+def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_output_log_level():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('_expand_home_directories').and_return(())
@@ -849,7 +849,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter():
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--stats') + ARCHIVE_WITH_PATHS,
-        output_log_level=logging.INFO,
+        output_log_level=logging.WARNING,
         error_on_warnings=False,
     )
 
@@ -863,6 +863,86 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter():
         },
         storage_config={},
         stats=True,
+    )
+
+
+def test_create_archive_with_stats_and_log_info_calls_borg_with_stats_parameter_and_info_output_log_level():
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--info', '--stats') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
+        error_on_warnings=False,
+    )
+    insert_logging_mock(logging.INFO)
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        stats=True,
+    )
+
+
+def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_output_log_level():
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--list', '--filter', 'AME-') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.WARNING,
+        error_on_warnings=False,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        files=True,
+    )
+
+
+def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_and_info_output_log_level():
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--list', '--filter', 'AME-', '--info') + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
+        error_on_warnings=False,
+    )
+    insert_logging_mock(logging.INFO)
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        files=True,
     )
 
 

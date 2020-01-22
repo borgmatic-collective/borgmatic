@@ -1,8 +1,7 @@
 1.4.23.dev0
  * #274: Add ~/.config/borgmatic.d as another configuration directory default.
- * Removed `borg --list --stats` option from `create`and `prune` actions at verbosity 1
- * The `--stats` now always requires to use the `borgmatic --stats` option to be enabled.
- * New option `--files` to (re-)add the `borg` `--list` at verbosity 1
+ * For "create" and "prune" actions, no longer list files or show detailed stats at verbosity 1. You
+   can opt back in with "--files" or "--stats" flags.
 
 1.4.22
  * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.

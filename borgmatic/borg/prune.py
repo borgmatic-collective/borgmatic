@@ -67,4 +67,9 @@ def prune_archives(
         + (repository,)
     )
 
-    execute_command(full_command, output_log_level=logging.INFO, error_on_warnings=False)
+    if (stats or files) and logger.getEffectiveLevel() == logging.WARNING:
+        output_log_level = logging.WARNING
+    else:
+        output_log_level = logging.INFO
+
+    execute_command(full_command, output_log_level=output_log_level, error_on_warnings=False)
