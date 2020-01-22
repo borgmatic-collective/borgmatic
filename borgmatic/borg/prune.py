@@ -58,23 +58,13 @@ def prune_archives(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (
-            ('--stats',)
-            if not dry_run and logger.getEffectiveLevel() == logging.DEBUG or stats
-            else ()
-        )
+        + (('--stats',) if (stats or logger.isEnabledFor(logging.DEBUG)) and not dry_run else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--list',) if logger.getEffectiveLevel() == logging.INFO and files else ())
-        + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--list',) if files or logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (repository,)
     )
 
-    execute_command(
-        full_command,
-        output_log_level=logging.WARNING
-        if (stats and logger.getEffectiveLevel() == logging.WARNING)
-        else logging.INFO,
-        error_on_warnings=False,
-    )
+    execute_command(full_command, output_log_level=logging.INFO, error_on_warnings=False)

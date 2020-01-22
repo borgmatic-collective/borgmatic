@@ -89,7 +89,7 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
         BASE_PRUNE_FLAGS
     )
     insert_execute_command_mock(
-        PRUNE_COMMAND + ('--stats', '--debug', '--list', '--show-rc', 'repo'), logging.INFO
+        PRUNE_COMMAND + ('--stats', '--list', '--debug', '--show-rc', 'repo'), logging.INFO
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -147,7 +147,7 @@ def test_prune_archives_with_stats_calls_borg_with_stats_parameter():
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS
     )
-    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), logging.WARNING)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), logging.INFO)
 
     module.prune_archives(
         dry_run=False,
