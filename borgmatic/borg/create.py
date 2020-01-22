@@ -131,6 +131,7 @@ def create_archive(
     progress=False,
     stats=False,
     json=False,
+    files=False,
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
@@ -177,13 +178,13 @@ def create_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--list', '--filter', 'AME-')
-            if logger.isEnabledFor(logging.INFO) and not json and not progress
+            if (files or logger.isEnabledFor(logging.DEBUG)) and not json and not progress
             else ()
         )
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (
             ('--stats',)
-            if not dry_run and (logger.isEnabledFor(logging.INFO) or stats) and not json
+            if (stats or logger.isEnabledFor(logging.DEBUG)) and not json and not dry_run
             else ()
         )
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
@@ -207,8 +208,6 @@ def create_archive(
 
     if json:
         output_log_level = None
-    elif stats:
-        output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO
 
