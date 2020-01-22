@@ -27,9 +27,10 @@ for each configuration file one at a time. In other words, borgmatic does not
 perform any merging of configuration files by default. If you'd like borgmatic
 to merge your configuration files, see below about configuration includes.
 
-And if you need even more customizability, you can specify alternate
-configuration paths on the command-line with borgmatic's `--config` option.
-See `borgmatic --help` for more information.
+Additionally, the `~/.config/borgmatic.d/` directory works the same way as
+`/etc/borgmatic.d`. If you need even more customizability, you can specify
+alternate configuration paths on the command-line with borgmatic's `--config`
+flag. See `borgmatic --help` for more information.
 
 
 ## Configuration includes

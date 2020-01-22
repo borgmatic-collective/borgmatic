@@ -68,10 +68,13 @@ sudo generate-borgmatic-config
 If that command is not found, then it may be installed in a location that's
 not in your system `PATH` (see above). Try looking in `~/.local/bin/`.
 
-This generates a sample configuration file at /etc/borgmatic/config.yaml (by
-default). You should edit the file to suit your needs, as the values are
-representative. All options are optional except where indicated, so feel free
-to ignore anything you don't need.
+This generates a sample configuration file at `/etc/borgmatic/config.yaml` by
+default. If you'd like to use another path, use the `--destination` flag, for
+instance: `--destination ~/.config/borgmatic/config.yaml`.
+
+You should edit the configuration file to suit your needs, as the generated
+values are only representative. All options are optional except where
+indicated, so feel free to ignore anything you don't need.
 
 Note that the configuration file is organized into distinct sections, each
 with a section name like `location:` or `storage:`. So take care that if you
@@ -79,12 +82,11 @@ uncomment a particular option, also uncomment its containing section name, or
 else borgmatic won't recognize the option. Also be sure to use spaces rather
 than tabs for indentation; YAML does not allow tabs.
 
-You can also get the same sample configuration file from the [configuration
+You can get the same sample configuration file from the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/), the
 authoritative set of all configuration options. This is handy if borgmatic has
-added new options
-since you originally created your configuration file. Also check out how to
-[upgrade your
+added new options since you originally created your configuration file. Also
+check out how to [upgrade your
 configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration).
 
 
@@ -172,6 +174,9 @@ like file damage.
 The verbosity flag makes borgmatic list the files that it's archiving, which
 are those that are new or changed since the last backup. Eyeball the list and
 see if it matches your expectations based on the configuration.
+
+If you'd like to specify an alternate configuration file path, use the
+`--config` flag. See `borgmatic --help` for more information.
 
 
 ## Autopilot
