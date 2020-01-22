@@ -110,7 +110,11 @@ def color_text(color, message):
 
 
 def configure_logging(
-    console_log_level, syslog_log_level=None, log_file_log_level=None, log_file=None
+    console_log_level,
+    syslog_log_level=None,
+    log_file_log_level=None,
+    monitoring_log_level=None,
+    log_file=None,
 ):
     '''
     Configure logging to go to both the console and (syslog or log file). Use the given log levels,
@@ -122,6 +126,8 @@ def configure_logging(
         syslog_log_level = console_log_level
     if log_file_log_level is None:
         log_file_log_level = console_log_level
+    if monitoring_log_level is None:
+        monitoring_log_level = console_log_level
 
     # Log certain log levels to console stderr and others to stdout. This supports use cases like
     # grepping (non-error) output.
@@ -160,5 +166,6 @@ def configure_logging(
         handlers = (console_handler,)
 
     logging.basicConfig(
-        level=min(console_log_level, syslog_log_level, log_file_log_level), handlers=handlers
+        level=min(console_log_level, syslog_log_level, log_file_log_level, monitoring_log_level),
+        handlers=handlers,
     )

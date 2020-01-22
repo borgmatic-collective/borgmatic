@@ -53,6 +53,7 @@ def run_configuration(config_filename, config, arguments):
     encountered_error = None
     error_repository = ''
     prune_create_or_check = {'prune', 'create', 'check'}.intersection(arguments)
+    monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     try:
         if prune_create_or_check:
@@ -62,6 +63,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitor.State.START,
+                monitoring_log_level,
                 global_arguments.dry_run,
             )
         if 'create' in arguments:
@@ -132,6 +134,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     monitor.MONITOR_HOOK_NAMES,
                     monitor.State.FINISH,
+                    monitoring_log_level,
                     global_arguments.dry_run,
                 )
         except (OSError, CalledProcessError) as error:
@@ -158,6 +161,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitor.State.FAIL,
+                monitoring_log_level,
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
@@ -601,6 +605,7 @@ def main():  # pragma: no cover
             verbosity_to_log_level(global_arguments.verbosity),
             verbosity_to_log_level(global_arguments.syslog_verbosity),
             verbosity_to_log_level(global_arguments.log_file_verbosity),
+            verbosity_to_log_level(global_arguments.monitoring_verbosity),
             global_arguments.log_file,
         )
     except (FileNotFoundError, PermissionError) as error:

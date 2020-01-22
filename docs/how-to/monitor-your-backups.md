@@ -131,9 +131,9 @@ the `on_error` hooks run, also tacking on logs including the error itself. But
 the logs are only included for errors that occur when a `prune`, `create`, or
 `check` action is run.
 
-Note that borgmatic sends logs to Healthchecks by applying the maximum of any
-other borgmatic verbosity levels (`--verbosity`, `--syslog-verbosity`, etc.),
-as there is not currently a dedicated Healthchecks verbosity setting.
+You can customize the verbosity of the logs that are sent to Healthchecks with
+borgmatic's `--monitoring-verbosity` flag. The `--files` and `--stats` flags
+may also be of use. See `borgmatic --help` for more information.
 
 You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail

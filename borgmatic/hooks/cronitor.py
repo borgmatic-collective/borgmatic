@@ -13,7 +13,7 @@ MONITOR_STATE_TO_CRONITOR = {
 }
 
 
-def ping_monitor(ping_url, config_filename, state, dry_run):
+def ping_monitor(ping_url, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the given Cronitor URL, modified with the monitor.State. Use the given configuration
     filename in any log entries. If this is a dry run, then don't actually ping anything.

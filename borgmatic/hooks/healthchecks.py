@@ -22,13 +22,14 @@ class Forgetful_buffering_handler(logging.Handler):
     first) once a particular capacity in bytes is reached.
     '''
 
-    def __init__(self, byte_capacity):
+    def __init__(self, byte_capacity, log_level):
         super().__init__()
 
         self.byte_capacity = byte_capacity
         self.byte_count = 0
         self.buffer = []
         self.forgot = False
+        self.setLevel(log_level)
 
     def emit(self, record):
         message = record.getMessage() + '\n'
@@ -64,16 +65,18 @@ def format_buffered_logs_for_payload():
     return payload
 
 
-def ping_monitor(ping_url_or_uuid, config_filename, state, dry_run):
+def ping_monitor(ping_url_or_uuid, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the given Healthchecks URL or UUID, modified with the monitor.State. Use the given
-    configuration filename in any log entries. If this is a dry run, then don't actually ping
-    anything.
+    configuration filename in any log entries, and log to Healthchecks with the giving log level.
+    If this is a dry run, then don't actually ping anything.
     '''
     if state is monitor.State.START:
         # Add a handler to the root logger that stores in memory the most recent logs emitted. That
         # way, we can send them all to Healthchecks upon a finish or failure state.
-        logging.getLogger().addHandler(Forgetful_buffering_handler(PAYLOAD_LIMIT_BYTES))
+        logging.getLogger().addHandler(
+            Forgetful_buffering_handler(PAYLOAD_LIMIT_BYTES, monitoring_log_level)
+        )
         payload = ''
 
     ping_url = (
