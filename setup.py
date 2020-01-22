@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = '1.4.22.dev0-files'
+VERSION = '1.4.23.dev0'
 
 
 setup(

@@ -20,9 +20,11 @@ location:
         - /home
         - /etc
 
-    # Paths to local or remote repositories.
+    # Paths of local or remote repositories to backup to.
     repositories:
-        - user@backupserver:sourcehostname.borg
+        - 1234@usw-s001.rsync.net:backups.borg
+        - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
+        - /var/lib/backups/backups.borg
 
 retention:
     # Retention policy for how many backups to keep.
