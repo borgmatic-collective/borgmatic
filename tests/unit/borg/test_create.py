@@ -349,8 +349,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-', '--stats', '--debug', '--show-rc')
-        + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--debug', '--show-rc') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         error_on_warnings=False,
     )
@@ -421,7 +420,7 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     )
 
 
-def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_parameter():
+def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_parameter():
     # --dry-run and --stats are mutually exclusive, see:
     # https://borgbackup.readthedocs.io/en/stable/usage/create.html#description
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
@@ -447,36 +446,7 @@ def test_create_archive_with_dry_run_and_log_info_calls_borg_without_stats_param
             'exclude_patterns': None,
         },
         storage_config={},
-    )
-
-
-def test_create_archive_with_dry_run_and_log_debug_calls_borg_without_stats_parameter():
-    # --dry-run and --stats are mutually exclusive, see:
-    # https://borgbackup.readthedocs.io/en/stable/usage/create.html#description
-    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-', '--debug', '--show-rc', '--dry-run')
-        + ARCHIVE_WITH_PATHS,
-        output_log_level=logging.INFO,
-        error_on_warnings=False,
-    )
-    insert_logging_mock(logging.DEBUG)
-
-    module.create_archive(
-        dry_run=True,
-        repository='repo',
-        location_config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        storage_config={},
+        stats=True,
     )
 
 

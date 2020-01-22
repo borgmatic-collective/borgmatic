@@ -88,9 +88,7 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('_make_prune_flags').with_args(retention_config).and_return(
         BASE_PRUNE_FLAGS
     )
-    insert_execute_command_mock(
-        PRUNE_COMMAND + ('--stats', '--list', '--debug', '--show-rc', 'repo'), logging.INFO
-    )
+    insert_execute_command_mock(PRUNE_COMMAND + ('--debug', '--show-rc', 'repo'), logging.INFO)
     insert_logging_mock(logging.DEBUG)
 
     module.prune_archives(
