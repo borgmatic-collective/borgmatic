@@ -145,9 +145,16 @@ def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config
 
 
 def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_if_present': 'exclude_me'})
+    exclude_flags = module._make_exclude_flags(
+        location_config={'exclude_if_present': ['exclude_me', 'also_me']}
+    )
 
-    assert exclude_flags == ('--exclude-if-present', 'exclude_me')
+    assert exclude_flags == (
+        '--exclude-if-present',
+        'exclude_me',
+        '--exclude-if-present',
+        'also_me',
+    )
 
 
 def test_make_exclude_flags_includes_keep_exclude_tags_when_true_in_config():

@@ -88,8 +88,12 @@ def _make_exclude_flags(location_config, exclude_filename=None):
         )
     )
     caches_flag = ('--exclude-caches',) if location_config.get('exclude_caches') else ()
-    if_present = location_config.get('exclude_if_present')
-    if_present_flags = ('--exclude-if-present', if_present) if if_present else ()
+    if_present_flags = tuple(
+        itertools.chain.from_iterable(
+            ('--exclude-if-present', if_present)
+            for if_present in location_config.get('exclude_if_present', ())
+        )
+    )
     keep_exclude_tags_flags = (
         ('--keep-exclude-tags',) if location_config.get('keep_exclude_tags') else ()
     )

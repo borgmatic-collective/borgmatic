@@ -6,7 +6,7 @@ import pykwalify.core
 import pykwalify.errors
 import ruamel.yaml
 
-from borgmatic.config import load, override
+from borgmatic.config import load, normalize, override
 
 
 def schema_filename():
@@ -104,6 +104,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
         raise Validation_error(config_filename, (str(error),))
 
     override.apply_overrides(config, overrides)
+    normalize.normalize(config)
 
     validator = pykwalify.core.Core(source_data=config, schema_data=remove_examples(schema))
     parsed_result = validator.validate(raise_exception=False)

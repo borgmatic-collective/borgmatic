@@ -239,3 +239,28 @@ def test_parse_configuration_applies_overrides():
             'local_path': 'borg2',
         }
     }
+
+
+def test_parse_configuration_applies_normalization():
+    mock_config_and_schema(
+        '''
+        location:
+            source_directories:
+                - /home
+
+            repositories:
+                - hostname.borg
+
+            exclude_if_present: .nobackup
+        '''
+    )
+
+    result = module.parse_configuration('config.yaml', 'schema.yaml')
+
+    assert result == {
+        'location': {
+            'source_directories': ['/home'],
+            'repositories': ['hostname.borg'],
+            'exclude_if_present': ['.nobackup'],
+        }
+    }

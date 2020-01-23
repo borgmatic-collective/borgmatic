@@ -121,11 +121,13 @@ map:
                     http://www.brynosaurus.com/cachedir/spec.html for details. Defaults to false.
                 example: true
             exclude_if_present:
-                type: str
+                seq:
+                    - type: str
                 desc: |
-                    Exclude directories that contain a file with the given filename. Defaults to not
+                    Exclude directories that contain a file with the given filenames. Defaults to not
                     set.
-                example: .nobackup
+                example:
+                    - .nobackup
             keep_exclude_tags:
                 type: bool
                 desc: |
