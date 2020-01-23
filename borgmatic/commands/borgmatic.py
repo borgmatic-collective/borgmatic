@@ -353,7 +353,8 @@ def run_actions(
         if arguments['list'].repository is None or validate.repositories_match(
             repository, arguments['list'].repository
         ):
-            logger.warning('{}: Listing archives'.format(repository))
+            if not arguments['list'].json:
+                logger.warning('{}: Listing archives'.format(repository))
             json_output = borg_list.list_archives(
                 repository,
                 storage,
@@ -367,7 +368,8 @@ def run_actions(
         if arguments['info'].repository is None or validate.repositories_match(
             repository, arguments['info'].repository
         ):
-            logger.warning('{}: Displaying summary info for archives'.format(repository))
+            if not arguments['info'].json:
+                logger.warning('{}: Displaying summary info for archives'.format(repository))
             json_output = borg_info.display_archives_info(
                 repository,
                 storage,
