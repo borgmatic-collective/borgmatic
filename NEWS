@@ -3,6 +3,7 @@
  * #277: Customize Healthchecks log level via borgmatic "--monitoring-verbosity" flag.
  * For "create" and "prune" actions, no longer list files or show detailed stats at any verbosities
    by default. You can opt back in with "--files" or "--stats" flags.
+ * For "list" and "info" actions, show repository names even at verbosity 0.
 
 1.4.22
  * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.
