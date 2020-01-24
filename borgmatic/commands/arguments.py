@@ -262,7 +262,7 @@ def parse_arguments(*unparsed_arguments):
         dest='progress',
         default=False,
         action='store_true',
-        help='Display progress for each file as it is processed',
+        help='Display progress for each file as it is backed up',
     )
     create_group.add_argument(
         '--stats',
@@ -287,6 +287,13 @@ def parse_arguments(*unparsed_arguments):
         add_help=False,
     )
     check_group = check_parser.add_argument_group('check arguments')
+    check_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress for each file as it is checked',
+    )
     check_group.add_argument(
         '--repair',
         dest='repair',
@@ -336,7 +343,7 @@ def parse_arguments(*unparsed_arguments):
         dest='progress',
         default=False,
         action='store_true',
-        help='Display progress for each file as it is processed',
+        help='Display progress for each file as it is extracted',
     )
     extract_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

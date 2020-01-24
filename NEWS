@@ -3,6 +3,7 @@
  * #277: Customize Healthchecks log level via borgmatic "--monitoring-verbosity" flag.
  * #280: Change "exclude_if_present" option to support multiple filenames that indicate a directory
    should be excluded from backups, rather than just a single filename.
+ * #287: View consistency check progress via "--progress" flag for "check" action.
  * For "create" and "prune" actions, no longer list files or show detailed stats at any verbosities
    by default. You can opt back in with "--files" or "--stats" flags.
  * For "list" and "info" actions, show repository names even at verbosity 0.

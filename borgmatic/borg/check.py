@@ -91,13 +91,15 @@ def check_archives(
     consistency_config,
     local_path='borg',
     remote_path=None,
+    progress=None,
     repair=None,
     only_checks=None,
 ):
     '''
     Given a local or remote repository path, a storage config dict, a consistency config dict,
-    local/remote commands to run, whether to attempt a repair, and an optional list of checks
-    to use instead of configured checks, check the contained Borg archives for consistency.
+    local/remote commands to run, whether to include progress information, whether to attempt a
+    repair, and an optional list of checks to use instead of configured checks, check the contained
+    Borg archives for consistency.
 
     If there are no consistency checks to run, skip running them.
     '''
@@ -124,17 +126,17 @@ def check_archives(
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
+            + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
             + (repository,)
         )
 
         # The Borg repair option trigger an interactive prompt, which won't work when output is
-        # captured.
-        if repair:
+        # captured. And progress messes with the terminal directly.
+        if repair or progress:
             execute_command_without_capture(full_command, error_on_warnings=True)
-            return
-
-        execute_command(full_command, error_on_warnings=True)
+        else:
+            execute_command(full_command, error_on_warnings=True)
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

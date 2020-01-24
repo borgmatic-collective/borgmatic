@@ -242,6 +242,7 @@ def run_actions(
             consistency,
             local_path=local_path,
             remote_path=remote_path,
+            progress=arguments['check'].progress,
             repair=arguments['check'].repair,
             only_checks=arguments['check'].only,
         )

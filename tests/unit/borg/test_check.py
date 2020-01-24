@@ -158,6 +158,21 @@ def test_make_check_flags_with_default_checks_and_prefix_includes_prefix_flag():
     assert flags == ('--prefix', 'foo-')
 
 
+def test_check_archives_with_progress_calls_borg_with_progress_parameter():
+    checks = ('repository',)
+    consistency_config = {'check_last': None}
+    flexmock(module).should_receive('_parse_checks').and_return(checks)
+    flexmock(module).should_receive('_make_check_flags').and_return(())
+    flexmock(module).should_receive('execute_command').never()
+    flexmock(module).should_receive('execute_command_without_capture').with_args(
+        ('borg', 'check', '--progress', 'repo'), error_on_warnings=True
+    ).once()
+
+    module.check_archives(
+        repository='repo', storage_config={}, consistency_config=consistency_config, progress=True
+    )
+
+
 def test_check_archives_with_repair_calls_borg_with_repair_parameter():
     checks = ('repository',)
     consistency_config = {'check_last': None}
