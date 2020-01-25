@@ -1,5 +1,5 @@
 ---
-title: Backup to a removable drive or an intermittent server
+title: How to backup to a removable drive or an intermittent server
 ---
 ## Occasional backups
 
