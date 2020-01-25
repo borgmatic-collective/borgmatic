@@ -83,6 +83,9 @@ def run_configuration(config_filename, config, arguments):
                 global_arguments.dry_run,
             )
     except (OSError, CalledProcessError) as error:
+        if command.considered_soft_failure(config_filename, error):
+            return
+
         encountered_error = error
         yield from make_error_log_records(
             '{}: Error running pre-backup hook'.format(config_filename), error
@@ -138,6 +141,9 @@ def run_configuration(config_filename, config, arguments):
                     global_arguments.dry_run,
                 )
         except (OSError, CalledProcessError) as error:
+            if command.considered_soft_failure(config_filename, error):
+                return
+
             encountered_error = error
             yield from make_error_log_records(
                 '{}: Error running post-backup hook'.format(config_filename), error
@@ -165,6 +171,9 @@ def run_configuration(config_filename, config, arguments):
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
+            if command.considered_soft_failure(config_filename, error):
+                return
+
             yield from make_error_log_records(
                 '{}: Error running on-error hook'.format(config_filename), error
             )

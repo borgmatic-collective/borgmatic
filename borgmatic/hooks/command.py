@@ -6,6 +6,9 @@ from borgmatic import execute
 logger = logging.getLogger(__name__)
 
 
+SOFT_FAIL_EXIT_CODE = 75
+
+
 def interpolate_context(command, context):
     '''
     Given a single hook command and a dict of context names/values, interpolate the values by
@@ -69,3 +72,24 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     finally:
         if original_umask:
             os.umask(original_umask)
+
+
+def considered_soft_failure(config_filename, error):
+    '''
+    Given a configuration filename and an exception object, return whether the exception object
+    represents a subprocess.CalledProcessError with a return code of SOFT_FAIL_EXIT_CODE. If so,
+    that indicates that the error is a "soft failure", and should not result in an error.
+    '''
+    exit_code = getattr(error, 'returncode', None)
+    if exit_code is None:
+        return False
+
+    if exit_code == SOFT_FAIL_EXIT_CODE:
+        logger.info(
+            '{}: Command hook exited with soft failure exit code ({}); skipping remaining actions'.format(
+                config_filename, SOFT_FAIL_EXIT_CODE
+            )
+        )
+        return True
+
+    return False

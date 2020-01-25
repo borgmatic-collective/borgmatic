@@ -1,4 +1,5 @@
 import logging
+import subprocess
 
 from flexmock import flexmock
 
@@ -79,3 +80,19 @@ def test_execute_hook_on_error_logs_as_error():
     ).once()
 
     module.execute_hook([':'], None, 'config.yaml', 'on-error', dry_run=False)
+
+
+def test_considered_soft_failure_treats_soft_fail_exit_code_as_soft_fail():
+    error = subprocess.CalledProcessError(module.SOFT_FAIL_EXIT_CODE, 'try again')
+
+    assert module.considered_soft_failure('config.yaml', error)
+
+
+def test_considered_soft_failure_does_not_treat_other_exit_code_as_soft_fail():
+    error = subprocess.CalledProcessError(1, 'error')
+
+    assert not module.considered_soft_failure('config.yaml', error)
+
+
+def test_considered_soft_failure_does_not_treat_other_exception_type_as_soft_fail():
+    assert not module.considered_soft_failure('config.yaml', Exception())

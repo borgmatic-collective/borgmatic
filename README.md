@@ -24,7 +24,7 @@ location:
     repositories:
         - 1234@usw-s001.rsync.net:backups.borg
         - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
-        - /var/lib/backups/backups.borg
+        - /var/lib/backups/local.borg
 
 retention:
     # Retention policy for how many backups to keep.
@@ -80,6 +80,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
  * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)
  * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
+ * [Backup to a removable drive or an intermittent server](https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/)
  * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
  * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
 

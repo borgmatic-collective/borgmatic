@@ -3,6 +3,9 @@
  * #277: Customize Healthchecks log level via borgmatic "--monitoring-verbosity" flag.
  * #280: Change "exclude_if_present" option to support multiple filenames that indicate a directory
    should be excluded from backups, rather than just a single filename.
+ * #284: Backup to a removable drive or intermittent server via "soft failure" feature. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/
  * #287: View consistency check progress via "--progress" flag for "check" action.
  * For "create" and "prune" actions, no longer list files or show detailed stats at any verbosities
    by default. You can opt back in with "--files" or "--stats" flags.

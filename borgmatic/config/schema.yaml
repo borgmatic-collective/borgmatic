@@ -548,7 +548,8 @@ map:
                     - type: str
                 desc: |
                     List of one or more shell commands or scripts to execute before running all
-                    actions (if one of them is "create"), run once before all configuration files.
+                    actions (if one of them is "create"). These are collected from all configuration
+                    files and then run once before all of them (prior to all actions).
                 example:
                     - echo "Starting actions."
             after_everything:
@@ -556,7 +557,8 @@ map:
                     - type: str
                 desc: |
                     List of one or more shell commands or scripts to execute after running all
-                    actions (if one of them is "create"), run once after all configuration files.
+                    actions (if one of them is "create"). These are collected from all configuration
+                    files and then run once before all of them (prior to all actions).
                 example:
                     - echo "Completed actions."
             umask:
