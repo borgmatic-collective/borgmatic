@@ -395,6 +395,22 @@ map:
                     backup, run once per configuration file.
                 example:
                     - echo "Starting a backup."
+            before_prune:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute before pruning, run
+                    once per configuration file.
+                example:
+                    - echo "Starting pruning."
+            before_check:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute before consistency
+                    checks, run once per configuration file.
+                example:
+                    - echo "Starting checks."
             after_backup:
                 seq:
                     - type: str
@@ -402,15 +418,32 @@ map:
                     List of one or more shell commands or scripts to execute after creating a
                     backup, run once per configuration file.
                 example:
-                    - echo "Created a backup."
+                    - echo "Finished a backup."
+            after_prune:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute after pruning, run once
+                    per configuration file.
+                example:
+                    - echo "Finished pruning."
+            after_check:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute after consistency
+                    checks, run once per configuration file.
+                example:
+                    - echo "Finished checks."
             on_error:
                 seq:
                     - type: str
                 desc: |
                     List of one or more shell commands or scripts to execute when an exception
-                    occurs during a backup or when running a before_backup or after_backup hook.
+                    occurs during a "prune", "create", or "check" action or an associated
+                    before/after hook.
                 example:
-                    - echo "Error while creating a backup or running a backup hook."
+                    - echo "Error during prune/create/check."
             postgresql_databases:
                 seq:
                     - map:

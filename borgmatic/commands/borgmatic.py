@@ -66,6 +66,14 @@ def run_configuration(config_filename, config, arguments):
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
+        if 'prune' in arguments:
+            command.execute_hook(
+                hooks.get('before_prune'),
+                hooks.get('umask'),
+                config_filename,
+                'pre-prune',
+                global_arguments.dry_run,
+            )
         if 'create' in arguments:
             command.execute_hook(
                 hooks.get('before_backup'),
@@ -82,13 +90,21 @@ def run_configuration(config_filename, config, arguments):
                 location,
                 global_arguments.dry_run,
             )
+        if 'check' in arguments:
+            command.execute_hook(
+                hooks.get('before_check'),
+                hooks.get('umask'),
+                config_filename,
+                'pre-check',
+                global_arguments.dry_run,
+            )
     except (OSError, CalledProcessError) as error:
         if command.considered_soft_failure(config_filename, error):
             return
 
         encountered_error = error
         yield from make_error_log_records(
-            '{}: Error running pre-backup hook'.format(config_filename), error
+            '{}: Error running pre hook'.format(config_filename), error
         )
 
     if not encountered_error:
@@ -114,6 +130,14 @@ def run_configuration(config_filename, config, arguments):
 
     if not encountered_error:
         try:
+            if 'prune' in arguments:
+                command.execute_hook(
+                    hooks.get('after_prune'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-prune',
+                    global_arguments.dry_run,
+                )
             if 'create' in arguments:
                 dispatch.call_hooks(
                     'remove_database_dumps',
@@ -128,6 +152,14 @@ def run_configuration(config_filename, config, arguments):
                     hooks.get('umask'),
                     config_filename,
                     'post-backup',
+                    global_arguments.dry_run,
+                )
+            if 'check' in arguments:
+                command.execute_hook(
+                    hooks.get('after_check'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-check',
                     global_arguments.dry_run,
                 )
             if {'prune', 'create', 'check'}.intersection(arguments):
@@ -146,7 +178,7 @@ def run_configuration(config_filename, config, arguments):
 
             encountered_error = error
             yield from make_error_log_records(
-                '{}: Error running post-backup hook'.format(config_filename), error
+                '{}: Error running post hook'.format(config_filename), error
             )
 
     if encountered_error and prune_create_or_check:
