@@ -567,6 +567,15 @@ map:
                     for details.
                 example:
                     https://cronitor.link/d3x0c1
+            pagerduty:
+                type: str
+                desc: |
+                    PagerDuty integration key used to notify PagerDuty when a backup errors. Create
+                    an account at https://www.pagerduty.com/ if you'd like to use this service. See
+                    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook
+                    for details.
+                example:
+                    a177cad45bd374409f78906a810a3074
             cronhub:
                 type: str
                 desc: |

@@ -28,14 +28,15 @@ hooks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hoo
 below for how to configure this.
 4. **borgmatic monitoring hooks**: This feature integrates with monitoring
    services like [Healthchecks](https://healthchecks.io/),
-[Cronitor](https://cronitor.io), and [Cronhub](https://cronhub.io), and pings
-these services whenever borgmatic runs. That way, you'll receive an alert when
-something goes wrong or the service doesn't hear from borgmatic for a
-configured interval. See
-[Healthchecks
+[Cronitor](https://cronitor.io), [Cronhub](https://cronhub.io), and
+[PagerDuty](https://www.pagerduty.com/) and pings these services whenever
+borgmatic runs. That way, you'll receive an alert when something goes wrong or
+(for certain hooks) the service doesn't hear from borgmatic for a configured
+interval. See [Healthchecks
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook), [Cronitor
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook), and [Cronhub
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook), [Cronhub
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook), and
+[PagerDuty hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
 below for how to configure this.
 3. **Third-party monitoring software**: You can use traditional monitoring
 software to consume borgmatic JSON output and track when the last
@@ -198,6 +199,32 @@ Cronhub ("start", "finish", or "fail").
 You can configure Cronhub to notify you by a [variety of
 mechanisms](https://docs.cronhub.io/integrations.html) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
+
+
+## PagerDuty hook
+
+[PagerDuty](https://cronhub.io/) provides incident monitoring and alerting,
+and borgmatic has built-in integration with it. Once you create a PagerDuty
+account and <a
+href="https://support.pagerduty.com/docs/services-and-integrations">service</a>
+on their site, all you need to do is configure borgmatic with the unique
+"Integration Key" for your service. Here's an example:
+
+
+```yaml
+hooks:
+    pagerduty: a177cad45bd374409f78906a810a3074
+```
+
+With this hook in place, borgmatic creates a PagerDuty event for your service
+whenever backups fail. Specifically, if an error occurs during a `create`,
+`prune`, or `check` action, borgmatic sends an event to PagerDuty after the
+`on_error` hooks run. Note that borgmatic does not contact PagerDuty when a
+backup starts or ends without error.
+
+You can configure PagerDuty to notify you by a [variety of
+mechanisms](https://support.pagerduty.com/docs/notifications) when backups
+fail.
 
 
 ## Scripting borgmatic
