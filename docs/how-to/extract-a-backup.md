@@ -31,6 +31,12 @@ borgmatic extract --archive host-2019-01-02T04:06:07.080910
 (No borgmatic `extract` action? Try the old-style `--extract`, or upgrade
 borgmatic!)
 
+With newer versions of borgmatic, you can simplify this to:
+
+```bash
+borgmatic extract --archive latest
+```
+
 The `--archive` value is the name of the archive to extract. This extracts the
 entire contents of the archive to the current directory, so make sure you're
 in the right place before running the command.
@@ -104,6 +110,12 @@ Omit the `--archive` flag to mount all archives (lazy-loaded):
 
 ```bash
 borgmatic mount --mount-point /mnt
+```
+
+Or use the "latest" value for the archive to mount the latest successful archive:
+
+```bash
+borgmatic mount --archive latest --mount-point /mnt
 ```
 
 If you'd like to restrict the mounted filesystem to only particular paths from

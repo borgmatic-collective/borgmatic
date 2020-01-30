@@ -261,6 +261,18 @@ multiple different hosts into a single repository, then you'll need to get
 fancier with your archive listing. See `borg list --help` for more flags.
 
 
+### Latest backups
+
+All borgmatic actions that accept an "--archive" flag allow you to specify an
+archive name of "latest". This lets you get the latest successful archive
+without having to first run "borgmatic list" manually, which can be handy in
+automated scripts. Here's an example:
+
+```bash
+borgmatic info --archive latest
+```
+
+
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
