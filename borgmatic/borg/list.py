@@ -11,6 +11,42 @@ logger = logging.getLogger(__name__)
 BORG_EXCLUDE_CHECKPOINTS_GLOB = '*[0123456789]'
 
 
+def resolve_archive_name(repository, archive, storage_config, local_path='borg', remote_path=None):
+    '''
+    Given a local or remote repository path, an archive name, a storage config dict, a local Borg
+    path, and a remote Borg path, simply return the archive name. But if the archive name is
+    "latest", then instead introspect the repository for the latest successful (non-checkpoint)
+    archive, and return its name.
+
+    Raise ValueError if "latest" is given but there are no archives in the repository.
+    '''
+    if archive != "latest":
+        return archive
+
+    lock_wait = storage_config.get('lock_wait', None)
+
+    full_command = (
+        (local_path, 'list')
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + make_flags('remote-path', remote_path)
+        + make_flags('lock-wait', lock_wait)
+        + make_flags('glob-archives', BORG_EXCLUDE_CHECKPOINTS_GLOB)
+        + make_flags('last', 1)
+        + ('--short', repository)
+    )
+
+    output = execute_command(full_command, output_log_level=None, error_on_warnings=False)
+    try:
+        latest_archive = output.strip().splitlines()[-1]
+    except IndexError:
+        raise ValueError('No archives found in the repository')
+
+    logger.debug('{}: Latest archive is {}'.format(repository, latest_archive))
+
+    return latest_archive
+
+
 def list_archives(repository, storage_config, list_arguments, local_path='borg', remote_path=None):
     '''
     Given a local or remote repository path, a storage config dict, and the arguments to the list

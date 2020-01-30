@@ -1,4 +1,5 @@
 import collections
+import copy
 import json
 import logging
 import os
@@ -297,7 +298,9 @@ def run_actions(
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
-                arguments['extract'].archive,
+                borg_list.resolve_archive_name(
+                    repository, arguments['extract'].archive, storage, local_path, remote_path
+                ),
                 arguments['extract'].paths,
                 location,
                 storage,
@@ -319,7 +322,9 @@ def run_actions(
 
             borg_mount.mount_archive(
                 repository,
-                arguments['mount'].archive,
+                borg_list.resolve_archive_name(
+                    repository, arguments['mount'].archive, storage, local_path, remote_path
+                ),
                 arguments['mount'].mount_point,
                 arguments['mount'].paths,
                 arguments['mount'].foreground,
@@ -355,7 +360,9 @@ def run_actions(
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
-                arguments['restore'].archive,
+                borg_list.resolve_archive_name(
+                    repository, arguments['restore'].archive, storage, local_path, remote_path
+                ),
                 dump.convert_glob_patterns_to_borg_patterns(
                     dump.flatten_dump_patterns(dump_patterns, restore_names)
                 ),
@@ -395,12 +402,16 @@ def run_actions(
         if arguments['list'].repository is None or validate.repositories_match(
             repository, arguments['list'].repository
         ):
-            if not arguments['list'].json:
+            list_arguments = copy.copy(arguments['list'])
+            if not list_arguments.json:
                 logger.warning('{}: Listing archives'.format(repository))
+            list_arguments.archive = borg_list.resolve_archive_name(
+                repository, list_arguments.archive, storage, local_path, remote_path
+            )
             json_output = borg_list.list_archives(
                 repository,
                 storage,
-                list_arguments=arguments['list'],
+                list_arguments=list_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
             )
@@ -410,12 +421,16 @@ def run_actions(
         if arguments['info'].repository is None or validate.repositories_match(
             repository, arguments['info'].repository
         ):
-            if not arguments['info'].json:
+            info_arguments = copy.copy(arguments['info'])
+            if not info_arguments.json:
                 logger.warning('{}: Displaying summary info for archives'.format(repository))
+            info_arguments.archive = borg_list.resolve_archive_name(
+                repository, info_arguments.archive, storage, local_path, remote_path
+            )
             json_output = borg_info.display_archives_info(
                 repository,
                 storage,
-                info_arguments=arguments['info'],
+                info_arguments=info_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
             )

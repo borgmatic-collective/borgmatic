@@ -323,7 +323,9 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to extract, defaults to the configured repository if there is only one',
     )
-    extract_group.add_argument('--archive', help='Name of archive to extract', required=True)
+    extract_group.add_argument(
+        '--archive', help='Name of archive to extract (or "latest")', required=True
+    )
     extract_group.add_argument(
         '--path',
         '--restore-path',
@@ -361,7 +363,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one',
     )
-    mount_group.add_argument('--archive', help='Name of archive to mount')
+    mount_group.add_argument('--archive', help='Name of archive to mount (or "latest")')
     mount_group.add_argument(
         '--mount-point',
         metavar='PATH',
@@ -415,7 +417,9 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to restore from, defaults to the configured repository if there is only one',
     )
-    restore_group.add_argument('--archive', help='Name of archive to restore from', required=True)
+    restore_group.add_argument(
+        '--archive', help='Name of archive to restore from (or "latest")', required=True
+    )
     restore_group.add_argument(
         '--database',
         metavar='NAME',
@@ -446,7 +450,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to list, defaults to the configured repository if there is only one',
     )
-    list_group.add_argument('--archive', help='Name of archive to list')
+    list_group.add_argument('--archive', help='Name of archive to list (or "latest")')
     list_group.add_argument(
         '--path',
         metavar='PATH',
@@ -508,7 +512,7 @@ def parse_arguments(*unparsed_arguments):
         '--repository',
         help='Path of repository to show info for, defaults to the configured repository if there is only one',
     )
-    info_group.add_argument('--archive', help='Name of archive to show info for')
+    info_group.add_argument('--archive', help='Name of archive to show info for (or "latest")')
     info_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )

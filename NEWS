@@ -1,3 +1,8 @@
+1.5.1.dev0
+ * #289: Tired of looking up the latest successful archive name in order to pass it to borgmatic
+   actions? Me too. Now you can specify "--archive latest" to all actions that accept an archive
+   flag.
+
 1.5.0
  * #245: Monitor backups with PagerDuty hook integration. See the documentation for more
    information: https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook

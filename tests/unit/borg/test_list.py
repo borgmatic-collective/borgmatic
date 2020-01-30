@@ -7,6 +7,110 @@ from borgmatic.borg import list as module
 
 from ..test_verbosity import insert_logging_mock
 
+BORG_LIST_LATEST_ARGUMENTS = (
+    '--glob-archives',
+    module.BORG_EXCLUDE_CHECKPOINTS_GLOB,
+    '--last',
+    '1',
+    '--short',
+    'repo',
+)
+
+
+def test_resolve_archive_name_passes_through_non_latest_archive_name():
+    archive = 'myhost-2030-01-01T14:41:17.647620'
+
+    assert module.resolve_archive_name('repo', archive, storage_config={}) == archive
+
+
+def test_resolve_archive_name_calls_borg_with_parameters():
+    expected_archive = 'archive-name'
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+
+    assert module.resolve_archive_name('repo', 'latest', storage_config={}) == expected_archive
+
+
+def test_resolve_archive_name_with_log_info_calls_borg_with_info_parameter():
+    expected_archive = 'archive-name'
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--info') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+    insert_logging_mock(logging.INFO)
+
+    assert module.resolve_archive_name('repo', 'latest', storage_config={}) == expected_archive
+
+
+def test_resolve_archive_name_with_log_debug_calls_borg_with_debug_parameter():
+    expected_archive = 'archive-name'
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--debug', '--show-rc') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+    insert_logging_mock(logging.DEBUG)
+
+    assert module.resolve_archive_name('repo', 'latest', storage_config={}) == expected_archive
+
+
+def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
+    expected_archive = 'archive-name'
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name('repo', 'latest', storage_config={}, local_path='borg1')
+        == expected_archive
+    )
+
+
+def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_parameters():
+    expected_archive = 'archive-name'
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--remote-path', 'borg1') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name('repo', 'latest', storage_config={}, remote_path='borg1')
+        == expected_archive
+    )
+
+
+def test_resolve_archive_name_without_archives_raises():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return('')
+
+    with pytest.raises(ValueError):
+        module.resolve_archive_name('repo', 'latest', storage_config={})
+
+
+def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    expected_archive = 'archive-name'
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--lock-wait', 'okay') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        error_on_warnings=False,
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name('repo', 'latest', storage_config={'lock_wait': 'okay'})
+        == expected_archive
+    )
+
 
 def test_list_archives_calls_borg_with_parameters():
     flexmock(module).should_receive('execute_command').with_args(
