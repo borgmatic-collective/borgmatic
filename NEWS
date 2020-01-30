@@ -2,6 +2,7 @@
  * #289: Tired of looking up the latest successful archive name in order to pass it to borgmatic
    actions? Me too. Now you can specify "--archive latest" to all actions that accept an archive
    flag.
+ * Add security policy documentation in SECURITY.md.
 
 1.5.0
  * #245: Monitor backups with PagerDuty hook integration. See the documentation for more

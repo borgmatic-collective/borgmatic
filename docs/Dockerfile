@@ -1,4 +1,4 @@
-FROM python:3.7.4-alpine3.10 as borgmatic
+FROM python:3.8.1-alpine3.11 as borgmatic
 
 COPY . /app
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
@@ -7,7 +7,7 @@ RUN borgmatic --help > /command-line.txt \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 
-FROM node:12.10.0-alpine as html
+FROM node:13.7.0-alpine as html
 
 ARG ENVIRONMENT=production
 

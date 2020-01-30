@@ -119,7 +119,12 @@ If you'd like to chat with borgmatic developers or users, head on over to the
 href="https://webchat.freenode.net/?channels=borgmatic">web chat</a> or a
 native <a href="irc://chat.freenode.net:6697">IRC client</a>.
 
-Other questions or comments? Contact <mailto:witten@torsion.org>.
+Also see the [security
+policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
+issues.
+
+Other questions or comments? Contact
+[witten@torsion.org](mailto:witten@torsion.org).
 
 
 ### Contributing

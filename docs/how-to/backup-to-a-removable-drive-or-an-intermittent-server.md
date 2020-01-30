@@ -10,7 +10,7 @@ buddy's sometimes-online server for that extra level of redundancy.
 
 But if you run borgmatic and your hard drive isn't plugged in, or your buddy's
 server is offline, then you'll get an annoying error message and the overall
-borgmatic run will fail (even if individual repositories complete just fine).
+borgmatic run will fail (even if individual repositories still complete).
 
 So what if you want borgmatic to swallow the error of a missing drive
 or an offline server, and continue trucking along? That's where the concept of
@@ -96,7 +96,7 @@ There are some caveats you should be aware of with this feature.
    a test to make sure that individual source directories are mounted and
    available. Use your imagination!
  * The soft failure feature also works for `before_prune`, `after_prune`,
-   `before_check`, and `after_check` hooks. However it is not implemented for
+   `before_check`, and `after_check` hooks. But it is not implemented for
    `before_everything` or `after_everything`.
 
 ## Related documentation
