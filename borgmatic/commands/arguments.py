@@ -163,7 +163,7 @@ def parse_arguments(*unparsed_arguments):
         '--monitoring-verbosity',
         type=int,
         choices=range(-1, 3),
-        default=1,
+        default=0,
         help='Log verbose progress to monitoring integrations that support logging (from only errors to very verbose: -1, 0, 1, or 2)',
     )
     global_group.add_argument(
