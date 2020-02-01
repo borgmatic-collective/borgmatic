@@ -203,9 +203,9 @@ or it doesn't hear from borgmatic for a certain period of time.
 
 ## PagerDuty hook
 
-[PagerDuty](https://cronhub.io/) provides incident monitoring and alerting,
-and borgmatic has built-in integration with it. Once you create a PagerDuty
-account and <a
+[PagerDuty](https://www.pagerduty.com/) provides incident monitoring and
+alerting, and borgmatic has built-in integration with it. Once you create a
+PagerDuty account and <a
 href="https://support.pagerduty.com/docs/services-and-integrations">service</a>
 on their site, all you need to do is configure borgmatic with the unique
 "Integration Key" for your service. Here's an example:
