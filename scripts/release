@@ -23,9 +23,10 @@ git push github $version
 rm -fr dist
 python3 setup.py bdist_wheel
 python3 setup.py sdist
-gpg --detach-sign --armor dist/*
-twine upload -r pypi dist/borgmatic-*.tar.gz
-twine upload -r pypi dist/borgmatic-*-py3-none-any.whl
+gpg --detach-sign --armor dist/borgmatic-*.tar.gz
+gpg --detach-sign --armor dist/borgmatic-*-py3-none-any.whl
+twine upload -r pypi dist/borgmatic-*.tar.gz dist/borgmatic-*.tar.gz.asc
+twine upload -r pypi dist/borgmatic-*-py3-none-any.whl borgmatic-*-py3-none-any.whl.asc
 
 # Set release changelogs on projects.torsion.org and GitHub.
 release_changelog="$(cat NEWS | sed '/^$/q' | grep -v '^\S')"
