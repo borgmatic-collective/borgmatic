@@ -203,12 +203,21 @@ or it doesn't hear from borgmatic for a certain period of time.
 
 ## PagerDuty hook
 
+In case you're new here: [borgmatic](https://torsion.org/borgmatic/) is
+simple, configuration-driven backup software for servers and workstations,
+powered by [Borg Backup](https://www.borgbackup.org/).
+
 [PagerDuty](https://www.pagerduty.com/) provides incident monitoring and
-alerting, and borgmatic has built-in integration with it. Once you create a
-PagerDuty account and <a
+alerting. borgmatic has built-in integration that can notify you via PagerDuty
+as soon as a backup fails, so you can make sure your backups keep working.
+
+First, create a PagerDuty account and <a
 href="https://support.pagerduty.com/docs/services-and-integrations">service</a>
-on their site, all you need to do is configure borgmatic with the unique
-"Integration Key" for your service. Here's an example:
+on their site, setting the Integration Type to "Use our API directly" and
+selecting "Events API v2".
+
+Then, configure borgmatic with the unique "Integration Key" for your service.
+Here's an example:
 
 
 ```yaml
@@ -225,6 +234,9 @@ backup starts or ends without error.
 You can configure PagerDuty to notify you by a [variety of
 mechanisms](https://support.pagerduty.com/docs/notifications) when backups
 fail.
+
+If you have any issues with the integration, [please contact
+us](https://torsion.org/borgmatic/#support-and-contributing).
 
 
 ## Scripting borgmatic
