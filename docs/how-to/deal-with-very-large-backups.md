@@ -7,7 +7,7 @@ Borg itself is great for efficiently de-duplicating data across successive
 backup archives, even when dealing with very large repositories. But you may
 find that while borgmatic's default mode of "prune, create, and check" works
 well on small repositories, it's not so great on larger ones. That's because
-running the default consistency checks takes a long time on large
+running the default pruning and consistency checks take a long time on large
 repositories.
 
 ### A la carte actions
@@ -27,9 +27,18 @@ borgmatic check
 
 You can run with only one of these actions provided, or you can mix and match
 any number of them in a single borgmatic run. This supports approaches like
-making backups with `create` on a frequent schedule, while only running
-expensive consistency checks with `check` on a much less frequent basis from
-a separate cron job.
+skipping certain actions while running others. For instance, this skips
+`prune` and only runs `create` and `check`:
+
+```bash
+borgmatic create check
+```
+
+Or, you can make backups with `create` on a frequent schedule (e.g. with
+`borgmatic create` called from one cron job), while only running expensive
+consistency checks with `check` on a much less frequent basis (e.g. with
+`borgmatic check` called from a separate cron job).
+
 
 ### Consistency check configuration
 
