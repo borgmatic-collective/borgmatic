@@ -130,8 +130,11 @@ Other questions or comments? Contact
 ### Contributing
 
 borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
-available](https://projects.torsion.org/witten/borgmatic). It's also mirrored
-on [GitHub](https://github.com/witten/borgmatic) for convenience.
+available](https://projects.torsion.org/witten/borgmatic), and is also
+mirrored on [GitHub](https://github.com/witten/borgmatic) for convenience.
+
+borgmatic is licensed under the GNU General Public License version 3 or any
+later version.
 
 If you'd like to contribute to borgmatic development, please feel free to
 submit a [Pull Request](https://projects.torsion.org/witten/borgmatic/pulls)
