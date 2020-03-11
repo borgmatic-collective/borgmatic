@@ -39,6 +39,7 @@ borgmatic:
  * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
  * [Fedora unofficial](https://copr.fedorainfracloud.org/coprs/heffer/borgmatic/)
  * [Arch Linux](https://www.archlinux.org/packages/community/any/borgmatic/)
+ * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [stand-alone binary](https://github.com/cmarquardt/borgmatic-binary)
