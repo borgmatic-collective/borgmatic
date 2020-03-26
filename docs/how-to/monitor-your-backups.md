@@ -213,8 +213,8 @@ as soon as a backup fails, so you can make sure your backups keep working.
 
 First, create a PagerDuty account and <a
 href="https://support.pagerduty.com/docs/services-and-integrations">service</a>
-on their site, setting the Integration Type to "Use our API directly" and
-selecting "Events API v2".
+on their site. On the service, add an integration and set the Integration Type
+to "borgmatic".
 
 Then, configure borgmatic with the unique "Integration Key" for your service.
 Here's an example:
