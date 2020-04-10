@@ -34,7 +34,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         )
         all_databases = bool(name == 'all')
         command = (
-            ('pg_dumpall' if all_databases else 'pg_dump', '--no-password', '--clean')
+            ('pg_dumpall' if all_databases else 'pg_dump', '--no-password', '--clean','--if-exists')
             + ('--file', dump_filename)
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
@@ -93,34 +93,23 @@ def restore_database_dumps(databases, log_prefix, location_config, dry_run):
         dump_filename = dump.make_database_dump_filename(
             make_dump_path(location_config), database['name'], database.get('hostname')
         )
-        if database['name'] == 'all':
-            restore_command = (
-                ('psql', '--no-password', '--clean', '--if-exists', '--exit-on-error')
-                + (('--host', database['hostname']) if 'hostname' in database else ())
-                + (('--port', str(database['port'])) if 'port' in database else ())
-                + (('--username', database['username']) if 'username' in database else ())
-                + ('--dbname', database['name'])
-                + (dump_filename,)
-            )
-        else:
-            restore_command = (
-                ('pg_restore', '--no-password', '--clean', '--if-exists', '--exit-on-error')
-                + (('--host', database['hostname']) if 'hostname' in database else ())
-                + (('--port', str(database['port'])) if 'port' in database else ())
-                + (('--username', database['username']) if 'username' in database else ())
-                + ('--dbname', database['name'])
-                + (dump_filename,)
-            )
-
-        extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
+        all_databases = bool(database['name'] == 'all')
         analyze_command = (
             ('psql', '--no-password', '--quiet')
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
-            + ('--dbname', database['name'])
             + ('--command', 'ANALYZE')
         )
+        restore_command = (
+            ('psql' if all_databases else 'pg_restore', '--no-password')
+            + (('--if-exists', '--exit-on-error', '--clean', '--create', '--dbname', database['name']) if not all_databases else ())
+            + (('--host', database['hostname']) if 'hostname' in database else ())
+            + (('--port', str(database['port'])) if 'port' in database else ())
+            + (('--username', database['username']) if 'username' in database else ())
+            + ( ('-f', dump_filename) if all_databases else (dump_filename,) )
+        )
+        extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
 
         logger.debug(
             '{}: Restoring PostgreSQL database {}{}'.format(
