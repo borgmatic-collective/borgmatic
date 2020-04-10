@@ -103,7 +103,7 @@ def restore_database_dumps(databases, log_prefix, location_config, dry_run):
         )
         restore_command = (
             ('psql' if all_databases else 'pg_restore', '--no-password')
-            + (('--if-exists', '--exit-on-error', '--clean', '--create', '--dbname', database['name']) if not all_databases else ())
+            + (('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name']) if not all_databases else ())
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
