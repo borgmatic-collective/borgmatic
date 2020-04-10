@@ -93,14 +93,25 @@ def restore_database_dumps(databases, log_prefix, location_config, dry_run):
         dump_filename = dump.make_database_dump_filename(
             make_dump_path(location_config), database['name'], database.get('hostname')
         )
-        restore_command = (
-            ('pg_restore', '--no-password', '--clean', '--if-exists', '--exit-on-error')
-            + (('--host', database['hostname']) if 'hostname' in database else ())
-            + (('--port', str(database['port'])) if 'port' in database else ())
-            + (('--username', database['username']) if 'username' in database else ())
-            + ('--dbname', database['name'])
-            + (dump_filename,)
-        )
+        if database['name'] == 'all':
+            restore_command = (
+                ('psql', '--no-password', '--clean', '--if-exists', '--exit-on-error')
+                + (('--host', database['hostname']) if 'hostname' in database else ())
+                + (('--port', str(database['port'])) if 'port' in database else ())
+                + (('--username', database['username']) if 'username' in database else ())
+                + ('--dbname', database['name'])
+                + (dump_filename,)
+            )
+        else:
+            restore_command = (
+                ('pg_restore', '--no-password', '--clean', '--if-exists', '--exit-on-error')
+                + (('--host', database['hostname']) if 'hostname' in database else ())
+                + (('--port', str(database['port'])) if 'port' in database else ())
+                + (('--username', database['username']) if 'username' in database else ())
+                + ('--dbname', database['name'])
+                + (dump_filename,)
+            )
+
         extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
         analyze_command = (
             ('psql', '--no-password', '--quiet')
