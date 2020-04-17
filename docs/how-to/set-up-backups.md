@@ -133,7 +133,7 @@ this step if you already have a Borg repository.) To create a repository, run
 a command like the following:
 
 ```bash
-borgmatic init --encryption repokey
+sudo borgmatic init --encryption repokey
 ```
 
 (No borgmatic `init` action? Try the old-style `--init` flag, or upgrade
@@ -165,7 +165,7 @@ good idea to test that borgmatic is working. So to run borgmatic and start a
 backup, you can invoke it like this:
 
 ```bash
-borgmatic --verbosity 1
+sudo borgmatic --verbosity 1
 ```
 
 By default, this will also prune any old backups as per the configured
