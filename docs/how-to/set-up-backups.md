@@ -3,6 +3,11 @@ title: How to set up backups with borgmatic
 ---
 ## Installation
 
+Many users need to backup system files that require privileged access, so
+these instructions install and run borgmatic as root. If you don't need to
+backup such files, then you are welcome to install and run borgmatic as a
+non-root user.
+
 First, [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
 version 1.1.
@@ -26,13 +31,6 @@ export PATH="$PATH:~/.local/bin"
 
 Note that your pip binary may have a different name than "pip3". Make sure
 you're using Python 3, as borgmatic does not support Python 2.
-
-### root versus non-root
-
-These instructions install and run borgmatic as root, because many users want
-to backup system files that require privileged access. Therefore borgmatic
-needs to run as root to read them. But if you don't need to backup such files,
-then you are welcome to install and run borgmatic as a non-root user.
 
 ### Other ways to install
 
