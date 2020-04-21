@@ -11,4 +11,4 @@
 set -e
 
 docker-compose --file tests/end-to-end/docker-compose.yaml up --force-recreate \
-    --abort-on-container-exit
+    --renew-anon-volumes --abort-on-container-exit
