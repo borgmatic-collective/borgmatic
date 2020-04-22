@@ -16,6 +16,43 @@ def make_dump_path(location_config):  # pragma: no cover
     )
 
 
+SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
+
+
+def database_names_to_dump(database, extra_environment, log_prefix, dry_run_label):
+    '''
+    Given a requested database name, return the corresponding sequence of database names to dump.
+    In the case of "all", query for the names of databases on the configured host and return them,
+    excluding any system databases that will cause problems during restore.
+    '''
+    requested_name = database['name']
+
+    if requested_name != 'all':
+        return (requested_name,)
+
+    show_command = (
+        ('mysql',)
+        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--port', str(database['port'])) if 'port' in database else ())
+        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--user', database['username']) if 'username' in database else ())
+        + ('--skip-column-names', '--batch')
+        + ('--execute', 'show schemas')
+    )
+    logger.debug(
+        '{}: Querying for "all" MySQL databases to dump{}'.format(log_prefix, dry_run_label)
+    )
+    show_output = execute_command(
+        show_command, output_log_level=None, extra_environment=extra_environment
+    )
+
+    return tuple(
+        show_name
+        for show_name in show_output.strip().splitlines()
+        if show_name not in SYSTEM_DATABASE_NAMES
+    )
+
+
 def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     Dump the given MySQL/MariaDB databases to disk. The databases are supplied as a sequence of
@@ -28,30 +65,37 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     logger.info('{}: Dumping MySQL databases{}'.format(log_prefix, dry_run_label))
 
     for database in databases:
-        name = database['name']
+        requested_name = database['name']
         dump_filename = dump.make_database_dump_filename(
-            make_dump_path(location_config), name, database.get('hostname')
+            make_dump_path(location_config), requested_name, database.get('hostname')
         )
-        command = (
+        extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
+        dump_command_names = database_names_to_dump(
+            database, extra_environment, log_prefix, dry_run_label
+        )
+
+        dump_command = (
             ('mysqldump', '--add-drop-database')
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
             + (('--user', database['username']) if 'username' in database else ())
             + (tuple(database['options'].split(' ')) if 'options' in database else ())
-            + (('--all-databases',) if name == 'all' else ('--databases', name))
+            + ('--databases',)
+            + dump_command_names
         )
-        extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
 
         logger.debug(
             '{}: Dumping MySQL database {} to {}{}'.format(
-                log_prefix, name, dump_filename, dry_run_label
+                log_prefix, requested_name, dump_filename, dry_run_label
             )
         )
         if not dry_run:
             os.makedirs(os.path.dirname(dump_filename), mode=0o700, exist_ok=True)
             execute_command(
-                command, output_file=open(dump_filename, 'w'), extra_environment=extra_environment
+                dump_command,
+                output_file=open(dump_filename, 'w'),
+                extra_environment=extra_environment,
             )
 
 

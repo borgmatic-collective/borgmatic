@@ -1,3 +1,6 @@
+1.5.2.dev0
+ * #301: Fix MySQL restore error on "all" database dump by excluding system tables.
+
 1.5.1
  * #289: Tired of looking up the latest successful archive name in order to pass it to borgmatic
    actions? Me too. Now you can specify "--archive latest" to all actions that accept an archive

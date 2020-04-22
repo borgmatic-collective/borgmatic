@@ -34,6 +34,10 @@ hooks:
           hostname: mysql
           username: root
           password: test
+        - name: all
+          hostname: mysql
+          username: root
+          password: test
 '''.format(
         config_path, repository_path, borgmatic_source_directory
     )

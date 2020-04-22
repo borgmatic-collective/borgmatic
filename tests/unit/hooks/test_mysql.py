@@ -5,6 +5,35 @@ from flexmock import flexmock
 from borgmatic.hooks import mysql as module
 
 
+def test_database_names_to_dump_passes_through_name():
+    extra_environment = flexmock()
+    log_prefix = ''
+    dry_run_label = ''
+
+    names = module.database_names_to_dump(
+        {'name': 'foo'}, extra_environment, log_prefix, dry_run_label
+    )
+
+    assert names == ('foo',)
+
+
+def test_database_names_to_dump_queries_mysql_for_database_names():
+    extra_environment = flexmock()
+    log_prefix = ''
+    dry_run_label = ''
+    flexmock(module).should_receive('execute_command').with_args(
+        ('mysql', '--skip-column-names', '--batch', '--execute', 'show schemas'),
+        output_log_level=None,
+        extra_environment=extra_environment,
+    ).and_return('foo\nbar\nmysql\n').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'all'}, extra_environment, log_prefix, dry_run_label
+    )
+
+    assert names == ('foo', 'bar')
+
+
 def test_dump_databases_runs_mysqldump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     output_file = flexmock()
@@ -12,6 +41,9 @@ def test_dump_databases_runs_mysqldump_for_each_database():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
+        ('bar',)
+    )
     flexmock(module.os).should_receive('makedirs')
     flexmock(sys.modules['builtins']).should_receive('open').and_return(output_file)
 
@@ -31,6 +63,9 @@ def test_dump_databases_with_dry_run_skips_mysqldump():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
+        ('bar',)
+    )
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -44,6 +79,7 @@ def test_dump_databases_runs_mysqldump_with_hostname_and_port():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/database.example.org/foo'
     )
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.os).should_receive('makedirs')
     flexmock(sys.modules['builtins']).should_receive('open').and_return(output_file)
 
@@ -74,6 +110,7 @@ def test_dump_databases_runs_mysqldump_with_username_and_password():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.os).should_receive('makedirs')
     flexmock(sys.modules['builtins']).should_receive('open').and_return(output_file)
 
@@ -93,6 +130,7 @@ def test_dump_databases_runs_mysqldump_with_options():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.os).should_receive('makedirs')
     flexmock(sys.modules['builtins']).should_receive('open').and_return(output_file)
 
@@ -112,11 +150,12 @@ def test_dump_databases_runs_mysqldump_for_all_databases():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
     )
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
     flexmock(module.os).should_receive('makedirs')
     flexmock(sys.modules['builtins']).should_receive('open').and_return(output_file)
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mysqldump', '--add-drop-database', '--all-databases'),
+        ('mysqldump', '--add-drop-database', '--databases', 'foo', 'bar'),
         output_file=output_file,
         extra_environment=None,
     ).once()
