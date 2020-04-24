@@ -29,6 +29,10 @@ hooks:
           hostname: postgresql
           username: postgres
           password: test
+        - name: all
+          hostname: postgresql
+          username: postgres
+          password: test
     mysql_databases:
         - name: test
           hostname: mysql
