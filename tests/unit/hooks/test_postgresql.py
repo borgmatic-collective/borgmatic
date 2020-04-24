@@ -310,7 +310,7 @@ def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
     module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
 
 
-def test_restore_all_database_dump():
+def test_restore_database_dumps_runs_psql_for_all_database_dump():
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(

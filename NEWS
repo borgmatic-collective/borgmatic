@@ -1,5 +1,7 @@
-1.5.2.dev0
+1.5.2
  * #301: Fix MySQL restore error on "all" database dump by excluding system tables.
+ * Fix PostgreSQL restore error on "all" database dump by using "psql" for the restore instead of
+   "pg_restore".
 
 1.5.1
  * #289: Tired of looking up the latest successful archive name in order to pass it to borgmatic
