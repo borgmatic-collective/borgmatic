@@ -221,6 +221,13 @@ sudo systemctl enable --now borgmatic.timer
 Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
 
+### launchd in macOS
+
+If you run borgmatic in macOS with launchd, you may encounter permissions
+issues when reading files to backup. If that happens to you, you may be
+interested in an [unofficial work-around for Full Disk
+Access](https://projects.torsion.org/witten/borgmatic/issues/293).
+
 ## Colored output
 
 Borgmatic produces colored terminal output by default. It is disabled when a

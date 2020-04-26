@@ -1,3 +1,6 @@
+1.5.3.dev0
+ * #293: Documentation on macOS launchd permissions issues with work-around for Full Disk Access.
+
 1.5.2
  * #301: Fix MySQL restore error on "all" database dump by excluding system tables.
  * Fix PostgreSQL restore error on "all" database dump by using "psql" for the restore instead of
