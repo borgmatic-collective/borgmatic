@@ -56,6 +56,15 @@ consistency:
         - repository
 ```
 
+Here are the available checks from fastest to slowest:
+
+ * `repository`: Checks the consistency of the repository itself.
+ * `archives`: Checks all of the archives in the repository.
+ * `extract`: Performs an extraction dry-run of the most recent archive.
+ * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data (implies `archives` as well).
+
+See [Borg's check documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html) for more information.
+
 If that's still too slow, you can disable consistency checks entirely,
 either for a single repository or for all repositories.
 
