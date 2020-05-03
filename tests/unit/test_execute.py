@@ -19,9 +19,7 @@ def test_exit_code_indicates_error_respects_exit_code_and_error_on_warnings(
     exit_code, error_on_warnings, expected_result
 ):
     assert (
-        module.exit_code_indicates_error(
-            ('command',), exit_code, error_on_warnings=error_on_warnings
-        )
+        module.exit_code_indicates_error(exit_code, error_on_warnings=error_on_warnings)
         is expected_result
     )
 

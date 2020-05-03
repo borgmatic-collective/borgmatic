@@ -9,10 +9,10 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE = 2
 
 
-def exit_code_indicates_error(command, exit_code, error_on_warnings=True):
+def exit_code_indicates_error(exit_code, error_on_warnings=True):
     '''
-    Return True if the given exit code from running the command corresponds to an error.
-    If error on warnings is False, then treat exit code 1 as a warning instead of an error.
+    Return True if the given exit code from running a command corresponds to an error. If error on
+    warnings is False, then treat exit code 1 as a warning instead of an error.
     '''
     if error_on_warnings:
         return bool(exit_code != 0)
@@ -48,7 +48,7 @@ def log_output(command, process, output_buffer, output_log_level, error_on_warni
 
     exit_code = process.poll()
 
-    if exit_code_indicates_error(command, exit_code, error_on_warnings):
+    if exit_code_indicates_error(exit_code, error_on_warnings):
         # If an error occurs, include its output in the raised exception so that we don't
         # inadvertently hide error output.
         if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
@@ -124,5 +124,5 @@ def execute_command_without_capture(full_command, working_directory=None, error_
     try:
         subprocess.check_call(full_command, cwd=working_directory)
     except subprocess.CalledProcessError as error:
-        if exit_code_indicates_error(full_command, error.returncode, error_on_warnings):
+        if exit_code_indicates_error(error.returncode, error_on_warnings):
             raise
