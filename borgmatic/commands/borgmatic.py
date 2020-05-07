@@ -83,14 +83,6 @@ def run_configuration(config_filename, config, arguments):
                 'pre-backup',
                 global_arguments.dry_run,
             )
-            dispatch.call_hooks(
-                'dump_databases',
-                hooks,
-                config_filename,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
         if 'check' in arguments:
             command.execute_hook(
                 hooks.get('before_check'),
@@ -262,6 +254,16 @@ def run_actions(
         )
     if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
+        active_dumps = dispatch.call_hooks(
+            'dump_databases',
+            hooks,
+            repository,
+            dump.DATABASE_HOOK_NAMES,
+            location,
+            global_arguments.dry_run,
+        )
+        stream_processes = [process for processes in active_dumps.values() for process in processes]
+
         json_output = borg_create.create_archive(
             global_arguments.dry_run,
             repository,
@@ -273,9 +275,11 @@ def run_actions(
             stats=arguments['create'].stats,
             json=arguments['create'].json,
             files=arguments['create'].files,
+            stream_processes=stream_processes,
         )
         if json_output:
             yield json.loads(json_output)
+
     if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
@@ -347,57 +351,67 @@ def run_actions(
             if 'all' in restore_names:
                 restore_names = []
 
-            # Extract dumps for the named databases from the archive.
-            dump_patterns = dispatch.call_hooks(
-                'make_database_dump_patterns',
-                hooks,
-                repository,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                restore_names,
+            archive_name = borg_list.resolve_archive_name(
+                repository, arguments['restore'].archive, storage, local_path, remote_path
             )
+            found_names = set()
 
-            borg_extract.extract_archive(
-                global_arguments.dry_run,
-                repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['restore'].archive, storage, local_path, remote_path
-                ),
-                dump.convert_glob_patterns_to_borg_patterns(
-                    dump.flatten_dump_patterns(dump_patterns, restore_names)
-                ),
-                location,
-                storage,
-                local_path=local_path,
-                remote_path=remote_path,
-                destination_path='/',
-                progress=arguments['restore'].progress,
-                # We don't want glob patterns that don't match to error.
-                error_on_warnings=False,
-            )
+            for hook_name, per_hook_restore_databases in hooks.items():
+                if hook_name not in dump.DATABASE_HOOK_NAMES:
+                    continue
 
-            # Map the restore names or detected dumps to the corresponding database configurations.
-            restore_databases = dump.get_per_hook_database_configurations(
-                hooks, restore_names, dump_patterns
-            )
+                for restore_database in per_hook_restore_databases:
+                    database_name = restore_database['name']
+                    if restore_names and database_name not in restore_names:
+                        continue
 
-            # Finally, restore the databases and cleanup the dumps.
-            dispatch.call_hooks(
-                'restore_database_dumps',
-                restore_databases,
-                repository,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
-            dispatch.call_hooks(
-                'remove_database_dumps',
-                restore_databases,
-                repository,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
+                    found_names.add(database_name)
+                    dump_pattern = dispatch.call_hooks(
+                        'make_database_dump_pattern',
+                        hooks,
+                        repository,
+                        dump.DATABASE_HOOK_NAMES,
+                        location,
+                        database_name,
+                    )[hook_name]
+
+                    # Kick off a single database extract to stdout.
+                    extract_process = borg_extract.extract_archive(
+                        dry_run=global_arguments.dry_run,
+                        repository=repository,
+                        archive=archive_name,
+                        paths=dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
+                        location_config=location,
+                        storage_config=storage,
+                        local_path=local_path,
+                        remote_path=remote_path,
+                        destination_path='/',
+                        progress=arguments['restore'].progress,
+                        extract_to_stdout=True,
+                    )
+
+                    # Run a single database restore, consuming the extract stdout.
+                    dispatch.call_hooks(
+                        'restore_database_dump',
+                        {hook_name: [restore_database]},
+                        repository,
+                        dump.DATABASE_HOOK_NAMES,
+                        location,
+                        global_arguments.dry_run,
+                        extract_process,
+                    )
+
+            if not restore_names and not found_names:
+                raise ValueError('No databases were found to restore')
+
+            missing_names = sorted(set(restore_names) - found_names)
+            if missing_names:
+                raise ValueError(
+                    'Cannot restore database(s) {} missing from borgmatic\'s configuration'.format(
+                        ', '.join(missing_names)
+                    )
+                )
+
     if 'list' in arguments:
         if arguments['list'].repository is None or validate.repositories_match(
             repository, arguments['list'].repository

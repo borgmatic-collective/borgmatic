@@ -4,7 +4,11 @@ import logging
 import os
 import tempfile
 
-from borgmatic.execute import execute_command, execute_command_without_capture
+from borgmatic.execute import (
+    execute_command,
+    execute_command_with_processes,
+    execute_command_without_capture,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +129,9 @@ def borgmatic_source_directories(borgmatic_source_directory):
     )
 
 
+DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+
+
 def create_archive(
     dry_run,
     repository,
@@ -136,10 +143,14 @@ def create_archive(
     stats=False,
     json=False,
     files=False,
+    stream_processes=None,
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
     storage config dict, create a Borg archive and return Borg's JSON output (if any).
+
+    If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
+    create command while also triggering the given processes to produce output.
     '''
     sources = _expand_directories(
         location_config['source_directories']
@@ -157,8 +168,7 @@ def create_archive(
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
     files_cache = location_config.get('files_cache')
-    default_archive_name_format = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
-    archive_name_format = storage_config.get('archive_name_format', default_archive_name_format)
+    archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
 
     full_command = (
@@ -174,7 +184,7 @@ def create_archive(
         + (('--noatime',) if location_config.get('atime') is False else ())
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
-        + (('--read-special',) if location_config.get('read_special') else ())
+        + (('--read-special',) if (location_config.get('read_special') or stream_processes) else ())
         + (('--nobsdflags',) if location_config.get('bsd_flags') is False else ())
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
@@ -198,6 +208,7 @@ def create_archive(
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
+    # FIXME: "--progress" and stream_processes can't be used together.
     if progress:
         execute_command_without_capture(full_command, error_on_warnings=False)
         return
@@ -208,5 +219,10 @@ def create_archive(
         output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO
+
+    if stream_processes:
+        return execute_command_with_processes(
+            full_command, stream_processes, output_log_level, error_on_warnings=False
+        )
 
     return execute_command(full_command, output_log_level, error_on_warnings=False)

@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 
 from borgmatic.execute import execute_command, execute_command_without_capture
 
@@ -63,12 +64,16 @@ def extract_archive(
     destination_path=None,
     progress=False,
     error_on_warnings=True,
+    extract_to_stdout=False,
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
     restore from the archive, location/storage configuration dicts, optional local and remote Borg
     paths, and an optional destination path to extract to, extract the archive into the current
     directory.
+
+    If extract to stdout is True, then start the extraction streaming to stdout, and return that
+    extract process as an instance of subprocess.Popen.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -83,6 +88,7 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--progress',) if progress else ())
+        + (('--stdout',) if extract_to_stdout else ())
         + ('::'.join((repository if ':' in repository else os.path.abspath(repository), archive)),)
         + (tuple(paths) if paths else ())
     )
@@ -93,7 +99,16 @@ def extract_archive(
         execute_command_without_capture(
             full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
         )
-        return
+        return None
+
+    if extract_to_stdout:
+        return execute_command(
+            full_command,
+            output_file=subprocess.PIPE,
+            working_directory=destination_path,
+            error_on_warnings=error_on_warnings,
+            run_to_completion=False,
+        )
 
     # Error on warnings by default, as Borg only gives a warning if the restore paths don't exist in
     # the archive!

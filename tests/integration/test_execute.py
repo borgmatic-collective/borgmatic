@@ -14,20 +14,12 @@ def test_log_output_logs_each_line_separately():
 
     hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
     module.log_output(
-        ['echo', 'hi'],
-        hi_process,
-        hi_process.stdout,
-        output_log_level=logging.INFO,
-        error_on_warnings=False,
+        hi_process, hi_process.stdout, output_log_level=logging.INFO, error_on_warnings=False
     )
 
     there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
     module.log_output(
-        ['echo', 'there'],
-        there_process,
-        there_process.stdout,
-        output_log_level=logging.INFO,
-        error_on_warnings=False,
+        there_process, there_process.stdout, output_log_level=logging.INFO, error_on_warnings=False
     )
 
 
@@ -39,11 +31,7 @@ def test_log_output_includes_error_output_in_exception():
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.log_output(
-            ['grep'],
-            process,
-            process.stdout,
-            output_log_level=logging.INFO,
-            error_on_warnings=False,
+            process, process.stdout, output_log_level=logging.INFO, error_on_warnings=False
         )
 
     assert error.value.returncode == 2
@@ -59,11 +47,7 @@ def test_log_output_truncates_long_error_output():
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.log_output(
-            ['grep'],
-            process,
-            process.stdout,
-            output_log_level=logging.INFO,
-            error_on_warnings=False,
+            process, process.stdout, output_log_level=logging.INFO, error_on_warnings=False
         )
 
     assert error.value.returncode == 2
@@ -76,5 +60,5 @@ def test_log_output_with_no_output_logs_nothing():
 
     process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     module.log_output(
-        ['true'], process, process.stdout, output_log_level=logging.INFO, error_on_warnings=False
+        process, process.stdout, output_log_level=logging.INFO, error_on_warnings=False
     )

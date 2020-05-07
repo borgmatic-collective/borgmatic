@@ -87,7 +87,7 @@ def test_execute_command_calls_full_command_with_shell():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
-        full_command,
+        ' '.join(full_command),
         stdin=None,
         stdout=module.subprocess.PIPE,
         stderr=module.subprocess.STDOUT,
@@ -138,6 +138,24 @@ def test_execute_command_calls_full_command_with_working_directory():
     output = module.execute_command(full_command, working_directory='/working')
 
     assert output is None
+
+
+def test_execute_command_without_run_to_completion_returns_process():
+    full_command = ['foo', 'bar']
+    process = flexmock()
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdin=None,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
+        shell=False,
+        env=None,
+        cwd=None,
+    ).and_return(process).once()
+    flexmock(module).should_receive('log_output')
+
+    assert module.execute_command(full_command, run_to_completion=False) == process
 
 
 def test_execute_command_captures_output():

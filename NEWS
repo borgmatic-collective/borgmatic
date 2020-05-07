@@ -1,4 +1,7 @@
 1.5.3.dev0
+ * #258: Stream database dumps and restores directly to/from Borg without using any additional
+   filesystem space. This feature is automatic, and works even on restores from archives made with
+   previous versions of borgmatic.
  * #293: Documentation on macOS launchd permissions issues with work-around for Full Disk Access.
 
 1.5.2

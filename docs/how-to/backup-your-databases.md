@@ -22,13 +22,13 @@ hooks:
         - name: posts
 ```
 
-Prior to each backup, borgmatic dumps each configured database to a file
-and includes it in the backup. After the backup completes, borgmatic removes
-the database dump files to recover disk space.
+As part of each backup, borgmatic streams a database dump for each configured
+database directly to Borg, so it's included in the backup without consuming
+additional disk space.
 
-borgmatic creates these temporary dump files in `~/.borgmatic` by default. To
-customize this path, set the `borgmatic_source_directory` option in the
-`location` section of borgmatic's configuration.
+To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
+default. To customize this path, set the `borgmatic_source_directory` option
+in the `location` section of borgmatic's configuration.
 
 Here's a more involved example that connects to remote databases:
 

@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks import postgresql as module
@@ -5,19 +6,21 @@ from borgmatic.hooks import postgresql as module
 
 def test_dump_databases_runs_pg_dump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
+    processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
-    for name in ('foo', 'bar'):
+    for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
             (
                 'pg_dump',
                 '--no-password',
                 '--clean',
                 '--if-exists',
+                '--no-sync',
                 '--file',
                 'databases/localhost/{}'.format(name),
                 '--format',
@@ -25,9 +28,10 @@ def test_dump_databases_runs_pg_dump_for_each_database():
                 name,
             ),
             extra_environment=None,
-        ).once()
+            run_to_completion=False,
+        ).and_return(process).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
 
 
 def test_dump_databases_with_dry_run_skips_pg_dump():
@@ -36,19 +40,20 @@ def test_dump_databases_with_dry_run_skips_pg_dump():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
-    flexmock(module.os).should_receive('makedirs').never()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=True)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
 
 
 def test_dump_databases_runs_pg_dump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/database.example.org/foo'
     )
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -56,6 +61,7 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
             '--no-password',
             '--clean',
             '--if-exists',
+            '--no-sync',
             '--file',
             'databases/database.example.org/foo',
             '--host',
@@ -67,18 +73,20 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
             'foo',
         ),
         extra_environment=None,
-    ).once()
+        run_to_completion=False,
+    ).and_return(process).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
 def test_dump_databases_runs_pg_dump_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -86,6 +94,7 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
             '--no-password',
             '--clean',
             '--if-exists',
+            '--no-sync',
             '--file',
             'databases/localhost/foo',
             '--username',
@@ -95,18 +104,20 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
             'foo',
         ),
         extra_environment={'PGPASSWORD': 'trustsome1'},
-    ).once()
+        run_to_completion=False,
+    ).and_return(process).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
 def test_dump_databases_runs_pg_dump_with_format():
     databases = [{'name': 'foo', 'format': 'tar'}]
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -114,6 +125,7 @@ def test_dump_databases_runs_pg_dump_with_format():
             '--no-password',
             '--clean',
             '--if-exists',
+            '--no-sync',
             '--file',
             'databases/localhost/foo',
             '--format',
@@ -121,18 +133,20 @@ def test_dump_databases_runs_pg_dump_with_format():
             'foo',
         ),
         extra_environment=None,
-    ).once()
+        run_to_completion=False,
+    ).and_return(process).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
 def test_dump_databases_runs_pg_dump_with_options():
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -140,6 +154,7 @@ def test_dump_databases_runs_pg_dump_with_options():
             '--no-password',
             '--clean',
             '--if-exists',
+            '--no-sync',
             '--file',
             'databases/localhost/foo',
             '--format',
@@ -148,18 +163,20 @@ def test_dump_databases_runs_pg_dump_with_options():
             'foo',
         ),
         extra_environment=None,
-    ).once()
+        run_to_completion=False,
+    ).and_return(process).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
 def test_dump_databases_runs_pg_dumpall_for_all_databases():
     databases = [{'name': 'all'}]
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
     )
-    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -167,73 +184,62 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
             '--no-password',
             '--clean',
             '--if-exists',
+            '--no-sync',
             '--file',
             'databases/localhost/all',
         ),
         extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+
+
+def test_restore_database_dump_runs_pg_restore():
+    database_config = [{'name': 'foo'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'pg_restore',
+            '--no-password',
+            '--if-exists',
+            '--exit-on-error',
+            '--clean',
+            '--dbname',
+            'foo',
+        ),
+        processes=[extract_process],
+        input_file=extract_process.stdout,
+        extra_environment=None,
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        ('psql', '--no-password', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
+        extra_environment=None,
     ).once()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
-
-
-def test_make_database_dump_patterns_converts_names_to_glob_paths():
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/*/foo'
-    ).and_return('databases/*/bar')
-
-    assert module.make_database_dump_patterns(flexmock(), flexmock(), {}, ('foo', 'bar')) == [
-        'databases/*/foo',
-        'databases/*/bar',
-    ]
-
-
-def test_make_database_dump_patterns_treats_empty_names_as_matching_all_databases():
-    flexmock(module).should_receive('make_dump_path').and_return('/dump/path')
-    flexmock(module.dump).should_receive('make_database_dump_filename').with_args(
-        '/dump/path', '*', '*'
-    ).and_return('databases/*/*')
-
-    assert module.make_database_dump_patterns(flexmock(), flexmock(), {}, ()) == ['databases/*/*']
-
-
-def test_restore_database_dumps_restores_each_database():
-    databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
-    ).and_return('databases/localhost/bar')
-
-    for name in ('foo', 'bar'):
-        flexmock(module).should_receive('execute_command').with_args(
-            (
-                'pg_restore',
-                '--no-password',
-                '--if-exists',
-                '--exit-on-error',
-                '--clean',
-                '--dbname',
-                name,
-                'databases/localhost/{}'.format(name),
-            ),
-            extra_environment=None,
-        ).once()
-        flexmock(module).should_receive('execute_command').with_args(
-            ('psql', '--no-password', '--quiet', '--dbname', name, '--command', 'ANALYZE'),
-            extra_environment=None,
-        ).once()
-
-    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
-
-
-def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
-    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
     )
 
-    flexmock(module).should_receive('execute_command').with_args(
+
+def test_restore_database_dump_errors_on_multiple_database_config():
+    database_config = [{'name': 'foo'}, {'name': 'bar'}]
+
+    flexmock(module).should_receive('execute_command_with_processes').never()
+    flexmock(module).should_receive('execute_command').never()
+
+    with pytest.raises(ValueError):
+        module.restore_database_dump(
+            database_config, 'test.yaml', {}, dry_run=False, extract_process=flexmock()
+        )
+
+
+def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
+    database_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
             '--no-password',
@@ -246,8 +252,9 @@ def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
             'database.example.org',
             '--port',
             '5433',
-            'databases/localhost/foo',
         ),
+        processes=[extract_process],
+        input_file=extract_process.stdout,
         extra_environment=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
@@ -267,17 +274,16 @@ def test_restore_database_dumps_runs_pg_restore_with_hostname_and_port():
         extra_environment=None,
     ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
-
-
-def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
-    databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
     )
 
-    flexmock(module).should_receive('execute_command').with_args(
+
+def test_restore_database_dump_runs_pg_restore_with_username_and_password():
+    database_config = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
             '--no-password',
@@ -288,8 +294,9 @@ def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
             'foo',
             '--username',
             'postgres',
-            'databases/localhost/foo',
         ),
+        processes=[extract_process],
+        input_file=extract_process.stdout,
         extra_environment={'PGPASSWORD': 'trustsome1'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
@@ -307,21 +314,25 @@ def test_restore_database_dumps_runs_pg_restore_with_username_and_password():
         extra_environment={'PGPASSWORD': 'trustsome1'},
     ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
-
-
-def test_restore_database_dumps_runs_psql_for_all_database_dump():
-    databases = [{'name': 'all'}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/all'
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
     )
 
-    flexmock(module).should_receive('execute_command').with_args(
-        ('psql', '--no-password', '-f', 'databases/localhost/all'), extra_environment=None
+
+def test_restore_database_dump_runs_psql_for_all_database_dump():
+    database_config = [{'name': 'all'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('psql', '--no-password'),
+        processes=[extract_process],
+        input_file=extract_process.stdout,
+        extra_environment=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--quiet', '--command', 'ANALYZE'), extra_environment=None
     ).once()
 
-    module.restore_database_dumps(databases, 'test.yaml', {}, dry_run=False)
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+    )
