@@ -336,3 +336,13 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     module.restore_database_dump(
         database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
     )
+
+
+def test_restore_database_dump_with_dry_run_skips_restore():
+    database_config = [{'name': 'foo'}]
+
+    flexmock(module).should_receive('execute_command_with_processes').never()
+
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=True, extract_process=flexmock()
+    )

@@ -83,7 +83,9 @@ def remove_database_dumps(databases, log_prefix, location_config, dry_run):  # p
     )
 
 
-def make_database_dump_pattern(databases, log_prefix, location_config, name=None):
+def make_database_dump_pattern(
+    databases, log_prefix, location_config, name=None
+):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a prefix to log with, a location configuration dict,
     and a database name to match, return the corresponding glob patterns to match the database dump

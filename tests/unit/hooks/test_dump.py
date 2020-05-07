@@ -34,6 +34,14 @@ def test_make_database_dump_filename_with_invalid_name_raises():
         module.make_database_dump_filename('databases', 'invalid/name')
 
 
+def test_create_named_pipe_for_dump_does_not_raise():
+    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os).should_receive('mkfifo')
+
+    module.create_named_pipe_for_dump('/path/to/pipe')
+
+
 def test_remove_database_dumps_removes_dump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_database_dump_filename').with_args(

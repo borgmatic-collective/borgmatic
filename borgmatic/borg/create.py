@@ -208,7 +208,6 @@ def create_archive(
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
-    # FIXME: "--progress" and stream_processes can't be used together.
     if progress:
         execute_command_without_capture(full_command, error_on_warnings=False)
         return
