@@ -24,6 +24,19 @@ def test_exit_code_indicates_error_respects_exit_code_and_error_on_warnings(
     )
 
 
+def output_buffer_for_process_returns_stderr_when_stdout_excluded():
+    stdout = flexmock()
+    process = flexmock(stdout=stdout)
+
+    module.output_buffer_for_process(process, excluded_stdouts=[flexmock(), stdout])
+
+
+def output_buffer_for_process_returns_stdout_when_not_excluded():
+    process = flexmock(stdout=flexmock())
+
+    module.output_buffer_for_process(process, excluded_stdouts=[flexmock(), flexmock()])
+
+
 def test_execute_command_calls_full_command():
     full_command = ['foo', 'bar']
     flexmock(module.os, environ={'a': 'b'})
