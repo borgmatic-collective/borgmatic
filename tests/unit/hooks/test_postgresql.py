@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from flexmock import flexmock
 
@@ -203,6 +205,7 @@ def test_restore_database_dump_runs_pg_restore():
             'foo',
         ),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
     ).once()
@@ -247,6 +250,7 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
             '5433',
         ),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
     ).once()
@@ -289,6 +293,7 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
             'postgres',
         ),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment={'PGPASSWORD': 'trustsome1'},
     ).once()
@@ -319,6 +324,7 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('psql', '--no-password'),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
     ).once()

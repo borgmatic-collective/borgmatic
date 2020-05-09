@@ -142,6 +142,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     execute_command_with_processes(
         restore_command,
         [extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=extra_environment,
     )

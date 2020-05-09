@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from flexmock import flexmock
 
@@ -201,8 +203,9 @@ def test_restore_database_dump_runs_mysql_to_restore():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('mysql', '--batch'),
+        ('mysql', '--batch', '--verbose'),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
     ).once()
@@ -232,6 +235,7 @@ def test_restore_database_dump_runs_mysql_with_hostname_and_port():
         (
             'mysql',
             '--batch',
+            '--verbose',
             '--host',
             'database.example.org',
             '--port',
@@ -240,6 +244,7 @@ def test_restore_database_dump_runs_mysql_with_hostname_and_port():
             'tcp',
         ),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
     ).once()
@@ -254,8 +259,9 @@ def test_restore_database_dump_runs_mysql_with_username_and_password():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('mysql', '--batch', '--user', 'root'),
+        ('mysql', '--batch', '--verbose', '--user', 'root'),
         processes=[extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment={'MYSQL_PWD': 'trustsome1'},
     ).once()

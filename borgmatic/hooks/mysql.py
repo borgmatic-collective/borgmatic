@@ -152,7 +152,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
 
     database = database_config[0]
     restore_command = (
-        ('mysql', '--batch')
+        ('mysql', '--batch', '--verbose')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
@@ -169,6 +169,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     execute_command_with_processes(
         restore_command,
         [extract_process],
+        output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=extra_environment,
     )
