@@ -42,15 +42,16 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 '--no-password',
                 '--clean',
                 '--if-exists',
-                '--no-sync',
             )
-            + ('--file', dump_filename)
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
             + (() if all_databases else ('--format', database.get('format', 'custom')))
             + (tuple(database['options'].split(' ')) if 'options' in database else ())
             + (() if all_databases else (name,))
+            # Use shell redirection rather than the --file flag to sidestep synchronization issues
+            # when pg_dump/pg_dumpall tries to write to a named pipe.
+            + ('>', dump_filename)
         )
         extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
 
@@ -65,7 +66,9 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         dump.create_named_pipe_for_dump(dump_filename)
 
         processes.append(
-            execute_command(command, extra_environment=extra_environment, run_to_completion=False)
+            execute_command(
+                command, shell=True, extra_environment=extra_environment, run_to_completion=False
+            )
         )
 
     return processes
