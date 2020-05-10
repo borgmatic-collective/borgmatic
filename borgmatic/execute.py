@@ -206,12 +206,12 @@ def execute_command(
         return process
 
     if do_not_capture:
-        exit_code = process.poll()
+        exit_code = process.wait()
 
         if exit_code_indicates_error(exit_code, error_on_warnings):
             raise subprocess.CalledProcessError(exit_code, process_command(process))
 
-        return
+        return None
 
     log_output(
         process,
