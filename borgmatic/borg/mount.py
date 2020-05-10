@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.execute import execute_command, execute_command_without_capture
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def mount_archive(
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
     if foreground:
-        execute_command_without_capture(full_command, error_on_warnings=False)
+        execute_command(full_command, output_file=DO_NOT_CAPTURE, error_on_warnings=False)
         return
 
     execute_command(full_command, error_on_warnings=False)

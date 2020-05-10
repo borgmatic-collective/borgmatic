@@ -386,7 +386,6 @@ def run_actions(
                         local_path=local_path,
                         remote_path=remote_path,
                         destination_path='/',
-                        progress=arguments['restore'].progress,
                         extract_to_stdout=True,
                     )
 

@@ -1,7 +1,7 @@
 import logging
 import subprocess
 
-from borgmatic.execute import execute_command, execute_command_without_capture
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -54,5 +54,5 @@ def initialize_repository(
         + (repository,)
     )
 
-    # Don't use execute_command() here because it doesn't support interactive prompts.
-    execute_command_without_capture(init_command, error_on_warnings=False)
+    # Do not capture output here, so as to support interactive prompts.
+    execute_command(init_command, output_file=DO_NOT_CAPTURE, error_on_warnings=False)

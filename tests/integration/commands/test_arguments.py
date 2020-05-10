@@ -393,12 +393,6 @@ def test_parse_arguments_allows_progress_and_extract():
     module.parse_arguments('--progress', 'extract', '--archive', 'test', 'list')
 
 
-def test_parse_arguments_allows_progress_and_restore():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--progress', 'restore', '--archive', 'test', 'list')
-
-
 def test_parse_arguments_disallows_progress_without_create():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

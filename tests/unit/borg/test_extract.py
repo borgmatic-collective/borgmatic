@@ -221,8 +221,9 @@ def test_extract_archive_calls_borg_with_destination_path():
 
 def test_extract_archive_calls_borg_with_progress_parameter():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
-    flexmock(module).should_receive('execute_command_without_capture').with_args(
+    flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'extract', '--progress', 'repo::archive'),
+        output_file=module.DO_NOT_CAPTURE,
         working_directory=None,
         error_on_warnings=True,
     ).once()

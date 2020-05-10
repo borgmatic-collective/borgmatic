@@ -89,7 +89,11 @@ def log_many_outputs(processes, exclude_stdouts, output_log_level, error_on_warn
     '''
     # Map from output buffer to sequence of last lines.
     buffer_last_lines = collections.defaultdict(list)
-    output_buffers = [output_buffer_for_process(process, exclude_stdouts) for process in processes]
+    output_buffers = [
+        output_buffer_for_process(process, exclude_stdouts)
+        for process in processes
+        if process.stdout or process.stderr
+    ]
 
     while True:
         (ready_buffers, _, _) = select.select(output_buffers, [], [])
@@ -112,9 +116,13 @@ def log_many_outputs(processes, exclude_stdouts, output_log_level, error_on_warn
             break
 
     for process in processes:
-        remaining_output = (
-            output_buffer_for_process(process, exclude_stdouts).read().rstrip().decode()
-        )
+        output_buffer = output_buffer_for_process(process, exclude_stdouts)
+
+        if not output_buffer:
+            continue
+
+        remaining_output = output_buffer.read().rstrip().decode()
+
         if remaining_output:  # pragma: no cover
             logger.log(output_log_level, remaining_output)
 
@@ -125,7 +133,8 @@ def log_many_outputs(processes, exclude_stdouts, output_log_level, error_on_warn
             # If an error occurs, include its output in the raised exception so that we don't
             # inadvertently hide error output.
             output_buffer = output_buffer_for_process(process, exclude_stdouts)
-            last_lines = buffer_last_lines[output_buffer]
+
+            last_lines = buffer_last_lines[output_buffer] if output_buffer else []
             if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                 last_lines.insert(0, '...')
 
@@ -144,6 +153,9 @@ def log_command(full_command, input_file, output_file):
         + (' < {}'.format(getattr(input_file, 'name', '')) if input_file else '')
         + (' > {}'.format(getattr(output_file, 'name', '')) if output_file else '')
     )
+
+
+DO_NOT_CAPTURE = object()
 
 
 def execute_command(
@@ -173,49 +185,40 @@ def execute_command(
     '''
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
+    do_not_capture = bool(output_file is DO_NOT_CAPTURE)
 
     if output_log_level is None:
         output = subprocess.check_output(
             full_command, shell=shell, env=environment, cwd=working_directory
         )
         return output.decode() if output is not None else None
-    else:
-        process = subprocess.Popen(
-            ' '.join(full_command) if shell else full_command,
-            stdin=input_file,
-            stdout=output_file or subprocess.PIPE,
-            stderr=subprocess.PIPE if output_file else subprocess.STDOUT,
-            shell=shell,
-            env=environment,
-            cwd=working_directory,
-        )
-        if not run_to_completion:
-            return process
 
-        log_output(
-            process,
-            process.stderr if output_file else process.stdout,
-            output_log_level,
-            error_on_warnings,
-        )
+    process = subprocess.Popen(
+        ' '.join(full_command) if shell else full_command,
+        stdin=input_file,
+        stdout=None if do_not_capture else (output_file or subprocess.PIPE),
+        stderr=None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT),
+        shell=shell,
+        env=environment,
+        cwd=working_directory,
+    )
+    if not run_to_completion:
+        return process
 
+    if do_not_capture:
+        exit_code = process.poll()
 
-def execute_command_without_capture(full_command, working_directory=None, error_on_warnings=True):
-    '''
-    Execute the given command (a sequence of command/argument strings), but don't capture or log its
-    output in any way. This is necessary for commands that monkey with the terminal (e.g. progress
-    display) or provide interactive prompts.
+        if exit_code_indicates_error(exit_code, error_on_warnings):
+            raise subprocess.CalledProcessError(exit_code, process_command(process))
 
-    If a working directory is given, use that as the present working directory when running the
-    command. If error on warnings is False, then treat exit code 1 as a warning instead of an error.
-    '''
-    logger.debug(' '.join(full_command))
+        return
 
-    try:
-        subprocess.check_call(full_command, cwd=working_directory)
-    except subprocess.CalledProcessError as error:
-        if exit_code_indicates_error(error.returncode, error_on_warnings):
-            raise
+    log_output(
+        process,
+        process.stderr if output_file else process.stdout,
+        output_log_level,
+        error_on_warnings,
+    )
 
 
 def execute_command_with_processes(
@@ -248,13 +251,16 @@ def execute_command_with_processes(
     '''
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
+    do_not_capture = bool(output_file is DO_NOT_CAPTURE)
 
     try:
         command_process = subprocess.Popen(
             full_command,
             stdin=input_file,
-            stdout=output_file or subprocess.PIPE,
-            stderr=subprocess.PIPE if output_file else subprocess.STDOUT,
+            stdout=None if do_not_capture else (output_file or subprocess.PIPE),
+            stderr=None
+            if do_not_capture
+            else (subprocess.PIPE if output_file else subprocess.STDOUT),
             shell=shell,
             env=environment,
             cwd=working_directory,

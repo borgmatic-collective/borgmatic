@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import extract
-from borgmatic.execute import execute_command, execute_command_without_capture
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = ('repository', 'archives')
 DEFAULT_PREFIX = '{hostname}-'
@@ -134,7 +134,7 @@ def check_archives(
         # The Borg repair option trigger an interactive prompt, which won't work when output is
         # captured. And progress messes with the terminal directly.
         if repair or progress:
-            execute_command_without_capture(full_command, error_on_warnings=True)
+            execute_command(full_command, output_file=DO_NOT_CAPTURE, error_on_warnings=True)
         else:
             execute_command(full_command, error_on_warnings=True)
 

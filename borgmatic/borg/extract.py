@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-from borgmatic.execute import execute_command, execute_command_without_capture
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,9 @@ def extract_archive(
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
 
+    if progress and extract_to_stdout:
+        raise ValueError('progress and extract_to_stdout cannot both be set')
+
     full_command = (
         (local_path, 'extract')
         + (('--remote-path', remote_path) if remote_path else ())
@@ -96,8 +99,11 @@ def extract_archive(
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if progress:
-        execute_command_without_capture(
-            full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
+        return execute_command(
+            full_command,
+            output_file=DO_NOT_CAPTURE,
+            working_directory=destination_path,
+            error_on_warnings=error_on_warnings,
         )
         return None
 

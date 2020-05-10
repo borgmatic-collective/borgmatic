@@ -23,8 +23,8 @@ def insert_info_command_not_found_mock():
 
 
 def insert_init_command_mock(init_command, **kwargs):
-    flexmock(module).should_receive('execute_command_without_capture').with_args(
-        init_command, error_on_warnings=False
+    flexmock(module).should_receive('execute_command').with_args(
+        init_command, output_file=module.DO_NOT_CAPTURE, error_on_warnings=False
     ).once()
 
 
@@ -37,7 +37,7 @@ def test_initialize_repository_calls_borg_with_parameters():
 
 def test_initialize_repository_raises_for_borg_init_error():
     insert_info_command_not_found_mock()
-    flexmock(module).should_receive('execute_command_without_capture').and_raise(
+    flexmock(module).should_receive('execute_command').and_raise(
         module.subprocess.CalledProcessError(2, 'borg init')
     )
 
@@ -48,8 +48,7 @@ def test_initialize_repository_raises_for_borg_init_error():
 
 
 def test_initialize_repository_skips_initialization_when_repository_already_exists():
-    insert_info_command_found_mock()
-    flexmock(module).should_receive('execute_command_without_capture').never()
+    flexmock(module).should_receive('execute_command').once()
 
     module.initialize_repository(repository='repo', storage_config={}, encryption_mode='repokey')
 

@@ -225,30 +225,3 @@ def test_execute_command_captures_output_with_working_directory():
     )
 
     assert output == expected_output
-
-
-def test_execute_command_without_capture_does_not_raise_on_success():
-    flexmock(module.subprocess).should_receive('check_call').and_raise(
-        module.subprocess.CalledProcessError(0, 'borg init')
-    )
-
-    module.execute_command_without_capture(('borg', 'init'))
-
-
-def test_execute_command_without_capture_does_not_raise_on_warning():
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
-    flexmock(module.subprocess).should_receive('check_call').and_raise(
-        module.subprocess.CalledProcessError(1, 'borg init')
-    )
-
-    module.execute_command_without_capture(('borg', 'init'))
-
-
-def test_execute_command_without_capture_raises_on_error():
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(True)
-    flexmock(module.subprocess).should_receive('check_call').and_raise(
-        module.subprocess.CalledProcessError(2, 'borg init')
-    )
-
-    with pytest.raises(module.subprocess.CalledProcessError):
-        module.execute_command_without_capture(('borg', 'init'))

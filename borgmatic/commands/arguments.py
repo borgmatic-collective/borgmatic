@@ -428,13 +428,6 @@ def parse_arguments(*unparsed_arguments):
         help='Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic\'s configuration',
     )
     restore_group.add_argument(
-        '--progress',
-        dest='progress',
-        default=False,
-        action='store_true',
-        help='Display progress for each database dump file as it is extracted from archive',
-    )
-    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

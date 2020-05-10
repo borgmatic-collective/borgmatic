@@ -164,8 +164,10 @@ def test_check_archives_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     flexmock(module).should_receive('execute_command').never()
-    flexmock(module).should_receive('execute_command_without_capture').with_args(
-        ('borg', 'check', '--progress', 'repo'), error_on_warnings=True
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'check', '--progress', 'repo'),
+        output_file=module.DO_NOT_CAPTURE,
+        error_on_warnings=True,
     ).once()
 
     module.check_archives(
@@ -179,8 +181,10 @@ def test_check_archives_with_repair_calls_borg_with_repair_parameter():
     flexmock(module).should_receive('_parse_checks').and_return(checks)
     flexmock(module).should_receive('_make_check_flags').and_return(())
     flexmock(module).should_receive('execute_command').never()
-    flexmock(module).should_receive('execute_command_without_capture').with_args(
-        ('borg', 'check', '--repair', 'repo'), error_on_warnings=True
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'check', '--repair', 'repo'),
+        output_file=module.DO_NOT_CAPTURE,
+        error_on_warnings=True,
     ).once()
 
     module.check_archives(
