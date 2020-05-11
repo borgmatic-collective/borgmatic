@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import extract as module
@@ -237,6 +238,22 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         storage_config={},
         progress=True,
     )
+
+
+def test_extract_archive_with_progress_and_extract_to_stdout_raises():
+    flexmock(module).should_receive('execute_command').never()
+
+    with pytest.raises(ValueError):
+        module.extract_archive(
+            dry_run=False,
+            repository='repo',
+            archive='archive',
+            paths=None,
+            location_config={},
+            storage_config={},
+            progress=True,
+            extract_to_stdout=True,
+        )
 
 
 def test_extract_archive_calls_borg_with_stdout_parameter_and_returns_process():

@@ -1005,6 +1005,36 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     )
 
 
+def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progress_parameter():
+    processes = flexmock()
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('borg', 'create', '--read-special', '--progress') + ARCHIVE_WITH_PATHS,
+        processes=processes,
+        output_log_level=logging.INFO,
+        output_file=module.DO_NOT_CAPTURE,
+        error_on_warnings=False,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        progress=True,
+        stream_processes=processes,
+    )
+
+
 def test_create_archive_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('_expand_directories').and_return(('foo', 'bar'))
