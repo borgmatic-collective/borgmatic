@@ -49,7 +49,7 @@ def test_execute_command_calls_full_command():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command)
 
@@ -69,7 +69,7 @@ def test_execute_command_calls_full_command_with_output_file():
         env=None,
         cwd=None,
     ).and_return(flexmock(stderr=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, output_file=output_file)
 
@@ -89,7 +89,7 @@ def test_execute_command_calls_full_command_with_input_file():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, input_file=input_file)
 
@@ -108,7 +108,7 @@ def test_execute_command_calls_full_command_with_shell():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, shell=True)
 
@@ -127,7 +127,7 @@ def test_execute_command_calls_full_command_with_extra_environment():
         env={'a': 'b', 'c': 'd'},
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, extra_environment={'c': 'd'})
 
@@ -146,7 +146,7 @@ def test_execute_command_calls_full_command_with_working_directory():
         env=None,
         cwd='/working',
     ).and_return(flexmock(stdout=None)).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, working_directory='/working')
 
@@ -166,7 +166,7 @@ def test_execute_command_without_run_to_completion_returns_process():
         env=None,
         cwd=None,
     ).and_return(process).once()
-    flexmock(module).should_receive('log_output')
+    flexmock(module).should_receive('log_outputs')
 
     assert module.execute_command(full_command, run_to_completion=False) == process
 

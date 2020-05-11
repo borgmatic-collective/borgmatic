@@ -30,45 +30,6 @@ def process_command(process):
     return process.args if isinstance(process.args, str) else ' '.join(process.args)
 
 
-def log_output(process, output_buffer, output_log_level, error_on_warnings):
-    '''
-    Given an executed command's process opened by subprocess.Popen(), and the process' relevant
-    output buffer (stderr or stdout), log its output with the requested log level. Additionally,
-    raise a CalledProcessError if the process exits with an error (or a warning, if error on
-    warnings is True).
-    '''
-    last_lines = []
-
-    while process.poll() is None:
-        line = output_buffer.readline().rstrip().decode()
-        if not line:
-            continue
-
-        # Keep the last few lines of output in case the command errors, and we need the output for
-        # the exception below.
-        last_lines.append(line)
-        if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
-            last_lines.pop(0)
-
-        logger.log(output_log_level, line)
-
-    remaining_output = output_buffer.read().rstrip().decode()
-    if remaining_output:  # pragma: no cover
-        logger.log(output_log_level, remaining_output)
-
-    exit_code = process.poll()
-
-    if exit_code_indicates_error(exit_code, error_on_warnings):
-        # If an error occurs, include its output in the raised exception so that we don't
-        # inadvertently hide error output.
-        if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
-            last_lines.insert(0, '...')
-
-        raise subprocess.CalledProcessError(
-            exit_code, process_command(process), '\n'.join(last_lines)
-        )
-
-
 def output_buffer_for_process(process, exclude_stdouts):
     '''
     Given an instance of subprocess.Popen and a sequence of stdouts to exclude, return either the
@@ -78,7 +39,7 @@ def output_buffer_for_process(process, exclude_stdouts):
     return process.stderr if process.stdout in exclude_stdouts else process.stdout
 
 
-def log_many_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings):
+def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
     process with the requested log level. Additionally, raise a CalledProcessError if a process
@@ -213,12 +174,7 @@ def execute_command(
 
         return None
 
-    log_output(
-        process,
-        process.stderr if output_file else process.stdout,
-        output_log_level,
-        error_on_warnings,
-    )
+    log_outputs((process,), (input_file, output_file), output_log_level, error_on_warnings)
 
 
 def execute_command_with_processes(
@@ -274,7 +230,7 @@ def execute_command_with_processes(
                 process.kill()
         raise
 
-    log_many_outputs(
+    log_outputs(
         tuple(processes) + (command_process,),
         (input_file, output_file),
         output_log_level,
