@@ -22,7 +22,7 @@ def exit_code_indicates_error(exit_code, error_on_warnings=True):
     return bool(exit_code >= BORG_ERROR_EXIT_CODE)
 
 
-def process_command(process):
+def command_for_process(process):
     '''
     Given a process as an instance of subprocess.Popen, return the command string that was used to
     invoke it.
@@ -32,9 +32,9 @@ def process_command(process):
 
 def output_buffer_for_process(process, exclude_stdouts):
     '''
-    Given an instance of subprocess.Popen and a sequence of stdouts to exclude, return either the
-    process's stdout or stderr. The idea is that if stdout is excluded for a process, we still have
-    stderr to log.
+    Given a process as an instance of subprocess.Popen and a sequence of stdouts to exclude, return
+    either the process's stdout or stderr. The idea is that if stdout is excluded for a process, we
+    still have stderr to log.
     '''
     return process.stderr if process.stdout in exclude_stdouts else process.stdout
 
@@ -100,7 +100,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
                 last_lines.insert(0, '...')
 
             raise subprocess.CalledProcessError(
-                exit_code, process_command(process), '\n'.join(last_lines)
+                exit_code, command_for_process(process), '\n'.join(last_lines)
             )
 
 
@@ -170,7 +170,7 @@ def execute_command(
         exit_code = process.wait()
 
         if exit_code_indicates_error(exit_code, error_on_warnings):
-            raise subprocess.CalledProcessError(exit_code, process_command(process))
+            raise subprocess.CalledProcessError(exit_code, command_for_process(process))
 
         return None
 
