@@ -47,6 +47,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
 
     For simplicity, it's assumed that the output buffer for each process is its stdout. But if any
     stdouts are given to exclude, then for any matching processes, log from their stderr instead.
+
+    Note that stdout for a process can be None if output is intentionally not captured. In which
+    case it won't be logged.
     '''
     # Map from output buffer to sequence of last lines.
     buffer_last_lines = collections.defaultdict(list)
@@ -56,7 +59,11 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
         if process.stdout or process.stderr
     ]
 
+    # Log output for each process until they all exit.
     while True:
+        if not output_buffers:
+            break
+
         (ready_buffers, _, _) = select.select(output_buffers, [], [])
 
         for ready_buffer in ready_buffers:
@@ -76,6 +83,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
         if all(process.poll() is not None for process in processes):
             break
 
+    # Consume any remaining output that we missed (if any).
     for process in processes:
         output_buffer = output_buffer_for_process(process, exclude_stdouts)
 
@@ -87,8 +95,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
         if remaining_output:  # pragma: no cover
             logger.log(output_log_level, remaining_output)
 
+    # If any process errored, then raise accordingly.
     for process in processes:
-        exit_code = process.poll()
+        exit_code = process.wait()
 
         if exit_code_indicates_error(exit_code, error_on_warnings):
             # If an error occurs, include its output in the raised exception so that we don't
@@ -116,6 +125,9 @@ def log_command(full_command, input_file, output_file):
     )
 
 
+# An sentinel passed as an output file to execute_command() to indicate that the command's output
+# should be allowed to flow through to stdout without being captured for logging. Useful for
+# commands with interactive prompts or those that mess directly with the console.
 DO_NOT_CAPTURE = object()
 
 
@@ -147,15 +159,16 @@ def execute_command(
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
+    command = ' '.join(full_command) if shell else full_command
 
     if output_log_level is None:
         output = subprocess.check_output(
-            full_command, shell=shell, env=environment, cwd=working_directory
+            command, shell=shell, env=environment, cwd=working_directory
         )
         return output.decode() if output is not None else None
 
     process = subprocess.Popen(
-        ' '.join(full_command) if shell else full_command,
+        command,
         stdin=input_file,
         stdout=None if do_not_capture else (output_file or subprocess.PIPE),
         stderr=None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT),
@@ -165,14 +178,6 @@ def execute_command(
     )
     if not run_to_completion:
         return process
-
-    if do_not_capture:
-        exit_code = process.wait()
-
-        if exit_code_indicates_error(exit_code, error_on_warnings):
-            raise subprocess.CalledProcessError(exit_code, command_for_process(process))
-
-        return None
 
     log_outputs((process,), (input_file, output_file), output_log_level, error_on_warnings)
 
@@ -208,10 +213,11 @@ def execute_command_with_processes(
     log_command(full_command, input_file, output_file)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
+    command = ' '.join(full_command) if shell else full_command
 
     try:
         command_process = subprocess.Popen(
-            full_command,
+            command,
             stdin=input_file,
             stdout=None if do_not_capture else (output_file or subprocess.PIPE),
             stderr=None

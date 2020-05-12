@@ -17,9 +17,28 @@ def test_log_outputs_logs_each_line_separately():
         hi_process, ()
     ).and_return(hi_process.stdout)
 
+    there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        there_process, ()
+    ).and_return(there_process.stdout)
+
     module.log_outputs(
-        (hi_process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+        (hi_process, there_process),
+        exclude_stdouts=(),
+        output_log_level=logging.INFO,
+        error_on_warnings=False,
     )
+
+
+def test_log_outputs_skips_logs_for_process_with_none_stdout():
+    flexmock(module.logger).should_receive('log').with_args(logging.INFO, 'hi').never()
+    flexmock(module.logger).should_receive('log').with_args(logging.INFO, 'there').once()
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
+
+    hi_process = subprocess.Popen(['echo', 'hi'], stdout=None)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        hi_process, ()
+    ).and_return(hi_process.stdout)
 
     there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
     flexmock(module).should_receive('output_buffer_for_process').with_args(
@@ -27,7 +46,10 @@ def test_log_outputs_logs_each_line_separately():
     ).and_return(there_process.stdout)
 
     module.log_outputs(
-        (there_process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+        (hi_process, there_process),
+        exclude_stdouts=(),
+        output_log_level=logging.INFO,
+        error_on_warnings=False,
     )
 
 
@@ -46,6 +68,23 @@ def test_log_outputs_includes_error_output_in_exception():
 
     assert error.value.returncode == 2
     assert error.value.output
+
+
+def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdout():
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(True)
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(['grep'], stdout=None)
+    flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        module.log_outputs(
+            (process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+        )
+
+    assert error.value.returncode == 2
+    assert not error.value.output
 
 
 def test_log_outputs_truncates_long_error_output():
