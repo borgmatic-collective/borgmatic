@@ -21,6 +21,7 @@ from borgmatic import execute as module
         (flexmock(args=['grep']), 0, 'borg', False),
         (flexmock(args=['borg']), 0, 'borg', False),
         (flexmock(args=['borg1']), 0, 'borg1', False),
+        (flexmock(args=['borg']), None, None, False),
     ),
 )
 def test_exit_code_indicates_error_respects_exit_code_and_borg_local_path(
