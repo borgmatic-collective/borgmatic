@@ -5,6 +5,8 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
+
 
 def write_configuration(config_path, repository_path, borgmatic_source_directory):
     '''
@@ -67,7 +69,7 @@ def test_database_dump_and_restore():
             'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
         )
 
-        # Run borgmatic to generate a backup archive including a database dump
+        # Run borgmatic to generate a backup archive including a database dump.
         subprocess.check_call('borgmatic create --config {} -v 2'.format(config_path).split(' '))
 
         # Get the created archive name.
@@ -86,6 +88,41 @@ def test_database_dump_and_restore():
                 ' '
             )
         )
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_with_error_causes_borgmatic_to_exit():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
+
+    original_working_directory = os.getcwd()
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        write_configuration(config_path, repository_path, borgmatic_source_directory)
+
+        subprocess.check_call(
+            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+        )
+
+        # Run borgmatic with a config override such that the database dump fails.
+        with pytest.raises(subprocess.CalledProcessError):
+            subprocess.check_call(
+                [
+                    'borgmatic',
+                    'create',
+                    '--config',
+                    config_path,
+                    '-v',
+                    '2',
+                    '--override',
+                    "hooks.postgresql_databases=[{'name': 'nope'}]",
+                ]
+            )
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)

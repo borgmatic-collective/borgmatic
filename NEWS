@@ -1,4 +1,4 @@
-1.5.4.dev0
+1.5.4
  * #310: Fix legitimate database dump command errors (exit code 1) not being treated as errors by
    borgmatic.
  * For database dumps, replace the named pipe on every borgmatic run. This prevent hangs on stale

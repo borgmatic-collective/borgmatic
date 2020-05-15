@@ -68,7 +68,7 @@ def test_borgmatic_command():
         extracted_config_path = os.path.join(extract_path, config_path)
         assert open(extracted_config_path).read() == open(config_path).read()
 
-        # Exercise the info flag.
+        # Exercise the info action.
         output = subprocess.check_output(
             'borgmatic --config {} info --json'.format(config_path).split(' ')
         ).decode(sys.stdout.encoding)
