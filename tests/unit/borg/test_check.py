@@ -9,9 +9,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(command):
-    flexmock(module).should_receive('execute_command').with_args(
-        command, error_on_warnings=True
-    ).once()
+    flexmock(module).should_receive('execute_command').with_args(command).once()
 
 
 def insert_execute_command_never():
@@ -165,9 +163,7 @@ def test_check_archives_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('_make_check_flags').and_return(())
     flexmock(module).should_receive('execute_command').never()
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'check', '--progress', 'repo'),
-        output_file=module.DO_NOT_CAPTURE,
-        error_on_warnings=True,
+        ('borg', 'check', '--progress', 'repo'), output_file=module.DO_NOT_CAPTURE
     ).once()
 
     module.check_archives(
@@ -182,9 +178,7 @@ def test_check_archives_with_repair_calls_borg_with_repair_parameter():
     flexmock(module).should_receive('_make_check_flags').and_return(())
     flexmock(module).should_receive('execute_command').never()
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'check', '--repair', 'repo'),
-        output_file=module.DO_NOT_CAPTURE,
-        error_on_warnings=True,
+        ('borg', 'check', '--repair', 'repo'), output_file=module.DO_NOT_CAPTURE
     ).once()
 
     module.check_archives(

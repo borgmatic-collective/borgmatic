@@ -7,23 +7,26 @@ from borgmatic import execute as module
 
 
 @pytest.mark.parametrize(
-    'exit_code,error_on_warnings,expected_result',
+    'process,exit_code,borg_local_path,expected_result',
     (
-        (2, True, True),
-        (2, False, True),
-        (1, True, True),
-        (1, False, False),
-        (0, True, False),
-        (0, False, False),
+        (flexmock(args=['grep']), 2, None, True),
+        (flexmock(args=['grep']), 2, 'borg', True),
+        (flexmock(args=['borg']), 2, 'borg', True),
+        (flexmock(args=['borg1']), 2, 'borg1', True),
+        (flexmock(args=['grep']), 1, None, True),
+        (flexmock(args=['grep']), 1, 'borg', True),
+        (flexmock(args=['borg']), 1, 'borg', False),
+        (flexmock(args=['borg1']), 1, 'borg1', False),
+        (flexmock(args=['grep']), 0, None, False),
+        (flexmock(args=['grep']), 0, 'borg', False),
+        (flexmock(args=['borg']), 0, 'borg', False),
+        (flexmock(args=['borg1']), 0, 'borg1', False),
     ),
 )
-def test_exit_code_indicates_error_respects_exit_code_and_error_on_warnings(
-    exit_code, error_on_warnings, expected_result
+def test_exit_code_indicates_error_respects_exit_code_and_borg_local_path(
+    process, exit_code, borg_local_path, expected_result
 ):
-    assert (
-        module.exit_code_indicates_error(exit_code, error_on_warnings=error_on_warnings)
-        is expected_result
-    )
+    assert module.exit_code_indicates_error(process, exit_code, borg_local_path) is expected_result
 
 
 def test_command_for_process_converts_sequence_command_to_string():

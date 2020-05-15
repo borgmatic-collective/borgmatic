@@ -40,7 +40,7 @@ def mount_archive(
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
     if foreground:
-        execute_command(full_command, output_file=DO_NOT_CAPTURE, error_on_warnings=False)
+        execute_command(full_command, output_file=DO_NOT_CAPTURE, borg_local_path=local_path)
         return
 
-    execute_command(full_command, error_on_warnings=False)
+    execute_command(full_command, borg_local_path=local_path)

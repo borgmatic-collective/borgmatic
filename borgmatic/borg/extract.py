@@ -28,7 +28,9 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         + (repository,)
     )
 
-    list_output = execute_command(full_list_command, output_log_level=None, error_on_warnings=False)
+    list_output = execute_command(
+        full_list_command, output_log_level=None, borg_local_path=local_path
+    )
 
     try:
         last_archive_name = list_output.strip().splitlines()[-1]
@@ -49,7 +51,7 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         )
     )
 
-    execute_command(full_extract_command, working_directory=None, error_on_warnings=True)
+    execute_command(full_extract_command, working_directory=None)
 
 
 def extract_archive(
@@ -63,7 +65,6 @@ def extract_archive(
     remote_path=None,
     destination_path=None,
     progress=False,
-    error_on_warnings=True,
     extract_to_stdout=False,
 ):
     '''
@@ -100,10 +101,7 @@ def extract_archive(
     # the terminal directly.
     if progress:
         return execute_command(
-            full_command,
-            output_file=DO_NOT_CAPTURE,
-            working_directory=destination_path,
-            error_on_warnings=error_on_warnings,
+            full_command, output_file=DO_NOT_CAPTURE, working_directory=destination_path
         )
         return None
 
@@ -112,12 +110,9 @@ def extract_archive(
             full_command,
             output_file=subprocess.PIPE,
             working_directory=destination_path,
-            error_on_warnings=error_on_warnings,
             run_to_completion=False,
         )
 
-    # Error on warnings by default, as Borg only gives a warning if the restore paths don't exist in
-    # the archive!
-    execute_command(
-        full_command, working_directory=destination_path, error_on_warnings=error_on_warnings
-    )
+    # Don't give Borg local path, so as to error on warnings, as Borg only gives a warning if the
+    # restore paths don't exist in the archive!
+    execute_command(full_command, working_directory=destination_path)

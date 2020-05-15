@@ -36,7 +36,7 @@ def resolve_archive_name(repository, archive, storage_config, local_path='borg',
         + ('--short', repository)
     )
 
-    output = execute_command(full_command, output_log_level=None, error_on_warnings=False)
+    output = execute_command(full_command, output_log_level=None, borg_local_path=local_path)
     try:
         latest_archive = output.strip().splitlines()[-1]
     except IndexError:
@@ -85,5 +85,5 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
     return execute_command(
         full_command,
         output_log_level=None if list_arguments.json else logging.WARNING,
-        error_on_warnings=False,
+        borg_local_path=local_path,
     )

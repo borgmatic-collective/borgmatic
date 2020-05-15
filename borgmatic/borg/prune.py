@@ -72,4 +72,4 @@ def prune_archives(
     else:
         output_log_level = logging.INFO
 
-    execute_command(full_command, output_log_level=output_log_level, error_on_warnings=False)
+    execute_command(full_command, output_log_level=output_log_level, borg_local_path=local_path)

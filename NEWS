@@ -1,3 +1,9 @@
+1.5.4.dev0
+ * #310: Fix legitimate database dump command errors (exit code 1) not being treated as errors by
+   borgmatic.
+ * For database dumps, replace the named pipe on every borgmatic run. This prevent hangs on stale
+   pipes left over from previous runs.
+
 1.5.3
  * #258: Stream database dumps and restores directly to/from Borg without using any additional
    filesystem space. This feature is automatic, and works even on restores from archives made with

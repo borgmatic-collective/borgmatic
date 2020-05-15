@@ -41,5 +41,5 @@ def display_archives_info(
     return execute_command(
         full_command,
         output_log_level=None if info_arguments.json else logging.WARNING,
-        error_on_warnings=False,
+        borg_local_path=local_path,
     )

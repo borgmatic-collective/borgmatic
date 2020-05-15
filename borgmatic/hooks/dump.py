@@ -38,8 +38,10 @@ def create_named_pipe_for_dump(dump_path):
     Create a named pipe at the given dump path.
     '''
     os.makedirs(os.path.dirname(dump_path), mode=0o700, exist_ok=True)
-    if not os.path.exists(dump_path):
-        os.mkfifo(dump_path, mode=0o600)
+    if os.path.exists(dump_path):
+        os.remove(dump_path)
+
+    os.mkfifo(dump_path, mode=0o600)
 
 
 def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, dry_run):

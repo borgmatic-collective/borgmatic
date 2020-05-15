@@ -10,7 +10,7 @@ from ..test_verbosity import insert_logging_mock
 
 def insert_execute_command_mock(prune_command, output_log_level):
     flexmock(module).should_receive('execute_command').with_args(
-        prune_command, output_log_level=output_log_level, error_on_warnings=False
+        prune_command, output_log_level=output_log_level, borg_local_path=prune_command[0]
     ).once()
 
 

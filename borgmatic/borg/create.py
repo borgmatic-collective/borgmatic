@@ -215,7 +215,11 @@ def create_archive(
 
     if stream_processes:
         return execute_command_with_processes(
-            full_command, stream_processes, output_log_level, output_file, error_on_warnings=False
+            full_command,
+            stream_processes,
+            output_log_level,
+            output_file,
+            borg_local_path=local_path,
         )
 
-    return execute_command(full_command, output_log_level, output_file, error_on_warnings=False)
+    return execute_command(full_command, output_log_level, output_file, borg_local_path=local_path)

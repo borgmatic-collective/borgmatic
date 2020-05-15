@@ -223,7 +223,7 @@ def test_create_archive_calls_borg_with_parameters():
         ('borg', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -252,7 +252,7 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
         ('borg', 'create') + pattern_flags + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -281,7 +281,7 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
         ('borg', 'create') + exclude_flags + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -308,7 +308,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
         ('borg', 'create', '--info') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -336,7 +336,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -364,7 +364,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
         ('borg', 'create', '--debug', '--show-rc') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -391,7 +391,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -420,7 +420,7 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
         ('borg', 'create', '--dry-run') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -449,7 +449,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
         ('borg', 'create', '--info', '--dry-run') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -477,7 +477,7 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
         ('borg', 'create', '--checkpoint-interval', '600') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -503,7 +503,7 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
         ('borg', 'create', '--chunker-params', '1,2,3,4') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -529,7 +529,7 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
         ('borg', 'create', '--compression', 'rle') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -555,7 +555,7 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_
         ('borg', 'create', '--remote-ratelimit', '100') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -581,7 +581,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
         ('borg', 'create', '--one-file-system') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -608,7 +608,7 @@ def test_create_archive_with_numeric_owner_calls_borg_with_numeric_owner_paramet
         ('borg', 'create', '--numeric-owner') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -635,7 +635,7 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
         ('borg', 'create', '--read-special') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -663,7 +663,7 @@ def test_create_archive_with_option_true_calls_borg_without_corresponding_parame
         ('borg', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -691,7 +691,7 @@ def test_create_archive_with_option_false_calls_borg_with_corresponding_paramete
         ('borg', 'create', '--no' + option_name.replace('_', '')) + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -718,7 +718,7 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
         ('borg', 'create', '--files-cache', 'ctime,size') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -745,7 +745,7 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
         ('borg1', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg1',
     )
 
     module.create_archive(
@@ -772,7 +772,7 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
         ('borg', 'create', '--remote-path', 'borg1') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -799,7 +799,7 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
         ('borg', 'create', '--umask', '740') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -825,7 +825,7 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
         ('borg', 'create', '--lock-wait', '5') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -851,7 +851,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_o
         ('borg', 'create', '--stats') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.WARNING,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -878,7 +878,7 @@ def test_create_archive_with_stats_and_log_info_calls_borg_with_stats_parameter_
         ('borg', 'create', '--info', '--stats') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -906,7 +906,7 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_ou
         ('borg', 'create', '--list', '--filter', 'AME-') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.WARNING,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -933,7 +933,7 @@ def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_a
         ('borg', 'create', '--list', '--filter', 'AME-', '--info') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -961,7 +961,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
         ('borg', 'create', '--info', '--progress') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -989,7 +989,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
         ('borg', 'create', '--progress') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1018,7 +1018,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         processes=processes,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1046,7 +1046,7 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     ).and_return('[]')
 
     json_output = module.create_archive(
@@ -1075,7 +1075,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     ).and_return('[]')
 
     json_output = module.create_archive(
@@ -1105,7 +1105,7 @@ def test_create_archive_with_source_directories_glob_expands():
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return(['foo', 'food'])
 
@@ -1132,7 +1132,7 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'),
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
     flexmock(module.glob).should_receive('glob').with_args('foo*').and_return([])
 
@@ -1159,7 +1159,7 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1185,7 +1185,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
         ('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'),
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1211,7 +1211,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
         ('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'),
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1237,7 +1237,7 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
         ('borg', 'create', '--extra', '--options') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(
@@ -1265,7 +1265,7 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes():
         processes=processes,
         output_log_level=logging.INFO,
         output_file=None,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
     module.create_archive(

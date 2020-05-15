@@ -26,7 +26,7 @@ def test_log_outputs_logs_each_line_separately():
         (hi_process, there_process),
         exclude_stdouts=(),
         output_log_level=logging.INFO,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
 
@@ -49,7 +49,7 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
         (hi_process, there_process),
         exclude_stdouts=(),
         output_log_level=logging.INFO,
-        error_on_warnings=False,
+        borg_local_path='borg',
     )
 
 
@@ -63,7 +63,7 @@ def test_log_outputs_includes_error_output_in_exception():
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.log_outputs(
-            (process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+            (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
         )
 
     assert error.value.returncode == 2
@@ -80,7 +80,7 @@ def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdou
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.log_outputs(
-            (process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+            (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
         )
 
     assert error.value.returncode == 2
@@ -98,7 +98,7 @@ def test_log_outputs_truncates_long_error_output():
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         module.log_outputs(
-            (process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+            (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
         )
 
     assert error.value.returncode == 2
@@ -113,5 +113,5 @@ def test_log_outputs_with_no_output_logs_nothing():
     flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
 
     module.log_outputs(
-        (process,), exclude_stdouts=(), output_log_level=logging.INFO, error_on_warnings=False
+        (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
     )

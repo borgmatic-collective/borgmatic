@@ -17,4 +17,4 @@ def unmount_archive(mount_point, local_path='borg'):
         + (mount_point,)
     )
 
-    execute_command(full_command, error_on_warnings=True)
+    execute_command(full_command)

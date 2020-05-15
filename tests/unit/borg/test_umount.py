@@ -8,9 +8,7 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(command):
-    flexmock(module).should_receive('execute_command').with_args(
-        command, error_on_warnings=True
-    ).once()
+    flexmock(module).should_receive('execute_command').with_args(command).once()
 
 
 def test_unmount_archive_calls_borg_with_required_parameters():

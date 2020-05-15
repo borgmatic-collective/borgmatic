@@ -11,15 +11,18 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE = 2
 
 
-def exit_code_indicates_error(exit_code, error_on_warnings=True):
+def exit_code_indicates_error(process, exit_code, borg_local_path=None):
     '''
-    Return True if the given exit code from running a command corresponds to an error. If error on
-    warnings is False, then treat exit code 1 as a warning instead of an error.
+    Return True if the given exit code from running a command corresponds to an error. If a Borg
+    local path is given and matches the process' command, then treat exit code 1 as a warning
+    instead of an error.
     '''
-    if error_on_warnings:
-        return bool(exit_code != 0)
+    command = process.args.split(' ') if isinstance(process.args, str) else process.args
 
-    return bool(exit_code >= BORG_ERROR_EXIT_CODE)
+    if borg_local_path and command[0] == borg_local_path:
+        return bool(exit_code >= BORG_ERROR_EXIT_CODE)
+
+    return bool(exit_code != 0)
 
 
 def command_for_process(process):
@@ -39,11 +42,11 @@ def output_buffer_for_process(process, exclude_stdouts):
     return process.stderr if process.stdout in exclude_stdouts else process.stdout
 
 
-def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings):
+def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
     process with the requested log level. Additionally, raise a CalledProcessError if a process
-    exits with an error (or a warning, if error on warnings is True).
+    exits with an error (or a warning for exit code 1, if that process matches the Borg local path).
 
     For simplicity, it's assumed that the output buffer for each process is its stdout. But if any
     stdouts are given to exclude, then for any matching processes, log from their stderr instead.
@@ -99,7 +102,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, error_on_warnings)
     for process in processes:
         exit_code = process.wait()
 
-        if exit_code_indicates_error(exit_code, error_on_warnings):
+        if exit_code_indicates_error(process, exit_code, borg_local_path):
             # If an error occurs, include its output in the raised exception so that we don't
             # inadvertently hide error output.
             output_buffer = output_buffer_for_process(process, exclude_stdouts)
@@ -139,7 +142,7 @@ def execute_command(
     shell=False,
     extra_environment=None,
     working_directory=None,
-    error_on_warnings=True,
+    borg_local_path=None,
     run_to_completion=True,
 ):
     '''
@@ -150,9 +153,9 @@ def execute_command(
     then read stdin from the file. If shell is True, execute the command within a shell. If an extra
     environment dict is given, then use it to augment the current environment, and pass the result
     into the command. If a working directory is given, use that as the present working directory
-    when running the command. If error on warnings is False, then treat exit code 1 as a warning
-    instead of an error. If run to completion is False, then return the process for the command
-    without executing it to completion.
+    when running the command. If a Borg local path is given, and the command matches it (regardless
+    of arguments), treat exit code 1 as a warning instead of an error. If run to completion is
+    False, then return the process for the command without executing it to completion.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -179,7 +182,9 @@ def execute_command(
     if not run_to_completion:
         return process
 
-    log_outputs((process,), (input_file, output_file), output_log_level, error_on_warnings)
+    log_outputs(
+        (process,), (input_file, output_file), output_log_level, borg_local_path=borg_local_path
+    )
 
 
 def execute_command_with_processes(
@@ -191,7 +196,7 @@ def execute_command_with_processes(
     shell=False,
     extra_environment=None,
     working_directory=None,
-    error_on_warnings=True,
+    borg_local_path=None,
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
@@ -204,8 +209,8 @@ def execute_command_with_processes(
     the file.  If shell is True, execute the command within a shell. If an extra environment dict is
     given, then use it to augment the current environment, and pass the result into the command. If
     a working directory is given, use that as the present working directory when running the
-    command.  If error on warnings is False, then treat exit code 1 as a warning instead of an
-    error.
+    command. If a Borg local path is given, then for any matching command or process (regardless of
+    arguments), treat exit code 1 as a warning instead of an error.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
@@ -240,5 +245,5 @@ def execute_command_with_processes(
         tuple(processes) + (command_process,),
         (input_file, output_file),
         output_log_level,
-        error_on_warnings,
+        borg_local_path=borg_local_path,
     )

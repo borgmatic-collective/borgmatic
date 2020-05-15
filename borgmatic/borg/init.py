@@ -55,4 +55,4 @@ def initialize_repository(
     )
 
     # Do not capture output here, so as to support interactive prompts.
-    execute_command(init_command, output_file=DO_NOT_CAPTURE, error_on_warnings=False)
+    execute_command(init_command, output_file=DO_NOT_CAPTURE, borg_local_path=local_path)

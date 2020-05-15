@@ -134,9 +134,9 @@ def check_archives(
         # The Borg repair option trigger an interactive prompt, which won't work when output is
         # captured. And progress messes with the terminal directly.
         if repair or progress:
-            execute_command(full_command, output_file=DO_NOT_CAPTURE, error_on_warnings=True)
+            execute_command(full_command, output_file=DO_NOT_CAPTURE)
         else:
-            execute_command(full_command, error_on_warnings=True)
+            execute_command(full_command)
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)

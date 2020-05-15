@@ -145,5 +145,6 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=extra_environment,
+        borg_local_path=location_config.get('local_path', 'borg'),
     )
     execute_command(analyze_command, extra_environment=extra_environment)
