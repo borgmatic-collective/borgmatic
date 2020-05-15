@@ -170,16 +170,17 @@ good idea to test that borgmatic is working. So to run borgmatic and start a
 backup, you can invoke it like this:
 
 ```bash
-sudo borgmatic --verbosity 1
+sudo borgmatic --verbosity 1 --files
 ```
 
 By default, this will also prune any old backups as per the configured
 retention policy, and check backups for consistency problems due to things
 like file damage.
 
-The verbosity flag makes borgmatic list the files that it's archiving, which
-are those that are new or changed since the last backup. Eyeball the list and
-see if it matches your expectations based on the configuration.
+The verbosity flag makes borgmatic show the steps it's performing. And the
+files flag lists each file that's new or changed since the last backup.
+Eyeball the list and see if it matches your expectations based on the
+configuration.
 
 If you'd like to specify an alternate configuration file path, use the
 `--config` flag. See `borgmatic --help` for more information.
