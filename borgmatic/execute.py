@@ -17,6 +17,9 @@ def exit_code_indicates_error(process, exit_code, borg_local_path=None):
     local path is given and matches the process' command, then treat exit code 1 as a warning
     instead of an error.
     '''
+    if exit_code is None:
+        return False
+
     command = process.args.split(' ') if isinstance(process.args, str) else process.args
 
     if borg_local_path and command[0] == borg_local_path:
@@ -64,24 +67,46 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
     # Log output for each process until they all exit.
     while True:
-        if not output_buffers:
-            break
+        if output_buffers:
+            (ready_buffers, _, _) = select.select(output_buffers, [], [])
 
-        (ready_buffers, _, _) = select.select(output_buffers, [], [])
+            for ready_buffer in ready_buffers:
+                line = ready_buffer.readline().rstrip().decode()
+                if not line:
+                    continue
 
-        for ready_buffer in ready_buffers:
-            line = ready_buffer.readline().rstrip().decode()
-            if not line:
-                continue
+                # Keep the last few lines of output in case the process errors, and we need the output for
+                # the exception below.
+                last_lines = buffer_last_lines[ready_buffer]
+                last_lines.append(line)
+                if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
+                    last_lines.pop(0)
 
-            # Keep the last few lines of output in case the process errors, and we need the output for
-            # the exception below.
-            last_lines = buffer_last_lines[ready_buffer]
-            last_lines.append(line)
-            if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
-                last_lines.pop(0)
+                logger.log(output_log_level, line)
 
-            logger.log(output_log_level, line)
+        for process in processes:
+            exit_code = process.poll() if output_buffers else process.wait()
+
+            # If any process errors, then raise accordingly.
+            if exit_code_indicates_error(process, exit_code, borg_local_path):
+                # If an error occurs, include its output in the raised exception so that we don't
+                # inadvertently hide error output.
+                output_buffer = output_buffer_for_process(process, exclude_stdouts)
+
+                last_lines = buffer_last_lines[output_buffer] if output_buffer else []
+                if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
+                    last_lines.insert(0, '...')
+
+                # Something has gone wrong. So vent each process' output buffer to prevent it from
+                # hanging. And then kill the process.
+                for other_process in processes:
+                    if other_process.poll() is None:
+                        other_process.stdout.read(0)
+                        other_process.kill()
+
+                raise subprocess.CalledProcessError(
+                    exit_code, command_for_process(process), '\n'.join(last_lines)
+                )
 
         if all(process.poll() is not None for process in processes):
             break
@@ -97,23 +122,6 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
         if remaining_output:  # pragma: no cover
             logger.log(output_log_level, remaining_output)
-
-    # If any process errored, then raise accordingly.
-    for process in processes:
-        exit_code = process.wait()
-
-        if exit_code_indicates_error(process, exit_code, borg_local_path):
-            # If an error occurs, include its output in the raised exception so that we don't
-            # inadvertently hide error output.
-            output_buffer = output_buffer_for_process(process, exclude_stdouts)
-
-            last_lines = buffer_last_lines[output_buffer] if output_buffer else []
-            if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
-                last_lines.insert(0, '...')
-
-            raise subprocess.CalledProcessError(
-                exit_code, command_for_process(process), '\n'.join(last_lines)
-            )
 
 
 def log_command(full_command, input_file, output_file):
