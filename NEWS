@@ -3,7 +3,7 @@
    borgmatic.
  * For database dumps, replace the named pipe on every borgmatic run. This prevent hangs on stale
    pipes left over from previous runs.
- * Fix error handling when executing commands to handle more edge cases.
+ * Fix error handling to handle more edge cases when executing commands.
 
 1.5.3
  * #258: Stream database dumps and restores directly to/from Borg without using any additional
