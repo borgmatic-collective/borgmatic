@@ -173,6 +173,9 @@ backup, you can invoke it like this:
 sudo borgmatic --verbosity 1 --files
 ```
 
+(No borgmatic `--files` flag? It's only present in newer versions of
+borgmatic. So try leaving it out, or upgrade borgmatic!)
+
 By default, this will also prune any old backups as per the configured
 retention policy, and check backups for consistency problems due to things
 like file damage.
