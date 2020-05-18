@@ -8,11 +8,13 @@ import tempfile
 import pytest
 
 
-def write_configuration(config_path, repository_path, borgmatic_source_directory):
+def write_configuration(
+    config_path, repository_path, borgmatic_source_directory, postgresql_dump_format='custom'
+):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
     for testing. This includes injecting the given repository path, borgmatic source directory for
-    storing database dumps, and encryption passphrase.
+    storing database dumps, dump format (for PostgreSQL), and encryption passphrase.
     '''
     config = '''
 location:
@@ -31,6 +33,7 @@ hooks:
           hostname: postgresql
           username: postgres
           password: test
+          format: {}
         - name: all
           hostname: postgresql
           username: postgres
@@ -45,7 +48,7 @@ hooks:
           username: root
           password: test
 '''.format(
-        config_path, repository_path, borgmatic_source_directory
+        config_path, repository_path, borgmatic_source_directory, postgresql_dump_format
     )
 
     config_file = open(config_path, 'w')
@@ -87,6 +90,39 @@ def test_database_dump_and_restore():
             'borgmatic --config {} restore --archive {}'.format(config_path, archive_name).split(
                 ' '
             )
+        )
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_and_restore_with_directory_format():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
+
+    original_working_directory = os.getcwd()
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        write_configuration(
+            config_path,
+            repository_path,
+            borgmatic_source_directory,
+            postgresql_dump_format='directory',
+        )
+
+        subprocess.check_call(
+            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+        )
+
+        # Run borgmatic to generate a backup archive including a database dump.
+        subprocess.check_call('borgmatic create --config {} -v 2'.format(config_path).split(' '))
+
+        # Restore the database from the archive.
+        subprocess.check_call(
+            'borgmatic --config {} restore --archive latest'.format(config_path).split(' ')
         )
     finally:
         os.chdir(original_working_directory)

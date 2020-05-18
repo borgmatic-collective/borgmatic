@@ -36,6 +36,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             make_dump_path(location_config), name, database.get('hostname')
         )
         all_databases = bool(name == 'all')
+        dump_format = database.get('format', 'custom')
         command = (
             (
                 'pg_dumpall' if all_databases else 'pg_dump',
@@ -46,12 +47,14 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
-            + (() if all_databases else ('--format', database.get('format', 'custom')))
+            + (() if all_databases else ('--format', dump_format))
+            + (('--file', dump_filename) if dump_format == 'directory' else ())
             + (tuple(database['options'].split(' ')) if 'options' in database else ())
             + (() if all_databases else (name,))
             # Use shell redirection rather than the --file flag to sidestep synchronization issues
-            # when pg_dump/pg_dumpall tries to write to a named pipe.
-            + ('>', dump_filename)
+            # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
+            # format in a particular, a named destination is required, and redirection doesn't work.
+            + (('>', dump_filename) if dump_format != 'directory' else ())
         )
         extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
 
@@ -63,7 +66,10 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         if dry_run:
             continue
 
-        dump.create_named_pipe_for_dump(dump_filename)
+        if dump_format == 'directory':
+            dump.create_parent_directory_for_dump(dump_filename)
+        else:
+            dump.create_named_pipe_for_dump(dump_filename)
 
         processes.append(
             execute_command(
@@ -104,6 +110,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     Use the given log prefix in any log entries. If this is a dry run, then don't actually restore
     anything. Trigger the given active extract process (an instance of subprocess.Popen) to produce
     output to consume.
+
+    If the extract process is None, then restore the dump from the filesystem rather than from an
+    extract stream.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
@@ -112,6 +121,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
 
     database = database_config[0]
     all_databases = bool(database['name'] == 'all')
+    dump_filename = dump.make_database_dump_filename(
+        make_dump_path(location_config), database['name'], database.get('hostname')
+    )
     analyze_command = (
         ('psql', '--no-password', '--quiet')
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -130,6 +142,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
+        + (() if extract_process else (dump_filename,))
     )
     extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
 
@@ -141,9 +154,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
 
     execute_command_with_processes(
         restore_command,
-        [extract_process],
+        [extract_process] if extract_process else [],
         output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout,
+        input_file=extract_process.stdout if extract_process else None,
         extra_environment=extra_environment,
         borg_local_path=location_config.get('local_path', 'borg'),
     )

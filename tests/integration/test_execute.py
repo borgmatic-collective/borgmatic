@@ -66,7 +66,6 @@ def test_log_outputs_includes_error_output_in_exception():
             (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
         )
 
-    assert error.value.returncode == 2
     assert error.value.output
 
 

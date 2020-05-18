@@ -33,14 +33,18 @@ def make_database_dump_filename(dump_path, name, hostname=None):
     return os.path.join(os.path.expanduser(dump_path), hostname or 'localhost', name)
 
 
+def create_parent_directory_for_dump(dump_path):
+    '''
+    Create a directory to contain the given dump path.
+    '''
+    os.makedirs(os.path.dirname(dump_path), mode=0o700, exist_ok=True)
+
+
 def create_named_pipe_for_dump(dump_path):
     '''
     Create a named pipe at the given dump path.
     '''
-    os.makedirs(os.path.dirname(dump_path), mode=0o700, exist_ok=True)
-    if os.path.exists(dump_path):
-        os.remove(dump_path)
-
+    create_parent_directory_for_dump(dump_path)
     os.mkfifo(dump_path, mode=0o600)
 
 
@@ -74,13 +78,15 @@ def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, 
         if dry_run:
             continue
 
-        if os.path.isdir(dump_filename):
-            shutil.rmtree(dump_filename)
-        else:
-            os.remove(dump_filename)
+        if os.path.exists(dump_filename):
+            if os.path.isdir(dump_filename):
+                shutil.rmtree(dump_filename)
+            else:
+                os.remove(dump_filename)
+
         dump_file_dir = os.path.dirname(dump_filename)
 
-        if len(os.listdir(dump_file_dir)) == 0:
+        if os.path.exists(dump_file_dir) and len(os.listdir(dump_file_dir)) == 0:
             os.rmdir(dump_file_dir)
 
 

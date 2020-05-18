@@ -254,6 +254,14 @@ def run_actions(
         )
     if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
+        dispatch.call_hooks(
+            'remove_database_dumps',
+            hooks,
+            repository,
+            dump.DATABASE_HOOK_NAMES,
+            location,
+            global_arguments.dry_run,
+        )
         active_dumps = dispatch.call_hooks(
             'dump_databases',
             hooks,
@@ -346,6 +354,14 @@ def run_actions(
                     repository, arguments['restore'].archive
                 )
             )
+            dispatch.call_hooks(
+                'remove_database_dumps',
+                hooks,
+                repository,
+                dump.DATABASE_HOOK_NAMES,
+                location,
+                global_arguments.dry_run,
+            )
 
             restore_names = arguments['restore'].databases or []
             if 'all' in restore_names:
@@ -386,10 +402,12 @@ def run_actions(
                         local_path=local_path,
                         remote_path=remote_path,
                         destination_path='/',
-                        extract_to_stdout=True,
+                        # A directory format dump isn't a single file, and therefore can't extract
+                        # to stdout. In this case, the extract_process return value is None.
+                        extract_to_stdout=bool(restore_database.get('format') != 'directory'),
                     )
 
-                    # Run a single database restore, consuming the extract stdout.
+                    # Run a single database restore, consuming the extract stdout (if any).
                     dispatch.call_hooks(
                         'restore_database_dump',
                         {hook_name: [restore_database]},
@@ -399,6 +417,15 @@ def run_actions(
                         global_arguments.dry_run,
                         extract_process,
                     )
+
+            dispatch.call_hooks(
+                'remove_database_dumps',
+                hooks,
+                repository,
+                dump.DATABASE_HOOK_NAMES,
+                location,
+                global_arguments.dry_run,
+            )
 
             if not restore_names and not found_names:
                 raise ValueError('No databases were found to restore')
