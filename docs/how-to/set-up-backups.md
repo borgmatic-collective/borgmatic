@@ -25,8 +25,8 @@ This installs borgmatic and its commands at the `/root/.local/bin` path.
 Your pip binary may have a different name than "pip3". Make sure you're using
 Python 3, as borgmatic does not support Python 2.
 
-The next step is to ensure that borgmatic's commands are on your system
-`PATH`, so that you can run borgmatic:
+The next step is to ensure that borgmatic's commands available are on your
+system `PATH`, so that you can run borgmatic:
 
 ```bash
 echo export 'PATH="$PATH:/root/.local/bin"' >> ~/.bashrc
@@ -38,10 +38,39 @@ This adds `/root/.local/bin` to your non-root user's system `PATH`.
 If you're using a command shell other than Bash, you may need to use different
 commands here.
 
+You can check whether all of this worked with:
+
+```bash
+sudo borgmatic --version
+```
+
+If borgmatic is properly installed, that should output your borgmatic version.
+
+
+### Global install option
+
+If you try the user site installation above, and have problems making
+borgmatic commands runnable on your system `PATH`, an alternate approach is to
+install borgmatic globally.
+
+The following uninstalls borgmatic, and then reinstalls it such that borgmatic
+commands are on the default system `PATH`:
+
+```bash
+sudo pip3 uninstall borgmatic
+sudo pip3 install --upgrade borgmatic
+```
+
+The main downside of a global install is that borgmatic is less cleanly
+separated from the rest of your Python software, and there's the theoretical
+possibility for libary conflicts. But if you're okay with that, for instance
+on a relatively dedicated system, then a global install can work out just
+fine.
+
 
 ### Other ways to install
 
-Besides the process described above, there are several other options for
+Besides the approaches described above, there are several other options for
 installing borgmatic:
 
  * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/)

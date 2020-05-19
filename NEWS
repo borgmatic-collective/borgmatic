@@ -2,7 +2,7 @@
  * #314: Fix regression in support for PostgreSQL's "directory" dump format. Unlike other dump
    formats, the "directory" dump format does not stream directly to/from Borg.
  * Improve documentation around the installation process. Specifically, making borgmatic commands
-   runnable via the system PATH.
+   runnable via the system PATH and offering a global install option.
 
 1.5.4
  * #310: Fix legitimate database dump command errors (exit code 1) not being treated as errors by
