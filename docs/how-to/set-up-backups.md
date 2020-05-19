@@ -12,30 +12,37 @@ First, [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
 version 1.1.
 
-Then, download and install borgmatic by running the following command:
+Then, download and install borgmatic as a [user site
+installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site)
+by running the following command:
 
 ```bash
 sudo pip3 install --user --upgrade borgmatic
 ```
 
-This is a [recommended user site
-installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site).
-You will need to ensure that `/root/.local/bin` is available on your `$PATH`
-so
-that the borgmatic executable is available. For instance, adding this to
-root's `~/.profile` or `~/.bash_profile` may do the trick:
+This installs borgmatic and its commands at the `/root/.local/bin` path.
+
+Your pip binary may have a different name than "pip3". Make sure you're using
+Python 3, as borgmatic does not support Python 2.
+
+The next step is to ensure that borgmatic's commands are on your system
+`PATH`, so that you can run borgmatic:
 
 ```bash
-export PATH="$PATH:~/.local/bin"
+echo export 'PATH="$PATH:/root/.local/bin"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-Note that your pip binary may have a different name than "pip3". Make sure
-you're using Python 3, as borgmatic does not support Python 2.
+This adds `/root/.local/bin` to your non-root user's system `PATH`.
+
+If you're using a command shell other than Bash, you may need to use different
+commands here.
+
 
 ### Other ways to install
 
-Along with the above process, you have several other options for installing
-borgmatic:
+Besides the process described above, there are several other options for
+installing borgmatic:
 
  * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/)
  * [Docker base image](https://hub.docker.com/r/monachus/borgmatic/)
