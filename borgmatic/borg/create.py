@@ -2,6 +2,7 @@ import glob
 import itertools
 import logging
 import os
+import pathlib
 import tempfile
 
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
@@ -41,6 +42,35 @@ def _expand_home_directories(directories):
         return ()
 
     return tuple(os.path.expanduser(directory) for directory in directories)
+
+
+def deduplicate_directories(directories):
+    '''
+    Given a sequence of directories, return them as a sorted tuple with all duplicate child
+    directories removed. For instance, if paths is ('/foo', '/foo/bar'), return just: ('/foo',)
+
+    The idea is that if Borg is given a parent directory, then it doesn't also need to be given
+    child directories, because it will naturally spider the contents of the parent directory. And
+    there are cases where Borg coming across the same file twice will result in duplicate reads and
+    even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
+    Borg.
+    '''
+    deduplicated = set()
+
+    for directory in sorted(directories):
+        # If the directory is "/", that contains all child directories, so we can early out.
+        if directory == os.path.sep:
+            return (os.path.sep,)
+
+        # If no other directories are parents of current directory (even n levels up), then the
+        # current directory isn't a duplicate.
+        if not any(
+            pathlib.PurePath(other_directory) in pathlib.PurePath(directory).parents
+            for other_directory in directories
+        ):
+            deduplicated.add(directory)
+
+    return tuple(sorted(deduplicated))
 
 
 def _write_pattern_file(patterns=None):
@@ -148,9 +178,11 @@ def create_archive(
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
     '''
-    sources = _expand_directories(
-        location_config['source_directories']
-        + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+    sources = deduplicate_directories(
+        _expand_directories(
+            location_config['source_directories']
+            + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+        )
     )
 
     pattern_file = _write_pattern_file(location_config.get('patterns'))
