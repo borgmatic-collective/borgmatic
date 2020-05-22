@@ -19,6 +19,7 @@ Restart=no
 # doesn't support this (pre-240 or so), you may have to remove this option.
 LogRateLimitIntervalSec=0
 
-# Delay start to prevent backups running during boot.
+# Delay start to prevent backups running during boot. Note that systemd-inhibit requires dbus and
+# dbus-user-session to be installed.
 ExecStartPre=sleep 1m
 ExecStart=systemd-inhibit --who="borgmatic" --why="Prevent interrupting scheduled backup" /root/.local/bin/borgmatic --syslog-verbosity 1
