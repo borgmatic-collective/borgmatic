@@ -1064,7 +1064,8 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('borg', 'create', '--read-special', '--progress') + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--one-file-system', '--read-special', '--progress')
+        + ARCHIVE_WITH_PATHS,
         processes=processes,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
@@ -1320,7 +1321,7 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes():
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('borg', 'create', '--read-special') + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--one-file-system', '--read-special') + ARCHIVE_WITH_PATHS,
         processes=processes,
         output_log_level=logging.INFO,
         output_file=None,

@@ -30,7 +30,10 @@ map:
                     - user@backupserver:sourcehostname.borg
             one_file_system:
                 type: bool
-                desc: Stay in same file system (do not cross mount points). Defaults to false.
+                desc: |
+                  Stay in same file system (do not cross mount points). Defaults to false. But when
+                  a database hook is used, the setting here is ignored and one_file_system is
+                  considered true.
                 example: true
             numeric_owner:
                 type: bool
@@ -53,7 +56,9 @@ map:
                 desc: |
                     Use Borg's --read-special flag to allow backup of block and other special
                     devices. Use with caution, as it will lead to problems if used when
-                    backing up special devices such as /dev/zero. Defaults to false.
+                    backing up special devices such as /dev/zero. Defaults to false. But when a
+                    database hook is used, the setting here is ignored and read_special is
+                    considered true.
                 example: false
             bsd_flags:
                 type: bool
@@ -452,7 +457,9 @@ map:
                             type: str
                             desc: |
                                 Database name (required if using this hook). Or "all" to dump all
-                                databases on the host.
+                                databases on the host. Note that using this database hook implicitly
+                                enables both read_special and one_file_system (see above) to support
+                                dump and restore streaming.
                             example: users
                         hostname:
                             type: str
@@ -508,7 +515,9 @@ map:
                             type: str
                             desc: |
                                 Database name (required if using this hook). Or "all" to dump all
-                                databases on the host.
+                                databases on the host. Note that using this database hook implicitly
+                                enables both read_special and one_file_system (see above) to support
+                                dump and restore streaming.
                             example: users
                         hostname:
                             type: str

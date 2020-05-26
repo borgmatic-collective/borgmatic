@@ -207,7 +207,11 @@ def create_archive(
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
         + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
-        + (('--one-file-system',) if location_config.get('one_file_system') else ())
+        + (
+            ('--one-file-system',)
+            if location_config.get('one_file_system') or stream_processes
+            else ()
+        )
         + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
         + (('--noatime',) if location_config.get('atime') is False else ())
         + (('--noctime',) if location_config.get('ctime') is False else ())

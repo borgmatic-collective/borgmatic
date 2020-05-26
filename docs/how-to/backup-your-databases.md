@@ -31,6 +31,10 @@ To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
 default. To customize this path, set the `borgmatic_source_directory` option
 in the `location` section of borgmatic's configuration.
 
+Also note that using a database hook implicitly enables both the
+`read_special` and `one_file_system` configuration settings (even if they're
+disabled in your configuration) to support this dump and restore streaming.
+
 Here's a more involved example that connects to remote databases:
 
 ```yaml

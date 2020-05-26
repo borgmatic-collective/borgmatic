@@ -1,6 +1,8 @@
 1.5.5.dev0
  * #314: Fix regression in support for PostgreSQL's "directory" dump format. Unlike other dump
    formats, the "directory" dump format does not stream directly to/from Borg.
+ * #315: Fix enabled database hooks to implicitly set one_file_system configuration option to true.
+   This prevents Borg from reading devices like /dev/zero and hanging.
  * #316: Fix hang when streaming a database dump to Borg with implicit duplicate source directories
    by deduplicating them first.
  * #319: Fix error message when there are no MySQL databases to dump for "all" databases.
