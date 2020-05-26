@@ -73,9 +73,11 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             make_dump_path(location_config), requested_name, database.get('hostname')
         )
         extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
-        dump_command_names = database_names_to_dump(
+        dump_database_names = database_names_to_dump(
             database, extra_environment, log_prefix, dry_run_label
         )
+        if not dump_database_names:
+            raise ValueError('Cannot find any MySQL databases to dump.')
 
         dump_command = (
             ('mysqldump',)
@@ -86,7 +88,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             + (('--user', database['username']) if 'username' in database else ())
             + (tuple(database['options'].split(' ')) if 'options' in database else ())
             + ('--databases',)
-            + dump_command_names
+            + dump_database_names
             # Use shell redirection rather than execute_command(output_file=open(...)) to prevent
             # the open() call on a named pipe from hanging the main borgmatic process.
             + ('>', dump_filename)

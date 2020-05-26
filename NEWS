@@ -3,6 +3,7 @@
    formats, the "directory" dump format does not stream directly to/from Borg.
  * #316: Fix hang when streaming a database dump to Borg with implicit duplicate source directories
    by deduplicating them first.
+ * #319: Fix error message when there are no MySQL databases to dump for "all" databases.
  * Improve documentation around the installation process. Specifically, making borgmatic commands
    runnable via the system PATH and offering a global install option.
 

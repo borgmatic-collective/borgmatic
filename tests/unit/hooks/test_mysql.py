@@ -198,6 +198,19 @@ def test_dump_databases_runs_mysqldump_for_all_databases():
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
+def test_dump_databases_errors_for_missing_all_databases():
+    databases = [{'name': 'all'}]
+    process = flexmock()
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/all'
+    )
+    flexmock(module).should_receive('database_names_to_dump').and_return(())
+
+    with pytest.raises(ValueError):
+        assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+
+
 def test_restore_database_dump_runs_mysql_to_restore():
     database_config = [{'name': 'foo'}]
     extract_process = flexmock(stdout=flexmock())
