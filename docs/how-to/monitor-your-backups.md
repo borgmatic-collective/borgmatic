@@ -117,21 +117,21 @@ hooks:
 ```
 
 With this hook in place, borgmatic pings your Healthchecks project when a
-backup begins, ends, or errors. Specifically, before the <a
+backup begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Healthchecks know that it has started if any of
 the `prune`, `create`, or `check` actions are run.
 
 Then, if the actions complete successfully, borgmatic notifies Healthchecks of
-the success after the `after_backup` hooks run, and includes borgmatic logs in
+the success before the `after_backup` hooks run, and includes borgmatic logs in
 the payload data sent to Healthchecks. This means that borgmatic logs show up
 in the Healthchecks UI, although be aware that Healthchecks currently has a
 10-kilobyte limit for the logs in each ping.
 
-If an error occurs during any action, borgmatic notifies Healthchecks after
-the `on_error` hooks run, also tacking on logs including the error itself. But
-the logs are only included for errors that occur when a `prune`, `create`, or
-`check` action is run.
+If an error occurs during any action or hook, borgmatic notifies Healthchecks
+before the `on_error` hooks run, also tacking on logs including the error
+itself. But the logs are only included for errors that occur when a `prune`,
+`create`, or `check` action is run.
 
 You can customize the verbosity of the logs that are sent to Healthchecks with
 borgmatic's `--monitoring-verbosity` flag. The `--files` and `--stats` flags
@@ -157,13 +157,13 @@ hooks:
 ```
 
 With this hook in place, borgmatic pings your Cronitor monitor when a backup
-begins, ends, or errors. Specifically, before the <a
+begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Cronitor know that it has started if any of the
 `prune`, `create`, or `check` actions are run. Then, if the actions complete
-successfully, borgmatic notifies Cronitor of the success after the
-`after_backup` hooks run. And if an error occurs during any action, borgmatic
-notifies Cronitor after the `on_error` hooks run.
+successfully, borgmatic notifies Cronitor of the success before the
+`after_backup` hooks run. And if an error occurs during any action or hook,
+borgmatic notifies Cronitor before the `on_error` hooks run.
 
 You can configure Cronitor to notify you by a [variety of
 mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups fail
@@ -185,13 +185,13 @@ hooks:
 ```
 
 With this hook in place, borgmatic pings your Cronhub monitor when a backup
-begins, ends, or errors. Specifically, before the <a
+begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Cronhub know that it has started if any of the
 `prune`, `create`, or `check` actions are run. Then, if the actions complete
-successfully, borgmatic notifies Cronhub of the success after the
-`after_backup` hooks run. And if an error occurs during any action, borgmatic
-notifies Cronhub after the `on_error` hooks run.
+successfully, borgmatic notifies Cronhub of the success before the
+`after_backup` hooks run. And if an error occurs during any action or hook,
+borgmatic notifies Cronhub before the `on_error` hooks run.
 
 Note that even though you configure borgmatic with the "start" variant of the
 ping URL, borgmatic substitutes the correct state into the URL when pinging
@@ -228,7 +228,7 @@ hooks:
 
 With this hook in place, borgmatic creates a PagerDuty event for your service
 whenever backups fail. Specifically, if an error occurs during a `create`,
-`prune`, or `check` action, borgmatic sends an event to PagerDuty after the
+`prune`, or `check` action, borgmatic sends an event to PagerDuty before the
 `on_error` hooks run. Note that borgmatic does not contact PagerDuty when a
 backup starts or ends without error.
 

@@ -13,6 +13,13 @@ MONITOR_STATE_TO_CRONITOR = {
 }
 
 
+def initialize_monitor(ping_url, config_filename, monitoring_log_level, dry_run):
+    '''
+    No initialization is necessary for this monitor.
+    '''
+    pass
+
+
 def ping_monitor(ping_url, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the given Cronitor URL, modified with the monitor.State. Use the given configuration

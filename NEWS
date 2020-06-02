@@ -1,4 +1,8 @@
 1.5.6.dev0
+ * #292: Allow before_backup and similiar hooks to exit with a soft failure without altering the
+   monitoring status on Healthchecks or other providers. Support this by waiting to ping monitoring
+   services with a "start" status until after before_* hooks finish. Failures in before_* hooks
+   still trigger a monitoring "fail" status.
  * #316: Fix hang when a stale database dump named pipe from an aborted borgmatic run remains on
    disk.
  * Tweak comment indentation in generated configuration file for clarity.

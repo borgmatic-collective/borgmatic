@@ -12,6 +12,13 @@ logger = logging.getLogger(__name__)
 EVENTS_API_URL = 'https://events.pagerduty.com/v2/enqueue'
 
 
+def initialize_monitor(integration_key, config_filename, monitoring_log_level, dry_run):
+    '''
+    No initialization is necessary for this monitor.
+    '''
+    pass
+
+
 def ping_monitor(integration_key, config_filename, state, monitoring_log_level, dry_run):
     '''
     If this is an error state, create a PagerDuty event with the given integration key. Use the

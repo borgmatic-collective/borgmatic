@@ -59,11 +59,10 @@ def run_configuration(config_filename, config, arguments):
     try:
         if prune_create_or_check:
             dispatch.call_hooks(
-                'ping_monitor',
+                'initialize_monitor',
                 hooks,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
-                monitor.State.START,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
@@ -89,6 +88,16 @@ def run_configuration(config_filename, config, arguments):
                 hooks.get('umask'),
                 config_filename,
                 'pre-check',
+                global_arguments.dry_run,
+            )
+        if prune_create_or_check:
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.START,
+                monitoring_log_level,
                 global_arguments.dry_run,
             )
     except (OSError, CalledProcessError) as error:
@@ -123,6 +132,16 @@ def run_configuration(config_filename, config, arguments):
 
     if not encountered_error:
         try:
+            if prune_create_or_check:
+                dispatch.call_hooks(
+                    'ping_monitor',
+                    hooks,
+                    config_filename,
+                    monitor.MONITOR_HOOK_NAMES,
+                    monitor.State.FINISH,
+                    monitoring_log_level,
+                    global_arguments.dry_run,
+                )
             if 'prune' in arguments:
                 command.execute_hook(
                     hooks.get('after_prune'),
@@ -155,16 +174,6 @@ def run_configuration(config_filename, config, arguments):
                     'post-check',
                     global_arguments.dry_run,
                 )
-            if {'prune', 'create', 'check'}.intersection(arguments):
-                dispatch.call_hooks(
-                    'ping_monitor',
-                    hooks,
-                    config_filename,
-                    monitor.MONITOR_HOOK_NAMES,
-                    monitor.State.FINISH,
-                    monitoring_log_level,
-                    global_arguments.dry_run,
-                )
         except (OSError, CalledProcessError) as error:
             if command.considered_soft_failure(config_filename, error):
                 return
@@ -176,6 +185,15 @@ def run_configuration(config_filename, config, arguments):
 
     if encountered_error and prune_create_or_check:
         try:
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.FAIL,
+                monitoring_log_level,
+                global_arguments.dry_run,
+            )
             command.execute_hook(
                 hooks.get('on_error'),
                 hooks.get('umask'),
@@ -185,15 +203,6 @@ def run_configuration(config_filename, config, arguments):
                 repository=error_repository,
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
-            )
-            dispatch.call_hooks(
-                'ping_monitor',
-                hooks,
-                config_filename,
-                monitor.MONITOR_HOOK_NAMES,
-                monitor.State.FAIL,
-                monitoring_log_level,
-                global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
             if command.considered_soft_failure(config_filename, error):
