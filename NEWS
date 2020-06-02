@@ -1,3 +1,6 @@
+1.5.6.dev0
+ * Tweak comment indentation in generated configuration file for clarity.
+
 1.5.5
  * #314: Fix regression in support for PostgreSQL's "directory" dump format. Unlike other dump
    formats, the "directory" dump format does not stream directly to/from Borg.

@@ -37,9 +37,7 @@ def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
                 for item_schema in schema['seq']
             ]
         )
-        add_comments_to_configuration_sequence(
-            config, schema, indent=(level * INDENT) + SEQUENCE_INDENT
-        )
+        add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif 'map' in schema:
         config = yaml.comments.CommentedMap(
             [
@@ -86,8 +84,8 @@ def _comment_out_optional_configuration(rendered_config):
     optional = False
 
     for line in rendered_config.split('\n'):
-        # Upon encountering an optional configuration option, commenting out lines until the next
-        # blank line.
+        # Upon encountering an optional configuration option, comment out lines until the next blank
+        # line.
         if line.strip().startswith('# {}'.format(COMMENTED_OUT_SENTINEL)):
             optional = True
             continue
@@ -142,7 +140,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
 
     ```
     things:
-          # First key description. Added by this function.
+        # First key description. Added by this function.
         - key: foo
           # Second key description. Added by add_comments_to_configuration_map().
           other: bar
