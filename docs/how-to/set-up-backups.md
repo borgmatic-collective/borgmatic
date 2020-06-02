@@ -268,6 +268,7 @@ issues when reading files to backup. If that happens to you, you may be
 interested in an [unofficial work-around for Full Disk
 Access](https://projects.torsion.org/witten/borgmatic/issues/293).
 
+
 ## Colored output
 
 Borgmatic produces colored terminal output by default. It is disabled when a
@@ -275,6 +276,7 @@ non-interactive terminal is detected (like a cron job), or when you use the
 `--json` flag. Otherwise, you can disable it by passing the `--no-color` flag,
 setting the environment variable `PY_COLORS=False`, or setting the `color`
 option to `false` in the `output` section of configuration.
+
 
 ## Troubleshooting
 

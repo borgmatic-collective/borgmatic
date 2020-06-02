@@ -2,6 +2,7 @@
  * #316: Fix hang when a stale database dump named pipe from an aborted borgmatic run remains on
    disk.
  * Tweak comment indentation in generated configuration file for clarity.
+ * Link to Borgmacator GNOME AppIndicator from monitoring documentation.
 
 1.5.5
  * #314: Fix regression in support for PostgreSQL's "directory" dump format. Unlike other dump
