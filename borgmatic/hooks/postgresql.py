@@ -82,14 +82,11 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
 
 def remove_database_dumps(databases, log_prefix, location_config, dry_run):  # pragma: no cover
     '''
-    Remove the database dumps for the given databases. The databases are supplied as a sequence of
-    dicts, one dict describing each database as per the configuration schema. Use the log prefix in
-    any log entries. Use the given location configuration dict to construct the destination path. If
-    this is a dry run, then don't actually remove anything.
+    Remove all database dump files for this hook regardless of the given databases. Use the log
+    prefix in any log entries. Use the given location configuration dict to construct the
+    destination path. If this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(
-        make_dump_path(location_config), databases, 'PostgreSQL', log_prefix, dry_run
-    )
+    dump.remove_database_dumps(make_dump_path(location_config), 'PostgreSQL', log_prefix, dry_run)
 
 
 def make_database_dump_pattern(

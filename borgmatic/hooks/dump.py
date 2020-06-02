@@ -48,46 +48,24 @@ def create_named_pipe_for_dump(dump_path):
     os.mkfifo(dump_path, mode=0o600)
 
 
-def remove_database_dumps(dump_path, databases, database_type_name, log_prefix, dry_run):
+def remove_database_dumps(dump_path, database_type_name, log_prefix, dry_run):
     '''
-    Remove the database dumps for the given databases in the dump directory path. The databases are
-    supplied as a sequence of dicts, one dict describing each database as per the configuration
-    schema. Use the name of the database type and the log prefix in any log entries. If this is a
-    dry run, then don't actually remove anything.
+    Remove all database dumps in the given dump directory path (including the directory itself). If
+    this is a dry run, then don't actually remove anything.
     '''
-    if not databases:
-        logger.debug('{}: No {} databases configured'.format(log_prefix, database_type_name))
-        return
-
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     logger.info(
         '{}: Removing {} database dumps{}'.format(log_prefix, database_type_name, dry_run_label)
     )
 
-    for database in databases:
-        dump_filename = make_database_dump_filename(
-            dump_path, database['name'], database.get('hostname')
-        )
+    expanded_path = os.path.expanduser(dump_path)
 
-        logger.debug(
-            '{}: Removing {} database dump {} from {}{}'.format(
-                log_prefix, database_type_name, database['name'], dump_filename, dry_run_label
-            )
-        )
-        if dry_run:
-            continue
+    if dry_run:
+        return
 
-        if os.path.exists(dump_filename):
-            if os.path.isdir(dump_filename):
-                shutil.rmtree(dump_filename)
-            else:
-                os.remove(dump_filename)
-
-        dump_file_dir = os.path.dirname(dump_filename)
-
-        if os.path.exists(dump_file_dir) and len(os.listdir(dump_file_dir)) == 0:
-            os.rmdir(dump_file_dir)
+    if os.path.exists(expanded_path):
+        shutil.rmtree(expanded_path)
 
 
 def convert_glob_patterns_to_borg_patterns(patterns):
