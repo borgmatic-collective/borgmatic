@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 EVENTS_API_URL = 'https://events.pagerduty.com/v2/enqueue'
 
 
-def initialize_monitor(integration_key, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    integration_key, config_filename, monitoring_log_level, dry_run
+):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''

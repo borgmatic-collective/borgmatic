@@ -13,7 +13,9 @@ MONITOR_STATE_TO_CRONHUB = {
 }
 
 
-def initialize_monitor(ping_url, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    ping_url, config_filename, monitoring_log_level, dry_run
+):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
     '''

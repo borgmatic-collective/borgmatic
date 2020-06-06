@@ -65,7 +65,9 @@ def format_buffered_logs_for_payload():
     return payload
 
 
-def initialize_monitor(ping_url_or_uuid, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(
+    ping_url_or_uuid, config_filename, monitoring_log_level, dry_run
+):  # pragma: no cover
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That
     way, we can send them all to Healthchecks upon a finish or failure state.
