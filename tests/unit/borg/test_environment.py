@@ -60,3 +60,15 @@ def test_initialize_with_relocated_repo_access_should_override_default():
         assert os.environ.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'yes'
     finally:
         os.environ = orig_environ
+
+
+def test_initialize_is_not_effected_by_existing_environment():
+    orig_environ = os.environ
+
+    try:
+        os.environ = {'BORG_PASSPHRASE': 'pass', 'BORG_SSH': 'mosh'}
+        module.initialize({'ssh_command': 'ssh -C'})
+        assert 'BORG_PASSPHRASE' not in os.environ
+        assert os.environ.get('BORG_RSH') == 'ssh -C'
+    finally:
+        os.environ = orig_environ

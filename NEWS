@@ -5,6 +5,8 @@
    still trigger a monitoring "fail" status.
  * #316: Fix hang when a stale database dump named pipe from an aborted borgmatic run remains on
    disk.
+ * #323: Fix for certain configuration options like ssh_command impacting Borg invocations for
+   separate configuration files.
  * Tweak comment indentation in generated configuration file for clarity.
  * Link to Borgmacator GNOME AppIndicator from monitoring documentation.
 

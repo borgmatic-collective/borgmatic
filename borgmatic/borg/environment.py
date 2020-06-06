@@ -22,6 +22,8 @@ def initialize(storage_config):
         value = storage_config.get(option_name)
         if value:
             os.environ[environment_variable_name] = value
+        else:
+            os.environ.pop(environment_variable_name, None)
 
     for (
         option_name,
