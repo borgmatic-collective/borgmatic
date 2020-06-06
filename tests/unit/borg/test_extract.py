@@ -220,6 +220,21 @@ def test_extract_archive_calls_borg_with_destination_path():
     )
 
 
+def test_extract_archive_calls_borg_with_strip_components():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    insert_execute_command_mock(('borg', 'extract', '--strip-components', '5', 'repo::archive'))
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        paths=None,
+        location_config={},
+        storage_config={},
+        strip_components=5,
+    )
+
+
 def test_extract_archive_calls_borg_with_progress_parameter():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module).should_receive('execute_command').with_args(

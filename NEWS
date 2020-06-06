@@ -7,6 +7,8 @@
    disk.
  * #323: Fix for certain configuration options like ssh_command impacting Borg invocations for
    separate configuration files.
+ * #324: Add "borgmatic extract --strip-components" flag to remove leading path components when
+   extracting an archive.
  * Tweak comment indentation in generated configuration file for clarity.
  * Link to Borgmacator GNOME AppIndicator from monitoring documentation.
 

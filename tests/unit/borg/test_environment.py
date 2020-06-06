@@ -62,7 +62,7 @@ def test_initialize_with_relocated_repo_access_should_override_default():
         os.environ = orig_environ
 
 
-def test_initialize_is_not_effected_by_existing_environment():
+def test_initialize_is_not_affected_by_existing_environment():
     orig_environ = os.environ
 
     try:

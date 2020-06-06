@@ -328,6 +328,7 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
                 destination_path=arguments['extract'].destination,
+                strip_components=arguments['extract'].strip_components,
                 progress=arguments['extract'].progress,
             )
     if 'mount' in arguments:

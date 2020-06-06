@@ -64,6 +64,7 @@ def extract_archive(
     local_path='borg',
     remote_path=None,
     destination_path=None,
+    strip_components=None,
     progress=False,
     extract_to_stdout=False,
 ):
@@ -91,6 +92,7 @@ def extract_archive(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
+        + (('--strip-components', str(strip_components)) if strip_components else ())
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + ('::'.join((repository if ':' in repository else os.path.abspath(repository), archive)),)

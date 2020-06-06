@@ -341,6 +341,13 @@ def parse_arguments(*unparsed_arguments):
         help='Directory to extract files into, defaults to the current directory',
     )
     extract_group.add_argument(
+        '--strip-components',
+        type=int,
+        metavar='NUMBER',
+        dest='strip_components',
+        help='Number of leading path components to remove from each extracted path. Skip paths with fewer elements',
+    )
+    extract_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
