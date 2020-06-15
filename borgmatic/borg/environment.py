@@ -19,7 +19,8 @@ DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
 
 def initialize(storage_config):
     for option_name, environment_variable_name in OPTION_TO_ENVIRONMENT_VARIABLE.items():
-        value = storage_config.get(option_name)
+        # Options from the config.yaml file have precedence over already set env variables:
+        value = storage_config.get(option_name) or os.environ.get(environment_variable_name)
         if value:
             os.environ[environment_variable_name] = value
         else:
