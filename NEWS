@@ -1,3 +1,6 @@
+1.5.7.dev0
+ * Update documentation code fragments theme to better match the rest of the page.
+
 1.5.6
  * #292: Allow before_backup and similiar hooks to exit with a soft failure without altering the
    monitoring status on Healthchecks or other providers. Support this by waiting to ping monitoring

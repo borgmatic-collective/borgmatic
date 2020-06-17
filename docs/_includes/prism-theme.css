@@ -3,9 +3,12 @@
  * Based on dabblet (http://dabblet.com)
  * @author Lea Verou
  */
+/*
+ * Modified with an approximation of the One Light syntax highlighting theme.
+ */
 code[class*="language-"],
 pre[class*="language-"] {
-  color: #ABB2BF;
+  color: #494b53;
   background: none;
   font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
   text-align: left;
@@ -26,13 +29,15 @@ pre[class*="language-"] {
 pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
 code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
   text-shadow: none;
-  background: #383e49;
+  color: #232324;
+  background: #dbdbdc;
 }
 
 pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
 code[class*="language-"]::selection, code[class*="language-"] ::selection {
   text-shadow: none;
-  background: #9aa2b1;
+  color: #232324;
+  background: #dbdbdc;
 }
 
 @media print {
@@ -50,7 +55,7 @@ pre[class*="language-"] {
 
 :not(pre) > code[class*="language-"],
 pre[class*="language-"] {
-  background: #282c34;
+  background: #fafafa;
 }
 
 /* Inline code */
@@ -64,16 +69,16 @@ pre[class*="language-"] {
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  color: #5C6370;
+  color: #505157;
 }
 
 .token.punctuation {
-  color: #abb2bf;
+  color: #526fff;
 }
 
 .token.selector,
 .token.tag {
-  color: #e06c75;
+  color: none;
 }
 
 .token.property,
@@ -83,7 +88,7 @@ pre[class*="language-"] {
 .token.symbol,
 .token.attr-name,
 .token.deleted {
-  color: #d19a66;
+  color: #986801;
 }
 
 .token.string,
@@ -91,7 +96,7 @@ pre[class*="language-"] {
 .token.attr-value,
 .token.builtin,
 .token.inserted {
-  color: #98c379;
+  color: #50a14f;
 }
 
 .token.operator,
@@ -99,22 +104,22 @@ pre[class*="language-"] {
 .token.url,
 .language-css .token.string,
 .style .token.string {
-  color: #56b6c2;
+  color: #526fff;
 }
 
 .token.atrule,
 .token.keyword {
-  color: #e06c75;
+  color: #e45649;
 }
 
 .token.function {
-  color: #61afef;
+  color: #4078f2;
 }
 
 .token.regex,
 .token.important,
 .token.variable {
-  color: #c678dd;
+  color: #e45649;
 }
 
 .token.important,

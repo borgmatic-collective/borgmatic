@@ -181,7 +181,7 @@ pre {
 	padding: .5em;
 	margin: 1em -.5em 2em -.5em;
 	overflow-x: auto;
-	background-color: #eee;
+	background-color: #fafafa;
 	font-size: 0.75em; /* 12px /16 */
 }
 pre,
@@ -194,7 +194,7 @@ code {
 	-webkit-hyphens: manual;
 	-moz-hyphens: manual;
 	hyphens: manual;
-	background-color: #efefef;
+	background-color: #fafafa;
 }
 pre + pre[class*="language-"] {
 	margin-top: 1em;
