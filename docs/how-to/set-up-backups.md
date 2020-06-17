@@ -8,9 +8,10 @@ these instructions install and run borgmatic as root. If you don't need to
 backup such files, then you are welcome to install and run borgmatic as a
 non-root user.
 
-First, [install
+First, manually [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
-version 1.1.
+version 1.1. borgmatic does not install Borg automatically so as to avoid
+conflicts with existing Borg installations.
 
 Then, download and install borgmatic as a [user site
 installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site)
