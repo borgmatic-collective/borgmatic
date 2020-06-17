@@ -556,6 +556,34 @@ map:
                                 documentation for details. Note that format is
                                 ignored when the database name is "all".
                             example: directory
+                        sslmode:
+                            type: str
+                            enum: ['disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full']
+                            desc: |
+                                SSL mode to use to connect to the database server. One of "disable", "allow", "prefer",
+                                "require", "verify-ca" or "verify-full". Defaults to "disable". See
+                                https://www.postgresql.org/docs/current/libpq-ssl.html for details.
+                            example: disable
+                        sslcert:
+                            type: str
+                            desc: |
+                                Path to a client certificate.
+                            example: "/root/.postgresql/postgresql.crt"
+                        sslkey:
+                            type: str
+                            desc: |
+                                Path to a private client key.
+                            example: "/root/.postgresql/postgresql.key"
+                        sslrootcert:
+                            type: str
+                            desc: |
+                                Path to a root certificate containing a list of trusted certificate authorities.
+                            example: "/root/.postgresql/root.crt"
+                        sslcrl:
+                            type: str
+                            desc: |
+                                Path to a certificate revocation list.
+                            example: "/root/.postgresql/root.crl"
                         options:
                             type: str
                             desc: |

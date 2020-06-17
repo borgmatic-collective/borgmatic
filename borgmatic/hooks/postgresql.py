@@ -56,7 +56,19 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             # format in a particular, a named destination is required, and redirection doesn't work.
             + (('>', dump_filename) if dump_format != 'directory' else ())
         )
-        extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
+        extra_environment = dict()
+        if 'password' in database:
+            extra_environment['PGPASSWORD'] = database['password']
+        extra_environment['PGSSLMODE'] = database['sslmode'] if 'sslmode' in database else 'disable'
+        if 'sslcert' in database:
+            extra_environment['PGSSLCERT'] = database['sslcert']
+        if 'sslkey' in database:
+            extra_environment['PGSSLKEY'] = database['sslkey']
+        if 'sslrootcert' in database:
+            extra_environment['PGSSLROOTCERT'] = database['sslrootcert']
+        if 'sslcrl' in database:
+            extra_environment['PGSSLCRL'] = database['sslcrl']
+
 
         logger.debug(
             '{}: Dumping PostgreSQL database {} to {}{}'.format(
@@ -141,7 +153,18 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--username', database['username']) if 'username' in database else ())
         + (() if extract_process else (dump_filename,))
     )
-    extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
+    extra_environment = dict()
+    if 'password' in database:
+        extra_environment['PGPASSWORD'] = database['password']
+    extra_environment['PGSSLMODE'] = database['sslmode'] if 'sslmode' in database else 'disable'
+    if 'sslcert' in database:
+        extra_environment['PGSSLCERT'] = database['sslcert']
+    if 'sslkey' in database:
+        extra_environment['PGSSLKEY'] = database['sslkey']
+    if 'sslrootcert' in database:
+        extra_environment['PGSSLROOTCERT'] = database['sslrootcert']
+    if 'sslcrl' in database:
+        extra_environment['PGSSLCRL'] = database['sslcrl']
 
     logger.debug(
         '{}: Restoring PostgreSQL database {}{}'.format(log_prefix, database['name'], dry_run_label)
