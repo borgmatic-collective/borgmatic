@@ -601,7 +601,8 @@ map:
                     database dumps are added to your source directories at
                     runtime, backed up, and removed afterwards. Requires
                     pg_dump/pg_dumpall/pg_restore commands. See
-                    https://www.postgresql.org/docs/current/app-pgdump.html for
+                    https://www.postgresql.org/docs/current/app-pgdump.html and
+                    https://www.postgresql.org/docs/current/libpq-ssl.html for
                     details.
             mysql_databases:
                 seq:
