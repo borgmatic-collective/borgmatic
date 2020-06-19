@@ -558,11 +558,13 @@ map:
                             example: directory
                         ssl_mode:
                             type: str
-                            enum: ['disable', 'allow', 'prefer', 'require', 'verify-ca', 'verify-full']
+                            enum: ['disable', 'allow', 'prefer',
+                                  'require', 'verify-ca', 'verify-full']
                             desc: |
-                                SSL mode to use to connect to the database server. One of "disable", "allow", "prefer",
-                                "require", "verify-ca" or "verify-full". Defaults to "disable". See
-                                https://www.postgresql.org/docs/current/libpq-ssl.html for details.
+                                SSL mode to use to connect to the database
+                                server. One of "disable", "allow", "prefer",
+                                "require", "verify-ca" or "verify-full".
+                                Defaults to "disable".
                             example: disable
                         ssl_cert:
                             type: str
@@ -577,7 +579,8 @@ map:
                         ssl_root_cert:
                             type: str
                             desc: |
-                                Path to a root certificate containing a list of trusted certificate authorities.
+                                Path to a root certificate containing a list of
+                                trusted certificate authorities.
                             example: "/root/.postgresql/root.crt"
                         ssl_crl:
                             type: str
