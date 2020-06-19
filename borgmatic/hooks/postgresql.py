@@ -22,15 +22,15 @@ def make_extra_environment(database):
     extra = dict()
     if 'password' in database:
         extra['PGPASSWORD'] = database['password']
-    extra['PGSSLMODE'] = database.get('sslmode', 'disable')
-    if 'sslcert' in database:
-        extra['PGSSLCERT'] = database['sslcert']
-    if 'sslkey' in database:
-        extra['PGSSLKEY'] = database['sslkey']
-    if 'sslrootcert' in database:
-        extra['PGSSLROOTCERT'] = database['sslrootcert']
-    if 'sslcrl' in database:
-        extra['PGSSLCRL'] = database['sslcrl']
+    extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
+    if 'ssl_cert' in database:
+        extra['PGSSLCERT'] = database['ssl_cert']
+    if 'ssl_key' in database:
+        extra['PGSSLKEY'] = database['ssl_key']
+    if 'ssl_root_cert' in database:
+        extra['PGSSLROOTCERT'] = database['ssl_root_cert']
+    if 'ssl_crl' in database:
+        extra['PGSSLCRL'] = database['ssl_crl']
     return extra
 
 
