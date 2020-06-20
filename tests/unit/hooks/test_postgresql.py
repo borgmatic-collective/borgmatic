@@ -29,7 +29,7 @@ def test_dump_databases_runs_pg_dump_for_each_database():
                 'databases/localhost/{}'.format(name),
             ),
             shell=True,
-            extra_environment=None,
+            extra_environment={'PGSSLMODE': 'disable'},
             run_to_completion=False,
         ).and_return(process).once()
 
@@ -74,7 +74,7 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
             'databases/database.example.org/foo',
         ),
         shell=True,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -105,11 +105,32 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment={'PGPASSWORD': 'trustsome1'},
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+
+
+def test_make_extra_environment():
+    database = {
+        'name': 'foo',
+        'ssl_mode': 'require',
+        'ssl_cert': 'cert.crt',
+        'ssl_key': 'key.key',
+        'ssl_root_cert': 'root.crt',
+        'ssl_crl': 'crl.crl',
+    }
+    expected = {
+        'PGSSLMODE': 'require',
+        'PGSSLCERT': 'cert.crt',
+        'PGSSLKEY': 'key.key',
+        'PGSSLROOTCERT': 'root.crt',
+        'PGSSLCRL': 'crl.crl',
+    }
+
+    extra_env = module.make_extra_environment(database)
+    assert extra_env == expected
 
 
 def test_dump_databases_runs_pg_dump_with_directory_format():
@@ -135,7 +156,7 @@ def test_dump_databases_runs_pg_dump_with_directory_format():
             'foo',
         ),
         shell=True,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -151,6 +172,8 @@ def test_dump_databases_runs_pg_dump_with_options():
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+
     flexmock(module).should_receive('execute_command').with_args(
         (
             'pg_dump',
@@ -165,7 +188,7 @@ def test_dump_databases_runs_pg_dump_with_options():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -184,7 +207,7 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
     flexmock(module).should_receive('execute_command').with_args(
         ('pg_dumpall', '--no-password', '--clean', '--if-exists', '>', 'databases/localhost/all'),
         shell=True,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -210,12 +233,12 @@ def test_restore_database_dump_runs_pg_restore():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         borg_local_path='borg',
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_database_dump(
@@ -260,7 +283,7 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         borg_local_path='borg',
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
@@ -277,7 +300,7 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
             '--command',
             'ANALYZE',
         ),
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_database_dump(
@@ -306,7 +329,7 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGPASSWORD': 'trustsome1'},
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         borg_local_path='borg',
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
@@ -321,7 +344,7 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGPASSWORD': 'trustsome1'},
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_database_dump(
@@ -340,11 +363,12 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         borg_local_path='borg',
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('psql', '--no-password', '--quiet', '--command', 'ANALYZE'), extra_environment=None
+        ('psql', '--no-password', '--quiet', '--command', 'ANALYZE'),
+        extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_database_dump(
@@ -383,12 +407,12 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
         borg_local_path='borg',
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
-        extra_environment=None,
+        extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_database_dump(

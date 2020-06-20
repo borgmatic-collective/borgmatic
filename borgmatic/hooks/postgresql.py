@@ -15,6 +15,25 @@ def make_dump_path(location_config):  # pragma: no cover
     )
 
 
+def make_extra_environment(database):
+    '''
+    Make the extra_environment dict from the given database configuration.
+    '''
+    extra = dict()
+    if 'password' in database:
+        extra['PGPASSWORD'] = database['password']
+    extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
+    if 'ssl_cert' in database:
+        extra['PGSSLCERT'] = database['ssl_cert']
+    if 'ssl_key' in database:
+        extra['PGSSLKEY'] = database['ssl_key']
+    if 'ssl_root_cert' in database:
+        extra['PGSSLROOTCERT'] = database['ssl_root_cert']
+    if 'ssl_crl' in database:
+        extra['PGSSLCRL'] = database['ssl_crl']
+    return extra
+
+
 def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     Dump the given PostgreSQL databases to a named pipe. The databases are supplied as a sequence of
@@ -56,7 +75,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             # format in a particular, a named destination is required, and redirection doesn't work.
             + (('>', dump_filename) if dump_format != 'directory' else ())
         )
-        extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
+        extra_environment = make_extra_environment(database)
 
         logger.debug(
             '{}: Dumping PostgreSQL database {} to {}{}'.format(
@@ -141,7 +160,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--username', database['username']) if 'username' in database else ())
         + (() if extract_process else (dump_filename,))
     )
-    extra_environment = {'PGPASSWORD': database['password']} if 'password' in database else None
+    extra_environment = make_extra_environment(database)
 
     logger.debug(
         '{}: Restoring PostgreSQL database {}{}'.format(log_prefix, database['name'], dry_run_label)
