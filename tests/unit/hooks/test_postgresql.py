@@ -14,6 +14,7 @@ def test_dump_databases_runs_pg_dump_for_each_database():
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
@@ -43,6 +44,7 @@ def test_dump_databases_with_dry_run_skips_pg_dump():
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command').never()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
@@ -56,6 +58,7 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
         'databases/database.example.org/foo'
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -89,6 +92,9 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
         'databases/localhost/foo'
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('make_extra_environment').and_return(
+        {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
+    )
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -112,9 +118,10 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
-def test_make_extra_environment():
+def test_make_extra_environment_maps_options_to_environment():
     database = {
         'name': 'foo',
+        'password': 'pass',
         'ssl_mode': 'require',
         'ssl_cert': 'cert.crt',
         'ssl_key': 'key.key',
@@ -122,6 +129,7 @@ def test_make_extra_environment():
         'ssl_crl': 'crl.crl',
     }
     expected = {
+        'PGPASSWORD': 'pass',
         'PGSSLMODE': 'require',
         'PGSSLCERT': 'cert.crt',
         'PGSSLKEY': 'key.key',
@@ -142,6 +150,7 @@ def test_dump_databases_runs_pg_dump_with_directory_format():
     )
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
 
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -171,7 +180,6 @@ def test_dump_databases_runs_pg_dump_with_options():
         'databases/localhost/foo'
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
-
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -203,6 +211,7 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
         'databases/localhost/all'
     )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
 
     flexmock(module).should_receive('execute_command').with_args(
         ('pg_dumpall', '--no-password', '--clean', '--if-exists', '>', 'databases/localhost/all'),
@@ -220,6 +229,7 @@ def test_restore_database_dump_runs_pg_restore():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -251,6 +261,7 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -266,6 +277,7 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -314,6 +326,9 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return(
+        {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
+    )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
@@ -358,6 +373,7 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('psql', '--no-password'),
         processes=[extract_process],
@@ -381,6 +397,7 @@ def test_restore_database_dump_with_dry_run_skips_restore():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
@@ -393,6 +410,7 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return('/dump/path')
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'pg_restore',
