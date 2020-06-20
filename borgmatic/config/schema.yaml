@@ -565,7 +565,7 @@ map:
                                 server. One of "disable", "allow", "prefer",
                                 "require", "verify-ca" or "verify-full".
                                 Defaults to "disable".
-                            example: disable
+                            example: require
                         ssl_cert:
                             type: str
                             desc: |
