@@ -44,10 +44,24 @@ def _expand_home_directories(directories):
     return tuple(os.path.expanduser(directory) for directory in directories)
 
 
-def deduplicate_directories(directories):
+def map_directories_to_devices(directories):  # pragma: no cover
     '''
-    Given a sequence of directories, return them as a sorted tuple with all duplicate child
-    directories removed. For instance, if paths is ('/foo', '/foo/bar'), return just: ('/foo',)
+    Given a sequence of directories, return a map from directory to an identifier for the device on
+    which that directory resides. This is handy for determining whether two different directories
+    are on the same filesystem (have the same device identifier).
+    '''
+    return {directory: os.stat(directory).st_dev for directory in directories}
+
+
+def deduplicate_directories(directory_devices):
+    '''
+    Given a map from directory to the identifier for the device on which that directory resides,
+    return the directories as a sorted tuple with all duplicate child directories removed. For
+    instance, if paths is ('/foo', '/foo/bar'), return just: ('/foo',)
+
+    The one exception to this rule is if two paths are on different filesystems (devices). In that
+    case, they won't get de-duplicated in case they both need to be passed to Borg (e.g. the
+    location.one_file_system option is true).
 
     The idea is that if Borg is given a parent directory, then it doesn't also need to be given
     child directories, because it will naturally spider the contents of the parent directory. And
@@ -56,19 +70,23 @@ def deduplicate_directories(directories):
     Borg.
     '''
     deduplicated = set()
+    directories = sorted(directory_devices.keys())
 
-    for directory in sorted(directories):
-        # If the directory is "/", that contains all child directories, so we can early out.
-        if directory == os.path.sep:
-            return (os.path.sep,)
+    for directory in directories:
+        deduplicated.add(directory)
+        parents = pathlib.PurePath(directory).parents
 
-        # If no other directories are parents of current directory (even n levels up), then the
-        # current directory isn't a duplicate.
-        if not any(
-            pathlib.PurePath(other_directory) in pathlib.PurePath(directory).parents
-            for other_directory in directories
-        ):
-            deduplicated.add(directory)
+        # If another directory in the given list is a parent of current directory (even n levels
+        # up) and both are on the same filesystem, then the current directory is a duplicate.
+        for other_directory in directories:
+            for parent in parents:
+                if (
+                    pathlib.PurePath(other_directory) == parent
+                    and directory_devices[other_directory] == directory_devices[directory]
+                ):
+                    if directory in deduplicated:
+                        deduplicated.remove(directory)
+                    break
 
     return tuple(sorted(deduplicated))
 
@@ -179,9 +197,11 @@ def create_archive(
     create command while also triggering the given processes to produce output.
     '''
     sources = deduplicate_directories(
-        _expand_directories(
-            location_config['source_directories']
-            + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+        map_directories_to_devices(
+            _expand_directories(
+                location_config['source_directories']
+                + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+            )
         )
     )
 

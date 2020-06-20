@@ -1,4 +1,8 @@
 1.5.7.dev0
+ * #333: Fix for potential data loss (data not getting backed up) when borgmatic omitted configured
+   source directories in certain situations. Specifically, this occurred when two source directories
+   on different filesystems were related by parentage (e.g. "/foo" and "/foo/bar/baz") and the
+   one_file_system option was enabled.
  * Update documentation code fragments theme to better match the rest of the page.
  * Improve configuration reference documentation readability via more aggressive word-wrapping in
    configuration schema descriptions.
