@@ -1,5 +1,6 @@
 1.5.7.dev0
  * #327: Fix broken pass-through of BORG_* environment variables to Borg.
+ * #328: Fix duplicate logging to Healthchecks and send "after_*" hooks output to Healthchecks.
  * #331: Add SSL support to PostgreSQL database configuration.
  * #333: Fix for potential data loss (data not getting backed up) when borgmatic omitted configured
    source directories in certain situations. Specifically, this occurred when two source directories

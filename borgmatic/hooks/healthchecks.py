@@ -107,3 +107,15 @@ def ping_monitor(ping_url_or_uuid, config_filename, state, monitoring_log_level,
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         requests.post(ping_url, data=payload.encode('utf-8'))
+
+
+def destroy_monitor(ping_url_or_uuid, config_filename, monitoring_log_level, dry_run):
+    '''
+    Remove the monitor handler that was added to the root logger. This prevents the handler from
+    getting reused by other instances of this monitor.
+    '''
+    logger = logging.getLogger()
+
+    for handler in tuple(logger.handlers):
+        if isinstance(handler, Forgetful_buffering_handler):
+            logger.removeHandler(handler)
