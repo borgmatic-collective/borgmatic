@@ -1,4 +1,4 @@
-1.5.7.dev0
+1.5.7
  * #327: Fix broken pass-through of BORG_* environment variables to Borg.
  * #328: Fix duplicate logging to Healthchecks and send "after_*" hooks output to Healthchecks.
  * #331: Add SSL support to PostgreSQL database configuration.
