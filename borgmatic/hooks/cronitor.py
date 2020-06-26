@@ -40,7 +40,9 @@ def ping_monitor(ping_url, config_filename, state, monitoring_log_level, dry_run
         requests.get(ping_url)
 
 
-def destroy_monitor(ping_url_or_uuid, config_filename, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config_filename, monitoring_log_level, dry_run
+):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

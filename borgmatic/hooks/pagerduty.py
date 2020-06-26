@@ -71,7 +71,9 @@ def ping_monitor(integration_key, config_filename, state, monitoring_log_level, 
     requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
 
 
-def destroy_monitor(ping_url_or_uuid, config_filename, monitoring_log_level, dry_run):  # pragma: no cover
+def destroy_monitor(
+    ping_url_or_uuid, config_filename, monitoring_log_level, dry_run
+):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''
