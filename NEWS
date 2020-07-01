@@ -1,4 +1,4 @@
-1.5.8.dev0
+1.5.8
  * #336: Fix for traceback when running Cronitor, Cronhub, and PagerDuty monitor hooks.
 
 1.5.7
