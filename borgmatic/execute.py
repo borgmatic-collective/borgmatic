@@ -84,8 +84,13 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
                 logger.log(output_log_level, line)
 
+        still_running = False
+
         for process in processes:
             exit_code = process.poll() if output_buffers else process.wait()
+
+            if exit_code is None:
+                still_running = True
 
             # If any process errors, then raise accordingly.
             if exit_code_indicates_error(process, exit_code, borg_local_path):
@@ -108,7 +113,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                     exit_code, command_for_process(process), '\n'.join(last_lines)
                 )
 
-        if all(process.poll() is not None for process in processes):
+        if not still_running:
             break
 
     # Consume any remaining output that we missed (if any).
