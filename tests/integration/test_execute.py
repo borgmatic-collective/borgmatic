@@ -143,3 +143,16 @@ def test_log_outputs_with_no_output_logs_nothing():
     module.log_outputs(
         (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
     )
+
+
+def test_log_outputs_with_unfinished_process_re_polls():
+    flexmock(module.logger).should_receive('log').never()
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
+
+    process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    flexmock(process).should_receive('poll').and_return(None).and_return(0).twice()
+    flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
+
+    module.log_outputs(
+        (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
+    )

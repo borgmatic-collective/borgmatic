@@ -1,3 +1,6 @@
+1.5.9.dev0
+ * #339: Fix for intermittent timing-related test failure of logging function.
+
 1.5.8
  * #336: Fix for traceback when running Cronitor, Cronhub, and PagerDuty monitor hooks.
 
