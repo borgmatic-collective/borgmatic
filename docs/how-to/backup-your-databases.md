@@ -171,7 +171,8 @@ databases that share the exact same name on different hosts.
 4. Because database hooks implicitly enable the `read_special` configuration
 setting to support dump and restore streaming, you'll need to ensure that any
 special files are excluded from backups (named pipes, block devices, and
-character devices). Common directories to exclude are `/dev` and `/run`, but
+character devices) to prevent hanging. Try a command like `find / -type c,b,p`
+to find such files. Common directories to exclude are `/dev` and `/run`, but
 that may not be exhaustive.
 
 
@@ -214,8 +215,8 @@ hooks:
 ### borgmatic hangs during backup
 
 See Limitations above about `read_special`. You may need to exclude certain
-paths with named pipes, block devices, or character devices. Common
-directories to exclude are `/dev` and `/run`, but that may not be exhaustive.
+paths with named pipes, block devices, or character devices on which borgmatic
+is hanging.
 
 
 ## Related documentation
