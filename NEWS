@@ -1,5 +1,7 @@
 1.5.9.dev0
  * #339: Fix for intermittent timing-related test failure of logging function.
+ * Clarify database documentation about excluding named pipes and character/block devices to prevent
+   hangs.
 
 1.5.8
  * #336: Fix for traceback when running Cronitor, Cronhub, and PagerDuty monitor hooks.

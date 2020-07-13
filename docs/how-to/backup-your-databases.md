@@ -34,6 +34,7 @@ in the `location` section of borgmatic's configuration.
 Also note that using a database hook implicitly enables both the
 `read_special` and `one_file_system` configuration settings (even if they're
 disabled in your configuration) to support this dump and restore streaming.
+See Limitations below for more on this.
 
 Here's a more involved example that connects to remote databases:
 
@@ -167,6 +168,11 @@ borgmatic's own configuration file. So include your configuration file in
 backups to avoid getting caught without a way to restore a database.
 3. borgmatic does not currently support backing up or restoring multiple
 databases that share the exact same name on different hosts.
+4. Because database hooks implicitly enable the `read_special` configuration
+setting to support dump and restore streaming, you'll need to ensure that any
+special files are excluded from backups (named pipes, block devices, and
+character devices). Common directories to exclude are `/dev` and `/run`, but
+that may not be exhaustive.
 
 
 ### Manual restoration
@@ -204,6 +210,12 @@ hooks:
         - name: posts
           options: "--single-transaction --quick"
 ```
+
+### borgmatic hangs during backup
+
+See Limitations above about `read_special`. You may need to exclude certain
+paths with named pipes, block devices, or character devices. Common
+directories to exclude are `/dev` and `/run`, but that may not be exhaustive.
 
 
 ## Related documentation
