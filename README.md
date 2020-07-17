@@ -75,6 +75,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/) ⬅ *Start here!*
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+ * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)

@@ -150,6 +150,13 @@ FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-e
 for more info.
 
 
+### Redundancy
+
+If you'd like to configure your backups to go to multiple different
+repositories, see the documentation on how to [make backups
+redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/).
+
+
 ### Validation
 
 If you'd like to validate that your borgmatic configuration is valid, the
@@ -311,6 +318,7 @@ it.
 ## Related documentation
 
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+ * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
  * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
  * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
  * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)

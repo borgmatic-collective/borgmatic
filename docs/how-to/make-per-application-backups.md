@@ -153,3 +153,4 @@ that your shell may interpret.
 ## Related documentation
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
+ * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)

@@ -103,5 +103,6 @@ There are some caveats you should be aware of with this feature.
 
  * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
  * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+ * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
  * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
  * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
