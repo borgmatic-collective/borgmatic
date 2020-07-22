@@ -329,8 +329,8 @@ map:
             Retention policy for how many backups to keep in each category. See
             https://borgbackup.readthedocs.io/en/stable/usage/prune.html for
             details. At least one of the "keep" options is required for pruning
-            to work. See borgmatic documentation if you'd like to skip pruning
-            entirely.
+            to work. To skip pruning entirely, run "borgmatic create" or "check"
+            without the "prune" action. See borgmatic documentation for details.
         map:
             keep_within:
                 type: str
