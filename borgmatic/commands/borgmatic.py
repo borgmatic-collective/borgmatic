@@ -12,6 +12,7 @@ import pkg_resources
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
+from borgmatic.borg import export_tar as borg_export_tar
 from borgmatic.borg import extract as borg_extract
 from borgmatic.borg import info as borg_info
 from borgmatic.borg import init as borg_init
@@ -346,6 +347,30 @@ def run_actions(
                 destination_path=arguments['extract'].destination,
                 strip_components=arguments['extract'].strip_components,
                 progress=arguments['extract'].progress,
+            )
+    if 'export-tar' in arguments:
+        if arguments['export-tar'].repository is None or validate.repositories_match(
+            repository, arguments['export-tar'].repository
+        ):
+            logger.info(
+                '{}: Exporting archive {} as tar file'.format(
+                    repository, arguments['export-tar'].archive
+                )
+            )
+            borg_export_tar.export_tar_archive(
+                global_arguments.dry_run,
+                repository,
+                borg_list.resolve_archive_name(
+                    repository, arguments['export-tar'].archive, storage, local_path, remote_path
+                ),
+                arguments['export-tar'].paths,
+                arguments['export-tar'].destination,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+                tar_filter=arguments['export-tar'].tar_filter,
+                files=arguments['export-tar'].files,
+                strip_components=arguments['export-tar'].strip_components,
             )
     if 'mount' in arguments:
         if arguments['mount'].repository is None or validate.repositories_match(

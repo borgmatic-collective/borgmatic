@@ -9,6 +9,7 @@ SUBPARSER_ALIASES = {
     'create': ['--create', '-C'],
     'check': ['--check', '-k'],
     'extract': ['--extract', '-x'],
+    'export-tar': ['--export-tar'],
     'mount': ['--mount', '-m'],
     'umount': ['--umount', '-u'],
     'restore': ['--restore', '-r'],
@@ -355,6 +356,52 @@ def parse_arguments(*unparsed_arguments):
         help='Display progress for each file as it is extracted',
     )
     extract_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    export_tar_parser = subparsers.add_parser(
+        'export-tar',
+        aliases=SUBPARSER_ALIASES['export-tar'],
+        help='Export an archive to a tar-formatted file or stream',
+        description='Export an archive to a tar-formatted file or stream',
+        add_help=False,
+    )
+    export_tar_group = export_tar_parser.add_argument_group('export-tar arguments')
+    export_tar_group.add_argument(
+        '--repository',
+        help='Path of repository to export from, defaults to the configured repository if there is only one',
+    )
+    export_tar_group.add_argument(
+        '--archive', help='Name of archive to export (or "latest")', required=True
+    )
+    export_tar_group.add_argument(
+        '--path',
+        metavar='PATH',
+        nargs='+',
+        dest='paths',
+        help='Paths to export from archive, defaults to the entire archive',
+    )
+    export_tar_group.add_argument(
+        '--destination',
+        metavar='PATH',
+        dest='destination',
+        help='Path to destination export tar file, or "-" for stdout (but be careful about dirtying output with --verbosity or --files)',
+        required=True,
+    )
+    export_tar_group.add_argument(
+        '--tar-filter', help='Name of filter program to pipe data through'
+    )
+    export_tar_group.add_argument(
+        '--files', default=False, action='store_true', help='Show per-file details'
+    )
+    export_tar_group.add_argument(
+        '--strip-components',
+        type=int,
+        metavar='NUMBER',
+        dest='strip_components',
+        help='Number of leading path components to remove from each exported path. Skip paths with fewer elements',
+    )
+    export_tar_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

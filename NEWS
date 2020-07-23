@@ -1,4 +1,5 @@
-1.5.9.dev0
+1.5.9
+ * #300: Add "borgmatic export-tar" action to export an archive to a tar-formatted file or stream.
  * #339: Fix for intermittent timing-related test failure of logging function.
  * Clarify database documentation about excluding named pipes and character/block devices to prevent
    hangs.
