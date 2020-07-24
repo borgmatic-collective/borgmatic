@@ -1,3 +1,7 @@
+1.5.10.dev0
+ * Clarify documentation on configuration overrides, specifically the portion about list syntax:
+   http://localhost:8080/docs/how-to/make-per-application-backups/#configuration-overrides
+
 1.5.9
  * #300: Add "borgmatic export-tar" action to export an archive to a tar-formatted file or stream.
  * #339: Fix for intermittent timing-related test failure of logging function.

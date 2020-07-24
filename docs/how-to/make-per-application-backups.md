@@ -129,12 +129,12 @@ Whatever the reason, you can override borgmatic configuration options at the
 command-line via the `--override` flag. Here's an example:
 
 ```bash
-borgmatic create --override location.remote_path=borg1
+borgmatic create --override location.remote_path=/usr/local/bin/borg1
 ```
 
 What this does is load your configuration files, and for each one, disregard
 the configured value for the `remote_path` option in the `location` section,
-and use the value of `borg1` instead.
+and use the value of `/usr/local/bin/borg1` instead.
 
 Note that the value is parsed as an actual YAML string, so you can even set
 list values by using brackets. For instance:
@@ -143,8 +143,21 @@ list values by using brackets. For instance:
 borgmatic create --override location.repositories=[test1.borg,test2.borg]
 ```
 
+Or even a single list element:
+
+```bash
+borgmatic create --override location.repositories=[/root/test1.borg]
+```
+
 There is not currently a way to override a single element of a list without
 replacing the whole list.
+
+Note that if you override an option of the list type (like
+`location.repositories`), you do need to use the `[ ]` list syntax. See the
+[configuration
+reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
+which options are list types. (YAML list values look like `- this` with an
+indentation and a leading dash.)
 
 Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
