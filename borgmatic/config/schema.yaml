@@ -473,6 +473,14 @@ map:
                     before consistency checks, run once per configuration file.
                 example:
                     - echo "Starting checks."
+            before_extract:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute
+                    before extracting a backup, run once per configuration file.
+                example:
+                    - echo "Starting extracting."
             after_backup:
                 seq:
                     - type: str
@@ -497,6 +505,14 @@ map:
                     after consistency checks, run once per configuration file.
                 example:
                     - echo "Finished checks."
+            after_extract:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute
+                    after extracting a backup, run once per configuration file.
+                example:
+                    - echo "Finished extracting."
             on_error:
                 seq:
                     - type: str
