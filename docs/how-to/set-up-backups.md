@@ -96,8 +96,8 @@ services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
 
 <ul>
- <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
+ <li>rsync.net: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
 </ul>
 
 ## Configuration
