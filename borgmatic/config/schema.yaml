@@ -710,7 +710,7 @@ map:
                     List of one or more shell commands or scripts to execute
                     after running all actions (if one of them is "create").
                     These are collected from all configuration files and then
-                    run once before all of them (prior to all actions).
+                    run once after all of them (after any action).
                 example:
                     - echo "Completed actions."
             umask:
