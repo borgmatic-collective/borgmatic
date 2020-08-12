@@ -96,7 +96,7 @@ def run_configuration(config_filename, config, arguments):
                 hooks.get('before_extract'),
                 hooks.get('umask'),
                 config_filename,
-                'pre-check',
+                'pre-extract',
                 global_arguments.dry_run,
             )
         if prune_create_or_check:
@@ -178,7 +178,7 @@ def run_configuration(config_filename, config, arguments):
                     hooks.get('after_extract'),
                     hooks.get('umask'),
                     config_filename,
-                    'post-check',
+                    'post-extract',
                     global_arguments.dry_run,
                 )
             if prune_create_or_check:
