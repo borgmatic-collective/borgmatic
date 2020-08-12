@@ -44,6 +44,9 @@ def collect_config_filenames(config_paths):
             yield path
             continue
 
+        if not os.access(path, os.R_OK):
+            continue
+
         for filename in sorted(os.listdir(path)):
             full_filename = os.path.join(path, filename)
             matching_filetype = full_filename.endswith('.yaml') or full_filename.endswith('.yml')

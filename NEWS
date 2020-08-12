@@ -1,4 +1,5 @@
 1.5.10.dev0
+ * #350: Fix traceback when a configuration directory is non-readable due to directory permissions.
  * Clarify documentation on configuration overrides, specifically the portion about list syntax:
    http://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides
  * Clarify documentation overview of monitoring options:
