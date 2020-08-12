@@ -91,6 +91,14 @@ def run_configuration(config_filename, config, arguments):
                 'pre-check',
                 global_arguments.dry_run,
             )
+        if 'extract' in arguments:
+            command.execute_hook(
+                hooks.get('before_extract'),
+                hooks.get('umask'),
+                config_filename,
+                'pre-extract',
+                global_arguments.dry_run,
+            )
         if prune_create_or_check:
             dispatch.call_hooks(
                 'ping_monitor',
@@ -163,6 +171,14 @@ def run_configuration(config_filename, config, arguments):
                     hooks.get('umask'),
                     config_filename,
                     'post-check',
+                    global_arguments.dry_run,
+                )
+            if 'extract' in arguments:
+                command.execute_hook(
+                    hooks.get('after_extract'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-extract',
                     global_arguments.dry_run,
                 )
             if prune_create_or_check:

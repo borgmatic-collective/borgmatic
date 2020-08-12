@@ -54,6 +54,17 @@ def test_run_configuration_calls_hooks_for_check_action():
     list(module.run_configuration('test.yaml', config, arguments))
 
 
+def test_run_configuration_calls_hooks_for_extract_action():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'extract': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
 def test_run_configuration_does_not_trigger_hooks_for_list_action():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook').never()
