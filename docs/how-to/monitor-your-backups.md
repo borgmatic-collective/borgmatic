@@ -10,48 +10,68 @@ and alerting comes in.
 
 There are several different ways you can monitor your backups and find out
 whether they're succeeding. Which of these you choose to do is up to you and
-your particular infrastructure:
+your particular infrastructure.
 
-1. **Job runner alerts**: The easiest place to start is with failure alerts
-from the [scheduled job
-runner](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot) (cron,
-systemd, etc.) that's running borgmatic. But note that if the job doesn't even
-get scheduled (e.g. due to the job runner not running), you probably won't get
-an alert at all! Still, this is a decent first line of defense, especially
-when combined with some of the other approaches below.
-2. **borgmatic error hooks**: The `on_error` hook allows you to run an arbitrary
-command or script when borgmatic itself encounters an error running your
-backups. So for instance, you can run a script to send yourself a text message
-alert. But note that if borgmatic doesn't actually run, this alert won't fire.
-See [error
+### Job runner alerts
+
+The easiest place to start is with failure alerts from the [scheduled job
+runner](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot)
+(cron, systemd, etc.) that's running borgmatic. But note that if the job
+doesn't even get scheduled (e.g. due to the job runner not running), you
+probably won't get an alert at all! Still, this is a decent first line of
+defense, especially when combined with some of the other approaches below.
+
+### Commands run on error
+
+The `on_error` hook allows you to run an arbitrary command or script when
+borgmatic itself encounters an error running your backups. So for instance,
+you can run a script to send yourself a text message alert. But note that if
+borgmatic doesn't actually run, this alert won't fire.  See [error
 hooks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks)
 below for how to configure this.
-4. **borgmatic monitoring hooks**: This feature integrates with monitoring
-   services like [Healthchecks](https://healthchecks.io/),
-[Cronitor](https://cronitor.io), [Cronhub](https://cronhub.io), and
-[PagerDuty](https://www.pagerduty.com/) and pings these services whenever
-borgmatic runs. That way, you'll receive an alert when something goes wrong or
-(for certain hooks) the service doesn't hear from borgmatic for a configured
-interval. See [Healthchecks
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook), [Cronitor
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook), [Cronhub
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook), and
-[PagerDuty hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+
+### Third-party monitoring services
+
+borgmatic integrates with monitoring services like
+[Healthchecks](https://healthchecks.io/), [Cronitor](https://cronitor.io),
+[Cronhub](https://cronhub.io), and [PagerDuty](https://www.pagerduty.com/) and
+pings these services whenever borgmatic runs. That way, you'll receive an
+alert when something goes wrong or (for certain hooks) the service doesn't
+hear from borgmatic for a configured interval. See [Healthchecks
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook),
+[Cronitor
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook),
+[Cronhub
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook),
+and [PagerDuty
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
 below for how to configure this.
-3. **Third-party monitoring software**: You can use traditional monitoring
-software to consume borgmatic JSON output and track when the last
-successful backup occurred. See [scripting
+
+While these services offer different features, you probably only need to use
+one of them at most.
+
+### Third-party monitoring software
+
+You can use traditional monitoring software to consume borgmatic JSON output
+and track when the last successful backup occurred. See [scripting
 borgmatic](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#scripting-borgmatic)
-and [related software](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#related-software)
+and [related
+software](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#related-software)
 below for how to configure this.
-5. **Borg hosting providers**: Most [Borg hosting
+
+### Borg hosting providers
+
+Most [Borg hosting
 providers](https://torsion.org/borgmatic/#hosting-providers) include
 monitoring and alerting as part of their offering. This gives you a dashboard
 to check on all of your backups, and can alert you if the service doesn't hear
 from borgmatic for a configured interval.
-6. **borgmatic consistency checks**: While not strictly part of monitoring, if you
-really want confidence that your backups are not only running but are
-restorable as well, you can configure particular [consistency
+
+### Consistency checks
+
+While not strictly part of monitoring, if you really want confidence that your
+backups are not only running but are restorable as well, you can configure
+particular [consistency
 checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)
 or even script full [extract
 tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).

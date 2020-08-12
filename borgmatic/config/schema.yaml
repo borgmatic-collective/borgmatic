@@ -123,7 +123,7 @@ map:
                     patterns" for more details.
                 example:
                     - '*.pyc'
-                    - ~/*/.cache
+                    - /home/*/.cache
                     - /etc/ssl
             exclude_from:
                 seq:
@@ -522,6 +522,26 @@ map:
                     "check" action or an associated before/after hook.
                 example:
                     - echo "Error during prune/create/check."
+            before_everything:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute
+                    before running all actions (if one of them is "create").
+                    These are collected from all configuration files and then
+                    run once before all of them (prior to all actions).
+                example:
+                    - echo "Starting actions."
+            after_everything:
+                seq:
+                    - type: str
+                desc: |
+                    List of one or more shell commands or scripts to execute
+                    after running all actions (if one of them is "create").
+                    These are collected from all configuration files and then
+                    run once after all of them (after any action).
+                example:
+                    - echo "Completed actions."
             postgresql_databases:
                 seq:
                     - map:
@@ -709,26 +729,6 @@ map:
                     documentation for details.
                 example:
                     https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d01
-            before_everything:
-                seq:
-                    - type: str
-                desc: |
-                    List of one or more shell commands or scripts to execute
-                    before running all actions (if one of them is "create").
-                    These are collected from all configuration files and then
-                    run once before all of them (prior to all actions).
-                example:
-                    - echo "Starting actions."
-            after_everything:
-                seq:
-                    - type: str
-                desc: |
-                    List of one or more shell commands or scripts to execute
-                    after running all actions (if one of them is "create").
-                    These are collected from all configuration files and then
-                    run once before all of them (prior to all actions).
-                example:
-                    - echo "Completed actions."
             umask:
                 type: scalar
                 desc: |

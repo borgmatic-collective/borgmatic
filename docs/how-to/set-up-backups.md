@@ -96,8 +96,8 @@ services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
 
 <ul>
- <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
+ <li>rsync.net: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
 </ul>
 
 ## Configuration
@@ -135,9 +135,8 @@ configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your
 
 ### Encryption
 
-Note that if you plan to run borgmatic on a schedule with cron, and you
-encrypt your Borg repository with a passphrase instead of a key file, you'll
-either need to set the borgmatic `encryption_passphrase` configuration
+If you encrypt your Borg repository with a passphrase instead of a key file,
+you'll either need to set the borgmatic `encryption_passphrase` configuration
 variable or set the `BORG_PASSPHRASE` environment variable. See the
 [repository encryption
 section](https://borgbackup.readthedocs.io/en/stable/quickstart.html#repository-encryption)
