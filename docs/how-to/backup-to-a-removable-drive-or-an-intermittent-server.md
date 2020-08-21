@@ -1,5 +1,9 @@
 ---
 title: How to backup to a removable drive or an intermittent server
+eleventyNavigation:
+  key: Backup to a removable drive or server
+  parent: How-to guides
+  order: 9
 ---
 ## Occasional backups
 
@@ -98,11 +102,3 @@ There are some caveats you should be aware of with this feature.
  * The soft failure feature also works for `before_prune`, `after_prune`,
    `before_check`, and `after_check` hooks. But it is not implemented for
    `before_everything` or `after_everything`.
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
- * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)

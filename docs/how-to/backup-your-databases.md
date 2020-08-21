@@ -1,5 +1,9 @@
 ---
 title: How to backup your databases
+eleventyNavigation:
+  key: Backup your databases
+  parent: How-to guides
+  order: 7
 ---
 ## Database dump hooks
 
@@ -217,11 +221,3 @@ hooks:
 See Limitations above about `read_special`. You may need to exclude certain
 paths with named pipes, block devices, or character devices on which borgmatic
 is hanging.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)

@@ -1,8 +1,7 @@
 /* Buzzwords */
 @keyframes rainbow {
 	0% { background-position: 0% 50%; }
-	50% { background-position: 100% 50%; }
-	100% { background-position: 0% 50%; }
+	100% { background-position: 100% 50%; }
 }
 .buzzword-list,
 .inlinelist {
@@ -25,6 +24,7 @@
 	margin: 4px 4px 4px 0;
 	transition: .15s linear outline;
 }
+
 .inlinelist .inlinelist-item.active {
 	background-color: #222;
 	color: #fff;
@@ -36,6 +36,38 @@
 }
 .inlinelist .inlinelist-item code {
 	background-color: transparent;
+	font-size: 80%;
+	margin-left: 6px;
+	padding-left: 6px;
+	display: inline-block;
+	position: relative;
+}
+@media (max-width: 26.8125em) { /* 429px */
+	.inlinelist .inlinelist-item {
+		overflow: hidden;
+	}
+	.inlinelist .inlinelist-item code {
+		float: right;
+		line-height: 1.75;
+	}
+}
+@media (min-width: 26.875em) { /* 430px */
+	.inlinelist .inlinelist-item code {
+		float: none;
+	}
+	.inlinelist .inlinelist-item code:before {
+		content: " ";
+		border-left: 1px solid rgba(255,255,255,.8);
+		position: absolute;
+		left: -2px;
+		top: -2px;
+		bottom: 2px;
+	}
+	@media (prefers-color-scheme: dark) {
+		.inlinelist .inlinelist-item code:before {
+			border-left-color: rgba(0,0,0,.8);
+		}
+	}
 }
 a.buzzword {
 	text-decoration: underline;
@@ -59,44 +91,74 @@ a.buzzword {
 .buzzword {
 	background-color: #f7f7f7;
 }
+@media (prefers-color-scheme: dark) {
+	.buzzword-list li,
+	.buzzword {
+		background-color: #080808;
+	}
+}
 .inlinelist .inlinelist-item {
 	background-color: #e9e9e9;
+}
+@media (prefers-color-scheme: dark) {
+	.inlinelist .inlinelist-item {
+		background-color: #000;
+	}
+	.inlinelist .inlinelist-item a {
+		color: #fff;
+	}
+	.inlinelist .inlinelist-item code {
+		color: inherit;
+	}
 }
 .inlinelist .inlinelist-item:hover,
 .inlinelist .inlinelist-item:focus,
 .buzzword-list li:hover,
 .buzzword-list li:focus,
 .buzzword:hover,
-.buzzword:focus {
+.buzzword:focus,
+.rainbow-active:hover,
+.rainbow-active:focus {
 	position: relative;
 	background-image: linear-gradient(238deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff0080);
 	background-size: 1200% 1200%;
+	background-position: 2% 80%;
 	color: #fff;
 	text-shadow: 0 0 2px rgba(0,0,0,.9);
-	animation: rainbow 1.6s infinite;
+	animation: rainbow 4s ease-out alternate infinite;
+}
+.rainbow-active-noanim {
+	animation: none !important;
 }
 .inlinelist .inlinelist-item:hover a,
 .inlinelist .inlinelist-item:focus a,
 .buzzword-list li:hover a,
 .buzzword-list li:focus a,
 a.buzzword:hover,
-a.buzzword:focus {
+a.buzzword:focus,
+a.rainbow-active:hover,
+a.rainbow-active:focus {
 	color: #fff;
 	text-decoration: none;
 }
-/*
-I wish there were a PE friendly way to do this but media queries don’t work work with @supports
-@media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: reduce) {
+	.inlinelist .inlinelist-item:hover,
+	.inlinelist .inlinelist-item:focus,
+	.buzzword-list li:hover,
+	.buzzword-list li:focus,
 	.buzzword:hover,
-	.buzzword:focus {
-		animation: rainbow 1s infinite;
+	.buzzword:focus,
+	.rainbow-active:hover,
+	.rainbow-active:focus {
+		animation: none;
 	}
-}*/
+}
+
 .buzzword-list li:hover:after,
 .buzzword-list li:focus:after,
 .buzzword:hover:after,
 .buzzword:focus:after {
-	font-family: system-ui, sans-serif;
+	font-family: system-ui, -apple-system, sans-serif;
 	content: "Buzzword alert!!!";
 	position: absolute;
 	left: 0;
@@ -123,4 +185,94 @@ main h2 a.buzzword,
 main h3 a.buzzword,
 main p a.buzzword {
 	text-decoration: underline;
+}
+
+/* Small viewport */
+@media (max-width: 26.8125em) { /* 429px */
+	.inlinelist .inlinelist-item {
+		display: block;
+		width: auto;
+		padding: 0;
+		line-height: 1.4;
+	}
+	.inlinelist .inlinelist-item > a {
+		display: block;
+		padding: .2em .5em;
+	}
+}
+@media (min-width: 26.875em) { /* 430px */
+	.inlinelist .inlinelist-item > a {
+		display: inline-block;
+		white-space: nowrap;
+	}
+}
+
+.numberflag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #dff7ff;
+	border-radius: 50%;
+	width: 1.75em;
+	height: 1.75em;
+	font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+	.numberflag {
+		background-color: #00bcd4;
+		color: #222;
+	}
+}
+h1 .numberflag,
+h2 .numberflag,
+h3 .numberflag,
+h4 .numberflag,
+h5 .numberflag {
+	width: 1.25em;
+	height: 1.25em;
+}
+h2 .numberflag {
+	position: relative;
+	margin-right: 0.25em; /* 10px /40 */
+}
+h2 .numberflag:after {
+	content: " ";
+	position: absolute;
+	bottom: -1px;
+	left: 0;
+	height: 1px;
+	background-color: #fff;
+	width: calc(100% + 0.4em); /* 16px /40 */
+}
+@media (prefers-color-scheme: dark) {
+	h2 .numberflag:after {
+		background-color: #222;
+	}
+}
+
+/* Super featured list on home page */
+.list-superfeatured .avatar {
+	width: calc(30px + 5vw);
+	height: calc(30px + 5vw);
+	max-width: 60px;
+	max-height: 60px;
+	margin-left: 0;
+}
+@media (max-width: 26.8125em) { /* 429px */
+	.list-superfeatured .inlinelist-item > a {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+}
+@media (min-width: 26.875em) { /* 430px */
+	.list-superfeatured .inlinelist-item {
+		font-size: 110%;
+	}
+}
+
+/* Only top level */
+.inlinelist-no-nest ul,
+.inlinelist-no-nest ol {
+	display: none;
 }

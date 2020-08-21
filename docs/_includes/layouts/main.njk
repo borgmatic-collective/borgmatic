@@ -6,9 +6,27 @@ headerClass: elv-header-default
 {% include "header.njk" %}
 
 <main class="elv-layout{% if layoutClass %} {{ layoutClass }}{% endif %}">
-    <article>
-        {{ content | safe }}
+    <div id="documentation" class="elv-toc">
+        <div>
+            {% set navPages = collections.all | eleventyNavigation %}
+            {% macro renderNavListItem(entry) -%}
+            <li{% if entry.url == page.url %} class="elv-toc-active"{% endif %}>
+              <a {% if entry.url %}href="https://torsion.org/borgmatic/docs{{ entry.url | url }}"{% endif %}>{{ entry.title }}</a>
+            {%- if entry.children.length -%}
+              <ul>
+                {%- for child in entry.children %}{{ renderNavListItem(child) }}{% endfor -%}
+              </ul>
+            {%- endif -%}
+            </li>
+            {%- endmacro %}
 
-        {% include 'components/suggestion-form.html' %}
-    </article>
+            <ul class="elv-toc-list">
+            {%- for entry in navPages %}{{ renderNavListItem(entry) }}{%- endfor -%}
+            </ul>
+        </div>
+    </div>
+
+    {{ content | safe }}
+
+    {% include 'components/suggestion-form.html' %}
 </main>

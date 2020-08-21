@@ -1,5 +1,9 @@
 ---
-title: How to set up backups with borgmatic
+title: How to set up backups
+eleventyNavigation:
+  key: Set up backups
+  parent: How-to guides
+  order: 0
 ---
 ## Installation
 
@@ -65,8 +69,7 @@ sudo pip3 install --upgrade borgmatic
 The main downside of a global install is that borgmatic is less cleanly
 separated from the rest of your Python software, and there's the theoretical
 possibility of libary conflicts. But if you're okay with that, for instance
-on a relatively dedicated system, then a global install can work out just
-fine.
+on a relatively dedicated system, then a global install can work out fine.
 
 
 ### Other ways to install
@@ -312,15 +315,3 @@ YAML library. If so, not to worry. borgmatic should install and function
 correctly even without the C YAML library. And borgmatic won't be any faster
 with the C library present, so you don't need to go out of your way to install
 it.
-
-
-## Related documentation
-
- * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
- * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
- * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
- * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
- * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration/)
- * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line/)

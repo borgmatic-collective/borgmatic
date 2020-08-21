@@ -1,5 +1,9 @@
 ---
 title: How to upgrade borgmatic
+eleventyNavigation:
+  key: Upgrade borgmatic
+  parent: How-to guides
+  order: 10
 ---
 ## Upgrading
 
@@ -111,8 +115,3 @@ sudo pip3 install --user borgmatic
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
-
-
-## Related documentation
-
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

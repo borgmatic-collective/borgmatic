@@ -1,5 +1,9 @@
 ---
 title: How to inspect your backups
+eleventyNavigation:
+  key: Inspect your backups
+  parent: How-to guides
+  order: 4
 ---
 ## Backup progress
 
@@ -98,11 +102,3 @@ Note that if you use the `--log-file` flag, you are responsible for rotating
 the log file so it doesn't grow too large, for example with
 [logrotate](https://wiki.archlinux.org/index.php/Logrotate). Also, there is a
 `--log-file-verbosity` flag to customize the log file's log level.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

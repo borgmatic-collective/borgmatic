@@ -1,5 +1,9 @@
 ---
 title: How to add preparation and cleanup steps to backups
+eleventyNavigation:
+  key: Add preparation and cleanup steps
+  parent: How-to guides
+  order: 8
 ---
 ## Preparation and cleanup hooks
 
@@ -73,11 +77,3 @@ with the user permissions of borgmatic itself. So to prevent potential shell
 injection or privilege escalation, do not forget to set secure permissions
 on borgmatic configuration files (`chmod 0600`) and scripts (`chmod 0700`)
 invoked by hooks.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)

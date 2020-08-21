@@ -1,9 +1,11 @@
 const pluginSyntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const inclusiveLangPlugin = require("@11ty/eleventy-plugin-inclusive-language");
+const navigationPlugin = require("@11ty/eleventy-navigation");
 
 module.exports = function(eleventyConfig) {
     eleventyConfig.addPlugin(pluginSyntaxHighlight);
     eleventyConfig.addPlugin(inclusiveLangPlugin);
+    eleventyConfig.addPlugin(navigationPlugin);
 
     let markdownIt = require("markdown-it");
     let markdownItAnchor = require("markdown-it-anchor");

@@ -71,26 +71,14 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <img src="docs/static/rsyncnet.png" alt="rsync.net" height="60px" style="margin-bottom:20px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
-## How-to guides
+## Getting started
 
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/) ⬅ *Start here!*
- * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
- * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
- * [Deal with very large backups](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
- * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)
- * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Backup to a removable drive or an intermittent server](https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/)
- * [Upgrade borgmatic](https://torsion.org/borgmatic/docs/how-to/upgrade/)
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)
+Your first step is to [install and configure
+borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/).
 
-
-## Reference guides
-
- * [borgmatic configuration reference](https://torsion.org/borgmatic/docs/reference/configuration/)
- * [borgmatic command-line reference](https://torsion.org/borgmatic/docs/reference/command-line/)
+For additional documentation, check out the links above for <a
+href="https://torsion.org/borgmatic/#documentation">borgmatic how-to and
+reference guides</a>.
 
 
 ## Hosting providers

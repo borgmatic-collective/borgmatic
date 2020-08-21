@@ -1,5 +1,9 @@
 ---
 title: How to develop on borgmatic
+eleventyNavigation:
+  key: Develop on borgmatic
+  parent: How-to guides
+  order: 11
 ---
 ## Source code
 
@@ -139,7 +143,3 @@ http://localhost:8080 to view the documentation with your changes.
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any
 additional documentation changes to take effect.
-
-## Related documentation
-
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)

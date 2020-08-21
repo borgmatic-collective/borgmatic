@@ -16,6 +16,7 @@ WORKDIR /source
 RUN npm install @11ty/eleventy \
     @11ty/eleventy-plugin-syntaxhighlight \
     @11ty/eleventy-plugin-inclusive-language \
+    @11ty/eleventy-navigation \
     markdown-it \
     markdown-it-anchor \
     markdown-it-replace-link

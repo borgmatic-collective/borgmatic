@@ -10,7 +10,20 @@
 	font-weight: 500;
 	margin: 0 0.4285714285714em 0.07142857142857em 0; /* 0 6px 1px 0 /14 */
 	line-height: 1.285714285714; /* 18px /14 */
-	font-family: system-ui, sans-serif;
+	font-family: system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  .minilink {
+    background-color: #222;
+    /*
+      !important to override .elv-callout a
+      see _includes/components/callout.css
+     */
+    color: #fff !important;
+  }
+}
+table .minilink {
+	margin-top: 6px;
 }
 .minilink[href] {
 	box-shadow: 0 1px 1px 0 rgba(0,0,0,.5);
@@ -18,6 +31,12 @@
 .minilink[href]:hover,
 .minilink[href]:focus {
 	background-color: #bbb;
+}
+@media (prefers-color-scheme: dark) {
+  .minilink[href]:hover,
+  .minilink[href]:focus {
+    background-color: #444;
+  }
 }
 pre + .minilink {
 	color: #fff;
@@ -35,6 +54,54 @@ p.minilink {
 	margin-left: 2em;
 	margin-bottom: 2em;
 }
+h1 .minilink,
+h2 .minilink,
+h3 .minilink,
+h4 .minilink {
+	font-size: 0.9375rem; /* 15px /16 */
+	vertical-align: middle;
+	margin-left: 1em;
+}
+h3 .minilink,
+h4 .minilink {
+	font-size: 0.8125rem; /* 13px /16 */
+}
 .minilink + pre[class*=language-] {
 	clear: both;
+}
+
+.minilink-addedin {
+	text-transform: none;
+	box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+}
+@media (prefers-color-scheme: dark) {
+  .minilink-addedin {
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
+  }
+}
+.minilink-addedin:not(:first-child) {
+	margin-left: .5em;
+}
+.minilink-addedin.minilink-inline {
+	margin: 0 4px;
+	background-color: #fff;
+}
+
+.minilink-lower {
+	text-transform: none;
+	background-color: transparent;
+}
+.minilink-lower[href] {
+	box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
+}
+.minilink-lower[href]:hover,
+.minilink-lower[href]:focus {
+	background-color: #eee;
+}
+
+.minilink > .minilink {
+	margin: -.125em .375em -.125em -.375em;
+	box-shadow: none;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
 }

@@ -1,5 +1,9 @@
 ---
 title: How to make backups redundant
+eleventyNavigation:
+  key: Make backups redundant
+  parent: How-to guides
+  order: 2
 ---
 ## Multiple repositories
 
@@ -38,10 +42,3 @@ potentially across providers.
 See [Borg repository URLs
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls)
 for more information on how to specify local and remote repository paths.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Make per-application backups](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
- * [Backup to a removable drive or an intermittent server](https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/)

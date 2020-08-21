@@ -1,5 +1,9 @@
 ---
 title: How to monitor your backups
+eleventyNavigation:
+  key: Monitor your backups
+  parent: How-to guides
+  order: 5
 ---
 
 ## Monitoring and alerting
@@ -309,12 +313,3 @@ automated scripts. Here's an example:
 ```bash
 borgmatic info --archive latest
 ```
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Add preparation and cleanup steps to backups](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
- * [Extract a backup](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/)
- * [Develop on borgmatic](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/)

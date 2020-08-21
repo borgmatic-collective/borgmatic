@@ -1,5 +1,9 @@
 ---
-title: borgmatic configuration reference
+title: Configuration reference
+eleventyNavigation:
+  key: Configuration reference
+  parent: Reference guides
+  order: 0
 ---
 ## Configuration file
 

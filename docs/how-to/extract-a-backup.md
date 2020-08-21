@@ -1,5 +1,9 @@
 ---
 title: How to extract a backup
+eleventyNavigation:
+  key: Extract a backup
+  parent: How-to guides
+  order: 6
 ---
 ## Extract
 
@@ -132,11 +136,3 @@ When you're all done exploring your files, unmount your mount point. No
 ```bash
 borgmatic umount --mount-point /mnt
 ```
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Inspect your backups](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/)
- * [Monitor your backups](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
- * [Backup your databases](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)

@@ -1,5 +1,9 @@
 ---
 title: How to deal with very large backups
+eleventyNavigation:
+  key: Deal with very large backups
+  parent: How-to guides
+  order: 3
 ---
 ## Biggish data
 
@@ -120,8 +124,3 @@ the following to the `~/.ssh/config` file on the client:
 
 This should make the client keep the connection alive while validating
 backups.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)

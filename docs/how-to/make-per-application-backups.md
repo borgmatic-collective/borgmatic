@@ -1,5 +1,9 @@
 ---
 title: How to make per-application backups
+eleventyNavigation:
+  key: Make per-application backups
+  parent: How-to guides
+  order: 1
 ---
 ## Multiple backup configurations
 
@@ -161,9 +165,3 @@ indentation and a leading dash.)
 
 Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
-
-
-## Related documentation
-
- * [Set up backups with borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/)
- * [Make backups redundant](https://torsion.org/borgmatic/docs/how-to/make-backups-redundant/)
