@@ -11,7 +11,7 @@ Type=oneshot
 # For more details about this settings check the systemd manuals
 # https://www.freedesktop.org/software/systemd/man/systemd.exec.html
 LockPersonality=true
-MemoryDenyWriteExecute=yes
+MemoryDenyWriteExecute=no
 NoNewPrivileges=yes
 PrivateDevices=yes
 PrivateTmp=yes
