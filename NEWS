@@ -1,3 +1,6 @@
+1.5.11.dev0
+ * #352: Lock down systemd security settings in sample systemd service file.
+
 1.5.10
  * #347: Add hooks that run for the "extract" action: "before_extract" and "after_extract".
  * #350: Fix traceback when a configuration directory is non-readable due to directory permissions.
