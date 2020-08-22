@@ -29,6 +29,8 @@ map:
                     expanded. Multiple repositories are backed up to in
                     sequence. See ssh_command for SSH options like identity file
                     or port.
+                    If systemd service is used, then add local repository paths
+                    in the systemd service file to the ReadWritePaths list.
                 example:
                     - user@backupserver:sourcehostname.borg
             one_file_system:

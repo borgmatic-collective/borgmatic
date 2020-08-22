@@ -7,6 +7,36 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 
+# Security settings for systemd running as root
+# For more details about this settings check the systemd manuals
+# https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+LockPersonality=true
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+# Restrict write access
+# Change to 'ProtectSystem=strict' and uncomment 'ProtectHome' to make the whole file
+# system read-only be default and uncomment 'ReadWritePaths' for the required write access.
+# Add local repositroy paths to the list of 'ReadWritePaths' like '-/mnt/my_backup_drive'.
+ProtectSystem=full
+# ProtectHome=read-only
+# ReadWritePaths=-/root/.config/borg -/root/.cache/borg -/root/.borgmatic
+
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
+
 # Lower CPU and I/O priority.
 Nice=19
 CPUSchedulingPolicy=batch
