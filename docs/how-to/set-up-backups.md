@@ -268,6 +268,10 @@ sudo mv borgmatic.service borgmatic.timer /etc/systemd/system/
 sudo systemctl enable --now borgmatic.timer
 ```
 
+Review the security settings in the service file and update them as needed.
+If `ProtectSystem=strict` is enabled and local repositories are used, then
+the repository path must be added to the `ReadWritePaths` list.
+
 Feel free to modify the timer file based on how frequently you'd like
 borgmatic to run.
 
