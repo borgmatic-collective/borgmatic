@@ -11,6 +11,8 @@ Type=oneshot
 # For more details about this settings check the systemd manuals
 # https://www.freedesktop.org/software/systemd/man/systemd.exec.html
 LockPersonality=true
+# Certain borgmatic features like Healthchecks integration need MemoryDenyWriteExecute to be off.
+# But you can try setting it to "yes" for improved security if you don't use those features.
 MemoryDenyWriteExecute=no
 NoNewPrivileges=yes
 PrivateDevices=yes
