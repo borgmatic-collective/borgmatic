@@ -228,6 +228,12 @@ map:
                     Remote network upload rate limit in kiBytes/second. Defaults
                     to unlimited.
                 example: 100
+            temporary_directory:
+                type: str
+                desc: |
+                    Directory where temporary files are stored. Defaults to
+                    $TMPDIR
+                example: /path/to/tmpdir
             ssh_command:
                 type: str
                 desc: |

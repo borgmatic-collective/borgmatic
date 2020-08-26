@@ -9,6 +9,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'encryption_passcommand': 'BORG_PASSCOMMAND',
     'encryption_passphrase': 'BORG_PASSPHRASE',
     'ssh_command': 'BORG_RSH',
+    'temporary_directory': 'TMPDIR',
 }
 
 DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
