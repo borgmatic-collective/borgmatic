@@ -1,4 +1,5 @@
 1.5.11.dev0
+ * #341: Add "temporary_directory" option for changing Borg's temporary directory.
  * #352: Lock down systemd security settings in sample systemd service file.
 
 1.5.10
