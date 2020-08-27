@@ -22,8 +22,8 @@ location:
 
     # Paths of local or remote repositories to backup to.
     repositories:
-        - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
         - 1234@usw-s001.rsync.net:backups.borg
+        - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
         - /var/lib/backups/local.borg
 
 retention:
@@ -66,9 +66,9 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://healthchecks.io/"><img src="docs/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://cronitor.io/"><img src="docs/static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://cronhub.io/"><img src="docs/static/cronhub.png" alt="Cronhub" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="https://www.pagerduty.com/"><img src="docs/static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px;"></a>
+<a href="https://www.pagerduty.com/"><img src="docs/static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic"><img src="docs/static/rsyncnet.png" alt="rsync.net" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px;"></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="docs/static/rsyncnet.png" alt="rsync.net" height="60px" style="margin-bottom:20px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 
 ## Getting started
@@ -89,8 +89,8 @@ services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
 
 <ul>
+ <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
- <li>rsync.net: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
 </ul>
 
 ## Support and contributing
