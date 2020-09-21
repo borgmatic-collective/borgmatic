@@ -74,8 +74,8 @@ hooks:
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
-If you would like to only backup databases and not source directories, you can
-specify an empty `source_directories` field because it is a mandatory field.
+If you would like to backup databases only and not source directories, you can
+specify an empty `source_directories` value because it is a mandatory field:
 
 ```yaml
 location:
