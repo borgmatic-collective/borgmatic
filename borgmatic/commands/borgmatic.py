@@ -658,7 +658,9 @@ def collect_configuration_run_summary_logs(configs, arguments):
 
     if not configs:
         yield from make_error_log_records(
-            '{}: No configuration files found'.format(' '.join(arguments['global'].config_paths))
+            '{}: No valid configuration files found'.format(
+                ' '.join(arguments['global'].config_paths)
+            )
         )
         return
 

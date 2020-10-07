@@ -58,8 +58,18 @@ def test_call_hooks_calls_each_hook_and_collects_return_values():
     assert return_values == expected_return_values
 
 
-def test_call_hooks_calls_skips_return_values_for_unconfigured_hooks():
+def test_call_hooks_calls_skips_return_values_for_missing_hooks():
     hooks = {'super_hook': flexmock()}
+    expected_return_values = {'super_hook': flexmock()}
+    flexmock(module).should_receive('call_hook').and_return(expected_return_values['super_hook'])
+
+    return_values = module.call_hooks('do_stuff', hooks, 'prefix', ('super_hook', 'other_hook'), 55)
+
+    assert return_values == expected_return_values
+
+
+def test_call_hooks_calls_skips_return_values_for_null_hooks():
+    hooks = {'super_hook': flexmock(), 'other_hook': None}
     expected_return_values = {'super_hook': flexmock()}
     flexmock(module).should_receive('call_hook').and_return(expected_return_values['super_hook'])
 

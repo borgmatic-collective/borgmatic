@@ -1,6 +1,7 @@
 1.5.11.dev0
  * #341: Add "temporary_directory" option for changing Borg's temporary directory.
  * #352: Lock down systemd security settings in sample systemd service file.
+ * #355: Fix traceback when a database hook value is null in a configuration file.
 
 1.5.10
  * #347: Add hooks that run for the "extract" action: "before_extract" and "after_extract".

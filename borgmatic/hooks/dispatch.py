@@ -58,5 +58,5 @@ def call_hooks(function_name, hooks, log_prefix, hook_names, *args, **kwargs):
     return {
         hook_name: call_hook(function_name, hooks, log_prefix, hook_name, *args, **kwargs)
         for hook_name in hook_names
-        if hook_name in hooks
+        if hooks.get(hook_name)
     }
