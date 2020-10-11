@@ -581,7 +581,7 @@ def parse_arguments(*unparsed_arguments):
         help='Show info for first N archives after other filters are applied',
     )
     info_group.add_argument(
-        '--last', metavar='N', help='Show info for first N archives after other filters are applied'
+        '--last', metavar='N', help='Show info for last N archives after other filters are applied'
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
