@@ -178,6 +178,7 @@ def parse_arguments(*unparsed_arguments):
         metavar='SECTION.OPTION=VALUE',
         nargs='+',
         dest='overrides',
+        action='extend',
         help='One or more configuration file options to override with specified values',
     )
     global_group.add_argument(
