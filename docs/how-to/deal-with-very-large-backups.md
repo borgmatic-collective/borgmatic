@@ -18,7 +18,7 @@ repositories.
 
 If you find yourself in this situation, you have some options. First, you can
 run borgmatic's pruning, creating, or checking actions separately. For
-instance, the the following optional actions are available:
+instance, the following optional actions are available:
 
 ```bash
 borgmatic prune
