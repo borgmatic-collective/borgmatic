@@ -1,5 +1,5 @@
 import collections
-from argparse import ArgumentParser
+from argparse import Action, ArgumentParser
 
 from borgmatic.config import collect
 
@@ -102,6 +102,20 @@ def parse_global_arguments(unparsed_arguments, top_level_parser, subparsers):
     return top_level_parser.parse_args(remaining_arguments)
 
 
+class Extend_action(Action):
+    '''
+    An argparse action to support Python 3.8's "extend" action in older versions of Python.
+    '''
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        items = getattr(namespace, self.dest, None)
+
+        if items:
+            items.extend(values)
+        else:
+            setattr(namespace, self.dest, list(values))
+
+
 def parse_arguments(*unparsed_arguments):
     '''
     Given command-line arguments with which this script was invoked, parse the arguments and return
@@ -111,6 +125,7 @@ def parse_arguments(*unparsed_arguments):
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
     global_parser = ArgumentParser(add_help=False)
+    global_parser.register('action', 'extend', Extend_action)
     global_group = global_parser.add_argument_group('global arguments')
 
     global_group.add_argument(
