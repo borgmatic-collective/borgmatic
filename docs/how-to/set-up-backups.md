@@ -103,6 +103,12 @@ links, but without any tracking scripts or cookies.)
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
 </ul>
 
+Additionally, this is a general storage hosting provider:
+
+<ul>
+  <li class="referral"><a href="https://storage.lima-labs.com/special-pricing-offer-for-borgmatic-users/">Lima-Labs</a>: Affordable, reliable cloud data storage accessable via SSH/SCP/FTP for Borg backups or any other bulk storage needs</li>
+</ul>
+
 ## Configuration
 
 After you install borgmatic, generate a sample configuration file:
