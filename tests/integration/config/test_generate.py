@@ -87,8 +87,8 @@ location:
     assert module._comment_out_optional_configuration(config.strip()) == expected_config.strip()
 
 
-def test_render_configuration_converts_configuration_to_yaml_string():
-    yaml_string = module._render_configuration({'foo': 'bar'})
+def testrender_configuration_converts_configuration_to_yaml_string():
+    yaml_string = module.render_configuration({'foo': 'bar'})
 
     assert yaml_string == 'foo: bar\n'
 
@@ -194,7 +194,7 @@ def test_generate_sample_configuration_does_not_raise():
     flexmock(module.yaml).should_receive('round_trip_load')
     flexmock(module).should_receive('_schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
-    flexmock(module).should_receive('_render_configuration')
+    flexmock(module).should_receive('render_configuration')
     flexmock(module).should_receive('_comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
@@ -208,7 +208,7 @@ def test_generate_sample_configuration_with_source_filename_does_not_raise():
     flexmock(module.load).should_receive('load_configuration')
     flexmock(module).should_receive('_schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
-    flexmock(module).should_receive('_render_configuration')
+    flexmock(module).should_receive('render_configuration')
     flexmock(module).should_receive('_comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 

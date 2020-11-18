@@ -4,6 +4,7 @@
  * #355: Fix traceback when a database hook value is null in a configuration file.
  * #361: Merge override values when specifying the "--override" flag multiple times. The previous
    behavior was to take the value of the last "--override" flag only.
+ * #367: Fix traceback when upgrading old INI-style configuration with upgrade-borgmatic-config.
  * #368: Fix signal forwarding from borgmatic to Borg resulting in recursion traceback.
  * #369: Document support for Borg placeholders in repository names.
 

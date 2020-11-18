@@ -99,7 +99,9 @@ def main():  # pragma: no cover
         )
 
         generate.write_configuration(
-            args.destination_config_filename, destination_config, mode=source_config_file_mode
+            args.destination_config_filename,
+            generate.render_configuration(destination_config),
+            mode=source_config_file_mode,
         )
 
         display_result(args)

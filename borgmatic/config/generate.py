@@ -99,7 +99,7 @@ def _comment_out_optional_configuration(rendered_config):
     return '\n'.join(lines)
 
 
-def _render_configuration(config):
+def render_configuration(config):
     '''
     Given a config data structure of nested OrderedDicts, render the config as YAML and return it.
     '''
@@ -284,5 +284,5 @@ def generate_sample_configuration(source_filename, destination_filename, schema_
 
     write_configuration(
         destination_filename,
-        _comment_out_optional_configuration(_render_configuration(destination_config)),
+        _comment_out_optional_configuration(render_configuration(destination_config)),
     )
