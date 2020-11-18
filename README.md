@@ -24,6 +24,7 @@ location:
     repositories:
         - 1234@usw-s001.rsync.net:backups.borg
         - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
+        - user1@scp2.cdn.lima-labs.com:repo
         - /var/lib/backups/local.borg
 
 retention:
@@ -91,12 +92,7 @@ links, but without any tracking scripts or cookies.)
 <ul>
  <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
-</ul>
-
-Additionally, this is a general storage hosting provider:
-
-<ul>
-  <li class="referral"><a href="https://storage.lima-labs.com/special-pricing-offer-for-borgmatic-users/">Lima-Labs</a>: Affordable, reliable cloud data storage accessable via SSH/SCP/FTP for Borg backups or any other bulk storage needs</li>
+ <li class="referral"><a href="https://storage.lima-labs.com/special-pricing-offer-for-borgmatic-users/">Lima-Labs</a>: Affordable, reliable cloud data storage accessable via SSH/SCP/FTP for Borg backups or any other bulk storage needs</li>
 </ul>
 
 ## Support and contributing
