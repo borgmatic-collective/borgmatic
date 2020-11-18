@@ -5,6 +5,7 @@
  * #361: Merge override values when specifying the "--override" flag multiple times. The previous
    behavior was to take the value of the last "--override" flag only.
  * #368: Fix signal forwarding from borgmatic to Borg resulting in recursion traceback.
+ * #369: Document support for Borg placeholders in repository names.
 
 1.5.10
  * #347: Add hooks that run for the "extract" action: "before_extract" and "after_extract".
