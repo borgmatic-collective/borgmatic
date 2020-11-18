@@ -4,8 +4,13 @@ import signal
 
 def _handle_signal(signal_number, frame):  # pragma: no cover
     '''
-    Send the signal to all processes in borgmatic's process group, which includes child process.
+    Send the signal to all processes in borgmatic's process group, which includes child processes.
     '''
+    # Prevent infinite signal handler recursion. If the parent frame is this very same handler
+    # function, we know we're recursing.
+    if frame.f_back.f_code.co_name == _handle_signal.__name__:
+        return
+
     os.killpg(os.getpgrp(), signal_number)
 
 
