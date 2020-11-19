@@ -140,7 +140,19 @@ What this does is load your configuration files, and for each one, disregard
 the configured value for the `remote_path` option in the `location` section,
 and use the value of `/usr/local/bin/borg1` instead.
 
-Note that the value is parsed as an actual YAML string, so you can even set
+You can even override multiple values at once. For instance:
+
+```bash
+borgmatic create --override section.option1=value1 section.option2=value2
+```
+
+This will accomplish the same thing:
+
+```bash
+borgmatic create --override section.option1=value1 --override section.option2=value2
+```
+
+Note that each value is parsed as an actual YAML string, so you can even set
 list values by using brackets. For instance:
 
 ```bash
