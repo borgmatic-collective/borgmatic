@@ -1,5 +1,5 @@
-1.5.12.dev0
- * 
+1.5.12
+ * Fix for previous release with incorrect version suffix in setup.py. No other changes.
 
 1.5.11
  * #341: Add "temporary_directory" option for changing Borg's temporary directory.
