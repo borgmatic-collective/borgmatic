@@ -15,6 +15,12 @@ if [[ ! -f NEWS ]]; then
 fi
 
 version=$(head --lines=1 NEWS)
+
+if [[ $version =~ .*dev* ]]; then
+    echo "Refusing to release a dev version: $version"
+    exit 1
+fi
+
 git tag $version
 git push origin $version
 git push github $version
