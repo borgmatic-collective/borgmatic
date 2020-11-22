@@ -447,7 +447,9 @@ def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
     flexmock(module).should_receive('run_configuration').and_return(['foo', 'bar']).and_return(
         ['baz']
     )
-    flexmock(module.sys.stdout).should_receive('write').with_args('["foo", "bar", "baz"]').once()
+    stdout = flexmock()
+    stdout.should_receive('write').with_args('["foo", "bar", "baz"]').once()
+    flexmock(module.sys).stdout = stdout
     arguments = {}
 
     tuple(

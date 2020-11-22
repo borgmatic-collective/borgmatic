@@ -1,3 +1,6 @@
+1.5.13.dev0
+ * Update versions of test dependencies (test_requirements.txt and test containers).
+
 1.5.12
  * Fix for previous release with incorrect version suffix in setup.py. No other changes.
 

@@ -28,7 +28,9 @@ def test_forgetful_buffering_handler_emit_forgets_log_records_when_capacity_reac
 def test_format_buffered_logs_for_payload_flattens_log_buffer():
     handler = module.Forgetful_buffering_handler(byte_capacity=100, log_level=1)
     handler.buffer = ['foo\n', 'bar\n']
-    flexmock(module.logging).should_receive('getLogger').and_return(flexmock(handlers=[handler]))
+    logger = flexmock(handlers=[handler])
+    logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
 
     payload = module.format_buffered_logs_for_payload()
 
@@ -39,7 +41,9 @@ def test_format_buffered_logs_for_payload_inserts_truncation_indicator_when_logs
     handler = module.Forgetful_buffering_handler(byte_capacity=100, log_level=1)
     handler.buffer = ['foo\n', 'bar\n']
     handler.forgot = True
-    flexmock(module.logging).should_receive('getLogger').and_return(flexmock(handlers=[handler]))
+    logger = flexmock(handlers=[handler])
+    logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
 
     payload = module.format_buffered_logs_for_payload()
 
@@ -47,9 +51,9 @@ def test_format_buffered_logs_for_payload_inserts_truncation_indicator_when_logs
 
 
 def test_format_buffered_logs_for_payload_without_handler_produces_empty_payload():
-    flexmock(module.logging).should_receive('getLogger').and_return(
-        flexmock(handlers=[module.logging.Handler()])
-    )
+    logger = flexmock(handlers=[module.logging.Handler()])
+    logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
 
     payload = module.format_buffered_logs_for_payload()
 
