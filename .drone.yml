@@ -1,10 +1,10 @@
 ---
 kind: pipeline
-name: python-3-5-alpine-3-10
+name: python-3-6-alpine-3-9
 
 services:
   - name: postgresql
-    image: postgres:11.6-alpine
+    image: postgres:11.9-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
@@ -16,29 +16,7 @@ services:
 
 steps:
 - name: build
-  image: python:3.5-alpine3.10
-  pull: always
-  commands:
-    - scripts/run-full-tests
----
-kind: pipeline
-name: python-3-6-alpine-3-10
-
-services:
-  - name: postgresql
-    image: postgres:11.6-alpine
-    environment:
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
-  - name: mysql
-    image: mariadb:10.3
-    environment:
-      MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: test
-
-steps:
-- name: build
-  image: python:3.6-alpine3.10
+  image: alpine:3.9
   pull: always
   commands:
     - scripts/run-full-tests
@@ -48,7 +26,7 @@ name: python-3-7-alpine-3-10
 
 services:
   - name: postgresql
-    image: postgres:11.6-alpine
+    image: postgres:11.9-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
@@ -60,51 +38,29 @@ services:
 
 steps:
 - name: build
-  image: python:3.7-alpine3.10
+  image: alpine:3.10
   pull: always
   commands:
     - scripts/run-full-tests
 ---
 kind: pipeline
-name: python-3-7-alpine-3-7
+name: python-3-8-alpine-edge
 
 services:
   - name: postgresql
-    image: postgres:10.11-alpine
+    image: postgres:12.5-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
   - name: mysql
-    image: mariadb:10.1
+    image: mariadb:10.5
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
 
 steps:
 - name: build
-  image: python:3.7-alpine3.7
-  pull: always
-  commands:
-    - scripts/run-full-tests
----
-kind: pipeline
-name: python-3-8-alpine-3-10
-
-services:
-  - name: postgresql
-    image: postgres:11.6-alpine
-    environment:
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
-  - name: mysql
-    image: mariadb:10.3
-    environment:
-      MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: test
-
-steps:
-- name: build
-  image: python:3.8-alpine3.10
+  image: alpine:edge
   pull: always
   commands:
     - scripts/run-full-tests

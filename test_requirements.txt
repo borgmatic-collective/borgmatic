@@ -1,8 +1,8 @@
-appdirs==1.4.4
+appdirs==1.4.4; python_version >= '3.8'
 atomicwrites==1.4.0
-attrs==20.3.0
-black==19.10b0; python_version >= '3.6'
-click==7.1.2
+attrs==20.3.0; python_version >= '3.8'
+black==19.10b0; python_version >= '3.8'
+click==7.1.2; python_version >= '3.8'
 colorama==0.4.4
 coverage==5.3
 docopt==0.6.2
@@ -12,7 +12,7 @@ isort==5.6.4
 mccabe==0.6.1
 more-itertools==8.6.0
 pluggy==0.13.1
-pathspec==0.8.1
+pathspec==0.8.1; python_version >= '3.8'
 py==1.9.0
 pycodestyle==2.6.0
 pyflakes==2.2.0
@@ -21,8 +21,8 @@ pytest==6.1.2
 pytest-cov==2.10.1
 python-dateutil==2.8.1
 PyYAML==5.3.1
-regex==2020.11.13
+regex; python_version >= '3.8'
 requests==2.25.0
 ruamel.yaml>0.15.0,<0.17.0
-toml==0.10.2
-typed-ast==1.4.1
+toml==0.10.2; python_version >= '3.8'
+typed-ast==1.4.1; python_version >= '3.8'

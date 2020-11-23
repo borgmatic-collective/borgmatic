@@ -10,9 +10,10 @@
 
 set -e
 
-python -m pip install --upgrade pip==20.2.4
-pip install tox==3.20.1
+apk add --no-cache python3 borgbackup postgresql-client mariadb-client
+apk add --no-cache black || true  # If black is available in this version of Alpine, install it.
+python3 -m pip install --upgrade pip==20.2.4 setuptools==50.3.2
+pip3 install tox==3.20.1
 export COVERAGE_FILE=/tmp/.coverage
-apk add --no-cache borgbackup postgresql-client mariadb-client py3-typed-ast
-tox --workdir /tmp/.tox
-tox --workdir /tmp/.tox -e end-to-end
+tox --workdir /tmp/.tox --sitepackages
+tox --workdir /tmp/.tox --sitepackages -e end-to-end
