@@ -139,8 +139,8 @@ configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your
 
 ### Encryption
 
-If you encrypt your Borg repository with a passphrase instead of a key file,
-you'll either need to set the borgmatic `encryption_passphrase` configuration
+If you encrypt your Borg repository with a passphrase or a key file, you'll
+either need to set the borgmatic `encryption_passphrase` configuration
 variable or set the `BORG_PASSPHRASE` environment variable. See the
 [repository encryption
 section](https://borgbackup.readthedocs.io/en/stable/quickstart.html#repository-encryption)
