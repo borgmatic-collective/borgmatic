@@ -185,10 +185,10 @@ map:
                 desc: |
                     The standard output of this command is used to unlock the
                     encryption key. Only use on repositories that were
-                    initialized with passcommand/repokey/keyfile encryption. Note
-                    that if both encryption_passcommand and encryption_passphrase
-                    are set, then encryption_passphrase takes precedence.
-                    Defaults to not set.
+                    initialized with passcommand/repokey/keyfile encryption.
+                    Note that if both encryption_passcommand and
+                    encryption_passphrase are set, then encryption_passphrase
+                    takes precedence. Defaults to not set.
                 example: "secret-tool lookup borg-repository repo-name"
             encryption_passphrase:
                 type: str
@@ -197,7 +197,8 @@ map:
                     repositories that were initialized with
                     passphrase/repokey/keyfile encryption. Quote the value if it
                     contains punctuation, so it parses correctly. And backslash
-                    any quote or backslash literals as well. Defaults to not set.
+                    any quote or backslash literals as well. Defaults to not
+                    set.
                 example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
             checkpoint_interval:
                 type: int
