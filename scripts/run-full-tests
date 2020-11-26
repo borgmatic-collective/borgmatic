@@ -11,7 +11,8 @@
 set -e
 
 apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client
-apk add --no-cache black || true  # If black is available in this version of Alpine, install it.
+# If certain dependencies of black are available in this version of Alpine, install them.
+apk add --no-cache py3-typed-ast py3-regex || true
 python3 -m pip install --upgrade pip==20.2.4 setuptools==50.3.2
 pip3 install tox==3.20.1
 export COVERAGE_FILE=/tmp/.coverage
