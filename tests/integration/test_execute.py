@@ -91,12 +91,18 @@ def test_log_outputs_kills_other_processes_when_one_errors():
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
     process = subprocess.Popen(['grep'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    flexmock(module).should_receive('exit_code_indicates_error').with_args(process, None, 'borg').and_return(False)
-    flexmock(module).should_receive('exit_code_indicates_error').with_args(process, 2, 'borg').and_return(True)
+    flexmock(module).should_receive('exit_code_indicates_error').with_args(
+        process, None, 'borg'
+    ).and_return(False)
+    flexmock(module).should_receive('exit_code_indicates_error').with_args(
+        process, 2, 'borg'
+    ).and_return(True)
     other_process = subprocess.Popen(
         ['watch', 'true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
-    flexmock(module).should_receive('exit_code_indicates_error').with_args(other_process, None, 'borg').and_return(False)
+    flexmock(module).should_receive('exit_code_indicates_error').with_args(
+        other_process, None, 'borg'
+    ).and_return(False)
     flexmock(module).should_receive('output_buffer_for_process').with_args(process, ()).and_return(
         process.stdout
     )
