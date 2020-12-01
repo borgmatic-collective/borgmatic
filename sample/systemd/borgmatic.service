@@ -29,6 +29,7 @@ RestrictRealtime=yes
 RestrictSUIDSGID=yes
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
 # Restrict write access
 # Change to 'ProtectSystem=strict' and uncomment 'ProtectHome' to make the whole file
 # system read-only be default and uncomment 'ReadWritePaths' for the required write access.

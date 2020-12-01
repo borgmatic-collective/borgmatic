@@ -1,5 +1,7 @@
 1.5.13.dev0
  * #373: Document that passphrase is used for Borg keyfile encryption, not just repokey encryption.
+ * Update systemd service example to return a permission error when a system call isn't permitted
+   (instead of terminating borgmatic outright).
  * Drop support for Python 3.5, which has been end-of-lifed.
  * Update versions of test dependencies (test_requirements.txt and test containers).
  * Only support black code formatter on Python 3.8+. New black dependencies make installation
