@@ -7,9 +7,9 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 
-# Security settings for systemd running as root
-# For more details about this settings check the systemd manuals
-# https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+# Security settings for systemd running as root, optional but recommended to improve security. You
+# can disable individual settings if they cause problems for your use case. For more details, see
+# the systemd manual: https://www.freedesktop.org/software/systemd/man/systemd.exec.html
 LockPersonality=true
 # Certain borgmatic features like Healthchecks integration need MemoryDenyWriteExecute to be off.
 # But you can try setting it to "yes" for improved security if you don't use those features.
