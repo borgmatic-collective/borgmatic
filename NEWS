@@ -6,6 +6,7 @@
  * Update versions of test dependencies (test_requirements.txt and test containers).
  * Only support black code formatter on Python 3.8+. New black dependencies make installation
    difficult on older versions of Python.
+ * Replace "improve this documentation" form with link to support and ticket tracker.
 
 1.5.12
  * Fix for previous release with incorrect version suffix in setup.py. No other changes.
