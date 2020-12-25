@@ -48,7 +48,7 @@ name: python-3-8-alpine-edge
 
 services:
   - name: postgresql
-    image: postgres:12.5-alpine
+    image: postgres:13.1-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test

@@ -1,7 +1,7 @@
 version: '3'
 services:
   postgresql:
-    image: postgres:12.5-alpine
+    image: postgres:13.1-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
