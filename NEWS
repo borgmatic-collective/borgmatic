@@ -3,6 +3,7 @@
  * Update systemd service example to return a permission error when a system call isn't permitted
    (instead of terminating borgmatic outright).
  * Drop support for Python 3.5, which has been end-of-lifed.
+ * Add support for Python 3.9.
  * Update versions of test dependencies (test_requirements.txt and test containers).
  * Only support black code formatter on Python 3.8+. New black dependencies make installation
    difficult on older versions of Python.
