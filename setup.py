@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = '1.5.13.dev0'
+VERSION = '1.5.13'
 
 
 setup(
@@ -32,7 +32,7 @@ setup(
     install_requires=(
         'pykwalify>=1.6.0,<14.06',
         'requests',
-        'ruamel.yaml>0.15.0,<0.17.0',
+        'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools',
         'colorama>=0.4.1,<0.5',
     ),

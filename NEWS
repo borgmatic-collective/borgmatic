@@ -1,5 +1,6 @@
-1.5.13.dev0
+1.5.13
  * #373: Document that passphrase is used for Borg keyfile encryption, not just repokey encryption.
+ * #404: Add support for ruamel.yaml 0.17.x YAML parsing library.
  * Update systemd service example to return a permission error when a system call isn't permitted
    (instead of terminating borgmatic outright).
  * Drop support for Python 3.5, which has been end-of-lifed.
