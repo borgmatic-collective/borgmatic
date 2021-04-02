@@ -151,6 +151,8 @@ def configure_logging(
             syslog_path = '/dev/log'
         elif os.path.exists('/var/run/syslog'):
             syslog_path = '/var/run/syslog'
+        elif os.path.exists('/var/run/log'):
+            syslog_path = '/var/run/log'
 
     if syslog_path and not interactive_console():
         syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
