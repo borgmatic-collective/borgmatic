@@ -11,6 +11,8 @@ borgmatic is simple, configuration-driven backup software for servers and
 workstations. Protect your files with client-side encryption. Backup your
 databases too. Monitor it all with integrated third-party services.
 
+The canonical home of borgmatic is at <a href="https://torsion.org/borgmatic">https://torsion.org/borgmatic</a>.
+
 Here's an example configuration file:
 
 ```yaml
@@ -108,7 +110,9 @@ an existing GitHub account if you prefer.
 If you'd like to chat with borgmatic developers or users, head on over to the
 `#borgmatic` IRC channel on Freenode, either via <a
 href="https://webchat.freenode.net/?channels=borgmatic">web chat</a> or a
-native <a href="irc://chat.freenode.net:6697">IRC client</a>.
+native <a href="irc://chat.freenode.net:6697">IRC client</a>. If you
+don't get a response right away, please hang around a while—or file a ticket
+instead.
 
 Also see the [security
 policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
@@ -120,9 +124,9 @@ Other questions or comments? Contact
 
 ### Contributing
 
-borgmatic is hosted at <https://torsion.org/borgmatic> with [source code
-available](https://projects.torsion.org/witten/borgmatic), and is also
-mirrored on [GitHub](https://github.com/witten/borgmatic) for convenience.
+borgmatic [source code is
+available](https://projects.torsion.org/witten/borgmatic) and is also mirrored
+on [GitHub](https://github.com/witten/borgmatic) for convenience.
 
 borgmatic is licensed under the GNU General Public License version 3 or any
 later version.
