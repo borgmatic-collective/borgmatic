@@ -11,7 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
   tests:
-    image: alpine:edge
+    image: alpine:3.13
     volumes:
       - "../..:/app:ro"
     tmpfs:

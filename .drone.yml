@@ -44,7 +44,7 @@ steps:
     - scripts/run-full-tests
 ---
 kind: pipeline
-name: python-3-8-alpine-edge
+name: python-3-8-alpine-3-13
 
 services:
   - name: postgresql
@@ -60,7 +60,7 @@ services:
 
 steps:
 - name: build
-  image: alpine:edge
+  image: alpine:3.13
   pull: always
   commands:
     - scripts/run-full-tests

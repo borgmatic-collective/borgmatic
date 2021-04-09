@@ -1,6 +1,7 @@
 1.5.14.dev0
  * #398: Clarify canonical home of borgmatic in documentation.
  * Fix build so as not to attempt to build and push documentation for a non-master branch.
+ * "Fix" build failure with Alpine Edge by switching from Edge to Alpine 3.13.
 
 1.5.13
  * #373: Document that passphrase is used for Borg keyfile encryption, not just repokey encryption.
