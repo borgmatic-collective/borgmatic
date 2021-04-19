@@ -1,4 +1,5 @@
 1.5.14.dev0
+ * #390: Add link to Hetzner storage offering from the documentation.
  * #398: Clarify canonical home of borgmatic in documentation.
  * #406: Clarify that spaces in path names should not be backslashed in path names.
  * Fix build so as not to attempt to build and push documentation for a non-master branch.

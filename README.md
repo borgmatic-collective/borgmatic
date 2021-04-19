@@ -87,15 +87,19 @@ reference guides</a>.
 ## Hosting providers
 
 Need somewhere to store your encrypted off-site backups? The following hosting
-providers include specific support for Borg/borgmatic. Using these links and
-services helps support borgmatic development and hosting. (These are referral
-links, but without any tracking scripts or cookies.)
+providers include specific support for Borg/borgmatic—and fund borgmatic
+development and hosting when you use these links to sign up. (These are
+referral links, but without any tracking scripts or cookies.)
 
 <ul>
  <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
  <li class="referral"><a href="https://storage.lima-labs.com/special-pricing-offer-for-borgmatic-users/">Lima-Labs</a>: Affordable, reliable cloud data storage accessable via SSH/SCP/FTP for Borg backups or any other bulk storage needs</li>
 </ul>
+
+Additionally, [Hetzner](https://www.hetzner.com/storage/storage-box) has a
+compatible storage offering, but does not currently fund borgmatic
+development or hosting.
 
 ## Support and contributing
 
