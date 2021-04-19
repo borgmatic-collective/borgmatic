@@ -20,6 +20,7 @@ def generate_configuration(config_path, repository_path):
         .read()
         .replace('user@backupserver:sourcehostname.borg', repository_path)
         .replace('- user@backupserver:{fqdn}', '')
+        .replace('- /home/user/path with spaces', '')
         .replace('- /home', '- {}'.format(config_path))
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
