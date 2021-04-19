@@ -86,7 +86,7 @@ reference guides</a>.
 
 ## Hosting providers
 
-Need somewhere to store your encrypted offsite backups? The following hosting
+Need somewhere to store your encrypted off-site backups? The following hosting
 providers include specific support for Borg/borgmatic. Using these links and
 services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)

@@ -15,11 +15,12 @@ map:
                     - type: str
                 desc: |
                     List of source directories to backup (required). Globs and
-                    tildes are expanded.
+                    tildes are expanded. Do not backslash spaces in path names.
                 example:
                     - /home
                     - /etc
                     - /var/log/syslog*
+                    - /home/user/path with spaces
             repositories:
                 required: true
                 seq:
@@ -123,12 +124,14 @@ map:
                     - type: str
                 desc: |
                     Any paths matching these patterns are excluded from backups.
-                    Globs and tildes are expanded. See the output of "borg help
-                    patterns" for more details.
+                    Globs and tildes are expanded. Do not backslash spaces in
+                    path names. See the output of "borg help patterns" for more
+                    details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
                     - /etc/ssl
+                    - /home/user/path with spaces
             exclude_from:
                 seq:
                     - type: str

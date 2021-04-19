@@ -68,7 +68,7 @@ sudo pip3 install --upgrade borgmatic
 
 The main downside of a global install is that borgmatic is less cleanly
 separated from the rest of your Python software, and there's the theoretical
-possibility of libary conflicts. But if you're okay with that, for instance
+possibility of library conflicts. But if you're okay with that, for instance
 on a relatively dedicated system, then a global install can work out fine.
 
 
@@ -93,7 +93,7 @@ installing borgmatic:
 
 ## Hosting providers
 
-Need somewhere to store your encrypted offsite backups? The following hosting
+Need somewhere to store your encrypted off-site backups? The following hosting
 providers include specific support for Borg/borgmatic. Using these links and
 services helps support borgmatic development and hosting. (These are referral
 links, but without any tracking scripts or cookies.)
