@@ -112,9 +112,9 @@ first](https://projects.torsion.org/user/login). Note that you can login with
 an existing GitHub account if you prefer.
 
 If you'd like to chat with borgmatic developers or users, head on over to the
-`#borgmatic` IRC channel on Freenode, either via <a
-href="https://webchat.freenode.net/?channels=borgmatic">web chat</a> or a
-native <a href="irc://chat.freenode.net:6697">IRC client</a>. If you
+`#borgmatic` IRC channel on Libera Chat, either via <a
+href="https://web.libera.chat/#borgmatic">web chat</a> or a
+native <a href="ircs://irc.libera.chat:6697">IRC client</a>. If you
 don't get a response right away, please hang around a while—or file a ticket
 instead.
 
