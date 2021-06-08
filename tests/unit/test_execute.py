@@ -21,6 +21,11 @@ from borgmatic import execute as module
         (flexmock(args=['grep']), 0, 'borg', False),
         (flexmock(args=['borg']), 0, 'borg', False),
         (flexmock(args=['borg1']), 0, 'borg1', False),
+        # -9 exit code occurs when child process get SIGKILLed.
+        (flexmock(args=['grep']), -9, None, True),
+        (flexmock(args=['grep']), -9, 'borg', True),
+        (flexmock(args=['borg']), -9, 'borg', True),
+        (flexmock(args=['borg1']), -9, 'borg1', True),
         (flexmock(args=['borg']), None, None, False),
     ),
 )

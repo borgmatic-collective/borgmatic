@@ -23,7 +23,7 @@ def exit_code_indicates_error(process, exit_code, borg_local_path=None):
     command = process.args.split(' ') if isinstance(process.args, str) else process.args
 
     if borg_local_path and command[0] == borg_local_path:
-        return bool(exit_code >= BORG_ERROR_EXIT_CODE)
+        return bool(exit_code < 0 or exit_code >= BORG_ERROR_EXIT_CODE)
 
     return bool(exit_code != 0)
 
