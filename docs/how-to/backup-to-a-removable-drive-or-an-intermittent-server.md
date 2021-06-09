@@ -16,9 +16,14 @@ But if you run borgmatic and your hard drive isn't plugged in, or your buddy's
 server is offline, then you'll get an annoying error message and the overall
 borgmatic run will fail (even if individual repositories still complete).
 
+Another variant is when the source machine is only sometimes available for
+backups, e.g. a laptop where you want to skip backups when the battery falls
+below a certain level.
+
 So what if you want borgmatic to swallow the error of a missing drive
-or an offline server, and continue trucking along? That's where the concept of
-"soft failure" come in.
+or an offline server or a low battery—and exit gracefully? That's where the
+concept of "soft failure" come in.
+
 
 ## Soft failure command hooks
 
@@ -77,6 +82,17 @@ hooks:
     before_backup:
       - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
+
+Or to only run backups if the battery level is high enough:
+
+```yaml
+hooks:
+    before_backup:
+      - is_battery_percent_at_least.sh 25
+```
+
+(Writing the battery script is left as an exercise to the reader.)
+
 
 ## Caveats and details
 
