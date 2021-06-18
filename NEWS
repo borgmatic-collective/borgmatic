@@ -1,4 +1,4 @@
-1.5.15.dev0
+1.5.15
  * #419: Document use case of running backups conditionally based on laptop power level:
    https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/
  * #425: Run arbitrary Borg commands with new "borgmatic borg" action. See the documentation for
