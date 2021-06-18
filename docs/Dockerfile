@@ -3,7 +3,7 @@ FROM python:3.8-alpine3.12 as borgmatic
 COPY . /app
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
 RUN borgmatic --help > /command-line.txt \
-    && for action in init prune create check extract mount umount restore list info; do \
+    && for action in init prune create check extract export-tar mount umount restore list info borg; do \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 

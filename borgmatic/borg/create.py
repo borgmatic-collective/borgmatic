@@ -220,7 +220,8 @@ def create_archive(
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
 
     full_command = (
-        (local_path, 'create')
+        tuple(local_path.split(' '))
+        + ('create',)
         + _make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
         + _make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())

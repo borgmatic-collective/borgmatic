@@ -163,6 +163,24 @@ def test_parse_arguments_with_help_and_action_shows_action_help(capsys):
     assert 'create arguments:' in captured.out
 
 
+def test_parse_arguments_with_action_before_global_options_parses_options():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('prune', '--verbosity', '2')
+
+    assert 'prune' in arguments
+    assert arguments['global'].verbosity == 2
+
+
+def test_parse_arguments_with_global_options_before_action_parses_options():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('--verbosity', '2', 'prune')
+
+    assert 'prune' in arguments
+    assert arguments['global'].verbosity == 2
+
+
 def test_parse_arguments_with_prune_action_leaves_other_actions_disabled():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

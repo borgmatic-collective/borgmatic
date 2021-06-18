@@ -2,7 +2,7 @@
 *.pyc
 *.swp
 .cache
-.coverage
+.coverage*
 .pytest_cache
 .tox
 __pycache__

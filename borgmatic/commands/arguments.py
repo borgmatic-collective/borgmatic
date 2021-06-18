@@ -15,17 +15,18 @@ SUBPARSER_ALIASES = {
     'restore': ['--restore', '-r'],
     'list': ['--list', '-l'],
     'info': ['--info', '-i'],
+    'borg': [],
 }
 
 
 def parse_subparser_arguments(unparsed_arguments, subparsers):
     '''
-    Given a sequence of arguments, and a subparsers object as returned by
-    argparse.ArgumentParser().add_subparsers(), give each requested action's subparser a shot at
-    parsing all arguments. This allows common arguments like "--repository" to be shared across
-    multiple subparsers.
+    Given a sequence of arguments and a dict from subparser name to argparse.ArgumentParser
+    instance, give each requested action's subparser a shot at parsing all arguments. This allows
+    common arguments like "--repository" to be shared across multiple subparsers.
 
-    Return the result as a dict mapping from subparser name to a parsed namespace of arguments.
+    Return the result as a tuple of (a dict mapping from subparser name to a parsed namespace of
+    arguments, a list of remaining arguments not claimed by any subparser).
     '''
     arguments = collections.OrderedDict()
     remaining_arguments = list(unparsed_arguments)
@@ -35,7 +36,12 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
         for alias in aliases
     }
 
-    for subparser_name, subparser in subparsers.choices.items():
+    # If the "borg" action is used, skip all other subparsers. This avoids confusion like
+    # "borg list" triggering borgmatic's own list action.
+    if 'borg' in unparsed_arguments:
+        subparsers = {'borg': subparsers['borg']}
+
+    for subparser_name, subparser in subparsers.items():
         if subparser_name not in remaining_arguments:
             continue
 
@@ -47,11 +53,11 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
         parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
         for value in vars(parsed).values():
             if isinstance(value, str):
-                if value in subparsers.choices:
+                if value in subparsers:
                     remaining_arguments.remove(value)
             elif isinstance(value, list):
                 for item in value:
-                    if item in subparsers.choices:
+                    if item in subparsers:
                         remaining_arguments.remove(item)
 
         arguments[canonical_name] = parsed
@@ -59,47 +65,33 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
     # If no actions are explicitly requested, assume defaults: prune, create, and check.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
         for subparser_name in ('prune', 'create', 'check'):
-            subparser = subparsers.choices[subparser_name]
+            subparser = subparsers[subparser_name]
             parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
             arguments[subparser_name] = parsed
 
-    return arguments
-
-
-def parse_global_arguments(unparsed_arguments, top_level_parser, subparsers):
-    '''
-    Given a sequence of arguments, a top-level parser (containing subparsers), and a subparsers
-    object as returned by argparse.ArgumentParser().add_subparsers(), parse and return any global
-    arguments as a parsed argparse.Namespace instance.
-    '''
-    # Ask each subparser, one by one, to greedily consume arguments. Any arguments that remain
-    # are global arguments.
     remaining_arguments = list(unparsed_arguments)
-    present_subparser_names = set()
 
-    for subparser_name, subparser in subparsers.choices.items():
-        if subparser_name not in remaining_arguments:
+    # Now ask each subparser, one by one, to greedily consume arguments.
+    for subparser_name, subparser in subparsers.items():
+        if subparser_name not in arguments.keys():
             continue
 
-        present_subparser_names.add(subparser_name)
+        subparser = subparsers[subparser_name]
         unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
 
-    # If no actions are explicitly requested, assume defaults: prune, create, and check.
-    if (
-        not present_subparser_names
-        and '--help' not in unparsed_arguments
-        and '-h' not in unparsed_arguments
-    ):
-        for subparser_name in ('prune', 'create', 'check'):
-            subparser = subparsers.choices[subparser_name]
-            unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
+    # Special case: If "borg" is present in the arguments, consume all arguments after (+1) the
+    # "borg" action.
+    if 'borg' in arguments:
+        borg_options_index = remaining_arguments.index('borg') + 1
+        arguments['borg'].options = remaining_arguments[borg_options_index:]
+        remaining_arguments = remaining_arguments[:borg_options_index]
 
     # Remove the subparser names themselves.
-    for subparser_name in present_subparser_names:
+    for subparser_name, subparser in subparsers.items():
         if subparser_name in remaining_arguments:
             remaining_arguments.remove(subparser_name)
 
-    return top_level_parser.parse_args(remaining_arguments)
+    return (arguments, remaining_arguments)
 
 
 class Extend_action(Action):
@@ -510,8 +502,7 @@ def parse_arguments(*unparsed_arguments):
     )
     list_group = list_parser.add_argument_group('list arguments')
     list_group.add_argument(
-        '--repository',
-        help='Path of repository to list, defaults to the configured repository if there is only one',
+        '--repository', help='Path of repository to list, defaults to the configured repositories',
     )
     list_group.add_argument('--archive', help='Name of archive to list (or "latest")')
     list_group.add_argument(
@@ -601,8 +592,32 @@ def parse_arguments(*unparsed_arguments):
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    arguments = parse_subparser_arguments(unparsed_arguments, subparsers)
-    arguments['global'] = parse_global_arguments(unparsed_arguments, top_level_parser, subparsers)
+    borg_parser = subparsers.add_parser(
+        'borg',
+        aliases=SUBPARSER_ALIASES['borg'],
+        help='Run an arbitrary Borg command',
+        description='Run an arbitrary Borg command based on borgmatic\'s configuration',
+        add_help=False,
+    )
+    borg_group = borg_parser.add_argument_group('borg arguments')
+    borg_group.add_argument(
+        '--repository',
+        help='Path of repository to pass to Borg, defaults to the configured repositories',
+    )
+    borg_group.add_argument('--archive', help='Name of archive to pass to Borg (or "latest")')
+    borg_group.add_argument(
+        '--',
+        metavar='OPTION',
+        dest='options',
+        nargs='+',
+        help='Options to pass to Borg, command first ("create", "list", etc). "--" is optional. To specify the repository or the archive, you must use --repository or --archive instead of providing them here.',
+    )
+    borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    arguments, remaining_arguments = parse_subparser_arguments(
+        unparsed_arguments, subparsers.choices
+    )
+    arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
     if arguments['global'].excludes_filename:
         raise ValueError(

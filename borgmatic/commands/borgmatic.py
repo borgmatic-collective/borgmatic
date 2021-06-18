@@ -9,6 +9,7 @@ from subprocess import CalledProcessError
 import colorama
 import pkg_resources
 
+from borgmatic.borg import borg as borg_borg
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
@@ -543,6 +544,22 @@ def run_actions(
             )
             if json_output:
                 yield json.loads(json_output)
+    if 'borg' in arguments:
+        if arguments['borg'].repository is None or validate.repositories_match(
+            repository, arguments['borg'].repository
+        ):
+            logger.warning('{}: Running arbitrary Borg command'.format(repository))
+            archive_name = borg_list.resolve_archive_name(
+                repository, arguments['borg'].archive, storage, local_path, remote_path
+            )
+            borg_borg.run_arbitrary_borg(
+                repository,
+                storage,
+                options=arguments['borg'].options,
+                archive=archive_name,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
 
 
 def load_configurations(config_filenames, overrides=None):

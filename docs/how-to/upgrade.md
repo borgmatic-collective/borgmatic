@@ -3,7 +3,7 @@ title: How to upgrade borgmatic
 eleventyNavigation:
   key: Upgrade borgmatic
   parent: How-to guides
-  order: 10
+  order: 11
 ---
 ## Upgrading
 
