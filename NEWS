@@ -1,3 +1,7 @@
+1.5.16.dev0
+ * Link borgmatic Ansible role from installation documentation:
+   https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install
+
 1.5.15
  * #419: Document use case of running backups conditionally based on laptop power level:
    https://torsion.org/borgmatic/docs/how-to/backup-to-a-removable-drive-or-an-intermittent-server/
