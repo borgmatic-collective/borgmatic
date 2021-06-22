@@ -4,8 +4,33 @@ from flexmock import flexmock
 from borgmatic.config import validate as module
 
 
-def test_validation_error_str_contains_error_messages_and_config_filename():
-    error = module.Validation_error('config.yaml', ('oops', 'uh oh'))
+def test_format_error_path_element_formats_array_index():
+    module.format_error_path_element(3) == '[3]'
+
+
+def test_format_error_path_element_formats_property():
+    module.format_error_path_element('foo') == '.foo'
+
+
+def test_format_error_formats_error_including_path():
+    flexmock(module).format_error_path_element = lambda element: '.{}'.format(element)
+    error = flexmock(message='oops', path=['foo', 'bar'])
+
+    assert module.format_error(error) == "At 'foo.bar': oops"
+
+
+def test_format_error_formats_error_without_path():
+    flexmock(module).should_receive('format_error_path_element').never()
+    error = flexmock(message='oops', path=[])
+
+    assert module.format_error(error) == 'At the top level: oops'
+
+
+def test_validation_error_string_contains_error_messages_and_config_filename():
+    flexmock(module).format_error = lambda error: error.message
+    error = module.Validation_error(
+        'config.yaml', (flexmock(message='oops', path=None), flexmock(message='uh oh'))
+    )
 
     result = str(error)
 
@@ -15,6 +40,8 @@ def test_validation_error_str_contains_error_messages_and_config_filename():
 
 
 def test_apply_logical_validation_raises_if_archive_name_format_present_without_prefix():
+    flexmock(module).format_error = lambda error: error.message
+
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
             'config.yaml',
@@ -26,6 +53,8 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
 
 
 def test_apply_logical_validation_raises_if_archive_name_format_present_without_retention_prefix():
+    flexmock(module).format_error = lambda error: error.message
+
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
             'config.yaml',
@@ -38,6 +67,8 @@ def test_apply_logical_validation_raises_if_archive_name_format_present_without_
 
 
 def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
+    flexmock(module).format_error = lambda error: error.message
+
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
             'config.yaml',
@@ -73,27 +104,6 @@ def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_pref
 
 def test_apply_logical_validation_does_not_raise_otherwise():
     module.apply_logical_validation('config.yaml', {'retention': {'keep_secondly': 1000}})
-
-
-def test_remove_examples_strips_examples_from_map():
-    schema = {
-        'map': {
-            'foo': {'desc': 'thing1', 'example': 'bar'},
-            'baz': {'desc': 'thing2', 'example': 'quux'},
-        }
-    }
-
-    module.remove_examples(schema)
-
-    assert schema == {'map': {'foo': {'desc': 'thing1'}, 'baz': {'desc': 'thing2'}}}
-
-
-def test_remove_examples_strips_examples_from_sequence_of_maps():
-    schema = {'seq': [{'map': {'foo': {'desc': 'thing', 'example': 'bar'}}, 'example': 'stuff'}]}
-
-    module.remove_examples(schema)
-
-    assert schema == {'seq': [{'map': {'foo': {'desc': 'thing'}}}]}
 
 
 def test_normalize_repository_path_passes_through_remote_repository():

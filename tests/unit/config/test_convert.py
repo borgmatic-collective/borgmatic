@@ -12,7 +12,7 @@ Parsed_config = namedtuple('Parsed_config', ('location', 'storage', 'retention',
 def test_convert_section_generates_integer_value_for_integer_type_in_schema():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
     source_section_config = OrderedDict([('check_last', '3')])
-    section_schema = {'map': {'check_last': {'type': 'int'}}}
+    section_schema = {'type': 'object', 'properties': {'check_last': {'type': 'integer'}}}
 
     destination_config = module._convert_section(source_section_config, section_schema)
 
@@ -21,7 +21,7 @@ def test_convert_section_generates_integer_value_for_integer_type_in_schema():
 
 def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
-    flexmock(module.generate).should_receive('add_comments_to_configuration_map')
+    flexmock(module.generate).should_receive('add_comments_to_configuration_object')
     source_config = Parsed_config(
         location=OrderedDict([('source_directories', '/home'), ('repository', 'hostname.borg')]),
         storage=OrderedDict([('encryption_passphrase', 'supersecret')]),
@@ -29,7 +29,10 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
         consistency=OrderedDict([('checks', 'repository')]),
     )
     source_excludes = ['/var']
-    schema = {'map': defaultdict(lambda: {'map': {}})}
+    schema = {
+        'type': 'object',
+        'properties': defaultdict(lambda: {'type': 'object', 'properties': {}}),
+    }
 
     destination_config = module.convert_legacy_parsed_config(source_config, source_excludes, schema)
 
@@ -54,7 +57,7 @@ def test_convert_legacy_parsed_config_transforms_source_config_to_mapping():
 
 def test_convert_legacy_parsed_config_splits_space_separated_values():
     flexmock(module.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
-    flexmock(module.generate).should_receive('add_comments_to_configuration_map')
+    flexmock(module.generate).should_receive('add_comments_to_configuration_object')
     source_config = Parsed_config(
         location=OrderedDict(
             [('source_directories', '/home /etc'), ('repository', 'hostname.borg')]
@@ -64,7 +67,10 @@ def test_convert_legacy_parsed_config_splits_space_separated_values():
         consistency=OrderedDict([('checks', 'repository archives')]),
     )
     source_excludes = ['/var']
-    schema = {'map': defaultdict(lambda: {'map': {}})}
+    schema = {
+        'type': 'object',
+        'properties': defaultdict(lambda: {'type': 'object', 'properties': {}}),
+    }
 
     destination_config = module.convert_legacy_parsed_config(source_config, source_excludes, schema)
 

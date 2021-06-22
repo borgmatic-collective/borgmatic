@@ -30,7 +30,7 @@ setup(
     },
     obsoletes=['atticmatic'],
     install_requires=(
-        'pykwalify>=1.6.0,<14.06',
+        'jsonschema',
         'requests',
         'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools',

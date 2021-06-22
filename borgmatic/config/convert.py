@@ -17,7 +17,7 @@ def _convert_section(source_section_config, section_schema):
             (
                 option_name,
                 int(option_value)
-                if section_schema['map'].get(option_name, {}).get('type') == 'int'
+                if section_schema['properties'].get(option_name, {}).get('type') == 'integer'
                 else option_value,
             )
             for option_name, option_value in source_section_config.items()
@@ -38,7 +38,7 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
     '''
     destination_config = yaml.comments.CommentedMap(
         [
-            (section_name, _convert_section(section_config, schema['map'][section_name]))
+            (section_name, _convert_section(section_config, schema['properties'][section_name]))
             for section_name, section_config in source_config._asdict().items()
         ]
     )
@@ -54,11 +54,11 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
         destination_config['consistency']['checks'] = source_config.consistency['checks'].split(' ')
 
     # Add comments to each section, and then add comments to the fields in each section.
-    generate.add_comments_to_configuration_map(destination_config, schema)
+    generate.add_comments_to_configuration_object(destination_config, schema)
 
     for section_name, section_config in destination_config.items():
-        generate.add_comments_to_configuration_map(
-            section_config, schema['map'][section_name], indent=generate.INDENT
+        generate.add_comments_to_configuration_object(
+            section_config, schema['properties'][section_name], indent=generate.INDENT
         )
 
     return destination_config

@@ -24,29 +24,27 @@ def _insert_newline_before_comment(config, field_name):
 def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema, generate and return sample config for it. Include comments
-    for each section based on the schema "desc" description.
+    for each section based on the schema "description".
     '''
+    schema_type = schema.get('type')
     example = schema.get('example')
     if example is not None:
         return example
 
-    if 'seq' in schema:
+    if schema_type == 'array':
         config = yaml.comments.CommentedSeq(
-            [
-                _schema_to_sample_configuration(item_schema, level, parent_is_sequence=True)
-                for item_schema in schema['seq']
-            ]
+            [_schema_to_sample_configuration(schema['items'], level, parent_is_sequence=True)]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
-    elif 'map' in schema:
+    elif schema_type == 'object':
         config = yaml.comments.CommentedMap(
             [
                 (field_name, _schema_to_sample_configuration(sub_schema, level + 1))
-                for field_name, sub_schema in schema['map'].items()
+                for field_name, sub_schema in schema['properties'].items()
             ]
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
-        add_comments_to_configuration_map(
+        add_comments_to_configuration_object(
             config, schema, indent=indent, skip_first=parent_is_sequence
         )
     else:
@@ -132,8 +130,8 @@ def write_configuration(config_filename, rendered_config, mode=0o600):
 
 def add_comments_to_configuration_sequence(config, schema, indent=0):
     '''
-    If the given config sequence's items are maps, then mine the schema for the description of the
-    map's first item, and slap that atop the sequence. Indent the comment the given number of
+    If the given config sequence's items are object, then mine the schema for the description of the
+    object's first item, and slap that atop the sequence. Indent the comment the given number of
     characters.
 
     Doing this for sequences of maps results in nice comments that look like:
@@ -142,16 +140,16 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
     things:
         # First key description. Added by this function.
         - key: foo
-          # Second key description. Added by add_comments_to_configuration_map().
+          # Second key description. Added by add_comments_to_configuration_object().
           other: bar
     ```
     '''
-    if 'map' not in schema['seq'][0]:
+    if schema['items'].get('type') != 'object':
         return
 
     for field_name in config[0].keys():
-        field_schema = schema['seq'][0]['map'].get(field_name, {})
-        description = field_schema.get('desc')
+        field_schema = schema['items']['properties'].get(field_name, {})
+        description = field_schema.get('description')
 
         # No description to use? Skip it.
         if not field_schema or not description:
@@ -160,7 +158,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         config[0].yaml_set_start_comment(description, indent=indent)
 
         # We only want the first key's description here, as the rest of the keys get commented by
-        # add_comments_to_configuration_map().
+        # add_comments_to_configuration_object().
         return
 
 
@@ -169,7 +167,7 @@ REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
 COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
 
-def add_comments_to_configuration_map(config, schema, indent=0, skip_first=False):
+def add_comments_to_configuration_object(config, schema, indent=0, skip_first=False):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
     config mapping, before each field. Indent the comment the given number of characters.
@@ -178,8 +176,8 @@ def add_comments_to_configuration_map(config, schema, indent=0, skip_first=False
         if skip_first and index == 0:
             continue
 
-        field_schema = schema['map'].get(field_name, {})
-        description = field_schema.get('desc', '').strip()
+        field_schema = schema['properties'].get(field_name, {})
+        description = field_schema.get('description', '').strip()
 
         # If this is an optional key, add an indicator to the comment flagging it to be commented
         # out from the sample configuration. This sentinel is consumed by downstream processing that
@@ -268,9 +266,9 @@ def merge_source_configuration_into_destination(destination_config, source_confi
 def generate_sample_configuration(source_filename, destination_filename, schema_filename):
     '''
     Given an optional source configuration filename, and a required destination configuration
-    filename, and the path to a schema filename in pykwalify YAML schema format, write out a
-    sample configuration file based on that schema. If a source filename is provided, merge the
-    parsed contents of that configuration into the generated configuration.
+    filename, and the path to a schema filename in a YAML rendition of the JSON Schema format,
+    write out a sample configuration file based on that schema. If a source filename is provided,
+    merge the parsed contents of that configuration into the generated configuration.
     '''
     schema = yaml.round_trip_load(open(schema_filename))
     source_config = None

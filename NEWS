@@ -1,4 +1,6 @@
 1.5.16.dev0
+ * Better error messages! Switch the library used for validating configuration files (from pykwalify
+   to jsonschema).
  * Link borgmatic Ansible role from installation documentation:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install
 

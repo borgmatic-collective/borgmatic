@@ -1,9 +1,7 @@
-import logging
 import os
 
+import jsonschema
 import pkg_resources
-import pykwalify.core
-import pykwalify.errors
 import ruamel.yaml
 
 from borgmatic.config import load, normalize, override
@@ -17,15 +15,40 @@ def schema_filename():
     return pkg_resources.resource_filename('borgmatic', 'config/schema.yaml')
 
 
+def format_error_path_element(path_element):
+    '''
+    Given a path element into a JSON data structure, format it for display as a string.
+    '''
+    if isinstance(path_element, int):
+        return str('[{}]'.format(path_element))
+
+    return str('.{}'.format(path_element))
+
+
+def format_error(error):
+    '''
+    Given an instance of jsonschema.exceptions.ValidationError, format it for display as a string.
+    '''
+    if not error.path:
+        return 'At the top level: {}'.format(error.message)
+
+    formatted_path = ''.join(format_error_path_element(element) for element in error.path)
+    return "At '{}': {}".format(formatted_path.lstrip('.'), error.message)
+
+
 class Validation_error(ValueError):
     '''
-    A collection of error message strings generated when attempting to validate a particular
-    configurartion file.
+    A collection of error messages generated when attempting to validate a particular
+    configuration file.
     '''
 
-    def __init__(self, config_filename, error_messages):
+    def __init__(self, config_filename, errors):
+        '''
+        Given a configuration filename path and a sequence of
+        jsonschema.exceptions.ValidationError instances, create a Validation_error.
+        '''
         self.config_filename = config_filename
-        self.error_messages = error_messages
+        self.errors = errors
 
     def __str__(self):
         '''
@@ -33,7 +56,7 @@ class Validation_error(ValueError):
         '''
         return 'An error occurred while parsing a configuration file at {}:\n'.format(
             self.config_filename
-        ) + '\n'.join(self.error_messages)
+        ) + '\n'.join(format_error(error) for error in self.errors)
 
 
 def apply_logical_validation(config_filename, parsed_configuration):
@@ -65,29 +88,12 @@ def apply_logical_validation(config_filename, parsed_configuration):
             )
 
 
-def remove_examples(schema):
-    '''
-    pykwalify gets angry if the example field is not a string. So rather than bend to its will,
-    remove all examples from the given schema before passing the schema to pykwalify.
-    '''
-    if 'map' in schema:
-        for item_name, item_schema in schema['map'].items():
-            item_schema.pop('example', None)
-            remove_examples(item_schema)
-    elif 'seq' in schema:
-        for item_schema in schema['seq']:
-            item_schema.pop('example', None)
-            remove_examples(item_schema)
-
-    return schema
-
-
 def parse_configuration(config_filename, schema_filename, overrides=None):
     '''
-    Given the path to a config filename in YAML format, the path to a schema filename in pykwalify
-    YAML schema format, a sequence of configuration file override strings in the form of
-    "section.option=value", return the parsed configuration as a data structure of nested dicts and
-    lists corresponding to the schema. Example return value:
+    Given the path to a config filename in YAML format, the path to a schema filename in a YAML
+    rendition of JSON Schema format, a sequence of configuration file override strings in the form
+    of "section.option=value", return the parsed configuration as a data structure of nested dicts
+    and lists corresponding to the schema. Example return value:
 
        {'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
        'retention': {'keep_daily': 7}, 'consistency': {'checks': ['repository', 'archives']}}
@@ -95,8 +101,6 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
-    logging.getLogger('pykwalify').setLevel(logging.ERROR)
-
     try:
         config = load.load_configuration(config_filename)
         schema = load.load_configuration(schema_filename)
@@ -106,15 +110,15 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
     override.apply_overrides(config, overrides)
     normalize.normalize(config)
 
-    validator = pykwalify.core.Core(source_data=config, schema_data=remove_examples(schema))
-    parsed_result = validator.validate(raise_exception=False)
+    validator = jsonschema.Draft7Validator(schema)
+    validation_errors = tuple(validator.iter_errors(config))
 
-    if validator.validation_errors:
-        raise Validation_error(config_filename, validator.validation_errors)
+    if validation_errors:
+        raise Validation_error(config_filename, validation_errors)
 
-    apply_logical_validation(config_filename, parsed_result)
+    apply_logical_validation(config_filename, config)
 
-    return parsed_result
+    return config
 
 
 def normalize_repository_path(repository):

@@ -122,38 +122,44 @@ def test_write_configuration_with_already_existing_directory_does_not_raise():
 
 def test_add_comments_to_configuration_sequence_of_strings_does_not_raise():
     config = module.yaml.comments.CommentedSeq(['foo', 'bar'])
-    schema = {'seq': [{'type': 'str'}]}
+    schema = {'type': 'array', 'items': {'type': 'string'}}
 
     module.add_comments_to_configuration_sequence(config, schema)
 
 
 def test_add_comments_to_configuration_sequence_of_maps_does_not_raise():
     config = module.yaml.comments.CommentedSeq([module.yaml.comments.CommentedMap([('foo', 'yo')])])
-    schema = {'seq': [{'map': {'foo': {'desc': 'yo'}}}]}
+    schema = {
+        'type': 'array',
+        'items': {'type': 'object', 'properties': {'foo': {'description': 'yo'}}},
+    }
 
     module.add_comments_to_configuration_sequence(config, schema)
 
 
 def test_add_comments_to_configuration_sequence_of_maps_without_description_does_not_raise():
     config = module.yaml.comments.CommentedSeq([module.yaml.comments.CommentedMap([('foo', 'yo')])])
-    schema = {'seq': [{'map': {'foo': {}}}]}
+    schema = {'type': 'array', 'items': {'type': 'object', 'properties': {'foo': {}}}}
 
     module.add_comments_to_configuration_sequence(config, schema)
 
 
-def test_add_comments_to_configuration_map_does_not_raise():
+def test_add_comments_to_configuration_object_does_not_raise():
     # Ensure that it can deal with fields both in the schema and missing from the schema.
     config = module.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
-    schema = {'map': {'foo': {'desc': 'Foo'}, 'bar': {'desc': 'Bar'}}}
+    schema = {
+        'type': 'object',
+        'properties': {'foo': {'description': 'Foo'}, 'bar': {'description': 'Bar'}},
+    }
 
-    module.add_comments_to_configuration_map(config, schema)
+    module.add_comments_to_configuration_object(config, schema)
 
 
-def test_add_comments_to_configuration_map_with_skip_first_does_not_raise():
+def test_add_comments_to_configuration_object_with_skip_first_does_not_raise():
     config = module.yaml.comments.CommentedMap([('foo', 33)])
-    schema = {'map': {'foo': {'desc': 'Foo'}}}
+    schema = {'type': 'object', 'properties': {'foo': {'description': 'Foo'}}}
 
-    module.add_comments_to_configuration_map(config, schema, skip_first=True)
+    module.add_comments_to_configuration_object(config, schema, skip_first=True)
 
 
 def test_remove_commented_out_sentinel_keeps_other_comments():
