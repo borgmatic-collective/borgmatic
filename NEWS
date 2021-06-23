@@ -1,4 +1,5 @@
 1.5.16.dev0
+ * #379: Suppress console output in sample crontab and systemd service files.
  * #407: Fix syslog logging on FreeBSD.
  * Better error messages! Switch the library used for validating configuration files (from pykwalify
    to jsonschema).
