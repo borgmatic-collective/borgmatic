@@ -179,6 +179,26 @@ def test_configure_logging_probes_for_log_socket_on_macos():
     module.configure_logging(logging.INFO)
 
 
+def test_configure_logging_probes_for_log_socket_on_freebsd():
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+    flexmock(module).should_receive('Console_color_formatter')
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/var/run/syslog').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/var/run/log').and_return(True)
+    syslog_handler = logging.handlers.SysLogHandler()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').with_args(
+        address='/var/run/log'
+    ).and_return(syslog_handler).once()
+
+    module.configure_logging(logging.INFO)
+
+
 def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
