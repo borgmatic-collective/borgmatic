@@ -262,11 +262,19 @@ You can modify the cron file if you'd like to run borgmatic more or less frequen
 
 ### systemd
 
-If you're using systemd instead of cron to run jobs, download the [sample
-systemd service
+If you're using systemd instead of cron to run jobs, you can still configure
+borgmatic to run automatically.
+
+(If you installed borgmatic from [Other ways to
+install](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install),
+you may already have borgmatic systemd service and timer files. If so, you may
+be able to skip some of the steps below.)
+
+First, download the [sample systemd service
 file](https://projects.torsion.org/witten/borgmatic/raw/branch/master/sample/systemd/borgmatic.service)
 and the [sample systemd timer
 file](https://projects.torsion.org/witten/borgmatic/raw/branch/master/sample/systemd/borgmatic.timer).
+
 Then, from the directory where you downloaded them:
 
 ```bash
