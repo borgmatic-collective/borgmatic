@@ -253,7 +253,7 @@ properties:
                 type: integer
                 description: |
                     Number of times to retry a backup before failing. Defaults
-                    to 1.
+                    to 0 (i.e. does not attempt retry).
                 example: 3
             temporary_directory:
                 type: string

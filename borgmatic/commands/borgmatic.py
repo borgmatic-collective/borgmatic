@@ -53,7 +53,7 @@ def run_configuration(config_filename, config, arguments):
 
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
-    retries = storage.get('retries',1)
+    retries = storage.get('retries', 0)
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
