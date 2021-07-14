@@ -249,6 +249,12 @@ properties:
                     Remote network upload rate limit in kiBytes/second. Defaults
                     to unlimited.
                 example: 100
+            retries:
+                type: integer
+                description: |
+                    Number of times to retry a backup before failing. Defaults
+                    to 1.
+                example: 3
             temporary_directory:
                 type: string
                 description: |

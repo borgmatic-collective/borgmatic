@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from subprocess import CalledProcessError
+from queue import Queue
 
 import colorama
 import pkg_resources
@@ -52,6 +53,7 @@ def run_configuration(config_filename, config, arguments):
 
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
+    retries = storage.get('retries',1)
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
@@ -120,7 +122,12 @@ def run_configuration(config_filename, config, arguments):
         )
 
     if not encountered_error:
-        for repository_path in location['repositories']:
+        repo_queue = Queue()
+        for repo in location['repositories']:
+            repo_queue.put((repo,0),)
+       
+        while not repo_queue.empty():
+            repository_path, retry_num = repo_queue.get()
             try:
                 yield from run_actions(
                     arguments=arguments,
@@ -134,11 +141,15 @@ def run_configuration(config_filename, config, arguments):
                     repository_path=repository_path,
                 )
             except (OSError, CalledProcessError, ValueError) as error:
-                encountered_error = error
-                error_repository = repository_path
                 yield from make_error_log_records(
                     '{}: Error running actions for repository'.format(repository_path), error
                 )
+                if retry_num < retries:
+                    repo_queue.put((repository_path,retry_num + 1),)
+                    logger.warning(f'Retrying.. attempt {retry_num + 1}/{retries}')
+                    continue
+                encountered_error = error
+                error_repository = repository_path
 
     if not encountered_error:
         try:
