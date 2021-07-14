@@ -4,8 +4,8 @@ import json
 import logging
 import os
 import sys
-from subprocess import CalledProcessError
 from queue import Queue
+from subprocess import CalledProcessError
 
 import colorama
 import pkg_resources
