@@ -124,8 +124,10 @@ def run_configuration(config_filename, config, arguments):
     if not encountered_error:
         repo_queue = Queue()
         for repo in location['repositories']:
-            repo_queue.put((repo,0),)
-       
+            repo_queue.put(
+                (repo, 0),
+            )
+
         while not repo_queue.empty():
             repository_path, retry_num = repo_queue.get()
             try:
@@ -145,7 +147,9 @@ def run_configuration(config_filename, config, arguments):
                     '{}: Error running actions for repository'.format(repository_path), error
                 )
                 if retry_num < retries:
-                    repo_queue.put((repository_path,retry_num + 1),)
+                    repo_queue.put(
+                        (repository_path, retry_num + 1),
+                    )
                     logger.warning(f'Retrying.. attempt {retry_num + 1}/{retries}')
                     continue
                 encountered_error = error
@@ -268,7 +272,7 @@ def run_actions(
     hooks,
     local_path,
     remote_path,
-    repository_path
+    repository_path,
 ):  # pragma: no cover
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, several different
