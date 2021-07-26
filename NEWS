@@ -1,4 +1,4 @@
-1.5.16.dev0
+1.5.16
  * #379: Suppress console output in sample crontab and systemd service files.
  * #407: Fix syslog logging on FreeBSD.
  * #430: Fix hang when restoring a PostgreSQL "tar" format database dump.
