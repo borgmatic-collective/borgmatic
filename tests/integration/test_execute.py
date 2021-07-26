@@ -134,7 +134,7 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
     process = subprocess.Popen(
-        ['shuf', '-zer', '-n10000', '{A..Z}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ['xxd', '-l', '40000', '-p', '/dev/urandom'], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     other_process = subprocess.Popen(
         ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -145,7 +145,7 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     flexmock(module).should_receive('output_buffer_for_process').with_args(
         other_process, (process.stdout,)
     ).and_return(other_process.stdout)
-    flexmock(process.stdout).should_call('readline').once()
+    flexmock(process.stdout).should_call('readline').at_least().once()
 
     module.log_outputs(
         (process, other_process),
