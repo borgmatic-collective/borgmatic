@@ -59,11 +59,12 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     '''
     # Map from output buffer to sequence of last lines.
     buffer_last_lines = collections.defaultdict(list)
-    output_buffers = [
-        output_buffer_for_process(process, exclude_stdouts)
+    process_for_output_buffer = {
+        output_buffer_for_process(process, exclude_stdouts): process
         for process in processes
         if process.stdout or process.stderr
-    ]
+    }
+    output_buffers = list(process_for_output_buffer.keys())
 
     # Log output for each process until they all exit.
     while True:
@@ -71,8 +72,19 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
             (ready_buffers, _, _) = select.select(output_buffers, [], [])
 
             for ready_buffer in ready_buffers:
+                ready_process = process_for_output_buffer.get(ready_buffer)
+
+                # The "ready" process has exited, but it might be a pipe destination with other
+                # processes (pipe sources) waiting to be read from. So as a measure to prevent
+                # hangs, vent all processes when one exits.
+                if ready_process and ready_process.poll() is not None:
+                    for other_process in processes:
+                        if other_process.poll() is None:
+                            # Add the process's output to output_buffers to ensure it'll get read.
+                            output_buffers.append(other_process.stdout)
+
                 line = ready_buffer.readline().rstrip().decode()
-                if not line:
+                if not line or not ready_process:
                     continue
 
                 # Keep the last few lines of output in case the process errors, and we need the output for
