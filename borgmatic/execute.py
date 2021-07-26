@@ -79,7 +79,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                 # hangs, vent all processes when one exits.
                 if ready_process and ready_process.poll() is not None:
                     for other_process in processes:
-                        if other_process.poll() is None:
+                        if (
+                            other_process.poll() is None
+                            and other_process.stdout not in output_buffers
+                        ):
                             # Add the process's output to output_buffers to ensure it'll get read.
                             output_buffers.append(other_process.stdout)
 
