@@ -135,8 +135,13 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
     process = subprocess.Popen(
-        [sys.executable, '-c', "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))"],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     other_process = subprocess.Popen(
         ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
