@@ -1,3 +1,7 @@
+1.5.17
+ * #437: Fix error when configuration file contains "umask" option.
+ * Remove test dependency on vim and /dev/urandom.
+
 1.5.16
  * #379: Suppress console output in sample crontab and systemd service files.
  * #407: Fix syslog logging on FreeBSD.

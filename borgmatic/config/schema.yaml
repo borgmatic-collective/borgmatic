@@ -292,7 +292,7 @@ properties:
                     $borg_base_directory/.config/borg/keys
                 example: /path/to/base/config/keys
             umask:
-                type: string
+                type: integer
                 description: Umask to be used for borg create. Defaults to 0077.
                 example: 0077
             lock_wait:
@@ -787,7 +787,7 @@ properties:
                 example:
                     https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d01
             umask:
-                type: scalar
+                type: integer
                 description: |
                     Umask used when executing hooks. Defaults to the umask that
                     borgmatic is run with.
