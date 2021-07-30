@@ -138,9 +138,12 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
         if not output_buffer:
             continue
 
-        remaining_output = output_buffer.read().rstrip().decode()
+        while True:
+            remaining_output = output_buffer.readline().rstrip().decode()
 
-        if remaining_output:  # pragma: no cover
+            if not remaining_output:  # pragma: no cover
+                break
+
             logger.log(output_log_level, remaining_output)
 
 
