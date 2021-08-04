@@ -1,4 +1,4 @@
-1.5.18
+1.5.18.dev0
  * #389: Fix "message too long" error when logging to rsyslog.
 
 1.5.17
