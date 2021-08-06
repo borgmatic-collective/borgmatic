@@ -1,5 +1,6 @@
-1.5.18.dev0
+1.5.18
  * #389: Fix "message too long" error when logging to rsyslog.
+ * #440: Fix traceback that can occur when dumping a database.
 
 1.5.17
  * #437: Fix error when configuration file contains "umask" option.

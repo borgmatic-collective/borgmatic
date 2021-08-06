@@ -162,6 +162,37 @@ def test_log_outputs_vents_other_processes_when_one_exits():
     )
 
 
+def test_log_outputs_does_not_error_when_one_process_exits():
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))",
+        ],
+        stdout=None,  # Specifically test the case of a process without stdout captured.
+        stderr=None,
+    )
+    other_process = subprocess.Popen(
+        ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        process, (process.stdout,)
+    ).and_return(process.stderr)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        other_process, (process.stdout,)
+    ).and_return(other_process.stdout)
+
+    module.log_outputs(
+        (process, other_process),
+        exclude_stdouts=(process.stdout,),
+        output_log_level=logging.INFO,
+        borg_local_path='borg',
+    )
+
+
 def test_log_outputs_truncates_long_error_output():
     flexmock(module).ERROR_OUTPUT_MAX_LINE_COUNT = 0
     flexmock(module.logger).should_receive('log')

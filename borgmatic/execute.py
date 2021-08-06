@@ -81,6 +81,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                     for other_process in processes:
                         if (
                             other_process.poll() is None
+                            and other_process.stdout
                             and other_process.stdout not in output_buffers
                         ):
                             # Add the process's output to output_buffers to ensure it'll get read.
@@ -138,10 +139,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
         if not output_buffer:
             continue
 
-        while True:
+        while True:  # pragma: no cover
             remaining_output = output_buffer.readline().rstrip().decode()
 
-            if not remaining_output:  # pragma: no cover
+            if not remaining_output:
                 break
 
             logger.log(output_log_level, remaining_output)
