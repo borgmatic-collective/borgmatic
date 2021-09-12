@@ -77,7 +77,7 @@ on a relatively dedicated system, then a global install can work out fine.
 Besides the approaches described above, there are several other options for
 installing borgmatic:
 
- * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/)
+ * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
  * [Docker base image](https://hub.docker.com/r/monachus/borgmatic/)
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
