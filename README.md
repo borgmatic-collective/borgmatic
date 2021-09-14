@@ -145,5 +145,5 @@ Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
 
-<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg?ref=refs/heads/master)</a>
+<a href="https://build.torsion.org/borgmatic-collective/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/borgmatic-collective/borgmatic/status.svg?ref=refs/heads/master)</a>
 
