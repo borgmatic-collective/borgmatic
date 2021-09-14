@@ -130,7 +130,7 @@ Other questions or comments? Contact
 
 borgmatic [source code is
 available](https://projects.torsion.org/witten/borgmatic) and is also mirrored
-on [GitHub](https://github.com/witten/borgmatic) for convenience.
+on [GitHub](https://github.com/borgmatic-collective/borgmatic) for convenience.
 
 borgmatic is licensed under the GNU General Public License version 3 or any
 later version.

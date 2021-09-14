@@ -1,3 +1,8 @@
+1.5.19.dev0
+ * Move GitHub hosting from a personal namespace to an organization for better collaboration with
+   related projects.
+ * 1k ★s on GitHub!
+
 1.5.18
  * #389: Fix "message too long" error when logging to rsyslog.
  * #440: Fix traceback that can occur when dumping a database.
