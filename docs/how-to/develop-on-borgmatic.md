@@ -10,13 +10,13 @@ eleventyNavigation:
 To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
 
 ```bash
-git clone https://projects.torsion.org/witten/borgmatic.git
+git clone https://projects.torsion.org/borgmatic-collective/borgmatic.git
 ```
 
 Or:
 
 ```bash
-git clone ssh://git@projects.torsion.org:3022/witten/borgmatic.git
+git clone ssh://git@projects.torsion.org:3022/borgmatic-collective/borgmatic.git
 ```
 
 Then, install borgmatic

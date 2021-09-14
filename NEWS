@@ -1,6 +1,6 @@
 1.5.19.dev0
- * Move GitHub hosting from a personal namespace to an organization for better collaboration with
-   related projects.
+ * Move Gitea and GitHub hosting from a personal namespace to an organization for better
+   collaboration with related projects.
  * 1k ★s on GitHub!
 
 1.5.18
@@ -573,7 +573,7 @@
  * #49: Support for Borg experimental --patterns-from and --patterns options for specifying mixed
    includes/excludes.
  * Moved issue tracker from Taiga to integrated Gitea tracker at
-   https://projects.torsion.org/witten/borgmatic/issues
+   https://projects.torsion.org/borgmatic-collective/borgmatic/issues
 
 1.1.12
  * #46: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"

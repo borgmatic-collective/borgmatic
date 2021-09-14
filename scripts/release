@@ -38,7 +38,7 @@ twine upload -r pypi dist/borgmatic-*-py3-none-any.whl dist/borgmatic-*-py3-none
 release_changelog="$(cat NEWS | sed '/^$/q' | grep -v '^\S')"
 escaped_release_changelog="$(echo "$release_changelog" | sed -z 's/\n/\\n/g' | sed -z 's/\"/\\"/g')"
 curl --silent --request POST \
-    "https://projects.torsion.org/api/v1/repos/witten/borgmatic/releases" \
+    "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases" \
     --header "Authorization: token $projects_token" \
     --header "Accept: application/json" \
     --header "Content-Type: application/json" \
