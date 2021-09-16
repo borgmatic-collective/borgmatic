@@ -135,12 +135,14 @@ properties:
                     type: string
                 description: |
                     Any paths matching these patterns are excluded from backups.
-                    Globs and tildes are expanded. Do not backslash spaces in
-                    path names. See the output of "borg help patterns" for more
-                    details.
+                    Globs and tildes are expanded. (Note however that a glob
+                    pattern must either start with a glob or be an absolute
+                    path.) Do not backslash spaces in path names. See the output
+                    of "borg help patterns" for more details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
+                    - '*/.vim*.tmp'
                     - /etc/ssl
                     - /home/user/path with spaces
             exclude_from:
