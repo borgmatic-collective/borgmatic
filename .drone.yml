@@ -16,7 +16,7 @@ services:
 
 clone:
   git:
-    image: witten/drone-git
+    skip_verify: true
 
 steps:
 - name: build
@@ -42,7 +42,7 @@ services:
 
 clone:
   git:
-    image: witten/drone-git
+    skip_verify: true
 
 steps:
 - name: build
@@ -68,7 +68,7 @@ services:
 
 clone:
   git:
-    image: witten/drone-git
+    skip_verify: true
 
 steps:
 - name: build
