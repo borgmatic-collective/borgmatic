@@ -15,8 +15,7 @@ services:
       MYSQL_DATABASE: test
 
 clone:
-  git:
-    skip_verify: true
+  skip_verify: true
 
 steps:
 - name: build
@@ -41,8 +40,7 @@ services:
       MYSQL_DATABASE: test
 
 clone:
-  git:
-    skip_verify: true
+  skip_verify: true
 
 steps:
 - name: build
@@ -67,8 +65,7 @@ services:
       MYSQL_DATABASE: test
 
 clone:
-  git:
-    skip_verify: true
+  skip_verify: true
 
 steps:
 - name: build
