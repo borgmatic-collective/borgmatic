@@ -14,6 +14,10 @@ services:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
 
+clone:
+  git:
+    image: witten/drone-git
+
 steps:
 - name: build
   image: alpine:3.9
@@ -36,6 +40,10 @@ services:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
 
+clone:
+  git:
+    image: witten/drone-git
+
 steps:
 - name: build
   image: alpine:3.10
@@ -57,6 +65,10 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
+
+clone:
+  git:
+    image: witten/drone-git
 
 steps:
 - name: build
