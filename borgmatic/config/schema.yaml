@@ -635,7 +635,7 @@ properties:
                                 Password with which to connect to the database.
                                 Omitting a password will only work if PostgreSQL
                                 is configured to trust the configured username
-                                without a password, or you create a ~/.pgpass
+                                without a password or you create a ~/.pgpass
                                 file.
                             example: trustsome1
                         format:
