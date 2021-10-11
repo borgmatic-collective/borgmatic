@@ -1,4 +1,6 @@
 1.5.19.dev0
+ * #387: Fix error when configured source directories are not present on the filesystem at the time
+   of backup. Now, Borg will complain, but the backup will still continue.
  * Update sample systemd service file with more granular read-only filesystem settings.
  * Move Gitea and GitHub hosting from a personal namespace to an organization for better
    collaboration with related projects.

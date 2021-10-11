@@ -60,6 +60,30 @@ def test_expand_home_directories_considers_none_as_no_directories():
     assert paths == ()
 
 
+def test_map_directories_to_devices_gives_device_id_per_path():
+    flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
+    flexmock(module.os).should_receive('stat').with_args('/bar').and_return(flexmock(st_dev=66))
+
+    device_map = module.map_directories_to_devices(('/foo', '/bar'))
+
+    assert device_map == {
+        '/foo': 55,
+        '/bar': 66,
+    }
+
+
+def test_map_directories_to_devices_with_missing_path_does_not_error():
+    flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
+    flexmock(module.os).should_receive('stat').with_args('/bar').and_raise(FileNotFoundError)
+
+    device_map = module.map_directories_to_devices(('/foo', '/bar'))
+
+    assert device_map == {
+        '/foo': 55,
+        '/bar': None,
+    }
+
+
 @pytest.mark.parametrize(
     'directories,expected_directories',
     (
@@ -72,6 +96,7 @@ def test_expand_home_directories_considers_none_as_no_directories():
         ({'/root': 1, '/root/foo/': 1}, ('/root',)),
         ({'/root': 1, '/root/foo': 2}, ('/root', '/root/foo')),
         ({'/root/foo': 1, '/root': 1}, ('/root',)),
+        ({'/root': None, '/root/foo': None}, ('/root', '/root/foo')),
         ({'/root': 1, '/etc': 1, '/root/foo/bar': 1}, ('/etc', '/root')),
         ({'/root': 1, '/root/foo': 1, '/root/foo/bar': 1}, ('/root',)),
         ({'/dup': 1, '/dup': 1}, ('/dup',)),
