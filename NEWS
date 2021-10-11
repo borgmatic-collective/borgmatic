@@ -1,4 +1,4 @@
-1.5.19.dev0
+1.5.19
  * #387: Fix error when configured source directories are not present on the filesystem at the time
    of backup. Now, Borg will complain, but the backup will still continue.
  * #455: Mention changing borgmatic path in cron documentation.
