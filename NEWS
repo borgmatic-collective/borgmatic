@@ -1,4 +1,5 @@
 1.5.19.dev0
+ * Update sample systemd service file with more granular read-only filesystem settings.
  * Move Gitea and GitHub hosting from a personal namespace to an organization for better
    collaboration with related projects.
  * 1k ★s on GitHub!
