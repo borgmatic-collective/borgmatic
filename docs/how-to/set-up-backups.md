@@ -258,7 +258,10 @@ sudo mv borgmatic /etc/cron.d/borgmatic
 sudo chmod +x /etc/cron.d/borgmatic
 ```
 
-You can modify the cron file if you'd like to run borgmatic more or less frequently.
+If borgmatic is installed at a different location than
+`/root/.local/bin/borgmatic`, edit the cron file with the correct path. You
+can also modify the cron file if you'd like to run borgmatic more or less
+frequently.
 
 ### systemd
 
