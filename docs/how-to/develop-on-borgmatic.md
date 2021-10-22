@@ -20,7 +20,7 @@ git clone ssh://git@projects.torsion.org:3022/borgmatic-collective/borgmatic.git
 ```
 
 Then, install borgmatic
-"[editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)"
+"[editable](https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs)"
 so that you can run borgmatic commands while you're hacking on them to
 make sure your changes work.
 
