@@ -94,5 +94,7 @@ steps:
     dockerfile: docs/Dockerfile
 
 trigger:
+  repo:
+    - borgmatic-collective/borgmatic
   branch:
     - master
