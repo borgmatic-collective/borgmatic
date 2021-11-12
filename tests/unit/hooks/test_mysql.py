@@ -198,6 +198,24 @@ def test_dump_databases_runs_mysqldump_for_all_databases():
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
+def test_database_names_to_dump_runs_mysql_with_list_options():
+    database = {'name': 'all', 'list_options': '--defaults-extra-file=my.cnf'}
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysql',
+            '--defaults-extra-file=my.cnf',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+        output_log_level=None,
+        extra_environment=None,
+    ).and_return(('foo\nbar')).once()
+
+    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+
+
 def test_dump_databases_errors_for_missing_all_databases():
     databases = [{'name': 'all'}]
     process = flexmock()

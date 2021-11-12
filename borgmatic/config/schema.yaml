@@ -749,6 +749,14 @@ properties:
                                 configured to trust the configured username
                                 without a password.
                             example: trustsome1
+                        list_options:
+                            type: string
+                            description: |
+                                Additional mysql options to pass directly to
+                                the mysql command that lists available
+                                databases, without performing any validation on
+                                them. See mysql documentation for details.
+                            example: --defaults-extra-file=my.cnf
                         options:
                             type: string
                             description: |
