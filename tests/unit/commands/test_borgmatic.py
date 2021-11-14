@@ -184,6 +184,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
 
     assert results == expected_results
 
+
 def test_run_retries_soft_error():
     # Run action first fails, second passes
     flexmock(module.borg_environment).should_receive('initialize')
@@ -191,10 +192,11 @@ def test_run_retries_soft_error():
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_return([])
     expected_results = [flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(expected_results).once()
-    config = {'location': {'repositories': ['foo']}, 'storage': {'retries':1}}
+    config = {'location': {'repositories': ['foo']}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_run_retries_hard_error():
     # Run action fails twice
@@ -202,107 +204,140 @@ def test_run_retries_hard_error():
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     expected_results = [flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[:1]) \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[1:]).twice()
-    config = {'location': {'repositories': ['foo']}, 'storage': {'retries':1}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[:1]).with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(
+        expected_results[1:]
+    ).twice()
+    config = {'location': {'repositories': ['foo']}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_run_repos_ordered():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     expected_results = [flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[:1]).ordered() 
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[1:]).ordered()
-    config = {'location': {'repositories': ['foo','bar']}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[:1]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[1:]).ordered()
+    config = {'location': {'repositories': ['foo', 'bar']}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_run_retries_round_robbin():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[0:1]).ordered() 
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[1:2]).ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[2:3]).ordered() 
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[3:4]).ordered()
-    config = {'location': {'repositories': ['foo','bar']}, 'storage': {'retries':1}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[0:1]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[1:2]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[2:3]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[3:4]).ordered()
+    config = {'location': {'repositories': ['foo', 'bar']}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
 
+
 def test_run_retries_one_passes():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
-    flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return([]).and_raise(OSError).times(4)
+    flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
+        []
+    ).and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[0:1]).ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[1:2]).ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[2:3]).ordered()
-    config = {'location': {'repositories': ['foo','bar']}, 'storage': {'retries':1}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[0:1]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[1:2]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[2:3]).ordered()
+    config = {'location': {'repositories': ['foo', 'bar']}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_run_retry_timeout():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[0:1]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[0:1]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(10).and_return().ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[1:2]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[1:2]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(20).and_return().ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[2:3]).ordered() 
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[2:3]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(30).and_return().ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[3:4]).ordered()
-    config = {'location': {'repositories': ['foo']}, 'storage': {'retries':3, 'retry_timeout':10}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[3:4]).ordered()
+    config = {'location': {'repositories': ['foo']}, 'storage': {'retries': 3, 'retry_timeout': 10}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_run_retries_timeout_multiple_repos():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
-    flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return([]).and_raise(OSError).times(4)
+    flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
+        []
+    ).and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock()]
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('foo: Error running actions for repository', OSError).and_return(expected_results[0:1]).ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[1:2]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'foo: Error running actions for repository', OSError
+    ).and_return(expected_results[0:1]).ordered()
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[1:2]).ordered()
 
     # Sleep before retrying foo (and passing)
     flexmock(time).should_receive('sleep').with_args(10).and_return().ordered()
-    
+
     # Sleep before retrying bar (and failing)
     flexmock(time).should_receive('sleep').with_args(10).and_return().ordered()
-    flexmock(module).should_receive('make_error_log_records') \
-                        .with_args('bar: Error running actions for repository', OSError).and_return(expected_results[2:3]).ordered()
-    config = {'location': {'repositories': ['foo','bar']}, 'storage': {'retries':1, 'retry_timeout':10}}
+    flexmock(module).should_receive('make_error_log_records').with_args(
+        'bar: Error running actions for repository', OSError
+    ).and_return(expected_results[2:3]).ordered()
+    config = {
+        'location': {'repositories': ['foo', 'bar']},
+        'storage': {'retries': 1, 'retry_timeout': 10},
+    }
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
+
 
 def test_load_configurations_collects_parsed_configurations():
     configuration = flexmock()

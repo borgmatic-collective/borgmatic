@@ -260,7 +260,7 @@ properties:
             retry_timeout:
                 type: integer
                 description: |
-                    Wait time between retries, to allow transient issues to pass.
+                    Wait time between retries, to allow transient issues to pass
                     Defaults to 0s.
                 example: 10
             temporary_directory:
