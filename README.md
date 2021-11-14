@@ -106,7 +106,7 @@ development or hosting.
 ### Issues
 
 You've got issues? Or an idea for a feature enhancement? We've got an [issue
-tracker](https://projects.torsion.org/witten/borgmatic/issues). In order to
+tracker](https://projects.torsion.org/borgmatic-collective/borgmatic/issues). In order to
 create a new issue or comment on an issue, you'll need to [login
 first](https://projects.torsion.org/user/login). Note that you can login with
 an existing GitHub account if you prefer.
@@ -129,15 +129,15 @@ Other questions or comments? Contact
 ### Contributing
 
 borgmatic [source code is
-available](https://projects.torsion.org/witten/borgmatic) and is also mirrored
-on [GitHub](https://github.com/witten/borgmatic) for convenience.
+available](https://projects.torsion.org/borgmatic-collective/borgmatic) and is also mirrored
+on [GitHub](https://github.com/borgmatic-collective/borgmatic) for convenience.
 
 borgmatic is licensed under the GNU General Public License version 3 or any
 later version.
 
 If you'd like to contribute to borgmatic development, please feel free to
-submit a [Pull Request](https://projects.torsion.org/witten/borgmatic/pulls)
-or open an [issue](https://projects.torsion.org/witten/borgmatic/issues) first
+submit a [Pull Request](https://projects.torsion.org/borgmatic-collective/borgmatic/pulls)
+or open an [issue](https://projects.torsion.org/borgmatic-collective/borgmatic/issues) first
 to discuss your idea. We also accept Pull Requests on GitHub, if that's more
 your thing. In general, contributions are very welcome. We don't bite! 
 
@@ -145,5 +145,5 @@ Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
 
-<a href="https://build.torsion.org/witten/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/witten/borgmatic/status.svg?ref=refs/heads/master)</a>
+<a href="https://build.torsion.org/borgmatic-collective/borgmatic" alt="build status">![Build Status](https://build.torsion.org/api/badges/borgmatic-collective/borgmatic/status.svg?ref=refs/heads/master)</a>
 

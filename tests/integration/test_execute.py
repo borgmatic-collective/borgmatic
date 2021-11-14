@@ -1,5 +1,6 @@
 import logging
 import subprocess
+import sys
 
 import pytest
 from flexmock import flexmock
@@ -98,7 +99,7 @@ def test_log_outputs_kills_other_processes_when_one_errors():
         process, 2, 'borg'
     ).and_return(True)
     other_process = subprocess.Popen(
-        ['watch', 'true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ['sleep', '2'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
         other_process, None, 'borg'
@@ -121,6 +122,75 @@ def test_log_outputs_kills_other_processes_when_one_errors():
 
     assert error.value.returncode == 2
     assert error.value.output
+
+
+def test_log_outputs_vents_other_processes_when_one_exits():
+    '''
+    Execute a command to generate a longish random string and pipe it into another command that
+    exits quickly. The test is basically to ensure we don't hang forever waiting for the exited
+    process to read the pipe, and that the string-generating process eventually gets vented and
+    exits.
+    '''
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    other_process = subprocess.Popen(
+        ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        process, (process.stdout,)
+    ).and_return(process.stderr)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        other_process, (process.stdout,)
+    ).and_return(other_process.stdout)
+    flexmock(process.stdout).should_call('readline').at_least().once()
+
+    module.log_outputs(
+        (process, other_process),
+        exclude_stdouts=(process.stdout,),
+        output_log_level=logging.INFO,
+        borg_local_path='borg',
+    )
+
+
+def test_log_outputs_does_not_error_when_one_process_exits():
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            '-c',
+            "import random, string; print(''.join(random.choice(string.ascii_letters) for _ in range(40000)))",
+        ],
+        stdout=None,  # Specifically test the case of a process without stdout captured.
+        stderr=None,
+    )
+    other_process = subprocess.Popen(
+        ['true'], stdin=process.stdout, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        process, (process.stdout,)
+    ).and_return(process.stderr)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        other_process, (process.stdout,)
+    ).and_return(other_process.stdout)
+
+    module.log_outputs(
+        (process, other_process),
+        exclude_stdouts=(process.stdout,),
+        output_log_level=logging.INFO,
+        borg_local_path='borg',
+    )
 
 
 def test_log_outputs_truncates_long_error_output():

@@ -1,6 +1,30 @@
-1.5.16.dev0
+1.5.21.dev0
+ * Add support for old version (2.x) of jsonschema library.
+
+1.5.20
+ * Re-release with correct version without dev0 tag.
+
+1.5.19
+ * #387: Fix error when configured source directories are not present on the filesystem at the time
+   of backup. Now, Borg will complain, but the backup will still continue.
+ * #455: Mention changing borgmatic path in cron documentation.
+ * Update sample systemd service file with more granular read-only filesystem settings.
+ * Move Gitea and GitHub hosting from a personal namespace to an organization for better
+   collaboration with related projects.
+ * 1k ★s on GitHub!
+
+1.5.18
+ * #389: Fix "message too long" error when logging to rsyslog.
+ * #440: Fix traceback that can occur when dumping a database.
+
+1.5.17
+ * #437: Fix error when configuration file contains "umask" option.
+ * Remove test dependency on vim and /dev/urandom.
+
+1.5.16
  * #379: Suppress console output in sample crontab and systemd service files.
  * #407: Fix syslog logging on FreeBSD.
+ * #430: Fix hang when restoring a PostgreSQL "tar" format database dump.
  * Better error messages! Switch the library used for validating configuration files (from pykwalify
    to jsonschema).
  * Link borgmatic Ansible role from installation documentation:
@@ -559,7 +583,7 @@
  * #49: Support for Borg experimental --patterns-from and --patterns options for specifying mixed
    includes/excludes.
  * Moved issue tracker from Taiga to integrated Gitea tracker at
-   https://projects.torsion.org/witten/borgmatic/issues
+   https://projects.torsion.org/borgmatic-collective/borgmatic/issues
 
 1.1.12
  * #46: Declare dependency on pykwalify 1.6 or above, as older versions yield "Unknown key: version"

@@ -28,7 +28,7 @@ sudo pip3 install --user --upgrade borgmatic
 This installs borgmatic and its commands at the `/root/.local/bin` path.
 
 Your pip binary may have a different name than "pip3". Make sure you're using
-Python 3, as borgmatic does not support Python 2.
+Python 3.6+, as borgmatic does not support Python 2.
 
 The next step is to ensure that borgmatic's commands available are on your
 system `PATH`, so that you can run borgmatic:
@@ -77,7 +77,7 @@ on a relatively dedicated system, then a global install can work out fine.
 Besides the approaches described above, there are several other options for
 installing borgmatic:
 
- * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/)
+ * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
  * [Docker base image](https://hub.docker.com/r/monachus/borgmatic/)
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
@@ -250,7 +250,7 @@ that, you can configure a separate job runner to invoke it periodically.
 ### cron
 
 If you're using cron, download the [sample cron
-file](https://projects.torsion.org/witten/borgmatic/src/master/sample/cron/borgmatic).
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/src/master/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
 ```bash
@@ -258,7 +258,10 @@ sudo mv borgmatic /etc/cron.d/borgmatic
 sudo chmod +x /etc/cron.d/borgmatic
 ```
 
-You can modify the cron file if you'd like to run borgmatic more or less frequently.
+If borgmatic is installed at a different location than
+`/root/.local/bin/borgmatic`, edit the cron file with the correct path. You
+can also modify the cron file if you'd like to run borgmatic more or less
+frequently.
 
 ### systemd
 
@@ -271,9 +274,9 @@ you may already have borgmatic systemd service and timer files. If so, you may
 be able to skip some of the steps below.)
 
 First, download the [sample systemd service
-file](https://projects.torsion.org/witten/borgmatic/raw/branch/master/sample/systemd/borgmatic.service)
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/master/sample/systemd/borgmatic.service)
 and the [sample systemd timer
-file](https://projects.torsion.org/witten/borgmatic/raw/branch/master/sample/systemd/borgmatic.timer).
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/master/sample/systemd/borgmatic.timer).
 
 Then, from the directory where you downloaded them:
 
@@ -294,7 +297,7 @@ borgmatic to run.
 If you run borgmatic in macOS with launchd, you may encounter permissions
 issues when reading files to backup. If that happens to you, you may be
 interested in an [unofficial work-around for Full Disk
-Access](https://projects.torsion.org/witten/borgmatic/issues/293).
+Access](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/293).
 
 
 ## Colored output

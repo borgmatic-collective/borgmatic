@@ -110,7 +110,10 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
     override.apply_overrides(config, overrides)
     normalize.normalize(config)
 
-    validator = jsonschema.Draft7Validator(schema)
+    try:
+        validator = jsonschema.Draft7Validator(schema)
+    except AttributeError:
+        validator = jsonschema.Draft4Validator(schema)
     validation_errors = tuple(validator.iter_errors(config))
 
     if validation_errors:

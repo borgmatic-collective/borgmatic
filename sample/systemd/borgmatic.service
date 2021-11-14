@@ -32,13 +32,16 @@ RestrictSUIDSGID=yes
 SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallErrorNumber=EPERM
-# Restrict write access
-# Change to 'ProtectSystem=strict' and uncomment 'ProtectHome' to make the whole file
-# system read-only be default and uncomment 'ReadWritePaths' for the required write access.
-# Add local repositroy paths to the list of 'ReadWritePaths' like '-/mnt/my_backup_drive'.
+# To restrict write access further, change "ProtectSystem" to "strict" and uncomment
+# "ReadWritePaths", "ReadOnlyPaths", "ProtectHome", and "BindPaths". Then add any local repository
+# paths to the list of "ReadWritePaths" and local backup source paths to "ReadOnlyPaths". This
+# leaves most of the filesystem read-only to borgmatic.
 ProtectSystem=full
-# ProtectHome=read-only
-# ReadWritePaths=-/root/.config/borg -/root/.cache/borg -/root/.borgmatic
+# ReadWritePaths=-/mnt/my_backup_drive
+# ReadOnlyPaths=-/var/lib/my_backup_source
+# This will mount a tmpfs on top of /root and pass through needed paths
+# ProtectHome=tmpfs
+# BindPaths=-/root/.cache/borg -/root/.cache/borg -/root/.borgmatic
 
 CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
 

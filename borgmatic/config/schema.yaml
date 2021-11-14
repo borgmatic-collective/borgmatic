@@ -135,12 +135,14 @@ properties:
                     type: string
                 description: |
                     Any paths matching these patterns are excluded from backups.
-                    Globs and tildes are expanded. Do not backslash spaces in
-                    path names. See the output of "borg help patterns" for more
-                    details.
+                    Globs and tildes are expanded. (Note however that a glob
+                    pattern must either start with a glob or be an absolute
+                    path.) Do not backslash spaces in path names. See the output
+                    of "borg help patterns" for more details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
+                    - '*/.vim*.tmp'
                     - /etc/ssl
                     - /home/user/path with spaces
             exclude_from:
@@ -298,7 +300,7 @@ properties:
                     $borg_base_directory/.config/borg/keys
                 example: /path/to/base/config/keys
             umask:
-                type: string
+                type: integer
                 description: Umask to be used for borg create. Defaults to 0077.
                 example: 0077
             lock_wait:
@@ -639,7 +641,7 @@ properties:
                                 Password with which to connect to the database.
                                 Omitting a password will only work if PostgreSQL
                                 is configured to trust the configured username
-                                without a password, or you create a ~/.pgpass
+                                without a password or you create a ~/.pgpass
                                 file.
                             example: trustsome1
                         format:
@@ -793,7 +795,7 @@ properties:
                 example:
                     https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d01
             umask:
-                type: scalar
+                type: integer
                 description: |
                     Umask used when executing hooks. Defaults to the umask that
                     borgmatic is run with.

@@ -10,17 +10,17 @@ eleventyNavigation:
 To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
 
 ```bash
-git clone https://projects.torsion.org/witten/borgmatic.git
+git clone https://projects.torsion.org/borgmatic-collective/borgmatic.git
 ```
 
 Or:
 
 ```bash
-git clone ssh://git@projects.torsion.org:3022/witten/borgmatic.git
+git clone ssh://git@projects.torsion.org:3022/borgmatic-collective/borgmatic.git
 ```
 
 Then, install borgmatic
-"[editable](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs)"
+"[editable](https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs)"
 so that you can run borgmatic commands while you're hacking on them to
 make sure your changes work.
 
@@ -65,8 +65,6 @@ following:
 ```bash
 tox -e black
 ```
-
-Note that Black requires at minimum Python 3.6.
 
 And if you get a complaint from the
 [isort](https://github.com/timothycrosley/isort) Python import orderer, you
@@ -118,7 +116,7 @@ See the Black, Flake8, and isort documentation for more information.
 
 Each pull request triggers a continuous integration build which runs the test
 suite. You can view these builds on
-[build.torsion.org](https://build.torsion.org/witten/borgmatic), and they're
+[build.torsion.org](https://build.torsion.org/borgmatic-collective/borgmatic), and they're
 also linked from the commits list on each pull request.
 
 ## Documentation development

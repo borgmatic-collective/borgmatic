@@ -44,13 +44,18 @@ def _expand_home_directories(directories):
     return tuple(os.path.expanduser(directory) for directory in directories)
 
 
-def map_directories_to_devices(directories):  # pragma: no cover
+def map_directories_to_devices(directories):
     '''
     Given a sequence of directories, return a map from directory to an identifier for the device on
-    which that directory resides. This is handy for determining whether two different directories
-    are on the same filesystem (have the same device identifier).
+    which that directory resides or None if the path doesn't exist.
+
+    This is handy for determining whether two different directories are on the same filesystem (have
+    the same device identifier).
     '''
-    return {directory: os.stat(directory).st_dev for directory in directories}
+    return {
+        directory: os.stat(directory).st_dev if os.path.exists(directory) else None
+        for directory in directories
+    }
 
 
 def deduplicate_directories(directory_devices):
@@ -82,6 +87,7 @@ def deduplicate_directories(directory_devices):
             for parent in parents:
                 if (
                     pathlib.PurePath(other_directory) == parent
+                    and directory_devices[directory] is not None
                     and directory_devices[other_directory] == directory_devices[directory]
                 ):
                     if directory in deduplicated:
