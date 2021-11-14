@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import time
 from queue import Queue
 from subprocess import CalledProcessError
 
@@ -54,6 +55,7 @@ def run_configuration(config_filename, config, arguments):
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
     retries = storage.get('retries', 0)
+    retry_timeout = storage.get('retry_timeout', 0)
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
@@ -130,6 +132,10 @@ def run_configuration(config_filename, config, arguments):
 
         while not repo_queue.empty():
             repository_path, retry_num = repo_queue.get()
+            timeout = retry_num * retry_timeout
+            if timeout:
+                logger.warning(f'Sleeping {timeout}s before next retry')
+                time.sleep(timeout)
             try:
                 yield from run_actions(
                     arguments=arguments,
