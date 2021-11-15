@@ -82,9 +82,7 @@ clone:
 
 steps:
 - name: build
-  #image: plugins/docker
-  # Temporary work-around for https://github.com/drone-plugins/drone-docker/pull/327
-  image: techknowlogick/drone-docker
+  image: plugins/docker
   settings:
     username:
       from_secret: docker_username
