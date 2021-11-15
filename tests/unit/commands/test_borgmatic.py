@@ -185,7 +185,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
     assert results == expected_results
 
 
-def test_run_retries_soft_error():
+def test_run_configuration_retries_soft_error():
     # Run action first fails, second passes
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
@@ -198,7 +198,7 @@ def test_run_retries_soft_error():
     assert results == expected_results
 
 
-def test_run_retries_hard_error():
+def test_run_configuration_retries_hard_error():
     # Run action fails twice
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
@@ -234,7 +234,7 @@ def test_run_repos_ordered():
     assert results == expected_results
 
 
-def test_run_retries_round_robbin():
+def test_run_configuration_retries_round_robbin():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
@@ -257,7 +257,7 @@ def test_run_retries_round_robbin():
     assert results == expected_results
 
 
-def test_run_retries_one_passes():
+def test_run_configuration_retries_one_passes():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
@@ -279,7 +279,7 @@ def test_run_retries_one_passes():
     assert results == expected_results
 
 
-def test_run_retry_timeout():
+def test_run_configuration_retry_wait():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
@@ -302,13 +302,13 @@ def test_run_retry_timeout():
     flexmock(module).should_receive('make_error_log_records').with_args(
         'foo: Error running actions for repository', OSError
     ).and_return(expected_results[3:4]).ordered()
-    config = {'location': {'repositories': ['foo']}, 'storage': {'retries': 3, 'retry_timeout': 10}}
+    config = {'location': {'repositories': ['foo']}, 'storage': {'retries': 3, 'retry_wait': 10}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == expected_results
 
 
-def test_run_retries_timeout_multiple_repos():
+def test_run_configuration_retries_timeout_multiple_repos():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
@@ -332,7 +332,7 @@ def test_run_retries_timeout_multiple_repos():
     ).and_return(expected_results[2:3]).ordered()
     config = {
         'location': {'repositories': ['foo', 'bar']},
-        'storage': {'retries': 1, 'retry_timeout': 10},
+        'storage': {'retries': 1, 'retry_wait': 10},
     }
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))

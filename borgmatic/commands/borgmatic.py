@@ -55,7 +55,7 @@ def run_configuration(config_filename, config, arguments):
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
     retries = storage.get('retries', 0)
-    retry_timeout = storage.get('retry_timeout', 0)
+    retry_wait = storage.get('retry_wait', 0)
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
@@ -130,9 +130,9 @@ def run_configuration(config_filename, config, arguments):
 
         while not repo_queue.empty():
             repository_path, retry_num = repo_queue.get()
-            timeout = retry_num * retry_timeout
+            timeout = retry_num * retry_wait
             if timeout:
-                logger.warning(f'Sleeping {timeout}s before next retry')
+                logger.warning(f'{config_filename}: Sleeping {timeout}s before next retry')
                 time.sleep(timeout)
             try:
                 yield from run_actions(
@@ -152,7 +152,9 @@ def run_configuration(config_filename, config, arguments):
                 )
                 if retry_num < retries:
                     repo_queue.put((repository_path, retry_num + 1),)
-                    logger.warning(f'Retrying.. attempt {retry_num + 1}/{retries}')
+                    logger.warning(
+                        f'{config_filename}: Retrying... attempt {retry_num + 1}/{retries}'
+                    )
                     continue
                 encountered_error = error
                 error_repository = repository_path

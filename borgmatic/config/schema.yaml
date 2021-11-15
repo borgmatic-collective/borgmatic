@@ -254,14 +254,15 @@ properties:
             retries:
                 type: integer
                 description: |
-                    Number of times to retry a backup before failing. Defaults
-                    to 0 (i.e. does not attempt retry).
+                    Number of times to retry a failing backup before giving up.
+                    Defaults to 0 (i.e., does not attempt retry).
                 example: 3
-            retry_timeout:
+            retry_wait:
                 type: integer
                 description: |
-                    Wait time between retries, to allow transient issues to pass
-                    Defaults to 0s.
+                    Wait time between retries (in seconds) to allow transient
+                    issues to pass. Increases after each retry as a form of
+                    backoff. Defaults to 0 (no wait).
                 example: 10
             temporary_directory:
                 type: string

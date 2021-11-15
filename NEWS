@@ -1,4 +1,5 @@
 1.5.21.dev0
+ * #28: Optionally retry failing backups via "retries" and "retry_wait" configuration options.
  * #459: Add support for old version (2.x) of jsonschema library.
 
 1.5.20
