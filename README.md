@@ -92,14 +92,13 @@ development and hosting when you use these links to sign up. (These are
 referral links, but without any tracking scripts or cookies.)
 
 <ul>
- <li class="referral"><a href="https://www.rsync.net/cgi-bin/borg.cgi?campaign=borg&adgroup=borgmatic">rsync.net</a>: Cloud Storage provider with full support for borg and any other SSH/SFTP tool</li>
  <li class="referral"><a href="https://www.borgbase.com/?utm_source=borgmatic">BorgBase</a>: Borg hosting service with support for monitoring, 2FA, and append-only repos</li>
  <li class="referral"><a href="https://storage.lima-labs.com/special-pricing-offer-for-borgmatic-users/">Lima-Labs</a>: Affordable, reliable cloud data storage accessable via SSH/SCP/FTP for Borg backups or any other bulk storage needs</li>
 </ul>
 
-Additionally, [Hetzner](https://www.hetzner.com/storage/storage-box) has a
-compatible storage offering, but does not currently fund borgmatic
-development or hosting.
+Additionally, [rsync.net](https://www.rsync.net/products/borg.html) and
+[Hetzner](https://www.hetzner.com/storage/storage-box) have compatible storage
+offerings, but do not currently fund borgmatic development or hosting.
 
 ## Support and contributing
 
