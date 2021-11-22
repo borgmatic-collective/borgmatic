@@ -112,7 +112,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
 
     try:
         validator = jsonschema.Draft7Validator(schema)
-    except AttributeError:
+    except AttributeError:  # pragma: no cover
         validator = jsonschema.Draft4Validator(schema)
     validation_errors = tuple(validator.iter_errors(config))
 
