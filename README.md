@@ -55,9 +55,9 @@ hooks:
 ```
 
 Want to see borgmatic in action? Check out the <a
-href="https://asciinema.org/a/203761" target="_blank">screencast</a>.
+href="https://asciinema.org/a/203761?autoplay=1" target="_blank">screencast</a>.
 
-<a href="https://asciinema.org/a/203761"><img src="https://asciinema.org/a/203761.png" width="480"></a>
+<a href="https://asciinema.org/a/203761?autoplay=1" target="_blank"><img src="https://asciinema.org/a/203761.png" width="480"></a>
 
 borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 
