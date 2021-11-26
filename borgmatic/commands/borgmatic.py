@@ -62,6 +62,11 @@ def run_configuration(config_filename, config, arguments):
     prune_create_or_check = {'prune', 'create', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
+    hook_context = {
+        'repository': ','.join(location['repositories']),
+        'configuration_filename': config_filename,
+    }
+
     try:
         if prune_create_or_check:
             dispatch.call_hooks(
@@ -79,6 +84,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-prune',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'create' in arguments:
             command.execute_hook(
@@ -87,6 +93,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-backup',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'check' in arguments:
             command.execute_hook(
@@ -95,6 +102,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-check',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'extract' in arguments:
             command.execute_hook(
@@ -103,6 +111,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-extract',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if prune_create_or_check:
             dispatch.call_hooks(
@@ -168,6 +177,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-prune',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'create' in arguments:
                 dispatch.call_hooks(
@@ -184,6 +194,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-backup',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'check' in arguments:
                 command.execute_hook(
@@ -192,6 +203,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-check',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'extract' in arguments:
                 command.execute_hook(
@@ -200,6 +212,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-extract',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if prune_create_or_check:
                 dispatch.call_hooks(
@@ -239,6 +252,7 @@ def run_configuration(config_filename, config, arguments):
                 repository=error_repository,
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
+                configuration_filename=config_filename,
             )
             dispatch.call_hooks(
                 'ping_monitor',
