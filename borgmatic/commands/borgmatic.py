@@ -64,7 +64,6 @@ def run_configuration(config_filename, config, arguments):
 
     hook_context = {
         'repository': ','.join(location['repositories']),
-        'configuration_filename': config_filename,
     }
 
     try:
@@ -252,7 +251,6 @@ def run_configuration(config_filename, config, arguments):
                 repository=error_repository,
                 error=encountered_error,
                 output=getattr(encountered_error, 'output', ''),
-                configuration_filename=config_filename,
             )
             dispatch.call_hooks(
                 'ping_monitor',
