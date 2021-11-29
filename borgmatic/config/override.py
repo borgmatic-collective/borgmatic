@@ -59,7 +59,7 @@ def parse_overrides(raw_overrides):
             for raw_keys, value in (raw_override.split('=', 1),)
         )
     except ValueError:
-        raise ValueError(f'Invalid override. Make sure you use the form: SECTION.OPTION=VALUE')
+        raise ValueError('Invalid override. Make sure you use the form: SECTION.OPTION=VALUE')
     except ruamel.yaml.error.YAMLError as error:
         raise ValueError(f'Invalid override value: {error}')
 
