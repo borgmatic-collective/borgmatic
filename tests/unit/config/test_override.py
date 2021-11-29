@@ -1,7 +1,6 @@
 import pytest
-from flexmock import flexmock
-
 import ruamel.yaml
+from flexmock import flexmock
 
 from borgmatic.config import override as module
 
