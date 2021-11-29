@@ -82,12 +82,12 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
 
         dump_command = (
             ('mysqldump',)
+            + (tuple(database['options'].split(' ')) if 'options' in database else ())
             + ('--add-drop-database',)
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
             + (('--user', database['username']) if 'username' in database else ())
-            + (tuple(database['options'].split(' ')) if 'options' in database else ())
             + ('--databases',)
             + dump_database_names
             # Use shell redirection rather than execute_command(output_file=open(...)) to prevent

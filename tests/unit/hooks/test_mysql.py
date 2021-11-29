@@ -155,8 +155,8 @@ def test_dump_databases_runs_mysqldump_with_options():
     flexmock(module).should_receive('execute_command').with_args(
         (
             'mysqldump',
-            '--add-drop-database',
             '--stuff=such',
+            '--add-drop-database',
             '--databases',
             'foo',
             '>',
