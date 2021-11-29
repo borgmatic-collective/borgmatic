@@ -1,3 +1,6 @@
+1.5.22.dev0
+ * #470: Move mysqldump options to the beginning of the command due to MySQL bug 30994.
+
 1.5.21
  * #28: Optionally retry failing backups via "retries" and "retry_wait" configuration options.
  * #306: Add "list_options" MySQL configuration option for passing additional arguments to MySQL
