@@ -1,6 +1,8 @@
 import pytest
 from flexmock import flexmock
 
+import ruamel.yaml
+
 from borgmatic.config import override as module
 
 
@@ -65,6 +67,14 @@ def test_parse_overrides_allows_value_with_equal_sign():
 def test_parse_overrides_raises_on_missing_equal_sign():
     flexmock(module).should_receive('convert_value_type').replace_with(lambda value: value)
     raw_overrides = ['section.option']
+
+    with pytest.raises(ValueError):
+        module.parse_overrides(raw_overrides)
+
+
+def test_parse_overrides_raises_on_invalid_override_value():
+    flexmock(module).should_receive('convert_value_type').and_raise(ruamel.yaml.parser.ParserError)
+    raw_overrides = ['section.option=[in valid]']
 
     with pytest.raises(ValueError):
         module.parse_overrides(raw_overrides)

@@ -26,6 +26,8 @@ def convert_value_type(value):
     '''
     Given a string value, determine its logical type (string, boolean, integer, etc.), and return it
     converted to that type.
+
+    Raise ruamel.yaml.error.YAMLError if there's a parse issue with the YAML.
     '''
     return ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
 
@@ -57,7 +59,9 @@ def parse_overrides(raw_overrides):
             for raw_keys, value in (raw_override.split('=', 1),)
         )
     except ValueError:
-        raise ValueError('Invalid override. Make sure you use the form: SECTION.OPTION=VALUE')
+        raise ValueError(f'Invalid override. Make sure you use the form: SECTION.OPTION=VALUE')
+    except ruamel.yaml.error.YAMLError as error:
+        raise ValueError(f'Invalid override value: {error}')
 
 
 def apply_overrides(config, raw_overrides):

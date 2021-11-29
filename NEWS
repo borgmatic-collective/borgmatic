@@ -1,5 +1,7 @@
 1.5.22.dev0
  * #470: Move mysqldump options to the beginning of the command due to MySQL bug 30994.
+ * #471: When command-line configuration override produces a parse error, error cleanly instead of
+   tracebacking.
 
 1.5.21
  * #28: Optionally retry failing backups via "retries" and "retry_wait" configuration options.
