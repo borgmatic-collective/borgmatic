@@ -234,7 +234,7 @@ def test_restore_database_dump_runs_mysql_to_restore():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('mysql', '--batch', '--verbose'),
+        ('mysql', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
@@ -267,7 +267,6 @@ def test_restore_database_dump_runs_mysql_with_hostname_and_port():
         (
             'mysql',
             '--batch',
-            '--verbose',
             '--host',
             'database.example.org',
             '--port',
@@ -292,7 +291,7 @@ def test_restore_database_dump_runs_mysql_with_username_and_password():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('mysql', '--batch', '--verbose', '--user', 'root'),
+        ('mysql', '--batch', '--user', 'root'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
