@@ -48,7 +48,7 @@ properties:
                     Working directory for the "borg create" command. Tildes are
                     expanded. Useful for backing up using relative paths. See
                     http://borgbackup.readthedocs.io/en/stable/usage/create.html
-                    for details.
+                    for details. Defaults to not set.
                 example: /path/to/working/directory
             one_file_system:
                 type: boolean
