@@ -42,6 +42,14 @@ properties:
                 example:
                     - user@backupserver:sourcehostname.borg
                     - "user@backupserver:{fqdn}"
+            working_directory:
+                type: string
+                description: |
+                    Working directory for the "borg create" command. Tildes are
+                    expanded. Useful for backing up using relative paths. See
+                    http://borgbackup.readthedocs.io/en/stable/usage/create.html
+                    for details.
+                example: /path/to/working/directory
             one_file_system:
                 type: boolean
                 description: |
