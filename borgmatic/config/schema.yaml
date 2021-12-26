@@ -773,6 +773,71 @@ properties:
                     mysqldump/mysql commands (from either MySQL or MariaDB). See
                     https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html or
                     https://mariadb.com/kb/en/library/mysqldump/ for details.
+            mongodb_databases:
+                type: array
+                items:
+                    type: object
+                    required: ['name']
+                    additionalProperties: false
+                    properties:
+                        name:
+                            type: string
+                            description: |
+                                Database name (required if using this hook). Or
+                                "all" to dump all databases on the host. Note
+                                that using this database hook implicitly enables
+                                both read_special and one_file_system (see
+                                above) to support dump and restore streaming.
+                            example: users
+                        hostname:
+                            type: string
+                            description: |
+                                Database hostname to connect to. Defaults to
+                                connecting to localhost.
+                            example: database.example.org
+                        port:
+                            type: integer
+                            description: Port to connect to. Defaults to 27017.
+                            example: 27017
+                        username:
+                            type: string
+                            description: |
+                                Username with which to connect to the database.
+                                Skip it if no authentication is needed.
+                            example: dbuser
+                        password:
+                            type: string
+                            description: |
+                                Password with which to connect to the database.
+                                Skip it if no authentication is needed.
+                            example: trustsome1
+                        format:
+                            type: string
+                            enum: ['archive', 'directory']
+                            description: |
+                                Database dump output format. One of "archive",
+                                or "directory". Defaults to "archive" (unlike
+                                raw pg_dump). See pg_dump documentation for 
+                                details. Note that format is ignored when the 
+                                database name is "all".
+                            example: directory
+                        options:
+                            type: string
+                            description: |
+                                Additional mongodump options to pass
+                                directly to the dump command, without performing
+                                any validation on them. See mongodump
+                                documentation for details.
+                            example: --role=someone
+                description: |
+                    List of one or more MongoDB databases to dump before
+                    creating a backup, run once per configuration file. The
+                    database dumps are added to your source directories at
+                    runtime, backed up, and removed afterwards. Requires
+                    mongodump/mongorestore commands. See
+                    https://docs.mongodb.com/database-tools/mongodump/ and
+                    https://docs.mongodb.com/database-tools/mongorestore/ for
+                    details.
             healthchecks:
                 type: string
                 description: |

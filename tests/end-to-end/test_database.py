@@ -47,13 +47,21 @@ hooks:
           hostname: mysql
           username: root
           password: test
+    mongodb_databases:
+        - name: test
+          hostname: mongodb
+          username: root
+          password: test
+        - name: all
+          hostname: mongodb
+          username: root
+          password: test
 '''.format(
         config_path, repository_path, borgmatic_source_directory, postgresql_dump_format
     )
 
-    config_file = open(config_path, 'w')
-    config_file.write(config)
-    config_file.close()
+    with open(config_path, 'w') as config_file:
+        config_file.write(config)
 
 
 def test_database_dump_and_restore():
