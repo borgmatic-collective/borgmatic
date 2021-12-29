@@ -13,6 +13,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
+  - name: mongodb
+    image: mongo:5.0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: test
 
 clone:
   skip_verify: true
@@ -38,6 +43,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
+  - name: mongodb
+    image: mongo:5.0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: test
 
 clone:
   skip_verify: true
@@ -63,6 +73,11 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
+  - name: mongodb
+    image: mongo:5.0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: test
 
 clone:
   skip_verify: true

@@ -35,7 +35,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         dump_filename = dump.make_database_dump_filename(
             make_dump_path(location_config), name, database.get('hostname')
         )
-        dump_format = database.get('format', 'custom')
+        dump_format = database.get('format', 'archive')
 
         logger.debug(
             '{}: Dumping MongoDB database {} to {}{}'.format(
@@ -72,6 +72,8 @@ def build_dump_command(database, dump_filename, dump_format):
         command.extend(('--username', database['username']))
     if 'password' in database:
         command.extend(('--password', database['password']))
+    if 'auth_db' in database:
+        command.extend(('--authenticationDatabase', database['auth_db']))
     if not all_databases:
         command.extend(('--db', database['name']))
     if 'options' in database:
@@ -155,4 +157,6 @@ def build_restore_command(extract_process, database, dump_filename):
         command.extend(('--username', database['username']))
     if 'password' in database:
         command.extend(('--password', database['password']))
+    if 'auth_db' in database:
+        command.extend(('--authenticationDatabase', database['auth_db']))
     return command

@@ -811,15 +811,25 @@ properties:
                                 Password with which to connect to the database.
                                 Skip it if no authentication is needed.
                             example: trustsome1
+                        auth_db:
+                            type: string
+                            description: |
+                                Authentication database where the specified
+                                username has been created.
+                                If no authentication database is specified,
+                                the databse provided in "name" will be used.
+                                If "name" is "all", the "admin" database will
+                                be used.
+                            example: admin
                         format:
                             type: string
                             enum: ['archive', 'directory']
                             description: |
                                 Database dump output format. One of "archive",
-                                or "directory". Defaults to "archive" (unlike
-                                raw pg_dump). See pg_dump documentation for 
-                                details. Note that format is ignored when the 
-                                database name is "all".
+                                or "directory". Defaults to "archive". See 
+                                mongodump documentation for details. Note that 
+                                format is ignored when the database name is
+                                "all".
                             example: directory
                         options:
                             type: string
