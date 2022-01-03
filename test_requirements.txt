@@ -20,4 +20,4 @@ regex; python_version >= '3.8'
 requests==2.25.0
 ruamel.yaml>0.15.0,<0.18.0
 toml==0.10.2; python_version >= '3.8'
-typed-ast==1.5.1; python_version >= '3.8'
+typed-ast; python_version >= '3.8'
