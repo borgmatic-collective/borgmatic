@@ -22,7 +22,6 @@ location:
     repositories:
         - 1234@usw-s001.rsync.net:backups.borg
         - k8pDxu32@k8pDxu32.repo.borgbase.com:repo
-        - user1@scp2.cdn.lima-labs.com:repo
         - /var/lib/backups/local.borg
 ```
 
@@ -35,8 +34,7 @@ Here's a way of visualizing what borgmatic does with the above configuration:
 
 1. Backup `/home` and `/etc` to `1234@usw-s001.rsync.net:backups.borg`
 2. Backup `/home` and `/etc` to `k8pDxu32@k8pDxu32.repo.borgbase.com:repo`
-3. Backup `/home` and `/etc` to `user1@scp2.cdn.lima-labs.com:repo`
-4. Backup `/home` and `/etc` to `/var/lib/backups/local.borg`
+3. Backup `/home` and `/etc` to `/var/lib/backups/local.borg`
 
 This gives you redundancy of your data across repositories and even
 potentially across providers.
