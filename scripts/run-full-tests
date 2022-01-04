@@ -10,7 +10,7 @@
 
 set -e
 
-apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client
+apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client mongodb-tools
 # If certain dependencies of black are available in this version of Alpine, install them.
 apk add --no-cache py3-typed-ast py3-regex || true
 python3 -m pip install --upgrade pip==21.3.1 setuptools==58.2.0

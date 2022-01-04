@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.hooks import cronhub, cronitor, healthchecks, mysql, pagerduty, postgresql
+from borgmatic.hooks import cronhub, cronitor, healthchecks, mongodb, mysql, pagerduty, postgresql
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +11,7 @@ HOOK_NAME_TO_MODULE = {
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
     'mysql_databases': mysql,
+    'mongodb_databases': mongodb,
 }
 
 
