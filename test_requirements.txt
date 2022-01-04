@@ -14,10 +14,10 @@ py==1.10.0
 pycodestyle==2.6.0
 pyflakes==2.2.0
 jsonschema==3.2.0
-pytest==6.1.2
-pytest-cov==2.10.1
+pytest==6.2.5
+pytest-cov==3.0.0
 regex; python_version >= '3.8'
 requests==2.25.0
 ruamel.yaml>0.15.0,<0.18.0
 toml==0.10.2; python_version >= '3.8'
-typed-ast==1.4.2; python_version >= '3.8'
+typed-ast; python_version >= '3.8'

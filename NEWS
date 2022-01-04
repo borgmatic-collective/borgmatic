@@ -3,6 +3,8 @@
  * #471: When command-line configuration override produces a parse error, error cleanly instead of
    tracebacking.
  * #476: Fix unicode error when restoring particular MySQL databases.
+ * Drop support for Python 3.6, which has been end-of-lifed.
+ * Add support for Python 3.10.
 
 1.5.21
  * #28: Optionally retry failing backups via "retries" and "retry_wait" configuration options.
