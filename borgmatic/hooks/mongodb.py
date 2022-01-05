@@ -72,8 +72,8 @@ def build_dump_command(database, dump_filename, dump_format):
         command.extend(('--username', database['username']))
     if 'password' in database:
         command.extend(('--password', database['password']))
-    if 'auth_db' in database:
-        command.extend(('--authenticationDatabase', database['auth_db']))
+    if 'authentication_database' in database:
+        command.extend(('--authenticationDatabase', database['authentication_database']))
     if not all_databases:
         command.extend(('--db', database['name']))
     if 'options' in database:
@@ -157,6 +157,6 @@ def build_restore_command(extract_process, database, dump_filename):
         command.extend(('--username', database['username']))
     if 'password' in database:
         command.extend(('--password', database['password']))
-    if 'auth_db' in database:
-        command.extend(('--authenticationDatabase', database['auth_db']))
+    if 'authentication_database' in database:
+        command.extend(('--authenticationDatabase', database['authentication_database']))
     return command

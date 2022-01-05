@@ -67,7 +67,14 @@ def test_dump_databases_runs_mongodump_with_hostname_and_port():
 
 
 def test_dump_databases_runs_mongodump_with_username_and_password():
-    databases = [{'name': 'foo', 'username': 'mongo', 'password': 'trustsome1', 'auth_db': "admin"}]
+    databases = [
+        {
+            'name': 'foo',
+            'username': 'mongo',
+            'password': 'trustsome1',
+            'authentication_database': "admin",
+        }
+    ]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
@@ -216,7 +223,12 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
 
 def test_restore_database_dump_runs_pg_restore_with_username_and_password():
     database_config = [
-        {'name': 'foo', 'username': 'mongo', 'password': 'trustsome1', 'auth_db': 'admin'}
+        {
+            'name': 'foo',
+            'username': 'mongo',
+            'password': 'trustsome1',
+            'authentication_database': 'admin',
+        }
     ]
     extract_process = flexmock(stdout=flexmock())
 

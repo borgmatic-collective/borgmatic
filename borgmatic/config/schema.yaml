@@ -798,7 +798,7 @@ properties:
                         port:
                             type: integer
                             description: Port to connect to. Defaults to 27017.
-                            example: 27017
+                            example: 27018
                         username:
                             type: string
                             description: |
@@ -811,15 +811,14 @@ properties:
                                 Password with which to connect to the database.
                                 Skip it if no authentication is needed.
                             example: trustsome1
-                        auth_db:
+                        authentication_database:
                             type: string
                             description: |
                                 Authentication database where the specified
-                                username has been created.
-                                If no authentication database is specified,
-                                the databse provided in "name" will be used.
-                                If "name" is "all", the "admin" database will
-                                be used.
+                                username exists. If no authentication database
+                                is specified, the database provided in "name"
+                                is used. If "name" is "all", the "admin"
+                                database is used.
                             example: admin
                         format:
                             type: string

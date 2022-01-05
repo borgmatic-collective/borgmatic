@@ -52,7 +52,7 @@ hooks:
           hostname: mongodb
           username: root
           password: test
-          auth_db: admin
+          authentication_database: admin
         - name: all
           hostname: mongodb
           username: root
