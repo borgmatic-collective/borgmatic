@@ -1,5 +1,5 @@
-1.5.22.dev0
- * #288: Database dump hooks for MongoDB.
+1.5.22
+ * #288: Add database dump hook for MongoDB.
  * #470: Move mysqldump options to the beginning of the command due to MySQL bug 30994.
  * #471: When command-line configuration override produces a parse error, error cleanly instead of
    tracebacking.
