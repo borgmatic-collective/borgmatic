@@ -47,13 +47,22 @@ hooks:
           hostname: mysql
           username: root
           password: test
+    mongodb_databases:
+        - name: test
+          hostname: mongodb
+          username: root
+          password: test
+          authentication_database: admin
+        - name: all
+          hostname: mongodb
+          username: root
+          password: test
 '''.format(
         config_path, repository_path, borgmatic_source_directory, postgresql_dump_format
     )
 
-    config_file = open(config_path, 'w')
-    config_file.write(config)
-    config_file.close()
+    with open(config_path, 'w') as config_file:
+        config_file.write(config)
 
 
 def test_database_dump_and_restore():
@@ -69,15 +78,15 @@ def test_database_dump_and_restore():
         write_configuration(config_path, repository_path, borgmatic_source_directory)
 
         subprocess.check_call(
-            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
-        subprocess.check_call('borgmatic create --config {} -v 2'.format(config_path).split(' '))
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
 
         # Get the created archive name.
         output = subprocess.check_output(
-            'borgmatic --config {} list --json'.format(config_path).split(' ')
+            ['borgmatic', '--config', config_path, 'list', '--json']
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -87,9 +96,7 @@ def test_database_dump_and_restore():
 
         # Restore the database from the archive.
         subprocess.check_call(
-            'borgmatic --config {} restore --archive {}'.format(config_path, archive_name).split(
-                ' '
-            )
+            ['borgmatic', '--config', config_path, 'restore', '--archive', archive_name]
         )
     finally:
         os.chdir(original_working_directory)
@@ -114,15 +121,15 @@ def test_database_dump_and_restore_with_directory_format():
         )
 
         subprocess.check_call(
-            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
-        subprocess.check_call('borgmatic create --config {} -v 2'.format(config_path).split(' '))
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
 
         # Restore the database from the archive.
         subprocess.check_call(
-            'borgmatic --config {} restore --archive latest'.format(config_path).split(' ')
+            ['borgmatic', '--config', config_path, 'restore', '--archive', 'latest']
         )
     finally:
         os.chdir(original_working_directory)
@@ -142,7 +149,7 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
         write_configuration(config_path, repository_path, borgmatic_source_directory)
 
         subprocess.check_call(
-            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
         )
 
         # Run borgmatic with a config override such that the database dump fails.

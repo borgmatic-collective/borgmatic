@@ -15,7 +15,8 @@ consistent snapshot that is more suited for backups.
 
 Fortunately, borgmatic includes built-in support for creating database dumps
 prior to running backups. For example, here is everything you need to dump and
-backup a couple of local PostgreSQL databases and a MySQL/MariaDB database:
+backup a couple of local PostgreSQL databases, a MySQL/MariaDB database, and a
+MongoDB database:
 
 ```yaml
 hooks:
@@ -24,12 +25,15 @@ hooks:
         - name: orders
     mysql_databases:
         - name: posts
+    mongodb_databases:
+        - name: messages
 ```
 
 As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
-additional disk space. (The one exception is PostgreSQL's "directory" dump
-format, which can't stream and therefore does consume temporary disk space.)
+additional disk space. (The exceptions are the PostgreSQL/MongoDB "directory"
+dump formats, which can't stream and therefore do consume temporary disk
+space.)
 
 To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
 default. To customize this path, set the `borgmatic_source_directory` option
@@ -59,6 +63,14 @@ hooks:
           username: root
           password: trustsome1
           options: "--skip-comments"
+    mongodb_databases:
+        - name: messages
+          hostname: database3.example.org
+          port: 27018
+          username: dbuser
+          password: trustsome1
+          authentication_database: mongousers
+          options: "--ssl"
 ```
 
 If you want to dump all databases on a host, use `all` for the database name:
@@ -69,13 +81,15 @@ hooks:
         - name: all
     mysql_databases:
         - name: all
+    mongodb_databases:
+        - name: all
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
 If you would like to backup databases only and not source directories, you can
-specify an empty `source_directories` value because it is a mandatory field:
+specify an empty `source_directories` value (as it is a mandatory field):
 
 ```yaml
 location:
@@ -97,7 +111,7 @@ bring back any missing configuration files in order to restore a database.
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL and MySQL/MariaDB databases
+As of now, borgmatic supports PostgreSQL, MySQL/MariaDB, and MongoDB databases
 directly. But see below about general-purpose preparation and cleanup hooks as
 a work-around with other database systems. Also, please [file a
 ticket](https://torsion.org/borgmatic/#issues) for additional database systems
@@ -196,8 +210,8 @@ that may not be exhaustive.
 If you prefer to restore a database without the help of borgmatic, first
 [extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
 archive containing a database dump, and then manually restore the dump file
-found within the extracted `~/.borgmatic/` path (e.g. with `pg_restore` or
-`mysql` commands).
+found within the extracted `~/.borgmatic/` path (e.g. with `pg_restore`,
+`mysql`, or `mongorestore`, commands).
 
 
 ## Preparation and cleanup hooks
