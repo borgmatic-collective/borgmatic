@@ -36,6 +36,8 @@ module.exports = function(eleventyConfig) {
 
     eleventyConfig.addPassthroughCopy({"docs/static": "static"});
 
+    eleventyConfig.setLiquidOptions({dynamicPartials: false});
+
     return {
         templateFormats: [
           "md",
