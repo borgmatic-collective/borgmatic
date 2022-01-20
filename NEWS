@@ -1,3 +1,6 @@
+1.5.23.dev0
+ * #480, #482: Fix traceback when a YAML validation error occurs.
+
 1.5.22
  * #288: Add database dump hook for MongoDB.
  * #470: Move mysqldump options to the beginning of the command due to MySQL bug 30994.

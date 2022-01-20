@@ -15,7 +15,7 @@ def schema_filename():
     return pkg_resources.resource_filename('borgmatic', 'config/schema.yaml')
 
 
-def format_error_path_element(path_element):
+def format_json_error_path_element(path_element):
     '''
     Given a path element into a JSON data structure, format it for display as a string.
     '''
@@ -25,14 +25,14 @@ def format_error_path_element(path_element):
     return str('.{}'.format(path_element))
 
 
-def format_error(error):
+def format_json_error(error):
     '''
     Given an instance of jsonschema.exceptions.ValidationError, format it for display as a string.
     '''
     if not error.path:
         return 'At the top level: {}'.format(error.message)
 
-    formatted_path = ''.join(format_error_path_element(element) for element in error.path)
+    formatted_path = ''.join(format_json_error_path_element(element) for element in error.path)
     return "At '{}': {}".format(formatted_path.lstrip('.'), error.message)
 
 
@@ -44,8 +44,8 @@ class Validation_error(ValueError):
 
     def __init__(self, config_filename, errors):
         '''
-        Given a configuration filename path and a sequence of
-        jsonschema.exceptions.ValidationError instances, create a Validation_error.
+        Given a configuration filename path and a sequence of string error messages, create a
+        Validation_error.
         '''
         self.config_filename = config_filename
         self.errors = errors
@@ -56,7 +56,7 @@ class Validation_error(ValueError):
         '''
         return 'An error occurred while parsing a configuration file at {}:\n'.format(
             self.config_filename
-        ) + '\n'.join(format_error(error) for error in self.errors)
+        ) + '\n'.join(error for error in self.errors)
 
 
 def apply_logical_validation(config_filename, parsed_configuration):
@@ -117,7 +117,9 @@ def parse_configuration(config_filename, schema_filename, overrides=None):
     validation_errors = tuple(validator.iter_errors(config))
 
     if validation_errors:
-        raise Validation_error(config_filename, validation_errors)
+        raise Validation_error(
+            config_filename, tuple(format_json_error(error) for error in validation_errors)
+        )
 
     apply_logical_validation(config_filename, config)
 
