@@ -43,6 +43,7 @@ ProtectSystem=full
 # ProtectHome=tmpfs
 # BindPaths=-/root/.cache/borg -/root/.cache/borg -/root/.borgmatic
 
+# May interfere with running external programs within borgmatic hooks.
 CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
 
 # Lower CPU and I/O priority.
