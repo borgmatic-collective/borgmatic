@@ -4,15 +4,15 @@ black==19.10b0; python_version >= '3.8'
 click==7.1.2; python_version >= '3.8'
 colorama==0.4.4
 coverage==5.3
-flake8==3.8.4
+flake8==4.0.1
 flexmock==0.10.4
 isort==5.9.1
 mccabe==0.6.1
 pluggy==0.13.1
 pathspec==0.8.1; python_version >= '3.8'
 py==1.10.0
-pycodestyle==2.6.0
-pyflakes==2.2.0
+pycodestyle==2.8.0
+pyflakes==2.4.0
 jsonschema==3.2.0
 pytest==6.2.5
 pytest-cov==3.0.0

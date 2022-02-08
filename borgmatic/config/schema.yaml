@@ -346,27 +346,27 @@ properties:
                     init:
                         type: string
                         description: |
-                            Extra command-line options to pass to "borg init".
+                          Extra command-line options to pass to "borg init".
                         example: "--make-parent-dirs"
                     prune:
                         type: string
                         description: |
-                            Extra command-line options to pass to "borg prune".
+                          Extra command-line options to pass to "borg prune".
                         example: "--save-space"
                     compact:
                         type: string
                         description: |
-                            Extra command-line options to pass to "borg compact".
+                          Extra command-line options to pass to "borg compact".
                         example: "--save-space"
                     create:
                         type: string
                         description: |
-                            Extra command-line options to pass to "borg create".
+                          Extra command-line options to pass to "borg create".
                         example: "--no-files-cache"
                     check:
                         type: string
                         description: |
-                            Extra command-line options to pass to "borg check".
+                          Extra command-line options to pass to "borg check".
                         example: "--save-space"
                 description: |
                     Additional options to pass directly to particular Borg
