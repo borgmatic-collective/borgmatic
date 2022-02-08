@@ -262,8 +262,8 @@ def parse_arguments(*unparsed_arguments):
     compact_parser = subparsers.add_parser(
         'compact',
         aliases=SUBPARSER_ALIASES['compact'],
-        help='compact segments to free space (Borg 1.2+ only)',
-        description='compact segments to free space (Borg 1.2+ only)',
+        help='Compact segments to free space (Borg 1.2+ only)',
+        description='Compact segments to free space (Borg 1.2+ only)',
         add_help=False,
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
