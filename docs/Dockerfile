@@ -1,7 +1,8 @@
-FROM python:3.8-alpine3.12 as borgmatic
+FROM python:3.8-alpine3.13 as borgmatic
 
 COPY . /app
-RUN pip install --no-cache ruamel.yaml.clib==0.2.6 /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
+RUN apk add --no-cache py3-ruamel.yaml.clib
+RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
 RUN borgmatic --help > /command-line.txt \
     && for action in init prune create check extract export-tar mount umount restore list info borg; do \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
