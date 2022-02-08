@@ -287,7 +287,9 @@ def parse_arguments(*unparsed_arguments):
         dest='threshold',
         help='Minimum saved space percentage threshold for compacting a segment, defaults to 10',
     )
-    compact_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    compact_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     create_parser = subparsers.add_parser(
         'create',

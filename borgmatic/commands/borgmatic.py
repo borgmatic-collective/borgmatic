@@ -337,7 +337,6 @@ def run_actions(
             global_arguments.dry_run,
             repository,
             storage,
-            retention,
             local_path=local_path,
             remote_path=remote_path,
             progress=arguments['compact'].progress,

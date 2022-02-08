@@ -33,6 +33,16 @@ def test_run_configuration_calls_hooks_for_prune_action():
     list(module.run_configuration('test.yaml', config, arguments))
 
 
+def test_run_configuration_calls_hooks_for_compact_action():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'compact': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
 def test_run_configuration_executes_and_calls_hooks_for_create_action():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.command).should_receive('execute_hook').twice()

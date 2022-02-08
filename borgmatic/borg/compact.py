@@ -9,7 +9,6 @@ def compact_segments(
     dry_run,
     repository,
     storage_config,
-    retention_config,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -17,8 +16,8 @@ def compact_segments(
     threshold=None,
 ):
     '''
-    Given dry-run flag, a local or remote repository path, a storage config dict, and a
-    retention config dict, compact Borg segments in a repository.
+    Given dry-run flag, a local or remote repository path, and a storage config dict, compact Borg
+    segments in a repository.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)

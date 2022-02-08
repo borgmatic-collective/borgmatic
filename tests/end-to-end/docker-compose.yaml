@@ -16,7 +16,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: test
   tests:
-    image: alpine:3.13
+    image: alpine:3.15
     volumes:
       - "../..:/app:ro"
     tmpfs:
