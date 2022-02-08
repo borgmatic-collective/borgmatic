@@ -1,7 +1,7 @@
 FROM python:3.8-alpine3.13 as borgmatic
 
 COPY . /app
-RUN apk add --no-cache py3-ruamel.yaml.clib
+RUN apk add --no-cache py3-ruamel.yaml py3-ruamel.yaml.clib
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
 RUN borgmatic --help > /command-line.txt \
     && for action in init prune create check extract export-tar mount umount restore list info borg; do \

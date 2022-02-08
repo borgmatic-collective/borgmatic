@@ -11,7 +11,7 @@
 set -e
 
 apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client mongodb-tools \
-    py3-ruamel.yaml.clib
+    py3-ruamel.yaml py3-ruamel.yaml.clib
 # If certain dependencies of black are available in this version of Alpine, install them.
 apk add --no-cache py3-typed-ast py3-regex || true
 python3 -m pip install --no-cache --upgrade pip==22.0.3 setuptools==60.8.1
