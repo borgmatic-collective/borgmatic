@@ -353,6 +353,11 @@ properties:
                         description: |
                             Extra command-line options to pass to "borg prune".
                         example: "--save-space"
+                    compact:
+                        type: string
+                        description: |
+                            Extra command-line options to pass to "borg compact".
+                        example: "--save-space"
                     create:
                         type: string
                         description: |
@@ -522,6 +527,15 @@ properties:
                     before pruning, run once per configuration file.
                 example:
                     - echo "Starting pruning."
+            before_compact:
+                type: array
+                items:
+                    type: string
+                description: |
+                    List of one or more shell commands or scripts to execute
+                    before compaction, run once per configuration file.
+                example:
+                    - echo "Starting compaction."
             before_check:
                 type: array
                 items:
@@ -549,6 +563,15 @@ properties:
                     after creating a backup, run once per configuration file.
                 example:
                     - echo "Finished a backup."
+            after_compact:
+                type: array
+                items:
+                    type: string
+                description: |
+                    List of one or more shell commands or scripts to execute
+                    after compaction, run once per configuration file.
+                example:
+                    - echo "Finished compaction."
             after_prune:
                 type: array
                 items:

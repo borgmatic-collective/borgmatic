@@ -6,6 +6,7 @@ from borgmatic.config import collect
 SUBPARSER_ALIASES = {
     'init': ['--init', '-I'],
     'prune': ['--prune', '-p'],
+    'compact': [],
     'create': ['--create', '-C'],
     'check': ['--check', '-k'],
     'extract': ['--extract', '-x'],
@@ -257,6 +258,36 @@ def parse_arguments(*unparsed_arguments):
         '--files', dest='files', default=False, action='store_true', help='Show per-file details'
     )
     prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    compact_parser = subparsers.add_parser(
+        'compact',
+        aliases=SUBPARSER_ALIASES['compact'],
+        help='compact segments to free space (Borg 1.2+ only)',
+        description='compact segments to free space (Borg 1.2+ only)',
+        add_help=False,
+    )
+    compact_group = compact_parser.add_argument_group('compact arguments')
+    compact_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress as each segment is compacted',
+    )
+    compact_group.add_argument(
+        '--cleanup-commits',
+        dest='cleanup_commits',
+        default=False,
+        action='store_true',
+        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1',
+    )
+    compact_group.add_argument(
+        '--threshold',
+        type=int,
+        dest='threshold',
+        help='Minimum saved space percentage threshold for compacting a segment, defaults to 10',
+    )
+    compact_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     create_parser = subparsers.add_parser(
         'create',

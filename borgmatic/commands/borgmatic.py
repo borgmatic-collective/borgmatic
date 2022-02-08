@@ -13,6 +13,7 @@ import pkg_resources
 
 from borgmatic.borg import borg as borg_borg
 from borgmatic.borg import check as borg_check
+from borgmatic.borg import compact as borg_compact
 from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
 from borgmatic.borg import export_tar as borg_export_tar
@@ -78,6 +79,14 @@ def run_configuration(config_filename, config, arguments):
                 hooks.get('umask'),
                 config_filename,
                 'pre-prune',
+                global_arguments.dry_run,
+            )
+        if 'compact' in arguments:
+            command.execute_hook(
+                hooks.get('before_compact'),
+                hooks.get('umask'),
+                config_filename,
+                'pre-compact',
                 global_arguments.dry_run,
             )
         if 'create' in arguments:
@@ -167,6 +176,14 @@ def run_configuration(config_filename, config, arguments):
                     hooks.get('umask'),
                     config_filename,
                     'post-prune',
+                    global_arguments.dry_run,
+                )
+            if 'compact' in arguments:
+                command.execute_hook(
+                    hooks.get('after_compact'),
+                    hooks.get('umask'),
+                    config_filename,
+                    'post-compact',
                     global_arguments.dry_run,
                 )
             if 'create' in arguments:
@@ -313,6 +330,19 @@ def run_actions(
             remote_path=remote_path,
             stats=arguments['prune'].stats,
             files=arguments['prune'].files,
+        )
+    if 'compact' in arguments:
+        logger.info('{}: Compacting segments{}'.format(repository, dry_run_label))
+        borg_compact.compact_segments(
+            global_arguments.dry_run,
+            repository,
+            storage,
+            retention,
+            local_path=local_path,
+            remote_path=remote_path,
+            progress=arguments['compact'].progress,
+            cleanup_commits=arguments['compact'].cleanup_commits,
+            threshold=arguments['compact'].threshold,
         )
     if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
