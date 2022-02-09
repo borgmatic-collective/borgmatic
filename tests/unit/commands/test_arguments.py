@@ -72,12 +72,14 @@ def test_parse_subparser_arguments_consumes_multiple_subparser_arguments():
 
 def test_parse_subparser_arguments_applies_default_subparsers():
     prune_namespace = flexmock()
+    compact_namespace = flexmock()
     create_namespace = flexmock(progress=True)
     check_namespace = flexmock()
     subparsers = {
         'prune': flexmock(
             parse_known_args=lambda arguments: (prune_namespace, ['prune', '--progress'])
         ),
+        'compact': flexmock(parse_known_args=lambda arguments: (compact_namespace, [])),
         'create': flexmock(parse_known_args=lambda arguments: (create_namespace, [])),
         'check': flexmock(parse_known_args=lambda arguments: (check_namespace, [])),
         'other': flexmock(),
@@ -87,6 +89,7 @@ def test_parse_subparser_arguments_applies_default_subparsers():
 
     assert arguments == {
         'prune': prune_namespace,
+        'compact': compact_namespace,
         'create': create_namespace,
         'check': check_namespace,
     }

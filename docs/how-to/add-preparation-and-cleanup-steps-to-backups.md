@@ -33,9 +33,9 @@ configuration file, right before the `create` action. `after_backup` hooks run
 afterwards, but not if an error occurs in a previous hook or in the backups
 themselves.
 
-There are additional hooks for the `prune` and `check` actions as well.
-`before_prune` and `after_prune` run if there are any `prune` actions, while
-`before_check` and `after_check` run if there are any `check` actions.
+There are additional hooks that run before/after other actions as well. For
+instance, `before_prune` runs before a `prune` action, while `after_prune`
+runs after it.
 
 You can also use `before_everything` and `after_everything` hooks to perform
 global setup or cleanup:

@@ -605,10 +605,11 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    when an exception occurs during a "prune", "create", or
-                    "check" action or an associated before/after hook.
+                    when an exception occurs during a "prune", "compact",
+                    "create", or "check" action or an associated before/after
+                    hook.
                 example:
-                    - echo "Error during prune/create/check."
+                    - echo "Error during prune/compact/create/check."
             before_everything:
                 type: array
                 items:

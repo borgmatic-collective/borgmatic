@@ -83,10 +83,10 @@ tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
 
 ## Error hooks
 
-When an error occurs during a `prune`, `create`, or `check` action, borgmatic
-can run configurable shell commands to fire off custom error notifications or
-take other actions, so you can get alerted as soon as something goes wrong.
-Here's a not-so-useful example:
+When an error occurs during a `prune`, `compact`, `create`, or `check` action,
+borgmatic can run configurable shell commands to fire off custom error
+notifications or take other actions, so you can get alerted as soon as
+something goes wrong. Here's a not-so-useful example:
 
 ```yaml
 hooks:
@@ -117,9 +117,9 @@ here:
  * `output`: output of the command that failed (may be blank if an error
    occurred without running a command)
 
-Note that borgmatic runs the `on_error` hooks only for `prune`, `create`, or
-`check` actions or hooks in which an error occurs, and not other actions. 
-borgmatic does not run `on_error` hooks if an error occurs within a
+Note that borgmatic runs the `on_error` hooks only for `prune`, `compact`,
+`create`, or `check` actions or hooks in which an error occurs, and not other
+actions. borgmatic does not run `on_error` hooks if an error occurs within a
 `before_everything` or `after_everything` hook. For more about hooks, see the
 [borgmatic hooks
 documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
@@ -144,7 +144,7 @@ With this hook in place, borgmatic pings your Healthchecks project when a
 backup begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Healthchecks know that it has started if any of
-the `prune`, `create`, or `check` actions are run.
+the `prune`, `compact`, `create`, or `check` actions are run.
 
 Then, if the actions complete successfully, borgmatic notifies Healthchecks of
 the success after the `after_backup` hooks run, and includes borgmatic logs in
@@ -155,7 +155,7 @@ in the Healthchecks UI, although be aware that Healthchecks currently has a
 If an error occurs during any action or hook, borgmatic notifies Healthchecks
 after the `on_error` hooks run, also tacking on logs including the error
 itself. But the logs are only included for errors that occur when a `prune`,
-`create`, or `check` action is run.
+`compact`, `create`, or `check` action is run.
 
 You can customize the verbosity of the logs that are sent to Healthchecks with
 borgmatic's `--monitoring-verbosity` flag. The `--files` and `--stats` flags
@@ -184,8 +184,8 @@ With this hook in place, borgmatic pings your Cronitor monitor when a backup
 begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Cronitor know that it has started if any of the
-`prune`, `create`, or `check` actions are run. Then, if the actions complete
-successfully, borgmatic notifies Cronitor of the success after the
+`prune`, `compact`, `create`, or `check` actions are run. Then, if the actions
+complete successfully, borgmatic notifies Cronitor of the success after the
 `after_backup` hooks run. And if an error occurs during any action or hook,
 borgmatic notifies Cronitor after the `on_error` hooks run.
 
@@ -212,8 +212,8 @@ With this hook in place, borgmatic pings your Cronhub monitor when a backup
 begins, ends, or errors. Specifically, after the <a
 href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
 hooks</a> run, borgmatic lets Cronhub know that it has started if any of the
-`prune`, `create`, or `check` actions are run. Then, if the actions complete
-successfully, borgmatic notifies Cronhub of the success after the
+`prune`, `compact`, `create`, or `check` actions are run. Then, if the actions
+complete successfully, borgmatic notifies Cronhub of the success after the
 `after_backup` hooks run. And if an error occurs during any action or hook,
 borgmatic notifies Cronhub after the `on_error` hooks run.
 
@@ -252,9 +252,9 @@ hooks:
 
 With this hook in place, borgmatic creates a PagerDuty event for your service
 whenever backups fail. Specifically, if an error occurs during a `create`,
-`prune`, or `check` action, borgmatic sends an event to PagerDuty before the
-`on_error` hooks run. Note that borgmatic does not contact PagerDuty when a
-backup starts or ends without error.
+`prune`, `compact`, or `check` action, borgmatic sends an event to PagerDuty
+before the `on_error` hooks run. Note that borgmatic does not contact
+PagerDuty when a backup starts or ends without error.
 
 You can configure PagerDuty to notify you by a [variety of
 mechanisms](https://support.pagerduty.com/docs/notifications) when backups

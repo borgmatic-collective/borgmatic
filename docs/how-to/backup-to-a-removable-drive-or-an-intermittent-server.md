@@ -115,6 +115,6 @@ There are some caveats you should be aware of with this feature.
  * The soft failure doesn't have to apply to a repository. You can even perform
    a test to make sure that individual source directories are mounted and
    available. Use your imagination!
- * The soft failure feature also works for `before_prune`, `after_prune`,
-   `before_check`, and `after_check` hooks. But it is not implemented for
-   `before_everything` or `after_everything`.
+ * The soft failure feature also works for before/after hooks for other
+   actions as well. But it is not implemented for `before_everything` or
+   `after_everything`.

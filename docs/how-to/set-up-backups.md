@@ -227,8 +227,8 @@ sudo borgmatic --verbosity 1 --files
 borgmatic. So try leaving it out, or upgrade borgmatic!)
 
 By default, this will also prune any old backups as per the configured
-retention policy, and check backups for consistency problems due to things
-like file damage.
+retention policy, compact segments to free up space (with Borg 1.2+), and
+check backups for consistency problems due to things like file damage.
 
 The verbosity flag makes borgmatic show the steps it's performing. And the
 files flag lists each file that's new or changed since the last backup.

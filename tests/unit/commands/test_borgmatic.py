@@ -10,6 +10,7 @@ from borgmatic.commands import borgmatic as module
 
 def test_run_configuration_runs_actions_for_each_repository():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('run_actions').and_return(expected_results[:1]).and_return(
         expected_results[1:]
@@ -22,8 +23,21 @@ def test_run_configuration_runs_actions_for_each_repository():
     assert results == expected_results
 
 
+def test_run_configuration_with_invalid_borg_version_errors():
+    flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
+    flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+    flexmock(module).should_receive('run_actions').never()
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'prune': flexmock()}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
 def test_run_configuration_calls_hooks_for_prune_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
     flexmock(module).should_receive('run_actions').and_return([])
@@ -35,6 +49,7 @@ def test_run_configuration_calls_hooks_for_prune_action():
 
 def test_run_configuration_calls_hooks_for_compact_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module).should_receive('run_actions').and_return([])
     config = {'location': {'repositories': ['foo']}}
@@ -45,6 +60,7 @@ def test_run_configuration_calls_hooks_for_compact_action():
 
 def test_run_configuration_executes_and_calls_hooks_for_create_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
     flexmock(module).should_receive('run_actions').and_return([])
@@ -56,6 +72,7 @@ def test_run_configuration_executes_and_calls_hooks_for_create_action():
 
 def test_run_configuration_calls_hooks_for_check_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
     flexmock(module).should_receive('run_actions').and_return([])
@@ -67,6 +84,7 @@ def test_run_configuration_calls_hooks_for_check_action():
 
 def test_run_configuration_calls_hooks_for_extract_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').twice()
     flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('run_actions').and_return([])
@@ -78,6 +96,7 @@ def test_run_configuration_calls_hooks_for_extract_action():
 
 def test_run_configuration_does_not_trigger_hooks_for_list_action():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('run_actions').and_return([])
@@ -89,6 +108,7 @@ def test_run_configuration_does_not_trigger_hooks_for_list_action():
 
 def test_run_configuration_logs_actions_error():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module.dispatch).should_receive('call_hooks')
     expected_results = [flexmock()]
@@ -104,6 +124,7 @@ def test_run_configuration_logs_actions_error():
 
 def test_run_configuration_logs_pre_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').and_raise(OSError).and_return(None)
     expected_results = [flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(expected_results)
@@ -118,6 +139,7 @@ def test_run_configuration_logs_pre_hook_error():
 
 def test_run_configuration_bails_for_pre_hook_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('execute_hook').and_raise(error).and_return(None)
     flexmock(module).should_receive('make_error_log_records').never()
@@ -132,6 +154,7 @@ def test_run_configuration_bails_for_pre_hook_soft_failure():
 
 def test_run_configuration_logs_post_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(
         OSError
     ).and_return(None)
@@ -149,6 +172,7 @@ def test_run_configuration_logs_post_hook_error():
 
 def test_run_configuration_bails_for_post_hook_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(
         error
@@ -166,6 +190,7 @@ def test_run_configuration_bails_for_post_hook_soft_failure():
 
 def test_run_configuration_logs_on_error_hook_error():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').and_raise(OSError)
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_error_log_records').and_return(
@@ -182,6 +207,7 @@ def test_run_configuration_logs_on_error_hook_error():
 
 def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(error)
     expected_results = [flexmock()]
@@ -198,6 +224,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
 def test_run_configuration_retries_soft_error():
     # Run action first fails, second passes
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_return([])
     expected_results = [flexmock()]
@@ -211,6 +238,7 @@ def test_run_configuration_retries_soft_error():
 def test_run_configuration_retries_hard_error():
     # Run action fails twice
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     expected_results = [flexmock(), flexmock()]
@@ -229,6 +257,7 @@ def test_run_configuration_retries_hard_error():
 
 def test_run_repos_ordered():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     expected_results = [flexmock(), flexmock()]
@@ -246,6 +275,7 @@ def test_run_repos_ordered():
 
 def test_run_configuration_retries_round_robbin():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock(), flexmock()]
@@ -269,6 +299,7 @@ def test_run_configuration_retries_round_robbin():
 
 def test_run_configuration_retries_one_passes():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
         []
@@ -291,6 +322,7 @@ def test_run_configuration_retries_one_passes():
 
 def test_run_configuration_retry_wait():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     expected_results = [flexmock(), flexmock(), flexmock(), flexmock()]
@@ -320,6 +352,7 @@ def test_run_configuration_retry_wait():
 
 def test_run_configuration_retries_timeout_multiple_repos():
     flexmock(module.borg_environment).should_receive('initialize')
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
         []

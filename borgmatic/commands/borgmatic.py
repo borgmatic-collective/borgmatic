@@ -18,12 +18,14 @@ from borgmatic.borg import create as borg_create
 from borgmatic.borg import environment as borg_environment
 from borgmatic.borg import export_tar as borg_export_tar
 from borgmatic.borg import extract as borg_extract
+from borgmatic.borg import feature as borg_feature
 from borgmatic.borg import info as borg_info
 from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
 from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
 from borgmatic.borg import umount as borg_umount
+from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.hooks import command, dispatch, dump, monitor
@@ -39,8 +41,8 @@ LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 def run_configuration(config_filename, config, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, and command-line arguments as a
-    dict from subparser name to a namespace of parsed arguments, execute its defined pruning,
-    backups, consistency checks, and/or other actions.
+    dict from subparser name to a namespace of parsed arguments, execute the defined prune, compact,
+    create, check, and/or other actions.
 
     Yield a combination of:
 
@@ -60,11 +62,19 @@ def run_configuration(config_filename, config, arguments):
     borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
-    prune_create_or_check = {'prune', 'create', 'check'}.intersection(arguments)
+    using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     try:
-        if prune_create_or_check:
+        local_borg_version = borg_version.local_borg_version(local_path)
+    except (OSError, CalledProcessError, ValueError) as error:
+        yield from make_error_log_records(
+            '{}: Error getting local Borg version'.format(config_filename), error
+        )
+        return
+
+    try:
+        if using_primary_action:
             dispatch.call_hooks(
                 'initialize_monitor',
                 hooks,
@@ -113,7 +123,7 @@ def run_configuration(config_filename, config, arguments):
                 'pre-extract',
                 global_arguments.dry_run,
             )
-        if prune_create_or_check:
+        if using_primary_action:
             dispatch.call_hooks(
                 'ping_monitor',
                 hooks,
@@ -153,6 +163,7 @@ def run_configuration(config_filename, config, arguments):
                     hooks=hooks,
                     local_path=local_path,
                     remote_path=remote_path,
+                    local_borg_version=local_borg_version,
                     repository_path=repository_path,
                 )
             except (OSError, CalledProcessError, ValueError) as error:
@@ -218,7 +229,7 @@ def run_configuration(config_filename, config, arguments):
                     'post-extract',
                     global_arguments.dry_run,
                 )
-            if prune_create_or_check:
+            if using_primary_action:
                 dispatch.call_hooks(
                     'ping_monitor',
                     hooks,
@@ -245,7 +256,7 @@ def run_configuration(config_filename, config, arguments):
                 '{}: Error running post hook'.format(config_filename), error
             )
 
-    if encountered_error and prune_create_or_check:
+    if encountered_error and using_primary_action:
         try:
             command.execute_hook(
                 hooks.get('on_error'),
@@ -293,12 +304,13 @@ def run_actions(
     hooks,
     local_path,
     remote_path,
+    local_borg_version,
     repository_path,
 ):  # pragma: no cover
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, several different
-    configuration dicts, local and remote paths to Borg, and a repository name, run all actions
-    from the command-line arguments on the given repository.
+    configuration dicts, local and remote paths to Borg, a local Borg version string, and a
+    repository name, run all actions from the command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
 
@@ -332,17 +344,22 @@ def run_actions(
             files=arguments['prune'].files,
         )
     if 'compact' in arguments:
-        logger.info('{}: Compacting segments{}'.format(repository, dry_run_label))
-        borg_compact.compact_segments(
-            global_arguments.dry_run,
-            repository,
-            storage,
-            local_path=local_path,
-            remote_path=remote_path,
-            progress=arguments['compact'].progress,
-            cleanup_commits=arguments['compact'].cleanup_commits,
-            threshold=arguments['compact'].threshold,
-        )
+        if borg_feature.available(borg_feature.Feature.COMPACT, local_borg_version):
+            logger.info('{}: Compacting segments{}'.format(repository, dry_run_label))
+            borg_compact.compact_segments(
+                global_arguments.dry_run,
+                repository,
+                storage,
+                local_path=local_path,
+                remote_path=remote_path,
+                progress=arguments['compact'].progress,
+                cleanup_commits=arguments['compact'].cleanup_commits,
+                threshold=arguments['compact'].threshold,
+            )
+        else:
+            logger.info(
+                '{}: Skipping compact (only available/needed in Borg 1.2+)'.format(repository)
+            )
     if 'create' in arguments:
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
         dispatch.call_hooks(

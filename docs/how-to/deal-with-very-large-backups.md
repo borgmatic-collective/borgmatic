@@ -9,19 +9,20 @@ eleventyNavigation:
 
 Borg itself is great for efficiently de-duplicating data across successive
 backup archives, even when dealing with very large repositories. But you may
-find that while borgmatic's default mode of "prune, create, and check" works
-well on small repositories, it's not so great on larger ones. That's because
-running the default pruning and consistency checks take a long time on large
-repositories.
+find that while borgmatic's default mode of `prune`, `compact`, `create`, and
+`check` works well on small repositories, it's not so great on larger ones.
+That's because running the default pruning, compact, and consistency checks
+take a long time on large repositories.
 
 ### A la carte actions
 
 If you find yourself in this situation, you have some options. First, you can
-run borgmatic's pruning, creating, or checking actions separately. For
-instance, the following optional actions are available:
+run borgmatic's `prune`, `compact`, `create`, or `check` actions separately.
+For instance, the following optional actions are available:
 
 ```bash
 borgmatic prune
+borgmatic compact
 borgmatic create
 borgmatic check
 ```
@@ -32,7 +33,7 @@ borgmatic check
 You can run with only one of these actions provided, or you can mix and match
 any number of them in a single borgmatic run. This supports approaches like
 skipping certain actions while running others. For instance, this skips
-`prune` and only runs `create` and `check`:
+`prune` and `compact` and only runs `create` and `check`:
 
 ```bash
 borgmatic create check

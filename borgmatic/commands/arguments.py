@@ -63,9 +63,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
         arguments[canonical_name] = parsed
 
-    # If no actions are explicitly requested, assume defaults: prune, create, and check.
+    # If no actions are explicitly requested, assume defaults: prune, compact, create, and check.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
-        for subparser_name in ('prune', 'create', 'check'):
+        for subparser_name in ('prune', 'compact', 'create', 'check'):
             subparser = subparsers[subparser_name]
             parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
             arguments[subparser_name] = parsed
@@ -200,8 +200,8 @@ def parse_arguments(*unparsed_arguments):
     top_level_parser = ArgumentParser(
         description='''
             Simple, configuration-driven backup software for servers and workstations. If none of
-            the action options are given, then borgmatic defaults to: prune, create, and check
-            archives.
+            the action options are given, then borgmatic defaults to: prune, compact, create, and
+            check.
             ''',
         parents=[global_parser],
     )
@@ -209,7 +209,7 @@ def parse_arguments(*unparsed_arguments):
     subparsers = top_level_parser.add_subparsers(
         title='actions',
         metavar='',
-        help='Specify zero or more actions. Defaults to prune, create, and check. Use --help with action for details:',
+        help='Specify zero or more actions. Defaults to prune, compact, create, and check. Use --help with action for details:',
     )
     init_parser = subparsers.add_parser(
         'init',
@@ -242,8 +242,8 @@ def parse_arguments(*unparsed_arguments):
     prune_parser = subparsers.add_parser(
         'prune',
         aliases=SUBPARSER_ALIASES['prune'],
-        help='Prune archives according to the retention policy',
-        description='Prune archives according to the retention policy',
+        help='Prune archives according to the retention policy (with Borg 1.2+, run compact afterwards to actually free space)',
+        description='Prune archives according to the retention policy (with Borg 1.2+, run compact afterwards to actually free space)',
         add_help=False,
     )
     prune_group = prune_parser.add_argument_group('prune arguments')

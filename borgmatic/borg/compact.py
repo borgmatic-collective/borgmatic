@@ -38,4 +38,4 @@ def compact_segments(
         + (repository,)
     )
 
-    execute_command(full_command, output_log_level=logging.WARNING, borg_local_path=local_path)
+    execute_command(full_command, output_log_level=logging.INFO, borg_local_path=local_path)
