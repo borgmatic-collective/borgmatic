@@ -347,27 +347,27 @@ properties:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg init".
-                        example: "--make-parent-dirs"
+                        example: "--extra-option"
                     prune:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg prune".
-                        example: "--save-space"
+                        example: "--extra-option"
                     compact:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg compact".
-                        example: "--save-space"
+                        example: "--extra-option"
                     create:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg create".
-                        example: "--no-files-cache"
+                        example: "--extra-option"
                     check:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg check".
-                        example: "--save-space"
+                        example: "--extra-option"
                 description: |
                     Additional options to pass directly to particular Borg
                     commands, handy for Borg options that borgmatic does not yet

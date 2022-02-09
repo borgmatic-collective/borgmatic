@@ -54,7 +54,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--format' \
             | grep -v '^--glob-archives' \
             | grep -v '^--last' \
-            | grep -v '^--list-format' \
+            | grep -v '^--format' \
             | grep -v '^--patterns-from' \
             | grep -v '^--prefix' \
             | grep -v '^--short' \
