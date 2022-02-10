@@ -641,7 +641,9 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
 @pytest.mark.parametrize(
     'feature_available,option_flag', ((True, '--upload-ratelimit'), (False, '--remote-ratelimit')),
 )
-def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_parameters(feature_available, option_flag):
+def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_parameters(
+    feature_available, option_flag
+):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})

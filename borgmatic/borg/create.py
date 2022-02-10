@@ -243,9 +243,13 @@ def create_archive(
         numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
 
     if feature.available(feature.Feature.UPLOAD_RATELIMIT, local_borg_version):
-        upload_ratelimit_flags = ('--upload-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+        upload_ratelimit_flags = (
+            ('--upload-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+        )
     else:
-        upload_ratelimit_flags = ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+        upload_ratelimit_flags = (
+            ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+        )
 
     full_command = (
         tuple(local_path.split(' '))
