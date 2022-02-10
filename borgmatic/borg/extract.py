@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+from borgmatic.borg import feature
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,7 @@ def extract_archive(
     paths,
     location_config,
     storage_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     destination_path=None,
@@ -70,9 +72,9 @@ def extract_archive(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    restore from the archive, location/storage configuration dicts, optional local and remote Borg
-    paths, and an optional destination path to extract to, extract the archive into the current
-    directory.
+    restore from the archive, the local Borg version string, location/storage configuration dicts,
+    optional local and remote Borg paths, and an optional destination path to extract to, extract
+    the archive into the current directory.
 
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
@@ -83,10 +85,15 @@ def extract_archive(
     if progress and extract_to_stdout:
         raise ValueError('progress and extract_to_stdout cannot both be set')
 
+    if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
+        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_owner') else ()
+    else:
+        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
+
     full_command = (
         (local_path, 'extract')
         + (('--remote-path', remote_path) if remote_path else ())
-        + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
+        + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
