@@ -763,12 +763,7 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
 
 @pytest.mark.parametrize(
     'option_name,option_value',
-    (
-        ('ctime', True),
-        ('ctime', False),
-        ('birthtime', True),
-        ('birthtime', False),
-    ),
+    (('ctime', True), ('ctime', False), ('birthtime', True), ('birthtime', False),),
 )
 def test_create_archive_with_basic_option_calls_borg_with_corresponding_parameter(
     option_name, option_value
@@ -822,8 +817,12 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
     flexmock(module).should_receive('_expand_directories').and_return(())
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.ATIME, '1.2.3').and_return(feature_available)
-    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.NOFLAGS, '1.2.3').and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.ATIME, '1.2.3'
+    ).and_return(feature_available)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.NOFLAGS, '1.2.3'
+    ).and_return(True)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
@@ -865,8 +864,12 @@ def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_para
     flexmock(module).should_receive('_expand_directories').and_return(())
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.ATIME, '1.2.3').and_return(True)
-    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.NOFLAGS, '1.2.3').and_return(feature_available)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.ATIME, '1.2.3'
+    ).and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(
+        module.feature.Feature.NOFLAGS, '1.2.3'
+    ).and_return(feature_available)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
