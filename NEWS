@@ -1,4 +1,4 @@
-1.5.23.dev0
+1.5.23
  * #394: Compact repository segments and free space with new "borgmatic compact" action. Borg 1.2+
    only. Also run "compact" by default when no actions are specified, as "prune" in Borg 1.2 no
    longer frees up space unless "compact" is run.
