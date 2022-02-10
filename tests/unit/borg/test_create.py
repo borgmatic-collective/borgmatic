@@ -768,11 +768,9 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
         ('ctime', False),
         ('birthtime', True),
         ('birthtime', False),
-        ('bsd_flags', True),
-        ('bsd_flags', False),
     ),
 )
-def test_create_archive_with_option_calls_borg_without_corresponding_parameter(
+def test_create_archive_with_basic_option_calls_borg_with_corresponding_parameter(
     option_name, option_value
 ):
     option_flag = '--no' + option_name.replace('_', '') if option_value is False else None
@@ -815,7 +813,7 @@ def test_create_archive_with_option_calls_borg_without_corresponding_parameter(
         (False, False, '--noatime'),
     ),
 )
-def test_create_archive_with_atime_option_calls_borg_without_corresponding_parameter(
+def test_create_archive_with_atime_option_calls_borg_with_corresponding_parameter(
     option_value, feature_available, option_flag
 ):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
@@ -824,7 +822,8 @@ def test_create_archive_with_atime_option_calls_borg_without_corresponding_param
     flexmock(module).should_receive('_expand_directories').and_return(())
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').and_return(feature_available)
+    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.ATIME, '1.2.3').and_return(feature_available)
+    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.NOFLAGS, '1.2.3').and_return(True)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
@@ -841,6 +840,49 @@ def test_create_archive_with_atime_option_calls_borg_without_corresponding_param
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'atime': option_value,
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        local_borg_version='1.2.3',
+    )
+
+
+@pytest.mark.parametrize(
+    'option_value,feature_available,option_flag',
+    (
+        (True, True, None),
+        (True, False, None),
+        (False, True, '--noflags'),
+        (False, False, '--nobsdflags'),
+    ),
+)
+def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_parameter(
+    option_value, feature_available, option_flag
+):
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('_expand_home_directories').and_return(())
+    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.ATIME, '1.2.3').and_return(True)
+    flexmock(module.feature).should_receive('available').with_args(module.feature.Feature.NOFLAGS, '1.2.3').and_return(feature_available)
+    flexmock(module).should_receive('_make_pattern_flags').and_return(())
+    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create') + ((option_flag,) if option_flag else ()) + ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'bsd_flags': option_value,
             'exclude_patterns': None,
         },
         storage_config={},

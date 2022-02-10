@@ -38,7 +38,7 @@ for sub_command in prune create check list info; do
             | grep -v '^--json$' \
             | grep -v '^--keep-last$' \
             | grep -v '^--list$' \
-            | grep -v '^--nobsdflags$' \
+            | grep -v '^--bsdflags$' \
             | grep -v '^--pattern$' \
             | grep -v '^--progress$' \
             | grep -v '^--stats$' \

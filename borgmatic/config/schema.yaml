@@ -111,10 +111,10 @@ properties:
                     type: string
                 description: |
                     Any paths matching these patterns are included/excluded from
-                    backups. Globs are expanded. (Tildes are not.) Note that
-                    Borg considers this option experimental. See the output of
-                    "borg help patterns" for more details. Quote any value if it
-                    contains leading punctuation, so it parses correctly.
+                    backups. Globs are expanded. (Tildes are not.) See the
+                    output of "borg help patterns" for more details. Quote any
+                    value if it contains leading punctuation, so it parses
+                    correctly.
                 example:
                     - 'R /'
                     - '- /home/*/.cache'

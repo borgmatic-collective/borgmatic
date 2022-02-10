@@ -6,11 +6,13 @@ from pkg_resources import parse_version
 class Feature(Enum):
     COMPACT = 1
     ATIME = 2
+    NOFLAGS = 3
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
-    Feature.COMPACT: parse_version('1.2.0a2'),
-    Feature.ATIME: parse_version('1.2.0a7'),
+    Feature.COMPACT: parse_version('1.2.0a2'),  # borg compact
+    Feature.ATIME: parse_version('1.2.0a7'),    # borg create --atime
+    Feature.NOFLAGS: parse_version('1.2.0a8'),  # borg create --noflags
 }
 
 

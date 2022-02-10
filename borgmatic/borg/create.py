@@ -227,11 +227,15 @@ def create_archive(
     archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
 
-    atime_feature_available = feature.available(feature.Feature.ATIME, local_borg_version)
-    if atime_feature_available:
+    if feature.available(feature.Feature.ATIME, local_borg_version):
         atime_flags = ('--atime',) if location_config.get('atime') is True else ()
     else:
         atime_flags = ('--noatime',) if location_config.get('atime') is False else ()
+
+    if feature.available(feature.Feature.NOFLAGS, local_borg_version):
+        noflags_flags = ('--noflags',) if location_config.get('bsd_flags') is False else ()
+    else:
+        noflags_flags = ('--nobsdflags',) if location_config.get('bsd_flags') is False else ()
 
     full_command = (
         tuple(local_path.split(' '))
@@ -252,7 +256,7 @@ def create_archive(
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
         + (('--read-special',) if (location_config.get('read_special') or stream_processes) else ())
-        + (('--nobsdflags',) if location_config.get('bsd_flags') is False else ())
+        + noflags_flags
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
