@@ -638,18 +638,21 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     )
 
 
-def test_create_archive_with_remote_rate_limit_calls_borg_with_remote_ratelimit_parameters():
+@pytest.mark.parametrize(
+    'feature_available,option_flag', ((True, '--upload-ratelimit'), (False, '--remote-ratelimit')),
+)
+def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_parameters(feature_available, option_flag):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
     flexmock(module).should_receive('_expand_directories').and_return(())
     flexmock(module).should_receive('_expand_home_directories').and_return(())
     flexmock(module).should_receive('_write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.feature).should_receive('available').and_return(feature_available)
     flexmock(module).should_receive('_make_pattern_flags').and_return(())
     flexmock(module).should_receive('_make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--remote-ratelimit', '100') + ARCHIVE_WITH_PATHS,
+        ('borg', 'create', option_flag, '100') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -700,7 +703,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
 
 
 @pytest.mark.parametrize(
-    'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner'),),
+    'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner')),
 )
 def test_create_archive_with_numeric_owner_calls_borg_with_numeric_ids_parameter(
     feature_available, option_flag

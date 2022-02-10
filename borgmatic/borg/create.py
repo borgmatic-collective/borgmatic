@@ -242,6 +242,11 @@ def create_archive(
     else:
         numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
 
+    if feature.available(feature.Feature.UPLOAD_RATELIMIT, local_borg_version):
+        upload_ratelimit_flags = ('--upload-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+    else:
+        upload_ratelimit_flags = ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+
     full_command = (
         tuple(local_path.split(' '))
         + ('create',)
@@ -250,7 +255,7 @@ def create_archive(
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
-        + (('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ())
+        + upload_ratelimit_flags
         + (
             ('--one-file-system',)
             if location_config.get('one_file_system') or stream_processes

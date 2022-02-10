@@ -8,6 +8,7 @@ class Feature(Enum):
     ATIME = 2
     NOFLAGS = 3
     NUMERIC_IDS = 4
+    UPLOAD_RATELIMIT = 5
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -15,6 +16,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.ATIME: parse_version('1.2.0a7'),  # borg create --atime
     Feature.NOFLAGS: parse_version('1.2.0a8'),  # borg create --noflags
     Feature.NUMERIC_IDS: parse_version('1.2.0b3'),  # borg create/extract/mount --numeric-ids
+    Feature.UPLOAD_RATELIMIT: parse_version('1.2.0b3'),  # borg create --upload-ratelimit
 }
 
 
