@@ -385,6 +385,7 @@ def run_actions(
             repository,
             location,
             storage,
+            local_borg_version,
             local_path=local_path,
             remote_path=remote_path,
             progress=arguments['create'].progress,

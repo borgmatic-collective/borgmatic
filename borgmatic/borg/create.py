@@ -5,6 +5,7 @@ import os
 import pathlib
 import tempfile
 
+from borgmatic.borg import feature
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
 
 logger = logging.getLogger(__name__)
@@ -187,6 +188,7 @@ def create_archive(
     repository,
     location_config,
     storage_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -225,6 +227,12 @@ def create_archive(
     archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
 
+    atime_feature_available = feature.available(feature.Feature.ATIME, local_borg_version)
+    if atime_feature_available:
+        atime_flags = ('--atime',) if location_config.get('atime') is True else ()
+    else:
+        atime_flags = ('--noatime',) if location_config.get('atime') is False else ()
+
     full_command = (
         tuple(local_path.split(' '))
         + ('create',)
@@ -240,7 +248,7 @@ def create_archive(
             else ()
         )
         + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
-        + (('--noatime',) if location_config.get('atime') is False else ())
+        + atime_flags
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
         + (('--read-special',) if (location_config.get('read_special') or stream_processes) else ())

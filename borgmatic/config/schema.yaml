@@ -58,7 +58,9 @@ properties:
                 example: true
             atime:
                 type: boolean
-                description: Store atime into archive. Defaults to true.
+                description: |
+                    Store atime into archive. Defaults to true in Borg < 1.2,
+                    false in Borg 1.2+.
                 example: false
             ctime:
                 type: boolean
