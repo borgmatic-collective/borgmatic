@@ -237,6 +237,11 @@ def create_archive(
     else:
         noflags_flags = ('--nobsdflags',) if location_config.get('bsd_flags') is False else ()
 
+    if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
+        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_owner') else ()
+    else:
+        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
+
     full_command = (
         tuple(local_path.split(' '))
         + ('create',)
@@ -251,7 +256,7 @@ def create_archive(
             if location_config.get('one_file_system') or stream_processes
             else ()
         )
-        + (('--numeric-owner',) if location_config.get('numeric_owner') else ())
+        + numeric_ids_flags
         + atime_flags
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
