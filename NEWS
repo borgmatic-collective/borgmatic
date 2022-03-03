@@ -1,3 +1,6 @@
+1.5.24.dev0
+ * Add "working_directory" option to support source directories with relative paths (#431).
+
 1.5.23
  * #394: Compact repository segments and free space with new "borgmatic compact" action. Borg 1.2+
    only. Also run "compact" by default when no actions are specified, as "prune" in Borg 1.2 no
