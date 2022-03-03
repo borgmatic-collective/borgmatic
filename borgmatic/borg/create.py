@@ -213,6 +213,10 @@ def create_archive(
         )
     )
 
+    try:
+        working_directory = os.path.expanduser(location_config.get('working_directory'))
+    except TypeError:
+        working_directory = None
     pattern_file = _write_pattern_file(location_config.get('patterns'))
     exclude_file = _write_pattern_file(
         _expand_home_directories(location_config.get('exclude_patterns'))
@@ -309,6 +313,13 @@ def create_archive(
             output_log_level,
             output_file,
             borg_local_path=local_path,
+            working_directory=working_directory,
         )
 
-    return execute_command(full_command, output_log_level, output_file, borg_local_path=local_path)
+    return execute_command(
+        full_command,
+        output_log_level,
+        output_file,
+        borg_local_path=local_path,
+        working_directory=working_directory,
+    )
