@@ -12,7 +12,7 @@ def test_expand_directory_with_basic_path_passes_it_through():
     flexmock(module.os.path).should_receive('expanduser').and_return('foo')
     flexmock(module.glob).should_receive('glob').and_return([])
 
-    paths = module._expand_directory('foo')
+    paths = module.expand_directory('foo')
 
     assert paths == ['foo']
 
@@ -21,26 +21,24 @@ def test_expand_directory_with_glob_expands():
     flexmock(module.os.path).should_receive('expanduser').and_return('foo*')
     flexmock(module.glob).should_receive('glob').and_return(['foo', 'food'])
 
-    paths = module._expand_directory('foo*')
+    paths = module.expand_directory('foo*')
 
     assert paths == ['foo', 'food']
 
 
 def test_expand_directories_flattens_expanded_directories():
-    flexmock(module).should_receive('_expand_directory').with_args('~/foo').and_return(
-        ['/root/foo']
-    )
-    flexmock(module).should_receive('_expand_directory').with_args('bar*').and_return(
+    flexmock(module).should_receive('expand_directory').with_args('~/foo').and_return(['/root/foo'])
+    flexmock(module).should_receive('expand_directory').with_args('bar*').and_return(
         ['bar', 'barf']
     )
 
-    paths = module._expand_directories(('~/foo', 'bar*'))
+    paths = module.expand_directories(('~/foo', 'bar*'))
 
     assert paths == ('/root/foo', 'bar', 'barf')
 
 
 def test_expand_directories_considers_none_as_no_directories():
-    paths = module._expand_directories(None)
+    paths = module.expand_directories(None)
 
     assert paths == ()
 
@@ -49,13 +47,13 @@ def test_expand_home_directories_expands_tildes():
     flexmock(module.os.path).should_receive('expanduser').with_args('~/bar').and_return('/foo/bar')
     flexmock(module.os.path).should_receive('expanduser').with_args('baz').and_return('baz')
 
-    paths = module._expand_home_directories(('~/bar', 'baz'))
+    paths = module.expand_home_directories(('~/bar', 'baz'))
 
     assert paths == ('/foo/bar', 'baz')
 
 
 def test_expand_home_directories_considers_none_as_no_directories():
-    paths = module._expand_home_directories(None)
+    paths = module.expand_home_directories(None)
 
     assert paths == ()
 
@@ -114,15 +112,15 @@ def test_write_pattern_file_does_not_raise():
     temporary_file = flexmock(name='filename', write=lambda mode: None, flush=lambda: None)
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
 
-    module._write_pattern_file(['exclude'])
+    module.write_pattern_file(['exclude'])
 
 
 def test_write_pattern_file_with_empty_exclude_patterns_does_not_raise():
-    module._write_pattern_file([])
+    module.write_pattern_file([])
 
 
 def test_make_pattern_flags_includes_pattern_filename_when_given():
-    pattern_flags = module._make_pattern_flags(
+    pattern_flags = module.make_pattern_flags(
         location_config={'patterns': ['R /', '- /var']}, pattern_filename='/tmp/patterns'
     )
 
@@ -130,7 +128,7 @@ def test_make_pattern_flags_includes_pattern_filename_when_given():
 
 
 def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
-    pattern_flags = module._make_pattern_flags(
+    pattern_flags = module.make_pattern_flags(
         location_config={'patterns_from': ['patterns', 'other']}
     )
 
@@ -138,7 +136,7 @@ def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
 
 
 def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patterns_from_in_config():
-    pattern_flags = module._make_pattern_flags(
+    pattern_flags = module.make_pattern_flags(
         location_config={'patterns_from': ['patterns']}, pattern_filename='/tmp/patterns'
     )
 
@@ -146,13 +144,13 @@ def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patt
 
 
 def test_make_pattern_flags_considers_none_patterns_from_filenames_as_empty():
-    pattern_flags = module._make_pattern_flags(location_config={'patterns_from': None})
+    pattern_flags = module.make_pattern_flags(location_config={'patterns_from': None})
 
     assert pattern_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
-    exclude_flags = module._make_exclude_flags(
+    exclude_flags = module.make_exclude_flags(
         location_config={'exclude_patterns': ['*.pyc', '/var']}, exclude_filename='/tmp/excludes'
     )
 
@@ -161,7 +159,7 @@ def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
 
 def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
 
-    exclude_flags = module._make_exclude_flags(
+    exclude_flags = module.make_exclude_flags(
         location_config={'exclude_from': ['excludes', 'other']}
     )
 
@@ -169,7 +167,7 @@ def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
 
 
 def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_exclude_from_in_config():
-    exclude_flags = module._make_exclude_flags(
+    exclude_flags = module.make_exclude_flags(
         location_config={'exclude_from': ['excludes']}, exclude_filename='/tmp/excludes'
     )
 
@@ -177,25 +175,25 @@ def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_excl
 
 
 def test_make_exclude_flags_considers_none_exclude_from_filenames_as_empty():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_from': None})
+    exclude_flags = module.make_exclude_flags(location_config={'exclude_from': None})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_caches': True})
+    exclude_flags = module.make_exclude_flags(location_config={'exclude_caches': True})
 
     assert exclude_flags == ('--exclude-caches',)
 
 
 def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_caches': False})
+    exclude_flags = module.make_exclude_flags(location_config={'exclude_caches': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
-    exclude_flags = module._make_exclude_flags(
+    exclude_flags = module.make_exclude_flags(
         location_config={'exclude_if_present': ['exclude_me', 'also_me']}
     )
 
@@ -208,31 +206,31 @@ def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
 
 
 def test_make_exclude_flags_includes_keep_exclude_tags_when_true_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'keep_exclude_tags': True})
+    exclude_flags = module.make_exclude_flags(location_config={'keep_exclude_tags': True})
 
     assert exclude_flags == ('--keep-exclude-tags',)
 
 
 def test_make_exclude_flags_does_not_include_keep_exclude_tags_when_false_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'keep_exclude_tags': False})
+    exclude_flags = module.make_exclude_flags(location_config={'keep_exclude_tags': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_nodump_when_true_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_nodump': True})
+    exclude_flags = module.make_exclude_flags(location_config={'exclude_nodump': True})
 
     assert exclude_flags == ('--exclude-nodump',)
 
 
 def test_make_exclude_flags_does_not_include_exclude_nodump_when_false_in_config():
-    exclude_flags = module._make_exclude_flags(location_config={'exclude_nodump': False})
+    exclude_flags = module.make_exclude_flags(location_config={'exclude_nodump': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
-    exclude_flags = module._make_exclude_flags(location_config={})
+    exclude_flags = module.make_exclude_flags(location_config={})
 
     assert exclude_flags == ()
 
@@ -266,13 +264,13 @@ def test_create_archive_calls_borg_with_parameters():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -299,15 +297,15 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(
         flexmock(name='/tmp/patterns')
     ).and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(pattern_flags)
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(pattern_flags)
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + pattern_flags + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -334,15 +332,15 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(('exclude',))
-    flexmock(module).should_receive('_write_pattern_file').and_return(None).and_return(
+    flexmock(module).should_receive('expand_home_directories').and_return(('exclude',))
+    flexmock(module).should_receive('write_pattern_file').and_return(None).and_return(
         flexmock(name='/tmp/excludes')
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(exclude_flags)
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(exclude_flags)
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + exclude_flags + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -368,13 +366,13 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -401,13 +399,13 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
@@ -435,13 +433,13 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--debug', '--show-rc') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -468,13 +466,13 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
@@ -502,13 +500,13 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--dry-run') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -536,13 +534,13 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--dry-run') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -570,13 +568,13 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--checkpoint-interval', '600') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -602,13 +600,13 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--chunker-params', '1,2,3,4') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -634,13 +632,13 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--compression', 'rle') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -671,13 +669,13 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(feature_available)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', option_flag, '100') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -703,15 +701,15 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').with_args('/working/dir').and_return(
         '/working/dir'
     )
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -738,13 +736,13 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--one-file-system') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -776,13 +774,13 @@ def test_create_archive_with_numeric_owner_calls_borg_with_numeric_ids_parameter
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(feature_available)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', option_flag) + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -809,13 +807,13 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--read-special') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -845,17 +843,17 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
 def test_create_archive_with_basic_option_calls_borg_with_corresponding_parameter(
     option_name, option_value
 ):
-    option_flag = '--no' + option_name.replace('_', '') if option_value is False else None
+    option_flag = '--no' + option_name.replace('', '') if option_value is False else None
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -893,13 +891,13 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(feature_available)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -937,13 +935,13 @@ def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_para
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(feature_available)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -970,13 +968,13 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--files-cache', 'ctime,size') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1003,13 +1001,13 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg1', 'create') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1036,13 +1034,13 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--remote-path', 'borg1') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1069,13 +1067,13 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--umask', '740') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1101,13 +1099,13 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--lock-wait', '5') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1133,13 +1131,13 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_o
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--stats') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.WARNING,
@@ -1166,13 +1164,13 @@ def test_create_archive_with_stats_and_log_info_calls_borg_with_stats_parameter_
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--stats') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1200,13 +1198,13 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_ou
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--list', '--filter', 'AME-') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.WARNING,
@@ -1233,13 +1231,13 @@ def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_a
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--list', '--filter', 'AME-', '--info') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1267,13 +1265,13 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--progress') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1301,13 +1299,13 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--progress') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1335,13 +1333,13 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('borg', 'create', '--one-file-system', '--read-special', '--progress')
         + ARCHIVE_WITH_PATHS,
@@ -1371,13 +1369,13 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
@@ -1406,13 +1404,13 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + ARCHIVE_WITH_PATHS,
         output_log_level=None,
@@ -1442,13 +1440,13 @@ def test_create_archive_with_source_directories_glob_expands():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'food'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
         output_log_level=logging.INFO,
@@ -1475,13 +1473,13 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo*',))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'),
         output_log_level=logging.INFO,
@@ -1508,13 +1506,13 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'food'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
         output_log_level=logging.INFO,
@@ -1540,13 +1538,13 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'),
         output_log_level=logging.INFO,
@@ -1572,13 +1570,13 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'),
         output_log_level=logging.INFO,
@@ -1604,13 +1602,13 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '{fqdn}::Documents_{hostname}-{now}', 'foo', 'bar'),
         output_log_level=logging.INFO,
@@ -1636,13 +1634,13 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--extra', '--options') + ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
@@ -1669,13 +1667,13 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('_expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('_expand_home_directories').and_return(())
-    flexmock(module).should_receive('_write_pattern_file').and_return(None)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('_make_pattern_flags').and_return(())
-    flexmock(module).should_receive('_make_exclude_flags').and_return(())
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('borg', 'create', '--one-file-system', '--read-special') + ARCHIVE_WITH_PATHS,
         processes=processes,

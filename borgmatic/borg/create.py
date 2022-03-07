@@ -11,7 +11,7 @@ from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_w
 logger = logging.getLogger(__name__)
 
 
-def _expand_directory(directory):
+def expand_directory(directory):
     '''
     Given a directory path, expand any tilde (representing a user's home directory) and any globs
     therein. Return a list of one or more resulting paths.
@@ -21,7 +21,7 @@ def _expand_directory(directory):
     return glob.glob(expanded_directory) or [expanded_directory]
 
 
-def _expand_directories(directories):
+def expand_directories(directories):
     '''
     Given a sequence of directory paths, expand tildes and globs in each one. Return all the
     resulting directories as a single flattened tuple.
@@ -30,11 +30,11 @@ def _expand_directories(directories):
         return ()
 
     return tuple(
-        itertools.chain.from_iterable(_expand_directory(directory) for directory in directories)
+        itertools.chain.from_iterable(expand_directory(directory) for directory in directories)
     )
 
 
-def _expand_home_directories(directories):
+def expand_home_directories(directories):
     '''
     Given a sequence of directory paths, expand tildes in each one. Do not perform any globbing.
     Return the results as a tuple.
@@ -98,7 +98,7 @@ def deduplicate_directories(directory_devices):
     return tuple(sorted(deduplicated))
 
 
-def _write_pattern_file(patterns=None):
+def write_pattern_file(patterns=None):
     '''
     Given a sequence of patterns, write them to a named temporary file and return it. Return None
     if no patterns are provided.
@@ -113,7 +113,7 @@ def _write_pattern_file(patterns=None):
     return pattern_file
 
 
-def _make_pattern_flags(location_config, pattern_filename=None):
+def make_pattern_flags(location_config, pattern_filename=None):
     '''
     Given a location config dict with a potential patterns_from option, and a filename containing
     any additional patterns, return the corresponding Borg flags for those files as a tuple.
@@ -129,7 +129,7 @@ def _make_pattern_flags(location_config, pattern_filename=None):
     )
 
 
-def _make_exclude_flags(location_config, exclude_filename=None):
+def make_exclude_flags(location_config, exclude_filename=None):
     '''
     Given a location config dict with various exclude options, and a filename containing any exclude
     patterns, return the corresponding Borg flags as a tuple.
@@ -206,7 +206,7 @@ def create_archive(
     '''
     sources = deduplicate_directories(
         map_directories_to_devices(
-            _expand_directories(
+            expand_directories(
                 location_config['source_directories']
                 + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
             )
@@ -217,9 +217,9 @@ def create_archive(
         working_directory = os.path.expanduser(location_config.get('working_directory'))
     except TypeError:
         working_directory = None
-    pattern_file = _write_pattern_file(location_config.get('patterns'))
-    exclude_file = _write_pattern_file(
-        _expand_home_directories(location_config.get('exclude_patterns'))
+    pattern_file = write_pattern_file(location_config.get('patterns'))
+    exclude_file = write_pattern_file(
+        expand_home_directories(location_config.get('exclude_patterns'))
     )
     checkpoint_interval = storage_config.get('checkpoint_interval', None)
     chunker_params = storage_config.get('chunker_params', None)
@@ -258,8 +258,8 @@ def create_archive(
     full_command = (
         tuple(local_path.split(' '))
         + ('create',)
-        + _make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
-        + _make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
+        + make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
+        + make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
