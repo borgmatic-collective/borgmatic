@@ -113,6 +113,18 @@ def write_pattern_file(patterns=None):
     return pattern_file
 
 
+def ensure_files_readable(*filename_lists):
+    '''
+    Given a sequence of filename sequences, ensure that each filename is openable. This prevents
+    unreadable files from being passed to Borg, which in certain situations only warns instead of
+    erroring.
+    '''
+    for file_object in itertools.chain.from_iterable(
+        filename_list for filename_list in filename_lists if filename_list
+    ):
+        open(file_object).close()
+
+
 def make_pattern_flags(location_config, pattern_filename=None):
     '''
     Given a location config dict with a potential patterns_from option, and a filename containing
@@ -254,6 +266,8 @@ def create_archive(
         upload_ratelimit_flags = (
             ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
         )
+
+    ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))
 
     full_command = (
         tuple(local_path.split(' '))
