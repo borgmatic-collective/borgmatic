@@ -395,6 +395,15 @@ def test_load_configurations_collects_parsed_configurations():
     assert logs == []
 
 
+def test_load_configurations_logs_warning_for_permission_error():
+    flexmock(module.validate).should_receive('parse_configuration').and_raise(PermissionError)
+
+    configs, logs = tuple(module.load_configurations(('test.yaml',)))
+
+    assert configs == {}
+    assert {log.levelno for log in logs} == {logging.WARNING}
+
+
 def test_load_configurations_logs_critical_for_parse_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(ValueError)
 

@@ -646,6 +646,20 @@ def load_configurations(config_filenames, overrides=None):
             configs[config_filename] = validate.parse_configuration(
                 config_filename, validate.schema_filename(), overrides
             )
+        except PermissionError:
+            logs.extend(
+                [
+                    logging.makeLogRecord(
+                        dict(
+                            levelno=logging.WARNING,
+                            levelname='WARNING',
+                            msg='{}: Insufficient permissions to read configuration file'.format(
+                                config_filename
+                            ),
+                        )
+                    ),
+                ]
+            )
         except (ValueError, OSError, validate.Validation_error) as error:
             logs.extend(
                 [
