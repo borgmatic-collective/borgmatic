@@ -36,8 +36,8 @@ def test_compact_segments_with_log_debug_calls_borg_with_debug_parameter():
     module.compact_segments(repository='repo', storage_config={}, dry_run=False)
 
 
-def test_compact_segments_with_dry_run_calls_borg_with_dry_run_parameter():
-    insert_execute_command_mock(COMPACT_COMMAND + ('--dry-run', 'repo'), logging.INFO)
+def test_compact_segments_with_dry_run_skips_borg_call():
+    flexmock(module).should_receive('execute_command').never()
 
     module.compact_segments(repository='repo', storage_config={}, dry_run=True)
 

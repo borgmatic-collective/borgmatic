@@ -1,7 +1,9 @@
 1.5.24.dev0
- * Add "working_directory" option to support source directories with relative paths (#431).
+ * #431: Add "working_directory" option to support source directories with relative paths.
  * #486: Fix handling of "patterns_from" and "exclude_from" options to error instead of warning when
-   referencing unreadable files and running "create" action.
+   referencing unreadable files and "create" action is run.
+ * #507: Fix Borg usage error in the "compact" action when running "borgmatic --dry-run". Now, skip
+   "compact" entirely during a dry run.
 
 1.5.23
  * #394: Compact repository segments and free space with new "borgmatic compact" action. Borg 1.2+

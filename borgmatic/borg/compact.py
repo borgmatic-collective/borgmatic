@@ -33,9 +33,9 @@ def compact_segments(
         + (('--threshold', str(threshold)) if threshold else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (repository,)
     )
 
-    execute_command(full_command, output_log_level=logging.INFO, borg_local_path=local_path)
+    if not dry_run:
+        execute_command(full_command, output_log_level=logging.INFO, borg_local_path=local_path)
