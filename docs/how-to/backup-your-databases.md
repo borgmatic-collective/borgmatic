@@ -199,10 +199,10 @@ backups to avoid getting caught without a way to restore a database.
 databases that share the exact same name on different hosts.
 4. Because database hooks implicitly enable the `read_special` configuration
 setting to support dump and restore streaming, you'll need to ensure that any
-special files are excluded from backups (named pipes, block devices, and
-character devices) to prevent hanging. Try a command like `find / -type c,b,p`
-to find such files. Common directories to exclude are `/dev` and `/run`, but
-that may not be exhaustive.
+special files are excluded from backups (named pipes, block devices,
+character devices, and sockets) to prevent hanging. Try a command like
+`find /your/source/path -type c,b,p,s` to find such files. Common directories
+to exclude are `/dev` and `/run`, but that may not be exhaustive.
 
 
 ### Manual restoration
@@ -246,3 +246,8 @@ hooks:
 See Limitations above about `read_special`. You may need to exclude certain
 paths with named pipes, block devices, or character devices on which borgmatic
 is hanging.
+
+Alternatively, if excluding special files is too onerous, you can create two
+separate borgmatic configuration files—one for your source files and a
+separate one for backing up databases. That way, the database `read_special`
+option will not be active when backing up special files.
