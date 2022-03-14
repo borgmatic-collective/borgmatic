@@ -258,6 +258,7 @@ footer.elv-layout {
 /* Header */
 .elv-header {
 	position: relative;
+        text-align: center;
 }
 .elv-header-default {
 	display: flex;

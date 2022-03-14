@@ -1,9 +1,11 @@
-1.5.24.dev0
+1.5.24
  * #431: Add "working_directory" option to support source directories with relative paths.
  * #444: When loading a configuration file that is unreadable due to file permissions, warn instead
    of erroring. This supports running borgmatic as a non-root user with configuration in ~/.config
    even if there is an unreadable global configuration file in /etc.
- * #469: Add "repositories" context to "before_*" and "after_*" command action hooks.
+ * #469: Add "repositories" context to "before_*" and "after_*" command action hooks. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
  * #486: Fix handling of "patterns_from" and "exclude_from" options to error instead of warning when
    referencing unreadable files and "create" action is run.
  * #507: Fix Borg usage error in the "compact" action when running "borgmatic --dry-run". Now, skip
