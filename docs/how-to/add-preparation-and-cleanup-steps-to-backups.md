@@ -59,10 +59,10 @@ variables you can use here:
  * `repositories`: comma-separated paths of all repositories configured in the
    current borgmatic configuration file
 
+## Global hooks
+
 You can also use `before_everything` and `after_everything` hooks to perform
 global setup or cleanup:
-
-## Global hooks
 
 ```yaml
 hooks:
