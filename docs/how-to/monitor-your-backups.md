@@ -104,10 +104,9 @@ hooks:
         - send-text-message.sh "{configuration_filename}" "{repository}"
 ```
 
-In this example, when the error occurs, borgmatic interpolates a few runtime
-values into the hook command: the borgmatic configuration filename, and the
-path of the repository. Here's the full set of supported variables you can use
-here:
+In this example, when the error occurs, borgmatic interpolates runtime values
+into the hook command: the borgmatic configuration filename, and the path of
+the repository. Here's the full set of supported variables you can use here:
 
  * `configuration_filename`: borgmatic configuration filename in which the
    error occurred

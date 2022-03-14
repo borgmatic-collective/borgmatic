@@ -66,7 +66,7 @@ def run_configuration(config_filename, config, arguments):
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     hook_context = {
-        'repository': ','.join(location['repositories']),
+        'repositories': ','.join(location['repositories']),
     }
 
     try:

@@ -244,8 +244,8 @@ hooks:
 ### borgmatic hangs during backup
 
 See Limitations above about `read_special`. You may need to exclude certain
-paths with named pipes, block devices, or character devices on which borgmatic
-is hanging.
+paths with named pipes, block devices, character devices, or sockets on which
+borgmatic is hanging.
 
 Alternatively, if excluding special files is too onerous, you can create two
 separate borgmatic configuration files—one for your source files and a

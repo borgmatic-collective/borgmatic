@@ -37,8 +37,32 @@ There are additional hooks that run before/after other actions as well. For
 instance, `before_prune` runs before a `prune` action, while `after_prune`
 runs after it.
 
+## Variable interpolation
+
+The before and after action hooks support interpolating particular runtime
+variables into the hook command. Here's an example that assumes you provide a
+separate shell script:
+
+```yaml
+hooks:
+    after_prune:
+        - record-prune.sh "{configuration_filename}" "{repositories}"
+```
+
+In this example, when the hook is triggered, borgmatic interpolates runtime
+values into the hook command: the borgmatic configuration filename and the
+paths of all configured repositories. Here's the full set of supported
+variables you can use here:
+
+ * `configuration_filename`: borgmatic configuration filename in which the
+   hook was defined
+ * `repositories`: comma-separated paths of all repositories configured in the
+   current borgmatic configuration file
+
 You can also use `before_everything` and `after_everything` hooks to perform
 global setup or cleanup:
+
+## Global hooks
 
 ```yaml
 hooks:
@@ -57,6 +81,8 @@ causes borgmatic to exit without creating backups.
 but only if there is a `create` action. It runs even if an error occurs during
 a backup or a backup hook, but not if an error occurs during a
 `before_everything` hook.
+
+## Error hooks
 
 borgmatic also runs `on_error` hooks if an error occurs, either when creating
 a backup or running a backup hook. See the [monitoring and alerting
