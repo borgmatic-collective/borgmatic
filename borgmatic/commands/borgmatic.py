@@ -65,6 +65,10 @@ def run_configuration(config_filename, config, arguments):
     using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
+    hook_context = {
+        'repository': ','.join(location['repositories']),
+    }
+
     try:
         local_borg_version = borg_version.local_borg_version(local_path)
     except (OSError, CalledProcessError, ValueError) as error:
@@ -90,6 +94,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-prune',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'compact' in arguments:
             command.execute_hook(
@@ -106,6 +111,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-backup',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'check' in arguments:
             command.execute_hook(
@@ -114,6 +120,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-check',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if 'extract' in arguments:
             command.execute_hook(
@@ -122,6 +129,7 @@ def run_configuration(config_filename, config, arguments):
                 config_filename,
                 'pre-extract',
                 global_arguments.dry_run,
+                **hook_context,
             )
         if using_primary_action:
             dispatch.call_hooks(
@@ -188,6 +196,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-prune',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'compact' in arguments:
                 command.execute_hook(
@@ -212,6 +221,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-backup',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'check' in arguments:
                 command.execute_hook(
@@ -220,6 +230,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-check',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if 'extract' in arguments:
                 command.execute_hook(
@@ -228,6 +239,7 @@ def run_configuration(config_filename, config, arguments):
                     config_filename,
                     'post-extract',
                     global_arguments.dry_run,
+                    **hook_context,
                 )
             if using_primary_action:
                 dispatch.call_hooks(
