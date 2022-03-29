@@ -28,7 +28,7 @@ sudo pip3 install --user --upgrade borgmatic
 This installs borgmatic and its commands at the `/root/.local/bin` path.
 
 Your pip binary may have a different name than "pip3". Make sure you're using
-Python 3.6+, as borgmatic does not support Python 2.
+Python 3.7+, as borgmatic does not support older versions of Python.
 
 The next step is to ensure that borgmatic's commands available are on your
 system `PATH`, so that you can run borgmatic:
