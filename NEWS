@@ -1,4 +1,5 @@
 1.5.25.dev0
+ * #516: Fix handling of TERM signal to exit borgmatic, not just forward the signal to Borg.
  * #517: Fix borgmatic exit code (so it's zero) when initial Borg calls fail but later retries
    succeed.
 
