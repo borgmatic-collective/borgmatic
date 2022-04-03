@@ -1,3 +1,7 @@
+1.5.25.dev0
+ * #517: Fix borgmatic exit code (so it's zero) when initial Borg calls fail but later retries
+   succeed.
+
 1.5.24
  * #431: Add "working_directory" option to support source directories with relative paths.
  * #444: When loading a configuration file that is unreadable due to file permissions, warn instead

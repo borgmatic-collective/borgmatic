@@ -72,7 +72,7 @@ def run_configuration(config_filename, config, arguments):
     try:
         local_borg_version = borg_version.local_borg_version(local_path)
     except (OSError, CalledProcessError, ValueError) as error:
-        yield from make_error_log_records(
+        yield from log_error_records(
             '{}: Error getting local Borg version'.format(config_filename), error
         )
         return
@@ -146,9 +146,7 @@ def run_configuration(config_filename, config, arguments):
             return
 
         encountered_error = error
-        yield from make_error_log_records(
-            '{}: Error running pre hook'.format(config_filename), error
-        )
+        yield from log_error_records('{}: Error running pre hook'.format(config_filename), error)
 
     if not encountered_error:
         repo_queue = Queue()
@@ -175,15 +173,24 @@ def run_configuration(config_filename, config, arguments):
                     repository_path=repository_path,
                 )
             except (OSError, CalledProcessError, ValueError) as error:
-                yield from make_error_log_records(
-                    '{}: Error running actions for repository'.format(repository_path), error
-                )
                 if retry_num < retries:
                     repo_queue.put((repository_path, retry_num + 1),)
+                    tuple(  # Consume the generator so as to trigger logging.
+                        log_error_records(
+                            '{}: Error running actions for repository'.format(repository_path),
+                            error,
+                            levelno=logging.WARNING,
+                            log_command_error_output=True,
+                        )
+                    )
                     logger.warning(
                         f'{config_filename}: Retrying... attempt {retry_num + 1}/{retries}'
                     )
                     continue
+
+                yield from log_error_records(
+                    '{}: Error running actions for repository'.format(repository_path), error
+                )
                 encountered_error = error
                 error_repository = repository_path
 
@@ -264,7 +271,7 @@ def run_configuration(config_filename, config, arguments):
                 return
 
             encountered_error = error
-            yield from make_error_log_records(
+            yield from log_error_records(
                 '{}: Error running post hook'.format(config_filename), error
             )
 
@@ -301,7 +308,7 @@ def run_configuration(config_filename, config, arguments):
             if command.considered_soft_failure(config_filename, error):
                 return
 
-            yield from make_error_log_records(
+            yield from log_error_records(
                 '{}: Error running on-error hook'.format(config_filename), error
             )
 
@@ -704,28 +711,39 @@ def log_record(suppress_log=False, **kwargs):
     return record
 
 
-def make_error_log_records(message, error=None):
+def log_error_records(
+    message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
+):
     '''
-    Given error message text and an optional exception object, yield a series of logging.LogRecord
-    instances with error summary information. As a side effect, log each record.
+    Given error message text, an optional exception object, an optional log level, and whether to
+    log the error output of a CalledProcessError (if any), log error summary information and also
+    yield it as a series of logging.LogRecord instances.
+
+    Note that because the logs are yielded as a generator, logs won't get logged unless you consume
+    the generator output.
     '''
+    level_name = logging._levelToName[levelno]
+
     if not error:
-        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        yield log_record(levelno=levelno, levelname=level_name, msg=message)
         return
 
     try:
         raise error
     except CalledProcessError as error:
-        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
+        yield log_record(levelno=levelno, levelname=level_name, msg=message)
         if error.output:
             # Suppress these logs for now and save full error output for the log summary at the end.
             yield log_record(
-                levelno=logging.CRITICAL, levelname='CRITICAL', msg=error.output, suppress_log=True
+                levelno=levelno,
+                levelname=level_name,
+                msg=error.output,
+                suppress_log=not log_command_error_output,
             )
-        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+        yield log_record(levelno=levelno, levelname=level_name, msg=error)
     except (ValueError, OSError) as error:
-        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=message)
-        yield log_record(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+        yield log_record(levelno=levelno, levelname=level_name, msg=message)
+        yield log_record(levelno=levelno, levelname=level_name, msg=error)
     except:  # noqa: E722
         # Raising above only as a means of determining the error type. Swallow the exception here
         # because we don't want the exception to propagate out of this function.
@@ -764,11 +782,11 @@ def collect_configuration_run_summary_logs(configs, arguments):
         try:
             validate.guard_configuration_contains_repository(repository, configs)
         except ValueError as error:
-            yield from make_error_log_records(str(error))
+            yield from log_error_records(str(error))
             return
 
     if not configs:
-        yield from make_error_log_records(
+        yield from log_error_records(
             '{}: No valid configuration files found'.format(
                 ' '.join(arguments['global'].config_paths)
             )
@@ -787,7 +805,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     arguments['global'].dry_run,
                 )
         except (CalledProcessError, ValueError, OSError) as error:
-            yield from make_error_log_records('Error running pre-everything hook', error)
+            yield from log_error_records('Error running pre-everything hook', error)
             return
 
     # Execute the actions corresponding to each configuration file.
@@ -797,7 +815,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
         if error_logs:
-            yield from make_error_log_records(
+            yield from log_error_records(
                 '{}: Error running configuration file'.format(config_filename)
             )
             yield from error_logs
@@ -819,7 +837,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
                 mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs)
             )
         except (CalledProcessError, OSError) as error:
-            yield from make_error_log_records('Error unmounting mount point', error)
+            yield from log_error_records('Error unmounting mount point', error)
 
     if json_results:
         sys.stdout.write(json.dumps(json_results))
@@ -836,7 +854,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     arguments['global'].dry_run,
                 )
         except (CalledProcessError, ValueError, OSError) as error:
-            yield from make_error_log_records('Error running post-everything hook', error)
+            yield from log_error_records('Error running post-everything hook', error)
 
 
 def exit_with_help_link():  # pragma: no cover
