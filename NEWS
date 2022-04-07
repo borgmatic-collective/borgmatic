@@ -2,6 +2,8 @@
  * #516: Fix handling of TERM signal to exit borgmatic, not just forward the signal to Borg.
  * #517: Fix borgmatic exit code (so it's zero) when initial Borg calls fail but later retries
    succeed.
+ * Change Healthchecks logs truncation size from 10k bytes to 100k bytes, corresponding to that
+   same change on Healthchecks.io.
 
 1.5.24
  * #431: Add "working_directory" option to support source directories with relative paths.
