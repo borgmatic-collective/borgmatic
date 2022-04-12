@@ -53,10 +53,10 @@ properties:
             one_file_system:
                 type: boolean
                 description: |
-                    Stay in same file system (do not cross mount points).
-                    Defaults to false. But when a database hook is used, the
-                    setting here is ignored and one_file_system is considered
-                    true.
+                    Stay in same file system: do not cross mount points beyond
+                    the given source directories. Defaults to false. But when a
+                    database hook is used, the setting here is ignored and
+                    one_file_system is considered true.
                 example: true
             numeric_owner:
                 type: boolean
