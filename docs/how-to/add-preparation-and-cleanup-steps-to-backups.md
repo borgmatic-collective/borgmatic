@@ -7,11 +7,12 @@ eleventyNavigation:
 ---
 ## Preparation and cleanup hooks
 
-If you find yourself performing prepraration tasks before your backup runs, or
+If you find yourself performing preparation tasks before your backup runs, or
 cleanup work afterwards, borgmatic hooks may be of interest. Hooks are shell
-commands that borgmatic executes for you at various points, and they're
-configured in the `hooks` section of your configuration file. But if you're
-looking to backup a database, it's probably easier to use the [database backup
+commands that borgmatic executes for you at various points as it runs, and
+they're configured in the `hooks` section of your configuration file. But if
+you're looking to backup a database, it's probably easier to use the [database
+backup
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.
 
@@ -27,15 +28,14 @@ hooks:
         - umount /some/filesystem
 ```
 
-The `before_backup` and `after_backup` hooks each run once per configuration
-file. `before_backup` hooks run prior to backups of all repositories in a
-configuration file, right before the `create` action. `after_backup` hooks run
-afterwards, but not if an error occurs in a previous hook or in the backups
-themselves.
+The `before_backup` and `after_backup` hooks each run once per repository in a
+configuration file. `before_backup` hooks runs right before the `create`
+action for a particular repository, and `after_backup` hooks run afterwards,
+but not if an error occurs in a previous hook or in the backups themselves.
 
 There are additional hooks that run before/after other actions as well. For
-instance, `before_prune` runs before a `prune` action, while `after_prune`
-runs after it.
+instance, `before_prune` runs before a `prune` action for a repository, while
+`after_prune` runs after it.
 
 ## Variable interpolation
 
@@ -46,18 +46,18 @@ separate shell script:
 ```yaml
 hooks:
     after_prune:
-        - record-prune.sh "{configuration_filename}" "{repositories}"
+        - record-prune.sh "{configuration_filename}" "{repository}"
 ```
 
 In this example, when the hook is triggered, borgmatic interpolates runtime
 values into the hook command: the borgmatic configuration filename and the
-paths of all configured repositories. Here's the full set of supported
+paths of the current Borg repository. Here's the full set of supported
 variables you can use here:
 
  * `configuration_filename`: borgmatic configuration filename in which the
    hook was defined
- * `repositories`: comma-separated paths of all repositories configured in the
-   current borgmatic configuration file
+ * `repository`: path of the current repository as configured in the current
+   borgmatic configuration file
 
 ## Global hooks
 

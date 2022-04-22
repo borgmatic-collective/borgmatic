@@ -35,75 +35,36 @@ def test_run_configuration_with_invalid_borg_version_errors():
     list(module.run_configuration('test.yaml', config, arguments))
 
 
-def test_run_configuration_calls_hooks_for_prune_action():
+def test_run_configuration_logs_monitor_start_error():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').twice()
-    flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'prune': flexmock()}
-
-    list(module.run_configuration('test.yaml', config, arguments))
-
-
-def test_run_configuration_calls_hooks_for_compact_action():
-    flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').twice()
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'compact': flexmock()}
-
-    list(module.run_configuration('test.yaml', config, arguments))
-
-
-def test_run_configuration_executes_and_calls_hooks_for_create_action():
-    flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').twice()
-    flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
-    flexmock(module).should_receive('run_actions').and_return([])
+    flexmock(module.dispatch).should_receive('call_hooks').and_raise(OSError).and_return(
+        None
+    ).and_return(None)
+    expected_results = [flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    flexmock(module).should_receive('run_actions').never()
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
-    list(module.run_configuration('test.yaml', config, arguments))
+    results = list(module.run_configuration('test.yaml', config, arguments))
+
+    assert results == expected_results
 
 
-def test_run_configuration_calls_hooks_for_check_action():
+def test_run_configuration_bails_for_monitor_start_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').twice()
-    flexmock(module.dispatch).should_receive('call_hooks').at_least().twice()
-    flexmock(module).should_receive('run_actions').and_return([])
+    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    flexmock(module.dispatch).should_receive('call_hooks').and_raise(error)
+    flexmock(module).should_receive('log_error_records').never()
+    flexmock(module).should_receive('run_actions').never()
     config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'check': flexmock()}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
-    list(module.run_configuration('test.yaml', config, arguments))
+    results = list(module.run_configuration('test.yaml', config, arguments))
 
-
-def test_run_configuration_calls_hooks_for_extract_action():
-    flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').twice()
-    flexmock(module.dispatch).should_receive('call_hooks').never()
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'extract': flexmock()}
-
-    list(module.run_configuration('test.yaml', config, arguments))
-
-
-def test_run_configuration_does_not_trigger_hooks_for_list_action():
-    flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').never()
-    flexmock(module.dispatch).should_receive('call_hooks').never()
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'list': flexmock()}
-
-    list(module.run_configuration('test.yaml', config, arguments))
+    assert results == []
 
 
 def test_run_configuration_logs_actions_error():
@@ -122,28 +83,14 @@ def test_run_configuration_logs_actions_error():
     assert results == expected_results
 
 
-def test_run_configuration_logs_pre_hook_error():
+def test_run_configuration_bails_for_actions_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').and_raise(OSError).and_return(None)
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
-    flexmock(module).should_receive('run_actions').never()
-    config = {'location': {'repositories': ['foo']}}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, arguments))
-
-    assert results == expected_results
-
-
-def test_run_configuration_bails_for_pre_hook_soft_failure():
-    flexmock(module.borg_environment).should_receive('initialize')
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks')
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.command).should_receive('execute_hook').and_raise(error).and_return(None)
+    flexmock(module).should_receive('run_actions').and_raise(error)
     flexmock(module).should_receive('log_error_records').never()
-    flexmock(module).should_receive('run_actions').never()
+    flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
@@ -152,13 +99,12 @@ def test_run_configuration_bails_for_pre_hook_soft_failure():
     assert results == []
 
 
-def test_run_configuration_logs_post_hook_error():
+def test_run_configuration_logs_monitor_finish_error():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(
-        OSError
-    ).and_return(None)
-    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
+        None
+    ).and_raise(OSError)
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').and_return([])
@@ -170,16 +116,16 @@ def test_run_configuration_logs_post_hook_error():
     assert results == expected_results
 
 
-def test_run_configuration_bails_for_post_hook_soft_failure():
+def test_run_configuration_bails_for_monitor_finish_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(
-        error
-    ).and_return(None)
-    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
+        None
+    ).and_raise(error)
     flexmock(module).should_receive('log_error_records').never()
     flexmock(module).should_receive('run_actions').and_return([])
+    flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
@@ -209,7 +155,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module.borg_environment).should_receive('initialize')
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(error)
+    flexmock(module.command).should_receive('execute_hook').and_raise(error)
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').and_raise(OSError)
@@ -409,6 +355,313 @@ def test_run_configuration_retries_timeout_multiple_repos():
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
     results = list(module.run_configuration('test.yaml', config, arguments))
     assert results == error_logs
+
+
+def test_run_actions_does_not_raise_for_init_action():
+    flexmock(module.borg_init).should_receive('initialize_repository')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'init': flexmock(
+            encryption_mode=flexmock(), append_only=flexmock(), storage_quota=flexmock()
+        ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_calls_hooks_for_prune_action():
+    flexmock(module.borg_prune).should_receive('prune_archives')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'prune': flexmock(stats=flexmock(), files=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_calls_hooks_for_compact_action():
+    flexmock(module.borg_feature).should_receive('available').and_return(True)
+    flexmock(module.borg_compact).should_receive('compact_segments')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'compact': flexmock(progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_executes_and_calls_hooks_for_create_action():
+    flexmock(module.borg_create).should_receive('create_archive')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.dispatch).should_receive('call_hooks').and_return({}).times(3)
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'create': flexmock(
+            progress=flexmock(), stats=flexmock(), json=flexmock(), files=flexmock()
+        ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_calls_hooks_for_check_action():
+    flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
+    flexmock(module.borg_check).should_receive('check_archives')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'check': flexmock(progress=flexmock(), repair=flexmock(), only=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_calls_hooks_for_extract_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_extract).should_receive('extract_archive')
+    flexmock(module.command).should_receive('execute_hook').twice()
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'extract': flexmock(
+            paths=flexmock(),
+            progress=flexmock(),
+            destination=flexmock(),
+            strip_components=flexmock(),
+            archive=flexmock(),
+            repository='repo',
+        ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_export_tar_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_export_tar).should_receive('export_tar_archive')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'export-tar': flexmock(
+            repository=flexmock(),
+            archive=flexmock(),
+            paths=flexmock(),
+            destination=flexmock(),
+            tar_filter=flexmock(),
+            files=flexmock(),
+            strip_components=flexmock(),
+        ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_mount_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_mount).should_receive('mount_archive')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'mount': flexmock(
+            repository=flexmock(),
+            archive=flexmock(),
+            mount_point=flexmock(),
+            paths=flexmock(),
+            foreground=flexmock(),
+            options=flexmock(),
+        ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_list_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_list).should_receive('list_archives')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'list': flexmock(repository=flexmock(), archive=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_info_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_info).should_receive('display_archives_info')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'info': flexmock(repository=flexmock(), archive=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_borg_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_borg).should_receive('run_arbitrary_borg')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'borg': flexmock(repository=flexmock(), archive=flexmock(), options=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
 
 
 def test_load_configurations_collects_parsed_configurations():

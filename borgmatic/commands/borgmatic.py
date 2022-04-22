@@ -65,10 +65,6 @@ def run_configuration(config_filename, config, arguments):
     using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
-    hook_context = {
-        'repositories': ','.join(location['repositories']),
-    }
-
     try:
         local_borg_version = borg_version.local_borg_version(local_path)
     except (OSError, CalledProcessError, ValueError) as error:
@@ -87,50 +83,6 @@ def run_configuration(config_filename, config, arguments):
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
-        if 'prune' in arguments:
-            command.execute_hook(
-                hooks.get('before_prune'),
-                hooks.get('umask'),
-                config_filename,
-                'pre-prune',
-                global_arguments.dry_run,
-                **hook_context,
-            )
-        if 'compact' in arguments:
-            command.execute_hook(
-                hooks.get('before_compact'),
-                hooks.get('umask'),
-                config_filename,
-                'pre-compact',
-                global_arguments.dry_run,
-            )
-        if 'create' in arguments:
-            command.execute_hook(
-                hooks.get('before_backup'),
-                hooks.get('umask'),
-                config_filename,
-                'pre-backup',
-                global_arguments.dry_run,
-                **hook_context,
-            )
-        if 'check' in arguments:
-            command.execute_hook(
-                hooks.get('before_check'),
-                hooks.get('umask'),
-                config_filename,
-                'pre-check',
-                global_arguments.dry_run,
-                **hook_context,
-            )
-        if 'extract' in arguments:
-            command.execute_hook(
-                hooks.get('before_extract'),
-                hooks.get('umask'),
-                config_filename,
-                'pre-extract',
-                global_arguments.dry_run,
-                **hook_context,
-            )
         if using_primary_action:
             dispatch.call_hooks(
                 'ping_monitor',
@@ -146,7 +98,7 @@ def run_configuration(config_filename, config, arguments):
             return
 
         encountered_error = error
-        yield from log_error_records('{}: Error running pre hook'.format(config_filename), error)
+        yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
 
     if not encountered_error:
         repo_queue = Queue()
@@ -162,6 +114,7 @@ def run_configuration(config_filename, config, arguments):
             try:
                 yield from run_actions(
                     arguments=arguments,
+                    config_filename=config_filename,
                     location=location,
                     storage=storage,
                     retention=retention,
@@ -188,6 +141,9 @@ def run_configuration(config_filename, config, arguments):
                     )
                     continue
 
+                if command.considered_soft_failure(config_filename, error):
+                    return
+
                 yield from log_error_records(
                     '{}: Error running actions for repository'.format(repository_path), error
                 )
@@ -196,58 +152,6 @@ def run_configuration(config_filename, config, arguments):
 
     if not encountered_error:
         try:
-            if 'prune' in arguments:
-                command.execute_hook(
-                    hooks.get('after_prune'),
-                    hooks.get('umask'),
-                    config_filename,
-                    'post-prune',
-                    global_arguments.dry_run,
-                    **hook_context,
-                )
-            if 'compact' in arguments:
-                command.execute_hook(
-                    hooks.get('after_compact'),
-                    hooks.get('umask'),
-                    config_filename,
-                    'post-compact',
-                    global_arguments.dry_run,
-                )
-            if 'create' in arguments:
-                dispatch.call_hooks(
-                    'remove_database_dumps',
-                    hooks,
-                    config_filename,
-                    dump.DATABASE_HOOK_NAMES,
-                    location,
-                    global_arguments.dry_run,
-                )
-                command.execute_hook(
-                    hooks.get('after_backup'),
-                    hooks.get('umask'),
-                    config_filename,
-                    'post-backup',
-                    global_arguments.dry_run,
-                    **hook_context,
-                )
-            if 'check' in arguments:
-                command.execute_hook(
-                    hooks.get('after_check'),
-                    hooks.get('umask'),
-                    config_filename,
-                    'post-check',
-                    global_arguments.dry_run,
-                    **hook_context,
-                )
-            if 'extract' in arguments:
-                command.execute_hook(
-                    hooks.get('after_extract'),
-                    hooks.get('umask'),
-                    config_filename,
-                    'post-extract',
-                    global_arguments.dry_run,
-                    **hook_context,
-                )
             if using_primary_action:
                 dispatch.call_hooks(
                     'ping_monitor',
@@ -271,9 +175,7 @@ def run_configuration(config_filename, config, arguments):
                 return
 
             encountered_error = error
-            yield from log_error_records(
-                '{}: Error running post hook'.format(config_filename), error
-            )
+            yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
 
     if encountered_error and using_primary_action:
         try:
@@ -316,6 +218,7 @@ def run_configuration(config_filename, config, arguments):
 def run_actions(
     *,
     arguments,
+    config_filename,
     location,
     storage,
     retention,
@@ -325,20 +228,28 @@ def run_actions(
     remote_path,
     local_borg_version,
     repository_path,
-):  # pragma: no cover
+):
     '''
-    Given parsed command-line arguments as an argparse.ArgumentParser instance, several different
-    configuration dicts, local and remote paths to Borg, a local Borg version string, and a
-    repository name, run all actions from the command-line arguments on the given repository.
+    Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
+    filename, several different configuration dicts, local and remote paths to Borg, a local Borg
+    version string, and a repository name, run all actions from the command-line arguments on the
+    given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
 
     Raise OSError or subprocess.CalledProcessError if an error occurs running a command for an
-    action. Raise ValueError if the arguments or configuration passed to action are invalid.
+    action or a hook. Raise ValueError if the arguments or configuration passed to action are
+    invalid.
     '''
     repository = os.path.expanduser(repository_path)
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
+    hook_context = {
+        'repository': repository_path,
+        # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
+        'repositories': ','.join(location['repositories']),
+    }
+
     if 'init' in arguments:
         logger.info('{}: Initializing repository'.format(repository))
         borg_init.initialize_repository(
@@ -351,6 +262,14 @@ def run_actions(
             remote_path=remote_path,
         )
     if 'prune' in arguments:
+        command.execute_hook(
+            hooks.get('before_prune'),
+            hooks.get('umask'),
+            config_filename,
+            'pre-prune',
+            global_arguments.dry_run,
+            **hook_context,
+        )
         logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
         borg_prune.prune_archives(
             global_arguments.dry_run,
@@ -362,7 +281,22 @@ def run_actions(
             stats=arguments['prune'].stats,
             files=arguments['prune'].files,
         )
+        command.execute_hook(
+            hooks.get('after_prune'),
+            hooks.get('umask'),
+            config_filename,
+            'post-prune',
+            global_arguments.dry_run,
+            **hook_context,
+        )
     if 'compact' in arguments:
+        command.execute_hook(
+            hooks.get('before_compact'),
+            hooks.get('umask'),
+            config_filename,
+            'pre-compact',
+            global_arguments.dry_run,
+        )
         if borg_feature.available(borg_feature.Feature.COMPACT, local_borg_version):
             logger.info('{}: Compacting segments{}'.format(repository, dry_run_label))
             borg_compact.compact_segments(
@@ -375,11 +309,26 @@ def run_actions(
                 cleanup_commits=arguments['compact'].cleanup_commits,
                 threshold=arguments['compact'].threshold,
             )
-        else:
+        else:  # pragma: nocover
             logger.info(
                 '{}: Skipping compact (only available/needed in Borg 1.2+)'.format(repository)
             )
+        command.execute_hook(
+            hooks.get('after_compact'),
+            hooks.get('umask'),
+            config_filename,
+            'post-compact',
+            global_arguments.dry_run,
+        )
     if 'create' in arguments:
+        command.execute_hook(
+            hooks.get('before_backup'),
+            hooks.get('umask'),
+            config_filename,
+            'pre-backup',
+            global_arguments.dry_run,
+            **hook_context,
+        )
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
         dispatch.call_hooks(
             'remove_database_dumps',
@@ -413,10 +362,35 @@ def run_actions(
             files=arguments['create'].files,
             stream_processes=stream_processes,
         )
-        if json_output:
+        if json_output:  # pragma: nocover
             yield json.loads(json_output)
 
+        dispatch.call_hooks(
+            'remove_database_dumps',
+            hooks,
+            config_filename,
+            dump.DATABASE_HOOK_NAMES,
+            location,
+            global_arguments.dry_run,
+        )
+        command.execute_hook(
+            hooks.get('after_backup'),
+            hooks.get('umask'),
+            config_filename,
+            'post-backup',
+            global_arguments.dry_run,
+            **hook_context,
+        )
+
     if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
+        command.execute_hook(
+            hooks.get('before_check'),
+            hooks.get('umask'),
+            config_filename,
+            'pre-check',
+            global_arguments.dry_run,
+            **hook_context,
+        )
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
             repository,
@@ -428,7 +402,23 @@ def run_actions(
             repair=arguments['check'].repair,
             only_checks=arguments['check'].only,
         )
+        command.execute_hook(
+            hooks.get('after_check'),
+            hooks.get('umask'),
+            config_filename,
+            'post-check',
+            global_arguments.dry_run,
+            **hook_context,
+        )
     if 'extract' in arguments:
+        command.execute_hook(
+            hooks.get('before_extract'),
+            hooks.get('umask'),
+            config_filename,
+            'pre-extract',
+            global_arguments.dry_run,
+            **hook_context,
+        )
         if arguments['extract'].repository is None or validate.repositories_match(
             repository, arguments['extract'].repository
         ):
@@ -451,6 +441,14 @@ def run_actions(
                 strip_components=arguments['extract'].strip_components,
                 progress=arguments['extract'].progress,
             )
+        command.execute_hook(
+            hooks.get('after_extract'),
+            hooks.get('umask'),
+            config_filename,
+            'post-extract',
+            global_arguments.dry_run,
+            **hook_context,
+        )
     if 'export-tar' in arguments:
         if arguments['export-tar'].repository is None or validate.repositories_match(
             repository, arguments['export-tar'].repository
@@ -483,7 +481,7 @@ def run_actions(
                 logger.info(
                     '{}: Mounting archive {}'.format(repository, arguments['mount'].archive)
                 )
-            else:
+            else:  # pragma: nocover
                 logger.info('{}: Mounting repository'.format(repository))
 
             borg_mount.mount_archive(
@@ -499,7 +497,7 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
             )
-    if 'restore' in arguments:
+    if 'restore' in arguments:  # pragma: nocover
         if arguments['restore'].repository is None or validate.repositories_match(
             repository, arguments['restore'].repository
         ):
@@ -598,7 +596,7 @@ def run_actions(
             repository, arguments['list'].repository
         ):
             list_arguments = copy.copy(arguments['list'])
-            if not list_arguments.json:
+            if not list_arguments.json:  # pragma: nocover
                 logger.warning('{}: Listing archives'.format(repository))
             list_arguments.archive = borg_list.resolve_archive_name(
                 repository, list_arguments.archive, storage, local_path, remote_path
@@ -610,14 +608,14 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
             )
-            if json_output:
+            if json_output:  # pragma: nocover
                 yield json.loads(json_output)
     if 'info' in arguments:
         if arguments['info'].repository is None or validate.repositories_match(
             repository, arguments['info'].repository
         ):
             info_arguments = copy.copy(arguments['info'])
-            if not info_arguments.json:
+            if not info_arguments.json:  # pragma: nocover
                 logger.warning('{}: Displaying summary info for archives'.format(repository))
             info_arguments.archive = borg_list.resolve_archive_name(
                 repository, info_arguments.archive, storage, local_path, remote_path
@@ -629,7 +627,7 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
             )
-            if json_output:
+            if json_output:  # pragma: nocover
                 yield json.loads(json_output)
     if 'borg' in arguments:
         if arguments['borg'].repository is None or validate.repositories_match(
