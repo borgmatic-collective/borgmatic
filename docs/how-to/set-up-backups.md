@@ -51,6 +51,11 @@ sudo borgmatic --version
 
 If borgmatic is properly installed, that should output your borgmatic version.
 
+As an alternative to adding the path to `~/.bashrc` file, if you're using sudo
+to run borgmatic, you can configure [sudo's
+`secure_path` option](https://man.archlinux.org/man/sudoers.5) to include
+borgmatic's path.
+
 
 ### Global install option
 
