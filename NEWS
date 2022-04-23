@@ -6,6 +6,7 @@
    once for each configured repository instead of once per configuration file. Additionally, the
    "repositories" interpolated variable has been changed to "repository", containing the path to the
    current repository for the hook.
+ * #515: Fix "borgmatic borg key ..." to pass parameters to Borg in correct order.
  * #516: Fix handling of TERM signal to exit borgmatic, not just forward the signal to Borg.
  * #517: Fix borgmatic exit code (so it's zero) when initial Borg calls fail but later retries
    succeed.

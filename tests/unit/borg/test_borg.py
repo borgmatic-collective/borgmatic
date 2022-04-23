@@ -121,3 +121,13 @@ def test_run_arbitrary_borg_without_borg_specific_parameters_does_not_raise():
     module.run_arbitrary_borg(
         repository='repo', storage_config={}, options=[],
     )
+
+
+def test_run_arbitrary_borg_passes_key_sub_command_to_borg_before_repository():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'key', 'export', 'repo'), output_log_level=logging.WARNING, borg_local_path='borg',
+    )
+
+    module.run_arbitrary_borg(
+        repository='repo', storage_config={}, options=['key', 'export'],
+    )

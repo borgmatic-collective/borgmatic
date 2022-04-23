@@ -21,17 +21,20 @@ def run_arbitrary_borg(
 
     try:
         options = options[1:] if options[0] == '--' else options
-        borg_command = options[0]
-        command_options = tuple(options[1:])
+
+        # Borg's "key" command has a sub-command ("export", etc.) that must follow it.
+        command_options_start_index = 2 if options[0] == 'key' else 1
+        borg_command = tuple(options[:command_options_start_index])
+        command_options = tuple(options[command_options_start_index:])
     except IndexError:
-        borg_command = None
+        borg_command = ()
         command_options = ()
 
     repository_archive = '::'.join((repository, archive)) if repository and archive else repository
 
     full_command = (
         (local_path,)
-        + ((borg_command,) if borg_command else ())
+        + borg_command
         + ((repository_archive,) if borg_command and repository_archive else ())
         + command_options
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
