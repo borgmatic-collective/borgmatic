@@ -32,6 +32,8 @@ The `before_backup` and `after_backup` hooks each run once per repository in a
 configuration file. `before_backup` hooks runs right before the `create`
 action for a particular repository, and `after_backup` hooks run afterwards,
 but not if an error occurs in a previous hook or in the backups themselves.
+(Prior to borgmatic 1.6.0, these hooks instead ran once per configuration file
+rather than once per repository.)
 
 There are additional hooks that run before/after other actions as well. For
 instance, `before_prune` runs before a `prune` action for a repository, while
