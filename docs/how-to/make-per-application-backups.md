@@ -113,7 +113,7 @@ Once this include gets merged in, the resulting configuration would have a
 `keep_hourly` value of `24` and an overridden `keep_daily` value of `5`.
 
 When there's an option collision between the local file and the merged
-include, the local file's option takes precedent. And as of borgmatic 1.6.0,
+include, the local file's option takes precedence. And as of borgmatic 1.6.0,
 this feature performs a deep merge, meaning that values are merged at all
 levels in the two configuration files. This allows you to include common
 configuration—up to full borgmatic configuration files—while overriding only
