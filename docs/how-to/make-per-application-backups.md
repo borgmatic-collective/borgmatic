@@ -80,7 +80,7 @@ location:
 !include /etc/borgmatic/common_retention.yaml
 ```
 
-But if you do want to merge in a YAML key and its values, keep reading!
+But if you do want to merge in a YAML key *and* its values, keep reading!
 
 
 ## Include merging
@@ -89,31 +89,35 @@ If you need to get even fancier and pull in common configuration options while
 potentially overriding individual options, you can perform a YAML merge of
 included configuration using the YAML `<<` key. For instance, here's an
 example of a main configuration file that pulls in two retention options via
-an include, and then overrides one of them locally:
+an include and then overrides one of them locally:
 
 ```yaml
+<<: !include /etc/borgmatic/common.yaml
+
 location:
    ...
 
 retention:
     keep_daily: 5
-    <<: !include /etc/borgmatic/common_retention.yaml
 ```
 
-This is what `common_retention.yaml` might look like:
+This is what `common.yaml` might look like:
 
 ```yaml
-keep_hourly: 24
-keep_daily: 7
+retention:
+    keep_hourly: 24
+    keep_daily: 7
 ```
 
 Once this include gets merged in, the resulting configuration would have a
 `keep_hourly` value of `24` and an overridden `keep_daily` value of `5`.
 
-When there is a collision of an option between the local file and the merged
-include, the local file's option takes precedent. And note that this is a
-shallow merge rather than a deep merge, so the merging does not descend into
-nested values.
+When there's an option collision between the local file and the merged
+include, the local file's option takes precedent. And as of borgmatic 1.6.0,
+this feature performs a deep merge, meaning that values are merged at all
+levels in the two configuration files. This allows you to include common
+configuration—up to full borgmatic configuration files—while overriding only
+the parts you want to customize.
 
 Note that this `<<` include merging syntax is only for merging in mappings
 (keys/values). If you'd like to include other types like scalars or lists
