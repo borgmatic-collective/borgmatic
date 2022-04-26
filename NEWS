@@ -8,7 +8,8 @@
    timing-sensitive tasks like pausing containers. Side effect: before/after command hooks now run
    once for each configured repository instead of once per configuration file. Additionally, the
    "repositories" interpolated variable has been changed to "repository", containing the path to the
-   current repository for the hook.
+   current repository for the hook. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
  * #513: Add mention of sudo's "secure_path" option to borgmatic installation documentation.
  * #515: Fix "borgmatic borg key ..." to pass parameters to Borg in the correct order.
  * #516: Fix handling of TERM signal to exit borgmatic, not just forward the signal to Borg.
