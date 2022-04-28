@@ -32,10 +32,16 @@ perform any merging of configuration files by default. If you'd like borgmatic
 to merge your configuration files, see below about configuration includes.
 
 Additionally, the `~/.config/borgmatic.d/` directory works the same way as
-`/etc/borgmatic.d`. If you need even more customizability, you can specify
-alternate configuration paths on the command-line with borgmatic's `--config`
-flag. See `borgmatic --help` for more information.
+`/etc/borgmatic.d`.
 
+If you need even more customizability, you can specify alternate configuration
+paths on the command-line with borgmatic's `--config` flag. (See `borgmatic
+--help` for more information.) For instance, if you want to schedule your
+various borgmatic backups to run at different times, you'll need multiple
+entries in your [scheduling software of
+choice](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot),
+each entry using borgmatic's `--config` flag instead of relying on
+`/etc/borgmatic.d`.
 
 ## Configuration includes
 
