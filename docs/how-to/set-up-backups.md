@@ -92,7 +92,6 @@ installing borgmatic:
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
- * [stand-alone binary](https://github.com/cmarquardt/borgmatic-binary)
  * [virtualenv](https://virtualenv.pypa.io/en/stable/)
 
 
