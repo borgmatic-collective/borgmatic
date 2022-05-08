@@ -1,3 +1,6 @@
+1.6.1.dev0
+ * Add a randomized delay to the sample systemd timer to spread out the load on a server.
+
 1.6.0
  * #381: BREAKING: Greatly simplify configuration file reuse by deep merging when including common
    configuration. See the documentation for more information:
