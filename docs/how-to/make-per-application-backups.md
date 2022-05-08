@@ -126,8 +126,8 @@ configuration—up to full borgmatic configuration files—while overriding only
 the parts you want to customize.
 
 Note that this `<<` include merging syntax is only for merging in mappings
-(keys/values). If you'd like to include other types like scalars or lists
-directly, please see the section above about standard includes.
+(configuration options and their values). But if you'd like to include a
+single value directly, please see the section above about standard includes.
 
 
 ## Configuration overrides
