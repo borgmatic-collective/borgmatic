@@ -33,7 +33,8 @@ As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
 additional disk space. (The exceptions are the PostgreSQL/MongoDB "directory"
 dump formats, which can't stream and therefore do consume temporary disk
-space.)
+space. Additionally, prior to borgmatic 1.5.3, all database dumps consumed
+temporary disk space.)
 
 To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
 default. To customize this path, set the `borgmatic_source_directory` option
