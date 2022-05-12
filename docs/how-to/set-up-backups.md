@@ -83,6 +83,7 @@ Besides the approaches described above, there are several other options for
 installing borgmatic:
 
  * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
+ * [Docker image with multi-arch and Docker CLI support](https://hub.docker.com/r/modem7/borgmatic-docker/)
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
