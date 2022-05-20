@@ -1,7 +1,7 @@
 ---
 title: Configuration reference
 eleventyNavigation:
-  key: Configuration reference
+  key: ⚙️ Configuration reference
   parent: Reference guides
   order: 0
 ---

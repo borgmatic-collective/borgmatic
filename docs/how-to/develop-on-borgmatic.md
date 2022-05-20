@@ -1,7 +1,7 @@
 ---
 title: How to develop on borgmatic
 eleventyNavigation:
-  key: Develop on borgmatic
+  key: 🏗️ Develop on borgmatic
   parent: How-to guides
   order: 12
 ---

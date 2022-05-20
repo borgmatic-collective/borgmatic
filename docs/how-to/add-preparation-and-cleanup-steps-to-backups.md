@@ -1,7 +1,7 @@
 ---
 title: How to add preparation and cleanup steps to backups
 eleventyNavigation:
-  key: Add preparation and cleanup steps
+  key: 🧹 Add preparation and cleanup steps
   parent: How-to guides
   order: 8
 ---

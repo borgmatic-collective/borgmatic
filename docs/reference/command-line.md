@@ -1,7 +1,7 @@
 ---
 title: Command-line reference
 eleventyNavigation:
-  key: Command-line reference
+  key: ⌨️ Command-line reference
   parent: Reference guides
   order: 1
 ---

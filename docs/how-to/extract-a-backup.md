@@ -1,7 +1,7 @@
 ---
 title: How to extract a backup
 eleventyNavigation:
-  key: Extract a backup
+  key: 📤 Extract a backup
   parent: How-to guides
   order: 6
 ---

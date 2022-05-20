@@ -1,7 +1,7 @@
 ---
 title: How to inspect your backups
 eleventyNavigation:
-  key: Inspect your backups
+  key: 🔎 Inspect your backups
   parent: How-to guides
   order: 4
 ---

@@ -1,7 +1,7 @@
 ---
 title: How to make backups redundant
 eleventyNavigation:
-  key: Make backups redundant
+  key: ☁️  Make backups redundant
   parent: How-to guides
   order: 2
 ---

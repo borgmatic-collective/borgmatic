@@ -3,6 +3,8 @@
    directory or from the directory containing the file doing the including. (Previously, only the
    working directory was used.)
  * Add a randomized delay to the sample systemd timer to spread out the load on a server.
+ * Add emojis to documentation table of contents to make it easier to find particular how-to and
+   reference guides at a glance.
 
 1.6.0
  * #381: BREAKING: Greatly simplify configuration file reuse by deep merging when including common

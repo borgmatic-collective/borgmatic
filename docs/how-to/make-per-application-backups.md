@@ -1,7 +1,7 @@
 ---
 title: How to make per-application backups
 eleventyNavigation:
-  key: Make per-application backups
+  key: 🔀 Make per-application backups
   parent: How-to guides
   order: 1
 ---
