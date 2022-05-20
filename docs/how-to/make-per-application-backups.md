@@ -176,7 +176,14 @@ borgmatic create --override location.repositories=[test1.borg,test2.borg]
 Or even a single list element:
 
 ```bash
-borgmatic create --override location.repositories=[/root/test1.borg]
+borgmatic create --override location.repositories=[/root/test.borg]
+```
+
+If your override value contains special YAML characters like colons, then
+you'll need quotes for it to parse correctly:
+
+```bash
+borgmatic create --override location.repositories="['user@server:test.borg']"
 ```
 
 There is not currently a way to override a single element of a list without

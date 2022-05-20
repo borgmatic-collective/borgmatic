@@ -1,4 +1,5 @@
 1.6.1.dev0
+ * #528: Improve the error message when a configuration override contains an invalid value.
  * #532: When a configuration include is a relative path, load it from either the current working
    directory or from the directory containing the file doing the including. (Previously, only the
    working directory was used.)

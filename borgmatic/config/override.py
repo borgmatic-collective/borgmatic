@@ -52,16 +52,20 @@ def parse_overrides(raw_overrides):
     if not raw_overrides:
         return ()
 
-    try:
-        return tuple(
-            (tuple(raw_keys.split('.')), convert_value_type(value))
-            for raw_override in raw_overrides
-            for raw_keys, value in (raw_override.split('=', 1),)
-        )
-    except ValueError:
-        raise ValueError('Invalid override. Make sure you use the form: SECTION.OPTION=VALUE')
-    except ruamel.yaml.error.YAMLError as error:
-        raise ValueError(f'Invalid override value: {error}')
+    parsed_overrides = []
+
+    for raw_override in raw_overrides:
+        try:
+            raw_keys, value = raw_override.split('=', 1)
+            parsed_overrides.append((tuple(raw_keys.split('.')), convert_value_type(value),))
+        except ValueError:
+            raise ValueError(
+                f"Invalid override '{raw_override}'. Make sure you use the form: SECTION.OPTION=VALUE"
+            )
+        except ruamel.yaml.error.YAMLError as error:
+            raise ValueError(f"Invalid override '{raw_override}': {error.problem}")
+
+    return tuple(parsed_overrides)
 
 
 def apply_overrides(config, raw_overrides):
