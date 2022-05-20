@@ -212,15 +212,13 @@ If you prefer to restore a database without the help of borgmatic, first
 [extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
 archive containing a database dump.
 
-The dump file can then be found in the extracted destination path within the 
-`~/.borgmatic/` directory. The `~` here corresponds to the HOME directory of 
-the user with whom you created the backup. For example, if you created the 
-backup with the `root` user, then the dump will be in 
-`EXTRACTED_DESTINATION_PATH/root/.borgmatic`. This also means you will have 
-to backup the HOME directory of that user you use to run `borgmatic create` 
-(otherwise there the dump file will not be available).
+borgmatic extracts the dump file into the *`username`*`/.borgmatic/` directory
+within the extraction destination path, where *`username`* is the user that
+created the backup. For example, if you created the backup with the `root`
+user and you're extracting to `/tmp`, then the dump will be in
+`/tmp/root/.borgmatic`.
 
-You can then use the dump file to manually restore it using the native database 
+After extraction, you can manually restore the dump file using native database
 commands like `pg_restore`, `mysql`, `mongorestore` or similar.
 
 
