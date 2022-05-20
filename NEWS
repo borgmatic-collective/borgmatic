@@ -1,4 +1,7 @@
 1.6.1.dev0
+ * #532: When a configuration include is a relative path, load it from either the current working
+   directory or from the directory containing the file doing the including. (Previously, only the
+   working directory was used.)
  * Add a randomized delay to the sample systemd timer to spread out the load on a server.
 
 1.6.0

@@ -75,6 +75,10 @@ themselves and complaining that they are not valid configuration files, you
 should put them in a directory other than `/etc/borgmatic.d/`. (A subdirectory
 is fine.)
 
+When a configuration include is a relative path, borgmatic loads it from either
+the current working directory or from the directory containing the file doing
+the including.
+
 Note that this form of include must be a YAML value rather than a key. For
 example, this will not work:
 

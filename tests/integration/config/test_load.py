@@ -1,3 +1,4 @@
+import io
 import sys
 
 import pytest
@@ -14,49 +15,133 @@ def test_load_configuration_parses_contents():
     assert module.load_configuration('config.yaml') == {'key': 'value'}
 
 
-def test_load_configuration_inlines_include():
+def test_load_configuration_inlines_include_relative_to_current_directory():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('include.yaml').and_return('value')
-    builtins.should_receive('open').with_args('config.yaml').and_return(
-        'key: !include include.yaml'
-    )
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    include_file = io.StringIO('value')
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    config_file = io.StringIO('key: !include include.yaml')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
 
     assert module.load_configuration('config.yaml') == {'key': 'value'}
 
 
+def test_load_configuration_inlines_include_relative_to_config_parent_directory():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').with_args('/etc').and_return(True)
+    flexmock(module.os.path).should_receive('isabs').with_args('/etc/config.yaml').and_return(True)
+    flexmock(module.os.path).should_receive('isabs').with_args('include.yaml').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/tmp/include.yaml').and_return(
+        False
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/etc/include.yaml').and_return(
+        True
+    )
+    include_file = io.StringIO('value')
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/etc/include.yaml').and_return(include_file)
+    config_file = io.StringIO('key: !include include.yaml')
+    config_file.name = '/etc/config.yaml'
+    builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+
+    assert module.load_configuration('/etc/config.yaml') == {'key': 'value'}
+
+
+def test_load_configuration_raises_if_relative_include_does_not_exist():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').with_args('/etc').and_return(True)
+    flexmock(module.os.path).should_receive('isabs').with_args('/etc/config.yaml').and_return(True)
+    flexmock(module.os.path).should_receive('isabs').with_args('include.yaml').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    config_file = io.StringIO('key: !include include.yaml')
+    config_file.name = '/etc/config.yaml'
+    builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+
+    with pytest.raises(FileNotFoundError):
+        module.load_configuration('/etc/config.yaml')
+
+
+def test_load_configuration_inlines_absolute_include():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(True)
+    flexmock(module.os.path).should_receive('exists').never()
+    include_file = io.StringIO('value')
+    include_file.name = '/root/include.yaml'
+    builtins.should_receive('open').with_args('/root/include.yaml').and_return(include_file)
+    config_file = io.StringIO('key: !include /root/include.yaml')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+
+    assert module.load_configuration('config.yaml') == {'key': 'value'}
+
+
+def test_load_configuration_raises_if_absolute_include_does_not_exist():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(True)
+    builtins.should_receive('open').with_args('/root/include.yaml').and_raise(FileNotFoundError)
+    config_file = io.StringIO('key: !include /root/include.yaml')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+
+    with pytest.raises(FileNotFoundError):
+        assert module.load_configuration('config.yaml')
+
+
 def test_load_configuration_merges_include():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('include.yaml').and_return(
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    include_file = io.StringIO(
         '''
         foo: bar
         baz: quux
         '''
     )
-    builtins.should_receive('open').with_args('config.yaml').and_return(
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    config_file = io.StringIO(
         '''
         foo: override
         <<: !include include.yaml
         '''
     )
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
 
     assert module.load_configuration('config.yaml') == {'foo': 'override', 'baz': 'quux'}
 
 
 def test_load_configuration_does_not_merge_include_list():
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('include.yaml').and_return(
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    include_file = io.StringIO(
         '''
           - one
           - two
         '''
     )
-    builtins.should_receive('open').with_args('config.yaml').and_return(
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
+    config_file = io.StringIO(
         '''
         foo: bar
         repositories:
           <<: !include include.yaml
         '''
     )
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
 
     with pytest.raises(ruamel.yaml.error.YAMLError):
         assert module.load_configuration('config.yaml')

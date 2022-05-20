@@ -6,6 +6,19 @@ import ruamel.yaml
 logger = logging.getLogger(__name__)
 
 
+class Yaml_with_loader_stream(ruamel.yaml.YAML):
+    '''
+    A derived class of ruamel.yaml.YAML that simply tacks the loaded stream (file object) onto the
+    loader class so that it's available anywhere that's passed a loader (in this case,
+    include_configuration() below).
+    '''
+
+    def get_constructor_parser(self, stream):
+        constructor, parser = super(Yaml_with_loader_stream, self).get_constructor_parser(stream)
+        constructor.loader.stream = stream
+        return constructor, parser
+
+
 def load_configuration(filename):
     '''
     Load the given configuration file and return its contents as a data structure of nested dicts
@@ -14,7 +27,7 @@ def load_configuration(filename):
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
     '''
-    yaml = ruamel.yaml.YAML(typ='safe')
+    yaml = Yaml_with_loader_stream(typ='safe')
     yaml.Constructor = Include_constructor
 
     return yaml.load(open(filename))
@@ -22,10 +35,31 @@ def load_configuration(filename):
 
 def include_configuration(loader, filename_node):
     '''
-    Load the given YAML filename (ignoring the given loader so we can use our own), and return its
-    contents as a data structure of nested dicts and lists.
+    Load the given YAML filename (ignoring the given loader so we can use our own) and return its
+    contents as a data structure of nested dicts and lists. If the filename is relative, probe for
+    it within 1. the current working directory and 2. the directory containing the YAML file doing
+    the including.
+
+    Raise FileNotFoundError if an included file was not found.
     '''
-    return load_configuration(os.path.expanduser(filename_node.value))
+    include_directories = [os.getcwd(), os.path.abspath(os.path.dirname(loader.stream.name))]
+    include_filename = os.path.expanduser(filename_node.value)
+
+    if not os.path.isabs(include_filename):
+        candidate_filenames = [
+            os.path.join(directory, include_filename) for directory in include_directories
+        ]
+
+        for candidate_filename in candidate_filenames:
+            if os.path.exists(candidate_filename):
+                include_filename = candidate_filename
+                break
+        else:
+            raise FileNotFoundError(
+                f'Could not find include {filename_node.value} at {" or ".join(candidate_filenames)}'
+            )
+
+    return load_configuration(include_filename)
 
 
 DELETED_NODE = object()

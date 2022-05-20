@@ -21,14 +21,20 @@ def mock_config_and_schema(config_yaml, schema_yaml=None):
     when parsing the configuration.
     '''
     config_stream = io.StringIO(config_yaml)
+    config_stream.name = 'config.yaml'
+
     if schema_yaml is None:
         schema_stream = open(module.schema_filename())
     else:
         schema_stream = io.StringIO(schema_yaml)
+        schema_stream.name = 'schema.yaml'
 
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_stream)
-    builtins.should_receive('open').with_args('schema.yaml').and_return(schema_stream)
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    builtins.should_receive('open').with_args('/tmp/config.yaml').and_return(config_stream)
+    builtins.should_receive('open').with_args('/tmp/schema.yaml').and_return(schema_stream)
 
 
 def test_parse_configuration_transforms_file_into_mapping():
@@ -54,7 +60,7 @@ def test_parse_configuration_transforms_file_into_mapping():
         '''
     )
 
-    result = module.parse_configuration('config.yaml', 'schema.yaml')
+    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert result == {
         'location': {'source_directories': ['/home', '/etc'], 'repositories': ['hostname.borg']},
@@ -79,7 +85,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
         )
     )
 
-    result = module.parse_configuration('config.yaml', 'schema.yaml')
+    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert result == {
         'location': {
@@ -115,7 +121,7 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
         ''',
     )
 
-    module.parse_configuration('config.yaml', 'schema.yaml')
+    module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
 def test_parse_configuration_inlines_include():
@@ -133,14 +139,16 @@ def test_parse_configuration_inlines_include():
         '''
     )
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('include.yaml').and_return(
+    include_file = io.StringIO(
         '''
         keep_daily: 7
         keep_hourly: 24
         '''
     )
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    result = module.parse_configuration('config.yaml', 'schema.yaml')
+    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert result == {
         'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
@@ -164,14 +172,16 @@ def test_parse_configuration_merges_include():
         '''
     )
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('include.yaml').and_return(
+    include_file = io.StringIO(
         '''
         keep_daily: 7
         keep_hourly: 24
         '''
     )
+    include_file.name = 'include.yaml'
+    builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    result = module.parse_configuration('config.yaml', 'schema.yaml')
+    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert result == {
         'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
@@ -181,23 +191,23 @@ def test_parse_configuration_merges_include():
 
 def test_parse_configuration_raises_for_missing_config_file():
     with pytest.raises(FileNotFoundError):
-        module.parse_configuration('config.yaml', 'schema.yaml')
+        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
 def test_parse_configuration_raises_for_missing_schema_file():
     mock_config_and_schema('')
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('schema.yaml').and_raise(FileNotFoundError)
+    builtins.should_receive('open').with_args('/tmp/schema.yaml').and_raise(FileNotFoundError)
 
     with pytest.raises(FileNotFoundError):
-        module.parse_configuration('config.yaml', 'schema.yaml')
+        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
 def test_parse_configuration_raises_for_syntax_error():
     mock_config_and_schema('foo:\nbar')
 
     with pytest.raises(ValueError):
-        module.parse_configuration('config.yaml', 'schema.yaml')
+        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
 def test_parse_configuration_raises_for_validation_error():
@@ -211,7 +221,7 @@ def test_parse_configuration_raises_for_validation_error():
     )
 
     with pytest.raises(module.Validation_error):
-        module.parse_configuration('config.yaml', 'schema.yaml')
+        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
 def test_parse_configuration_applies_overrides():
@@ -229,7 +239,7 @@ def test_parse_configuration_applies_overrides():
     )
 
     result = module.parse_configuration(
-        'config.yaml', 'schema.yaml', overrides=['location.local_path=borg2']
+        '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['location.local_path=borg2']
     )
 
     assert result == {
@@ -255,7 +265,7 @@ def test_parse_configuration_applies_normalization():
         '''
     )
 
-    result = module.parse_configuration('config.yaml', 'schema.yaml')
+    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert result == {
         'location': {
