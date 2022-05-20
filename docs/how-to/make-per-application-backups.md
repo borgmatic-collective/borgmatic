@@ -125,9 +125,9 @@ Once this include gets merged in, the resulting configuration would have a
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence. And as of borgmatic 1.6.0,
 this feature performs a deep merge, meaning that values are merged at all
-levels in the two configuration files. This allows you to include common
-configuration—up to full borgmatic configuration files—while overriding only
-the parts you want to customize.
+levels in the two configuration files. Colliding list values are appended
+together. This allows you to include common configuration—up to full borgmatic
+configuration files—while overriding only the parts you want to customize.
 
 Note that this `<<` include merging syntax is only for merging in mappings
 (configuration options and their values). But if you'd like to include a

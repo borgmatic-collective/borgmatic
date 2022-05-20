@@ -157,6 +157,20 @@ def deep_merge_nodes(nodes):
                             anchor=b_value.anchor,
                         ),
                     )
+                # If we're dealing with SequenceNodes, merge by appending one sequence to the other.
+                elif isinstance(b_value, ruamel.yaml.nodes.SequenceNode):
+                    replaced_nodes[(b_key, b_value)] = (
+                        b_key,
+                        ruamel.yaml.nodes.SequenceNode(
+                            tag=b_value.tag,
+                            value=a_value.value + b_value.value,
+                            start_mark=b_value.start_mark,
+                            end_mark=b_value.end_mark,
+                            flow_style=b_value.flow_style,
+                            comment=b_value.comment,
+                            anchor=b_value.anchor,
+                        ),
+                    )
 
     return [
         replaced_nodes.get(node, node) for node in nodes if replaced_nodes.get(node) != DELETED_NODE

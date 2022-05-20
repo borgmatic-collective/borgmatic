@@ -326,3 +326,49 @@ def test_deep_merge_nodes_keeps_deeply_nested_values():
     assert nested_options[0][1].value == '--init-option'
     assert nested_options[1][0].value == 'prune'
     assert nested_options[1][1].value == '--prune-option'
+
+
+def test_deep_merge_nodes_appends_colliding_sequence_values():
+    node_values = [
+        (
+            ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='hooks'),
+            ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='before_backup'
+                        ),
+                        ruamel.yaml.nodes.SequenceNode(
+                            tag='tag:yaml.org,2002:int', value=['echo 1', 'echo 2']
+                        ),
+                    ),
+                ],
+            ),
+        ),
+        (
+            ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='hooks'),
+            ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='before_backup'
+                        ),
+                        ruamel.yaml.nodes.SequenceNode(
+                            tag='tag:yaml.org,2002:int', value=['echo 3', 'echo 4']
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ]
+
+    result = module.deep_merge_nodes(node_values)
+    assert len(result) == 1
+    (section_key, section_value) = result[0]
+    assert section_key.value == 'hooks'
+    options = section_value.value
+    assert len(options) == 1
+    assert options[0][0].value == 'before_backup'
+    assert options[0][1].value == ['echo 1', 'echo 2', 'echo 3', 'echo 4']

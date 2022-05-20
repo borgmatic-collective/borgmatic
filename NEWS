@@ -1,8 +1,10 @@
 1.6.1.dev0
  * #528: Improve the error message when a configuration override contains an invalid value.
+ * #531: BREAKING: When deep merging common configuration, merge colliding list values by appending
+   them. Previously, one list replaced the other.
  * #532: When a configuration include is a relative path, load it from either the current working
-   directory or from the directory containing the file doing the including. (Previously, only the
-   working directory was used.)
+   directory or from the directory containing the file doing the including. Previously, only the
+   working directory was used.
  * Add a randomized delay to the sample systemd timer to spread out the load on a server.
  * Add emojis to documentation table of contents to make it easier to find particular how-to and
    reference guides at a glance.
