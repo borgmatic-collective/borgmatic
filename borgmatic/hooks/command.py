@@ -26,8 +26,7 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     a hook description, and whether this is a dry run, run the given commands. Or, don't run them
     if this is a dry run.
 
-    The context contains optional values interpolated by name into the hook commands. Currently,
-    this only applies to the on_error hook.
+    The context contains optional values interpolated by name into the hook commands.
 
     Raise ValueError if the umask cannot be parsed.
     Raise subprocesses.CalledProcessError if an error occurs in a hook.
