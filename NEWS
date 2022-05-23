@@ -1,4 +1,5 @@
 1.6.1.dev0
+ * #420: Warn when an unsupported variable is used in a hook command.
  * #528: Improve the error message when a configuration override contains an invalid value.
  * #531: BREAKING: When deep merging common configuration, merge colliding list values by appending
    them. Previously, one list replaced the other.

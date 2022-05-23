@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from borgmatic import execute
 
@@ -9,13 +10,18 @@ logger = logging.getLogger(__name__)
 SOFT_FAIL_EXIT_CODE = 75
 
 
-def interpolate_context(command, context):
+def interpolate_context(config_filename, hook_description, command, context):
     '''
-    Given a single hook command and a dict of context names/values, interpolate the values by
-    "{name}" into the command and return the result.
+    Given a config filename, a hook description, a single hook command, and a dict of context
+    names/values, interpolate the values by "{name}" into the command and return the result.
     '''
     for name, value in context.items():
         command = command.replace('{%s}' % name, str(value))
+
+    for unsupported_variable in re.findall(r'{\w+}', command):
+        logger.warn(
+            f"{config_filename}: Variable '{unsupported_variable}' is not supported in {hook_description} hook"
+        )
 
     return command
 
@@ -38,7 +44,9 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     dry_run_label = ' (dry run; not actually running hooks)' if dry_run else ''
 
     context['configuration_filename'] = config_filename
-    commands = [interpolate_context(command, context) for command in commands]
+    commands = [
+        interpolate_context(config_filename, description, command, context) for command in commands
+    ]
 
     if len(commands) == 1:
         logger.info(
