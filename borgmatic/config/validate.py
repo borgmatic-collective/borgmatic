@@ -65,15 +65,6 @@ def apply_logical_validation(config_filename, parsed_configuration):
     below), run through any additional logical validation checks. If there are any such validation
     problems, raise a Validation_error.
     '''
-    archive_name_format = parsed_configuration.get('storage', {}).get('archive_name_format')
-    prefix = parsed_configuration.get('retention', {}).get('prefix')
-
-    if archive_name_format and not prefix:
-        raise Validation_error(
-            config_filename,
-            ('If you provide an archive_name_format, you must also specify a retention prefix.',),
-        )
-
     location_repositories = parsed_configuration.get('location', {}).get('repositories')
     check_repositories = parsed_configuration.get('consistency', {}).get('check_repositories', [])
     for repository in check_repositories:

@@ -37,33 +37,6 @@ def test_validation_error_string_contains_errors():
     assert 'uh oh' in result
 
 
-def test_apply_logical_validation_raises_if_archive_name_format_present_without_prefix():
-    flexmock(module).format_json_error = lambda error: error.message
-
-    with pytest.raises(module.Validation_error):
-        module.apply_logical_validation(
-            'config.yaml',
-            {
-                'storage': {'archive_name_format': '{hostname}-{now}'},
-                'retention': {'keep_daily': 7},
-            },
-        )
-
-
-def test_apply_logical_validation_raises_if_archive_name_format_present_without_retention_prefix():
-    flexmock(module).format_json_error = lambda error: error.message
-
-    with pytest.raises(module.Validation_error):
-        module.apply_logical_validation(
-            'config.yaml',
-            {
-                'storage': {'archive_name_format': '{hostname}-{now}'},
-                'retention': {'keep_daily': 7},
-                'consistency': {'prefix': '{hostname}-'},
-            },
-        )
-
-
 def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
     flexmock(module).format_json_error = lambda error: error.message
 

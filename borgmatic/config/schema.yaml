@@ -332,10 +332,10 @@ properties:
                     Name of the archive. Borg placeholders can be used. See the
                     output of "borg help placeholders" for details. Defaults to
                     "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this
-                    option, you must also specify a prefix in the retention
-                    section to avoid accidental pruning of archives with a
-                    different archive name format. And you should also specify a
-                    prefix in the consistency section as well.
+                    option, consider also specifying a prefix in the retention
+                    and consistency sections to avoid accidental
+                    pruning/checking of archives with different archive name
+                    formats.
                 example: "{hostname}-documents-{now}"
             relocated_repo_access_is_ok:
                 type: boolean

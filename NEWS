@@ -1,4 +1,5 @@
 1.6.1.dev0
+ * #402: Remove the error when "archive_name_format" is specified but a retention prefix isn't. 
  * #420: Warn when an unsupported variable is used in a hook command.
  * #528: Improve the error message when a configuration override contains an invalid value.
  * #531: BREAKING: When deep merging common configuration, merge colliding list values by appending
