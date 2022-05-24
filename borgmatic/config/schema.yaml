@@ -914,6 +914,8 @@ properties:
                             List of one or more monitoring states to ping for:
                             "start", "finish", and/or "fail". Defaults to
                             pinging for all states.
+                        example:
+                            - finish
                 description: |
                     Configuration for a monitoring integration with
                     Healthchecks. Create an account at https://healthchecks.io
