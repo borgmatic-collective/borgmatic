@@ -892,6 +892,15 @@ properties:
                             Healthchecks ping URL or UUID to notify when a
                             backup begins, ends, or errors.
                         example: https://hc-ping.com/your-uuid-here
+                    ping_body_limit:
+                        type: integer
+                        description: |
+                            Number of bytes of borgmatic logs to send to
+                            Healthchecks, ideally the same as PING_BODY_LIMIT
+                            configured on the Healthchecks server. Set to 0 to
+                            send all logs and disable this truncation. Defaults
+                            to 100000.
+                        example: 200000
                 description: |
                     Configuration for a monitoring integration with
                     Healthchecks. Create an account at https://healthchecks.io

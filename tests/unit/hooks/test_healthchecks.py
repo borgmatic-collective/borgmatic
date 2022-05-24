@@ -12,6 +12,15 @@ def test_forgetful_buffering_handler_emit_collects_log_records():
     assert not handler.forgot
 
 
+def test_forgetful_buffering_handler_emit_collects_log_records_with_zero_byte_capacity():
+    handler = module.Forgetful_buffering_handler(byte_capacity=0, log_level=1)
+    handler.emit(flexmock(getMessage=lambda: 'foo'))
+    handler.emit(flexmock(getMessage=lambda: 'bar'))
+
+    assert handler.buffer == ['foo\n', 'bar\n']
+    assert not handler.forgot
+
+
 def test_forgetful_buffering_handler_emit_forgets_log_records_when_capacity_reached():
     handler = module.Forgetful_buffering_handler(byte_capacity=len('foo\nbar\n'), log_level=1)
     handler.emit(flexmock(getMessage=lambda: 'foo'))
@@ -58,6 +67,43 @@ def test_format_buffered_logs_for_payload_without_handler_produces_empty_payload
     payload = module.format_buffered_logs_for_payload()
 
     assert payload == ''
+
+
+def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
+    ping_body_limit = 100
+    monitoring_log_level = 1
+
+    flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
+        ping_body_limit - len(module.PAYLOAD_TRUNCATION_INDICATOR), monitoring_log_level
+    ).once()
+
+    module.initialize_monitor(
+        {'ping_body_limit': ping_body_limit}, 'test.yaml', monitoring_log_level, dry_run=False
+    )
+
+
+def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
+    monitoring_log_level = 1
+
+    flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
+        module.DEFAULT_PING_BODY_LIMIT_BYTES - len(module.PAYLOAD_TRUNCATION_INDICATOR),
+        monitoring_log_level,
+    ).once()
+
+    module.initialize_monitor({}, 'test.yaml', monitoring_log_level, dry_run=False)
+
+
+def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
+    ping_body_limit = 0
+    monitoring_log_level = 1
+
+    flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
+        ping_body_limit, monitoring_log_level
+    ).once()
+
+    module.initialize_monitor(
+        {'ping_body_limit': ping_body_limit}, 'test.yaml', monitoring_log_level, dry_run=False
+    )
 
 
 def test_ping_monitor_hits_ping_url_for_start_state():

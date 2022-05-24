@@ -13,13 +13,14 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
 }
 
 PAYLOAD_TRUNCATION_INDICATOR = '...\n'
-PAYLOAD_LIMIT_BYTES = 100 * 1024 - len(PAYLOAD_TRUNCATION_INDICATOR)
+DEFAULT_PING_BODY_LIMIT_BYTES = 100000
 
 
 class Forgetful_buffering_handler(logging.Handler):
     '''
     A buffering log handler that stores log messages in memory, and throws away messages (oldest
-    first) once a particular capacity in bytes is reached.
+    first) once a particular capacity in bytes is reached. But if the given byte capacity is zero,
+    don't throw away any messages.
     '''
 
     def __init__(self, byte_capacity, log_level):
@@ -35,6 +36,9 @@ class Forgetful_buffering_handler(logging.Handler):
         message = record.getMessage() + '\n'
         self.byte_count += len(message)
         self.buffer.append(message)
+
+        if not self.byte_capacity:
+            return
 
         while self.byte_count > self.byte_capacity and self.buffer:
             self.byte_count -= len(self.buffer[0])
@@ -65,15 +69,19 @@ def format_buffered_logs_for_payload():
     return payload
 
 
-def initialize_monitor(
-    hook_config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def initialize_monitor(hook_config, config_filename, monitoring_log_level, dry_run):
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That
     way, we can send them all to Healthchecks upon a finish or failure state.
     '''
+    ping_body_limit = max(
+        hook_config.get('ping_body_limit', DEFAULT_PING_BODY_LIMIT_BYTES)
+        - len(PAYLOAD_TRUNCATION_INDICATOR),
+        0,
+    )
+
     logging.getLogger().addHandler(
-        Forgetful_buffering_handler(PAYLOAD_LIMIT_BYTES, monitoring_log_level)
+        Forgetful_buffering_handler(ping_body_limit, monitoring_log_level)
     )
 
 
