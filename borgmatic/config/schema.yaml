@@ -901,6 +901,19 @@ properties:
                             send all logs and disable this truncation. Defaults
                             to 100000.
                         example: 200000
+                    skip_states:
+                        type: array
+                        items:
+                            type: string
+                            enum:
+                                - start
+                                - finish
+                                - fail
+                            uniqueItems: true
+                        description: |
+                            List of one or more monitoring states to skip
+                            pinging for: "start", "finish", and/or "fail".
+                            Defaults to pinging for all states.
                 description: |
                     Configuration for a monitoring integration with
                     Healthchecks. Create an account at https://healthchecks.io

@@ -3,6 +3,8 @@
    logs to send to the Healthchecks server.
  * #402: Remove the error when "archive_name_format" is specified but a retention prefix isn't. 
  * #420: Warn when an unsupported variable is used in a hook command.
+ * #525: Add Healthchecks monitoring hook "skip_states" option to disable pinging for particular
+   monitoring states.
  * #528: Improve the error message when a configuration override contains an invalid value.
  * #531: BREAKING: When deep merging common configuration, merge colliding list values by appending
    them. Previously, one list replaced the other.
@@ -12,7 +14,7 @@
  * Add a randomized delay to the sample systemd timer to spread out the load on a server.
  * Change the configuration format for borgmatic monitoring hooks (Healthchecks, Cronitor,
    PagerDuty, and Cronhub) to specify the ping URL / integration key as a named option. The intent
-   is to support additional options in the future. This change is backwards-compatible.
+   is to support additional options (some in this release). This change is backwards-compatible.
  * Add emojis to documentation table of contents to make it easier to find particular how-to and
    reference guides at a glance.
 

@@ -185,3 +185,33 @@ def test_ping_monitor_dry_run_does_not_hit_ping_url():
         monitoring_log_level=1,
         dry_run=True,
     )
+
+
+def test_ping_monitor_with_skip_states_does_not_hit_ping_url():
+    flexmock(module).should_receive('Forgetful_buffering_handler')
+    hook_config = {'ping_url': 'https://example.com', 'skip_states': ['start']}
+    flexmock(module.requests).should_receive('post').never()
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=True,
+    )
+
+
+def test_ping_monitor_hits_ping_url_with_non_matching_skip_states():
+    flexmock(module).should_receive('Forgetful_buffering_handler')
+    hook_config = {'ping_url': 'https://example.com', 'skip_states': ['finish']}
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/start', data=''.encode('utf-8')
+    )
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
