@@ -106,6 +106,22 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
     )
 
 
+def test_initialize_monitor_creates_log_handler_when_send_logs_true():
+    flexmock(module).should_receive('Forgetful_buffering_handler').once()
+
+    module.initialize_monitor(
+        {'send_logs': True}, 'test.yaml', monitoring_log_level=1, dry_run=False
+    )
+
+
+def test_initialize_monitor_bails_when_send_logs_false():
+    flexmock(module).should_receive('Forgetful_buffering_handler').never()
+
+    module.initialize_monitor(
+        {'send_logs': False}, 'test.yaml', monitoring_log_level=1, dry_run=False
+    )
+
+
 def test_ping_monitor_hits_ping_url_for_start_state():
     flexmock(module).should_receive('Forgetful_buffering_handler')
     hook_config = {'ping_url': 'https://example.com'}

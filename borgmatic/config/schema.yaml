@@ -892,6 +892,12 @@ properties:
                             Healthchecks ping URL or UUID to notify when a
                             backup begins, ends, or errors.
                         example: https://hc-ping.com/your-uuid-here
+                    send_logs:
+                        type: boolean
+                        description: |
+                            Send borgmatic logs to Healthchecks as part the
+                            "finish" state. Defaults to true.
+                        example: false
                     ping_body_limit:
                         type: integer
                         description: |

@@ -71,9 +71,13 @@ def format_buffered_logs_for_payload():
 
 def initialize_monitor(hook_config, config_filename, monitoring_log_level, dry_run):
     '''
-    Add a handler to the root logger that stores in memory the most recent logs emitted. That
-    way, we can send them all to Healthchecks upon a finish or failure state.
+    Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
+    we can send them all to Healthchecks upon a finish or failure state. But skip this if the
+    "send_logs" option is false.
     '''
+    if hook_config.get('send_logs') is False:
+        return
+
     ping_body_limit = max(
         hook_config.get('ping_body_limit', DEFAULT_PING_BODY_LIMIT_BYTES)
         - len(PAYLOAD_TRUNCATION_INDICATOR),

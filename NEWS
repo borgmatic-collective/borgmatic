@@ -3,6 +3,8 @@
    logs to send to the Healthchecks server.
  * #402: Remove the error when "archive_name_format" is specified but a retention prefix isn't. 
  * #420: Warn when an unsupported variable is used in a hook command.
+ * #460: Add Healthchecks monitoring hook "send_logs" option to enable/disable sending borgmatic
+   logs to the Healthchecks server.
  * #525: Add Healthchecks monitoring hook "states" option to only enable pinging for particular
    monitoring states (start, finish, fail).
  * #528: Improve the error message when a configuration override contains an invalid value.
