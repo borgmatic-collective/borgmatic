@@ -98,9 +98,9 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     )
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
-    if state.name.lower() in hook_config.get('skip_states', []):
+    if 'states' in hook_config and state.name.lower() not in hook_config['states']:
         logger.info(
-            f'{config_filename}: Skipping Healthchecks {state.name.lower()} ping due to configured skip states'
+            f'{config_filename}: Skipping Healthchecks {state.name.lower()} ping due to configured states'
         )
         return
 
