@@ -22,14 +22,18 @@ def initialize_monitor(
     pass
 
 
-def ping_monitor(ping_url, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Ping the given Cronhub URL, modified with the monitor.State. Use the given configuration
+    Ping the configured Cronhub URL, modified with the monitor.State. Use the given configuration
     filename in any log entries. If this is a dry run, then don't actually ping anything.
     '''
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
     formatted_state = '/{}/'.format(MONITOR_STATE_TO_CRONHUB[state])
-    ping_url = ping_url.replace('/start/', formatted_state).replace('/ping/', formatted_state)
+    ping_url = (
+        hook_config['ping_url']
+        .replace('/start/', formatted_state)
+        .replace('/ping/', formatted_state)
+    )
 
     logger.info(
         '{}: Pinging Cronhub {}{}'.format(config_filename, state.name.lower(), dry_run_label)

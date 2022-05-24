@@ -21,10 +21,10 @@ def initialize_monitor(
     pass
 
 
-def ping_monitor(integration_key, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    If this is an error state, create a PagerDuty event with the given integration key. Use the
-    given configuration filename in any log entries. If this is a dry run, then don't actually
+    If this is an error state, create a PagerDuty event with the configured integration key. Use
+    the given configuration filename in any log entries. If this is a dry run, then don't actually
     create an event.
     '''
     if state != monitor.State.FAIL:
@@ -47,7 +47,7 @@ def ping_monitor(integration_key, config_filename, state, monitoring_log_level, 
     )
     payload = json.dumps(
         {
-            'routing_key': integration_key,
+            'routing_key': hook_config['integration_key'],
             'event_action': 'trigger',
             'payload': {
                 'summary': 'backup failed on {}'.format(hostname),

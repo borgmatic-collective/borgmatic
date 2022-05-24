@@ -8,6 +8,9 @@
    directory or from the directory containing the file doing the including. Previously, only the
    working directory was used.
  * Add a randomized delay to the sample systemd timer to spread out the load on a server.
+ * Change the configuration format for borgmatic monitoring hooks (Healthchecks, Cronitor,
+   PagerDuty, and Cronhub) to specify the ping URL / integration key as a named option. The intent
+   is to support additional options in the future. This change is backwards-compatible.
  * Add emojis to documentation table of contents to make it easier to find particular how-to and
    reference guides at a glance.
 

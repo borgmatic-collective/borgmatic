@@ -66,7 +66,7 @@ def format_buffered_logs_for_payload():
 
 
 def initialize_monitor(
-    ping_url_or_uuid, config_filename, monitoring_log_level, dry_run
+    hook_config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That
@@ -77,16 +77,16 @@ def initialize_monitor(
     )
 
 
-def ping_monitor(ping_url_or_uuid, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Ping the given Healthchecks URL or UUID, modified with the monitor.State. Use the given
+    Ping the configured Healthchecks URL or UUID, modified with the monitor.State. Use the given
     configuration filename in any log entries, and log to Healthchecks with the giving log level.
     If this is a dry run, then don't actually ping anything.
     '''
     ping_url = (
-        ping_url_or_uuid
-        if ping_url_or_uuid.startswith('http')
-        else 'https://hc-ping.com/{}'.format(ping_url_or_uuid)
+        hook_config['ping_url']
+        if hook_config['ping_url'].startswith('http')
+        else 'https://hc-ping.com/{}'.format(hook_config['ping_url'])
     )
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
@@ -109,7 +109,7 @@ def ping_monitor(ping_url_or_uuid, config_filename, state, monitoring_log_level,
         requests.post(ping_url, data=payload.encode('utf-8'))
 
 
-def destroy_monitor(ping_url_or_uuid, config_filename, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config_filename, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.

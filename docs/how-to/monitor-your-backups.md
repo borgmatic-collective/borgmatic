@@ -136,7 +136,8 @@ URL" for your project. Here's an example:
 
 ```yaml
 hooks:
-    healthchecks: https://hc-ping.com/addffa72-da17-40ae-be9c-ff591afb942a
+    healthchecks:
+        ping_url: https://hc-ping.com/addffa72-da17-40ae-be9c-ff591afb942a
 ```
 
 With this hook in place, borgmatic pings your Healthchecks project when a
@@ -176,7 +177,8 @@ API URL" for your monitor. Here's an example:
 
 ```yaml
 hooks:
-    cronitor: https://cronitor.link/d3x0c1
+    cronitor:
+        ping_url: https://cronitor.link/d3x0c1
 ```
 
 With this hook in place, borgmatic pings your Cronitor monitor when a backup
@@ -204,7 +206,8 @@ URL" for your monitor. Here's an example:
 
 ```yaml
 hooks:
-    cronhub: https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
+    cronhub:
+        ping_url: https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
 ```
 
 With this hook in place, borgmatic pings your Cronhub monitor when a backup
@@ -246,7 +249,8 @@ Here's an example:
 
 ```yaml
 hooks:
-    pagerduty: a177cad45bd374409f78906a810a3074
+    pagerduty:
+        integration_key: a177cad45bd374409f78906a810a3074
 ```
 
 With this hook in place, borgmatic creates a PagerDuty event for your service
