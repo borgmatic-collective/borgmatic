@@ -1,4 +1,4 @@
-1.6.1.dev0
+1.6.1
  * #294: Add Healthchecks monitoring hook "ping_body_limit" option to configure how many bytes of
    logs to send to the Healthchecks server.
  * #402: Remove the error when "archive_name_format" is specified but a retention prefix isn't. 
