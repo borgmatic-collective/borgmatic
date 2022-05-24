@@ -124,7 +124,10 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
-        requests.post(ping_url, data=payload.encode('utf-8'))
+        try:
+            requests.post(ping_url, data=payload.encode('utf-8'))
+        except requests.exceptions.RequestException as error:
+            logger.warning(f'{config_filename}: Healthchecks error: {error}')
 
 
 def destroy_monitor(hook_config, config_filename, monitoring_log_level, dry_run):

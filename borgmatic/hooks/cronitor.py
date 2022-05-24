@@ -37,7 +37,10 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
-        requests.get(ping_url)
+        try:
+            requests.get(ping_url)
+        except requests.exceptions.RequestException as error:
+            logger.warning(f'{config_filename}: Cronitor error: {error}')
 
 
 def destroy_monitor(

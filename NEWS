@@ -3,6 +3,9 @@
    logs to send to the Healthchecks server.
  * #402: Remove the error when "archive_name_format" is specified but a retention prefix isn't. 
  * #420: Warn when an unsupported variable is used in a hook command.
+ * #439: Change connection failures for monitoring hooks (Healthchecks, Cronitor, PagerDuty, and
+   Cronhub) to be warnings instead of errors. This way, the monitoring system failing does not block
+   backups.
  * #460: Add Healthchecks monitoring hook "send_logs" option to enable/disable sending borgmatic
    logs to the Healthchecks server.
  * #525: Add Healthchecks monitoring hook "states" option to only enable pinging for particular

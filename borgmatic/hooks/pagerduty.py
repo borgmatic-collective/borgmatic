@@ -68,7 +68,10 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     logger.debug('{}: Using PagerDuty payload: {}'.format(config_filename, payload))
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
-    requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
+    try:
+        requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
+    except requests.exceptions.RequestException as error:
+        logger.warning(f'{config_filename}: PagerDuty error: {error}')
 
 
 def destroy_monitor(

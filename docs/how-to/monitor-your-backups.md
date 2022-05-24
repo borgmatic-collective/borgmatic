@@ -159,7 +159,10 @@ itself. But the logs are only included for errors that occur when a `prune`,
 
 You can customize the verbosity of the logs that are sent to Healthchecks with
 borgmatic's `--monitoring-verbosity` flag. The `--files` and `--stats` flags
-may also be of use. See `borgmatic --help` for more information.
+may also be of use. See `borgmatic --help` for more information. Additionally,
+see the [borgmatic configuration
+file](https://torsion.org/borgmatic/docs/reference/configuration/) for
+additional Healthchecks options.
 
 You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail

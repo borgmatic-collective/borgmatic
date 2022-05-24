@@ -19,7 +19,7 @@ def interpolate_context(config_filename, hook_description, command, context):
         command = command.replace('{%s}' % name, str(value))
 
     for unsupported_variable in re.findall(r'{\w+}', command):
-        logger.warn(
+        logger.warning(
             f"{config_filename}: Variable '{unsupported_variable}' is not supported in {hook_description} hook"
         )
 

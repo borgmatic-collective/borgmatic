@@ -231,3 +231,20 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_ping_monitor_with_connection_error_does_not_raise():
+    flexmock(module).should_receive('Forgetful_buffering_handler')
+    flexmock(module.logger).should_receive('warning')
+    hook_config = {'ping_url': 'https://example.com'}
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/start', data=''.encode('utf-8')
+    ).and_raise(module.requests.exceptions.ConnectionError)
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
