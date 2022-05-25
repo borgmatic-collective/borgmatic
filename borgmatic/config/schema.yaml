@@ -859,8 +859,8 @@ properties:
                             enum: ['archive', 'directory']
                             description: |
                                 Database dump output format. One of "archive",
-                                or "directory". Defaults to "archive". See 
-                                mongodump documentation for details. Note that 
+                                or "directory". Defaults to "archive". See
+                                mongodump documentation for details. Note that
                                 format is ignored when the database name is
                                 "all".
                             example: directory
