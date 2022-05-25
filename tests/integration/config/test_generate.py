@@ -212,6 +212,7 @@ def test_generate_sample_configuration_with_source_filename_does_not_raise():
     builtins.should_receive('open').with_args('schema.yaml').and_return('')
     flexmock(module.yaml).should_receive('round_trip_load')
     flexmock(module.load).should_receive('load_configuration')
+    flexmock(module.normalize).should_receive('normalize')
     flexmock(module).should_receive('_schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('render_configuration')

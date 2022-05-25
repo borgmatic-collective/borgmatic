@@ -1,3 +1,7 @@
+1.6.2.dev0
+ * #536: Fix generate-borgmatic-config with "--source" flag to support more complex schema changes
+   like the new Healthchecks configuration options.
+
 1.6.1
  * #294: Add Healthchecks monitoring hook "ping_body_limit" option to configure how many bytes of
    logs to send to the Healthchecks server.

@@ -5,7 +5,7 @@ import re
 
 from ruamel import yaml
 
-from borgmatic.config import load
+from borgmatic.config import load, normalize
 
 INDENT = 4
 SEQUENCE_INDENT = 2
@@ -275,6 +275,7 @@ def generate_sample_configuration(source_filename, destination_filename, schema_
 
     if source_filename:
         source_config = load.load_configuration(source_filename)
+        normalize.normalize(source_config)
 
     destination_config = merge_source_configuration_into_destination(
         _schema_to_sample_configuration(schema), source_config
