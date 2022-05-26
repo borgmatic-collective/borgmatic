@@ -37,5 +37,5 @@ setup(
         'colorama>=0.4.1,<0.5',
     ),
     include_package_data=True,
-    python_requires='>3.7.0',
+    python_requires='>=3.7',
 )
