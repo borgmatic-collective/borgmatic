@@ -133,6 +133,11 @@ Note that this `<<` include merging syntax is only for merging in mappings
 (configuration options and their values). But if you'd like to include a
 single value directly, please see the section above about standard includes.
 
+Additionally, there is a limitation preventing multiple `<<` include merges
+per section. So for instance, that means you can do one `<<` merge at the
+global level, another `<<` within each configuration section, etc. (This is a
+YAML limitation.)
+
 
 ## Configuration overrides
 
