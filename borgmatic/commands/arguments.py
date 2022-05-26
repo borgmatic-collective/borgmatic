@@ -109,10 +109,9 @@ class Extend_action(Action):
             setattr(namespace, self.dest, list(values))
 
 
-def parse_arguments(*unparsed_arguments):
+def make_parsers():
     '''
-    Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
+    Build a top-level parser and its subparsers and return them as a tuple.
     '''
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
@@ -188,6 +187,12 @@ def parse_arguments(*unparsed_arguments):
         dest='overrides',
         action='extend',
         help='One or more configuration file options to override with specified values',
+    )
+    global_group.add_argument(
+        '--bash-completion',
+        default=False,
+        action='store_true',
+        help='Show bash completion script and exit',
     )
     global_group.add_argument(
         '--version',
@@ -646,6 +651,16 @@ def parse_arguments(*unparsed_arguments):
         help='Options to pass to Borg, command first ("create", "list", etc). "--" is optional. To specify the repository or the archive, you must use --repository or --archive instead of providing them here.',
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    return top_level_parser, subparsers
+
+
+def parse_arguments(*unparsed_arguments):
+    '''
+    Given command-line arguments with which this script was invoked, parse the arguments and return
+    them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
+    '''
+    top_level_parser, subparsers = make_parsers()
 
     arguments, remaining_arguments = parse_subparser_arguments(
         unparsed_arguments, subparsers.choices

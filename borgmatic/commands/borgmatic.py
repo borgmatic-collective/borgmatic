@@ -11,6 +11,7 @@ from subprocess import CalledProcessError
 import colorama
 import pkg_resources
 
+import borgmatic.commands.completion
 from borgmatic.borg import borg as borg_borg
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import compact as borg_compact
@@ -883,6 +884,9 @@ def main():  # pragma: no cover
     global_arguments = arguments['global']
     if global_arguments.version:
         print(pkg_resources.require('borgmatic')[0].version)
+        sys.exit(0)
+    if global_arguments.bash_completion:
+        print(borgmatic.commands.completion.bash_completion())
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))

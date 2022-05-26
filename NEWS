@@ -1,6 +1,9 @@
 1.6.2.dev0
  * #536: Fix generate-borgmatic-config with "--source" flag to support more complex schema changes
    like the new Healthchecks configuration options.
+ * Add Bash completion script so you can tab-complete the borgmatic command-line. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
 
 1.6.1
  * #294: Add Healthchecks monitoring hook "ping_body_limit" option to configure how many bytes of

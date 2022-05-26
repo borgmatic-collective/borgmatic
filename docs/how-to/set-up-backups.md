@@ -111,6 +111,7 @@ Additionally, [rsync.net](https://www.rsync.net/products/borg.html) and
 [Hetzner](https://www.hetzner.com/storage/storage-box) have compatible storage
 offerings, but do not currently fund borgmatic development or hosting.
 
+
 ## Configuration
 
 After you install borgmatic, generate a sample configuration file:
@@ -302,9 +303,34 @@ interested in an [unofficial work-around for Full Disk
 Access](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/293).
 
 
-## Colored output
+## Niceties
 
-Borgmatic produces colored terminal output by default. It is disabled when a
+
+### Shell completion
+
+borgmatic includes a shell completion script (currently only for Bash) to
+support tab-completing borgmatic command-line actions and flags. Depending on
+how you installed borgmatic, this may be enabled by default. But if it's not,
+you can install the shell completion script globally:
+
+```bash
+sudo su -c "borgmatic --bash-completion > /usr/share/bash-completion/completions/borgmatic"
+```
+
+Alternatively, if you'd like to install the script for just the current user:
+
+```bash
+mkdir --parents ~/.local/share/bash-completion/completions
+borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmatic
+```
+
+In either case, you may also need to install the `bash-completion` Linux
+package and restart your shell (`exit` and open a new shell).
+
+
+### Colored output
+
+borgmatic produces colored terminal output by default. It is disabled when a
 non-interactive terminal is detected (like a cron job), or when you use the
 `--json` flag. Otherwise, you can disable it by passing the `--no-color` flag,
 setting the environment variable `PY_COLORS=False`, or setting the `color`
