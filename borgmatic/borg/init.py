@@ -1,6 +1,8 @@
+import argparse
 import logging
 import subprocess
 
+from borgmatic.borg import info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -23,17 +25,14 @@ def initialize_repository(
     whether the repository should be append-only, and the storage quota to use, initialize the
     repository. If the repository already exists, then log and skip initialization.
     '''
-    info_command = (
-        (local_path, 'info')
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--remote-path', remote_path) if remote_path else ())
-        + (repository,)
-    )
-    logger.debug(' '.join(info_command))
-
     try:
-        execute_command(info_command, output_log_level=None)
+        info.display_archives_info(
+            repository,
+            storage_config,
+            argparse.Namespace(json=True, archive=None),
+            local_path,
+            remote_path,
+        )
         logger.info('Repository already exists. Skipping initialization.')
         return
     except subprocess.CalledProcessError as error:

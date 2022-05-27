@@ -13,11 +13,11 @@ INIT_COMMAND = ('borg', 'init', '--encryption', 'repokey')
 
 
 def insert_info_command_found_mock():
-    flexmock(module).should_receive('execute_command')
+    flexmock(module.info).should_receive('display_archives_info')
 
 
 def insert_info_command_not_found_mock():
-    flexmock(module).should_receive('execute_command').and_raise(
+    flexmock(module.info).should_receive('display_archives_info').and_raise(
         subprocess.CalledProcessError(module.INFO_REPOSITORY_NOT_FOUND_EXIT_CODE, [])
     )
 
@@ -48,13 +48,13 @@ def test_initialize_repository_raises_for_borg_init_error():
 
 
 def test_initialize_repository_skips_initialization_when_repository_already_exists():
-    flexmock(module).should_receive('execute_command').once()
+    insert_info_command_found_mock()
 
     module.initialize_repository(repository='repo', storage_config={}, encryption_mode='repokey')
 
 
 def test_initialize_repository_raises_for_unknown_info_command_error():
-    flexmock(module).should_receive('execute_command').and_raise(
+    flexmock(module.info).should_receive('display_archives_info').and_raise(
         subprocess.CalledProcessError(INFO_SOME_UNKNOWN_EXIT_CODE, [])
     )
 
