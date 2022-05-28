@@ -49,7 +49,7 @@ consistency checks with `check` on a much less frequent basis (e.g. with
 
 Another option is to customize your consistency checks. The default
 consistency checks run both full-repository checks and per-archive checks
-within each repository no more than once every two weeks.
+within each repository no more than once a month.
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
@@ -72,8 +72,8 @@ See [Borg's check documentation](https://borgbackup.readthedocs.io/en/stable/usa
 
 ### Check frequency
 
-You can optionally configure checks to run on a periodic basis rather than
-every time borgmatic runs checks. For instance:
+As of borgmatic 1.6.2, you can optionally configure checks to run on a
+periodic basis rather than every time borgmatic runs checks. For instance:
 
 ```yaml
 consistency:

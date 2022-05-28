@@ -103,7 +103,7 @@ def test_parse_frequency_raises_on_parse_error(frequency):
 
 def test_filter_checks_on_frequency_without_config_uses_default_checks():
     flexmock(module).should_receive('parse_frequency').and_return(
-        module.datetime.timedelta(weeks=2)
+        module.datetime.timedelta(weeks=4)
     )
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('read_check_time').and_return(None)

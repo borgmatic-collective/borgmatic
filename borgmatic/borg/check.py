@@ -9,8 +9,8 @@ from borgmatic.borg import extract, info, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
-    {'name': 'repository', 'frequency': '2 weeks'},
-    {'name': 'archives', 'frequency': '2 weeks'},
+    {'name': 'repository', 'frequency': '1 month'},
+    {'name': 'archives', 'frequency': '1 month'},
 )
 DEFAULT_PREFIX = '{hostname}-'
 
