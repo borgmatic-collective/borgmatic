@@ -37,8 +37,9 @@ retention:
 consistency:
     # List of checks to run to validate your backups.
     checks:
-        - repository
-        - archives
+        - name: repository
+        - name: archives
+          frequency: 2 weeks
 
 hooks:
     # Custom preparation scripts to run.

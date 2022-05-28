@@ -30,11 +30,11 @@ setup(
     },
     obsoletes=['atticmatic'],
     install_requires=(
+        'colorama>=0.4.1,<0.5',
         'jsonschema',
         'requests',
         'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools',
-        'colorama>=0.4.1,<0.5',
     ),
     include_package_data=True,
     python_requires='>=3.7',

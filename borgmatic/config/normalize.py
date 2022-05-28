@@ -24,3 +24,8 @@ def normalize(config):
     cronhub = config.get('hooks', {}).get('cronhub')
     if isinstance(cronhub, str):
         config['hooks']['cronhub'] = {'ping_url': cronhub}
+
+    # Upgrade consistency checks from a list of strings to a list of dicts.
+    checks = config.get('consistency', {}).get('checks')
+    if isinstance(checks, list) and len(checks) and isinstance(checks[0], str):
+        config['consistency']['checks'] = [{'name': check_type} for check_type in checks]

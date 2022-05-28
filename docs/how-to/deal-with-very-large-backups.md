@@ -49,7 +49,7 @@ consistency checks with `check` on a much less frequent basis (e.g. with
 
 Another option is to customize your consistency checks. The default
 consistency checks run both full-repository checks and per-archive checks
-within each repository.
+within each repository no more than once every two weeks.
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
@@ -58,7 +58,7 @@ configure borgmatic to run repository checks only. Configure this in the
 ```yaml
 consistency:
     checks:
-        - repository
+        - name: repository
 ```
 
 Here are the available checks from fastest to slowest:
@@ -70,6 +70,33 @@ Here are the available checks from fastest to slowest:
 
 See [Borg's check documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html) for more information.
 
+### Check frequency
+
+You can optionally configure checks to run on a periodic basis rather than
+every time borgmatic runs checks. For instance:
+
+```yaml
+consistency:
+    checks:
+        - name: repository
+          frequency: 2 weeks
+```
+
+This tells borgmatic to run this consistency check at most once every two
+weeks for a given repository. The `frequency` value is a number followed by a
+unit of time, e.g. "3 days", "1 week", "2 months", etc. The `frequency`
+defaults to "always", which means run this check every time checks run.
+
+Unlike a real scheduler like cron, borgmatic only makes a best effort to run
+checks on the configured frequency. It compares that frequency with how long
+it's been since the last check for a given repository (as recorded in a file
+within `~/.borgmatic/checks`). If it hasn't been long enough, the check is
+skipped. And you still have to run `borgmatic check` (or just `borgmatic`) in
+order for checks to run, even when a `frequency` is configured!
+
+
+### Disabling checks
+
 If that's still too slow, you can disable consistency checks entirely,
 either for a single repository or for all repositories.
 
@@ -78,7 +105,7 @@ Disabling all consistency checks looks like this:
 ```yaml
 consistency:
     checks:
-        - disabled
+        - name: disabled
 ```
 
 Or, if you have multiple repositories in your borgmatic configuration file,
@@ -99,7 +126,8 @@ borgmatic check --only data --only extract
 ```
 
 This is useful for running slow consistency checks on an infrequent basis,
-separate from your regular checks.
+separate from your regular checks. It is still subject to any configured
+check frequencies.
 
 
 ## Troubleshooting

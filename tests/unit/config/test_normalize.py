@@ -35,6 +35,10 @@ from borgmatic.config import normalize as module
             {'hooks': {'cronhub': 'https://example.com'}},
             {'hooks': {'cronhub': {'ping_url': 'https://example.com'}}},
         ),
+        (
+            {'consistency': {'checks': ['archives']}},
+            {'consistency': {'checks': [{'name': 'archives'}]}},
+        ),
     ),
 )
 def test_normalize_applies_hard_coded_normalization_to_config(config, expected_config):

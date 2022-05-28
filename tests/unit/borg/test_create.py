@@ -271,7 +271,9 @@ def test_borgmatic_source_directories_defaults_when_directory_not_given():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.os.path).should_receive('expanduser')
 
-    assert module.borgmatic_source_directories(None) == [module.DEFAULT_BORGMATIC_SOURCE_DIRECTORY]
+    assert module.borgmatic_source_directories(None) == [
+        module.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+    ]
 
 
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'

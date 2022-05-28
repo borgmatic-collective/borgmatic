@@ -354,7 +354,7 @@ def make_parsers():
         choices=('repository', 'archives', 'data', 'extract'),
         dest='only',
         action='append',
-        help='Run a particular consistency check (repository, archives, data, or extract) instead of configured checks; can specify flag multiple times',
+        help='Run a particular consistency check (repository, archives, data, or extract) instead of configured checks (subject to configured frequency, can specify flag multiple times)',
     )
     check_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 

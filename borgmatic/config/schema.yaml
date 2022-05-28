@@ -447,26 +447,45 @@ properties:
             checks:
                 type: array
                 items:
-                    type: string
-                    enum:
-                        - repository
-                        - archives
-                        - data
-                        - extract
-                        - disabled
-                    uniqueItems: true
+                    type: object
+                    required: ['name']
+                    additionalProperties: false
+                    properties:
+                        name:
+                            type: string
+                            enum:
+                                - repository
+                                - archives
+                                - data
+                                - extract
+                                - disabled
+                            description: |
+                                Name of consistency check to run: "repository",
+                                "archives", "data", and/or "extract". Set to
+                                "disabled" to disable all consistency checks.
+                                "repository" checks the consistency of the
+                                repository, "archives" checks all of the
+                                archives, "data" verifies the integrity of the
+                                data within the archives, and "extract" does an
+                                extraction dry-run of the most recent archive.
+                                Note that "data" implies "archives".
+                            example: repository
+                        frequency:
+                            type: string
+                            description: |
+                                How frequently to run this type of consistency
+                                check (as a best effort). The value is a number
+                                followed by a unit of time. E.g., "2 weeks" to
+                                run this consistency check no more than every
+                                two weeks for a given repository or "1 month" to
+                                run it no more than monthly. Defaults to
+                                "always": running this check every time checks
+                                are run.
+                            example: 2 weeks
                 description: |
-                    List of one or more consistency checks to run: "repository",
-                    "archives", "data", and/or "extract". Defaults to
-                    "repository" and "archives". Set to "disabled" to disable
-                    all consistency checks. "repository" checks the consistency
-                    of the repository, "archives" checks all of the archives,
-                    "data" verifies the integrity of the data within the
-                    archives, and "extract" does an extraction dry-run of the
-                    most recent archive. Note that "data" implies "archives".
-                example:
-                    - repository
-                    - archives
+                    List of one or more consistency checks to run on a periodic
+                    basis (if "frequency" is set) or every time borgmatic runs
+                    checks (if "frequency" is omitted).
             check_repositories:
                 type: array
                 items:

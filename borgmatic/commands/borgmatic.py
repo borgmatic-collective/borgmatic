@@ -395,6 +395,7 @@ def run_actions(
         logger.info('{}: Running consistency checks'.format(repository))
         borg_check.check_archives(
             repository,
+            location,
             storage,
             consistency,
             local_path=local_path,

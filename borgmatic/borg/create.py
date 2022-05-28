@@ -5,7 +5,7 @@ import os
 import pathlib
 import tempfile
 
-from borgmatic.borg import feature
+from borgmatic.borg import feature, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
 
 logger = logging.getLogger(__name__)
@@ -175,7 +175,7 @@ def make_exclude_flags(location_config, exclude_filename=None):
     )
 
 
-DEFAULT_BORGMATIC_SOURCE_DIRECTORY = '~/.borgmatic'
+DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 
 
 def borgmatic_source_directories(borgmatic_source_directory):
@@ -183,16 +183,13 @@ def borgmatic_source_directories(borgmatic_source_directory):
     Return a list of borgmatic-specific source directories used for state like database backups.
     '''
     if not borgmatic_source_directory:
-        borgmatic_source_directory = DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+        borgmatic_source_directory = state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
     return (
         [borgmatic_source_directory]
         if os.path.exists(os.path.expanduser(borgmatic_source_directory))
         else []
     )
-
-
-DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 
 
 def create_archive(

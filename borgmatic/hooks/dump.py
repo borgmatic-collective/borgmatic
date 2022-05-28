@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from borgmatic.borg.create import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
