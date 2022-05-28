@@ -1,5 +1,3 @@
-import pkg_resources
-
 from borgmatic.commands import arguments
 
 UPGRADE_MESSAGE = '''
@@ -28,15 +26,15 @@ def bash_completion():
     top_level_parser, subparsers = arguments.make_parsers()
     global_flags = parser_flags(top_level_parser)
     actions = ' '.join(subparsers.choices.keys())
-    borgmatic_version = pkg_resources.require('borgmatic')[0].version
 
     # Avert your eyes.
     return '\n'.join(
         (
+            'set -euo pipefail',
             'check_version() {',
-            '    local installed_version="$(borgmatic --version 2> /dev/null)"',
-            '    if [ "$installed_version" != "%s" ] && [ "$installed_version" != "" ];'
-            % borgmatic_version,
+            '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
+            '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
+            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
             '        then cat << EOF\n%s\nEOF' % UPGRADE_MESSAGE,
             '    fi',
             '}',
