@@ -30,7 +30,7 @@ def bash_completion():
     # Avert your eyes.
     return '\n'.join(
         (
-            'set -euo pipefail',
+            'set -uo pipefail',
             'check_version() {',
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
@@ -53,6 +53,6 @@ def bash_completion():
             % (actions, global_flags),
             '    (check_version &)',
             '}',
-            '\ncomplete -F complete_borgmatic borgmatic',
+            '\ncomplete -o bashdefault -o default -F complete_borgmatic borgmatic',
         )
     )
