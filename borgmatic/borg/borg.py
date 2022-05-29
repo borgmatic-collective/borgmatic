@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 REPOSITORYLESS_BORG_COMMANDS = {'serve', None}
+BORG_COMMANDS_WITH_SUBCOMMANDS = {'key', 'debug'}
+BORG_SUBCOMMANDS_WITHOUT_REPOSITORY = (('debug', 'info'), ('debug', 'convert-profile'))
 
 
 def run_arbitrary_borg(
@@ -22,15 +24,20 @@ def run_arbitrary_borg(
     try:
         options = options[1:] if options[0] == '--' else options
 
-        # Borg's "key" command has a sub-command ("export", etc.) that must follow it.
-        command_options_start_index = 2 if options[0] == 'key' else 1
+        # Borg commands like "key" have a sub-command ("export", etc.) that must follow it.
+        command_options_start_index = 2 if options[0] in BORG_COMMANDS_WITH_SUBCOMMANDS else 1
         borg_command = tuple(options[:command_options_start_index])
         command_options = tuple(options[command_options_start_index:])
     except IndexError:
         borg_command = ()
         command_options = ()
 
-    repository_archive = '::'.join((repository, archive)) if repository and archive else repository
+    if borg_command in BORG_SUBCOMMANDS_WITHOUT_REPOSITORY:
+        repository_archive = None
+    else:
+        repository_archive = (
+            '::'.join((repository, archive)) if repository and archive else repository
+        )
 
     full_command = (
         (local_path,)

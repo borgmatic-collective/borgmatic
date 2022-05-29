@@ -131,3 +131,37 @@ def test_run_arbitrary_borg_passes_key_sub_command_to_borg_before_repository():
     module.run_arbitrary_borg(
         repository='repo', storage_config={}, options=['key', 'export'],
     )
+
+
+def test_run_arbitrary_borg_passes_debug_sub_command_to_borg_before_repository():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'debug', 'dump-manifest', 'repo', 'path'),
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+    )
+
+    module.run_arbitrary_borg(
+        repository='repo', storage_config={}, options=['debug', 'dump-manifest', 'path'],
+    )
+
+
+def test_run_arbitrary_borg_with_debug_info_command_does_not_pass_borg_repository():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'debug', 'info'), output_log_level=logging.WARNING, borg_local_path='borg',
+    )
+
+    module.run_arbitrary_borg(
+        repository='repo', storage_config={}, options=['debug', 'info'],
+    )
+
+
+def test_run_arbitrary_borg_with_debug_convert_profile_command_does_not_pass_borg_repository():
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'debug', 'convert-profile', 'in', 'out'),
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+    )
+
+    module.run_arbitrary_borg(
+        repository='repo', storage_config={}, options=['debug', 'convert-profile', 'in', 'out'],
+    )

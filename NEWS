@@ -5,6 +5,7 @@
    https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#check-frequency
  * #536: Fix generate-borgmatic-config to support more complex schema changes like the new
    Healthchecks configuration options when the "--source" flag is used.
+ * #538: Add support for "borgmatic borg debug" command.
  * Add Bash completion script so you can tab-complete the borgmatic command-line. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
