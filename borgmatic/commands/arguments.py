@@ -346,7 +346,7 @@ def make_parsers():
         dest='repair',
         default=False,
         action='store_true',
-        help='Attempt to repair any inconsistencies found (experimental and only for interactive use)',
+        help='Attempt to repair any inconsistencies found (for interactive use)',
     )
     check_group.add_argument(
         '--only',
@@ -355,6 +355,12 @@ def make_parsers():
         dest='only',
         action='append',
         help='Run a particular consistency check (repository, archives, data, or extract) instead of configured checks (subject to configured frequency, can specify flag multiple times)',
+    )
+    check_group.add_argument(
+        '--force',
+        default=False,
+        action='store_true',
+        help='Ignore configured check frequencies and run checks unconditionally',
     )
     check_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 

@@ -96,6 +96,9 @@ within `~/.borgmatic/checks`). If it hasn't been long enough, the check is
 skipped. And you still have to run `borgmatic check` (or just `borgmatic`) in
 order for checks to run, even when a `frequency` is configured!
 
+If you want to temporarily ignore your configured frequencies, you can invoke
+`borgmatic check --force` to run checks unconditionally.
+
 
 ### Disabling checks
 
@@ -129,7 +132,7 @@ borgmatic check --only data --only extract
 
 This is useful for running slow consistency checks on an infrequent basis,
 separate from your regular checks. It is still subject to any configured
-check frequencies.
+check frequencies unless the `--force` flag is used.
 
 
 ## Troubleshooting

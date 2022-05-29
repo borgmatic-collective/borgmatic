@@ -83,8 +83,8 @@ def test_parse_checks_with_override_data_check_also_injects_archives():
         ('2 days', module.datetime.timedelta(days=2)),
         ('1 week', module.datetime.timedelta(weeks=1)),
         ('2 weeks', module.datetime.timedelta(weeks=2)),
-        ('1 month', module.datetime.timedelta(weeks=4)),
-        ('2 months', module.datetime.timedelta(weeks=8)),
+        ('1 month', module.datetime.timedelta(days=30)),
+        ('2 months', module.datetime.timedelta(days=60)),
         ('1 year', module.datetime.timedelta(days=365)),
         ('2 years', module.datetime.timedelta(days=365 * 2)),
     ),
@@ -113,12 +113,17 @@ def test_filter_checks_on_frequency_without_config_uses_default_checks():
         consistency_config={},
         borg_repository_id='repo',
         checks=('repository', 'archives'),
+        force=False,
     ) == ('repository', 'archives')
 
 
 def test_filter_checks_on_frequency_retains_unconfigured_check():
     assert module.filter_checks_on_frequency(
-        location_config={}, consistency_config={}, borg_repository_id='repo', checks=('data',),
+        location_config={},
+        consistency_config={},
+        borg_repository_id='repo',
+        checks=('data',),
+        force=False,
     ) == ('data',)
 
 
@@ -130,6 +135,7 @@ def test_filter_checks_on_frequency_retains_check_without_frequency():
         consistency_config={'checks': [{'name': 'archives'}]},
         borg_repository_id='repo',
         checks=('archives',),
+        force=False,
     ) == ('archives',)
 
 
@@ -147,6 +153,7 @@ def test_filter_checks_on_frequency_retains_check_with_elapsed_frequency():
         consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
         checks=('archives',),
+        force=False,
     ) == ('archives',)
 
 
@@ -162,6 +169,7 @@ def test_filter_checks_on_frequency_retains_check_with_missing_check_time_file()
         consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
         checks=('archives',),
+        force=False,
     ) == ('archives',)
 
 
@@ -178,9 +186,20 @@ def test_filter_checks_on_frequency_skips_check_with_unelapsed_frequency():
             consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
             borg_repository_id='repo',
             checks=('archives',),
+            force=False,
         )
         == ()
     )
+
+
+def test_filter_checks_on_frequency_restains_check_with_unelapsed_frequency_and_force():
+    assert module.filter_checks_on_frequency(
+        location_config={},
+        consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+        borg_repository_id='repo',
+        checks=('archives',),
+        force=True,
+    ) == ('archives',)
 
 
 def test_make_check_flags_with_repository_check_returns_flag():

@@ -81,8 +81,8 @@ def parse_frequency(frequency):
         time_unit += 's'
 
     if time_unit == 'months':
-        number *= 4
-        time_unit = 'weeks'
+        number *= 30
+        time_unit = 'days'
     elif time_unit == 'years':
         number *= 365
         time_unit = 'days'
@@ -93,11 +93,13 @@ def parse_frequency(frequency):
         raise ValueError(f"Could not parse consistency check frequency '{frequency}'")
 
 
-def filter_checks_on_frequency(location_config, consistency_config, borg_repository_id, checks):
+def filter_checks_on_frequency(
+    location_config, consistency_config, borg_repository_id, checks, force
+):
     '''
     Given a location config, a consistency config with a "checks" sequence of dicts, a Borg
-    repository ID, and sequence of checks, filter down those checks based on the configured
-    "frequency" for each check as compared to its check time file.
+    repository ID, a sequence of checks, and whether to force checks to run, filter down those
+    checks based on the configured "frequency" for each check as compared to its check time file.
 
     In other words, a check whose check time file's timestamp is too new (based on the configured
     frequency) will get cut from the returned sequence of checks. Example:
@@ -118,6 +120,9 @@ def filter_checks_on_frequency(location_config, consistency_config, borg_reposit
     Raise ValueError if a frequency cannot be parsed.
     '''
     filtered_checks = list(checks)
+
+    if force:
+        return tuple(filtered_checks)
 
     for check_config in consistency_config.get('checks', DEFAULT_CHECKS):
         check = check_config['name']
@@ -240,6 +245,7 @@ def check_archives(
     progress=None,
     repair=None,
     only_checks=None,
+    force=None,
 ):
     '''
     Given a local or remote repository path, a storage config dict, a consistency config dict,
@@ -269,6 +275,7 @@ def check_archives(
         consistency_config,
         borg_repository_id,
         parse_checks(consistency_config, only_checks),
+        force,
     )
     check_last = consistency_config.get('check_last', None)
     lock_wait = None

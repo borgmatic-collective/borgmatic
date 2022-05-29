@@ -403,6 +403,7 @@ def run_actions(
             progress=arguments['check'].progress,
             repair=arguments['check'].repair,
             only_checks=arguments['check'].only,
+            force=arguments['check'].force,
         )
         command.execute_hook(
             hooks.get('after_check'),

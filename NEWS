@@ -1,6 +1,7 @@
 1.6.2.dev0
  * #523: Reduce the default consistency check frequency and support configuring the frequency
-   independently for each check. See the documentation for more information:
+   independently for each check. Also add "borgmatic check --force" flag to ignore configured
+   frequencies. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#check-frequency
  * #536: Fix generate-borgmatic-config to support more complex schema changes like the new
    Healthchecks configuration options when the "--source" flag is used.

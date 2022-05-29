@@ -468,7 +468,9 @@ def test_run_actions_calls_hooks_for_check_action():
     flexmock(module.command).should_receive('execute_hook').twice()
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
-        'check': flexmock(progress=flexmock(), repair=flexmock(), only=flexmock()),
+        'check': flexmock(
+            progress=flexmock(), repair=flexmock(), only=flexmock(), force=flexmock()
+        ),
     }
 
     list(
