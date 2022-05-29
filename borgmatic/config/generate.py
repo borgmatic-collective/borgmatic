@@ -109,13 +109,18 @@ def render_configuration(config):
     return rendered.getvalue()
 
 
-def write_configuration(config_filename, rendered_config, mode=0o600):
+def write_configuration(config_filename, rendered_config, mode=0o600, overwrite=False):
     '''
     Given a target config filename and rendered config YAML, write it out to file. Create any
-    containing directories as needed.
+    containing directories as needed. But if the file already exists and overwrite is False,
+    abort before writing anything.
     '''
-    if os.path.exists(config_filename):
-        raise FileExistsError('{} already exists. Aborting.'.format(config_filename))
+    if not overwrite and os.path.exists(config_filename):
+        raise FileExistsError(
+            '{} already exists. Aborting. Use --overwrite to replace the file.'.format(
+                config_filename
+            )
+        )
 
     try:
         os.makedirs(os.path.dirname(config_filename), mode=0o700)
@@ -263,12 +268,15 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     return destination_config
 
 
-def generate_sample_configuration(source_filename, destination_filename, schema_filename):
+def generate_sample_configuration(
+    source_filename, destination_filename, schema_filename, overwrite=False
+):
     '''
     Given an optional source configuration filename, and a required destination configuration
-    filename, and the path to a schema filename in a YAML rendition of the JSON Schema format,
-    write out a sample configuration file based on that schema. If a source filename is provided,
-    merge the parsed contents of that configuration into the generated configuration.
+    filename, the path to a schema filename in a YAML rendition of the JSON Schema format, and
+    whether to overwrite a destination file, write out a sample configuration file based on that
+    schema. If a source filename is provided, merge the parsed contents of that configuration into
+    the generated configuration.
     '''
     schema = yaml.round_trip_load(open(schema_filename))
     source_config = None
@@ -284,4 +292,5 @@ def generate_sample_configuration(source_filename, destination_filename, schema_
     write_configuration(
         destination_filename,
         _comment_out_optional_configuration(render_configuration(destination_config)),
+        overwrite=overwrite,
     )

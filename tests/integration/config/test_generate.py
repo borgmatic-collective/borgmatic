@@ -87,7 +87,7 @@ location:
     assert module._comment_out_optional_configuration(config.strip()) == expected_config.strip()
 
 
-def testrender_configuration_converts_configuration_to_yaml_string():
+def test_render_configuration_converts_configuration_to_yaml_string():
     yaml_string = module.render_configuration({'foo': 'bar'})
 
     assert yaml_string == 'foo: bar\n'
@@ -108,6 +108,12 @@ def test_write_configuration_with_already_existing_file_raises():
 
     with pytest.raises(FileExistsError):
         module.write_configuration('config.yaml', 'config: yaml')
+
+
+def test_write_configuration_with_already_existing_file_and_overwrite_does_not_raise():
+    flexmock(os.path).should_receive('exists').and_return(True)
+
+    module.write_configuration('config.yaml', 'config: yaml', overwrite=True)
 
 
 def test_write_configuration_with_already_existing_directory_does_not_raise():

@@ -23,9 +23,15 @@ def parse_arguments(*arguments):
         '--destination',
         dest='destination_filename',
         default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help='Destination YAML configuration file. Default: {}'.format(
+        help='Destination YAML configuration file, default: {}'.format(
             DEFAULT_DESTINATION_CONFIG_FILENAME
         ),
+    )
+    parser.add_argument(
+        '--overwrite',
+        default=False,
+        action='store_true',
+        help='Whether to overwrite any existing destination file, defaults to false',
     )
 
     return parser.parse_args(arguments)
@@ -36,7 +42,10 @@ def main():  # pragma: no cover
         args = parse_arguments(*sys.argv[1:])
 
         generate.generate_sample_configuration(
-            args.source_filename, args.destination_filename, validate.schema_filename()
+            args.source_filename,
+            args.destination_filename,
+            validate.schema_filename(),
+            overwrite=args.overwrite,
         )
 
         print('Generated a sample configuration file at {}.'.format(args.destination_filename))
