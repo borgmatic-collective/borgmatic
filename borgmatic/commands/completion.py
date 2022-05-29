@@ -5,7 +5,7 @@ Your bash completions script is from a different version of borgmatic than is
 currently installed. Please upgrade your script so your completions match the
 command-line flags in your installed borgmatic! Try this to upgrade:
 
-    sudo sh -c "borgmatic --bash-completions > $BASH_SOURCE"
+    sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"
     source $BASH_SOURCE
 '''
 
