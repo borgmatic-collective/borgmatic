@@ -61,6 +61,8 @@ consistency:
         - name: repository
 ```
 
+(Prior to borgmatic 1.6.2, `checks` was a plain list of strings without the `name:` part.)
+
 Here are the available checks from fastest to slowest:
 
  * `repository`: Checks the consistency of the repository itself.
