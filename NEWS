@@ -1,4 +1,4 @@
-1.6.2.dev0
+1.6.2
  * #523: Reduce the default consistency check frequency and support configuring the frequency
    independently for each check. Also add "borgmatic check --force" flag to ignore configured
    frequencies. See the documentation for more information:
