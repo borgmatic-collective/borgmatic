@@ -312,23 +312,31 @@ Access](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/293).
 borgmatic includes a shell completion script (currently only for Bash) to
 support tab-completing borgmatic command-line actions and flags. Depending on
 how you installed borgmatic, this may be enabled by default. But if it's not,
-you can install the shell completion script globally:
+start by installing the `bash-completion` Linux package or the
+[`bash-completion@2`](https://formulae.brew.sh/formula/bash-completion@2)
+macOS Homebrew formula. Then, install the shell completion script globally:
 
 ```bash
 sudo su -c "borgmatic --bash-completion > $(pkg-config --variable=completionsdir bash-completion)/borgmatic"
 ```
 
-Alternatively, if you'd like to install the script for just the current user:
+If you don't have `pkg-config` installed, you can try the following path
+instead:
+
+```bash
+sudo su -c "borgmatic --bash-completion > /usr/share/bash-completion/completions/borgmatic"
+```
+
+Or, if you'd like to install the script for just the current user:
 
 ```bash
 mkdir --parents ~/.local/share/bash-completion/completions
 borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmatic
 ```
 
-In either case, you may also need to install the `bash-completion` Linux
-package and restart your shell (`exit` and open a new shell).
+Finally, restart your shell (`exit` and open a new shell) so the completions
+take effect.
 
-For macOS, you can enable shell completion by setting up [`bash-completion@2`](https://formulae.brew.sh/formula/bash-completion@2) and then running above global command. `sudo` is not required.
 
 ### Colored output
 
