@@ -92,6 +92,7 @@ installing borgmatic:
  * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
  * [OpenBSD](http://ports.su/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
+ * [macOS (via Homebrew)](https://formulae.brew.sh/formula/borgmatic)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
  * [virtualenv](https://virtualenv.pypa.io/en/stable/)
 
@@ -314,7 +315,7 @@ how you installed borgmatic, this may be enabled by default. But if it's not,
 you can install the shell completion script globally:
 
 ```bash
-sudo su -c "borgmatic --bash-completion > /usr/share/bash-completion/completions/borgmatic"
+sudo su -c "borgmatic --bash-completion > $(pkg-config --variable=completionsdir bash-completion)/borgmatic"
 ```
 
 Alternatively, if you'd like to install the script for just the current user:
@@ -327,6 +328,7 @@ borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmat
 In either case, you may also need to install the `bash-completion` Linux
 package and restart your shell (`exit` and open a new shell).
 
+For macOS, you can enable shell completion by setting up [`bash-completion@2`](https://formulae.brew.sh/formula/bash-completion@2) and then running above global command. `sudo` is not required.
 
 ### Colored output
 
