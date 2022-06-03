@@ -258,8 +258,8 @@ def test_make_list_command_includes_additional_flags(argument_name):
     assert command == ('borg', 'list', '--' + argument_name.replace('_', '-'), 'value', 'repo')
 
 
-def test_make_find_paths_passes_through_empty_paths():
-    assert module.make_find_paths(()) == ()
+def test_make_find_paths_considers_none_as_empty_paths():
+    assert module.make_find_paths(None) == ()
 
 
 def test_make_find_paths_passes_through_patterns():

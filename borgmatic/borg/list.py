@@ -92,6 +92,8 @@ def make_find_paths(find_paths):
 
       ['sh:**/*foo.txt*/**', 'pp:root/somedir']
     '''
+    if not find_paths:
+        return ()
 
     return tuple(
         find_path
