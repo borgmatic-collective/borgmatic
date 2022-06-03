@@ -62,7 +62,9 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
         )
         + make_flags('remote-path', remote_path)
         + make_flags('lock-wait', lock_wait)
-        + make_flags_from_arguments(list_arguments, excludes=('repository', 'archive', 'paths'))
+        + make_flags_from_arguments(
+            list_arguments, excludes=('repository', 'archive', 'successful', 'paths')
+        )
         + (
             '::'.join((repository, list_arguments.archive))
             if list_arguments.archive
