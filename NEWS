@@ -1,4 +1,8 @@
 1.6.3.dev0
+ * #541: Add "borgmatic list --find" flag for searching for files across multiple archives, useful
+   for hunting down that file you accidentally deleted so you can extract it. See the documentation
+   for more information:
+   https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#searching-for-a-file
  * Deprecate "borgmatic list --successful" flag, as listing only non-checkpoint (successful)
    archives is now the default in newer versions of Borg.
 

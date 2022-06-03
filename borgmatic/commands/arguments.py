@@ -554,7 +554,14 @@ def make_parsers():
         metavar='PATH',
         nargs='+',
         dest='paths',
-        help='Paths to list from archive, defaults to the entire archive',
+        help='Paths or patterns to list from a single selected archive (via "--archive"), defaults to listing the entire archive',
+    )
+    list_group.add_argument(
+        '--find',
+        metavar='PATH',
+        nargs='+',
+        dest='find_paths',
+        help='Partial paths or patterns to search for and list across multiple archives',
     )
     list_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive or path names'
@@ -571,7 +578,7 @@ def make_parsers():
     )
     list_group.add_argument(
         '--successful',
-        default=False,
+        default=True,
         action='store_true',
         help='Deprecated in favor of listing successful (non-checkpoint) backups by default in newer versions of Borg',
     )
