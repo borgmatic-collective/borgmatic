@@ -296,15 +296,6 @@ def test_parse_arguments_disallows_init_and_dry_run():
         )
 
 
-def test_parse_arguments_disallows_glob_archives_with_successful():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments(
-            '--config', 'myconfig', 'list', '--glob-archives', '*glob*', '--successful'
-        )
-
-
 def test_parse_arguments_disallows_repository_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

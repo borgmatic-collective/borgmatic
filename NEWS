@@ -1,3 +1,7 @@
+1.6.3.dev0
+ * Deprecate "borgmatic list --successful" flag, as listing only non-checkpoint (successful)
+   archives is now the default in newer versions of Borg.
+
 1.6.2
  * #523: Reduce the default consistency check frequency and support configuring the frequency
    independently for each check. Also add "borgmatic check --force" flag to ignore configured

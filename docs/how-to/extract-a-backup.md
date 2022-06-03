@@ -116,7 +116,7 @@ Omit the `--archive` flag to mount all archives (lazy-loaded):
 borgmatic mount --mount-point /mnt
 ```
 
-Or use the "latest" value for the archive to mount the latest successful archive:
+Or use the "latest" value for the archive to mount the latest archive:
 
 ```bash
 borgmatic mount --archive latest --mount-point /mnt

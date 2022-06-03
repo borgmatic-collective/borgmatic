@@ -286,35 +286,12 @@ output only shows up at the console, and not in syslog.
  * [Borgmacator GNOME AppIndicator](https://github.com/N-Coder/borgmacator/)
 
 
-### Successful backups
-
-`borgmatic list` includes support for a `--successful` flag that only lists
-successful (non-checkpoint) backups. This flag works via a basic heuristic: It
-assumes that non-checkpoint archive names end with a digit (e.g. from a
-timestamp), while checkpoint archive names do not. This means that if you're
-using custom archive names that do not end in a digit, the `--successful` flag
-will not work as expected.
-
-Combined with a built-in Borg flag like `--last`, you can list the last
-successful backup for use in your monitoring scripts. Here's an example
-combined with `--json`:
-
-```bash
-borgmatic list --successful --last 1 --json
-```
-
-Note that this particular combination will only work if you've got a single
-backup "series" in your repository. If you're instead backing up, say, from
-multiple different hosts into a single repository, then you'll need to get
-fancier with your archive listing. See `borg list --help` for more flags.
-
-
 ### Latest backups
 
 All borgmatic actions that accept an "--archive" flag allow you to specify an
-archive name of "latest". This lets you get the latest successful archive
-without having to first run "borgmatic list" manually, which can be handy in
-automated scripts. Here's an example:
+archive name of "latest". This lets you get the latest archive without having
+to first run "borgmatic list" manually, which can be handy in automated
+scripts. Here's an example:
 
 ```bash
 borgmatic info --archive latest

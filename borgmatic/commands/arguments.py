@@ -573,7 +573,7 @@ def make_parsers():
         '--successful',
         default=False,
         action='store_true',
-        help='Only list archive names of successful (non-checkpoint) backups',
+        help='Deprecated in favor of listing successful (non-checkpoint) backups by default in newer versions of Borg',
     )
     list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -680,9 +680,6 @@ def parse_arguments(*unparsed_arguments):
 
     if 'init' in arguments and arguments['global'].dry_run:
         raise ValueError('The init action cannot be used with the --dry-run option')
-
-    if 'list' in arguments and arguments['list'].glob_archives and arguments['list'].successful:
-        raise ValueError('The --glob-archives and --successful options cannot be used together')
 
     if (
         'list' in arguments
