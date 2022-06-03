@@ -55,7 +55,8 @@ borgmatic info
 
 Let's say you've accidentally deleted a file and want to find the backup
 archive(s) containing it. `borgmatic list` provides a `--find` flag for
-exactly this purpose. For instance, if you're looking for a `foo.txt`:
+exactly this purpose (as of borgmatic 1.6.3). For instance, if you're looking
+for a `foo.txt`:
 
 ```bash
 borgmatic list --find foo.txt
