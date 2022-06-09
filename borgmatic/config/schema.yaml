@@ -900,6 +900,107 @@ properties:
                     https://docs.mongodb.com/database-tools/mongodump/ and
                     https://docs.mongodb.com/database-tools/mongorestore/ for
                     details.
+            ntfy:
+                type: object
+                required: ['topic']
+                additionalProperties: false
+                properties:
+                    topic:
+                        type: string
+                        description: |
+                            The topic to publish to
+                            (https://ntfy.sh/docs/publish/)
+                        example: topic
+                    server:
+                        type: string
+                        description: |
+                            The address of your self-hosted ntfy.sh installation
+                        example: https://ntfy.your-domain.com
+                    start:
+                        type: object
+                        properties:
+                            title:
+                                type: string
+                                description: |
+                                    The title of the message
+                                example: Ping!
+                            message:
+                                type: string
+                                description: |
+                                    The message body to publish
+                                example: Your backups have failed.
+                            priority:
+                                type: string
+                                description: |
+                                    The priority to set
+                                example: urgent
+                            tags:
+                                type: string
+                                description: |
+                                    Tags to attach to the message
+                                example: incoming_envelope
+                    finish:
+                        type: object
+                        properties:
+                            title:
+                                type: string
+                                description: |
+                                    The title of the message
+                                example: Ping!
+                            message:
+                                type: string
+                                description: |
+                                    The message body to publish
+                                example: Your backups have failed.
+                            priority:
+                                type: string
+                                description: |
+                                    The priority to set
+                                example: urgent
+                            tags:
+                                type: string
+                                description: |
+                                    Tags to attach to the message
+                                example: incoming_envelope
+                    fail:
+                        type: object
+                        properties:
+                            title:
+                                type: string
+                                description: |
+                                    The title of the message
+                                example: Ping!
+                            message:
+                                type: string
+                                description: |
+                                    The message body to publish
+                                example: Your backups have failed.
+                            priority:
+                                type: string
+                                description: |
+                                    The priority to set
+                                example: urgent
+                            tags:
+                                type: string
+                                description: |
+                                    Tags to attach to the message
+                                example: incoming_envelope
+                    states:
+                        type: array
+                        items:
+                            type: string
+                            enum:
+                                - start
+                                - finish
+                                - fail
+                            uniqueItems: true
+                        description: |
+                            List of one or more monitoring states to ping for:
+                            "start", "finish", and/or "fail". Defaults to
+                            pinging for failure only.
+                        example:
+                            - start
+                            - finish
             healthchecks:
                 type: object
                 required: ['ping_url']
