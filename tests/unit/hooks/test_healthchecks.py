@@ -69,10 +69,18 @@ def test_format_buffered_logs_for_payload_without_handler_produces_empty_payload
     assert payload == ''
 
 
+def mock_logger():
+    logger = flexmock()
+    logger.should_receive('addHandler')
+    logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
+
+
 def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
     ping_body_limit = 100
     monitoring_log_level = 1
 
+    mock_logger()
     flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
         ping_body_limit - len(module.PAYLOAD_TRUNCATION_INDICATOR), monitoring_log_level
     ).once()
@@ -85,6 +93,7 @@ def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
 def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
     monitoring_log_level = 1
 
+    mock_logger()
     flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
         module.DEFAULT_PING_BODY_LIMIT_BYTES - len(module.PAYLOAD_TRUNCATION_INDICATOR),
         monitoring_log_level,
@@ -97,6 +106,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
     ping_body_limit = 0
     monitoring_log_level = 1
 
+    mock_logger()
     flexmock(module).should_receive('Forgetful_buffering_handler').with_args(
         ping_body_limit, monitoring_log_level
     ).once()
@@ -107,6 +117,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
 
 
 def test_initialize_monitor_creates_log_handler_when_send_logs_true():
+    mock_logger()
     flexmock(module).should_receive('Forgetful_buffering_handler').once()
 
     module.initialize_monitor(
@@ -115,6 +126,7 @@ def test_initialize_monitor_creates_log_handler_when_send_logs_true():
 
 
 def test_initialize_monitor_bails_when_send_logs_false():
+    mock_logger()
     flexmock(module).should_receive('Forgetful_buffering_handler').never()
 
     module.initialize_monitor(
