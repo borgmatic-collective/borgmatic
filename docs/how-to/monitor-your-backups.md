@@ -270,6 +270,52 @@ If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
 
 
+## Ntfy hook
+
+[Ntfy](https://ntfy.sh) is a free, simple, service (either hosted or self-hosted)
+which offers simple pub/sub push notifications to multiple platforms including
+[web](https://ntfy.sh/stats), [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
+and [iOS](https://apps.apple.com/us/app/ntfy/id1625396347).
+
+Since push notifications for regular events might soon become quite annoying,
+this hook only fires on any errors by default in order to instantly alert you to issues.
+The `states` list can override this.
+
+As Ntfy is unauthenticated, it isn't a suitable channel for any private information
+so the default messages are intentionally generic. These can be overridden, depending
+on your risk assessment. Each `state` can have its own custom messages, priorities and tags
+or, if none are provided, will use the default.
+
+An example configuration is shown here, with all the available options, including
+[priorities](https://ntfy.sh/docs/publish/#message-priority) and
+[tags](https://ntfy.sh/docs/publish/#tags-emojis):
+
+```yaml
+hooks:
+    ntfy:
+        topic: my-unique-topic
+        server: https://ntfy.my-domain.com
+        start:
+            title: A Borgmatic backup started
+            message: Watch this space...
+            tags: borgmatic
+            priority: min
+        finish:
+            title: A Borgmatic backup completed successfully
+            message: Nice!
+            tags: borgmatic,+1
+            priority: min
+        fail:
+            title: A Borgmatic backup failed
+            message: You should probably fix it
+            tags: borgmatic,-1,skull
+            priority: max
+        states:
+            - start
+            - finish
+            - fail
+```
+
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an
