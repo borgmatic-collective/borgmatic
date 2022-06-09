@@ -5,6 +5,8 @@
    https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#searching-for-a-file
  * #543: Add a monitoring hook for sending push notifications via ntfy. See the documentation for
    more information: https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook
+ * Fix Bash completion script to no longer alter your shell's settings (complain about unset
+   variables or error on pipe failures).
  * Deprecate "borgmatic list --successful" flag, as listing only non-checkpoint (successful)
    archives is now the default in newer versions of Borg.
 
