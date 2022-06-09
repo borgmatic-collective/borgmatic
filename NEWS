@@ -3,6 +3,8 @@
    for hunting down that file you accidentally deleted so you can extract it. See the documentation
    for more information:
    https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#searching-for-a-file
+ * #543: Add a monitoring hook for sending push notifications via ntfy. See the documentation for
+   more information: https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook
  * Deprecate "borgmatic list --successful" flag, as listing only non-checkpoint (successful)
    archives is now the default in newer versions of Borg.
 

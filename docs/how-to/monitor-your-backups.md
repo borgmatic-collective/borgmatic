@@ -38,17 +38,19 @@ below for how to configure this.
 
 borgmatic integrates with monitoring services like
 [Healthchecks](https://healthchecks.io/), [Cronitor](https://cronitor.io),
-[Cronhub](https://cronhub.io), and [PagerDuty](https://www.pagerduty.com/) and
-pings these services whenever borgmatic runs. That way, you'll receive an
-alert when something goes wrong or (for certain hooks) the service doesn't
-hear from borgmatic for a configured interval. See [Healthchecks
+[Cronhub](https://cronhub.io), [PagerDuty](https://www.pagerduty.com/), and
+[ntfy](https://ntfy.sh/) and pings these services whenever borgmatic runs.
+That way, you'll receive an alert when something goes wrong or (for certain
+hooks) the service doesn't hear from borgmatic for a configured interval. See
+[Healthchecks
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook),
 [Cronitor
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook),
 [Cronhub
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook),
-and [PagerDuty
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+[PagerDuty
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook),
+and [ntfy hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
 below for how to configure this.
 
 While these services offer different features, you probably only need to use
@@ -270,9 +272,9 @@ If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
 
 
-## Ntfy hook
+## ntfy hook
 
-[Ntfy](https://ntfy.sh) is a free, simple, service (either hosted or self-hosted)
+[ntfy](https://ntfy.sh) is a free, simple, service (either hosted or self-hosted)
 which offers simple pub/sub push notifications to multiple platforms including
 [web](https://ntfy.sh/stats), [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
 and [iOS](https://apps.apple.com/us/app/ntfy/id1625396347).
@@ -281,7 +283,7 @@ Since push notifications for regular events might soon become quite annoying,
 this hook only fires on any errors by default in order to instantly alert you to issues.
 The `states` list can override this.
 
-As Ntfy is unauthenticated, it isn't a suitable channel for any private information
+As ntfy is unauthenticated, it isn't a suitable channel for any private information
 so the default messages are intentionally generic. These can be overridden, depending
 on your risk assessment. Each `state` can have its own custom messages, priorities and tags
 or, if none are provided, will use the default.
