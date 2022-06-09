@@ -1,4 +1,4 @@
-1.6.3.dev0
+1.6.3
  * #541: Add "borgmatic list --find" flag for searching for files across multiple archives, useful
    for hunting down that file you accidentally deleted so you can extract it. See the documentation
    for more information:
