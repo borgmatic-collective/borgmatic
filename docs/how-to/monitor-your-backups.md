@@ -61,8 +61,6 @@ one of them at most.
 You can use traditional monitoring software to consume borgmatic JSON output
 and track when the last successful backup occurred. See [scripting
 borgmatic](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#scripting-borgmatic)
-and [related
-software](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#related-software)
 below for how to configure this.
 
 ### Borg hosting providers
@@ -327,11 +325,6 @@ formatted as JSON.
 Note that when you specify the `--json` flag, Borg's other non-JSON output is
 suppressed so as not to interfere with the captured JSON. Also note that JSON
 output only shows up at the console, and not in syslog.
-
-
-## Related software
-
- * [Borgmacator GNOME AppIndicator](https://github.com/N-Coder/borgmacator/)
 
 
 ### Latest backups
