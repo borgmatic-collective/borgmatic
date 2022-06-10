@@ -908,13 +908,13 @@ properties:
                     topic:
                         type: string
                         description: |
-                            The topic to publish to
+                            The topic to publish to.
                             (https://ntfy.sh/docs/publish/)
                         example: topic
                     server:
                         type: string
                         description: |
-                            The address of your self-hosted ntfy.sh installation
+                            The address of your self-hosted ntfy.sh instance.
                         example: https://ntfy.your-domain.com
                     start:
                         type: object
@@ -927,17 +927,17 @@ properties:
                             message:
                                 type: string
                                 description: |
-                                    The message body to publish
+                                    The message body to publish.
                                 example: Your backups have failed.
                             priority:
                                 type: string
                                 description: |
-                                    The priority to set
+                                    The priority to set.
                                 example: urgent
                             tags:
                                 type: string
                                 description: |
-                                    Tags to attach to the message
+                                    Tags to attach to the message.
                                 example: incoming_envelope
                     finish:
                         type: object
@@ -945,22 +945,22 @@ properties:
                             title:
                                 type: string
                                 description: |
-                                    The title of the message
+                                    The title of the message.
                                 example: Ping!
                             message:
                                 type: string
                                 description: |
-                                    The message body to publish
+                                    The message body to publish.
                                 example: Your backups have failed.
                             priority:
                                 type: string
                                 description: |
-                                    The priority to set
+                                    The priority to set.
                                 example: urgent
                             tags:
                                 type: string
                                 description: |
-                                    Tags to attach to the message
+                                    Tags to attach to the message.
                                 example: incoming_envelope
                     fail:
                         type: object
@@ -968,22 +968,22 @@ properties:
                             title:
                                 type: string
                                 description: |
-                                    The title of the message
+                                    The title of the message.
                                 example: Ping!
                             message:
                                 type: string
                                 description: |
-                                    The message body to publish
+                                    The message body to publish.
                                 example: Your backups have failed.
                             priority:
                                 type: string
                                 description: |
-                                    The priority to set
+                                    The priority to set.
                                 example: urgent
                             tags:
                                 type: string
                                 description: |
-                                    Tags to attach to the message
+                                    Tags to attach to the message.
                                 example: incoming_envelope
                     states:
                         type: array
