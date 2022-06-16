@@ -189,6 +189,12 @@ def make_parsers():
         help='One or more configuration file options to override with specified values',
     )
     global_group.add_argument(
+        '--no-env',
+        dest='resolve_env',
+        action='store_false',
+        help='Do not resolve environment variables in configuration file',
+    )
+    global_group.add_argument(
         '--bash-completion',
         default=False,
         action='store_true',
