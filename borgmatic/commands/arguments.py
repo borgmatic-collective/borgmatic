@@ -189,7 +189,7 @@ def make_parsers():
         help='One or more configuration file options to override with specified values',
     )
     global_group.add_argument(
-        '--no-env',
+        '--no-environment-interpolation',
         dest='resolve_env',
         action='store_false',
         help='Do not resolve environment variables in configuration file',

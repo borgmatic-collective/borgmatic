@@ -4,7 +4,7 @@ import jsonschema
 import pkg_resources
 import ruamel.yaml
 
-from borgmatic.config import load, normalize, override
+from borgmatic.config import environment, load, normalize, override
 
 
 def schema_filename():
@@ -98,10 +98,10 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
+    normalize.normalize(config)
     override.apply_overrides(config, overrides)
     if resolve_env:
-        override.resolve_env_variables(config)
-    normalize.normalize(config)
+        environment.resolve_env_variables(config)
 
     try:
         validator = jsonschema.Draft7Validator(schema)

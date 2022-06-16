@@ -1,3 +1,7 @@
+1.6.4.dev0
+ * #546: Substitute an environment variable anywhere in a borgmatic configuration option value with
+   new "${MY_ENV_VAR}" syntax.
+
 1.6.3
  * #541: Add "borgmatic list --find" flag for searching for files across multiple archives, useful
    for hunting down that file you accidentally deleted so you can extract it. See the documentation
