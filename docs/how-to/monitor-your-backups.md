@@ -3,7 +3,7 @@ title: How to monitor your backups
 eleventyNavigation:
   key: 🚨 Monitor your backups
   parent: How-to guides
-  order: 5
+  order: 6
 ---
 
 ## Monitoring and alerting

@@ -203,3 +203,5 @@ indentation and a leading dash.)
 
 Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
+
+An alternate to command-line overrides is passing in your values via [environment variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).

@@ -3,7 +3,7 @@ title: How to add preparation and cleanup steps to backups
 eleventyNavigation:
   key: 🧹 Add preparation and cleanup steps
   parent: How-to guides
-  order: 8
+  order: 9
 ---
 ## Preparation and cleanup hooks
 
@@ -60,6 +60,10 @@ variables you can use here:
    hook was defined
  * `repository`: path of the current repository as configured in the current
    borgmatic configuration file
+
+Note that you can also interpolate in [arbitrary environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+
 
 ## Global hooks
 

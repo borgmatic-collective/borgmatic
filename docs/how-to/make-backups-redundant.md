@@ -3,7 +3,7 @@ title: How to make backups redundant
 eleventyNavigation:
   key: ☁️  Make backups redundant
   parent: How-to guides
-  order: 2
+  order: 3
 ---
 ## Multiple repositories
 

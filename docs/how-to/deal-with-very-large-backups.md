@@ -3,7 +3,7 @@ title: How to deal with very large backups
 eleventyNavigation:
   key: 📏 Deal with very large backups
   parent: How-to guides
-  order: 3
+  order: 4
 ---
 ## Biggish data
 

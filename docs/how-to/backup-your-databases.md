@@ -3,7 +3,7 @@ title: How to backup your databases
 eleventyNavigation:
   key: 🗄️ Backup your databases
   parent: How-to guides
-  order: 7
+  order: 8
 ---
 ## Database dump hooks
 
@@ -99,6 +99,14 @@ hooks:
     mysql_databases:
         - name: all
 ```
+
+### External passwords
+
+If you don't want to keep your database passwords in your borgmatic
+configuration file, you can instead pass them in via [environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/)
+or command-line [configuration
+overrides](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides).
 
 
 ### Configuration backups

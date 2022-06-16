@@ -3,7 +3,7 @@ title: How to run arbitrary Borg commands
 eleventyNavigation:
   key: 🔧 Run arbitrary Borg commands
   parent: How-to guides
-  order: 10
+  order: 11
 ---
 ## Running Borg with borgmatic
 

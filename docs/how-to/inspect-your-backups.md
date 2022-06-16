@@ -3,7 +3,7 @@ title: How to inspect your backups
 eleventyNavigation:
   key: 🔎 Inspect your backups
   parent: How-to guides
-  order: 4
+  order: 5
 ---
 ## Backup progress
 
