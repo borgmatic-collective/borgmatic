@@ -1,7 +1,6 @@
 import os
 import re
 
-
 _VARIABLE_PATTERN = re.compile(r'(?<!\\)\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\}')
 
 
