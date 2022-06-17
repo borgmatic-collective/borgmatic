@@ -137,12 +137,11 @@ YAML limitation.)
 
 ### Deep merge
 
-<span class="minilink minilink-addedin">New in version 1.6.0</span>
-
-borgmatic performs a deep merge of merged include files, meaning that values
-are merged at all levels in the two configuration files. Colliding list values
-are appended together. This allows you to include common configuration—up to
-full borgmatic configuration files—while overriding only the parts you want to
+<span class="minilink minilink-addedin">New in version 1.6.0</span> borgmatic
+performs a deep merge of merged include files, meaning that values are merged
+at all levels in the two configuration files. Colliding list values are
+appended together. This allows you to include common configuration—up to full
+borgmatic configuration files—while overriding only the parts you want to
 customize.
 
 

@@ -28,9 +28,8 @@ hooks:
         - umount /some/filesystem
 ```
 
-<span class="minilink minilink-addedin">New in version 1.6.0</span>
-
-The `before_backup` and `after_backup` hooks each run once per repository in a
+<span class="minilink minilink-addedin">New in version 1.6.0</span> The
+`before_backup` and `after_backup` hooks each run once per repository in a
 configuration file. `before_backup` hooks runs right before the `create`
 action for a particular repository, and `after_backup` hooks run afterwards,
 but not if an error occurs in a previous hook or in the backups themselves.
