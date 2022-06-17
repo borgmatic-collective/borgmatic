@@ -123,11 +123,7 @@ Once this include gets merged in, the resulting configuration would have a
 `keep_hourly` value of `24` and an overridden `keep_daily` value of `5`.
 
 When there's an option collision between the local file and the merged
-include, the local file's option takes precedence. And as of borgmatic 1.6.0,
-this feature performs a deep merge, meaning that values are merged at all
-levels in the two configuration files. Colliding list values are appended
-together. This allows you to include common configuration—up to full borgmatic
-configuration files—while overriding only the parts you want to customize.
+include, the local file's option takes precedence.
 
 Note that this `<<` include merging syntax is only for merging in mappings
 (configuration options and their values). But if you'd like to include a
@@ -137,6 +133,17 @@ Additionally, there is a limitation preventing multiple `<<` include merges
 per section. So for instance, that means you can do one `<<` merge at the
 global level, another `<<` within each configuration section, etc. (This is a
 YAML limitation.)
+
+
+### Deep merge
+
+<span class="minilink minilink-addedin">New in version 1.6.0</span>
+
+borgmatic performs a deep merge of merged include files, meaning that values
+are merged at all levels in the two configuration files. Colliding list values
+are appended together. This allows you to include common configuration—up to
+full borgmatic configuration files—while overriding only the parts you want to
+customize.
 
 
 ## Configuration overrides

@@ -74,8 +74,10 @@ See [Borg's check documentation](https://borgbackup.readthedocs.io/en/stable/usa
 
 ### Check frequency
 
-As of borgmatic 1.6.2, you can optionally configure checks to run on a
-periodic basis rather than every time borgmatic runs checks. For instance:
+<span class="minilink minilink-addedin">New in version 1.6.2</span>
+
+You can optionally configure checks to run on a periodic basis rather than
+every time borgmatic runs checks. For instance:
 
 ```yaml
 consistency:

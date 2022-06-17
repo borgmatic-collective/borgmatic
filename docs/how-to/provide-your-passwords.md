@@ -13,11 +13,12 @@ treating those secrets like any other option value. But if you'd rather store
 them outside of borgmatic, whether for convenience or security reasons, read
 on.
 
-As of version 1.6.4, borgmatic supports interpolating arbitrary environment
-variables directly into option values in your configuration file. That means
-you can instruct borgmatic to pull your repository passphrase, your database
-passwords, or any other option values from environment variables. For
-instance:
+<span class="minilink minilink-addedin">New in version 1.6.4</span>
+
+borgmatic supports interpolating arbitrary environment variables directly into
+option values in your configuration file. That means you can instruct
+borgmatic to pull your repository passphrase, your database passwords, or any
+other option values from environment variables. For instance:
 
 ```yaml
 storage:
@@ -46,6 +47,7 @@ hooks:
 
 This uses the `MY_DATABASE_PASSWORD` environment variable as your database
 password.
+
 
 ### Interpolation defaults
 
