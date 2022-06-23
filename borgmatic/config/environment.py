@@ -1,7 +1,7 @@
 import os
 import re
 
-_VARIABLE_PATTERN = re.compile(r'(?<!\\)\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\}')
+_VARIABLE_PATTERN = re.compile(r'(?P<escape>\\)?(?P<variable>\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\})')
 
 
 def _resolve_string(matcher):
@@ -9,10 +9,14 @@ def _resolve_string(matcher):
     Get the value from environment given a matcher containing a name and an optional default value.
     If the variable is not defined in environment and no default value is provided, an Error is raised.
     '''
-    name, default = matcher.group("name"), matcher.group("default")
+    if matcher.group('escape') is not None:
+        # in case of escaped envvar, unescape it
+        return matcher.group('variable')
+    # resolve the env var
+    name, default = matcher.group('name'), matcher.group('default')
     out = os.getenv(name, default=default)
     if out is None:
-        raise ValueError("Cannot find variable ${name} in environment".format(name=name))
+        raise ValueError('Cannot find variable ${name} in environment'.format(name=name))
     return out
 
 
