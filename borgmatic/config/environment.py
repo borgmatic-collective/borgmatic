@@ -1,7 +1,9 @@
 import os
 import re
 
-_VARIABLE_PATTERN = re.compile(r'(?P<escape>\\)?(?P<variable>\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\})')
+_VARIABLE_PATTERN = re.compile(
+    r'(?P<escape>\\)?(?P<variable>\$\{(?P<name>[A-Za-z0-9_]+)((:?-)(?P<default>[^}]+))?\})'
+)
 
 
 def _resolve_string(matcher):

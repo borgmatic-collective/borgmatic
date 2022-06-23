@@ -16,12 +16,14 @@ def test_env_braces(monkeypatch):
     module.resolve_env_variables(config)
     assert config == {'key': 'Hello foo'}
 
+
 def test_env_multi(monkeypatch):
     monkeypatch.setenv('MY_CUSTOM_VALUE', 'foo')
     monkeypatch.setenv('MY_CUSTOM_VALUE2', 'bar')
     config = {'key': 'Hello ${MY_CUSTOM_VALUE}${MY_CUSTOM_VALUE2}'}
     module.resolve_env_variables(config)
     assert config == {'key': 'Hello foobar'}
+
 
 def test_env_escape(monkeypatch):
     monkeypatch.setenv('MY_CUSTOM_VALUE', 'foo')
