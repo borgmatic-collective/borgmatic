@@ -67,6 +67,14 @@ variable doesn't exist, borgmatic will error.
 To disable this environment variable interpolation feature entirely, you can
 pass the `--no-environment-interpolation` flag on the command-line.
 
+Or if you'd like to disable interpolation within a single option value, you
+can escape it with a backslash. For instance, if your password is literally
+`${A}@!`:
+
+```yaml
+storage:
+    encryption_passphrase: \${A}@!
+```
 
 ### Related features
 
