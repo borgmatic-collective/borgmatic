@@ -21,6 +21,11 @@ if [[ $version =~ .*dev* ]]; then
     exit 1
 fi
 
+if ! git diff-index --quiet HEAD -- ; then
+    echo "Refusing to release with local changes:"
+    git status --porcelain
+fi
+
 git tag $version
 git push origin $version
 git push github $version
