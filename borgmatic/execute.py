@@ -87,18 +87,19 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                             # Add the process's output to output_buffers to ensure it'll get read.
                             output_buffers.append(other_process.stdout)
 
-                line = ready_buffer.readline().rstrip().decode()
-                if not line or not ready_process:
-                    continue
+                while True:
+                    line = ready_buffer.readline().rstrip().decode()
+                    if not line or not ready_process:
+                        break
 
-                # Keep the last few lines of output in case the process errors, and we need the output for
-                # the exception below.
-                last_lines = buffer_last_lines[ready_buffer]
-                last_lines.append(line)
-                if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
-                    last_lines.pop(0)
+                    # Keep the last few lines of output in case the process errors, and we need the output for
+                    # the exception below.
+                    last_lines = buffer_last_lines[ready_buffer]
+                    last_lines.append(line)
+                    if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
+                        last_lines.pop(0)
 
-                logger.log(output_log_level, line)
+                    logger.log(output_log_level, line)
 
         still_running = False
 
@@ -131,21 +132,6 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
         if not still_running:
             break
-
-    # Consume any remaining output that we missed (if any).
-    for process in processes:
-        output_buffer = output_buffer_for_process(process, exclude_stdouts)
-
-        if not output_buffer:
-            continue
-
-        while True:  # pragma: no cover
-            remaining_output = output_buffer.readline().rstrip().decode()
-
-            if not remaining_output:
-                break
-
-            logger.log(output_log_level, remaining_output)
 
 
 def log_command(full_command, input_file, output_file):

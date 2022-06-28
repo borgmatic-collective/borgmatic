@@ -70,6 +70,27 @@ def test_log_outputs_includes_error_output_in_exception():
     assert error.value.output
 
 
+def test_log_outputs_logs_multiline_error_output():
+    '''
+    Make sure that all error output lines get logged, not just (for instance) the first few lines
+    of a process' traceback.
+    '''
+    flexmock(module.logger).should_receive('log')
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(True)
+    flexmock(module).should_receive('command_for_process').and_return('grep')
+
+    process = subprocess.Popen(
+        ['python', '-c', 'foopydoo'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
+    flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
+    flexmock(module.logger).should_call('log').at_least().times(3)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        module.log_outputs(
+            (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
+        )
+
+
 def test_log_outputs_skips_error_output_in_exception_for_process_with_none_stdout():
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('exit_code_indicates_error').and_return(True)
