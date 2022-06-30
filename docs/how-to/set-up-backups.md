@@ -232,15 +232,6 @@ sudo borgmatic create --verbosity 1 --files
 (No borgmatic `--files` flag? It's only present in newer versions of
 borgmatic. So try leaving it out, or upgrade borgmatic!)
 
-Or, you can omit the `create` action to prune any old backups as per the
-configured retention policy, compact segments to free up space (with Borg
-1.2+), create a backup, *and* check backups for consistency problems due to
-things like file damage:
-
-```bash
-sudo borgmatic --verbosity 1 --files
-```
-
 The verbosity flag makes borgmatic show the steps it's performing. And the
 files flag lists each file that's new or changed since the last backup.
 Eyeball the list and see if it matches your expectations based on the
@@ -249,6 +240,18 @@ configuration.
 If you'd like to specify an alternate configuration file path, use the
 `--config` flag. See `borgmatic --help` for more information.
 
+
+## Default actions
+
+If you omit `create` and other actions, borgmatic runs through a set of
+default actions: `prune` any old backups as per the configured retention
+policy, `compact` segments to free up space (with Borg 1.2+), `create` a
+backup, *and* `check` backups for consistency problems due to things like file
+damage. For instance:
+
+```bash
+sudo borgmatic --verbosity 1 --files
+```
 
 ## Autopilot
 
