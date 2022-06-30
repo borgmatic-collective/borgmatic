@@ -226,19 +226,24 @@ good idea to test that borgmatic is working. So to run borgmatic and start a
 backup, you can invoke it like this:
 
 ```bash
-sudo borgmatic create --verbosity 1 --files
+sudo borgmatic create --verbosity 1 --files --stats
 ```
 
 (No borgmatic `--files` flag? It's only present in newer versions of
 borgmatic. So try leaving it out, or upgrade borgmatic!)
 
-The verbosity flag makes borgmatic show the steps it's performing. And the
-files flag lists each file that's new or changed since the last backup.
-Eyeball the list and see if it matches your expectations based on the
-configuration.
+The `--verbosity` flag makes borgmatic show the steps it's performing. The
+`--files` flag lists each file that's new or changed since the last backup.
+And `--stats` shows summary information about the created archive. All of
+these flags are optional.
+
+As the command runs, you should eyeball the output to see if it matches your
+expectations based on your configuration.
 
 If you'd like to specify an alternate configuration file path, use the
-`--config` flag. See `borgmatic --help` for more information.
+`--config` flag.
+
+See `borgmatic --help` and `borgmatic create --help` for more information.
 
 
 ## Default actions
@@ -250,7 +255,7 @@ backup, *and* `check` backups for consistency problems due to things like file
 damage. For instance:
 
 ```bash
-sudo borgmatic --verbosity 1 --files
+sudo borgmatic --verbosity 1 --files --stats
 ```
 
 ## Autopilot
