@@ -1,6 +1,7 @@
 import logging
 import os
 
+from borgmatic.borg import environment
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -61,4 +62,5 @@ def export_tar_archive(
         output_file=DO_NOT_CAPTURE if destination_path == '-' else None,
         output_log_level=output_log_level,
         borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
     )

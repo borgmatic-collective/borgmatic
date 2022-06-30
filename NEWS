@@ -3,6 +3,8 @@
    the first few lines.
  * #554: Fix all monitoring hooks to warn if the server returns an HTTP 4xx error. This can happen
    with Healthchecks, for instance, when using an invalid ping URL.
+ * #555: Fix environment variable plumbing so options like "encryption_passphrase" and
+   "encryption_passcommand" in one configuration file aren't used for other configuration files.
 
 1.6.4
  * #546, #382: Keep your repository passphrases and database passwords outside of borgmatic's

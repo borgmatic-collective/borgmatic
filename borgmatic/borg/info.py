@@ -1,5 +1,6 @@
 import logging
 
+from borgmatic.borg import environment
 from borgmatic.borg.flags import make_flags, make_flags_from_arguments
 from borgmatic.execute import execute_command
 
@@ -42,4 +43,5 @@ def display_archives_info(
         full_command,
         output_log_level=None if info_arguments.json else logging.WARNING,
         borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
     )

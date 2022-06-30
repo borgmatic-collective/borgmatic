@@ -24,8 +24,12 @@ def test_resolve_archive_name_passes_through_non_latest_archive_name():
 
 def test_resolve_archive_name_calls_borg_with_parameters():
     expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, output_log_level=None, borg_local_path='borg'
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        borg_local_path='borg',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert module.resolve_archive_name('repo', 'latest', storage_config={}) == expected_archive
@@ -33,10 +37,12 @@ def test_resolve_archive_name_calls_borg_with_parameters():
 
 def test_resolve_archive_name_with_log_info_calls_borg_with_info_parameter():
     expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--info') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.INFO)
 
@@ -45,10 +51,12 @@ def test_resolve_archive_name_with_log_info_calls_borg_with_info_parameter():
 
 def test_resolve_archive_name_with_log_debug_calls_borg_with_debug_parameter():
     expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--debug', '--show-rc') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.DEBUG)
 
@@ -57,10 +65,12 @@ def test_resolve_archive_name_with_log_debug_calls_borg_with_debug_parameter():
 
 def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg1',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -71,10 +81,12 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
 
 def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_parameters():
     expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--remote-path', 'borg1') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -84,8 +96,12 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_param
 
 
 def test_resolve_archive_name_without_archives_raises():
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, output_log_level=None, borg_local_path='borg'
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        output_log_level=None,
+        borg_local_path='borg',
+        extra_environment=None,
     ).and_return('')
 
     with pytest.raises(ValueError):
@@ -95,10 +111,12 @@ def test_resolve_archive_name_without_archives_raises():
 def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_parameters():
     expected_archive = 'archive-name'
 
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--lock-wait', 'okay') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -296,8 +314,12 @@ def test_list_archives_calls_borg_with_parameters():
         remote_path=None,
     ).and_return(('borg', 'list', 'repo'))
     flexmock(module).should_receive('make_find_paths').and_return(())
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo'), output_log_level=logging.WARNING, borg_local_path='borg'
+        ('borg', 'list', 'repo'),
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+        extra_environment=None,
     ).once()
 
     module.list_archives(
@@ -316,8 +338,12 @@ def test_list_archives_with_json_suppresses_most_borg_output():
         remote_path=None,
     ).and_return(('borg', 'list', 'repo'))
     flexmock(module).should_receive('make_find_paths').and_return(())
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo'), output_log_level=None, borg_local_path='borg'
+        ('borg', 'list', 'repo'),
+        output_log_level=None,
+        borg_local_path='borg',
+        extra_environment=None,
     ).once()
 
     module.list_archives(
@@ -336,8 +362,12 @@ def test_list_archives_calls_borg_with_local_path():
         remote_path=None,
     ).and_return(('borg2', 'list', 'repo'))
     flexmock(module).should_receive('make_find_paths').and_return(())
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg2', 'list', 'repo'), output_log_level=logging.WARNING, borg_local_path='borg2'
+        ('borg2', 'list', 'repo'),
+        output_log_level=logging.WARNING,
+        borg_local_path='borg2',
+        extra_environment=None,
     ).once()
 
     module.list_archives(
@@ -355,20 +385,27 @@ def test_list_archives_calls_borg_multiple_times_with_find_paths():
         ('borg', 'list', 'repo')
     ).and_return(('borg', 'list', 'repo::archive1')).and_return(('borg', 'list', 'repo::archive2'))
     flexmock(module).should_receive('make_find_paths').and_return(glob_paths)
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo'), output_log_level=None, borg_local_path='borg'
+        ('borg', 'list', 'repo'),
+        output_log_level=None,
+        borg_local_path='borg',
+        extra_environment=None,
     ).and_return(
         'archive1   Sun, 2022-05-29 15:27:04 [abc]\narchive2   Mon, 2022-05-30 19:47:15 [xyz]'
     ).once()
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive1') + glob_paths,
         output_log_level=logging.WARNING,
         borg_local_path='borg',
+        extra_environment=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive2') + glob_paths,
         output_log_level=logging.WARNING,
         borg_local_path='borg',
+        extra_environment=None,
     ).once()
 
     module.list_archives(
@@ -387,8 +424,12 @@ def test_list_archives_calls_borg_with_archive():
         remote_path=None,
     ).and_return(('borg', 'list', 'repo::archive'))
     flexmock(module).should_receive('make_find_paths').and_return(())
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'), output_log_level=logging.WARNING, borg_local_path='borg'
+        ('borg', 'list', 'repo::archive'),
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+        extra_environment=None,
     ).once()
 
     module.list_archives(

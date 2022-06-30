@@ -16,7 +16,6 @@ from borgmatic.borg import borg as borg_borg
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import compact as borg_compact
 from borgmatic.borg import create as borg_create
-from borgmatic.borg import environment as borg_environment
 from borgmatic.borg import export_tar as borg_export_tar
 from borgmatic.borg import extract as borg_extract
 from borgmatic.borg import feature as borg_feature
@@ -60,14 +59,13 @@ def run_configuration(config_filename, config, arguments):
     remote_path = location.get('remote_path')
     retries = storage.get('retries', 0)
     retry_wait = storage.get('retry_wait', 0)
-    borg_environment.initialize(storage)
     encountered_error = None
     error_repository = ''
     using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     try:
-        local_borg_version = borg_version.local_borg_version(local_path)
+        local_borg_version = borg_version.local_borg_version(storage, local_path)
     except (OSError, CalledProcessError, ValueError) as error:
         yield from log_error_records(
             '{}: Error getting local Borg version'.format(config_filename), error
@@ -835,7 +833,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         logger.info('Unmounting mount point {}'.format(arguments['umount'].mount_point))
         try:
             borg_umount.unmount_archive(
-                mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs)
+                mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs),
             )
         except (CalledProcessError, OSError) as error:
             yield from log_error_records('Error unmounting mount point', error)

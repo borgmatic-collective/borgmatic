@@ -113,7 +113,7 @@ def test_write_configuration_with_already_existing_file_raises():
 def test_write_configuration_with_already_existing_file_and_overwrite_does_not_raise():
     flexmock(os.path).should_receive('exists').and_return(True)
 
-    module.write_configuration('config.yaml', 'config: yaml', overwrite=True)
+    module.write_configuration('/tmp/config.yaml', 'config: yaml', overwrite=True)
 
 
 def test_write_configuration_with_already_existing_directory_does_not_raise():

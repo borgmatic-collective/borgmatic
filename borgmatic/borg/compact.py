@@ -1,5 +1,6 @@
 import logging
 
+from borgmatic.borg import environment
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -38,4 +39,9 @@ def compact_segments(
     )
 
     if not dry_run:
-        execute_command(full_command, output_log_level=logging.INFO, borg_local_path=local_path)
+        execute_command(
+            full_command,
+            output_log_level=logging.INFO,
+            borg_local_path=local_path,
+            extra_environment=environment.make_environment(storage_config),
+        )

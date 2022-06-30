@@ -2,6 +2,7 @@ import copy
 import logging
 import re
 
+from borgmatic.borg import environment
 from borgmatic.borg.flags import make_flags, make_flags_from_arguments
 from borgmatic.execute import execute_command
 
@@ -31,7 +32,12 @@ def resolve_archive_name(repository, archive, storage_config, local_path='borg',
         + ('--short', repository)
     )
 
-    output = execute_command(full_command, output_log_level=None, borg_local_path=local_path)
+    output = execute_command(
+        full_command,
+        output_log_level=None,
+        borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
+    )
     try:
         latest_archive = output.strip().splitlines()[-1]
     except IndexError:
@@ -111,6 +117,8 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
     archive. Or, if list_arguments.find_paths are given, list the files by searching across multiple
     archives.
     '''
+    borg_environment = environment.make_environment(storage_config)
+
     # If there are any paths to find (and there's not a single archive already selected), start by
     # getting a list of archives to search.
     if list_arguments.find_paths and not list_arguments.archive:
@@ -127,6 +135,7 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
                 ),
                 output_log_level=None,
                 borg_local_path=local_path,
+                extra_environment=borg_environment,
             )
             .strip('\n')
             .split('\n')
@@ -154,6 +163,7 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
             main_command,
             output_log_level=None if list_arguments.json else logging.WARNING,
             borg_local_path=local_path,
+            extra_environment=borg_environment,
         )
 
         if list_arguments.json:

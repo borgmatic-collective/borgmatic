@@ -8,8 +8,12 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(compact_command, output_log_level):
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        compact_command, output_log_level=output_log_level, borg_local_path=compact_command[0]
+        compact_command,
+        output_log_level=output_log_level,
+        borg_local_path=compact_command[0],
+        extra_environment=None,
     ).once()
 
 

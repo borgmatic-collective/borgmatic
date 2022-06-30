@@ -5,7 +5,7 @@ import os
 import pathlib
 import tempfile
 
-from borgmatic.borg import feature, state
+from borgmatic.borg import environment, feature, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
 
 logger = logging.getLogger(__name__)
@@ -317,6 +317,8 @@ def create_archive(
     # the terminal directly.
     output_file = DO_NOT_CAPTURE if progress else None
 
+    borg_environment = environment.make_environment(storage_config)
+
     if stream_processes:
         return execute_command_with_processes(
             full_command,
@@ -325,6 +327,7 @@ def create_archive(
             output_file,
             borg_local_path=local_path,
             working_directory=working_directory,
+            extra_environment=borg_environment,
         )
 
     return execute_command(
@@ -333,4 +336,5 @@ def create_archive(
         output_file,
         borg_local_path=local_path,
         working_directory=working_directory,
+        extra_environment=borg_environment,
     )

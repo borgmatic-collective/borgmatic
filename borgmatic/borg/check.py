@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import extract, info, state
+from borgmatic.borg import environment, extract, info, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -304,16 +304,22 @@ def check_archives(
             + (repository,)
         )
 
+        borg_environment = environment.make_environment(storage_config)
+
         # The Borg repair option triggers an interactive prompt, which won't work when output is
         # captured. And progress messes with the terminal directly.
         if repair or progress:
-            execute_command(full_command, output_file=DO_NOT_CAPTURE)
+            execute_command(
+                full_command, output_file=DO_NOT_CAPTURE, extra_environment=borg_environment
+            )
         else:
-            execute_command(full_command)
+            execute_command(full_command, extra_environment=borg_environment)
 
         for check in checks:
             write_check_time(make_check_time_path(location_config, borg_repository_id, check))
 
     if 'extract' in checks:
-        extract.extract_last_archive_dry_run(repository, lock_wait, local_path, remote_path)
+        extract.extract_last_archive_dry_run(
+            storage_config, repository, lock_wait, local_path, remote_path
+        )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))

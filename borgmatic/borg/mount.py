@@ -1,5 +1,6 @@
 import logging
 
+from borgmatic.borg import environment
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -38,9 +39,16 @@ def mount_archive(
         + (tuple(paths) if paths else ())
     )
 
+    borg_environment = environment.make_environment(storage_config)
+
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
     if foreground:
-        execute_command(full_command, output_file=DO_NOT_CAPTURE, borg_local_path=local_path)
+        execute_command(
+            full_command,
+            output_file=DO_NOT_CAPTURE,
+            borg_local_path=local_path,
+            extra_environment=borg_environment,
+        )
         return
 
-    execute_command(full_command, borg_local_path=local_path)
+    execute_command(full_command, borg_local_path=local_path, extra_environment=borg_environment)

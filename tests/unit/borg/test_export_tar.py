@@ -10,11 +10,13 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(
     command, output_log_level=logging.INFO, borg_local_path='borg', capture=True
 ):
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         command,
         output_file=None if capture else module.DO_NOT_CAPTURE,
         output_log_level=output_log_level,
         borg_local_path=borg_local_path,
+        extra_environment=None,
     ).once()
 
 

@@ -23,8 +23,12 @@ def insert_info_command_not_found_mock():
 
 
 def insert_init_command_mock(init_command, **kwargs):
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        init_command, output_file=module.DO_NOT_CAPTURE, borg_local_path=init_command[0]
+        init_command,
+        output_file=module.DO_NOT_CAPTURE,
+        borg_local_path=init_command[0],
+        extra_environment=None,
     ).once()
 
 
@@ -37,6 +41,7 @@ def test_initialize_repository_calls_borg_with_parameters():
 
 def test_initialize_repository_raises_for_borg_init_error():
     insert_info_command_not_found_mock()
+    flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').and_raise(
         module.subprocess.CalledProcessError(2, 'borg init')
     )

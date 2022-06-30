@@ -2,13 +2,15 @@ import logging
 import os
 import subprocess
 
-from borgmatic.borg import feature
+from borgmatic.borg import environment, feature
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
 
-def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', remote_path=None):
+def extract_last_archive_dry_run(
+    storage_config, repository, lock_wait=None, local_path='borg', remote_path=None
+):
     '''
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
     dry-run.
@@ -29,8 +31,13 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         + (repository,)
     )
 
+    borg_environment = environment.make_environment(storage_config)
+
     list_output = execute_command(
-        full_list_command, output_log_level=None, borg_local_path=local_path
+        full_list_command,
+        output_log_level=None,
+        borg_local_path=local_path,
+        extra_environment=borg_environment,
     )
 
     try:
@@ -52,7 +59,9 @@ def extract_last_archive_dry_run(repository, lock_wait=None, local_path='borg', 
         )
     )
 
-    execute_command(full_extract_command, working_directory=None)
+    execute_command(
+        full_extract_command, working_directory=None, extra_environment=borg_environment
+    )
 
 
 def extract_archive(
@@ -106,11 +115,16 @@ def extract_archive(
         + (tuple(paths) if paths else ())
     )
 
+    borg_environment = environment.make_environment(storage_config)
+
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     if progress:
         return execute_command(
-            full_command, output_file=DO_NOT_CAPTURE, working_directory=destination_path
+            full_command,
+            output_file=DO_NOT_CAPTURE,
+            working_directory=destination_path,
+            extra_environment=borg_environment,
         )
         return None
 
@@ -120,8 +134,11 @@ def extract_archive(
             output_file=subprocess.PIPE,
             working_directory=destination_path,
             run_to_completion=False,
+            extra_environment=borg_environment,
         )
 
     # Don't give Borg local path, so as to error on warnings, as Borg only gives a warning if the
     # restore paths don't exist in the archive!
-    execute_command(full_command, working_directory=destination_path)
+    execute_command(
+        full_command, working_directory=destination_path, extra_environment=borg_environment
+    )

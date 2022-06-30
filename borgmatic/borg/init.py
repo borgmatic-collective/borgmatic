@@ -2,7 +2,7 @@ import argparse
 import logging
 import subprocess
 
-from borgmatic.borg import info
+from borgmatic.borg import environment, info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -54,4 +54,9 @@ def initialize_repository(
     )
 
     # Do not capture output here, so as to support interactive prompts.
-    execute_command(init_command, output_file=DO_NOT_CAPTURE, borg_local_path=local_path)
+    execute_command(
+        init_command,
+        output_file=DO_NOT_CAPTURE,
+        borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
+    )
