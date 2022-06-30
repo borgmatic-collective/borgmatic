@@ -139,7 +139,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
         'https://example.com/start', data=''.encode('utf-8')
-    )
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -156,7 +156,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
         'https://example.com', data=payload.encode('utf-8')
-    )
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -173,7 +173,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
         'https://example.com/fail', data=payload.encode('utf')
-    )
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -190,7 +190,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
         'https://hc-ping.com/{}'.format(hook_config['ping_url']), data=payload.encode('utf-8')
-    )
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -234,7 +234,7 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
     hook_config = {'ping_url': 'https://example.com', 'states': ['start', 'finish']}
     flexmock(module.requests).should_receive('post').with_args(
         'https://example.com/start', data=''.encode('utf-8')
-    )
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -245,13 +245,34 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
     )
 
 
-def test_ping_monitor_with_connection_error_does_not_raise():
+def test_ping_monitor_with_connection_error_logs_warning():
     flexmock(module).should_receive('Forgetful_buffering_handler')
-    flexmock(module.logger).should_receive('warning')
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
         'https://example.com/start', data=''.encode('utf-8')
     ).and_raise(module.requests.exceptions.ConnectionError)
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_with_other_error_logs_warning():
+    flexmock(module).should_receive('Forgetful_buffering_handler')
+    hook_config = {'ping_url': 'https://example.com'}
+    response = flexmock(ok=False)
+    response.should_receive('raise_for_status').and_raise(
+        module.requests.exceptions.RequestException
+    )
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/start', data=''.encode('utf-8')
+    ).and_return(response)
+    flexmock(module.logger).should_receive('warning').once()
 
     module.ping_monitor(
         hook_config,

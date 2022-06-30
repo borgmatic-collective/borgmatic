@@ -59,7 +59,9 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
         if not dry_run:
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
-                requests.post(f'{base_url}/{topic}', headers=headers)
+                response = requests.post(f'{base_url}/{topic}', headers=headers)
+                if not response.ok:
+                    response.raise_for_status()
             except requests.exceptions.RequestException as error:
                 logger.warning(f'{config_filename}: Ntfy error: {error}')
 

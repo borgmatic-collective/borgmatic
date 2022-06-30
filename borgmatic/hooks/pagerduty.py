@@ -69,7 +69,9 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
-        requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
+        response = requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
+        if not response.ok:
+            response.raise_for_status()
     except requests.exceptions.RequestException as error:
         logger.warning(f'{config_filename}: PagerDuty error: {error}')
 

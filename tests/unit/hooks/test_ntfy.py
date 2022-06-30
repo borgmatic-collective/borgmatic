@@ -38,7 +38,7 @@ def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(module.monitor.State.FAIL),
-    ).once()
+    ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
         hook_config, 'config.yaml', module.monitor.State.FAIL, monitoring_log_level=1, dry_run=False
@@ -76,7 +76,7 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
     flexmock(module.requests).should_receive('post').with_args(
         f'{custom_base_url}/{topic}',
         headers=return_default_message_headers(module.monitor.State.FAIL),
-    ).once()
+    ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
         hook_config, 'config.yaml', module.monitor.State.FAIL, monitoring_log_level=1, dry_run=False
@@ -96,7 +96,7 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
     hook_config = {'topic': topic, 'fail': custom_message_config}
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}', headers=custom_message_headers,
-    ).once()
+    ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
         hook_config, 'config.yaml', module.monitor.State.FAIL, monitoring_log_level=1, dry_run=False
@@ -108,7 +108,7 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(module.monitor.State.START),
-    ).once()
+    ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
         hook_config,
@@ -119,12 +119,34 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
     )
 
 
-def test_ping_monitor_with_connection_error_does_not_raise():
+def test_ping_monitor_with_connection_error_logs_warning():
     hook_config = {'topic': topic}
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(module.monitor.State.FAIL),
     ).and_raise(module.requests.exceptions.ConnectionError)
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        module.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_with_other_error_logs_warning():
+    hook_config = {'topic': topic}
+    response = flexmock(ok=False)
+    response.should_receive('raise_for_status').and_raise(
+        module.requests.exceptions.RequestException
+    )
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{default_base_url}/{topic}',
+        headers=return_default_message_headers(module.monitor.State.FAIL),
+    ).and_return(response)
+    flexmock(module.logger).should_receive('warning').once()
 
     module.ping_monitor(
         hook_config,
