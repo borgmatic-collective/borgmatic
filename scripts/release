@@ -24,6 +24,7 @@ fi
 if ! git diff-index --quiet HEAD -- ; then
     echo "Refusing to release with local changes:"
     git status --porcelain
+    exit 1
 fi
 
 git tag $version

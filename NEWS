@@ -1,4 +1,4 @@
-1.6.5.dev0
+1.6.5
  * #553: Fix logging to include the full traceback when Borg experiences an internal error, not just
    the first few lines.
  * #554: Fix all monitoring hooks to warn if the server returns an HTTP 4xx error. This can happen
