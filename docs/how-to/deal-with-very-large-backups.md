@@ -97,6 +97,10 @@ within `~/.borgmatic/checks`). If it hasn't been long enough, the check is
 skipped. And you still have to run `borgmatic check` (or just `borgmatic`) in
 order for checks to run, even when a `frequency` is configured!
 
+This also applies *across* configuration files that have the same repository
+configured. Just make sure you have the same check frequency configured in
+each—or the most frequently configured check will apply.
+
 If you want to temporarily ignore your configured frequencies, you can invoke
 `borgmatic check --force` to run checks unconditionally.
 
