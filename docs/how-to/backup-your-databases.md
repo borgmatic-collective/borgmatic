@@ -52,6 +52,8 @@ hooks:
     postgresql_databases:
         - name: users
           hostname: database1.example.org
+        - name: orders
+          hostname: database2.example.org
           port: 5433
           username: postgres
           password: trustsome1
@@ -59,14 +61,14 @@ hooks:
           options: "--role=someone"
     mysql_databases:
         - name: posts
-          hostname: database2.example.org
+          hostname: database3.example.org
           port: 3307
           username: root
           password: trustsome1
           options: "--skip-comments"
     mongodb_databases:
         - name: messages
-          hostname: database3.example.org
+          hostname: database4.example.org
           port: 27018
           username: dbuser
           password: trustsome1

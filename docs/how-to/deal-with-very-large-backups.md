@@ -83,12 +83,15 @@ consistency:
     checks:
         - name: repository
           frequency: 2 weeks
+        - name: archives
+          frequency: 1 month
 ```
 
-This tells borgmatic to run this consistency check at most once every two
-weeks for a given repository. The `frequency` value is a number followed by a
-unit of time, e.g. "3 days", "1 week", "2 months", etc. The `frequency`
-defaults to "always", which means run this check every time checks run.
+This tells borgmatic to run the `repository` consistency check at most once
+every two weeks for a given repository and the `archives` check at most once a
+month. The `frequency` value is a number followed by a unit of time, e.g. "3
+days", "1 week", "2 months", etc. The `frequency` defaults to `always`, which
+means run this check every time checks run.
 
 Unlike a real scheduler like cron, borgmatic only makes a best effort to run
 checks on the configured frequency. It compares that frequency with how long
