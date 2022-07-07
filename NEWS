@@ -1,5 +1,6 @@
 1.6.6.dev0
  * #559: Update documentation about configuring multiple consistency checks or multiple databases.
+ * #561: Fix command-line "--override" flag to continue supporting old configuration file formats.
 
 1.6.5
  * #553: Fix logging to include the full traceback when Borg experiences an internal error, not just

@@ -98,8 +98,8 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
-    normalize.normalize(config)
     override.apply_overrides(config, overrides)
+    normalize.normalize(config)
     if resolve_env:
         environment.resolve_env_variables(config)
 
