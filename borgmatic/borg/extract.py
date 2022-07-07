@@ -137,8 +137,8 @@ def extract_archive(
             extra_environment=borg_environment,
         )
 
-    # Don't give Borg local path, so as to error on warnings, as Borg only gives a warning if the
-    # restore paths don't exist in the archive!
+    # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
+    # if the restore paths don't exist in the archive.
     execute_command(
         full_command, working_directory=destination_path, extra_environment=borg_environment
     )

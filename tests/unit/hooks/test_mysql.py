@@ -239,7 +239,6 @@ def test_restore_database_dump_runs_mysql_to_restore():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -278,7 +277,6 @@ def test_restore_database_dump_runs_mysql_with_hostname_and_port():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment=None,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -296,7 +294,6 @@ def test_restore_database_dump_runs_mysql_with_username_and_password():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         extra_environment={'MYSQL_PWD': 'trustsome1'},
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(

@@ -159,7 +159,7 @@ def test_dump_databases_runs_mongodumpall_for_all_databases():
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
 
 
-def test_restore_database_dump_runs_pg_restore():
+def test_restore_database_dump_runs_mongorestore():
     database_config = [{'name': 'foo'}]
     extract_process = flexmock(stdout=flexmock())
 
@@ -170,7 +170,6 @@ def test_restore_database_dump_runs_pg_restore():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -192,7 +191,7 @@ def test_restore_database_dump_errors_on_multiple_database_config():
         )
 
 
-def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
+def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
     database_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     extract_process = flexmock(stdout=flexmock())
 
@@ -213,7 +212,6 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -221,7 +219,7 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
     )
 
 
-def test_restore_database_dump_runs_pg_restore_with_username_and_password():
+def test_restore_database_dump_runs_mongorestore_with_username_and_password():
     database_config = [
         {
             'name': 'foo',
@@ -251,7 +249,6 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -270,7 +267,6 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
@@ -300,7 +296,6 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
-        borg_local_path='borg',
     ).once()
 
     module.restore_database_dump(
