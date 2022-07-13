@@ -75,6 +75,16 @@ example, to search only the last five archives:
 borgmatic list --find foo.txt --last 5
 ```
 
+## Monitoring mysql backup size
+
+If you have enabled borgmatic's native mysql hook you can fetch the size of your individual sql backups from the backup target itself even when using an append-only access key like you can use on borgbase.com.
+
+For example: 
+```bash 
+borgmatic list --archive latest --no-color | grep  root/.borgmatic/mysql_databases/localhost/
+```
+
+Note that the `localhost` part of the path in this case is fully dependent on how your config looks. If you connect to an external database from this host, change to the address in config accordingly. 
 
 ## Logging
 
