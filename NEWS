@@ -3,6 +3,7 @@
  * #560: Fix all database hooks to error when the requested database to restore isn't present in the
    Borg archive.
  * #561: Fix command-line "--override" flag to continue supporting old configuration file formats.
+ * #563: Fix traceback with "create" action and "--json" flag when a database hook is configured.
 
 1.6.5
  * #553: Fix logging to include the full traceback when Borg experiences an internal error, not just

@@ -54,6 +54,30 @@ def test_log_outputs_skips_logs_for_process_with_none_stdout():
     )
 
 
+def test_log_outputs_returns_output_without_logging_for_output_log_level_none():
+    flexmock(module.logger).should_receive('log').never()
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
+
+    hi_process = subprocess.Popen(['echo', 'hi'], stdout=subprocess.PIPE)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        hi_process, ()
+    ).and_return(hi_process.stdout)
+
+    there_process = subprocess.Popen(['echo', 'there'], stdout=subprocess.PIPE)
+    flexmock(module).should_receive('output_buffer_for_process').with_args(
+        there_process, ()
+    ).and_return(there_process.stdout)
+
+    captured_outputs = module.log_outputs(
+        (hi_process, there_process),
+        exclude_stdouts=(),
+        output_log_level=None,
+        borg_local_path='borg',
+    )
+
+    assert captured_outputs == {hi_process: 'hi', there_process: 'there'}
+
+
 def test_log_outputs_includes_error_output_in_exception():
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('exit_code_indicates_error').and_return(True)

@@ -51,6 +51,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     process with the requested log level. Additionally, raise a CalledProcessError if a process
     exits with an error (or a warning for exit code 1, if that process matches the Borg local path).
 
+    If output log level is None, then instead of logging, capture output for each process and return
+    it as a dict from the process to its output.
+
     For simplicity, it's assumed that the output buffer for each process is its stdout. But if any
     stdouts are given to exclude, then for any matching processes, log from their stderr instead.
 
@@ -65,6 +68,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
         if process.stdout or process.stderr
     }
     output_buffers = list(process_for_output_buffer.keys())
+    captured_outputs = collections.defaultdict(list)
 
     # Log output for each process until they all exit.
     while True:
@@ -99,7 +103,10 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                     if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
                         last_lines.pop(0)
 
-                    logger.log(output_log_level, line)
+                    if output_log_level is None:
+                        captured_outputs[ready_process].append(line)
+                    else:
+                        logger.log(output_log_level, line)
 
         still_running = False
 
@@ -132,6 +139,11 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
         if not still_running:
             break
+
+    if captured_outputs:
+        return {
+            process: '\n'.join(output_lines) for process, output_lines in captured_outputs.items()
+        }
 
 
 def log_command(full_command, input_file, output_file):
@@ -222,13 +234,14 @@ def execute_command_with_processes(
     run as well. This is useful, for instance, for processes that are streaming output to a named
     pipe that the given command is consuming from.
 
-    If an open output file object is given, then write stdout to the file and only log stderr (but
-    only if an output log level is set). If an open input file object is given, then read stdin from
-    the file.  If shell is True, execute the command within a shell. If an extra environment dict is
-    given, then use it to augment the current environment, and pass the result into the command. If
-    a working directory is given, use that as the present working directory when running the
-    command. If a Borg local path is given, then for any matching command or process (regardless of
-    arguments), treat exit code 1 as a warning instead of an error.
+    If an open output file object is given, then write stdout to the file and only log stderr. But
+    if output log level is None, instead suppress logging and return the captured output for (only)
+    the given command. If an open input file object is given, then read stdin from the file. If
+    shell is True, execute the command within a shell. If an extra environment dict is given, then
+    use it to augment the current environment, and pass the result into the command. If a working
+    directory is given, use that as the present working directory when running the command. If a
+    Borg local path is given, then for any matching command or process (regardless of arguments),
+    treat exit code 1 as a warning instead of an error.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
@@ -259,9 +272,12 @@ def execute_command_with_processes(
                 process.kill()
         raise
 
-    log_outputs(
+    captured_outputs = log_outputs(
         tuple(processes) + (command_process,),
         (input_file, output_file),
         output_log_level,
         borg_local_path=borg_local_path,
     )
+
+    if output_log_level is None:
+        return captured_outputs.get(command_process)
