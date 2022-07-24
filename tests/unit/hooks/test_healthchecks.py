@@ -138,7 +138,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
     flexmock(module).should_receive('Forgetful_buffering_handler')
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8')
+        'https://example.com/start', data=''.encode('utf-8'), verify=True
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -155,7 +155,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
     payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com', data=payload.encode('utf-8')
+        'https://example.com', data=payload.encode('utf-8'), verify=True
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -172,7 +172,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
     payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/fail', data=payload.encode('utf')
+        'https://example.com/fail', data=payload.encode('utf'), verify=True
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -189,7 +189,43 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
     payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://hc-ping.com/{}'.format(hook_config['ping_url']), data=payload.encode('utf-8')
+        'https://hc-ping.com/{}'.format(hook_config['ping_url']),
+        data=payload.encode('utf-8'),
+        verify=True,
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.FINISH,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
+    hook_config = {'ping_url': 'https://example.com', 'verify_tls': False}
+    payload = 'data'
+    flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com', data=payload.encode('utf-8'), verify=False
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.FINISH,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
+    hook_config = {'ping_url': 'https://example.com', 'verify_tls': True}
+    payload = 'data'
+    flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com', data=payload.encode('utf-8'), verify=True
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -233,7 +269,7 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
     flexmock(module).should_receive('Forgetful_buffering_handler')
     hook_config = {'ping_url': 'https://example.com', 'states': ['start', 'finish']}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8')
+        'https://example.com/start', data=''.encode('utf-8'), verify=True
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -249,7 +285,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
     flexmock(module).should_receive('Forgetful_buffering_handler')
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8')
+        'https://example.com/start', data=''.encode('utf-8'), verify=True
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -270,7 +306,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.requests.exceptions.RequestException
     )
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8')
+        'https://example.com/start', data=''.encode('utf-8'), verify=True
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

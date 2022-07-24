@@ -1012,6 +1012,12 @@ properties:
                             Healthchecks ping URL or UUID to notify when a
                             backup begins, ends, or errors.
                         example: https://hc-ping.com/your-uuid-here
+                    verify_tls:
+                        type: boolean
+                        description: |
+                            Verify the SSL certificate of the endpoint.
+                            Defaults to true.
+                        example: false
                     send_logs:
                         type: boolean
                         description: |
