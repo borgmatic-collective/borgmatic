@@ -33,8 +33,6 @@ def parse_checks(consistency_config, only_checks=None):
 
     If no "checks" option is present in the config, return the DEFAULT_CHECKS. If a checks value
     has a name of "disabled", return an empty tuple, meaning that no checks should be run.
-
-    If the "data" check is present, then make sure the "archives" check is included as well.
     '''
     checks = only_checks or tuple(
         check_config['name']
@@ -47,9 +45,6 @@ def parse_checks(consistency_config, only_checks=None):
                 'Multiple checks are configured, but one of them is "disabled"; not running any checks'
             )
         return ()
-
-    if 'data' in checks and 'archives' not in checks:
-        return checks + ('archives',)
 
     return checks
 
@@ -164,7 +159,7 @@ def make_check_flags(checks, check_last=None, prefix=None):
         ('--repository-only',)
 
     However, if both "repository" and "archives" are in checks, then omit them from the returned
-    flags because Borg does both checks by default.
+    flags because Borg does both checks by default. If "data" is in checks, that implies "archives".
 
     Additionally, if a check_last value is given and "archives" is in checks, then include a
     "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
@@ -183,7 +178,13 @@ def make_check_flags(checks, check_last=None, prefix=None):
                 'Ignoring consistency prefix option, as "archives" is not in consistency checks'
             )
 
-    common_flags = last_flags + prefix_flags + (('--verify-data',) if 'data' in checks else ())
+    if 'data' in checks:
+        data_flags = ('--verify-data',)
+        checks += ('archives',)
+    else:
+        data_flags = ()
+
+    common_flags = last_flags + prefix_flags + data_flags
 
     if {'repository', 'archives'}.issubset(set(checks)):
         return common_flags

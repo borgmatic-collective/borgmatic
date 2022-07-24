@@ -49,30 +49,12 @@ def test_parse_checks_with_disabled_returns_no_checks():
     assert checks == ()
 
 
-def test_parse_checks_with_data_check_also_injects_archives():
-    checks = module.parse_checks({'checks': [{'name': 'data'}]})
-
-    assert checks == ('data', 'archives')
-
-
-def test_parse_checks_with_data_check_passes_through_archives():
-    checks = module.parse_checks({'checks': [{'name': 'data'}, {'name': 'archives'}]})
-
-    assert checks == ('data', 'archives')
-
-
 def test_parse_checks_prefers_override_checks_to_configured_checks():
     checks = module.parse_checks(
         {'checks': [{'name': 'archives'}]}, only_checks=['repository', 'extract']
     )
 
     assert checks == ('repository', 'extract')
-
-
-def test_parse_checks_with_override_data_check_also_injects_archives():
-    checks = module.parse_checks({'checks': [{'name': 'extract'}]}, only_checks=['data'])
-
-    assert checks == ('data', 'archives')
 
 
 @pytest.mark.parametrize(
@@ -217,16 +199,22 @@ def test_make_check_flags_with_archives_check_returns_flag():
     assert flags == ('--archives-only',)
 
 
-def test_make_check_flags_with_data_check_returns_flag():
+def test_make_check_flags_with_data_check_returns_flag_and_implies_archives():
     flags = module.make_check_flags(('data',))
 
-    assert flags == ('--verify-data',)
+    assert flags == ('--archives-only', '--verify-data',)
 
 
 def test_make_check_flags_with_extract_omits_extract_flag():
     flags = module.make_check_flags(('extract',))
 
     assert flags == ()
+
+
+def test_make_check_flags_with_repository_and_data_checks_does_not_return_repository_only():
+    flags = module.make_check_flags(('repository', 'data',))
+
+    assert flags == ('--verify-data',)
 
 
 def test_make_check_flags_with_default_checks_and_default_prefix_returns_default_flags():
