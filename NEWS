@@ -1,5 +1,7 @@
 1.6.7.dev0
  * #565: Fix handling of "repository" and "data" consistency checks to prevent invalid Borg flags.
+ * Add support for disabling TLS verification in Healthchecks monitoring hook with "verify_tls"
+   option.
 
 1.6.6
  * #559: Update documentation about configuring multiple consistency checks or multiple databases.

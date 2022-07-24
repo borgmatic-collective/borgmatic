@@ -1015,7 +1015,7 @@ properties:
                     verify_tls:
                         type: boolean
                         description: |
-                            Verify the SSL certificate of the endpoint.
+                            Verify the TLS certificate of the ping URL host.
                             Defaults to true.
                         example: false
                     send_logs:
