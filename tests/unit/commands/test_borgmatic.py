@@ -746,6 +746,7 @@ def test_get_local_path_without_local_path_defaults_to_borg():
 
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {}
 
@@ -757,6 +758,7 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 
 def test_collect_configuration_run_summary_executes_hooks_for_create():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'create': flexmock(), 'global': flexmock(monitoring_verbosity=1, dry_run=False)}
 
@@ -768,6 +770,7 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
+    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'extract': flexmock(repository='repo')}
@@ -795,6 +798,7 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_mount():
+    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'mount': flexmock(repository='repo')}
@@ -846,6 +850,7 @@ def test_collect_configuration_run_summary_logs_pre_hook_error():
 
 def test_collect_configuration_run_summary_logs_post_hook_error():
     flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(ValueError)
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
@@ -874,6 +879,7 @@ def test_collect_configuration_run_summary_logs_for_list_with_archive_and_reposi
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_list():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'list': flexmock(repository='repo', archive=None)}
 
@@ -916,6 +922,7 @@ def test_collect_configuration_run_summary_logs_run_umount_error():
 
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return(['foo', 'bar']).and_return(
         ['baz']
     )

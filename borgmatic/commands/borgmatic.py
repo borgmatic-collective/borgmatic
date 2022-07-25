@@ -768,21 +768,21 @@ def collect_configuration_run_summary_logs(configs, arguments):
     any, to stdout.
     '''
     # Run cross-file validation checks.
-    if 'extract' in arguments:
-        repository = arguments['extract'].repository
-    elif 'list' in arguments and arguments['list'].archive:
-        repository = arguments['list'].repository
-    elif 'mount' in arguments:
-        repository = arguments['mount'].repository
-    else:
-        repository = None
+    repository = None
 
-    if repository:
-        try:
-            validate.guard_configuration_contains_repository(repository, configs)
-        except ValueError as error:
-            yield from log_error_records(str(error))
-            return
+    for action_name, action_arguments in arguments.items():
+        if hasattr(action_arguments, 'repository'):
+            repository = getattr(action_arguments, 'repository')
+            break
+
+    try:
+        if 'extract' in arguments or 'mount' in arguments:
+            validate.guard_single_repository_selected(repository, configs)
+
+        validate.guard_configuration_contains_repository(repository, configs)
+    except ValueError as error:
+        yield from log_error_records(str(error))
+        return
 
     if not configs:
         yield from log_error_records(

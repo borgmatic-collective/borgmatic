@@ -1,5 +1,7 @@
 1.6.7.dev0
  * #565: Fix handling of "repository" and "data" consistency checks to prevent invalid Borg flags.
+ * #566: Modify "mount" and "extract" actions to require the "--repository" flag when multiple
+   repositories are configured.
  * Add support for disabling TLS verification in Healthchecks monitoring hook with "verify_tls"
    option.
 

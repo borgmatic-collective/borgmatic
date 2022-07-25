@@ -120,14 +120,6 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
 
-def test_guard_configuration_contains_repository_errors_when_repository_assumed_to_match_config_twice():
-    with pytest.raises(ValueError):
-        module.guard_configuration_contains_repository(
-            repository=None,
-            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
-        )
-
-
 def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
     flexmock(module).should_receive('repositories_match').replace_with(
         lambda first, second: first == second
@@ -153,3 +145,30 @@ def test_guard_configuration_contains_repository_errors_when_repository_matches_
                 'other.yaml': {'location': {'repositories': ['repo']}},
             },
         )
+
+
+def test_guard_single_repository_selected_raises_when_multiple_repositories_configured_and_none_selected():
+    with pytest.raises(ValueError):
+        module.guard_single_repository_selected(
+            repository=None,
+            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
+        )
+
+
+def test_guard_single_repository_selected_does_not_raise_when_single_repository_configured_and_none_selected():
+    module.guard_single_repository_selected(
+        repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
+    )
+
+
+def test_guard_single_repository_selected_does_not_raise_when_no_repositories_configured_and_one_selected():
+    module.guard_single_repository_selected(
+        repository='repo', configurations={'config.yaml': {'location': {'repositories': []}}},
+    )
+
+
+def test_guard_single_repository_selected_does_not_raise_when_repositories_configured_and_one_selected():
+    module.guard_single_repository_selected(
+        repository='repo',
+        configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
+    )
