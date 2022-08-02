@@ -42,7 +42,9 @@ steps:
       from_secret: docker_username
     password:
       from_secret: docker_password
-    repo: witten/borgmatic-docs
+    registry: projects.torsion.org
+    repo: projects.torsion.org/borgmatic-collective/borgmatic
+    tags: docs
     dockerfile: docs/Dockerfile
 
 trigger:
