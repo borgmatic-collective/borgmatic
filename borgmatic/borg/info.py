@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg import environment
+from borgmatic.borg import environment, feature
 from borgmatic.borg.flags import make_flags, make_flags_from_arguments
 from borgmatic.execute import execute_command
 
@@ -8,12 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 def display_archives_info(
-    repository, storage_config, info_arguments, local_path='borg', remote_path=None
+    repository,
+    storage_config,
+    local_borg_version,
+    info_arguments,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, and the arguments to the info
-    action, display summary information for Borg archives in the repository or return JSON summary
-    information.
+    Given a local or remote repository path, a storage config dict, the local Borg version, and the
+    arguments to the info action, display summary information for Borg archives in the repository or
+    return JSON summary information.
     '''
     lock_wait = storage_config.get('lock_wait', None)
 
@@ -33,9 +38,16 @@ def display_archives_info(
         + make_flags('lock-wait', lock_wait)
         + make_flags_from_arguments(info_arguments, excludes=('repository', 'archive'))
         + (
-            '::'.join((repository, info_arguments.archive))
-            if info_arguments.archive
-            else repository,
+            (
+                ('--repo', repository)
+                + (('--glob-archives', info_arguments.archive) if info_arguments.archive else ())
+            )
+            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
+            else (
+                '::'.join((repository, info_arguments.archive))
+                if info_arguments.archive
+                else repository,
+            )
         )
     )
 

@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import environment, extract, info, state
+from borgmatic.borg import environment, extract, rinfo, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -241,6 +241,7 @@ def check_archives(
     location_config,
     storage_config,
     consistency_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     progress=None,
@@ -260,10 +261,11 @@ def check_archives(
     '''
     try:
         borg_repository_id = json.loads(
-            info.display_archives_info(
+            rinfo.display_repository_info(
                 repository,
                 storage_config,
-                argparse.Namespace(json=True, archive=None),
+                local_borg_version,
+                argparse.Namespace(json=True),
                 local_path,
                 remote_path,
             )

@@ -27,9 +27,6 @@ borgmatic create
 borgmatic check
 ```
 
-(No borgmatic `prune`, `create`, or `check` actions? Try the old-style
-`--prune`, `--create`, or `--check`. Or upgrade borgmatic!)
-
 You can run with only one of these actions provided, or you can mix and match
 any number of them in a single borgmatic run. This supports approaches like
 skipping certain actions while running others. For instance, this skips
@@ -70,7 +67,9 @@ Here are the available checks from fastest to slowest:
  * `extract`: Performs an extraction dry-run of the most recent archive.
  * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data (implies `archives` as well).
 
-See [Borg's check documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html) for more information.
+See [Borg's check
+documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html)
+for more information.
 
 ### Check frequency
 

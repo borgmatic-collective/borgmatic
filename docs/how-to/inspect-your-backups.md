@@ -37,19 +37,22 @@ borgmatic --stats
 ## Existing backups
 
 borgmatic provides convenient actions for Borg's
-[list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
-[info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
+[`list`](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
+[`info`](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
 functionality:
-
 
 ```bash
 borgmatic list
 borgmatic info
 ```
 
-(No borgmatic `list` or `info` actions? Try the old-style `--list` or
-`--info`. Or upgrade borgmatic!)
+<span class="minilink minilink-addedin">New in borgmatic version 2.0.0</span>
+There's also an `rinfo` action for displaying repository information with Borg
+2.x:
 
+```bash
+borgmatic rinfo
+```
 
 ### Searching for a file
 

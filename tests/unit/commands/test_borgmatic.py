@@ -340,11 +340,11 @@ def test_run_configuration_retries_timeout_multiple_repos():
     assert results == error_logs
 
 
-def test_run_actions_does_not_raise_for_init_action():
-    flexmock(module.borg_init).should_receive('initialize_repository')
+def test_run_actions_does_not_raise_for_rcreate_action():
+    flexmock(module.borg_rcreate).should_receive('create_repository')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
-        'init': flexmock(
+        'rcreate': flexmock(
             encryption_mode=flexmock(), append_only=flexmock(), storage_quota=flexmock()
         ),
     }

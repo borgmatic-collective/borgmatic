@@ -186,32 +186,36 @@ files via configuration management, or you want to double check that your hand
 edits are valid.
 
 
-## Initialization
+## Repository creation
 
-Before you can create backups with borgmatic, you first need to initialize a
-Borg repository so you have a destination for your backup archives. (But skip
-this step if you already have a Borg repository.) To create a repository, run
-a command like the following:
+Before you can create backups with borgmatic, you first need to create a Borg
+repository so you have a destination for your backup archives. (But skip this
+step if you already have a Borg repository.) To create a repository, run a
+command like the following with Borg 1.x:
 
 ```bash
 sudo borgmatic init --encryption repokey
 ```
 
-(No borgmatic `init` action? Try the old-style `--init` flag, or upgrade
-borgmatic!)
+<span class="minilink minilink-addedin">New in borgmatic version 2.0.0</span>
+Or, with Borg 2.x:
+
+```bash
+sudo borgmatic rcreate --encryption repokey-aes-ocb
+```
 
 This uses the borgmatic configuration file you created above to determine
 which local or remote repository to create, and encrypts it with the
 encryption passphrase specified there if one is provided. Read about [Borg
 encryption
-modes](https://borgbackup.readthedocs.io/en/stable/usage/init.html#encryption-modes)
+modes](https://borgbackup.readthedocs.io/en/stable/usage/init.html#encryption-mode-tldr)
 for the menu of available encryption modes.
 
 Also, optionally check out the [Borg Quick
 Start](https://borgbackup.readthedocs.org/en/stable/quickstart.html) for more
-background about repository initialization.
+background about repository creation.
 
-Note that borgmatic skips repository initialization if the repository already
+Note that borgmatic skips repository creation if the repository already
 exists. This supports use cases like ensuring a repository exists prior to
 performing a backup.
 
@@ -221,8 +225,8 @@ key-based SSH access to the desired user account on the remote host.
 
 ## Backups
 
-Now that you've configured borgmatic and initialized a repository, it's a
-good idea to test that borgmatic is working. So to run borgmatic and start a
+Now that you've configured borgmatic and created a repository, it's a good
+idea to test that borgmatic is working. So to run borgmatic and start a
 backup, you can invoke it like this:
 
 ```bash
@@ -230,7 +234,7 @@ sudo borgmatic create --verbosity 1 --files --stats
 ```
 
 (No borgmatic `--files` flag? It's only present in newer versions of
-borgmatic. So try leaving it out, or upgrade borgmatic!)
+borgmatic. So try leaving it out or upgrade borgmatic!)
 
 The `--verbosity` flag makes borgmatic show the steps it's performing. The
 `--files` flag lists each file that's new or changed since the last backup.

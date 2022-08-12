@@ -4,7 +4,7 @@ from argparse import Action, ArgumentParser
 from borgmatic.config import collect
 
 SUBPARSER_ALIASES = {
-    'init': ['--init', '-I'],
+    'rcreate': ['init', '--init', '-I'],
     'prune': ['--prune', '-p'],
     'compact': [],
     'create': ['--create', '-C'],
@@ -222,33 +222,35 @@ def make_parsers():
         metavar='',
         help='Specify zero or more actions. Defaults to prune, compact, create, and check. Use --help with action for details:',
     )
-    init_parser = subparsers.add_parser(
-        'init',
-        aliases=SUBPARSER_ALIASES['init'],
-        help='Initialize an empty Borg repository',
-        description='Initialize an empty Borg repository',
+    rcreate_parser = subparsers.add_parser(
+        'rcreate',
+        aliases=SUBPARSER_ALIASES['rcreate'],
+        help='Create a new, empty Borg repository',
+        description='Create a new, empty Borg repository',
         add_help=False,
     )
-    init_group = init_parser.add_argument_group('init arguments')
-    init_group.add_argument(
+    rcreate_group = rcreate_parser.add_argument_group('rcreate arguments')
+    rcreate_group.add_argument(
         '-e',
         '--encryption',
         dest='encryption_mode',
         help='Borg repository encryption mode',
         required=True,
     )
-    init_group.add_argument(
+    rcreate_group.add_argument(
         '--append-only',
         dest='append_only',
         action='store_true',
         help='Create an append-only repository',
     )
-    init_group.add_argument(
+    rcreate_group.add_argument(
         '--storage-quota',
         dest='storage_quota',
         help='Create a repository with a fixed storage quota',
     )
-    init_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    rcreate_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     prune_parser = subparsers.add_parser(
         'prune',
@@ -688,11 +690,11 @@ def parse_arguments(*unparsed_arguments):
 
     if arguments['global'].excludes_filename:
         raise ValueError(
-            'The --excludes option has been replaced with exclude_patterns in configuration'
+            'The --excludes flag has been replaced with exclude_patterns in configuration'
         )
 
-    if 'init' in arguments and arguments['global'].dry_run:
-        raise ValueError('The init action cannot be used with the --dry-run option')
+    if 'rcreate' in arguments and arguments['global'].dry_run:
+        raise ValueError('The rcreate/init action cannot be used with the --dry-run flag')
 
     if (
         'list' in arguments
@@ -700,6 +702,11 @@ def parse_arguments(*unparsed_arguments):
         and arguments['list'].json
         and arguments['info'].json
     ):
-        raise ValueError('With the --json option, list and info actions cannot be used together')
+        raise ValueError('With the --json flag, list and info actions cannot be used together')
+
+    if 'info' in arguments and arguments['info'].archive and arguments['info'].glob_archives:
+        raise ValueError(
+            'With the info action, the --archive and --glob-archives flags cannot be used together'
+        )
 
     return arguments

@@ -20,10 +20,10 @@ from borgmatic.borg import export_tar as borg_export_tar
 from borgmatic.borg import extract as borg_extract
 from borgmatic.borg import feature as borg_feature
 from borgmatic.borg import info as borg_info
-from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
 from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
+from borgmatic.borg import rcreate as borg_rcreate
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -249,14 +249,15 @@ def run_actions(
         'repositories': ','.join(location['repositories']),
     }
 
-    if 'init' in arguments:
-        logger.info('{}: Initializing repository'.format(repository))
-        borg_init.initialize_repository(
+    if 'rcreate' in arguments:
+        logger.info('{}: Creating repository'.format(repository))
+        borg_rcreate.create_repository(
             repository,
             storage,
-            arguments['init'].encryption_mode,
-            arguments['init'].append_only,
-            arguments['init'].storage_quota,
+            local_borg_version,
+            arguments['rcreate'].encryption_mode,
+            arguments['rcreate'].append_only,
+            arguments['rcreate'].storage_quota,
             local_path=local_path,
             remote_path=remote_path,
         )
@@ -396,6 +397,7 @@ def run_actions(
             location,
             storage,
             consistency,
+            local_borg_version,
             local_path=local_path,
             remote_path=remote_path,
             progress=arguments['check'].progress,
@@ -624,6 +626,7 @@ def run_actions(
             json_output = borg_info.display_archives_info(
                 repository,
                 storage,
+                local_borg_version,
                 info_arguments=info_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
