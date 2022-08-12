@@ -292,7 +292,7 @@ def make_parsers():
         dest='cleanup_commits',
         default=False,
         action='store_true',
-        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1',
+        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1 (flag in Borg 1.2 only)',
     )
     compact_group.add_argument(
         '--threshold',

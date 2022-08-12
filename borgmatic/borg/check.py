@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import environment, extract, rinfo, state
+from borgmatic.borg import environment, extract, feature, rinfo, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -163,14 +163,14 @@ def make_check_flags(checks, check_last=None, prefix=None):
 
     Additionally, if a check_last value is given and "archives" is in checks, then include a
     "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
-    "--prefix" flag.
+    "--glob-archives" flag.
     '''
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
-        prefix_flags = ('--prefix', prefix) if prefix else ()
+        glob_archives_flags = ('--glob-archives', f'{prefix}*') if prefix else ()
     else:
         last_flags = ()
-        prefix_flags = ()
+        glob_archives_flags = ()
         if check_last:
             logger.info('Ignoring check_last option, as "archives" is not in consistency checks')
         if prefix:
@@ -184,7 +184,7 @@ def make_check_flags(checks, check_last=None, prefix=None):
     else:
         data_flags = ()
 
-    common_flags = last_flags + prefix_flags + data_flags
+    common_flags = last_flags + glob_archives_flags + data_flags
 
     if {'repository', 'archives'}.issubset(set(checks)):
         return common_flags
@@ -304,6 +304,13 @@ def check_archives(
             + verbosity_flags
             + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+            + (
+                ('--repo',)
+                if feature.available(
+                    feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
+                )
+                else ()
+            )
             + (repository,)
         )
 
