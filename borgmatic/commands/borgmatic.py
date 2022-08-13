@@ -24,6 +24,7 @@ from borgmatic.borg import list as borg_list
 from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
 from borgmatic.borg import rcreate as borg_rcreate
+from borgmatic.borg import rinfo as borg_rinfo
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -613,13 +614,30 @@ def run_actions(
             )
             if json_output:  # pragma: nocover
                 yield json.loads(json_output)
+    if 'rinfo' in arguments:
+        if arguments['rinfo'].repository is None or validate.repositories_match(
+            repository, arguments['rinfo'].repository
+        ):
+            rinfo_arguments = copy.copy(arguments['rinfo'])
+            if not rinfo_arguments.json:  # pragma: nocover
+                logger.warning('{}: Displaying repository summary information'.format(repository))
+            json_output = borg_rinfo.display_repository_info(
+                repository,
+                storage,
+                local_borg_version,
+                rinfo_arguments=rinfo_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            if json_output:  # pragma: nocover
+                yield json.loads(json_output)
     if 'info' in arguments:
         if arguments['info'].repository is None or validate.repositories_match(
             repository, arguments['info'].repository
         ):
             info_arguments = copy.copy(arguments['info'])
             if not info_arguments.json:  # pragma: nocover
-                logger.warning('{}: Displaying summary info for archives'.format(repository))
+                logger.warning('{}: Displaying archive summary information'.format(repository))
             info_arguments.archive = borg_list.resolve_archive_name(
                 repository, info_arguments.archive, storage, local_path, remote_path
             )

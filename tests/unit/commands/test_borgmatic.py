@@ -597,6 +597,31 @@ def test_run_actions_does_not_raise_for_list_action():
     )
 
 
+def test_run_actions_does_not_raise_for_rinfo_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_rinfo).should_receive('display_repository_info')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'rinfo': flexmock(repository=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
 def test_run_actions_does_not_raise_for_info_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())

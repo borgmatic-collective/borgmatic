@@ -15,6 +15,7 @@ SUBPARSER_ALIASES = {
     'umount': ['--umount', '-u'],
     'restore': ['--restore', '-r'],
     'list': ['--list', '-l'],
+    'rinfo': [],
     'info': ['--info', '-i'],
     'borg': [],
 }
@@ -613,17 +614,34 @@ def make_parsers():
     )
     list_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
+    rinfo_parser = subparsers.add_parser(
+        'rinfo',
+        aliases=SUBPARSER_ALIASES['rinfo'],
+        help='Show repository summary information such as disk space used',
+        description='Show repository summary information such as disk space used',
+        add_help=False,
+    )
+    rinfo_group = rinfo_parser.add_argument_group('rinfo arguments')
+    rinfo_group.add_argument(
+        '--repository',
+        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+    )
+    rinfo_group.add_argument(
+        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+    )
+    rinfo_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     info_parser = subparsers.add_parser(
         'info',
         aliases=SUBPARSER_ALIASES['info'],
-        help='Display summary information on archives',
-        description='Display summary information on archives',
+        help='Show archive summary information such as disk space used',
+        description='Show archive summary information such as disk space used',
         add_help=False,
     )
     info_group = info_parser.add_argument_group('info arguments')
     info_group.add_argument(
         '--repository',
-        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+        help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one',
     )
     info_group.add_argument('--archive', help='Name of archive to show info for (or "latest")')
     info_group.add_argument(
@@ -697,12 +715,11 @@ def parse_arguments(*unparsed_arguments):
         raise ValueError('The rcreate/init action cannot be used with the --dry-run flag')
 
     if (
-        'list' in arguments
-        and 'info' in arguments
-        and arguments['list'].json
-        and arguments['info'].json
+        ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
+        or ('list' in arguments and 'info' in arguments and arguments['list'].json)
+        or ('rinfo' in arguments and 'info' in arguments and arguments['rinfo'].json)
     ):
-        raise ValueError('With the --json flag, list and info actions cannot be used together')
+        raise ValueError('With the --json flag, multiple actions cannot be used together')
 
     if 'info' in arguments and arguments['info'].archive and arguments['info'].glob_archives:
         raise ValueError(
