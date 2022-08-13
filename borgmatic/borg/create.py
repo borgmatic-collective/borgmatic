@@ -299,9 +299,9 @@ def create_archive(
         + (('--json',) if json else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + (
-            '{repository}::{archive_name_format}'.format(
-                repository=repository, archive_name_format=archive_name_format
-            ),
+            ('--repo', repository, archive_name_format)
+            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
+            else (f'{repository}::{archive_name_format}',)
         )
         + sources
     )
