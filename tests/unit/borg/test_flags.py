@@ -45,3 +45,18 @@ def test_make_flags_from_arguments_omits_excludes():
     arguments = flexmock(foo='bar', baz='quux')
 
     assert module.make_flags_from_arguments(arguments, excludes=('baz', 'other')) == ('foo', 'bar')
+
+
+def test_make_repository_flags_with_borg_features_includes_repo_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == (
+        '--repo',
+        'repo',
+    )
+
+
+def test_make_repository_flags_without_borg_features_includes_omits_flag():
+    flexmock(module.feature).should_receive('available').and_return(False)
+
+    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == ('repo',)

@@ -305,6 +305,7 @@ def run_actions(
                 global_arguments.dry_run,
                 repository,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
                 progress=arguments['compact'].progress,

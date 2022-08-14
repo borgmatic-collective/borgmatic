@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg import environment, feature
+from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -64,12 +64,7 @@ def prune_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + (
-            ('--repo',)
-            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else ()
-        )
-        + (repository,)
+        + flags.make_repository_flags(repository, local_borg_version)
     )
 
     if (stats or files) and logger.getEffectiveLevel() == logging.WARNING:

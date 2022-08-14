@@ -1,4 +1,4 @@
-2.0.0.dev0
+1.7.0.dev0
  * #557: Support for Borg 2 while still working with Borg 1. If you install Borg 2, you'll need to
    manually "borg transfer" or "borgmatic transfer" any existing Borg 1 repositories before use. See
    the Borg 2.0 changelog summary for more information about Borg 2:

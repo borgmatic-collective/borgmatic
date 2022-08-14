@@ -1,7 +1,6 @@
 import logging
 
-from borgmatic.borg import environment, feature
-from borgmatic.borg.flags import make_flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -39,15 +38,10 @@ def display_repository_info(
             if logger.isEnabledFor(logging.DEBUG) and not rinfo_arguments.json
             else ()
         )
-        + make_flags('remote-path', remote_path)
-        + make_flags('lock-wait', lock_wait)
+        + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('lock-wait', lock_wait)
         + (('--json',) if rinfo_arguments.json else ())
-        + (
-            ('--repo',)
-            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else ()
-        )
-        + (repository,)
+        + flags.make_repository_flags(repository, local_borg_version)
     )
 
     return execute_command(

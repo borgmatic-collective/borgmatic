@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import environment, extract, feature, rinfo, state
+from borgmatic.borg import environment, extract, flags, rinfo, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -304,14 +304,7 @@ def check_archives(
             + verbosity_flags
             + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-            + (
-                ('--repo',)
-                if feature.available(
-                    feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
-                )
-                else ()
-            )
-            + (repository,)
+            + flags.make_repository_flags(repository, local_borg_version)
         )
 
         borg_environment = environment.make_environment(storage_config)

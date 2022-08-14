@@ -2,7 +2,7 @@ import argparse
 import logging
 import subprocess
 
-from borgmatic.borg import environment, feature, rinfo
+from borgmatic.borg import environment, feature, flags, rinfo
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -57,12 +57,7 @@ def create_repository(
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + (
-            ('--repo',)
-            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else ()
-        )
-        + (repository,)
+        + flags.make_repository_flags(repository, local_borg_version)
     )
 
     # Do not capture output here, so as to support interactive prompts.
