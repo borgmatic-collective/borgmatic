@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-from borgmatic.borg import environment, feature
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -111,7 +111,11 @@ def extract_archive(
         + (('--strip-components', str(strip_components)) if strip_components else ())
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
-        + ('::'.join((repository if ':' in repository else os.path.abspath(repository), archive)),)
+        + flags.make_repository_archive_flags(
+            repository if ':' in repository else os.path.abspath(repository),
+            archive,
+            local_borg_version,
+        )
         + (tuple(paths) if paths else ())
     )
 
