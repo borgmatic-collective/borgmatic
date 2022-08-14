@@ -277,6 +277,7 @@ def run_actions(
             repository,
             storage,
             retention,
+            local_borg_version,
             local_path=local_path,
             remote_path=remote_path,
             stats=arguments['prune'].stats,
