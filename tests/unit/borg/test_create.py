@@ -292,50 +292,12 @@ def test_create_archive_calls_borg_with_parameters():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        working_directory=None,
-        extra_environment=None,
-    )
-
-    module.create_archive(
-        dry_run=False,
-        repository='repo',
-        location_config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        storage_config={},
-        local_borg_version='1.2.3',
-    )
-
-
-def test_create_archive_with_borg_features_calls_borg_with_repo_flag():
-    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
-    flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
-    flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(True)
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--repo', 'repo', DEFAULT_ARCHIVE_NAME, 'foo', 'bar'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -368,9 +330,9 @@ def test_create_archive_calls_borg_with_environment():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     environment = {'BORG_THINGY': 'YUP'}
     flexmock(module.environment).should_receive('make_environment').and_return(environment)
     flexmock(module).should_receive('execute_command').with_args(
@@ -410,9 +372,9 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(pattern_flags)
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + pattern_flags + REPO_ARCHIVE_WITH_PATHS,
@@ -451,9 +413,9 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(exclude_flags)
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + exclude_flags + REPO_ARCHIVE_WITH_PATHS,
@@ -489,9 +451,9 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info') + REPO_ARCHIVE_WITH_PATHS,
@@ -528,9 +490,9 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
@@ -568,9 +530,9 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--debug', '--show-rc') + REPO_ARCHIVE_WITH_PATHS,
@@ -607,9 +569,9 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
@@ -647,9 +609,9 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--dry-run') + REPO_ARCHIVE_WITH_PATHS,
@@ -687,9 +649,9 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--dry-run') + REPO_ARCHIVE_WITH_PATHS,
@@ -727,9 +689,9 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--checkpoint-interval', '600') + REPO_ARCHIVE_WITH_PATHS,
@@ -765,9 +727,9 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--chunker-params', '1,2,3,4') + REPO_ARCHIVE_WITH_PATHS,
@@ -803,9 +765,9 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--compression', 'rle') + REPO_ARCHIVE_WITH_PATHS,
@@ -846,9 +808,9 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', option_flag, '100') + REPO_ARCHIVE_WITH_PATHS,
@@ -886,9 +848,9 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
@@ -925,9 +887,9 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--one-file-system') + REPO_ARCHIVE_WITH_PATHS,
@@ -969,9 +931,9 @@ def test_create_archive_with_numeric_owner_calls_borg_with_numeric_ids_parameter
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', option_flag) + REPO_ARCHIVE_WITH_PATHS,
@@ -1008,9 +970,9 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--read-special') + REPO_ARCHIVE_WITH_PATHS,
@@ -1054,9 +1016,9 @@ def test_create_archive_with_basic_option_calls_borg_with_corresponding_paramete
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + REPO_ARCHIVE_WITH_PATHS,
@@ -1104,9 +1066,9 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + REPO_ARCHIVE_WITH_PATHS,
@@ -1154,9 +1116,9 @@ def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_para
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + ((option_flag,) if option_flag else ()) + REPO_ARCHIVE_WITH_PATHS,
@@ -1193,9 +1155,9 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--files-cache', 'ctime,size') + REPO_ARCHIVE_WITH_PATHS,
@@ -1232,9 +1194,9 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg1', 'create') + REPO_ARCHIVE_WITH_PATHS,
@@ -1271,9 +1233,9 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--remote-path', 'borg1') + REPO_ARCHIVE_WITH_PATHS,
@@ -1310,9 +1272,9 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--umask', '740') + REPO_ARCHIVE_WITH_PATHS,
@@ -1348,9 +1310,9 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--lock-wait', '5') + REPO_ARCHIVE_WITH_PATHS,
@@ -1386,9 +1348,9 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_o
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--stats') + REPO_ARCHIVE_WITH_PATHS,
@@ -1425,9 +1387,9 @@ def test_create_archive_with_stats_and_log_info_calls_borg_with_stats_parameter_
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--stats') + REPO_ARCHIVE_WITH_PATHS,
@@ -1465,9 +1427,9 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_ou
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--list', '--filter', 'AME-') + REPO_ARCHIVE_WITH_PATHS,
@@ -1504,9 +1466,9 @@ def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_a
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--list', '--filter', 'AME-', '--info') + REPO_ARCHIVE_WITH_PATHS,
@@ -1544,9 +1506,9 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--info', '--progress') + REPO_ARCHIVE_WITH_PATHS,
@@ -1584,9 +1546,9 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--progress') + REPO_ARCHIVE_WITH_PATHS,
@@ -1624,9 +1586,9 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('borg', 'create', '--one-file-system', '--read-special', '--progress')
@@ -1666,9 +1628,9 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
@@ -1707,9 +1669,9 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
@@ -1749,9 +1711,9 @@ def test_create_archive_with_source_directories_glob_expands():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
@@ -1788,9 +1750,9 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'),
@@ -1827,9 +1789,9 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
@@ -1865,9 +1827,9 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::ARCHIVE_NAME',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', 'repo::ARCHIVE_NAME', 'foo', 'bar'),
@@ -1892,6 +1854,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
 
 
 def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
+    repository_archive_pattern = 'repo::Documents_{hostname}-{now}'
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1903,12 +1866,12 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (repository_archive_pattern,)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', 'repo::Documents_{hostname}-{now}', 'foo', 'bar'),
+        ('borg', 'create', repository_archive_pattern, 'foo', 'bar'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1930,6 +1893,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
 
 
 def test_create_archive_with_repository_accepts_borg_placeholders():
+    repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1941,12 +1905,12 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (repository_archive_pattern,)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '{fqdn}::Documents_{hostname}-{now}', 'foo', 'bar'),
+        ('borg', 'create', repository_archive_pattern, 'foo', 'bar'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1979,9 +1943,9 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--extra', '--options') + REPO_ARCHIVE_WITH_PATHS,
@@ -2018,9 +1982,9 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes():
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, '1.2.3'
-    ).and_return(False)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('borg', 'create', '--one-file-system', '--read-special') + REPO_ARCHIVE_WITH_PATHS,

@@ -5,7 +5,7 @@ import os
 import pathlib
 import tempfile
 
-from borgmatic.borg import environment, feature, state
+from borgmatic.borg import environment, feature, flags, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
 
 logger = logging.getLogger(__name__)
@@ -298,11 +298,7 @@ def create_archive(
         + (('--progress',) if progress else ())
         + (('--json',) if json else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + (
-            ('--repo', repository, archive_name_format)
-            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else (f'{repository}::{archive_name_format}',)
-        )
+        + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)
         + sources
     )
 
