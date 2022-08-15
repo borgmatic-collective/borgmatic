@@ -117,8 +117,13 @@ def list_archive(
         for flag_name in ('prefix', 'glob-archives', 'sort-by', 'first', 'last'):
             if getattr(list_arguments, flag_name.replace('-', '_'), None):
                 raise ValueError(
-                    f'The --{flag_name} flag on the list action is not supported when using the --archive flag and Borg 2.x.'
+                    f'The --{flag_name} flag on the list action is not supported when using the --archive/--find flags and Borg 2.x.'
                 )
+
+    if list_arguments.json:
+        raise ValueError(
+            'The --json flag on the list action is not supported when using the --archive/--find flags.'
+        )
 
     borg_environment = environment.make_environment(storage_config)
 
@@ -173,12 +178,9 @@ def list_archive(
             remote_path,
         ) + make_find_paths(list_arguments.find_paths)
 
-        output = execute_command(
+        execute_command(
             main_command,
-            output_log_level=None if list_arguments.json else logging.WARNING,
+            output_log_level=logging.WARNING,
             borg_local_path=local_path,
             extra_environment=borg_environment,
         )
-
-        if list_arguments.json:
-            return output

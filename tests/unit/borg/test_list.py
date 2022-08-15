@@ -282,33 +282,18 @@ def test_list_archive_calls_borg_with_parameters():
     )
 
 
-def test_list_archive_with_json_suppresses_most_borg_output():
+def test_list_archive_with_archive_and_json_errors():
     list_arguments = argparse.Namespace(archive='archive', paths=None, json=True, find_paths=None)
 
     flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module).should_receive('make_list_command').with_args(
-        repository='repo',
-        storage_config={},
-        local_borg_version='1.2.3',
-        list_arguments=list_arguments,
-        local_path='borg',
-        remote_path=None,
-    ).and_return(('borg', 'list', 'repo::archive'))
-    flexmock(module).should_receive('make_find_paths').and_return(())
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo::archive'),
-        output_log_level=None,
-        borg_local_path='borg',
-        extra_environment=None,
-    ).once()
 
-    module.list_archive(
-        repository='repo',
-        storage_config={},
-        local_borg_version='1.2.3',
-        list_arguments=list_arguments,
-    )
+    with pytest.raises(ValueError):
+        module.list_archive(
+            repository='repo',
+            storage_config={},
+            local_borg_version='1.2.3',
+            list_arguments=list_arguments,
+        )
 
 
 def test_list_archive_calls_borg_with_local_path():

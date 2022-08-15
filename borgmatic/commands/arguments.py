@@ -626,7 +626,7 @@ def make_parsers():
         '--successful',
         default=True,
         action='store_true',
-        help='Deprecated; no effect. Newer versions of Borg list successful (non-checkpoint) archives by default.',
+        help='Deprecated; no effect. Newer versions of Borg shows successful (non-checkpoint) archives by default.',
     )
     list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
