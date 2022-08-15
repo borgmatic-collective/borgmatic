@@ -2,14 +2,19 @@ import logging
 import os
 import subprocess
 
-from borgmatic.borg import environment, feature, flags
+from borgmatic.borg import environment, feature, flags, rlist
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
 
 def extract_last_archive_dry_run(
-    storage_config, repository, lock_wait=None, local_path='borg', remote_path=None
+    storage_config,
+    local_borg_version,
+    repository,
+    lock_wait=None,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
@@ -23,40 +28,23 @@ def extract_last_archive_dry_run(
     elif logger.isEnabledFor(logging.INFO):
         verbosity_flags = ('--info',)
 
-    full_list_command = (
-        (local_path, 'list', '--short')
-        + remote_path_flags
-        + lock_wait_flags
-        + verbosity_flags
-        + (repository,)
-    )
-
-    borg_environment = environment.make_environment(storage_config)
-
-    list_output = execute_command(
-        full_list_command,
-        output_log_level=None,
-        borg_local_path=local_path,
-        extra_environment=borg_environment,
-    )
-
     try:
-        last_archive_name = list_output.strip().splitlines()[-1]
-    except IndexError:
+        last_archive_name = rlist.resolve_archive_name(
+            repository, 'latest', storage_config, local_borg_version, local_path, remote_path
+        )
+    except ValueError:
+        logger.warning('No archives found. Skipping extract consistency check.')
         return
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
+    borg_environment = environment.make_environment(storage_config)
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + remote_path_flags
         + lock_wait_flags
         + verbosity_flags
         + list_flag
-        + (
-            '{repository}::{last_archive_name}'.format(
-                repository=repository, last_archive_name=last_archive_name
-            ),
-        )
+        + flags.make_repository_archive_flags(repository, last_archive_name, local_borg_version)
     )
 
     execute_command(

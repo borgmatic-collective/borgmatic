@@ -25,6 +25,7 @@ from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
 from borgmatic.borg import rcreate as borg_rcreate
 from borgmatic.borg import rinfo as borg_rinfo
+from borgmatic.borg import rlist as borg_rlist
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -434,8 +435,13 @@ def run_actions(
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['extract'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['extract'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['extract'].paths,
                 location,
@@ -467,8 +473,13 @@ def run_actions(
             borg_export_tar.export_tar_archive(
                 global_arguments.dry_run,
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['export-tar'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['export-tar'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['export-tar'].paths,
                 arguments['export-tar'].destination,
@@ -492,8 +503,13 @@ def run_actions(
 
             borg_mount.mount_archive(
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['mount'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['mount'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['mount'].mount_point,
                 arguments['mount'].paths,
@@ -525,8 +541,13 @@ def run_actions(
             if 'all' in restore_names:
                 restore_names = []
 
-            archive_name = borg_list.resolve_archive_name(
-                repository, arguments['restore'].archive, storage, local_path, remote_path
+            archive_name = borg_rlist.resolve_archive_name(
+                repository,
+                arguments['restore'].archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             found_names = set()
 
@@ -596,20 +617,45 @@ def run_actions(
                         ', '.join(missing_names)
                     )
                 )
-
+    if 'rlist' in arguments:
+        if arguments['rlist'].repository is None or validate.repositories_match(
+            repository, arguments['rlist'].repository
+        ):
+            rlist_arguments = copy.copy(arguments['rlist'])
+            if not rlist_arguments.json:  # pragma: nocover
+                logger.warning('{}: Listing repository'.format(repository))
+            json_output = borg_rlist.list_repository(
+                repository,
+                storage,
+                local_borg_version,
+                rlist_arguments=rlist_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            if json_output:  # pragma: nocover
+                yield json.loads(json_output)
     if 'list' in arguments:
         if arguments['list'].repository is None or validate.repositories_match(
             repository, arguments['list'].repository
         ):
             list_arguments = copy.copy(arguments['list'])
             if not list_arguments.json:  # pragma: nocover
-                logger.warning('{}: Listing archives'.format(repository))
-            list_arguments.archive = borg_list.resolve_archive_name(
-                repository, list_arguments.archive, storage, local_path, remote_path
+                if list_arguments.find_paths:
+                    logger.warning('{}: Searching archives'.format(repository))
+                else:
+                    logger.warning('{}: Listing archive'.format(repository))
+            list_arguments.archive = borg_rlist.resolve_archive_name(
+                repository,
+                list_arguments.archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
-            json_output = borg_list.list_archives(
+            json_output = borg_list.list_archive(
                 repository,
                 storage,
+                local_borg_version,
                 list_arguments=list_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
@@ -640,8 +686,13 @@ def run_actions(
             info_arguments = copy.copy(arguments['info'])
             if not info_arguments.json:  # pragma: nocover
                 logger.warning('{}: Displaying archive summary information'.format(repository))
-            info_arguments.archive = borg_list.resolve_archive_name(
-                repository, info_arguments.archive, storage, local_path, remote_path
+            info_arguments.archive = borg_rlist.resolve_archive_name(
+                repository,
+                info_arguments.archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             json_output = borg_info.display_archives_info(
                 repository,
@@ -658,8 +709,13 @@ def run_actions(
             repository, arguments['borg'].repository
         ):
             logger.warning('{}: Running arbitrary Borg command'.format(repository))
-            archive_name = borg_list.resolve_archive_name(
-                repository, arguments['borg'].archive, storage, local_path, remote_path
+            archive_name = borg_rlist.resolve_archive_name(
+                repository,
+                arguments['borg'].archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             borg_borg.run_arbitrary_borg(
                 repository,

@@ -323,6 +323,6 @@ def check_archives(
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(
-            storage_config, repository, lock_wait, local_path, remote_path
+            storage_config, local_borg_version, repository, lock_wait, local_path, remote_path
         )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))

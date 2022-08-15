@@ -14,6 +14,7 @@ SUBPARSER_ALIASES = {
     'mount': ['--mount', '-m'],
     'umount': ['--umount', '-u'],
     'restore': ['--restore', '-r'],
+    'rlist': [],
     'list': ['--list', '-l'],
     'rinfo': [],
     'info': ['--info', '-i'],
@@ -546,18 +547,54 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    rlist_parser = subparsers.add_parser(
+        'rlist',
+        aliases=SUBPARSER_ALIASES['rlist'],
+        help='List repository',
+        description='List the archives in a repository',
+        add_help=False,
+    )
+    rlist_group = rlist_parser.add_argument_group('rlist arguments')
+    rlist_group.add_argument(
+        '--repository', help='Path of repository to list, defaults to the configured repositories',
+    )
+    rlist_group.add_argument(
+        '--short', default=False, action='store_true', help='Output only archive names'
+    )
+    rlist_group.add_argument('--format', help='Format for archive listing')
+    rlist_group.add_argument(
+        '--json', default=False, action='store_true', help='Output results as JSON'
+    )
+    rlist_group.add_argument(
+        '-P', '--prefix', help='Only list archive names starting with this prefix'
+    )
+    rlist_group.add_argument(
+        '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
+    )
+    rlist_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    rlist_group.add_argument(
+        '--first', metavar='N', help='List first N archives after other filters are applied'
+    )
+    rlist_group.add_argument(
+        '--last', metavar='N', help='List last N archives after other filters are applied'
+    )
+    rlist_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     list_parser = subparsers.add_parser(
         'list',
         aliases=SUBPARSER_ALIASES['list'],
-        help='List archives',
-        description='List archives or the contents of an archive',
+        help='List archive',
+        description='List the files in an archive or search for a file across archives',
         add_help=False,
     )
     list_group = list_parser.add_argument_group('list arguments')
     list_group.add_argument(
-        '--repository', help='Path of repository to list, defaults to the configured repositories',
+        '--repository',
+        help='Path of repository containing archive to list, defaults to the configured repositories',
     )
-    list_group.add_argument('--archive', help='Name of archive to list (or "latest")')
+    list_group.add_argument('--archive', help='Name of the archive to list (or "latest")')
     list_group.add_argument(
         '--path',
         metavar='PATH',
@@ -573,7 +610,7 @@ def make_parsers():
         help='Partial paths or patterns to search for and list across multiple archives',
     )
     list_group.add_argument(
-        '--short', default=False, action='store_true', help='Output only archive or path names'
+        '--short', default=False, action='store_true', help='Output only path names'
     )
     list_group.add_argument('--format', help='Format for file listing')
     list_group.add_argument(
@@ -589,7 +626,7 @@ def make_parsers():
         '--successful',
         default=True,
         action='store_true',
-        help='Deprecated in favor of listing successful (non-checkpoint) backups by default in newer versions of Borg',
+        help='Deprecated; no effect. Newer versions of Borg list successful (non-checkpoint) archives by default.',
     )
     list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'

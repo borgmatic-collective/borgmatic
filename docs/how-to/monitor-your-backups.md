@@ -329,9 +329,9 @@ output only shows up at the console, and not in syslog.
 
 ### Latest backups
 
-All borgmatic actions that accept an "--archive" flag allow you to specify an
-archive name of "latest". This lets you get the latest archive without having
-to first run "borgmatic list" manually, which can be handy in automated
+All borgmatic actions that accept an `--archive` flag allow you to specify an
+archive name of `latest`. This lets you get the latest archive without having
+to first run `borgmatic rlist` manually, which can be handy in automated
 scripts. Here's an example:
 
 ```bash

@@ -1,58 +1,24 @@
+import argparse
 import copy
 import logging
 import re
 
-from borgmatic.borg import environment
-from borgmatic.borg.flags import make_flags, make_flags_from_arguments
+from borgmatic.borg import environment, feature, flags, rlist
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
-
-
-def resolve_archive_name(repository, archive, storage_config, local_path='borg', remote_path=None):
-    '''
-    Given a local or remote repository path, an archive name, a storage config dict, a local Borg
-    path, and a remote Borg path, simply return the archive name. But if the archive name is
-    "latest", then instead introspect the repository for the latest archive and return its name.
-
-    Raise ValueError if "latest" is given but there are no archives in the repository.
-    '''
-    if archive != "latest":
-        return archive
-
-    lock_wait = storage_config.get('lock_wait', None)
-
-    full_command = (
-        (local_path, 'list')
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + make_flags('remote-path', remote_path)
-        + make_flags('lock-wait', lock_wait)
-        + make_flags('last', 1)
-        + ('--short', repository)
-    )
-
-    output = execute_command(
-        full_command,
-        output_log_level=None,
-        borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
-    )
-    try:
-        latest_archive = output.strip().splitlines()[-1]
-    except IndexError:
-        raise ValueError('No archives found in the repository')
-
-    logger.debug('{}: Latest archive is {}'.format(repository, latest_archive))
-
-    return latest_archive
 
 
 MAKE_FLAGS_EXCLUDES = ('repository', 'archive', 'successful', 'paths', 'find_paths')
 
 
 def make_list_command(
-    repository, storage_config, list_arguments, local_path='borg', remote_path=None
+    repository,
+    storage_config,
+    local_borg_version,
+    list_arguments,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
     Given a local or remote repository path, a storage config dict, the arguments to the list
@@ -73,13 +39,15 @@ def make_list_command(
             if logger.isEnabledFor(logging.DEBUG) and not list_arguments.json
             else ()
         )
-        + make_flags('remote-path', remote_path)
-        + make_flags('lock-wait', lock_wait)
-        + make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES,)
+        + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('lock-wait', lock_wait)
+        + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES,)
         + (
-            ('::'.join((repository, list_arguments.archive)),)
+            flags.make_repository_archive_flags(
+                repository, list_arguments.archive, local_borg_version
+            )
             if list_arguments.archive
-            else (repository,)
+            else flags.make_repository_flags(repository, local_borg_version)
         )
         + (tuple(list_arguments.paths) if list_arguments.paths else ())
     )
@@ -109,29 +77,76 @@ def make_find_paths(find_paths):
     )
 
 
-def list_archives(repository, storage_config, list_arguments, local_path='borg', remote_path=None):
+def list_archive(
+    repository,
+    storage_config,
+    local_borg_version,
+    list_arguments,
+    local_path='borg',
+    remote_path=None,
+):
     '''
-    Given a local or remote repository path, a storage config dict, the arguments to the list
-    action, and local and remote Borg paths, display the output of listing Borg archives in the
-    repository or return JSON output. Or, if an archive name is given, list the files in that
-    archive. Or, if list_arguments.find_paths are given, list the files by searching across multiple
-    archives.
+    Given a local or remote repository path, a storage config dict, the local Borg version, the
+    arguments to the list action, and local and remote Borg paths, display the output of listing
+    the files of a Borg archive (or return JSON output). If list_arguments.find_paths are given,
+    list the files by searching across multiple archives. If neither find_paths nor archive name
+    are given, instead list the archives in the given repository.
     '''
+    if not list_arguments.archive and not list_arguments.find_paths:
+        if feature.available(feature.Feature.RLIST, local_borg_version):
+            logger.warning(
+                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x. Use the rlist action instead.'
+            )
+
+        rlist_arguments = argparse.Namespace(
+            repository=repository,
+            short=list_arguments.short,
+            format=list_arguments.format,
+            json=list_arguments.json,
+            prefix=list_arguments.prefix,
+            glob_archives=list_arguments.glob_archives,
+            sort_by=list_arguments.sort_by,
+            first=list_arguments.first,
+            last=list_arguments.last,
+        )
+        return rlist.list_repository(
+            repository, storage_config, local_borg_version, rlist_arguments, local_path, remote_path
+        )
+
+    if feature.available(feature.Feature.RLIST, local_borg_version):
+        for flag_name in ('prefix', 'glob-archives', 'sort-by', 'first', 'last'):
+            if getattr(list_arguments, flag_name.replace('-', '_'), None):
+                raise ValueError(
+                    f'The --{flag_name} flag on the list action is not supported when using the --archive flag and Borg 2.x.'
+                )
+
     borg_environment = environment.make_environment(storage_config)
 
     # If there are any paths to find (and there's not a single archive already selected), start by
     # getting a list of archives to search.
     if list_arguments.find_paths and not list_arguments.archive:
-        repository_arguments = copy.copy(list_arguments)
-        repository_arguments.archive = None
-        repository_arguments.json = False
-        repository_arguments.format = None
+        rlist_arguments = argparse.Namespace(
+            repository=repository,
+            short=True,
+            format=None,
+            json=None,
+            prefix=list_arguments.prefix,
+            glob_archives=list_arguments.glob_archives,
+            sort_by=list_arguments.sort_by,
+            first=list_arguments.first,
+            last=list_arguments.last,
+        )
 
         # Ask Borg to list archives. Capture its output for use below.
         archive_lines = tuple(
             execute_command(
-                make_list_command(
-                    repository, storage_config, repository_arguments, local_path, remote_path
+                rlist.make_rlist_command(
+                    repository,
+                    storage_config,
+                    local_borg_version,
+                    rlist_arguments,
+                    local_path,
+                    remote_path,
                 ),
                 output_log_level=None,
                 borg_local_path=local_path,
@@ -144,19 +159,18 @@ def list_archives(repository, storage_config, list_arguments, local_path='borg',
         archive_lines = (list_arguments.archive,)
 
     # For each archive listed by Borg, run list on the contents of that archive.
-    for archive_line in archive_lines:
-        try:
-            archive = archive_line.split()[0]
-        except (AttributeError, IndexError):
-            archive = None
-
-        if archive:
-            logger.warning(archive_line)
+    for archive in archive_lines:
+        logger.warning(f'{repository}: Listing archive {archive}')
 
         archive_arguments = copy.copy(list_arguments)
         archive_arguments.archive = archive
         main_command = make_list_command(
-            repository, storage_config, archive_arguments, local_path, remote_path
+            repository,
+            storage_config,
+            local_borg_version,
+            archive_arguments,
+            local_path,
+            remote_path,
         ) + make_find_paths(list_arguments.find_paths)
 
         output = execute_command(

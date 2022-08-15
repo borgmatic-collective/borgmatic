@@ -23,101 +23,100 @@ def insert_execute_command_output_mock(command, result):
 
 
 def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
-    insert_execute_command_output_mock(
-        ('borg', 'list', '--short', 'repo'), result='archive1\narchive2\n'
-    )
-    insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive2'))
-    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
+    insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive'))
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
-    )
-
-    module.extract_last_archive_dry_run(storage_config={}, repository='repo', lock_wait=None)
-
-
-def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
-    insert_execute_command_output_mock(('borg', 'list', '--short', 'repo'), result='\n')
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(('repo',))
-
-    module.extract_last_archive_dry_run(storage_config={}, repository='repo', lock_wait=None)
-
-
-def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_parameter():
-    insert_execute_command_output_mock(
-        ('borg', 'list', '--short', '--info', 'repo'), result='archive1\narchive2\n'
-    )
-    insert_execute_command_mock(('borg', 'extract', '--dry-run', '--info', 'repo::archive2'))
-    insert_logging_mock(logging.INFO)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
-    )
-
-    module.extract_last_archive_dry_run(storage_config={}, repository='repo', lock_wait=None)
-
-
-def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_parameter():
-    insert_execute_command_output_mock(
-        ('borg', 'list', '--short', '--debug', '--show-rc', 'repo'), result='archive1\narchive2\n'
-    )
-    insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--debug', '--show-rc', '--list', 'repo::archive2')
-    )
-    insert_logging_mock(logging.DEBUG)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
-    )
-
-    module.extract_last_archive_dry_run(storage_config={}, repository='repo', lock_wait=None)
-
-
-def test_extract_last_archive_dry_run_calls_borg_via_local_path():
-    insert_execute_command_output_mock(
-        ('borg1', 'list', '--short', 'repo'), result='archive1\narchive2\n'
-    )
-    insert_execute_command_mock(('borg1', 'extract', '--dry-run', 'repo::archive2'))
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
+        ('repo::archive',)
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, repository='repo', lock_wait=None, local_path='borg1'
+        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+    )
+
+
+def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_raise(ValueError)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(('repo',))
+
+    module.extract_last_archive_dry_run(
+        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+    )
+
+
+def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_parameter():
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
+    insert_execute_command_mock(('borg', 'extract', '--dry-run', '--info', 'repo::archive'))
+    insert_logging_mock(logging.INFO)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+
+    module.extract_last_archive_dry_run(
+        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+    )
+
+
+def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_parameter():
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
+    insert_execute_command_mock(
+        ('borg', 'extract', '--dry-run', '--debug', '--show-rc', '--list', 'repo::archive')
+    )
+    insert_logging_mock(logging.DEBUG)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+
+    module.extract_last_archive_dry_run(
+        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+    )
+
+
+def test_extract_last_archive_dry_run_calls_borg_via_local_path():
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
+    insert_execute_command_mock(('borg1', 'extract', '--dry-run', 'repo::archive'))
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+
+    module.extract_last_archive_dry_run(
+        storage_config={},
+        local_borg_version='1.2.3',
+        repository='repo',
+        lock_wait=None,
+        local_path='borg1',
     )
 
 
 def test_extract_last_archive_dry_run_calls_borg_with_remote_path_parameters():
-    insert_execute_command_output_mock(
-        ('borg', 'list', '--short', '--remote-path', 'borg1', 'repo'), result='archive1\narchive2\n'
-    )
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', 'repo::archive2')
+        ('borg', 'extract', '--dry-run', '--remote-path', 'borg1', 'repo::archive')
     )
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
+        ('repo::archive',)
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, repository='repo', lock_wait=None, remote_path='borg1'
+        storage_config={},
+        local_borg_version='1.2.3',
+        repository='repo',
+        lock_wait=None,
+        remote_path='borg1',
     )
 
 
 def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
-    insert_execute_command_output_mock(
-        ('borg', 'list', '--short', '--lock-wait', '5', 'repo'), result='archive1\narchive2\n'
-    )
+    flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(
-        ('borg', 'extract', '--dry-run', '--lock-wait', '5', 'repo::archive2')
+        ('borg', 'extract', '--dry-run', '--lock-wait', '5', 'repo::archive')
     )
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        ('repo::archive2',)
+        ('repo::archive',)
     )
 
-    module.extract_last_archive_dry_run(storage_config={}, repository='repo', lock_wait=5)
+    module.extract_last_archive_dry_run(
+        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=5
+    )
 
 
 def test_extract_archive_calls_borg_with_path_parameters():

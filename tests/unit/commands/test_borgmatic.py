@@ -571,10 +571,35 @@ def test_run_actions_does_not_raise_for_mount_action():
     )
 
 
+def test_run_actions_does_not_raise_for_rlist_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_rlist).should_receive('list_repository')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'rlist': flexmock(repository=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
 def test_run_actions_does_not_raise_for_list_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
-    flexmock(module.borg_list).should_receive('list_archives')
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_list).should_receive('list_archive')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'list': flexmock(repository=flexmock(), archive=flexmock(), json=flexmock()),
@@ -624,7 +649,7 @@ def test_run_actions_does_not_raise_for_rinfo_action():
 
 def test_run_actions_does_not_raise_for_info_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
     flexmock(module.borg_info).should_receive('display_archives_info')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
@@ -650,7 +675,7 @@ def test_run_actions_does_not_raise_for_info_action():
 
 def test_run_actions_does_not_raise_for_borg_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
     flexmock(module.borg_borg).should_receive('run_arbitrary_borg')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),

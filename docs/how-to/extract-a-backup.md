@@ -9,14 +9,13 @@ eleventyNavigation:
 
 When the worst happens—or you want to test your backups—the first step is
 to figure out which archive to extract. A good way to do that is to use the
-`list` action:
+`rlist` action:
 
 ```bash
-borgmatic list
+borgmatic rlist
 ```
 
-(No borgmatic `list` action? Try the old-style `--list`, or upgrade
-borgmatic!)
+(No borgmatic `rlist` action? Try `list` instead or upgrade borgmatic!)
 
 That should yield output looking something like:
 

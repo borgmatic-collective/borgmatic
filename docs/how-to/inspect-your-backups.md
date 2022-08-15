@@ -46,13 +46,19 @@ borgmatic list
 borgmatic info
 ```
 
-<span class="minilink minilink-addedin">New in borgmatic version 2.0.0</span>
-There's also an `rinfo` action for displaying repository information with Borg
-2.x:
+<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
+There are also `rlist` and `rinfo` actions for displaying repository
+information with Borg 2.x:
 
 ```bash
+borgmatic rlist
 borgmatic rinfo
 ```
+
+See the [borgmatic command-line
+reference](https://torsion.org/borgmatic/docs/reference/command-line/) for
+more information.
+
 
 ### Searching for a file
 
