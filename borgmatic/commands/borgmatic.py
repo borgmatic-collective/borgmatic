@@ -722,6 +722,7 @@ def run_actions(
             borg_borg.run_arbitrary_borg(
                 repository,
                 storage,
+                local_borg_version,
                 options=arguments['borg'].options,
                 archive=archive_name,
                 local_path=local_path,
