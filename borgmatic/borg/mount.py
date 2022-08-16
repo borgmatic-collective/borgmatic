@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg import environment
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -14,13 +14,15 @@ def mount_archive(
     foreground,
     options,
     storage_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a local or remote repository path, an optional archive name, a filesystem mount point,
     zero or more paths to mount from the archive, extra Borg mount options, a storage configuration
-    dict, and optional local and remote Borg paths, mount the archive onto the mount point.
+    dict, the local Borg version, and optional local and remote Borg paths, mount the archive onto
+    the mount point.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -34,7 +36,14 @@ def mount_archive(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--foreground',) if foreground else ())
         + (('-o', options) if options else ())
-        + (('::'.join((repository, archive)),) if archive else (repository,))
+        + (
+            (
+                flags.make_repository_flags(repository, local_borg_version)
+                + ('--glob-archives', archive)
+            )
+            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
+            else flags.make_repository_archive_flags(repository, archive, local_borg_version)
+        )
         + (mount_point,)
         + (tuple(paths) if paths else ())
     )

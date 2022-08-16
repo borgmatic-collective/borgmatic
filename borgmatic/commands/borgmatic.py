@@ -517,6 +517,7 @@ def run_actions(
                 arguments['mount'].foreground,
                 arguments['mount'].options,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
             )
