@@ -484,6 +484,7 @@ def run_actions(
                 arguments['export-tar'].paths,
                 arguments['export-tar'].destination,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
                 tar_filter=arguments['export-tar'].tar_filter,
