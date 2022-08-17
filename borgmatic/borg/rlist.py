@@ -51,7 +51,7 @@ def resolve_archive_name(
     return latest_archive
 
 
-MAKE_FLAGS_EXCLUDES = ('repository',)
+MAKE_FLAGS_EXCLUDES = ('repository', 'prefix')
 
 
 def make_rlist_command(
@@ -86,7 +86,12 @@ def make_rlist_command(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
-        + flags.make_flags_from_arguments(rlist_arguments, excludes=MAKE_FLAGS_EXCLUDES,)
+        + (
+            flags.make_flags('glob-archives', f'{rlist_arguments.prefix}*')
+            if rlist_arguments.prefix
+            else ()
+        )
+        + flags.make_flags_from_arguments(rlist_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + flags.make_repository_flags(repository, local_borg_version)
     )
 

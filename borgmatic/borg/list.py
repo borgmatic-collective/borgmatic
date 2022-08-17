@@ -41,7 +41,7 @@ def make_list_command(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
-        + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES,)
+        + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (
             flags.make_repository_archive_flags(
                 repository, list_arguments.archive, local_borg_version
