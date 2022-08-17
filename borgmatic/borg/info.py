@@ -1,7 +1,6 @@
 import logging
 
-from borgmatic.borg import environment, feature
-from borgmatic.borg.flags import make_flags, make_flags_from_arguments
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -34,13 +33,20 @@ def display_archives_info(
             if logger.isEnabledFor(logging.DEBUG) and not info_arguments.json
             else ()
         )
-        + make_flags('remote-path', remote_path)
-        + make_flags('lock-wait', lock_wait)
-        + make_flags_from_arguments(info_arguments, excludes=('repository', 'archive'))
+        + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('lock-wait', lock_wait)
+        + (
+            flags.make_flags('glob-archives', f'{info_arguments.prefix}*')
+            if info_arguments.prefix
+            else ()
+        )
+        + flags.make_flags_from_arguments(
+            info_arguments, excludes=('repository', 'archive', 'prefix')
+        )
         + (
             (
-                ('--repo', repository)
-                + (('--glob-archives', info_arguments.archive) if info_arguments.archive else ())
+                flags.make_flags('repo', repository)
+                + flags.make_flags('glob-archives', info_arguments.archive)
             )
             if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
             else (

@@ -745,22 +745,26 @@ def parse_arguments(*unparsed_arguments):
 
     if arguments['global'].excludes_filename:
         raise ValueError(
-            'The --excludes flag has been replaced with exclude_patterns in configuration'
+            'The --excludes flag has been replaced with exclude_patterns in configuration.'
         )
 
     if 'rcreate' in arguments and arguments['global'].dry_run:
-        raise ValueError('The rcreate/init action cannot be used with the --dry-run flag')
+        raise ValueError('The rcreate/init action cannot be used with the --dry-run flag.')
 
     if (
         ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('rinfo' in arguments and 'info' in arguments and arguments['rinfo'].json)
     ):
-        raise ValueError('With the --json flag, multiple actions cannot be used together')
+        raise ValueError('With the --json flag, multiple actions cannot be used together.')
 
-    if 'info' in arguments and arguments['info'].archive and arguments['info'].glob_archives:
+    if 'info' in arguments and (
+        (arguments['info'].archive and arguments['info'].prefix)
+        or (arguments['info'].archive and arguments['info'].glob_archives)
+        or (arguments['info'].prefix and arguments['info'].glob_archives)
+    ):
         raise ValueError(
-            'With the info action, the --archive and --glob-archives flags cannot be used together'
+            'With the info action, only one of --archive, --prefix, or --glob-archives flags can be used.'
         )
 
     return arguments
