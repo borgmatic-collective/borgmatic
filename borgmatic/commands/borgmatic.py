@@ -743,9 +743,10 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         try:
-            configs[config_filename] = validate.parse_configuration(
+            configs[config_filename], parse_logs = validate.parse_configuration(
                 config_filename, validate.schema_filename(), overrides, resolve_env
             )
+            logs.extend(parse_logs)
         except PermissionError:
             logs.extend(
                 [

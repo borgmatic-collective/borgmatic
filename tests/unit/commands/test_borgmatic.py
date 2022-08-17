@@ -699,17 +699,19 @@ def test_run_actions_does_not_raise_for_borg_action():
     )
 
 
-def test_load_configurations_collects_parsed_configurations():
+def test_load_configurations_collects_parsed_configurations_and_logs():
     configuration = flexmock()
     other_configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    other_expected_logs = [flexmock(), flexmock()]
     flexmock(module.validate).should_receive('parse_configuration').and_return(
-        configuration
-    ).and_return(other_configuration)
+        configuration, test_expected_logs
+    ).and_return(other_configuration, other_expected_logs)
 
     configs, logs = tuple(module.load_configurations(('test.yaml', 'other.yaml')))
 
     assert configs == {'test.yaml': configuration, 'other.yaml': other_configuration}
-    assert logs == []
+    assert logs == test_expected_logs + other_expected_logs
 
 
 def test_load_configurations_logs_warning_for_permission_error():

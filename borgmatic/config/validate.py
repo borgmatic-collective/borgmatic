@@ -89,6 +89,9 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
        {'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
        'retention': {'keep_daily': 7}, 'consistency': {'checks': ['repository', 'archives']}}
 
+    Also return a sequence of logging.LogRecord instances containing any warnings about the
+    configuration.
+
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
@@ -99,7 +102,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         raise Validation_error(config_filename, (str(error),))
 
     override.apply_overrides(config, overrides)
-    normalize.normalize(config)
+    logs = normalize.normalize(config_filename, config)
     if resolve_env:
         environment.resolve_env_variables(config)
 
@@ -116,7 +119,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
 
     apply_logical_validation(config_filename, config)
 
-    return config
+    return config, logs
 
 
 def normalize_repository_path(repository):
