@@ -60,7 +60,7 @@ def normalize(config_filename, config):
                         dict(
                             levelno=logging.WARNING,
                             levelname='WARNING',
-                            msg=f'{config_filename}: Repository paths containing "~" are deprecated in borgmatic and no longer work in Borg 2.',
+                            msg=f'{config_filename}: Repository paths containing "~" are deprecated in borgmatic and no longer work in Borg 2.x+.',
                         )
                     )
                 )

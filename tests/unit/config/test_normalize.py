@@ -74,8 +74,8 @@ from borgmatic.config import normalize as module
             True,
         ),
         (
-            {'location': {'repositories': ['ssh://foo@bar/repo']}},
-            {'location': {'repositories': ['ssh://foo@bar/repo']}},
+            {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
+            {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
             False,
         ),
     ),

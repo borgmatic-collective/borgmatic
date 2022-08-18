@@ -95,7 +95,7 @@ def list_archive(
     if not list_arguments.archive and not list_arguments.find_paths:
         if feature.available(feature.Feature.RLIST, local_borg_version):
             logger.warning(
-                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x. Use the rlist action instead.'
+                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x+. Use the rlist action instead.'
             )
 
         rlist_arguments = argparse.Namespace(
@@ -117,7 +117,7 @@ def list_archive(
         for flag_name in ('prefix', 'glob-archives', 'sort-by', 'first', 'last'):
             if getattr(list_arguments, flag_name.replace('-', '_'), None):
                 raise ValueError(
-                    f'The --{flag_name} flag on the list action is not supported when using the --archive/--find flags and Borg 2.x.'
+                    f'The --{flag_name} flag on the list action is not supported when using the --archive/--find flags and Borg 2.x+.'
                 )
 
     if list_arguments.json:
