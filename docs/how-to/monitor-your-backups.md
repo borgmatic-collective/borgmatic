@@ -319,8 +319,8 @@ hooks:
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an
-optional `--json` flag with `create`, `list`, or `info` to get the output
-formatted as JSON.
+optional `--json` flag with `create`, `rlist`, `rinfo`, or `info` to get the
+output formatted as JSON.
 
 Note that when you specify the `--json` flag, Borg's other non-JSON output is
 suppressed so as not to interfere with the captured JSON. Also note that JSON
