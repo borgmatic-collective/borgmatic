@@ -32,7 +32,7 @@ def insert_rcreate_command_mock(rcreate_command, **kwargs):
     ).once()
 
 
-def test_create_repository_calls_borg_with_parameters():
+def test_create_repository_calls_borg_with_flags():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)
@@ -85,7 +85,7 @@ def test_create_repository_raises_for_unknown_rinfo_command_error():
         )
 
 
-def test_create_repository_with_append_only_calls_borg_with_other_repo_parameter():
+def test_create_repository_with_key_repository_calls_borg_with_other_repo_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--other-repo', 'other.borg', '--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)
@@ -96,11 +96,26 @@ def test_create_repository_with_append_only_calls_borg_with_other_repo_parameter
         storage_config={},
         local_borg_version='2.3.4',
         encryption_mode='repokey',
-        other_repo='other.borg',
+        key_repository='other.borg',
     )
 
 
-def test_create_repository_with_append_only_calls_borg_with_append_only_parameter():
+def test_create_repository_with_copy_crypt_key_calls_borg_with_copy_crypt_key_flag():
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(RCREATE_COMMAND + ('--copy-crypt-key', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
+
+    module.create_repository(
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
+        copy_crypt_key=True,
+    )
+
+
+def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--append-only', '--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)
@@ -115,7 +130,7 @@ def test_create_repository_with_append_only_calls_borg_with_append_only_paramete
     )
 
 
-def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_parameter():
+def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--storage-quota', '5G', '--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)
@@ -130,7 +145,22 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_para
     )
 
 
-def test_create_repository_with_log_info_calls_borg_with_info_parameter():
+def test_create_repository_with_make_parent_dirs_calls_borg_with_make_parent_dirs_flag():
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(RCREATE_COMMAND + ('--make-parent-dirs', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
+
+    module.create_repository(
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
+        make_parent_dirs=True,
+    )
+
+
+def test_create_repository_with_log_info_calls_borg_with_info_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--info', '--repo', 'repo'))
     insert_logging_mock(logging.INFO)
@@ -142,7 +172,7 @@ def test_create_repository_with_log_info_calls_borg_with_info_parameter():
     )
 
 
-def test_create_repository_with_log_debug_calls_borg_with_debug_parameter():
+def test_create_repository_with_log_debug_calls_borg_with_debug_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--debug', '--repo', 'repo'))
     insert_logging_mock(logging.DEBUG)
@@ -169,7 +199,7 @@ def test_create_repository_with_local_path_calls_borg_via_local_path():
     )
 
 
-def test_create_repository_with_remote_path_calls_borg_with_remote_path_parameter():
+def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--remote-path', 'borg1', '--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)

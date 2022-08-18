@@ -18,6 +18,7 @@ SUBPARSER_ALIASES = {
     'list': ['--list', '-l'],
     'rinfo': [],
     'info': ['--info', '-i'],
+    'transfer': [],
     'borg': [],
 }
 
@@ -240,20 +241,26 @@ def make_parsers():
         required=True,
     )
     rcreate_group.add_argument(
+        '--key-repository',
         '--other-repo',
         metavar='SOURCE_REPOSITORY',
         help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
-        '--append-only',
-        dest='append_only',
+        '--copy-crypt-key',
         action='store_true',
-        help='Create an append-only repository',
+        help='Copy the crypt key used for authenticated encryption from the key repository, defaults to a new random key (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
-        '--storage-quota',
-        dest='storage_quota',
-        help='Create a repository with a fixed storage quota',
+        '--append-only', action='store_true', help='Create an append-only repository',
+    )
+    rcreate_group.add_argument(
+        '--storage-quota', help='Create a repository with a fixed storage quota',
+    )
+    rcreate_group.add_argument(
+        '--make-parent-dirs',
+        action='store_true',
+        help='Create any missing parent directories of the repository directory',
     )
     rcreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

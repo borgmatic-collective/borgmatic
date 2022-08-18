@@ -346,9 +346,11 @@ def test_run_actions_does_not_raise_for_rcreate_action():
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'rcreate': flexmock(
             encryption_mode=flexmock(),
-            other_repo=flexmock(),
+            key_repository=flexmock(),
+            copy_crypt_key=flexmock(),
             append_only=flexmock(),
             storage_quota=flexmock(),
+            make_parent_dirs=flexmock(),
         ),
     }
 
