@@ -44,15 +44,13 @@ def display_archives_info(
             info_arguments, excludes=('repository', 'archive', 'prefix')
         )
         + (
-            (
-                flags.make_flags('repo', repository)
-                + flags.make_flags('glob-archives', info_arguments.archive)
-            )
-            if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else (
-                '::'.join((repository, info_arguments.archive))
-                if info_arguments.archive
-                else repository,
+            flags.make_repository_flags(repository, local_borg_version)
+            + (
+                flags.make_flags('glob-archives', info_arguments.archive)
+                if feature.available(
+                    feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
+                )
+                else ()
             )
         )
     )
