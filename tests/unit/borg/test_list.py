@@ -254,7 +254,17 @@ def test_make_find_paths_adds_globs_to_path_fragments():
 
 
 def test_list_archive_calls_borg_with_parameters():
-    list_arguments = argparse.Namespace(archive='archive', paths=None, json=False, find_paths=None)
+    list_arguments = argparse.Namespace(
+        archive='archive',
+        paths=None,
+        json=False,
+        find_paths=None,
+        prefix=None,
+        glob_archives=None,
+        sort_by=None,
+        first=None,
+        last=None,
+    )
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
@@ -297,7 +307,17 @@ def test_list_archive_with_archive_and_json_errors():
 
 
 def test_list_archive_calls_borg_with_local_path():
-    list_arguments = argparse.Namespace(archive='archive', paths=None, json=False, find_paths=None)
+    list_arguments = argparse.Namespace(
+        archive='archive',
+        paths=None,
+        json=False,
+        find_paths=None,
+        prefix=None,
+        glob_archives=None,
+        sort_by=None,
+        first=None,
+        last=None,
+    )
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
@@ -346,9 +366,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
         output_log_level=None,
         borg_local_path='borg',
         extra_environment=None,
-    ).and_return(
-        'archive1   Sun, 2022-05-29 15:27:04 [abc]\narchive2   Mon, 2022-05-30 19:47:15 [xyz]'
-    ).once()
+    ).and_return('archive1\narchive2').once()
     flexmock(module).should_receive('make_list_command').and_return(
         ('borg', 'list', 'repo::archive1')
     ).and_return(('borg', 'list', 'repo::archive2'))
@@ -376,7 +394,17 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
 
 
 def test_list_archive_calls_borg_with_archive():
-    list_arguments = argparse.Namespace(archive='archive', paths=None, json=False, find_paths=None)
+    list_arguments = argparse.Namespace(
+        archive='archive',
+        paths=None,
+        json=False,
+        find_paths=None,
+        prefix=None,
+        glob_archives=None,
+        sort_by=None,
+        first=None,
+        last=None,
+    )
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
@@ -461,35 +489,15 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
 @pytest.mark.parametrize(
     'archive_filter_flag', ('prefix', 'glob_archives', 'sort_by', 'first', 'last',),
 )
-def test_list_archive_with_archive_disallows_archive_filter_flag_if_rlist_feature_available(
-    archive_filter_flag,
-):
-    list_arguments = argparse.Namespace(
-        archive='archive', paths=None, json=False, find_paths=None, **{archive_filter_flag: 'foo'}
-    )
-
-    flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.RLIST, '1.2.3'
-    ).and_return(True)
-
-    with pytest.raises(ValueError):
-        module.list_archive(
-            repository='repo',
-            storage_config={},
-            local_borg_version='1.2.3',
-            list_arguments=list_arguments,
-        )
-
-
-@pytest.mark.parametrize(
-    'archive_filter_flag', ('prefix', 'glob_archives', 'sort_by', 'first', 'last',),
-)
-def test_list_archive_with_archive_allows_archive_filter_flag_if_rlist_feature_unavailable(
-    archive_filter_flag,
-):
-    list_arguments = argparse.Namespace(
-        archive='archive', paths=None, json=False, find_paths=None, **{archive_filter_flag: 'foo'}
-    )
+def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_flag,):
+    default_filter_flags = {
+        'prefix': None,
+        'glob_archives': None,
+        'sort_by': None,
+        'first': None,
+        'last': None,
+    }
+    altered_filter_flags = {**default_filter_flags, **{archive_filter_flag: 'foo'}}
 
     flexmock(module.feature).should_receive('available').with_args(
         module.feature.Feature.RLIST, '1.2.3'
@@ -498,7 +506,9 @@ def test_list_archive_with_archive_allows_archive_filter_flag_if_rlist_feature_u
         repository='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        list_arguments=list_arguments,
+        list_arguments=argparse.Namespace(
+            archive='archive', paths=None, json=False, find_paths=None, **default_filter_flags
+        ),
         local_path='borg',
         remote_path=None,
     ).and_return(('borg', 'list', 'repo::archive'))
@@ -515,5 +525,110 @@ def test_list_archive_with_archive_allows_archive_filter_flag_if_rlist_feature_u
         repository='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        list_arguments=list_arguments,
+        list_arguments=argparse.Namespace(
+            archive='archive', paths=None, json=False, find_paths=None, **altered_filter_flags
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    'archive_filter_flag', ('prefix', 'glob_archives', 'sort_by', 'first', 'last',),
+)
+def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_rlist(
+    archive_filter_flag,
+):
+    default_filter_flags = {
+        'prefix': None,
+        'glob_archives': None,
+        'sort_by': None,
+        'first': None,
+        'last': None,
+    }
+    altered_filter_flags = {**default_filter_flags, **{archive_filter_flag: 'foo'}}
+    glob_paths = ('**/*foo.txt*/**',)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flexmock(module.rlist).should_receive('make_rlist_command').with_args(
+        repository='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        rlist_arguments=argparse.Namespace(
+            repository='repo', short=True, format=None, json=None, **altered_filter_flags
+        ),
+        local_path='borg',
+        remote_path=None,
+    ).and_return(('borg', 'rlist', '--repo', 'repo'))
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'rlist', '--repo', 'repo'),
+        output_log_level=None,
+        borg_local_path='borg',
+        extra_environment=None,
+    ).and_return('archive1\narchive2').once()
+
+    flexmock(module).should_receive('make_list_command').with_args(
+        repository='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        list_arguments=argparse.Namespace(
+            repository='repo',
+            archive='archive1',
+            paths=None,
+            short=True,
+            format=None,
+            json=None,
+            find_paths=['foo.txt'],
+            **default_filter_flags,
+        ),
+        local_path='borg',
+        remote_path=None,
+    ).and_return(('borg', 'list', '--repo', 'repo', 'archive1'))
+
+    flexmock(module).should_receive('make_list_command').with_args(
+        repository='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        list_arguments=argparse.Namespace(
+            repository='repo',
+            archive='archive2',
+            paths=None,
+            short=True,
+            format=None,
+            json=None,
+            find_paths=['foo.txt'],
+            **default_filter_flags,
+        ),
+        local_path='borg',
+        remote_path=None,
+    ).and_return(('borg', 'list', '--repo', 'repo', 'archive2'))
+
+    flexmock(module).should_receive('make_find_paths').and_return(glob_paths)
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--repo', 'repo', 'archive1') + glob_paths,
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+        extra_environment=None,
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'list', '--repo', 'repo', 'archive2') + glob_paths,
+        output_log_level=logging.WARNING,
+        borg_local_path='borg',
+        extra_environment=None,
+    ).once()
+
+    module.list_archive(
+        repository='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        list_arguments=argparse.Namespace(
+            repository='repo',
+            archive=None,
+            paths=None,
+            short=True,
+            format=None,
+            json=None,
+            find_paths=['foo.txt'],
+            **altered_filter_flags,
+        ),
     )

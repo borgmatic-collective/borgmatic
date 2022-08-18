@@ -204,6 +204,9 @@ Or, with Borg 2.x:
 sudo borgmatic rcreate --encryption repokey-aes-ocb
 ```
 
+(Note that `repokey-chacha20-poly1305` may be faster than `repokey-aes-ocb` on
+certain platforms like ARM64.)
+
 This uses the borgmatic configuration file you created above to determine
 which local or remote repository to create, and encrypts it with the
 encryption passphrase specified there if one is provided. Read about [Borg

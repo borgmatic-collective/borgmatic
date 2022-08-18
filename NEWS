@@ -3,10 +3,9 @@
    like "rcreate" (replaces "init"), "rlist" (list archives in repository), and "rinfo" (show
    repository info). For the most part, borgmatic tries to smooth over differences between Borg 1
    and 2 to make your upgrade process easier. However, there are still a few cases where Borg made
-   breaking changes, such as moving flags from "borg list" to "borg rlist". See the Borg 2.0
-   changelog for more information (https://www.borgbackup.org/releases/borg-2.0.html). If you
-   install Borg 2, you'll need to manually "borg transfer" or "borgmatic transfer" your existing
-   Borg 1 repositories before use.
+   breaking changes. See the Borg 2.0 changelog for more information
+   (https://www.borgbackup.org/releases/borg-2.0.html). If you install Borg 2, you'll need to
+   manually "borg transfer" or "borgmatic transfer" your existing Borg 1 repositories before use.
  * #557: Rename several configuration options to match Borg 2: "remote_rate_limit" is now
    "upload_rate_limit", "numeric_owner" is "numeric_ids", and "bsd_flags" is "flags". borgmatic
    still works with the old options.

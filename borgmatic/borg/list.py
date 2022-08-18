@@ -9,7 +9,14 @@ from borgmatic.execute import execute_command
 logger = logging.getLogger(__name__)
 
 
-MAKE_FLAGS_EXCLUDES = ('repository', 'archive', 'successful', 'paths', 'find_paths')
+ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST = ('prefix', 'glob_archives', 'sort_by', 'first', 'last')
+MAKE_FLAGS_EXCLUDES = (
+    'repository',
+    'archive',
+    'successful',
+    'paths',
+    'find_paths',
+) + ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST
 
 
 def make_list_command(
@@ -113,11 +120,11 @@ def list_archive(
             repository, storage_config, local_borg_version, rlist_arguments, local_path, remote_path
         )
 
-    if feature.available(feature.Feature.RLIST, local_borg_version):
-        for flag_name in ('prefix', 'glob-archives', 'sort-by', 'first', 'last'):
-            if getattr(list_arguments, flag_name.replace('-', '_'), None):
-                raise ValueError(
-                    f'The --{flag_name} flag on the list action is not supported when using the --archive/--find flags and Borg 2.x+.'
+    if list_arguments.archive:
+        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST:
+            if getattr(list_arguments, name, None):
+                logger.warning(
+                    f"The --{name.replace('_', '-')} flag on the list action is ignored when using the --archive flag."
                 )
 
     if list_arguments.json:
@@ -169,6 +176,12 @@ def list_archive(
 
         archive_arguments = copy.copy(list_arguments)
         archive_arguments.archive = archive
+
+        # This list call is to show the files in a single archive, not list multiple archives. So
+        # blank out any archive filtering flags. They'll break anyway in Borg 2.
+        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST:
+            setattr(archive_arguments, name, None)
+
         main_command = make_list_command(
             repository,
             storage_config,
