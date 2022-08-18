@@ -258,6 +258,7 @@ def run_actions(
             storage,
             local_borg_version,
             arguments['rcreate'].encryption_mode,
+            arguments['rcreate'].other_repo,
             arguments['rcreate'].append_only,
             arguments['rcreate'].storage_quota,
             local_path=local_path,

@@ -240,6 +240,11 @@ def make_parsers():
         required=True,
     )
     rcreate_group.add_argument(
+        '--other-repo',
+        metavar='SOURCE_REPOSITORY',
+        help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
+    )
+    rcreate_group.add_argument(
         '--append-only',
         dest='append_only',
         action='store_true',

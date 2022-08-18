@@ -85,6 +85,21 @@ def test_create_repository_raises_for_unknown_rinfo_command_error():
         )
 
 
+def test_create_repository_with_append_only_calls_borg_with_other_repo_parameter():
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(RCREATE_COMMAND + ('--other-repo', 'other.borg', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
+
+    module.create_repository(
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
+        other_repo='other.borg',
+    )
+
+
 def test_create_repository_with_append_only_calls_borg_with_append_only_parameter():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--append-only', '--repo', 'repo'))

@@ -345,7 +345,10 @@ def test_run_actions_does_not_raise_for_rcreate_action():
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'rcreate': flexmock(
-            encryption_mode=flexmock(), append_only=flexmock(), storage_quota=flexmock()
+            encryption_mode=flexmock(),
+            other_repo=flexmock(),
+            append_only=flexmock(),
+            storage_quota=flexmock(),
         ),
     }
 

@@ -16,6 +16,7 @@ def create_repository(
     storage_config,
     local_borg_version,
     encryption_mode,
+    other_repo=None,
     append_only=None,
     storage_quota=None,
     local_path='borg',
@@ -23,8 +24,9 @@ def create_repository(
 ):
     '''
     Given a local or remote repository path, a storage configuration dict, the local Borg version, a
-    Borg encryption mode, whether the repository should be append-only, and the storage quota to
-    use, create the repository. If the repository already exists, then log and skip creation.
+    Borg encryption mode, the path to another repo whose key material should be reused, whether the
+    repository should be append-only, and the storage quota to use, create the repository. If the
+    repository already exists, then log and skip creation.
     '''
     try:
         rinfo.display_repository_info(
@@ -51,6 +53,7 @@ def create_repository(
             else ('init',)
         )
         + (('--encryption', encryption_mode) if encryption_mode else ())
+        + (('--other-repo', other_repo) if other_repo else ())
         + (('--append-only',) if append_only else ())
         + (('--storage-quota', storage_quota) if storage_quota else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
