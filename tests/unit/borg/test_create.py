@@ -794,7 +794,7 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
 @pytest.mark.parametrize(
     'feature_available,option_flag', ((True, '--upload-ratelimit'), (False, '--remote-ratelimit')),
 )
-def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_parameters(
+def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_parameters(
     feature_available, option_flag
 ):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
@@ -829,7 +829,7 @@ def test_create_archive_with_remote_rate_limit_calls_borg_with_upload_ratelimit_
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={'remote_rate_limit': 100},
+        storage_config={'upload_rate_limit': 100},
         local_borg_version='1.2.3',
     )
 
@@ -917,7 +917,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
 @pytest.mark.parametrize(
     'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner')),
 )
-def test_create_archive_with_numeric_owner_calls_borg_with_numeric_ids_parameter(
+def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
     feature_available, option_flag
 ):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
@@ -950,7 +950,7 @@ def test_create_archive_with_numeric_owner_calls_borg_with_numeric_ids_parameter
         location_config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'numeric_owner': True,
+            'numeric_ids': True,
             'exclude_patterns': None,
         },
         storage_config={},
@@ -1102,7 +1102,7 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
         (False, False, '--nobsdflags'),
     ),
 )
-def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_parameter(
+def test_create_archive_with_flags_option_calls_borg_with_corresponding_parameter(
     option_value, feature_available, option_flag
 ):
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
@@ -1135,7 +1135,7 @@ def test_create_archive_with_bsd_flags_option_calls_borg_with_corresponding_para
         location_config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'bsd_flags': option_value,
+            'flags': option_value,
             'exclude_patterns': None,
         },
         storage_config={},

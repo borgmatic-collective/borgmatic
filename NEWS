@@ -4,6 +4,15 @@
    repository info). If you install Borg 2, you'll need to manually "borg transfer" or "borgmatic
    transfer" your existing Borg 1 repositories before use. See the Borg 2.0 changelog for more
    information about Borg 2: https://www.borgbackup.org/releases/borg-2.0.html
+ * #557: Rename several configuration options to match Borg 2: "remote_rate_limit" is now
+   "upload_rate_limit", "numeric_owner" is "numeric_ids", and "bsd_flags" is "flags". borgmatic
+   still works with the old options.
+ * #557: Remote repository paths without the "ssh://" syntax are deprecated but still supported for
+   now. However, remote repository paths containing "~" will no longer work.
+ * #557: Omitting the "--archive" flag on the "list" action is deprecated when using Borg 2. Use
+   the new "rlist" action instead. And when using the "--archive" or "--find" flags on the "list"
+   action with Borg 2, several flags are no longer supported: "--prefix", "--glob-archives",
+   "--sort-by", "--first", and "--last".
  * #565: Fix handling of "repository" and "data" consistency checks to prevent invalid Borg flags.
  * #566: Modify "mount" and "extract" actions to require the "--repository" flag when multiple
    repositories are configured.

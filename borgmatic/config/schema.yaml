@@ -58,7 +58,7 @@ properties:
                     database hook is used, the setting here is ignored and
                     one_file_system is considered true.
                 example: true
-            numeric_owner:
+            numeric_ids:
                 type: boolean
                 description: |
                     Only store/extract numeric user and group identifiers.
@@ -90,10 +90,10 @@ properties:
                     used, the setting here is ignored and read_special is
                     considered true.
                 example: false
-            bsd_flags:
+            flags:
                 type: boolean
                 description: |
-                    Record bsdflags (e.g. NODUMP, IMMUTABLE) in archive.
+                    Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
                     Defaults to true.
                 example: true
             files_cache:
@@ -255,7 +255,7 @@ properties:
                     http://borgbackup.readthedocs.io/en/stable/usage/create.html
                     for details. Defaults to "lz4".
                 example: lz4
-            remote_rate_limit:
+            upload_rate_limit:
                 type: integer
                 description: |
                     Remote network upload rate limit in kiBytes/second. Defaults

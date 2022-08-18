@@ -174,7 +174,7 @@ def test_extract_archive_calls_borg_with_numeric_ids_parameter(feature_available
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={'numeric_owner': True},
+        location_config={'numeric_ids': True},
         storage_config={},
         local_borg_version='1.2.3',
     )

@@ -314,8 +314,8 @@ def make_parsers():
     create_parser = subparsers.add_parser(
         'create',
         aliases=SUBPARSER_ALIASES['create'],
-        help='Create archives (actually perform backups)',
-        description='Create archives (actually perform backups)',
+        help='Create an archive (actually perform a backup)',
+        description='Create an archive (actually perform a backup)',
         add_help=False,
     )
     create_group = create_parser.add_argument_group('create arguments')

@@ -233,7 +233,7 @@ def create_archive(
     checkpoint_interval = storage_config.get('checkpoint_interval', None)
     chunker_params = storage_config.get('chunker_params', None)
     compression = storage_config.get('compression', None)
-    remote_rate_limit = storage_config.get('remote_rate_limit', None)
+    upload_rate_limit = storage_config.get('upload_rate_limit', None)
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
     files_cache = location_config.get('files_cache')
@@ -246,22 +246,22 @@ def create_archive(
         atime_flags = ('--noatime',) if location_config.get('atime') is False else ()
 
     if feature.available(feature.Feature.NOFLAGS, local_borg_version):
-        noflags_flags = ('--noflags',) if location_config.get('bsd_flags') is False else ()
+        noflags_flags = ('--noflags',) if location_config.get('flags') is False else ()
     else:
-        noflags_flags = ('--nobsdflags',) if location_config.get('bsd_flags') is False else ()
+        noflags_flags = ('--nobsdflags',) if location_config.get('flags') is False else ()
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
-        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_owner') else ()
+        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_ids') else ()
     else:
-        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
+        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_ids') else ()
 
     if feature.available(feature.Feature.UPLOAD_RATELIMIT, local_borg_version):
         upload_ratelimit_flags = (
-            ('--upload-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+            ('--upload-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
     else:
         upload_ratelimit_flags = (
-            ('--remote-ratelimit', str(remote_rate_limit)) if remote_rate_limit else ()
+            ('--remote-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
 
     ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))

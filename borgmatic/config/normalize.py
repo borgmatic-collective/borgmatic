@@ -36,12 +36,24 @@ def normalize(config_filename, config):
     if isinstance(checks, list) and len(checks) and isinstance(checks[0], str):
         config['consistency']['checks'] = [{'name': check_type} for check_type in checks]
 
+    # Rename various configuration options.
+    numeric_owner = config.get('location', {}).pop('numeric_owner', None)
+    if numeric_owner is not None:
+        config['location']['numeric_ids'] = numeric_owner
+
+    bsd_flags = config.get('location', {}).pop('bsd_flags', None)
+    if bsd_flags is not None:
+        config['location']['flags'] = bsd_flags
+
+    remote_rate_limit = config.get('storage', {}).pop('remote_rate_limit', None)
+    if remote_rate_limit is not None:
+        config['storage']['upload_rate_limit'] = remote_rate_limit
+
     # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
     repositories = config.get('location', {}).get('repositories')
     if repositories:
         config['location']['repositories'] = []
         for repository in repositories:
-            # TODO: Instead of logging directly here, return logs and bubble them up to be displayed *after* logging is initialized.
             if '~' in repository:
                 logs.append(
                     logging.makeLogRecord(

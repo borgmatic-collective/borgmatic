@@ -51,6 +51,13 @@ from borgmatic.config import normalize as module
             {'consistency': {'checks': [{'name': 'archives'}]}},
             False,
         ),
+        ({'location': {'numeric_owner': False}}, {'location': {'numeric_ids': False}}, False,),
+        ({'location': {'bsd_flags': False}}, {'location': {'flags': False}}, False,),
+        (
+            {'storage': {'remote_rate_limit': False}},
+            {'storage': {'upload_rate_limit': False}},
+            False,
+        ),
         (
             {'location': {'repositories': ['foo@bar:/repo']}},
             {'location': {'repositories': ['ssh://foo@bar/repo']}},

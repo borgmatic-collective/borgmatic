@@ -83,9 +83,9 @@ def extract_archive(
         raise ValueError('progress and extract_to_stdout cannot both be set')
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
-        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_owner') else ()
+        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_ids') else ()
     else:
-        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_owner') else ()
+        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_ids') else ()
 
     full_command = (
         (local_path, 'extract')
