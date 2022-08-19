@@ -20,8 +20,8 @@ location:
 
     # Paths of local or remote repositories to backup to.
     repositories:
-        - ssh://1234@usw-s001.rsync.net/backups.borg
-        - ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/repo
+        - ssh://1234@usw-s001.rsync.net/./backups.borg
+        - ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/./repo
         - /var/lib/backups/local.borg
 ```
 

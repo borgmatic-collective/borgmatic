@@ -76,7 +76,7 @@ location:
         - /home
 
     repositories:
-        - ssh://me@buddys-server.org/backup.borg
+        - ssh://me@buddys-server.org/./backup.borg
 
 hooks:
     before_backup:
