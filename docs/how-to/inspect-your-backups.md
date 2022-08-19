@@ -47,7 +47,7 @@ borgmatic info
 ```
 
 You can change the output format of `borgmatic list` by specifying your own
-with `--format $FORMAT`. Refer to the [borg list --format
+with `--format`. Refer to the [borg list --format
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/list.html#the-format-specifier-syntax)
 for available values.
 
