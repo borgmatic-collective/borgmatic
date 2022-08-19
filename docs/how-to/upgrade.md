@@ -1,11 +1,11 @@
 ---
-title: How to upgrade borgmatic
+title: How to upgrade borgmatic and Borg
 eleventyNavigation:
-  key: 📦 Upgrade borgmatic
+  key: 📦 Upgrade borgmatic/Borg
   parent: How-to guides
   order: 12
 ---
-## Upgrading
+## Upgrading borgmatic
 
 In general, all you should need to do to upgrade borgmatic is run the
 following:
@@ -115,3 +115,85 @@ sudo pip3 install --user borgmatic
 
 That's it! borgmatic will continue using your /etc/borgmatic configuration
 files.
+
+
+## Upgrading Borg
+
+To upgrade to a new version of Borg, you can generally install a new version
+the same way you installed the previous version, paying attention to any
+instructions included with each Borg release changelog linked from the
+[releases page](https://github.com/borgbackup/borg/releases). However, some
+more major Borg releases require additional steps that borgmatic can help
+with.
+
+
+### Borg 1.2 to 2.0
+
+<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
+Upgrading Borg from 1.2 to 2.0 requires manually upgrading your existing Borg
+1 repositories before use with Borg or borgmatic. Here's how you can
+accomplish that.
+
+Start by upgrading borgmatic as described above to at least version 1.7.0 and
+Borg to 2.0. Then, rename your repository in borgmatic's configuration file to
+a new repository path. The repository upgrade process does not occur
+in-place; you'll create a new repository with a copy of your old repository's
+data.
+
+Let's say your original borgmatic repository configuration file looks something
+like this:
+
+```yaml
+location:
+    repositories:
+        - original.borg
+```
+
+Change it to a new (not yet created) repository path:
+
+```yaml
+location:
+    repositories:
+        - upgraded.borg
+```
+
+Then, run the `rcreate` action (formerly `init`) to create that new Borg 2
+repository:
+
+```bash
+borgmatic rcreate --verbosity 1 --encryption repokey-aes-ocb \
+    --source-repository original.borg --repository upgraded.borg
+```
+
+(Note that `repokey-chacha20-poly1305` may be faster than `repokey-aes-ocb` on
+certain platforms like ARM64.)
+
+This creates an empty repository and doesn't actually transfer any data yet.
+The `--source-repository` flag is necessary to reuse key material from your
+Borg 1 repository so that the subsequent data transfer can work.
+
+To transfer data from your original Borg 1 repository to your newly created
+Borg 2 repository:
+
+```bash
+borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+    original.borg --repository upgraded.borg --dry-run
+borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+    original.borg --repository upgraded.borg
+borgmatic transfer --verbosity 1 --upgrader From12To20 --source-repository \
+    original.borg --repository upgraded.borg --dry-run
+```
+
+The first command with `--dry-run` tells you what Borg is going to do during
+the transfer, the second command actually performs the transfer/upgrade (this
+might take a while), and the final command with `--dry-run` again provides
+confirmation of success—or tells you if something hasn't been transferred yet.
+
+Note that by omitting the `--upgrader` flag, you can also do archive transfers
+between Borg 2 repositories without upgrading, even down to individual
+archives. For more on that functionality, see the [Borg transfer
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b1/usage/transfer.html).
+
+That's it! Now you can use your new Borg 2 repository as normal with
+borgmatic. If you've got multiple repositories, repeat the above process for
+each.

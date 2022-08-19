@@ -39,7 +39,26 @@ def test_create_repository_calls_borg_with_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
-        repository='repo', storage_config={}, local_borg_version='2.3.4', encryption_mode='repokey'
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
+    )
+
+
+def test_create_repository_with_dry_run_skips_borg_call():
+    insert_rinfo_command_not_found_mock()
+    flexmock(module).should_receive('execute_command').never()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
+
+    module.create_repository(
+        dry_run=True,
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
     )
 
 
@@ -54,6 +73,7 @@ def test_create_repository_raises_for_borg_rcreate_error():
 
     with pytest.raises(subprocess.CalledProcessError):
         module.create_repository(
+            dry_run=False,
             repository='repo',
             storage_config={},
             local_borg_version='2.3.4',
@@ -67,7 +87,11 @@ def test_create_repository_skips_creation_when_repository_already_exists():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
-        repository='repo', storage_config={}, local_borg_version='2.3.4', encryption_mode='repokey'
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
     )
 
 
@@ -78,6 +102,7 @@ def test_create_repository_raises_for_unknown_rinfo_command_error():
 
     with pytest.raises(subprocess.CalledProcessError):
         module.create_repository(
+            dry_run=False,
             repository='repo',
             storage_config={},
             local_borg_version='2.3.4',
@@ -85,18 +110,19 @@ def test_create_repository_raises_for_unknown_rinfo_command_error():
         )
 
 
-def test_create_repository_with_key_repository_calls_borg_with_other_repo_flag():
+def test_create_repository_with_source_repository_calls_borg_with_other_repo_flag():
     insert_rinfo_command_not_found_mock()
     insert_rcreate_command_mock(RCREATE_COMMAND + ('--other-repo', 'other.borg', '--repo', 'repo'))
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
         encryption_mode='repokey',
-        key_repository='other.borg',
+        source_repository='other.borg',
     )
 
 
@@ -107,6 +133,7 @@ def test_create_repository_with_copy_crypt_key_calls_borg_with_copy_crypt_key_fl
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -122,6 +149,7 @@ def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -137,6 +165,7 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -152,6 +181,7 @@ def test_create_repository_with_make_parent_dirs_calls_borg_with_make_parent_dir
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -168,7 +198,11 @@ def test_create_repository_with_log_info_calls_borg_with_info_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
-        repository='repo', storage_config={}, local_borg_version='2.3.4', encryption_mode='repokey'
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
     )
 
 
@@ -180,7 +214,11 @@ def test_create_repository_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
-        repository='repo', storage_config={}, local_borg_version='2.3.4', encryption_mode='repokey'
+        dry_run=False,
+        repository='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        encryption_mode='repokey',
     )
 
 
@@ -191,6 +229,7 @@ def test_create_repository_with_local_path_calls_borg_via_local_path():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -206,6 +245,7 @@ def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={},
         local_borg_version='2.3.4',
@@ -221,6 +261,7 @@ def test_create_repository_with_extra_borg_options_calls_borg_with_extra_options
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
 
     module.create_repository(
+        dry_run=False,
         repository='repo',
         storage_config={'extra_borg_options': {'rcreate': '--extra --options'}},
         local_borg_version='2.3.4',

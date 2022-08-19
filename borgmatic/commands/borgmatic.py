@@ -26,6 +26,7 @@ from borgmatic.borg import prune as borg_prune
 from borgmatic.borg import rcreate as borg_rcreate
 from borgmatic.borg import rinfo as borg_rinfo
 from borgmatic.borg import rlist as borg_rlist
+from borgmatic.borg import transfer as borg_transfer
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -254,15 +255,27 @@ def run_actions(
     if 'rcreate' in arguments:
         logger.info('{}: Creating repository'.format(repository))
         borg_rcreate.create_repository(
+            global_arguments.dry_run,
             repository,
             storage,
             local_borg_version,
             arguments['rcreate'].encryption_mode,
-            arguments['rcreate'].key_repository,
+            arguments['rcreate'].source_repository,
             arguments['rcreate'].copy_crypt_key,
             arguments['rcreate'].append_only,
             arguments['rcreate'].storage_quota,
             arguments['rcreate'].make_parent_dirs,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+    if 'transfer' in arguments:
+        logger.info(f'{repository}: Transferring archives to repository')
+        borg_transfer.transfer_archives(
+            global_arguments.dry_run,
+            repository,
+            storage,
+            local_borg_version,
+            transfer_arguments=arguments['transfer'],
             local_path=local_path,
             remote_path=remote_path,
         )

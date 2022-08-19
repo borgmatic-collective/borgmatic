@@ -241,15 +241,15 @@ def make_parsers():
         required=True,
     )
     rcreate_group.add_argument(
-        '--key-repository',
+        '--source-repository',
         '--other-repo',
-        metavar='SOURCE_REPOSITORY',
+        metavar='KEY_REPOSITORY',
         help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
         '--copy-crypt-key',
         action='store_true',
-        help='Copy the crypt key used for authenticated encryption from the key repository, defaults to a new random key (Borg 2.x+ only)',
+        help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
         '--append-only', action='store_true', help='Create an append-only repository',
@@ -263,6 +263,53 @@ def make_parsers():
         help='Create any missing parent directories of the repository directory',
     )
     rcreate_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    transfer_parser = subparsers.add_parser(
+        'transfer',
+        aliases=SUBPARSER_ALIASES['transfer'],
+        help='Transfer archives from one repository to another, optionally upgrading the transferred data',
+        description='Transfer archives from one repository to another, optionally upgrading the transferred data',
+        add_help=False,
+    )
+    transfer_group = transfer_parser.add_argument_group('transfer arguments')
+    transfer_group.add_argument(
+        '--repository',
+        help='Path of existing destination repository to transfer archives to, defaults to the configured repository if there is only one',
+    )
+    transfer_group.add_argument(
+        '--source-repository',
+        help='Path of existing source repository to transfer archives from',
+        required=True,
+    )
+    transfer_group.add_argument(
+        '--archive',
+        help='Name of single archive to transfer (or "latest"), defaults to transferring all archives',
+    )
+    transfer_group.add_argument(
+        '--upgrader',
+        help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
+        required=True,
+    )
+    transfer_group.add_argument(
+        '-a',
+        '--glob-archives',
+        metavar='GLOB',
+        help='Only transfer archives with names matching this glob',
+    )
+    transfer_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    transfer_group.add_argument(
+        '--first',
+        metavar='N',
+        help='Only transfer first N archives after other filters are applied',
+    )
+    transfer_group.add_argument(
+        '--last', metavar='N', help='Only transfer last N archives after other filters are applied'
+    )
+    transfer_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -760,15 +807,21 @@ def parse_arguments(*unparsed_arguments):
             'The --excludes flag has been replaced with exclude_patterns in configuration.'
         )
 
-    if 'rcreate' in arguments and arguments['global'].dry_run:
-        raise ValueError('The rcreate/init action cannot be used with the --dry-run flag.')
-
     if (
         ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('rinfo' in arguments and 'info' in arguments and arguments['rinfo'].json)
     ):
         raise ValueError('With the --json flag, multiple actions cannot be used together.')
+
+    if (
+        'transfer' in arguments
+        and arguments['transfer'].archive
+        and arguments['transfer'].glob_archives
+    ):
+        raise ValueError(
+            'With the transfer action, only one of --archive and --glob-archives flags can be used.'
+        )
 
     if 'info' in arguments and (
         (arguments['info'].archive and arguments['info'].prefix)

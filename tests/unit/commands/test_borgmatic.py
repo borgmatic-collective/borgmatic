@@ -346,12 +346,36 @@ def test_run_actions_does_not_raise_for_rcreate_action():
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'rcreate': flexmock(
             encryption_mode=flexmock(),
-            key_repository=flexmock(),
+            source_repository=flexmock(),
             copy_crypt_key=flexmock(),
             append_only=flexmock(),
             storage_quota=flexmock(),
             make_parent_dirs=flexmock(),
         ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_transfer_action():
+    flexmock(module.borg_transfer).should_receive('transfer_archives')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'transfer': flexmock(),
     }
 
     list(

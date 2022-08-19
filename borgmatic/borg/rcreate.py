@@ -12,11 +12,12 @@ RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
 
 
 def create_repository(
+    dry_run,
     repository,
     storage_config,
     local_borg_version,
     encryption_mode,
-    key_repository=None,
+    source_repository=None,
     copy_crypt_key=False,
     append_only=None,
     storage_quota=None,
@@ -25,10 +26,10 @@ def create_repository(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage configuration dict, the local Borg version, a
-    Borg encryption mode, the path to another repo whose key material should be reused, whether the
-    repository should be append-only, and the storage quota to use, create the repository. If the
-    repository already exists, then log and skip creation.
+    Given a dry-run flag, a local or remote repository path, a storage configuration dict, the local
+    Borg version, a Borg encryption mode, the path to another repo whose key material should be
+    reused, whether the repository should be append-only, and the storage quota to use, create the
+    repository. If the repository already exists, then log and skip creation.
     '''
     try:
         rinfo.display_repository_info(
@@ -39,7 +40,7 @@ def create_repository(
             local_path,
             remote_path,
         )
-        logger.info('Repository already exists. Skipping creation.')
+        logger.info(f'{repository}: Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:
         if error.returncode != RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
@@ -55,7 +56,7 @@ def create_repository(
             else ('init',)
         )
         + (('--encryption', encryption_mode) if encryption_mode else ())
-        + (('--other-repo', key_repository) if key_repository else ())
+        + (('--other-repo', source_repository) if source_repository else ())
         + (('--copy-crypt-key',) if copy_crypt_key else ())
         + (('--append-only',) if append_only else ())
         + (('--storage-quota', storage_quota) if storage_quota else ())
@@ -66,6 +67,10 @@ def create_repository(
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository, local_borg_version)
     )
+
+    if dry_run:
+        logging.info(f'{repository}: Skipping repository creation (dry run)')
+        return
 
     # Do not capture output here, so as to support interactive prompts.
     execute_command(

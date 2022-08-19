@@ -39,10 +39,13 @@ def compact_segments(
         + flags.make_repository_flags(repository, local_borg_version)
     )
 
-    if not dry_run:
-        execute_command(
-            full_command,
-            output_log_level=logging.INFO,
-            borg_local_path=local_path,
-            extra_environment=environment.make_environment(storage_config),
-        )
+    if dry_run:
+        logging.info(f'{repository}: Skipping compact (dry run)')
+        return
+
+    execute_command(
+        full_command,
+        output_log_level=logging.INFO,
+        borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
+    )
