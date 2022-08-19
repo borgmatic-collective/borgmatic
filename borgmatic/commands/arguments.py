@@ -269,8 +269,8 @@ def make_parsers():
     transfer_parser = subparsers.add_parser(
         'transfer',
         aliases=SUBPARSER_ALIASES['transfer'],
-        help='Transfer archives from one repository to another, optionally upgrading the transferred data',
-        description='Transfer archives from one repository to another, optionally upgrading the transferred data',
+        help='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
+        description='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
         add_help=False,
     )
     transfer_group = transfer_parser.add_argument_group('transfer arguments')
@@ -290,7 +290,6 @@ def make_parsers():
     transfer_group.add_argument(
         '--upgrader',
         help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
-        required=True,
     )
     transfer_group.add_argument(
         '-a',

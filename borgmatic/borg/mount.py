@@ -42,7 +42,11 @@ def mount_archive(
                 + ('--glob-archives', archive)
             )
             if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-            else flags.make_repository_archive_flags(repository, archive, local_borg_version)
+            else (
+                flags.make_repository_archive_flags(repository, archive, local_borg_version)
+                if archive
+                else flags.make_repository_flags(repository, local_borg_version)
+            )
         )
         + (mount_point,)
         + (tuple(paths) if paths else ())
