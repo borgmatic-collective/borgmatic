@@ -9,14 +9,13 @@ eleventyNavigation:
 
 When the worst happens—or you want to test your backups—the first step is
 to figure out which archive to extract. A good way to do that is to use the
-`list` action:
+`rlist` action:
 
 ```bash
-borgmatic list
+borgmatic rlist
 ```
 
-(No borgmatic `list` action? Try the old-style `--list`, or upgrade
-borgmatic!)
+(No borgmatic `rlist` action? Try `list` instead or upgrade borgmatic!)
 
 That should yield output looking something like:
 
@@ -32,10 +31,9 @@ and therefore the latest timestamp, run a command like:
 borgmatic extract --archive host-2019-01-02T04:06:07.080910
 ```
 
-(No borgmatic `extract` action? Try the old-style `--extract`, or upgrade
-borgmatic!)
+(No borgmatic `extract` action? Upgrade borgmatic!)
 
-With newer versions of borgmatic, you can simplify this to:
+Or simplify this to:
 
 ```bash
 borgmatic extract --archive latest
@@ -43,7 +41,8 @@ borgmatic extract --archive latest
 
 The `--archive` value is the name of the archive to extract. This extracts the
 entire contents of the archive to the current directory, so make sure you're
-in the right place before running the command.
+in the right place before running the command—or see below about the
+`--destination` flag.
 
 
 ## Repository selection
@@ -65,13 +64,15 @@ everything from an archive. To do that, tack on one or more `--path` values.
 For instance:
 
 ```bash
-borgmatic extract --archive host-2019-... --path path/1 path/2
+borgmatic extract --archive latest --path path/1 path/2
 ```
 
 Note that the specified restore paths should not have a leading slash. Like a
-whole-archive extract, this also extracts into the current directory. So for
-example, if you happen to be in the directory `/var` and you run the `extract`
-command above, borgmatic will extract `/var/path/1` and `/var/path/2`.
+whole-archive extract, this also extracts into the current directory by
+default. So for example, if you happen to be in the directory `/var` and you
+run the `extract` command above, borgmatic will extract `/var/path/1` and
+`/var/path/2`.
+
 
 ## Extract to a particular destination
 
@@ -80,7 +81,7 @@ extract files to a particular destination directory, use the `--destination`
 flag:
 
 ```bash
-borgmatic extract --archive host-2019-... --destination /tmp
+borgmatic extract --archive latest --destination /tmp
 ```
 
 When using the `--destination` flag, be careful not to overwrite your system's
@@ -104,7 +105,7 @@ archive as a [FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)
 filesystem, you can use the `borgmatic mount` action. Here's an example:
 
 ```bash
-borgmatic mount --archive host-2019-... --mount-point /mnt
+borgmatic mount --archive latest --mount-point /mnt
 ```
 
 This mounts the entire archive on the given mount point `/mnt`, so that you
@@ -127,7 +128,7 @@ your archive, use the `--path` flag, similar to the `extract` action above.
 For instance:
 
 ```bash
-borgmatic mount --archive host-2019-... --mount-point /mnt --path var/lib
+borgmatic mount --archive latest --mount-point /mnt --path var/lib
 ```
 
 When you're all done exploring your files, unmount your mount point. No

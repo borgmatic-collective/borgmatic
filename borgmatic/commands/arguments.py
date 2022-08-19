@@ -4,7 +4,7 @@ from argparse import Action, ArgumentParser
 from borgmatic.config import collect
 
 SUBPARSER_ALIASES = {
-    'init': ['--init', '-I'],
+    'rcreate': ['init', '--init', '-I'],
     'prune': ['--prune', '-p'],
     'compact': [],
     'create': ['--create', '-C'],
@@ -14,8 +14,11 @@ SUBPARSER_ALIASES = {
     'mount': ['--mount', '-m'],
     'umount': ['--umount', '-u'],
     'restore': ['--restore', '-r'],
+    'rlist': [],
     'list': ['--list', '-l'],
+    'rinfo': [],
     'info': ['--info', '-i'],
+    'transfer': [],
     'borg': [],
 }
 
@@ -222,33 +225,92 @@ def make_parsers():
         metavar='',
         help='Specify zero or more actions. Defaults to prune, compact, create, and check. Use --help with action for details:',
     )
-    init_parser = subparsers.add_parser(
-        'init',
-        aliases=SUBPARSER_ALIASES['init'],
-        help='Initialize an empty Borg repository',
-        description='Initialize an empty Borg repository',
+    rcreate_parser = subparsers.add_parser(
+        'rcreate',
+        aliases=SUBPARSER_ALIASES['rcreate'],
+        help='Create a new, empty Borg repository',
+        description='Create a new, empty Borg repository',
         add_help=False,
     )
-    init_group = init_parser.add_argument_group('init arguments')
-    init_group.add_argument(
+    rcreate_group = rcreate_parser.add_argument_group('rcreate arguments')
+    rcreate_group.add_argument(
         '-e',
         '--encryption',
         dest='encryption_mode',
         help='Borg repository encryption mode',
         required=True,
     )
-    init_group.add_argument(
-        '--append-only',
-        dest='append_only',
+    rcreate_group.add_argument(
+        '--source-repository',
+        '--other-repo',
+        metavar='KEY_REPOSITORY',
+        help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
+    )
+    rcreate_group.add_argument(
+        '--copy-crypt-key',
         action='store_true',
-        help='Create an append-only repository',
+        help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key (Borg 2.x+ only)',
     )
-    init_group.add_argument(
-        '--storage-quota',
-        dest='storage_quota',
-        help='Create a repository with a fixed storage quota',
+    rcreate_group.add_argument(
+        '--append-only', action='store_true', help='Create an append-only repository',
     )
-    init_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    rcreate_group.add_argument(
+        '--storage-quota', help='Create a repository with a fixed storage quota',
+    )
+    rcreate_group.add_argument(
+        '--make-parent-dirs',
+        action='store_true',
+        help='Create any missing parent directories of the repository directory',
+    )
+    rcreate_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    transfer_parser = subparsers.add_parser(
+        'transfer',
+        aliases=SUBPARSER_ALIASES['transfer'],
+        help='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
+        description='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
+        add_help=False,
+    )
+    transfer_group = transfer_parser.add_argument_group('transfer arguments')
+    transfer_group.add_argument(
+        '--repository',
+        help='Path of existing destination repository to transfer archives to, defaults to the configured repository if there is only one',
+    )
+    transfer_group.add_argument(
+        '--source-repository',
+        help='Path of existing source repository to transfer archives from',
+        required=True,
+    )
+    transfer_group.add_argument(
+        '--archive',
+        help='Name of single archive to transfer (or "latest"), defaults to transferring all archives',
+    )
+    transfer_group.add_argument(
+        '--upgrader',
+        help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
+    )
+    transfer_group.add_argument(
+        '-a',
+        '--glob-archives',
+        metavar='GLOB',
+        help='Only transfer archives with names matching this glob',
+    )
+    transfer_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    transfer_group.add_argument(
+        '--first',
+        metavar='N',
+        help='Only transfer first N archives after other filters are applied',
+    )
+    transfer_group.add_argument(
+        '--last', metavar='N', help='Only transfer last N archives after other filters are applied'
+    )
+    transfer_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     prune_parser = subparsers.add_parser(
         'prune',
@@ -290,7 +352,7 @@ def make_parsers():
         dest='cleanup_commits',
         default=False,
         action='store_true',
-        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1',
+        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1 (flag in Borg 1.2 only)',
     )
     compact_group.add_argument(
         '--threshold',
@@ -305,8 +367,8 @@ def make_parsers():
     create_parser = subparsers.add_parser(
         'create',
         aliases=SUBPARSER_ALIASES['create'],
-        help='Create archives (actually perform backups)',
-        description='Create archives (actually perform backups)',
+        help='Create an archive (actually perform a backup)',
+        description='Create an archive (actually perform a backup)',
         add_help=False,
     )
     create_group = create_parser.add_argument_group('create arguments')
@@ -543,18 +605,54 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    rlist_parser = subparsers.add_parser(
+        'rlist',
+        aliases=SUBPARSER_ALIASES['rlist'],
+        help='List repository',
+        description='List the archives in a repository',
+        add_help=False,
+    )
+    rlist_group = rlist_parser.add_argument_group('rlist arguments')
+    rlist_group.add_argument(
+        '--repository', help='Path of repository to list, defaults to the configured repositories',
+    )
+    rlist_group.add_argument(
+        '--short', default=False, action='store_true', help='Output only archive names'
+    )
+    rlist_group.add_argument('--format', help='Format for archive listing')
+    rlist_group.add_argument(
+        '--json', default=False, action='store_true', help='Output results as JSON'
+    )
+    rlist_group.add_argument(
+        '-P', '--prefix', help='Only list archive names starting with this prefix'
+    )
+    rlist_group.add_argument(
+        '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
+    )
+    rlist_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    rlist_group.add_argument(
+        '--first', metavar='N', help='List first N archives after other filters are applied'
+    )
+    rlist_group.add_argument(
+        '--last', metavar='N', help='List last N archives after other filters are applied'
+    )
+    rlist_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     list_parser = subparsers.add_parser(
         'list',
         aliases=SUBPARSER_ALIASES['list'],
-        help='List archives',
-        description='List archives or the contents of an archive',
+        help='List archive',
+        description='List the files in an archive or search for a file across archives',
         add_help=False,
     )
     list_group = list_parser.add_argument_group('list arguments')
     list_group.add_argument(
-        '--repository', help='Path of repository to list, defaults to the configured repositories',
+        '--repository',
+        help='Path of repository containing archive to list, defaults to the configured repositories',
     )
-    list_group.add_argument('--archive', help='Name of archive to list (or "latest")')
+    list_group.add_argument('--archive', help='Name of the archive to list (or "latest")')
     list_group.add_argument(
         '--path',
         metavar='PATH',
@@ -570,7 +668,7 @@ def make_parsers():
         help='Partial paths or patterns to search for and list across multiple archives',
     )
     list_group.add_argument(
-        '--short', default=False, action='store_true', help='Output only archive or path names'
+        '--short', default=False, action='store_true', help='Output only path names'
     )
     list_group.add_argument('--format', help='Format for file listing')
     list_group.add_argument(
@@ -586,7 +684,7 @@ def make_parsers():
         '--successful',
         default=True,
         action='store_true',
-        help='Deprecated in favor of listing successful (non-checkpoint) backups by default in newer versions of Borg',
+        help='Deprecated; no effect. Newer versions of Borg shows successful (non-checkpoint) archives by default.',
     )
     list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -611,17 +709,34 @@ def make_parsers():
     )
     list_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
+    rinfo_parser = subparsers.add_parser(
+        'rinfo',
+        aliases=SUBPARSER_ALIASES['rinfo'],
+        help='Show repository summary information such as disk space used',
+        description='Show repository summary information such as disk space used',
+        add_help=False,
+    )
+    rinfo_group = rinfo_parser.add_argument_group('rinfo arguments')
+    rinfo_group.add_argument(
+        '--repository',
+        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+    )
+    rinfo_group.add_argument(
+        '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
+    )
+    rinfo_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
     info_parser = subparsers.add_parser(
         'info',
         aliases=SUBPARSER_ALIASES['info'],
-        help='Display summary information on archives',
-        description='Display summary information on archives',
+        help='Show archive summary information such as disk space used',
+        description='Show archive summary information such as disk space used',
         add_help=False,
     )
     info_group = info_parser.add_argument_group('info arguments')
     info_group.add_argument(
         '--repository',
-        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+        help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one',
     )
     info_group.add_argument('--archive', help='Name of archive to show info for (or "latest")')
     info_group.add_argument(
@@ -688,18 +803,32 @@ def parse_arguments(*unparsed_arguments):
 
     if arguments['global'].excludes_filename:
         raise ValueError(
-            'The --excludes option has been replaced with exclude_patterns in configuration'
+            'The --excludes flag has been replaced with exclude_patterns in configuration.'
         )
 
-    if 'init' in arguments and arguments['global'].dry_run:
-        raise ValueError('The init action cannot be used with the --dry-run option')
+    if (
+        ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
+        or ('list' in arguments and 'info' in arguments and arguments['list'].json)
+        or ('rinfo' in arguments and 'info' in arguments and arguments['rinfo'].json)
+    ):
+        raise ValueError('With the --json flag, multiple actions cannot be used together.')
 
     if (
-        'list' in arguments
-        and 'info' in arguments
-        and arguments['list'].json
-        and arguments['info'].json
+        'transfer' in arguments
+        and arguments['transfer'].archive
+        and arguments['transfer'].glob_archives
     ):
-        raise ValueError('With the --json option, list and info actions cannot be used together')
+        raise ValueError(
+            'With the transfer action, only one of --archive and --glob-archives flags can be used.'
+        )
+
+    if 'info' in arguments and (
+        (arguments['info'].archive and arguments['info'].prefix)
+        or (arguments['info'].archive and arguments['info'].glob_archives)
+        or (arguments['info'].prefix and arguments['info'].glob_archives)
+    ):
+        raise ValueError(
+            'With the info action, only one of --archive, --prefix, or --glob-archives flags can be used.'
+        )
 
     return arguments

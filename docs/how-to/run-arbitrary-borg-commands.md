@@ -46,12 +46,11 @@ options, as that part is provided by borgmatic.
 You can also specify Borg options for relevant commands:
 
 ```bash
-borgmatic borg list --progress
+borgmatic borg rlist --short
 ```
 
-This runs Borg's `list` command once on each configured borgmatic
-repository. However, the native `borgmatic list` action should be preferred
-for most use.
+This runs Borg's `rlist` command once on each configured borgmatic repository.
+However, the native `borgmatic rlist` action should be preferred for most use.
 
 What if you only want to run Borg on a single configured borgmatic repository
 when you've got several configured? Not a problem.
@@ -63,7 +62,7 @@ borgmatic borg --repository repo.borg break-lock
 And what about a single archive?
 
 ```bash
-borgmatic borg --archive your-archive-name list
+borgmatic borg --archive your-archive-name rlist
 ```
 
 ### Limitations

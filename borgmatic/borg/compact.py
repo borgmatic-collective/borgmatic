@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg import environment
+from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -10,6 +10,7 @@ def compact_segments(
     dry_run,
     repository,
     storage_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -17,8 +18,8 @@ def compact_segments(
     threshold=None,
 ):
     '''
-    Given dry-run flag, a local or remote repository path, and a storage config dict, compact Borg
-    segments in a repository.
+    Given dry-run flag, a local or remote repository path, a storage config dict, and the local
+    Borg version, compact the segments in a repository.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -35,13 +36,16 @@ def compact_segments(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + (repository,)
+        + flags.make_repository_flags(repository, local_borg_version)
     )
 
-    if not dry_run:
-        execute_command(
-            full_command,
-            output_log_level=logging.INFO,
-            borg_local_path=local_path,
-            extra_environment=environment.make_environment(storage_config),
-        )
+    if dry_run:
+        logging.info(f'{repository}: Skipping compact (dry run)')
+        return
+
+    execute_command(
+        full_command,
+        output_log_level=logging.INFO,
+        borg_local_path=local_path,
+        extra_environment=environment.make_environment(storage_config),
+    )

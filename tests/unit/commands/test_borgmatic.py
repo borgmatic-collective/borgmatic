@@ -340,13 +340,42 @@ def test_run_configuration_retries_timeout_multiple_repos():
     assert results == error_logs
 
 
-def test_run_actions_does_not_raise_for_init_action():
-    flexmock(module.borg_init).should_receive('initialize_repository')
+def test_run_actions_does_not_raise_for_rcreate_action():
+    flexmock(module.borg_rcreate).should_receive('create_repository')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
-        'init': flexmock(
-            encryption_mode=flexmock(), append_only=flexmock(), storage_quota=flexmock()
+        'rcreate': flexmock(
+            encryption_mode=flexmock(),
+            source_repository=flexmock(),
+            copy_crypt_key=flexmock(),
+            append_only=flexmock(),
+            storage_quota=flexmock(),
+            make_parent_dirs=flexmock(),
         ),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
+def test_run_actions_does_not_raise_for_transfer_action():
+    flexmock(module.borg_transfer).should_receive('transfer_archives')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'transfer': flexmock(),
     }
 
     list(
@@ -571,10 +600,35 @@ def test_run_actions_does_not_raise_for_mount_action():
     )
 
 
+def test_run_actions_does_not_raise_for_rlist_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_rlist).should_receive('list_repository')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'rlist': flexmock(repository=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
 def test_run_actions_does_not_raise_for_list_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
-    flexmock(module.borg_list).should_receive('list_archives')
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_list).should_receive('list_archive')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'list': flexmock(repository=flexmock(), archive=flexmock(), json=flexmock()),
@@ -597,9 +651,34 @@ def test_run_actions_does_not_raise_for_list_action():
     )
 
 
+def test_run_actions_does_not_raise_for_rinfo_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_rinfo).should_receive('display_repository_info')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'rinfo': flexmock(repository=flexmock(), json=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
 def test_run_actions_does_not_raise_for_info_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
     flexmock(module.borg_info).should_receive('display_archives_info')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
@@ -625,7 +704,7 @@ def test_run_actions_does_not_raise_for_info_action():
 
 def test_run_actions_does_not_raise_for_borg_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borg_list).should_receive('resolve_archive_name').and_return(flexmock())
+    flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())
     flexmock(module.borg_borg).should_receive('run_arbitrary_borg')
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
@@ -649,17 +728,19 @@ def test_run_actions_does_not_raise_for_borg_action():
     )
 
 
-def test_load_configurations_collects_parsed_configurations():
+def test_load_configurations_collects_parsed_configurations_and_logs():
     configuration = flexmock()
     other_configuration = flexmock()
+    test_expected_logs = [flexmock(), flexmock()]
+    other_expected_logs = [flexmock(), flexmock()]
     flexmock(module.validate).should_receive('parse_configuration').and_return(
-        configuration
-    ).and_return(other_configuration)
+        configuration, test_expected_logs
+    ).and_return(other_configuration, other_expected_logs)
 
     configs, logs = tuple(module.load_configurations(('test.yaml', 'other.yaml')))
 
     assert configs == {'test.yaml': configuration, 'other.yaml': other_configuration}
-    assert logs == []
+    assert logs == test_expected_logs + other_expected_logs
 
 
 def test_load_configurations_logs_warning_for_permission_error():
@@ -746,6 +827,7 @@ def test_get_local_path_without_local_path_defaults_to_borg():
 
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.command).should_receive('execute_hook').never()
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {}
 
@@ -757,6 +839,7 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 
 def test_collect_configuration_run_summary_executes_hooks_for_create():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'create': flexmock(), 'global': flexmock(monitoring_verbosity=1, dry_run=False)}
 
@@ -768,6 +851,7 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
+    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'extract': flexmock(repository='repo')}
@@ -795,6 +879,7 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_mount():
+    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'mount': flexmock(repository='repo')}
@@ -846,6 +931,7 @@ def test_collect_configuration_run_summary_logs_pre_hook_error():
 
 def test_collect_configuration_run_summary_logs_post_hook_error():
     flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(ValueError)
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
@@ -874,6 +960,7 @@ def test_collect_configuration_run_summary_logs_for_list_with_archive_and_reposi
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_list():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'list': flexmock(repository='repo', archive=None)}
 
@@ -916,6 +1003,7 @@ def test_collect_configuration_run_summary_logs_run_umount_error():
 
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return(['foo', 'bar']).and_return(
         ['baz']
     )

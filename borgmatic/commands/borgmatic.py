@@ -20,10 +20,13 @@ from borgmatic.borg import export_tar as borg_export_tar
 from borgmatic.borg import extract as borg_extract
 from borgmatic.borg import feature as borg_feature
 from borgmatic.borg import info as borg_info
-from borgmatic.borg import init as borg_init
 from borgmatic.borg import list as borg_list
 from borgmatic.borg import mount as borg_mount
 from borgmatic.borg import prune as borg_prune
+from borgmatic.borg import rcreate as borg_rcreate
+from borgmatic.borg import rinfo as borg_rinfo
+from borgmatic.borg import rlist as borg_rlist
+from borgmatic.borg import transfer as borg_transfer
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -249,14 +252,30 @@ def run_actions(
         'repositories': ','.join(location['repositories']),
     }
 
-    if 'init' in arguments:
-        logger.info('{}: Initializing repository'.format(repository))
-        borg_init.initialize_repository(
+    if 'rcreate' in arguments:
+        logger.info('{}: Creating repository'.format(repository))
+        borg_rcreate.create_repository(
+            global_arguments.dry_run,
             repository,
             storage,
-            arguments['init'].encryption_mode,
-            arguments['init'].append_only,
-            arguments['init'].storage_quota,
+            local_borg_version,
+            arguments['rcreate'].encryption_mode,
+            arguments['rcreate'].source_repository,
+            arguments['rcreate'].copy_crypt_key,
+            arguments['rcreate'].append_only,
+            arguments['rcreate'].storage_quota,
+            arguments['rcreate'].make_parent_dirs,
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+    if 'transfer' in arguments:
+        logger.info(f'{repository}: Transferring archives to repository')
+        borg_transfer.transfer_archives(
+            global_arguments.dry_run,
+            repository,
+            storage,
+            local_borg_version,
+            transfer_arguments=arguments['transfer'],
             local_path=local_path,
             remote_path=remote_path,
         )
@@ -275,6 +294,7 @@ def run_actions(
             repository,
             storage,
             retention,
+            local_borg_version,
             local_path=local_path,
             remote_path=remote_path,
             stats=arguments['prune'].stats,
@@ -302,6 +322,7 @@ def run_actions(
                 global_arguments.dry_run,
                 repository,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
                 progress=arguments['compact'].progress,
@@ -396,6 +417,7 @@ def run_actions(
             location,
             storage,
             consistency,
+            local_borg_version,
             local_path=local_path,
             remote_path=remote_path,
             progress=arguments['check'].progress,
@@ -429,8 +451,13 @@ def run_actions(
             borg_extract.extract_archive(
                 global_arguments.dry_run,
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['extract'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['extract'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['extract'].paths,
                 location,
@@ -462,12 +489,18 @@ def run_actions(
             borg_export_tar.export_tar_archive(
                 global_arguments.dry_run,
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['export-tar'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['export-tar'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['export-tar'].paths,
                 arguments['export-tar'].destination,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
                 tar_filter=arguments['export-tar'].tar_filter,
@@ -487,14 +520,20 @@ def run_actions(
 
             borg_mount.mount_archive(
                 repository,
-                borg_list.resolve_archive_name(
-                    repository, arguments['mount'].archive, storage, local_path, remote_path
+                borg_rlist.resolve_archive_name(
+                    repository,
+                    arguments['mount'].archive,
+                    storage,
+                    local_borg_version,
+                    local_path,
+                    remote_path,
                 ),
                 arguments['mount'].mount_point,
                 arguments['mount'].paths,
                 arguments['mount'].foreground,
                 arguments['mount'].options,
                 storage,
+                local_borg_version,
                 local_path=local_path,
                 remote_path=remote_path,
             )
@@ -520,8 +559,13 @@ def run_actions(
             if 'all' in restore_names:
                 restore_names = []
 
-            archive_name = borg_list.resolve_archive_name(
-                repository, arguments['restore'].archive, storage, local_path, remote_path
+            archive_name = borg_rlist.resolve_archive_name(
+                repository,
+                arguments['restore'].archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             found_names = set()
 
@@ -591,21 +635,63 @@ def run_actions(
                         ', '.join(missing_names)
                     )
                 )
-
+    if 'rlist' in arguments:
+        if arguments['rlist'].repository is None or validate.repositories_match(
+            repository, arguments['rlist'].repository
+        ):
+            rlist_arguments = copy.copy(arguments['rlist'])
+            if not rlist_arguments.json:  # pragma: nocover
+                logger.warning('{}: Listing repository'.format(repository))
+            json_output = borg_rlist.list_repository(
+                repository,
+                storage,
+                local_borg_version,
+                rlist_arguments=rlist_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            if json_output:  # pragma: nocover
+                yield json.loads(json_output)
     if 'list' in arguments:
         if arguments['list'].repository is None or validate.repositories_match(
             repository, arguments['list'].repository
         ):
             list_arguments = copy.copy(arguments['list'])
             if not list_arguments.json:  # pragma: nocover
-                logger.warning('{}: Listing archives'.format(repository))
-            list_arguments.archive = borg_list.resolve_archive_name(
-                repository, list_arguments.archive, storage, local_path, remote_path
+                if list_arguments.find_paths:
+                    logger.warning('{}: Searching archives'.format(repository))
+                else:
+                    logger.warning('{}: Listing archive'.format(repository))
+            list_arguments.archive = borg_rlist.resolve_archive_name(
+                repository,
+                list_arguments.archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
-            json_output = borg_list.list_archives(
+            json_output = borg_list.list_archive(
                 repository,
                 storage,
+                local_borg_version,
                 list_arguments=list_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
+            if json_output:  # pragma: nocover
+                yield json.loads(json_output)
+    if 'rinfo' in arguments:
+        if arguments['rinfo'].repository is None or validate.repositories_match(
+            repository, arguments['rinfo'].repository
+        ):
+            rinfo_arguments = copy.copy(arguments['rinfo'])
+            if not rinfo_arguments.json:  # pragma: nocover
+                logger.warning('{}: Displaying repository summary information'.format(repository))
+            json_output = borg_rinfo.display_repository_info(
+                repository,
+                storage,
+                local_borg_version,
+                rinfo_arguments=rinfo_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
             )
@@ -617,13 +703,19 @@ def run_actions(
         ):
             info_arguments = copy.copy(arguments['info'])
             if not info_arguments.json:  # pragma: nocover
-                logger.warning('{}: Displaying summary info for archives'.format(repository))
-            info_arguments.archive = borg_list.resolve_archive_name(
-                repository, info_arguments.archive, storage, local_path, remote_path
+                logger.warning('{}: Displaying archive summary information'.format(repository))
+            info_arguments.archive = borg_rlist.resolve_archive_name(
+                repository,
+                info_arguments.archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             json_output = borg_info.display_archives_info(
                 repository,
                 storage,
+                local_borg_version,
                 info_arguments=info_arguments,
                 local_path=local_path,
                 remote_path=remote_path,
@@ -635,12 +727,18 @@ def run_actions(
             repository, arguments['borg'].repository
         ):
             logger.warning('{}: Running arbitrary Borg command'.format(repository))
-            archive_name = borg_list.resolve_archive_name(
-                repository, arguments['borg'].archive, storage, local_path, remote_path
+            archive_name = borg_rlist.resolve_archive_name(
+                repository,
+                arguments['borg'].archive,
+                storage,
+                local_borg_version,
+                local_path,
+                remote_path,
             )
             borg_borg.run_arbitrary_borg(
                 repository,
                 storage,
+                local_borg_version,
                 options=arguments['borg'].options,
                 archive=archive_name,
                 local_path=local_path,
@@ -661,9 +759,10 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
     # Parse and load each configuration file.
     for config_filename in config_filenames:
         try:
-            configs[config_filename] = validate.parse_configuration(
+            configs[config_filename], parse_logs = validate.parse_configuration(
                 config_filename, validate.schema_filename(), overrides, resolve_env
             )
+            logs.extend(parse_logs)
         except PermissionError:
             logs.extend(
                 [
@@ -768,21 +867,21 @@ def collect_configuration_run_summary_logs(configs, arguments):
     any, to stdout.
     '''
     # Run cross-file validation checks.
-    if 'extract' in arguments:
-        repository = arguments['extract'].repository
-    elif 'list' in arguments and arguments['list'].archive:
-        repository = arguments['list'].repository
-    elif 'mount' in arguments:
-        repository = arguments['mount'].repository
-    else:
-        repository = None
+    repository = None
 
-    if repository:
-        try:
-            validate.guard_configuration_contains_repository(repository, configs)
-        except ValueError as error:
-            yield from log_error_records(str(error))
-            return
+    for action_name, action_arguments in arguments.items():
+        if hasattr(action_arguments, 'repository'):
+            repository = getattr(action_arguments, 'repository')
+            break
+
+    try:
+        if 'extract' in arguments or 'mount' in arguments:
+            validate.guard_single_repository_selected(repository, configs)
+
+        validate.guard_configuration_contains_repository(repository, configs)
+    except ValueError as error:
+        yield from log_error_records(str(error))
+        return
 
     if not configs:
         yield from log_error_records(

@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import environment, extract, info, state
+from borgmatic.borg import environment, extract, flags, rinfo, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -33,8 +33,6 @@ def parse_checks(consistency_config, only_checks=None):
 
     If no "checks" option is present in the config, return the DEFAULT_CHECKS. If a checks value
     has a name of "disabled", return an empty tuple, meaning that no checks should be run.
-
-    If the "data" check is present, then make sure the "archives" check is included as well.
     '''
     checks = only_checks or tuple(
         check_config['name']
@@ -47,9 +45,6 @@ def parse_checks(consistency_config, only_checks=None):
                 'Multiple checks are configured, but one of them is "disabled"; not running any checks'
             )
         return ()
-
-    if 'data' in checks and 'archives' not in checks:
-        return checks + ('archives',)
 
     return checks
 
@@ -164,18 +159,18 @@ def make_check_flags(checks, check_last=None, prefix=None):
         ('--repository-only',)
 
     However, if both "repository" and "archives" are in checks, then omit them from the returned
-    flags because Borg does both checks by default.
+    flags because Borg does both checks by default. If "data" is in checks, that implies "archives".
 
     Additionally, if a check_last value is given and "archives" is in checks, then include a
     "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
-    "--prefix" flag.
+    "--glob-archives" flag.
     '''
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
-        prefix_flags = ('--prefix', prefix) if prefix else ()
+        glob_archives_flags = ('--glob-archives', f'{prefix}*') if prefix else ()
     else:
         last_flags = ()
-        prefix_flags = ()
+        glob_archives_flags = ()
         if check_last:
             logger.info('Ignoring check_last option, as "archives" is not in consistency checks')
         if prefix:
@@ -183,7 +178,13 @@ def make_check_flags(checks, check_last=None, prefix=None):
                 'Ignoring consistency prefix option, as "archives" is not in consistency checks'
             )
 
-    common_flags = last_flags + prefix_flags + (('--verify-data',) if 'data' in checks else ())
+    if 'data' in checks:
+        data_flags = ('--verify-data',)
+        checks += ('archives',)
+    else:
+        data_flags = ()
+
+    common_flags = last_flags + glob_archives_flags + data_flags
 
     if {'repository', 'archives'}.issubset(set(checks)):
         return common_flags
@@ -240,6 +241,7 @@ def check_archives(
     location_config,
     storage_config,
     consistency_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     progress=None,
@@ -259,10 +261,11 @@ def check_archives(
     '''
     try:
         borg_repository_id = json.loads(
-            info.display_archives_info(
+            rinfo.display_repository_info(
                 repository,
                 storage_config,
-                argparse.Namespace(json=True, archive=None),
+                local_borg_version,
+                argparse.Namespace(json=True),
                 local_path,
                 remote_path,
             )
@@ -301,7 +304,7 @@ def check_archives(
             + verbosity_flags
             + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-            + (repository,)
+            + flags.make_repository_flags(repository, local_borg_version)
         )
 
         borg_environment = environment.make_environment(storage_config)
@@ -320,6 +323,6 @@ def check_archives(
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(
-            storage_config, repository, lock_wait, local_path, remote_path
+            storage_config, local_borg_version, repository, lock_wait, local_path, remote_path
         )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))

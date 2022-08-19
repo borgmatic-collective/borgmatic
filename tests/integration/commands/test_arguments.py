@@ -287,15 +287,6 @@ def test_parse_arguments_allows_init_and_create():
     module.parse_arguments('--config', 'myconfig', 'init', '--encryption', 'repokey', 'create')
 
 
-def test_parse_arguments_disallows_init_and_dry_run():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments(
-            '--config', 'myconfig', 'init', '--encryption', 'repokey', '--dry-run'
-        )
-
-
 def test_parse_arguments_disallows_repository_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -494,6 +485,56 @@ def test_parse_arguments_disallows_json_with_both_list_and_info():
 
     with pytest.raises(ValueError):
         module.parse_arguments('list', 'info', '--json')
+
+
+def test_parse_arguments_disallows_json_with_both_list_and_rinfo():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('list', 'rinfo', '--json')
+
+
+def test_parse_arguments_disallows_json_with_both_rinfo_and_info():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('rinfo', 'info', '--json')
+
+
+def test_parse_arguments_disallows_transfer_with_both_archive_and_glob_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments(
+            'transfer',
+            '--source-repository',
+            'source.borg',
+            '--archive',
+            'foo',
+            '--glob-archives',
+            '*bar',
+        )
+
+
+def test_parse_arguments_disallows_info_with_both_archive_and_glob_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('info', '--archive', 'foo', '--glob-archives', '*bar')
+
+
+def test_parse_arguments_disallows_info_with_both_archive_and_prefix():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('info', '--archive', 'foo', '--prefix', 'bar')
+
+
+def test_parse_arguments_disallows_info_with_both_prefix_and_glob_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('info', '--prefix', 'foo', '--glob-archives', '*bar')
 
 
 def test_parse_arguments_check_only_extract_does_not_raise_extract_subparser_error():

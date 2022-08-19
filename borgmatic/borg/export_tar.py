@@ -1,7 +1,7 @@
 import logging
 import os
 
-from borgmatic.borg import environment
+from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,7 @@ def export_tar_archive(
     paths,
     destination_path,
     storage_config,
+    local_borg_version,
     local_path='borg',
     remote_path=None,
     tar_filter=None,
@@ -22,10 +23,10 @@ def export_tar_archive(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    export from the archive, a destination path to export to, a storage configuration dict, optional
-    local and remote Borg paths, an optional filter program, whether to include per-file details,
-    and an optional number of path components to strip, export the archive into the given
-    destination path as a tar-formatted file.
+    export from the archive, a destination path to export to, a storage configuration dict, the
+    local Borg version, optional local and remote Borg paths, an optional filter program, whether to
+    include per-file details, and an optional number of path components to strip, export the archive
+    into the given destination path as a tar-formatted file.
 
     If the destination path is "-", then stream the output to stdout instead of to a file.
     '''
@@ -43,7 +44,11 @@ def export_tar_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + ('::'.join((repository if ':' in repository else os.path.abspath(repository), archive)),)
+        + flags.make_repository_archive_flags(
+            repository if ':' in repository else os.path.abspath(repository),
+            archive,
+            local_borg_version,
+        )
         + (destination_path,)
         + (tuple(paths) if paths else ())
     )

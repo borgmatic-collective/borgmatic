@@ -37,20 +37,35 @@ borgmatic --stats
 ## Existing backups
 
 borgmatic provides convenient actions for Borg's
-[list](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
-[info](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
+[`list`](https://borgbackup.readthedocs.io/en/stable/usage/list.html) and
+[`info`](https://borgbackup.readthedocs.io/en/stable/usage/info.html)
 functionality:
-
 
 ```bash
 borgmatic list
 borgmatic info
 ```
 
-You can change the output format of `borgmatic list` by specifying your own using `--format $FORMAT`. Refer to the official [borg list --format specs]( https://borgbackup.readthedocs.io/en/stable/usage/list.html#the-format-specifier-syntax) for available options.
+You can change the output format of `borgmatic list` by specifying your own
+with `--format $FORMAT`. Refer to the [borg list --format
+documentation](https://borgbackup.readthedocs.io/en/stable/usage/list.html#the-format-specifier-syntax)
+for available values.
 
-*(No borgmatic `list` or `info` actions? Try the old-style `--list` or
-`--info`. Or upgrade borgmatic!)*
+*(No borgmatic `list` or `info` actions? Upgrade borgmatic!)*
+
+<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
+There are also `rlist` and `rinfo` actions for displaying repository
+information with Borg 2.x:
+
+```bash
+borgmatic rlist
+borgmatic rinfo
+```
+
+See the [borgmatic command-line
+reference](https://torsion.org/borgmatic/docs/reference/command-line/) for
+more information.
+
 
 ### Searching for a file
 

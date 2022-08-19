@@ -1,19 +1,23 @@
 import logging
 
-from borgmatic.borg import environment
-from borgmatic.borg.flags import make_flags, make_flags_from_arguments
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
 
 
 def display_archives_info(
-    repository, storage_config, info_arguments, local_path='borg', remote_path=None
+    repository,
+    storage_config,
+    local_borg_version,
+    info_arguments,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, and the arguments to the info
-    action, display summary information for Borg archives in the repository or return JSON summary
-    information.
+    Given a local or remote repository path, a storage config dict, the local Borg version, and the
+    arguments to the info action, display summary information for Borg archives in the repository or
+    return JSON summary information.
     '''
     lock_wait = storage_config.get('lock_wait', None)
 
@@ -29,13 +33,25 @@ def display_archives_info(
             if logger.isEnabledFor(logging.DEBUG) and not info_arguments.json
             else ()
         )
-        + make_flags('remote-path', remote_path)
-        + make_flags('lock-wait', lock_wait)
-        + make_flags_from_arguments(info_arguments, excludes=('repository', 'archive'))
+        + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('lock-wait', lock_wait)
         + (
-            '::'.join((repository, info_arguments.archive))
-            if info_arguments.archive
-            else repository,
+            flags.make_flags('glob-archives', f'{info_arguments.prefix}*')
+            if info_arguments.prefix
+            else ()
+        )
+        + flags.make_flags_from_arguments(
+            info_arguments, excludes=('repository', 'archive', 'prefix')
+        )
+        + (
+            flags.make_repository_flags(repository, local_borg_version)
+            + (
+                flags.make_flags('glob-archives', info_arguments.archive)
+                if feature.available(
+                    feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
+                )
+                else ()
+            )
         )
     )
 

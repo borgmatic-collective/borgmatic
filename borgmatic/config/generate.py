@@ -283,7 +283,7 @@ def generate_sample_configuration(
 
     if source_filename:
         source_config = load.load_configuration(source_filename)
-        normalize.normalize(source_config)
+        normalize.normalize(source_filename, source_config)
 
     destination_config = merge_source_configuration_into_destination(
         _schema_to_sample_configuration(schema), source_config

@@ -289,6 +289,27 @@ def test_execute_command_with_processes_calls_full_command():
     assert output is None
 
 
+def test_execute_command_with_processes_returns_output_with_output_log_level_none():
+    full_command = ['foo', 'bar']
+    processes = (flexmock(),)
+    flexmock(module.os, environ={'a': 'b'})
+    process = flexmock(stdout=None)
+    flexmock(module.subprocess).should_receive('Popen').with_args(
+        full_command,
+        stdin=None,
+        stdout=module.subprocess.PIPE,
+        stderr=module.subprocess.STDOUT,
+        shell=False,
+        env=None,
+        cwd=None,
+    ).and_return(process).once()
+    flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
+
+    output = module.execute_command_with_processes(full_command, processes, output_log_level=None)
+
+    assert output == 'out'
+
+
 def test_execute_command_with_processes_calls_full_command_with_output_file():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)

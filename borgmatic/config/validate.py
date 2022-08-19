@@ -89,6 +89,9 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
        {'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
        'retention': {'keep_daily': 7}, 'consistency': {'checks': ['repository', 'archives']}}
 
+    Also return a sequence of logging.LogRecord instances containing any warnings about the
+    configuration.
+
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
@@ -99,7 +102,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         raise Validation_error(config_filename, (str(error),))
 
     override.apply_overrides(config, overrides)
-    normalize.normalize(config)
+    logs = normalize.normalize(config_filename, config)
     if resolve_env:
         environment.resolve_env_variables(config)
 
@@ -116,7 +119,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
 
     apply_logical_validation(config_filename, config)
 
-    return config
+    return config, logs
 
 
 def normalize_repository_path(repository):
@@ -140,27 +143,13 @@ def repositories_match(first, second):
 def guard_configuration_contains_repository(repository, configurations):
     '''
     Given a repository path and a dict mapping from config filename to corresponding parsed config
-    dict, ensure that the repository is declared exactly once in all of the configurations.
-
-    If no repository is given, then error if there are multiple configured repositories.
+    dict, ensure that the repository is declared exactly once in all of the configurations. If no
+    repository is given, skip this check.
 
     Raise ValueError if the repository is not found in a configuration, or is declared multiple
     times.
     '''
     if not repository:
-        count = len(
-            tuple(
-                config_repository
-                for config in configurations.values()
-                for config_repository in config['location']['repositories']
-            )
-        )
-
-        if count > 1:
-            raise ValueError(
-                'Can\'t determine which repository to use. Use --repository option to disambiguate'
-            )
-
         return
 
     count = len(
@@ -176,3 +165,26 @@ def guard_configuration_contains_repository(repository, configurations):
         raise ValueError('Repository {} not found in configuration files'.format(repository))
     if count > 1:
         raise ValueError('Repository {} found in multiple configuration files'.format(repository))
+
+
+def guard_single_repository_selected(repository, configurations):
+    '''
+    Given a repository path and a dict mapping from config filename to corresponding parsed config
+    dict, ensure either a single repository exists across all configuration files or a repository
+    path was given.
+    '''
+    if repository:
+        return
+
+    count = len(
+        tuple(
+            config_repository
+            for config in configurations.values()
+            for config_repository in config['location']['repositories']
+        )
+    )
+
+    if count != 1:
+        raise ValueError(
+            'Can\'t determine which repository to use. Use --repository to disambiguate'
+        )

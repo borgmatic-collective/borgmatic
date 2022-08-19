@@ -133,14 +133,13 @@ that you'd like supported.
 
 To restore a database dump from an archive, use the `borgmatic restore`
 action. But the first step is to figure out which archive to restore from. A
-good way to do that is to use the `list` action:
+good way to do that is to use the `rlist` action:
 
 ```bash
-borgmatic list
+borgmatic rlist
 ```
 
-(No borgmatic `list` action? Try the old-style `--list`, or upgrade
-borgmatic!)
+(No borgmatic `rlist` action? Try `list` instead or upgrade borgmatic!)
 
 That should yield output looking something like:
 

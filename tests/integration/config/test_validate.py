@@ -60,39 +60,39 @@ def test_parse_configuration_transforms_file_into_mapping():
         '''
     )
 
-    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
-    assert result == {
+    assert config == {
         'location': {'source_directories': ['/home', '/etc'], 'repositories': ['hostname.borg']},
         'retention': {'keep_daily': 7, 'keep_hourly': 24, 'keep_minutely': 60},
         'consistency': {'checks': [{'name': 'repository'}, {'name': 'archives'}]},
     }
+    assert logs == []
 
 
 def test_parse_configuration_passes_through_quoted_punctuation():
     escaped_punctuation = string.punctuation.replace('\\', r'\\').replace('"', r'\"')
 
     mock_config_and_schema(
-        '''
+        f'''
         location:
             source_directories:
-                - /home
+                - "/home/{escaped_punctuation}"
 
             repositories:
-                - "{}.borg"
-        '''.format(
-            escaped_punctuation
-        )
+                - test.borg
+        '''
     )
 
-    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
-    assert result == {
+    assert config == {
         'location': {
-            'source_directories': ['/home'],
-            'repositories': ['{}.borg'.format(string.punctuation)],
+            'source_directories': [f'/home/{string.punctuation}'],
+            'repositories': ['test.borg'],
         }
     }
+    assert logs == []
 
 
 def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
@@ -148,12 +148,13 @@ def test_parse_configuration_inlines_include():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
-    assert result == {
+    assert config == {
         'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
         'retention': {'keep_daily': 7, 'keep_hourly': 24},
     }
+    assert logs == []
 
 
 def test_parse_configuration_merges_include():
@@ -181,12 +182,13 @@ def test_parse_configuration_merges_include():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
-    assert result == {
+    assert config == {
         'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
         'retention': {'keep_daily': 1, 'keep_hourly': 24},
     }
+    assert logs == []
 
 
 def test_parse_configuration_raises_for_missing_config_file():
@@ -238,17 +240,18 @@ def test_parse_configuration_applies_overrides():
         '''
     )
 
-    result = module.parse_configuration(
+    config, logs = module.parse_configuration(
         '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['location.local_path=borg2']
     )
 
-    assert result == {
+    assert config == {
         'location': {
             'source_directories': ['/home'],
             'repositories': ['hostname.borg'],
             'local_path': 'borg2',
         }
     }
+    assert logs == []
 
 
 def test_parse_configuration_applies_normalization():
@@ -265,12 +268,13 @@ def test_parse_configuration_applies_normalization():
         '''
     )
 
-    result = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
-    assert result == {
+    assert config == {
         'location': {
             'source_directories': ['/home'],
             'repositories': ['hostname.borg'],
             'exclude_if_present': ['.nobackup'],
         }
     }
+    assert logs == []
