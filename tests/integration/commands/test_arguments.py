@@ -501,6 +501,21 @@ def test_parse_arguments_disallows_json_with_both_rinfo_and_info():
         module.parse_arguments('rinfo', 'info', '--json')
 
 
+def test_parse_arguments_disallows_transfer_with_both_archive_and_glob_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments(
+            'transfer',
+            '--source-repository',
+            'source.borg',
+            '--archive',
+            'foo',
+            '--glob-archives',
+            '*bar',
+        )
+
+
 def test_parse_arguments_disallows_info_with_both_archive_and_glob_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
