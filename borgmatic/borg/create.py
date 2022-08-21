@@ -203,7 +203,7 @@ def create_archive(
     progress=False,
     stats=False,
     json=False,
-    files=False,
+    list_files=False,
     stream_processes=None,
 ):
     '''
@@ -290,7 +290,7 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AME-') if files and not json and not progress else ())
+        + (('--list', '--filter', 'AME-') if list_files and not json and not progress else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (('--stats',) if stats and not json and not dry_run else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
@@ -304,7 +304,7 @@ def create_archive(
 
     if json:
         output_log_level = None
-    elif (stats or files) and logger.getEffectiveLevel() == logging.WARNING:
+    elif (stats or list_files) and logger.getEffectiveLevel() == logging.WARNING:
         output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO

@@ -107,13 +107,6 @@ def test_parse_arguments_with_list_json_overrides_default():
     assert arguments['list'].json is True
 
 
-def test_parse_arguments_with_dashed_list_json_overrides_default():
-    arguments = module.parse_arguments('--list', '--json')
-
-    assert 'list' in arguments
-    assert arguments['list'].json is True
-
-
 def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -127,14 +120,14 @@ def test_parse_arguments_with_no_actions_defaults_to_all_actions_enabled():
 def test_parse_arguments_with_no_actions_passes_argument_to_relevant_actions():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    arguments = module.parse_arguments('--stats', '--files')
+    arguments = module.parse_arguments('--stats', '--list')
 
     assert 'prune' in arguments
     assert arguments['prune'].stats
-    assert arguments['prune'].files
+    assert arguments['prune'].list_archives
     assert 'create' in arguments
     assert arguments['create'].stats
-    assert arguments['create'].files
+    assert arguments['create'].list_files
     assert 'check' in arguments
 
 
@@ -191,30 +184,10 @@ def test_parse_arguments_with_prune_action_leaves_other_actions_disabled():
     assert 'check' not in arguments
 
 
-def test_parse_arguments_with_dashed_prune_action_leaves_other_actions_disabled():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    arguments = module.parse_arguments('--prune')
-
-    assert 'prune' in arguments
-    assert 'create' not in arguments
-    assert 'check' not in arguments
-
-
 def test_parse_arguments_with_multiple_actions_leaves_other_action_disabled():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     arguments = module.parse_arguments('create', 'check')
-
-    assert 'prune' not in arguments
-    assert 'create' in arguments
-    assert 'check' in arguments
-
-
-def test_parse_arguments_with_multiple_dashed_actions_leaves_other_action_disabled():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    arguments = module.parse_arguments('--create', '--check')
 
     assert 'prune' not in arguments
     assert 'create' in arguments
@@ -246,12 +219,6 @@ def test_parse_arguments_allows_encryption_mode_with_init():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--config', 'myconfig', 'init', '--encryption', 'repokey')
-
-
-def test_parse_arguments_allows_encryption_mode_with_dashed_init():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--config', 'myconfig', '--init', '--encryption', 'repokey')
 
 
 def test_parse_arguments_requires_encryption_mode_with_init():
@@ -352,22 +319,10 @@ def test_parse_arguments_allows_archive_with_mount():
     )
 
 
-def test_parse_arguments_allows_archive_with_dashed_extract():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--config', 'myconfig', '--extract', '--archive', 'test')
-
-
 def test_parse_arguments_allows_archive_with_restore():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--config', 'myconfig', 'restore', '--archive', 'test')
-
-
-def test_parse_arguments_allows_archive_with_dashed_restore():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--config', 'myconfig', '--restore', '--archive', 'test')
 
 
 def test_parse_arguments_allows_archive_with_list():
@@ -448,23 +403,23 @@ def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_valu
         module.parse_arguments('--stats', 'list')
 
 
-def test_parse_arguments_with_files_and_create_flags_does_not_raise():
+def test_parse_arguments_with_list_and_create_flags_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    module.parse_arguments('--files', 'create', 'list')
+    module.parse_arguments('--list', 'create')
 
 
-def test_parse_arguments_with_files_and_prune_flags_does_not_raise():
+def test_parse_arguments_with_list_and_prune_flags_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    module.parse_arguments('--files', 'prune', 'list')
+    module.parse_arguments('--list', 'prune')
 
 
-def test_parse_arguments_with_files_flag_but_no_create_or_prune_or_restore_flag_raises_value_error():
+def test_parse_arguments_with_list_flag_but_no_relevant_action_raises_value_error():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
-        module.parse_arguments('--files', 'list')
+        module.parse_arguments('--list', 'rcreate')
 
 
 def test_parse_arguments_allows_json_with_list_or_info():
@@ -472,12 +427,6 @@ def test_parse_arguments_allows_json_with_list_or_info():
 
     module.parse_arguments('list', '--json')
     module.parse_arguments('info', '--json')
-
-
-def test_parse_arguments_allows_json_with_dashed_info():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    module.parse_arguments('--info', '--json')
 
 
 def test_parse_arguments_disallows_json_with_both_list_and_info():

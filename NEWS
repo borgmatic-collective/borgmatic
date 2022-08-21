@@ -21,6 +21,11 @@
  * #565: Fix handling of "repository" and "data" consistency checks to prevent invalid Borg flags.
  * #566: Modify "mount" and "extract" actions to require the "--repository" flag when multiple
    repositories are configured.
+ * #571: BREAKING: Remove old-style command-line action flags like "--create, "--list", etc. If
+   you're already using actions like "create" and "list" instead, this change should not affect you.
+ * #571: BREAKING: Rename "--files" flag on "prune" action to "--list", as it lists archives, not
+   files.
+ * #571: Add "--list" as alias for "--files" flag on "create" and "export-tar" actions.
  * Add support for disabling TLS verification in Healthchecks monitoring hook with "verify_tls"
    option.
 

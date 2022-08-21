@@ -219,7 +219,7 @@ def test_prune_archives_with_files_calls_borg_with_list_parameter_and_warning_ou
         storage_config={},
         retention_config=retention_config,
         local_borg_version='1.2.3',
-        files=True,
+        list_archives=True,
     )
 
 
@@ -238,7 +238,7 @@ def test_prune_archives_with_files_and_log_info_calls_borg_with_list_parameter_a
         storage_config={},
         retention_config=retention_config,
         local_borg_version='1.2.3',
-        files=True,
+        list_archives=True,
     )
 
 

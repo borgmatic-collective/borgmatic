@@ -219,7 +219,7 @@ def test_export_tar_archive_calls_borg_with_list_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
-        files=True,
+        list_files=True,
     )
 
 

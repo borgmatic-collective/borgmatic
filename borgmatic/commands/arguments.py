@@ -4,20 +4,20 @@ from argparse import Action, ArgumentParser
 from borgmatic.config import collect
 
 SUBPARSER_ALIASES = {
-    'rcreate': ['init', '--init', '-I'],
-    'prune': ['--prune', '-p'],
+    'rcreate': ['init', '-I'],
+    'prune': ['-p'],
     'compact': [],
-    'create': ['--create', '-C'],
-    'check': ['--check', '-k'],
-    'extract': ['--extract', '-x'],
-    'export-tar': ['--export-tar'],
-    'mount': ['--mount', '-m'],
-    'umount': ['--umount', '-u'],
-    'restore': ['--restore', '-r'],
+    'create': ['-C'],
+    'check': ['-k'],
+    'extract': ['-x'],
+    'export-tar': [],
+    'mount': ['-m'],
+    'umount': ['-u'],
+    'restore': ['-r'],
     'rlist': [],
-    'list': ['--list', '-l'],
+    'list': ['-l'],
     'rinfo': [],
-    'info': ['--info', '-i'],
+    'info': ['-i'],
     'transfer': [],
     'borg': [],
 }
@@ -328,7 +328,7 @@ def make_parsers():
         help='Display statistics of archive',
     )
     prune_group.add_argument(
-        '--files', dest='files', default=False, action='store_true', help='Show per-file details'
+        '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
     )
     prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
@@ -387,7 +387,7 @@ def make_parsers():
         help='Display statistics of archive',
     )
     create_group.add_argument(
-        '--files', dest='files', default=False, action='store_true', help='Show per-file details'
+        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
     )
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
@@ -505,14 +505,14 @@ def make_parsers():
         '--destination',
         metavar='PATH',
         dest='destination',
-        help='Path to destination export tar file, or "-" for stdout (but be careful about dirtying output with --verbosity or --files)',
+        help='Path to destination export tar file, or "-" for stdout (but be careful about dirtying output with --verbosity or --list)',
         required=True,
     )
     export_tar_group.add_argument(
         '--tar-filter', help='Name of filter program to pipe data through'
     )
     export_tar_group.add_argument(
-        '--files', default=False, action='store_true', help='Show per-file details'
+        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
     )
     export_tar_group.add_argument(
         '--strip-components',

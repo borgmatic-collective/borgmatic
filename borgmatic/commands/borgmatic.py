@@ -298,7 +298,7 @@ def run_actions(
             local_path=local_path,
             remote_path=remote_path,
             stats=arguments['prune'].stats,
-            files=arguments['prune'].files,
+            list_archives=arguments['prune'].list_archives,
         )
         command.execute_hook(
             hooks.get('after_prune'),
@@ -379,7 +379,7 @@ def run_actions(
             progress=arguments['create'].progress,
             stats=arguments['create'].stats,
             json=arguments['create'].json,
-            files=arguments['create'].files,
+            list_files=arguments['create'].list_files,
             stream_processes=stream_processes,
         )
         if json_output:  # pragma: nocover
@@ -504,7 +504,7 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
                 tar_filter=arguments['export-tar'].tar_filter,
-                files=arguments['export-tar'].files,
+                list_files=arguments['export-tar'].list_files,
                 strip_components=arguments['export-tar'].strip_components,
             )
     if 'mount' in arguments:

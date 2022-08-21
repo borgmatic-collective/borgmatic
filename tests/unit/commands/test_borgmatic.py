@@ -400,7 +400,7 @@ def test_run_actions_calls_hooks_for_prune_action():
     flexmock(module.command).should_receive('execute_hook').twice()
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
-        'prune': flexmock(stats=flexmock(), files=flexmock()),
+        'prune': flexmock(stats=flexmock(), list_archives=flexmock()),
     }
 
     list(
@@ -453,7 +453,7 @@ def test_run_actions_executes_and_calls_hooks_for_create_action():
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'create': flexmock(
-            progress=flexmock(), stats=flexmock(), json=flexmock(), files=flexmock()
+            progress=flexmock(), stats=flexmock(), json=flexmock(), list_files=flexmock()
         ),
     }
 
@@ -546,7 +546,7 @@ def test_run_actions_does_not_raise_for_export_tar_action():
             paths=flexmock(),
             destination=flexmock(),
             tar_filter=flexmock(),
-            files=flexmock(),
+            list_files=flexmock(),
             strip_components=flexmock(),
         ),
     }

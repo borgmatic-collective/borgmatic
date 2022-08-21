@@ -18,7 +18,7 @@ def export_tar_archive(
     local_path='borg',
     remote_path=None,
     tar_filter=None,
-    files=False,
+    list_files=False,
     strip_components=None,
 ):
     '''
@@ -39,7 +39,7 @@ def export_tar_archive(
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--list',) if files else ())
+        + (('--list',) if list_files else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
@@ -53,7 +53,7 @@ def export_tar_archive(
         + (tuple(paths) if paths else ())
     )
 
-    if files and logger.getEffectiveLevel() == logging.WARNING:
+    if list_files and logger.getEffectiveLevel() == logging.WARNING:
         output_log_level = logging.WARNING
     else:
         output_log_level = logging.INFO
