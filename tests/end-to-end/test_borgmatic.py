@@ -18,8 +18,9 @@ def generate_configuration(config_path, repository_path):
     config = (
         open(config_path)
         .read()
-        .replace('user@backupserver:sourcehostname.borg', repository_path)
-        .replace('- user@backupserver:{fqdn}', '')
+        .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
+        .replace('- ssh://user@backupserver/./{fqdn}', '')
+        .replace('- /var/local/backups/local.borg', '')
         .replace('- /home/user/path with spaces', '')
         .replace('- /home', '- {}'.format(config_path))
         .replace('- /etc', '')

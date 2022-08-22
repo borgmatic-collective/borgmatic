@@ -16,8 +16,9 @@ def generate_configuration(config_path, repository_path):
     config = (
         open(config_path)
         .read()
-        .replace('user@backupserver:sourcehostname.borg', repository_path)
-        .replace('- user@backupserver:{fqdn}', '')
+        .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
+        .replace('- ssh://user@backupserver/./{fqdn}', '')
+        .replace('- /var/local/backups/local.borg', '')
         .replace('- /home/user/path with spaces', '')
         .replace('- /home', '- {}'.format(config_path))
         .replace('- /etc', '')
@@ -32,11 +33,8 @@ def generate_configuration(config_path, repository_path):
 def test_override_get_normalized():
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    extract_path = os.path.join(temporary_directory, 'extract')
 
     original_working_directory = os.getcwd()
-    os.mkdir(extract_path)
-    os.chdir(extract_path)
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
