@@ -1,4 +1,4 @@
-1.7.0.dev0
+1.7.0
  * #463: Add "before_actions" and "after_actions" command hooks that run before/after all the
    actions for each repository. These new hooks are a good place to run per-repository steps like
    mounting/unmounting a remote filesystem.
