@@ -23,8 +23,7 @@ module.exports = function(eleventyConfig) {
         }
     };
     let markdownItAnchorOptions = {
-        permalink: true,
-        permalinkClass: "direct-link"
+        permalink: markdownItAnchor.permalink.headerLink()
     };
 
     eleventyConfig.setLibrary(

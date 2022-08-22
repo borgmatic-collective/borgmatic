@@ -530,3 +530,11 @@ main .elv-toc + h1 .direct-link {
 		display: none ;
 	}
 }
+
+.header-anchor {
+    text-decoration: none;
+}
+
+.header-anchor:hover::after {
+    content: " 🔗";
+}
