@@ -145,10 +145,10 @@ properties:
                     type: string
                 description: |
                     Any paths matching these patterns are excluded from backups.
-                    Globs and tildes are expanded. (Note however that a glob
-                    pattern must either start with a glob or be an absolute
-                    path.) Do not backslash spaces in path names. See the output
-                    of "borg help patterns" for more details.
+                    Globs and tildes are expanded. Note that a glob pattern must
+                    either start with a glob or be an absolute path. Do not
+                    backslash spaces in path names. See the output of "borg help
+                    patterns" for more details.
                 example:
                     - '*.pyc'
                     - /home/*/.cache
@@ -538,13 +538,22 @@ properties:
             prevent potential shell injection or privilege escalation.
         additionalProperties: false
         properties:
+            before_actions:
+                type: array
+                items:
+                    type: string
+                description: |
+                    List of one or more shell commands or scripts to execute
+                    before all the actions for each repository.
+                example:
+                    - echo "Starting actions."
             before_backup:
                 type: array
                 items:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    before creating a backup, run once per configuration file.
+                    before creating a backup, run once per repository.
                 example:
                     - echo "Starting a backup."
             before_prune:
@@ -553,7 +562,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    before pruning, run once per configuration file.
+                    before pruning, run once per repository.
                 example:
                     - echo "Starting pruning."
             before_compact:
@@ -562,7 +571,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    before compaction, run once per configuration file.
+                    before compaction, run once per repository.
                 example:
                     - echo "Starting compaction."
             before_check:
@@ -571,7 +580,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    before consistency checks, run once per configuration file.
+                    before consistency checks, run once per repository.
                 example:
                     - echo "Starting checks."
             before_extract:
@@ -580,7 +589,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    before extracting a backup, run once per configuration file.
+                    before extracting a backup, run once per repository.
                 example:
                     - echo "Starting extracting."
             after_backup:
@@ -589,7 +598,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    after creating a backup, run once per configuration file.
+                    after creating a backup, run once per repository.
                 example:
                     - echo "Finished a backup."
             after_compact:
@@ -598,7 +607,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    after compaction, run once per configuration file.
+                    after compaction, run once per repository.
                 example:
                     - echo "Finished compaction."
             after_prune:
@@ -607,7 +616,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    after pruning, run once per configuration file.
+                    after pruning, run once per repository.
                 example:
                     - echo "Finished pruning."
             after_check:
@@ -616,7 +625,7 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    after consistency checks, run once per configuration file.
+                    after consistency checks, run once per repository.
                 example:
                     - echo "Finished checks."
             after_extract:
@@ -625,9 +634,18 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    after extracting a backup, run once per configuration file.
+                    after extracting a backup, run once per repository.
                 example:
                     - echo "Finished extracting."
+            after_actions:
+                type: array
+                items:
+                    type: string
+                description: |
+                    List of one or more shell commands or scripts to execute
+                    after all actions for each repository.
+                example:
+                    - echo "Finished actions."
             on_error:
                 type: array
                 items:

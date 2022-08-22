@@ -8,18 +8,28 @@ eleventyNavigation:
 ## Multiple backup configurations
 
 You may find yourself wanting to create different backup policies for
-different applications on your system. For instance, you may want one backup
-configuration for your database data directory, and a different configuration
-for your user home directories.
+different applications on your system or even for different backup
+repositories. For instance, you might want one backup configuration for your
+database data directory and a different configuration for your user home
+directories. Or one backup configuration for your local backups with a
+different configuration for your remote repository.
 
 The way to accomplish that is pretty simple: Create multiple separate
 configuration files and place each one in a `/etc/borgmatic.d/` directory. For
-instance:
+instance, for applications:
 
 ```bash
 sudo mkdir /etc/borgmatic.d
 sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
 sudo generate-borgmatic-config --destination /etc/borgmatic.d/app2.yaml
+```
+
+Or, for repositories:
+
+```bash
+sudo mkdir /etc/borgmatic.d
+sudo generate-borgmatic-config --destination /etc/borgmatic.d/repo1.yaml
+sudo generate-borgmatic-config --destination /etc/borgmatic.d/repo2.yaml
 ```
 
 When you set up multiple configuration files like this, borgmatic will run
@@ -29,7 +39,8 @@ default, the traditional `/etc/borgmatic/config.yaml` as well.
 Each configuration file is interpreted independently, as if you ran borgmatic
 for each configuration file one at a time. In other words, borgmatic does not
 perform any merging of configuration files by default. If you'd like borgmatic
-to merge your configuration files, see below about configuration includes.
+to merge your configuration files, for instance to avoid duplication of
+settings, see below about configuration includes.
 
 Additionally, the `~/.config/borgmatic.d/` directory works the same way as
 `/etc/borgmatic.d`.

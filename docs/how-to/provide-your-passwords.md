@@ -25,8 +25,8 @@ storage:
 ```
 
 This uses the `MY_PASSPHRASE` environment variable as your encryption
-passphrase. Note that the `{` `}` brackets are required. Just `$MY_PASSPHRASE`
-will not work.
+passphrase. Note that the `{` `}` brackets are required. `$MY_PASSPHRASE` by
+itself will not work.
 
 In the case of `encryption_passphrase` in particular, an alternate approach
 is to use Borg's `BORG_PASSPHRASE` environment variable, which doesn't even

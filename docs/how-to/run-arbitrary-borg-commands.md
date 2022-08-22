@@ -50,7 +50,7 @@ borgmatic borg rlist --short
 ```
 
 This runs Borg's `rlist` command once on each configured borgmatic repository.
-However, the native `borgmatic rlist` action should be preferred for most use.
+(The native `borgmatic rlist` action should be preferred for most use.)
 
 What if you only want to run Borg on a single configured borgmatic repository
 when you've got several configured? Not a problem.

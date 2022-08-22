@@ -122,9 +122,8 @@ files.
 To upgrade to a new version of Borg, you can generally install a new version
 the same way you installed the previous version, paying attention to any
 instructions included with each Borg release changelog linked from the
-[releases page](https://github.com/borgbackup/borg/releases). However, some
-more major Borg releases require additional steps that borgmatic can help
-with.
+[releases page](https://github.com/borgbackup/borg/releases). Some more major
+Borg releases require additional steps that borgmatic can help with.
 
 
 ### Borg 1.2 to 2.0

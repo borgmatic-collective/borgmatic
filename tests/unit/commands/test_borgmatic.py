@@ -397,7 +397,9 @@ def test_run_actions_does_not_raise_for_transfer_action():
 
 def test_run_actions_calls_hooks_for_prune_action():
     flexmock(module.borg_prune).should_receive('prune_archives')
-    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').times(
+        4
+    )  # Before/after extract and before/after actions.
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'prune': flexmock(stats=flexmock(), list_archives=flexmock()),
@@ -423,7 +425,9 @@ def test_run_actions_calls_hooks_for_prune_action():
 def test_run_actions_calls_hooks_for_compact_action():
     flexmock(module.borg_feature).should_receive('available').and_return(True)
     flexmock(module.borg_compact).should_receive('compact_segments')
-    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').times(
+        4
+    )  # Before/after extract and before/after actions.
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'compact': flexmock(progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()),
@@ -448,7 +452,9 @@ def test_run_actions_calls_hooks_for_compact_action():
 
 def test_run_actions_executes_and_calls_hooks_for_create_action():
     flexmock(module.borg_create).should_receive('create_archive')
-    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').times(
+        4
+    )  # Before/after extract and before/after actions.
     flexmock(module.dispatch).should_receive('call_hooks').and_return({}).times(3)
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
@@ -477,7 +483,9 @@ def test_run_actions_executes_and_calls_hooks_for_create_action():
 def test_run_actions_calls_hooks_for_check_action():
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(module.borg_check).should_receive('check_archives')
-    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').times(
+        4
+    )  # Before/after extract and before/after actions.
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'check': flexmock(
@@ -505,7 +513,9 @@ def test_run_actions_calls_hooks_for_check_action():
 def test_run_actions_calls_hooks_for_extract_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borg_extract).should_receive('extract_archive')
-    flexmock(module.command).should_receive('execute_hook').twice()
+    flexmock(module.command).should_receive('execute_hook').times(
+        4
+    )  # Before/after extract and before/after actions.
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'extract': flexmock(

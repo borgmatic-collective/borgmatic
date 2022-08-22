@@ -252,6 +252,15 @@ def run_actions(
         'repositories': ','.join(location['repositories']),
     }
 
+    command.execute_hook(
+        hooks.get('before_actions'),
+        hooks.get('umask'),
+        config_filename,
+        'pre-actions',
+        global_arguments.dry_run,
+        **hook_context,
+    )
+
     if 'rcreate' in arguments:
         logger.info('{}: Creating repository'.format(repository))
         borg_rcreate.create_repository(
@@ -744,6 +753,15 @@ def run_actions(
                 local_path=local_path,
                 remote_path=remote_path,
             )
+
+    command.execute_hook(
+        hooks.get('after_actions'),
+        hooks.get('umask'),
+        config_filename,
+        'post-actions',
+        global_arguments.dry_run,
+        **hook_context,
+    )
 
 
 def load_configurations(config_filenames, overrides=None, resolve_env=True):

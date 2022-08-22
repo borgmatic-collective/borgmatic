@@ -1,4 +1,9 @@
 1.7.0.dev0
+ * #463: Add "before_actions" and "after_actions" command hooks that run before/after all the
+   actions for each repository. These new hooks are a good place to run per-repository steps like
+   mounting/unmounting a remote filesystem.
+ * #463: Update documentation to cover per-repository configurations:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/
  * #557: Support for Borg 2 while still working with Borg 1. This includes new borgmatic actions
    like "rcreate" (replaces "init"), "rlist" (list archives in repository), "rinfo" (show repository
    info), and "transfer" (for upgrading Borg repositories). For the most part, borgmatic tries to

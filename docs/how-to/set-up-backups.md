@@ -347,7 +347,7 @@ instead:
 sudo su -c "borgmatic --bash-completion > /usr/share/bash-completion/completions/borgmatic"
 ```
 
-Or, if you'd like to install the script for just the current user:
+Or, if you'd like to install the script for only the current user:
 
 ```bash
 mkdir --parents ~/.local/share/bash-completion/completions

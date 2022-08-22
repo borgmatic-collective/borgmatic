@@ -40,6 +40,13 @@ There are additional hooks that run before/after other actions as well. For
 instance, `before_prune` runs before a `prune` action for a repository, while
 `after_prune` runs after it.
 
+<span class="minilink minilink-addedin">New in version 1.7.0</span> The
+`before_actions` and `after_actions` hooks run before/after all the actions
+(like `create`, `prune`, etc.) for each repository. These hooks are a good
+place to run per-repository steps like mounting/unmounting a remote
+filesystem.
+
+
 ## Variable interpolation
 
 The before and after action hooks support interpolating particular runtime
