@@ -40,8 +40,9 @@ properties:
                     is used, then add local repository paths in the systemd
                     service file to the ReadWritePaths list.
                 example:
-                    - user@backupserver:sourcehostname.borg
-                    - "user@backupserver:{fqdn}"
+                    - ssh://user@backupserver/./sourcehostname.borg
+                    - ssh://user@backupserver/./{fqdn}"
+                    - /var/local/backups/local.borg
             working_directory:
                 type: string
                 description: |
