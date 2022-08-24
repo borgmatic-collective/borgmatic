@@ -60,8 +60,8 @@ def main():  # pragma: no cover
                 '    diff --unified {} {}'.format(args.source_filename, args.destination_filename)
             )
             print()
-        print('Please edit the file to suit your needs. The values are representative.')
-        print('All fields are optional except where indicated.')
+        print('This includes all available configuration options with example values. The few')
+        print('required options are indicated. Please edit the file to suit your needs.')
         print()
         print('If you ever need help: https://torsion.org/borgmatic/#issues')
     except (ValueError, OSError) as error:
