@@ -1,3 +1,12 @@
+1.7.1.dev0
+ * #542: Make the "source_directories" option optional. This is useful for "check"-only setups or
+   using "patterns" exclusively.
+ * #574: Fix for potential data loss (data not getting backed up) when the "patterns" option was
+   used with "source_directories" (or the "~/.borgmatic" path existed, which got injected into
+   "source_directories" implicitly). The fix is for borgmatic to convert "source_directories" into
+   patterns whenever "patterns" is used, working around a potential Borg bug:
+   https://github.com/borgbackup/borg/issues/6994
+
 1.7.0
  * #463: Add "before_actions" and "after_actions" command hooks that run before/after all the
    actions for each repository. These new hooks are a good place to run per-repository steps like

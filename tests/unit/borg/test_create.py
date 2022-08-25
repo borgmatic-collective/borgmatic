@@ -109,11 +109,20 @@ def test_deduplicate_directories_removes_child_paths_on_the_same_filesystem(
     assert module.deduplicate_directories(directories) == expected_directories
 
 
-def test_write_pattern_file_does_not_raise():
-    temporary_file = flexmock(name='filename', write=lambda mode: None, flush=lambda: None)
+def test_write_pattern_file_writes_pattern_lines():
+    temporary_file = flexmock(name='filename', flush=lambda: None)
+    temporary_file.should_receive('write').with_args('R /foo\n+ /foo/bar')
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
 
-    module.write_pattern_file(['exclude'])
+    module.write_pattern_file(['R /foo', '+ /foo/bar'])
+
+
+def test_write_pattern_file_with_sources_writes_sources_as_roots():
+    temporary_file = flexmock(name='filename', flush=lambda: None)
+    temporary_file.should_receive('write').with_args('R /foo\n+ /foo/bar\nR /baz\nR /quux')
+    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
+
+    module.write_pattern_file(['R /foo', '+ /foo/bar'], sources=['/baz', '/quux'])
 
 
 def test_write_pattern_file_with_empty_exclude_patterns_does_not_raise():
@@ -357,7 +366,7 @@ def test_create_archive_calls_borg_with_environment():
     )
 
 
-def test_create_archive_with_patterns_calls_borg_with_patterns():
+def test_create_archive_with_patterns_calls_borg_with_patterns_including_converted_source_directories():
     pattern_flags = ('--patterns-from', 'patterns')
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -377,7 +386,7 @@ def test_create_archive_with_patterns_calls_borg_with_patterns():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + pattern_flags + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + pattern_flags + (f'repo::{DEFAULT_ARCHIVE_NAME}',),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',

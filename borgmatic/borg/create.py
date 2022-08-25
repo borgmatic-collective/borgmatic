@@ -98,16 +98,19 @@ def deduplicate_directories(directory_devices):
     return tuple(sorted(deduplicated))
 
 
-def write_pattern_file(patterns=None):
+def write_pattern_file(patterns=None, sources=None):
     '''
-    Given a sequence of patterns, write them to a named temporary file and return it. Return None
-    if no patterns are provided.
+    Given a sequence of patterns and an optional sequence of source directories, write them to a
+    named temporary file (with the source directories as additional roots) and return the file.
+    Return None if no patterns are provided.
     '''
     if not patterns:
         return None
 
     pattern_file = tempfile.NamedTemporaryFile('w')
-    pattern_file.write('\n'.join(patterns))
+    pattern_file.write(
+        '\n'.join(tuple(patterns) + tuple(f'R {source}' for source in (sources or [])))
+    )
     pattern_file.flush()
 
     return pattern_file
@@ -216,7 +219,7 @@ def create_archive(
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                location_config['source_directories']
+                location_config.get('source_directories', [])
                 + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
             )
         )
@@ -226,7 +229,7 @@ def create_archive(
         working_directory = os.path.expanduser(location_config.get('working_directory'))
     except TypeError:
         working_directory = None
-    pattern_file = write_pattern_file(location_config.get('patterns'))
+    pattern_file = write_pattern_file(location_config.get('patterns'), sources)
     exclude_file = write_pattern_file(
         expand_home_directories(location_config.get('exclude_patterns'))
     )
@@ -299,7 +302,7 @@ def create_archive(
         + (('--json',) if json else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)
-        + sources
+        + (sources if not pattern_file else ())
     )
 
     if json:

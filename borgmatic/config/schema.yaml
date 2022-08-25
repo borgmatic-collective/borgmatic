@@ -11,7 +11,6 @@ properties:
             https://borgbackup.readthedocs.io/en/stable/usage/create.html
             for details.
         required:
-            - source_directories
             - repositories
         additionalProperties: false
         properties:
@@ -20,8 +19,8 @@ properties:
                 items:
                     type: string
                 description: |
-                    List of source directories to backup (required). Globs and
-                    tildes are expanded. Do not backslash spaces in path names.
+                    List of source directories to backup. Globs and tildes are
+                    expanded. Do not backslash spaces in path names.
                 example:
                     - /home
                     - /etc
@@ -123,7 +122,8 @@ properties:
                     backups. Globs are expanded. (Tildes are not.) See the
                     output of "borg help patterns" for more details. Quote any
                     value if it contains leading punctuation, so it parses
-                    correctly.
+                    correctly. Note that only one of "patterns" and
+                    "source_directories" may be used.
                 example:
                     - 'R /'
                     - '- /home/*/.cache'

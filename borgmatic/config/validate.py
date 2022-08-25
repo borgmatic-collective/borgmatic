@@ -72,7 +72,7 @@ def apply_logical_validation(config_filename, parsed_configuration):
             raise Validation_error(
                 config_filename,
                 (
-                    'Unknown repository in the consistency section\'s check_repositories: {}'.format(
+                    'Unknown repository in the "consistency" section\'s "check_repositories": {}'.format(
                         repository
                     ),
                 ),
