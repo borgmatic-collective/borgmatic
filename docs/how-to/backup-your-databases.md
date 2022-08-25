@@ -92,7 +92,8 @@ Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
 If you would like to backup databases only and not source directories, you can
-specify an empty `source_directories` value (as it is a mandatory field):
+specify an empty `source_directories` value (as it is a mandatory field prior
+to borgmatic 1.7.1):
 
 ```yaml
 location:
@@ -101,6 +102,9 @@ hooks:
     mysql_databases:
         - name: all
 ```
+
+<span class="minilink minilink-addedin">New in version 1.7.1</span> You can
+omit `source_directories` entirely.
 
 ### External passwords
 
