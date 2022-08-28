@@ -41,7 +41,7 @@ ProtectSystem=full
 # ReadOnlyPaths=-/var/lib/my_backup_source
 # This will mount a tmpfs on top of /root and pass through needed paths
 # ProtectHome=tmpfs
-# BindPaths=-/root/.cache/borg -/root/.cache/borg -/root/.borgmatic
+# BindPaths=-/root/.cache/borg -/root/.config/borg -/root/.borgmatic
 
 # May interfere with running external programs within borgmatic hooks.
 CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_NET_RAW
