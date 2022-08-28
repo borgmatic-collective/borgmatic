@@ -278,7 +278,7 @@ def test_log_outputs_with_unfinished_process_re_polls():
     flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
 
     process = subprocess.Popen(['true'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    flexmock(process).should_receive('poll').and_return(None).and_return(0).twice()
+    flexmock(process).should_receive('poll').and_return(None).and_return(0).times(3)
     flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
 
     module.log_outputs(

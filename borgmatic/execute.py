@@ -69,6 +69,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     }
     output_buffers = list(process_for_output_buffer.keys())
     captured_outputs = collections.defaultdict(list)
+    still_running = True
 
     # Log output for each process until they all exit.
     while True:
@@ -108,6 +109,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                     else:
                         logger.log(output_log_level, line)
 
+        if not still_running:
+            break
+
         still_running = False
 
         for process in processes:
@@ -136,9 +140,6 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                 raise subprocess.CalledProcessError(
                     exit_code, command_for_process(process), '\n'.join(last_lines)
                 )
-
-        if not still_running:
-            break
 
     if captured_outputs:
         return {
