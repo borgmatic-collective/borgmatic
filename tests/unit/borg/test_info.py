@@ -12,31 +12,9 @@ def test_display_archives_info_calls_borg_with_parameters():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--repo', 'repo'),
-        output_log_level=logging.WARNING,
-        borg_local_path='borg',
-        extra_environment=None,
-    )
-
-    module.display_archives_info(
-        repository='repo',
-        storage_config={},
-        local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
-    )
-
-
-def test_display_archives_info_without_borg_features_calls_borg_without_repo_flag():
-    flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'info', 'repo'),
         output_log_level=logging.WARNING,
         borg_local_path='borg',
         extra_environment=None,
@@ -54,7 +32,6 @@ def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--info', '--repo', 'repo'),
@@ -75,7 +52,6 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
@@ -99,7 +75,6 @@ def test_display_archives_info_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--debug', '--show-rc', '--repo', 'repo'),
@@ -121,7 +96,6 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
@@ -145,7 +119,6 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
@@ -171,7 +144,6 @@ def test_display_archives_info_with_archive_calls_borg_with_glob_archives_parame
     ).and_return(('--glob-archives', 'archive'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--repo', 'repo', '--glob-archives', 'archive'),
@@ -188,31 +160,9 @@ def test_display_archives_info_with_archive_calls_borg_with_glob_archives_parame
     )
 
 
-def test_display_archives_info_with_archive_and_without_borg_features_calls_borg_with_repo_archive_parameter():
-    flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo::archive',))
-    flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'info', 'repo::archive'),
-        output_log_level=logging.WARNING,
-        borg_local_path='borg',
-        extra_environment=None,
-    )
-
-    module.display_archives_info(
-        repository='repo',
-        storage_config={},
-        local_borg_version='2.3.4',
-        info_arguments=flexmock(archive='archive', json=False, prefix=None),
-    )
-
-
 def test_display_archives_info_with_local_path_calls_borg_via_local_path():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
@@ -238,7 +188,6 @@ def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_para
     ).and_return(('--remote-path', 'borg1'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--remote-path', 'borg1', '--repo', 'repo'),
@@ -264,7 +213,6 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     storage_config = {'lock_wait': 5}
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--lock-wait', '5', '--repo', 'repo'),
@@ -288,7 +236,6 @@ def test_display_archives_info_with_prefix_calls_borg_with_glob_archives_paramet
     ).and_return(('--glob-archives', 'foo*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', '--glob-archives', 'foo*', '--repo', 'repo'),
@@ -313,7 +260,6 @@ def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
         (flag_name, 'value')
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
-    flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'info', flag_name, 'value', '--repo', 'repo'),

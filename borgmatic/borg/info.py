@@ -1,6 +1,6 @@
 import logging
 
-from borgmatic.borg import environment, feature, flags
+from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -43,16 +43,8 @@ def display_archives_info(
         + flags.make_flags_from_arguments(
             info_arguments, excludes=('repository', 'archive', 'prefix')
         )
-        + (
-            flags.make_repository_flags(repository, local_borg_version)
-            + (
-                flags.make_flags('glob-archives', info_arguments.archive)
-                if feature.available(
-                    feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
-                )
-                else ()
-            )
-        )
+        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_flags('glob-archives', info_arguments.archive)
     )
 
     return execute_command(
