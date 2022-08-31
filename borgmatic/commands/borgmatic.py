@@ -669,8 +669,8 @@ def run_actions(
             if not list_arguments.json:  # pragma: nocover
                 if list_arguments.find_paths:
                     logger.warning('{}: Searching archives'.format(repository))
-                else:
-                    logger.warning('{}: Listing archive'.format(repository))
+                elif not list_arguments.archive:
+                    logger.warning('{}: Listing archives'.format(repository))
             list_arguments.archive = borg_rlist.resolve_archive_name(
                 repository,
                 list_arguments.archive,
