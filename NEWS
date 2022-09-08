@@ -1,6 +1,8 @@
 1.7.2.dev0
  * #577: Fix regression in which "borgmatic info --archive ..." showed repository info instead of
    archive info with Borg 1.
+ * #582: Fix hang when database hooks are enabled and "patterns" contains a parent directory of
+   "~/.borgmatic".
 
 1.7.1
  * #542: Make the "source_directories" option optional. This is useful for "check"-only setups or

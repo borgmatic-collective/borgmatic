@@ -59,7 +59,7 @@ def map_directories_to_devices(directories):
     }
 
 
-def deduplicate_directories(directory_devices):
+def deduplicate_directories(directory_devices, additional_directory_devices):
     '''
     Given a map from directory to the identifier for the device on which that directory resides,
     return the directories as a sorted tuple with all duplicate child directories removed. For
@@ -74,22 +74,28 @@ def deduplicate_directories(directory_devices):
     there are cases where Borg coming across the same file twice will result in duplicate reads and
     even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
     Borg.
+
+    If any additional directory devices are given, also deduplicate against them, but don't include
+    them in the returned directories.
     '''
     deduplicated = set()
     directories = sorted(directory_devices.keys())
+    additional_directories = sorted(additional_directory_devices.keys())
+    all_devices = {**directory_devices, **additional_directory_devices}
 
     for directory in directories:
         deduplicated.add(directory)
         parents = pathlib.PurePath(directory).parents
 
-        # If another directory in the given list is a parent of current directory (even n levels
-        # up) and both are on the same filesystem, then the current directory is a duplicate.
-        for other_directory in directories:
+        # If another directory in the given list (or the additional list) is a parent of current
+        # directory (even n levels up) and both are on the same filesystem, then the current
+        # directory is a duplicate.
+        for other_directory in directories + additional_directories:
             for parent in parents:
                 if (
                     pathlib.PurePath(other_directory) == parent
-                    and directory_devices[directory] is not None
-                    and directory_devices[other_directory] == directory_devices[directory]
+                    and all_devices[directory] is not None
+                    and all_devices[other_directory] == all_devices[directory]
                 ):
                     if directory in deduplicated:
                         deduplicated.remove(directory)
@@ -195,6 +201,23 @@ def borgmatic_source_directories(borgmatic_source_directory):
     )
 
 
+ROOT_PATTERN_PREFIX = 'R '
+
+
+def pattern_root_directories(patterns=None):
+    '''
+    Given a sequence of patterns, parse out and return just the root directories.
+    '''
+    if not patterns:
+        return []
+
+    return [
+        pattern.split(ROOT_PATTERN_PREFIX, maxsplit=1)[1]
+        for pattern in patterns
+        if pattern.startswith(ROOT_PATTERN_PREFIX)
+    ]
+
+
 def create_archive(
     dry_run,
     repository,
@@ -222,7 +245,10 @@ def create_archive(
                 location_config.get('source_directories', [])
                 + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
             )
-        )
+        ),
+        additional_directory_devices=map_directories_to_devices(
+            expand_directories(pattern_root_directories(location_config.get('patterns')))
+        ),
     )
 
     try:
