@@ -215,8 +215,9 @@ databases that share the exact same name on different hosts.
 setting to support dump and restore streaming, you'll need to ensure that any
 special files are excluded from backups (named pipes, block devices,
 character devices, and sockets) to prevent hanging. Try a command like
-`find /your/source/path -type c,b,p,s` to find such files. Common directories
-to exclude are `/dev` and `/run`, but that may not be exhaustive.
+`find /your/source/path -type b -or -type c -or -type p -or -type s` to find
+such files. Common directories to exclude are `/dev` and `/run`, but that may
+not be exhaustive.
 
 
 ### Manual restoration
