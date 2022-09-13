@@ -30,8 +30,8 @@ based on your borgmatic configuration files or command-line arguments:
 
 ### borg action
 
-The way you run Borg with borgmatic is via the `borg` action. Here's a simple
-example:
+<span class="minilink minilink-addedin">New in version 1.5.15</span> The way
+you run Borg with borgmatic is via the `borg` action. Here's a simple example:
 
 ```bash
 borgmatic borg break-lock
