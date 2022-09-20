@@ -295,6 +295,11 @@ def create_archive(
 
     ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))
 
+    if stream_processes and location_config.get('read_special') is False:
+        logger.warning(
+            f'{repository}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+        )
+
     full_command = (
         tuple(local_path.split(' '))
         + ('create',)

@@ -1,3 +1,7 @@
+1.7.3
+ * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when
+   database hooks are enabled.
+
 1.7.2
  * #577: Fix regression in which "borgmatic info --archive ..." showed repository info instead of
    archive info with Borg 1.

@@ -1673,6 +1673,50 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     )
 
 
+def test_create_archive_with_stream_processes_ignores_read_special_false_logs_warning():
+    processes = flexmock()
+    flexmock(module).should_receive('borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').and_return(())
+    flexmock(module).should_receive('pattern_root_directories').and_return([])
+    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module).should_receive('ensure_files_readable')
+    flexmock(module.logger).should_receive('warning').once()
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('borg', 'create', '--one-file-system', '--read-special') + REPO_ARCHIVE_WITH_PATHS,
+        processes=processes,
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+        working_directory=None,
+        extra_environment=None,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+            'read_special': False,
+        },
+        storage_config={},
+        local_borg_version='1.2.3',
+        stream_processes=processes,
+    )
+
+
 def test_create_archive_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
