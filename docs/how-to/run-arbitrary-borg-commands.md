@@ -87,6 +87,9 @@ borgmatic's `borg` action is not without limitations:
    borgmatic action. In this case, only the Borg command is run.
  * Unlike normal borgmatic actions that support JSON, the `borg` action will
    not disable certain borgmatic logs to avoid interfering with JSON output.
+ * Unlike other borgmatic actions, the `borg` action captures (and logs) all
+   output, so interactive prompts or flags like `--progress` will not work as
+   expected.
 
 In general, this `borgmatic borg` feature should be considered an escape
 valve—a feature of second resort. In the long run, it's preferable to wrap
