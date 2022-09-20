@@ -1,4 +1,4 @@
-1.7.3
+1.7.3.dev0
  * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when
    database hooks are enabled.
 
