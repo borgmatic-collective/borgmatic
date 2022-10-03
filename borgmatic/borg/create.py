@@ -3,6 +3,7 @@ import itertools
 import logging
 import os
 import pathlib
+import stat
 import tempfile
 
 from borgmatic.borg import environment, feature, flags, state
@@ -104,16 +105,21 @@ def deduplicate_directories(directory_devices, additional_directory_devices):
     return tuple(sorted(deduplicated))
 
 
-def write_pattern_file(patterns=None, sources=None):
+def write_pattern_file(patterns=None, sources=None, pattern_file=None):
     '''
     Given a sequence of patterns and an optional sequence of source directories, write them to a
     named temporary file (with the source directories as additional roots) and return the file.
+    If an optional open pattern file is given, overwrite it instead of making a new temporary file.
     Return None if no patterns are provided.
     '''
     if not patterns:
         return None
 
-    pattern_file = tempfile.NamedTemporaryFile('w')
+    if pattern_file is None:
+        pattern_file = tempfile.NamedTemporaryFile('w')
+    else:
+        pattern_file.seek(0)
+
     pattern_file.write(
         '\n'.join(tuple(patterns) + tuple(f'R {source}' for source in (sources or [])))
     )
@@ -187,7 +193,7 @@ def make_exclude_flags(location_config, exclude_filename=None):
 DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 
 
-def borgmatic_source_directories(borgmatic_source_directory):
+def collect_borgmatic_source_directories(borgmatic_source_directory):
     '''
     Return a list of borgmatic-specific source directories used for state like database backups.
     '''
@@ -218,6 +224,58 @@ def pattern_root_directories(patterns=None):
     ]
 
 
+def special_file(path):
+    '''
+    Return whether the given path is a special file (character device, block device, or named pipe
+    / FIFO).
+    '''
+    mode = os.stat(path).st_mode
+    return stat.S_ISCHR(mode) or stat.S_ISBLK(mode) or stat.S_ISFIFO(mode)
+
+
+def any_parent_directories(path, candidate_parents):
+    '''
+    Return whether any of the given candidate parent directories are an actual parent of the given
+    path. This includes grandparents, etc.
+    '''
+    for parent in candidate_parents:
+        if pathlib.PurePosixPath(parent) in pathlib.PurePath(path).parents:
+            return True
+
+    return False
+
+
+def collect_special_file_paths(
+    create_command, local_path, working_directory, borg_environment, skip_directories
+):
+    '''
+    Given a Borg create command as a tuple, a local Borg path, a working directory, and a dict of
+    environment variables to pass to Borg, and a sequence of parent directories to skip, collect the
+    paths for any special files (character devices, block devices, and named pipes / FIFOs) that
+    Borg would encounter during a create. These are all paths that could cause Borg to hang if its
+    --read-special flag is used.
+    '''
+    paths_output = execute_command(
+        create_command + ('--dry-run', '--list'),
+        output_log_level=None,
+        borg_local_path=local_path,
+        working_directory=working_directory,
+        extra_environment=borg_environment,
+    )
+
+    paths = tuple(
+        path_line.split(' ', 1)[1]
+        for path_line in paths_output.split('\n')
+        if path_line and path_line.startswith('- ')
+    )
+
+    return tuple(
+        path
+        for path in paths
+        if special_file(path) and not any_parent_directories(path, skip_directories)
+    )
+
+
 def create_archive(
     dry_run,
     repository,
@@ -239,11 +297,13 @@ def create_archive(
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
     '''
+    borgmatic_source_directories = expand_directories(
+        collect_borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+    )
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                location_config.get('source_directories', [])
-                + borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+                tuple(location_config.get('source_directories', ())) + borgmatic_source_directories
             )
         ),
         additional_directory_devices=map_directories_to_devices(
@@ -265,6 +325,7 @@ def create_archive(
     upload_rate_limit = storage_config.get('upload_rate_limit', None)
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
+    read_special = True if (location_config.get('read_special') or stream_processes) else False
     files_cache = location_config.get('files_cache')
     archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
@@ -300,7 +361,7 @@ def create_archive(
             f'{repository}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
 
-    full_command = (
+    create_command = (
         tuple(local_path.split(' '))
         + ('create',)
         + make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
@@ -318,19 +379,14 @@ def create_archive(
         + atime_flags
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
-        + (('--read-special',) if (location_config.get('read_special') or stream_processes) else ())
+        + (('--read-special',) if read_special else ())
         + noflags_flags
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--list', '--filter', 'AME-') if list_files and not json and not progress else ())
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
-        + (('--stats',) if stats and not json and not dry_run else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
         + (('--dry-run',) if dry_run else ())
-        + (('--progress',) if progress else ())
-        + (('--json',) if json else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)
         + (sources if not pattern_file else ())
@@ -349,9 +405,39 @@ def create_archive(
 
     borg_environment = environment.make_environment(storage_config)
 
+    # If read_special is enabled, exclude files that might cause Borg to hang.
+    if read_special:
+        special_file_paths = collect_special_file_paths(
+            create_command,
+            local_path,
+            working_directory,
+            borg_environment,
+            skip_directories=borgmatic_source_directories,
+        )
+        logger.warning(
+            f'{repository}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
+        )
+
+        exclude_file = write_pattern_file(
+            expand_home_directories(
+                tuple(location_config.get('exclude_patterns') or ()) + special_file_paths
+            ),
+            pattern_file=exclude_file,
+        )
+        if exclude_file:
+            create_command += make_exclude_flags(location_config, exclude_file.name)
+
+    create_command += (
+        (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
+        + (('--stats',) if stats and not json and not dry_run else ())
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
+        + (('--progress',) if progress else ())
+        + (('--json',) if json else ())
+    )
+
     if stream_processes:
         return execute_command_with_processes(
-            full_command,
+            create_command,
             stream_processes,
             output_log_level,
             output_file,
@@ -361,7 +447,7 @@ def create_archive(
         )
 
     return execute_command(
-        full_command,
+        create_command,
         output_log_level,
         output_file,
         borg_local_path=local_path,

@@ -218,7 +218,7 @@ def test_execute_command_captures_output():
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command, shell=False, env=None, cwd=None
+        full_command, stderr=module.subprocess.STDOUT, shell=False, env=None, cwd=None
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command(full_command, output_log_level=None)
@@ -231,7 +231,7 @@ def test_execute_command_captures_output_with_shell():
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        'foo bar', shell=True, env=None, cwd=None
+        'foo bar', stderr=module.subprocess.STDOUT, shell=True, env=None, cwd=None
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command(full_command, output_log_level=None, shell=True)
@@ -244,7 +244,11 @@ def test_execute_command_captures_output_with_extra_environment():
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command, shell=False, env={'a': 'b', 'c': 'd'}, cwd=None
+        full_command,
+        stderr=module.subprocess.STDOUT,
+        shell=False,
+        env={'a': 'b', 'c': 'd'},
+        cwd=None,
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command(
@@ -259,7 +263,7 @@ def test_execute_command_captures_output_with_working_directory():
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command, shell=False, env=None, cwd='/working'
+        full_command, stderr=module.subprocess.STDOUT, shell=False, env=None, cwd='/working'
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command(

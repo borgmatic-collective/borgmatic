@@ -197,7 +197,7 @@ def execute_command(
 
     if output_log_level is None:
         output = subprocess.check_output(
-            command, shell=shell, env=environment, cwd=working_directory
+            command, stderr=subprocess.STDOUT, shell=shell, env=environment, cwd=working_directory
         )
         return output.decode() if output is not None else None
 

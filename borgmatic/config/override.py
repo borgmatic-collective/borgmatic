@@ -70,8 +70,8 @@ def parse_overrides(raw_overrides):
 
 def apply_overrides(config, raw_overrides):
     '''
-    Given a sequence of configuration file override strings in the form of "section.option=value"
-    and a configuration dict, parse each override and set it the configuration dict.
+    Given a configuration dict and a sequence of configuration file override strings in the form of
+    "section.option=value", parse each override and set it the configuration dict.
     '''
     overrides = parse_overrides(raw_overrides)
 
