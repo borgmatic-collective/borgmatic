@@ -19,6 +19,7 @@ SUBPARSER_ALIASES = {
     'rinfo': [],
     'info': ['-i'],
     'transfer': [],
+    'break-lock': [],
     'borg': [],
 }
 
@@ -773,6 +774,19 @@ def make_parsers():
         '--last', metavar='N', help='Show info for last N archives after other filters are applied'
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    break_lock_parser = subparsers.add_parser(
+        'break-lock',
+        aliases=SUBPARSER_ALIASES['break-lock'],
+        help='Break the repository and cache locks left behind by Borg aborting',
+        description='Break Borg repository and cache locks left behind by Borg aborting',
+        add_help=False,
+    )
+    break_lock_group = break_lock_parser.add_argument_group('break-lock arguments')
+    break_lock_group.add_argument(
+        '--repository',
+        help='Path of repository to break the lock for, defaults to the configured repository if there is only one',
+    )
 
     borg_parser = subparsers.add_parser(
         'borg',

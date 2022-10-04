@@ -407,6 +407,7 @@ def create_archive(
 
     # If read_special is enabled, exclude files that might cause Borg to hang.
     if read_special:
+        logger.debug(f'{repository}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_command,
             local_path,

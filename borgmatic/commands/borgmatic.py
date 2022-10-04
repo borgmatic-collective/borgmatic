@@ -13,6 +13,7 @@ import pkg_resources
 
 import borgmatic.commands.completion
 from borgmatic.borg import borg as borg_borg
+from borgmatic.borg import break_lock as borg_break_lock
 from borgmatic.borg import check as borg_check
 from borgmatic.borg import compact as borg_compact
 from borgmatic.borg import create as borg_create
@@ -731,6 +732,18 @@ def run_actions(
             )
             if json_output:  # pragma: nocover
                 yield json.loads(json_output)
+    if 'break-lock' in arguments:
+        if arguments['break-lock'].repository is None or validate.repositories_match(
+            repository, arguments['break-lock'].repository
+        ):
+            logger.warning(f'{repository}: Breaking repository and cache locks')
+            borg_break_lock.break_lock(
+                repository,
+                storage,
+                local_borg_version,
+                local_path=local_path,
+                remote_path=remote_path,
+            )
     if 'borg' in arguments:
         if arguments['borg'].repository is None or validate.repositories_match(
             repository, arguments['borg'].repository

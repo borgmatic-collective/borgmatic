@@ -712,6 +712,31 @@ def test_run_actions_does_not_raise_for_info_action():
     )
 
 
+def test_run_actions_does_not_raise_for_break_lock_action():
+    flexmock(module.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borg_break_lock).should_receive('break_lock')
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+        'break-lock': flexmock(repository=flexmock()),
+    }
+
+    list(
+        module.run_actions(
+            arguments=arguments,
+            config_filename='test.yaml',
+            location={'repositories': ['repo']},
+            storage={},
+            retention={},
+            consistency={},
+            hooks={},
+            local_path=None,
+            remote_path=None,
+            local_borg_version=None,
+            repository_path='repo',
+        )
+    )
+
+
 def test_run_actions_does_not_raise_for_borg_action():
     flexmock(module.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borg_rlist).should_receive('resolve_archive_name').and_return(flexmock())

@@ -1,4 +1,6 @@
 1.7.3.dev0
+ * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg
+   aborting.
  * #587: When the "read_special" option is true or database hooks are enabled, auto-exclude special
    files for a "create" action to prevent Borg from hanging.
  * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when

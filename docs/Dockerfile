@@ -4,7 +4,7 @@ COPY . /app
 RUN apk add --no-cache py3-pip py3-ruamel.yaml py3-ruamel.yaml.clib
 RUN pip install --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
 RUN borgmatic --help > /command-line.txt \
-    && for action in rcreate transfer prune compact create check extract export-tar mount umount restore rlist list rinfo info borg; do \
+    && for action in rcreate transfer prune compact create check extract export-tar mount umount restore rlist list rinfo info break-lock borg; do \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 
