@@ -84,7 +84,7 @@ be a [Borg
 pattern](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-patterns).
 
 To limit the archives searched, use the standard `list` parameters for
-filtering archives such as `--last`, `--archive`, `--glob-archives`, etc. For
+filtering archives such as `--last`, `--archive`, `--match-archives`, etc. For
 example, to search only the last five archives:
 
 ```bash

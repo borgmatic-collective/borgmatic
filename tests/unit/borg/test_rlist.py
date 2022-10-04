@@ -41,11 +41,11 @@ def test_resolve_archive_name_calls_borg_with_parameters():
     )
 
 
-def test_resolve_archive_name_with_log_info_calls_borg_with_info_parameter():
+def test_resolve_archive_name_with_log_info_calls_borg_without_info_parameter():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--info') + BORG_LIST_LATEST_ARGUMENTS,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
         extra_environment=None,
@@ -58,11 +58,11 @@ def test_resolve_archive_name_with_log_info_calls_borg_with_info_parameter():
     )
 
 
-def test_resolve_archive_name_with_log_debug_calls_borg_with_debug_parameter():
+def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_parameter():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', '--debug', '--show-rc') + BORG_LIST_LATEST_ARGUMENTS,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         output_log_level=None,
         borg_local_path='borg',
         extra_environment=None,
@@ -273,9 +273,9 @@ def test_make_rlist_command_includes_remote_path():
     assert command == ('borg', 'list', '--remote-path', 'borg2', 'repo')
 
 
-def test_make_rlist_command_transforms_prefix_into_glob_archives():
+def test_make_rlist_command_transforms_prefix_into_match_archives():
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
-        ('--glob-archives', 'foo*')
+        ('--match-archives', 'sh:foo*')
     )
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -287,7 +287,7 @@ def test_make_rlist_command_transforms_prefix_into_glob_archives():
         rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix='foo'),
     )
 
-    assert command == ('borg', 'list', '--glob-archives', 'foo*', 'repo')
+    assert command == ('borg', 'list', '--match-archives', 'sh:foo*', 'repo')
 
 
 def test_make_rlist_command_includes_short():
@@ -308,7 +308,7 @@ def test_make_rlist_command_includes_short():
 @pytest.mark.parametrize(
     'argument_name',
     (
-        'glob_archives',
+        'match_archives',
         'sort_by',
         'first',
         'last',

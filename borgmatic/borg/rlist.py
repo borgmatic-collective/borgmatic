@@ -26,8 +26,6 @@ def resolve_archive_name(
             local_path,
             'rlist' if feature.available(feature.Feature.RLIST, local_borg_version) else 'list',
         )
-        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
         + flags.make_flags('last', 1)
@@ -87,7 +85,11 @@ def make_rlist_command(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
         + (
-            flags.make_flags('glob-archives', f'{rlist_arguments.prefix}*')
+            (
+                flags.make_flags('match-archives', f'sh:{rlist_arguments.prefix}*')
+                if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
+                else flags.make_flags('glob-archives', f'{rlist_arguments.prefix}*')
+            )
             if rlist_arguments.prefix
             else ()
         )

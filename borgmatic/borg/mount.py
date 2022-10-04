@@ -39,7 +39,11 @@ def mount_archive(
         + (
             (
                 flags.make_repository_flags(repository, local_borg_version)
-                + ('--glob-archives', archive)
+                + (
+                    ('--match-archives', archive)
+                    if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
+                    else ('--glob-archives', archive)
+                )
             )
             if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
             else (

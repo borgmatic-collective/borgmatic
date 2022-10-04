@@ -25,12 +25,14 @@ def transfer_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', storage_config.get('lock_wait', None))
-        + flags.make_flags(
-            'glob-archives', transfer_arguments.glob_archives or transfer_arguments.archive
+        + (
+            flags.make_flags(
+                'match-archives', transfer_arguments.match_archives or transfer_arguments.archive
+            )
         )
         + flags.make_flags_from_arguments(
             transfer_arguments,
-            excludes=('repository', 'source_repository', 'archive', 'glob_archives'),
+            excludes=('repository', 'source_repository', 'archive', 'match_archives'),
         )
         + flags.make_repository_flags(repository, local_borg_version)
         + flags.make_flags('other-repo', transfer_arguments.source_repository)

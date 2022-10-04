@@ -192,7 +192,7 @@ def test_make_list_command_includes_short():
     'argument_name',
     (
         'prefix',
-        'glob_archives',
+        'match_archives',
         'sort_by',
         'first',
         'last',
@@ -260,7 +260,7 @@ def test_list_archive_calls_borg_with_parameters():
         json=False,
         find_paths=None,
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -313,7 +313,7 @@ def test_list_archive_calls_borg_with_local_path():
         json=False,
         find_paths=None,
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -353,7 +353,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
         json=False,
         find_paths=['foo.txt'],
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -400,7 +400,7 @@ def test_list_archive_calls_borg_with_archive():
         json=False,
         find_paths=None,
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -439,7 +439,7 @@ def test_list_archive_without_archive_delegates_to_list_repository():
         format=None,
         json=None,
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -466,7 +466,7 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
         format=None,
         json=None,
         prefix=None,
-        glob_archives=None,
+        match_archives=None,
         sort_by=None,
         first=None,
         last=None,
@@ -487,12 +487,12 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
 
 
 @pytest.mark.parametrize(
-    'archive_filter_flag', ('prefix', 'glob_archives', 'sort_by', 'first', 'last',),
+    'archive_filter_flag', ('prefix', 'match_archives', 'sort_by', 'first', 'last',),
 )
 def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_flag,):
     default_filter_flags = {
         'prefix': None,
-        'glob_archives': None,
+        'match_archives': None,
         'sort_by': None,
         'first': None,
         'last': None,
@@ -532,14 +532,14 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_fl
 
 
 @pytest.mark.parametrize(
-    'archive_filter_flag', ('prefix', 'glob_archives', 'sort_by', 'first', 'last',),
+    'archive_filter_flag', ('prefix', 'match_archives', 'sort_by', 'first', 'last',),
 )
 def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_rlist(
     archive_filter_flag,
 ):
     default_filter_flags = {
         'prefix': None,
-        'glob_archives': None,
+        'match_archives': None,
         'sort_by': None,
         'first': None,
         'last': None,

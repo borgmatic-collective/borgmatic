@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 
-from borgmatic.borg import environment, extract, flags, rinfo, state
+from borgmatic.borg import environment, extract, feature, flags, rinfo, state
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 DEFAULT_CHECKS = (
@@ -146,9 +146,10 @@ def filter_checks_on_frequency(
     return tuple(filtered_checks)
 
 
-def make_check_flags(checks, check_last=None, prefix=None):
+def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
     '''
-    Given a parsed sequence of checks, transform it into tuple of command-line flags.
+    Given the local Borg version and a parsed sequence of checks, transform the checks into tuple of
+    command-line flags.
 
     For example, given parsed checks of:
 
@@ -163,14 +164,17 @@ def make_check_flags(checks, check_last=None, prefix=None):
 
     Additionally, if a check_last value is given and "archives" is in checks, then include a
     "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
-    "--glob-archives" flag.
+    "--match-archives" flag.
     '''
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
-        glob_archives_flags = ('--glob-archives', f'{prefix}*') if prefix else ()
+        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+            match_archives_flags = ('--match-archives', f'sh:{prefix}*') if prefix else ()
+        else:
+            match_archives_flags = ('--glob-archives', f'{prefix}*') if prefix else ()
     else:
         last_flags = ()
-        glob_archives_flags = ()
+        match_archives_flags = ()
         if check_last:
             logger.info('Ignoring check_last option, as "archives" is not in consistency checks')
         if prefix:
@@ -184,7 +188,7 @@ def make_check_flags(checks, check_last=None, prefix=None):
     else:
         data_flags = ()
 
-    common_flags = last_flags + glob_archives_flags + data_flags
+    common_flags = last_flags + match_archives_flags + data_flags
 
     if {'repository', 'archives'}.issubset(set(checks)):
         return common_flags
@@ -298,7 +302,7 @@ def check_archives(
         full_command = (
             (local_path, 'check')
             + (('--repair',) if repair else ())
-            + make_check_flags(checks, check_last, prefix)
+            + make_check_flags(local_borg_version, checks, check_last, prefix)
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags

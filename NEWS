@@ -3,6 +3,8 @@
    files for a "create" action to prevent Borg from hanging.
  * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when
    database hooks are enabled.
+ * #591: Add support for Borg 2's "--match-archives" flag (replaces "--glob-archives").
+ * Fix for "borgmatic --archive latest" not finding the latest archive when a verbosity is set.
 
 1.7.2
  * #577: Fix regression in which "borgmatic info --archive ..." showed repository info instead of

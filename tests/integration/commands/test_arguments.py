@@ -450,7 +450,7 @@ def test_parse_arguments_disallows_json_with_both_rinfo_and_info():
         module.parse_arguments('rinfo', 'info', '--json')
 
 
-def test_parse_arguments_disallows_transfer_with_both_archive_and_glob_archives():
+def test_parse_arguments_disallows_transfer_with_both_archive_and_match_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
@@ -460,16 +460,16 @@ def test_parse_arguments_disallows_transfer_with_both_archive_and_glob_archives(
             'source.borg',
             '--archive',
             'foo',
-            '--glob-archives',
-            '*bar',
+            '--match-archives',
+            'sh:*bar',
         )
 
 
-def test_parse_arguments_disallows_info_with_both_archive_and_glob_archives():
+def test_parse_arguments_disallows_info_with_both_archive_and_match_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('info', '--archive', 'foo', '--glob-archives', '*bar')
+        module.parse_arguments('info', '--archive', 'foo', '--match-archives', 'sh:*bar')
 
 
 def test_parse_arguments_disallows_info_with_both_archive_and_prefix():
@@ -479,11 +479,11 @@ def test_parse_arguments_disallows_info_with_both_archive_and_prefix():
         module.parse_arguments('info', '--archive', 'foo', '--prefix', 'bar')
 
 
-def test_parse_arguments_disallows_info_with_both_prefix_and_glob_archives():
+def test_parse_arguments_disallows_info_with_both_prefix_and_match_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('info', '--prefix', 'foo', '--glob-archives', '*bar')
+        module.parse_arguments('info', '--prefix', 'foo', '--match-archives', 'sh:*bar')
 
 
 def test_parse_arguments_check_only_extract_does_not_raise_extract_subparser_error():

@@ -137,16 +137,16 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
     assert json_output == '[]'
 
 
-def test_display_archives_info_with_archive_calls_borg_with_glob_archives_parameter():
+def test_display_archives_info_with_archive_calls_borg_with_match_archives_parameter():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
-        'glob-archives', 'archive'
-    ).and_return(('--glob-archives', 'archive'))
+        'match-archives', 'archive'
+    ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'info', '--repo', 'repo', '--glob-archives', 'archive'),
+        ('borg', 'info', '--repo', 'repo', '--match-archives', 'archive'),
         output_log_level=logging.WARNING,
         borg_local_path='borg',
         extra_environment=None,
@@ -229,16 +229,16 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
     )
 
 
-def test_display_archives_info_with_prefix_calls_borg_with_glob_archives_parameters():
+def test_display_archives_info_with_prefix_calls_borg_with_match_archives_parameters():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags').with_args(
-        'glob-archives', 'foo*'
-    ).and_return(('--glob-archives', 'foo*'))
+        'match-archives', 'sh:foo*'
+    ).and_return(('--match-archives', 'sh:foo*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'info', '--glob-archives', 'foo*', '--repo', 'repo'),
+        ('borg', 'info', '--match-archives', 'sh:foo*', '--repo', 'repo'),
         output_log_level=logging.WARNING,
         borg_local_path='borg',
         extra_environment=None,
@@ -252,7 +252,7 @@ def test_display_archives_info_with_prefix_calls_borg_with_glob_archives_paramet
     )
 
 
-@pytest.mark.parametrize('argument_name', ('glob_archives', 'sort_by', 'first', 'last'))
+@pytest.mark.parametrize('argument_name', ('match_archives', 'sort_by', 'first', 'last'))
 def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
     flag_name = f"--{argument_name.replace('_', ' ')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())

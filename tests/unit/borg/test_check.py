@@ -188,95 +188,137 @@ def test_filter_checks_on_frequency_restains_check_with_unelapsed_frequency_and_
 
 
 def test_make_check_flags_with_repository_check_returns_flag():
-    flags = module.make_check_flags(('repository',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('repository',))
 
     assert flags == ('--repository-only',)
 
 
 def test_make_check_flags_with_archives_check_returns_flag():
-    flags = module.make_check_flags(('archives',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('archives',))
 
     assert flags == ('--archives-only',)
 
 
 def test_make_check_flags_with_data_check_returns_flag_and_implies_archives():
-    flags = module.make_check_flags(('data',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('data',))
 
     assert flags == ('--archives-only', '--verify-data',)
 
 
 def test_make_check_flags_with_extract_omits_extract_flag():
-    flags = module.make_check_flags(('extract',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('extract',))
 
     assert flags == ()
 
 
 def test_make_check_flags_with_repository_and_data_checks_does_not_return_repository_only():
-    flags = module.make_check_flags(('repository', 'data',))
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('repository', 'data',))
 
     assert flags == ('--verify-data',)
 
 
 def test_make_check_flags_with_default_checks_and_default_prefix_returns_default_flags():
-    flags = module.make_check_flags(('repository', 'archives'), prefix=module.DEFAULT_PREFIX)
+    flexmock(module.feature).should_receive('available').and_return(True)
 
-    assert flags == ('--glob-archives', f'{module.DEFAULT_PREFIX}*')
+    flags = module.make_check_flags(
+        '1.2.3', ('repository', 'archives'), prefix=module.DEFAULT_PREFIX
+    )
+
+    assert flags == ('--match-archives', f'sh:{module.DEFAULT_PREFIX}*')
 
 
 def test_make_check_flags_with_all_checks_and_default_prefix_returns_default_flags():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
     flags = module.make_check_flags(
-        ('repository', 'archives', 'extract'), prefix=module.DEFAULT_PREFIX
+        '1.2.3', ('repository', 'archives', 'extract'), prefix=module.DEFAULT_PREFIX
+    )
+
+    assert flags == ('--match-archives', f'sh:{module.DEFAULT_PREFIX}*')
+
+
+def test_make_check_flags_with_all_checks_and_default_prefix_without_borg_features_returns_glob_archives_flags():
+    flexmock(module.feature).should_receive('available').and_return(False)
+
+    flags = module.make_check_flags(
+        '1.2.3', ('repository', 'archives', 'extract'), prefix=module.DEFAULT_PREFIX
     )
 
     assert flags == ('--glob-archives', f'{module.DEFAULT_PREFIX}*')
 
 
 def test_make_check_flags_with_archives_check_and_last_includes_last_flag():
-    flags = module.make_check_flags(('archives',), check_last=3)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('archives',), check_last=3)
 
     assert flags == ('--archives-only', '--last', '3')
 
 
 def test_make_check_flags_with_repository_check_and_last_omits_last_flag():
-    flags = module.make_check_flags(('repository',), check_last=3)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('repository',), check_last=3)
 
     assert flags == ('--repository-only',)
 
 
 def test_make_check_flags_with_default_checks_and_last_includes_last_flag():
-    flags = module.make_check_flags(('repository', 'archives'), check_last=3)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('repository', 'archives'), check_last=3)
 
     assert flags == ('--last', '3')
 
 
-def test_make_check_flags_with_archives_check_and_prefix_includes_glob_archives_flag():
-    flags = module.make_check_flags(('archives',), prefix='foo-')
+def test_make_check_flags_with_archives_check_and_prefix_includes_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
 
-    assert flags == ('--archives-only', '--glob-archives', 'foo-*')
+    flags = module.make_check_flags('1.2.3', ('archives',), prefix='foo-')
 
-
-def test_make_check_flags_with_archives_check_and_empty_prefix_omits_glob_archives_flag():
-    flags = module.make_check_flags(('archives',), prefix='')
-
-    assert flags == ('--archives-only',)
+    assert flags == ('--archives-only', '--match-archives', 'sh:foo-*')
 
 
-def test_make_check_flags_with_archives_check_and_none_prefix_omits_glob_archives_flag():
-    flags = module.make_check_flags(('archives',), prefix=None)
+def test_make_check_flags_with_archives_check_and_empty_prefix_omits_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('archives',), prefix='')
 
     assert flags == ('--archives-only',)
 
 
-def test_make_check_flags_with_repository_check_and_prefix_omits_glob_archives_flag():
-    flags = module.make_check_flags(('repository',), prefix='foo-')
+def test_make_check_flags_with_archives_check_and_none_prefix_omits_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('archives',), prefix=None)
+
+    assert flags == ('--archives-only',)
+
+
+def test_make_check_flags_with_repository_check_and_prefix_omits_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('repository',), prefix='foo-')
 
     assert flags == ('--repository-only',)
 
 
-def test_make_check_flags_with_default_checks_and_prefix_includes_glob_archives_flag():
-    flags = module.make_check_flags(('repository', 'archives'), prefix='foo-')
+def test_make_check_flags_with_default_checks_and_prefix_includes_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
 
-    assert flags == ('--glob-archives', 'foo-*')
+    flags = module.make_check_flags('1.2.3', ('repository', 'archives'), prefix='foo-')
+
+    assert flags == ('--match-archives', 'sh:foo-*')
 
 
 def test_read_check_time_does_not_raise():
@@ -369,7 +411,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        checks, check_last, module.DEFAULT_PREFIX
+        '1.2.3', checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', 'repo'))
@@ -523,7 +565,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        checks, check_last, module.DEFAULT_PREFIX
+        '1.2.3', checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', 'check', 'repo'))
@@ -550,7 +592,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        checks, check_last, module.DEFAULT_PREFIX
+        '1.2.3', checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--remote-path', 'borg1', 'repo'))
@@ -577,7 +619,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        checks, check_last, module.DEFAULT_PREFIX
+        '1.2.3', checks, check_last, module.DEFAULT_PREFIX
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--lock-wait', '5', 'repo'))
@@ -604,7 +646,7 @@ def test_check_archives_with_retention_prefix():
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        checks, check_last, prefix
+        '1.2.3', checks, check_last, prefix
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', 'repo'))

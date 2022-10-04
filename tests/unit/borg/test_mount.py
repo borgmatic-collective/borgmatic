@@ -31,11 +31,11 @@ def test_mount_archive_calls_borg_with_required_flags():
     )
 
 
-def test_mount_archive_with_borg_features_calls_borg_with_repository_and_glob_archives_flags():
+def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_archives_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
     insert_execute_command_mock(
-        ('borg', 'mount', '--repo', 'repo', '--glob-archives', 'archive', '/mnt')
+        ('borg', 'mount', '--repo', 'repo', '--match-archives', 'archive', '/mnt')
     )
 
     module.mount_archive(

@@ -293,9 +293,10 @@ def make_parsers():
     )
     transfer_group.add_argument(
         '-a',
+        '--match-archives',
         '--glob-archives',
-        metavar='GLOB',
-        help='Only transfer archives with names matching this glob',
+        metavar='PATTERN',
+        help='Only transfer archives with names matching this pattern',
     )
     transfer_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -627,7 +628,11 @@ def make_parsers():
         '-P', '--prefix', help='Only list archive names starting with this prefix'
     )
     rlist_group.add_argument(
-        '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='Only list archive names matching this pattern',
     )
     rlist_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -678,7 +683,11 @@ def make_parsers():
         '-P', '--prefix', help='Only list archive names starting with this prefix'
     )
     list_group.add_argument(
-        '-a', '--glob-archives', metavar='GLOB', help='Only list archive names matching this glob'
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='Only list archive names matching this pattern',
     )
     list_group.add_argument(
         '--successful',
@@ -747,9 +756,10 @@ def make_parsers():
     )
     info_group.add_argument(
         '-a',
+        '--match-archives',
         '--glob-archives',
-        metavar='GLOB',
-        help='Only show info for archive names matching this glob',
+        metavar='PATTERN',
+        help='Only show info for archive names matching this pattern',
     )
     info_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -816,7 +826,7 @@ def parse_arguments(*unparsed_arguments):
     if (
         'transfer' in arguments
         and arguments['transfer'].archive
-        and arguments['transfer'].glob_archives
+        and arguments['transfer'].match_archives
     ):
         raise ValueError(
             'With the transfer action, only one of --archive and --glob-archives flags can be used.'
@@ -824,11 +834,11 @@ def parse_arguments(*unparsed_arguments):
 
     if 'info' in arguments and (
         (arguments['info'].archive and arguments['info'].prefix)
-        or (arguments['info'].archive and arguments['info'].glob_archives)
-        or (arguments['info'].prefix and arguments['info'].glob_archives)
+        or (arguments['info'].archive and arguments['info'].match_archives)
+        or (arguments['info'].prefix and arguments['info'].match_archives)
     ):
         raise ValueError(
-            'With the info action, only one of --archive, --prefix, or --glob-archives flags can be used.'
+            'With the info action, only one of --archive, --prefix, or --match-archives flags can be used.'
         )
 
     return arguments

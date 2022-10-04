@@ -13,6 +13,7 @@ class Feature(Enum):
     RCREATE = 7
     RLIST = 8
     RINFO = 9
+    MATCH_ARCHIVES = 10
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -25,6 +26,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.RCREATE: parse_version('2.0.0a2'),  # borg rcreate
     Feature.RLIST: parse_version('2.0.0a2'),  # borg rlist
     Feature.RINFO: parse_version('2.0.0a2'),  # borg rinfo
+    Feature.MATCH_ARCHIVES: parse_version('2.0.0b3'),  # borg --match-archives
 }
 
 

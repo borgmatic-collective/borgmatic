@@ -1,12 +1,12 @@
 import logging
 
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
 
 
-def make_prune_flags(retention_config):
+def make_prune_flags(retention_config, local_borg_version):
     '''
     Given a retention config dict mapping from option name to value, tranform it into an iterable of
     command-line name-value flag pairs.
@@ -24,8 +24,12 @@ def make_prune_flags(retention_config):
     '''
     config = retention_config.copy()
     prefix = config.pop('prefix', '{hostname}-')
+
     if prefix:
-        config['glob_archives'] = f'{prefix}*'
+        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+            config['match_archives'] = f'sh:{prefix}*'
+        else:
+            config['glob_archives'] = f'{prefix}*'
 
     return (
         ('--' + option_name.replace('_', '-'), str(value)) for option_name, value in config.items()
@@ -54,7 +58,11 @@ def prune_archives(
 
     full_command = (
         (local_path, 'prune')
-        + tuple(element for pair in make_prune_flags(retention_config) for element in pair)
+        + tuple(
+            element
+            for pair in make_prune_flags(retention_config, local_borg_version)
+            for element in pair
+        )
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())

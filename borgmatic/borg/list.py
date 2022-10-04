@@ -9,7 +9,7 @@ from borgmatic.execute import execute_command
 logger = logging.getLogger(__name__)
 
 
-ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST = ('prefix', 'glob_archives', 'sort_by', 'first', 'last')
+ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST = ('prefix', 'match_archives', 'sort_by', 'first', 'last')
 MAKE_FLAGS_EXCLUDES = (
     'repository',
     'archive',
@@ -111,7 +111,7 @@ def list_archive(
             format=list_arguments.format,
             json=list_arguments.json,
             prefix=list_arguments.prefix,
-            glob_archives=list_arguments.glob_archives,
+            match_archives=list_arguments.match_archives,
             sort_by=list_arguments.sort_by,
             first=list_arguments.first,
             last=list_arguments.last,
@@ -143,7 +143,7 @@ def list_archive(
             format=None,
             json=None,
             prefix=list_arguments.prefix,
-            glob_archives=list_arguments.glob_archives,
+            match_archives=list_arguments.match_archives,
             sort_by=list_arguments.sort_by,
             first=list_arguments.first,
             last=list_arguments.last,
