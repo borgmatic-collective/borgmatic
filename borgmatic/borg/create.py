@@ -112,7 +112,7 @@ def write_pattern_file(patterns=None, sources=None, pattern_file=None):
     If an optional open pattern file is given, overwrite it instead of making a new temporary file.
     Return None if no patterns are provided.
     '''
-    if not patterns:
+    if not patterns and not sources:
         return None
 
     if pattern_file is None:
@@ -121,7 +121,7 @@ def write_pattern_file(patterns=None, sources=None, pattern_file=None):
         pattern_file.seek(0)
 
     pattern_file.write(
-        '\n'.join(tuple(patterns) + tuple(f'R {source}' for source in (sources or [])))
+        '\n'.join(tuple(patterns or ()) + tuple(f'R {source}' for source in (sources or [])))
     )
     pattern_file.flush()
 
@@ -311,11 +311,18 @@ def create_archive(
         ),
     )
 
+    ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))
+
     try:
         working_directory = os.path.expanduser(location_config.get('working_directory'))
     except TypeError:
         working_directory = None
-    pattern_file = write_pattern_file(location_config.get('patterns'), sources)
+
+    pattern_file = (
+        write_pattern_file(location_config.get('patterns'), sources)
+        if location_config.get('patterns') or location_config.get('patterns_from')
+        else None
+    )
     exclude_file = write_pattern_file(
         expand_home_directories(location_config.get('exclude_patterns'))
     )
@@ -354,8 +361,6 @@ def create_archive(
             ('--remote-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
 
-    ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))
-
     if stream_processes and location_config.get('read_special') is False:
         logger.warning(
             f'{repository}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
@@ -385,7 +390,7 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AME-') if list_files and not json and not progress else ())
+        + (('--list', '--filter', 'AMEx-') if list_files and not json and not progress else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)
@@ -425,6 +430,7 @@ def create_archive(
             ),
             pattern_file=exclude_file,
         )
+
         if exclude_file:
             create_command += make_exclude_flags(location_config, exclude_file.name)
 

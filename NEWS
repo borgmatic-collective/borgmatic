@@ -5,6 +5,13 @@
    files for a "create" action to prevent Borg from hanging.
  * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when
    database hooks are enabled.
+ * #590: Fix for potential data loss (data not getting backed up) when the "patterns_from" option
+   was used with "source_directories" (or the "~/.borgmatic" path existed, which got injected into
+   "source_directories" implicitly). The fix is for borgmatic to convert "source_directories" into
+   patterns whenever "patterns_from" is used, working around a Borg bug:
+   https://github.com/borgbackup/borg/issues/6994
+ * #590: In "borgmatic create --list" output, display which files get excluded from the backup due
+   to patterns or excludes.
  * #591: Add support for Borg 2's "--match-archives" flag (replaces "--glob-archives").
  * Fix for "borgmatic --archive latest" not finding the latest archive when a verbosity is set.
 
@@ -20,7 +27,7 @@
  * #574: Fix for potential data loss (data not getting backed up) when the "patterns" option was
    used with "source_directories" (or the "~/.borgmatic" path existed, which got injected into
    "source_directories" implicitly). The fix is for borgmatic to convert "source_directories" into
-   patterns whenever "patterns" is used, working around a potential Borg bug:
+   patterns whenever "patterns" is used, working around a Borg bug:
    https://github.com/borgbackup/borg/issues/6994
 
 1.7.0

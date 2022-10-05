@@ -130,6 +130,14 @@ def test_write_pattern_file_with_sources_writes_sources_as_roots():
     module.write_pattern_file(['R /foo', '+ /foo/bar'], sources=['/baz', '/quux'])
 
 
+def test_write_pattern_file_without_patterns_but_with_sources_writes_sources_as_roots():
+    temporary_file = flexmock(name='filename', flush=lambda: None)
+    temporary_file.should_receive('write').with_args('R /baz\nR /quux')
+    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
+
+    module.write_pattern_file([], sources=['/baz', '/quux'])
+
+
 def test_write_pattern_file_with_empty_exclude_patterns_does_not_raise():
     module.write_pattern_file([])
 
@@ -1146,10 +1154,12 @@ def test_create_archive_with_read_special_adds_special_files_to_excludes():
     flexmock(module).should_receive('expand_directories').and_return(())
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('expand_home_directories').and_return(()).and_return(
+        ('special',)
+    )
     flexmock(module).should_receive('write_pattern_file').and_return(None).and_return(
-        None
-    ).and_return(flexmock(name='/excludes'))
+        flexmock(name='/excludes')
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1160,7 +1170,7 @@ def test_create_archive_with_read_special_adds_special_files_to_excludes():
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').and_return(())
+    flexmock(module).should_receive('collect_special_file_paths').and_return(('special',))
     create_command = ('borg', 'create', '--read-special') + REPO_ARCHIVE_WITH_PATHS
     flexmock(module).should_receive('execute_command').with_args(
         create_command + ('--dry-run', '--list'),
@@ -1639,7 +1649,7 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_ou
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--list', '--filter', 'AMEx-') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.WARNING,
         output_file=None,
         borg_local_path='borg',
@@ -1679,7 +1689,7 @@ def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_a
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AME-') + REPO_ARCHIVE_WITH_PATHS + ('--info',),
+        ('borg', 'create', '--list', '--filter', 'AMEx-') + REPO_ARCHIVE_WITH_PATHS + ('--info',),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
