@@ -332,7 +332,6 @@ def create_archive(
     upload_rate_limit = storage_config.get('upload_rate_limit', None)
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
-    read_special = True if (location_config.get('read_special') or stream_processes) else False
     files_cache = location_config.get('files_cache')
     archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
@@ -384,7 +383,7 @@ def create_archive(
         + atime_flags
         + (('--noctime',) if location_config.get('ctime') is False else ())
         + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
-        + (('--read-special',) if read_special else ())
+        + (('--read-special',) if location_config.get('read_special') or stream_processes else ())
         + noflags_flags
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
@@ -410,8 +409,9 @@ def create_archive(
 
     borg_environment = environment.make_environment(storage_config)
 
-    # If read_special is enabled, exclude files that might cause Borg to hang.
-    if read_special:
+    # If database hooks are enabled (as indicated by streaming processes), exclude files that might
+    # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
+    if stream_processes and not location_config.get('read_special'):
         logger.debug(f'{repository}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_command,

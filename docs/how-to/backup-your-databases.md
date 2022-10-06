@@ -217,7 +217,11 @@ special files are excluded from backups (named pipes, block devices,
 character devices, and sockets) to prevent hanging. Try a command like
 `find /your/source/path -type b -or -type c -or -type p -or -type s` to find
 such files. Common directories to exclude are `/dev` and `/run`, but that may
-not be exhaustive.
+not be exhaustive. <span class="minilink minilink-addedin">New in version
+1.7.3</span> When database hooks are enabled, borgmatic automatically excludes
+special files that may cause Borg to hang, so you no longer need to manually
+exclude them. You can override/prevent this behavior by explicitly setting
+`read_special` to true.
 
 
 ### Manual restoration
@@ -273,3 +277,7 @@ Alternatively, if excluding special files is too onerous, you can create two
 separate borgmatic configuration files—one for your source files and a
 separate one for backing up databases. That way, the database `read_special`
 option will not be active when backing up special files.
+
+<span class="minilink minilink-addedin">New in version 1.7.3</span> See
+Limitations above about borgmatic's automatic exclusion of special files to
+prevent Borg hangs.
