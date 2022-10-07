@@ -1,12 +1,13 @@
 1.7.3.dev0
  * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg
    aborting.
- * #587: When the "read_special" option is true or database hooks are enabled, auto-exclude special
-   files from a "create" action to prevent Borg from hanging.
+ * #587: When database hooks are enabled, auto-exclude special files from a "create" action to
+   prevent Borg from hanging. You can override/prevent this behavior by explicitly setting the
+   "read_special" option to true.
  * #587: Warn when ignoring a configured "read_special" value of false, as true is needed when
    database hooks are enabled.
- * #589: Update sample systemd service file to allow system "idle" (monitor turning off) while
-   borgmatic is running.
+ * #589: Update sample systemd service file to allow system "idle" (e.g. a video monitor turning
+   off) while borgmatic is running.
  * #590: Fix for potential data loss (data not getting backed up) when the "patterns_from" option
    was used with "source_directories" (or the "~/.borgmatic" path existed, which got injected into
    "source_directories" implicitly). The fix is for borgmatic to convert "source_directories" into
@@ -14,7 +15,10 @@
    https://github.com/borgbackup/borg/issues/6994
  * #590: In "borgmatic create --list" output, display which files get excluded from the backup due
    to patterns or excludes.
- * #591: Add support for Borg 2's "--match-archives" flag (replaces "--glob-archives").
+ * #591: Add support for Borg 2's "--match-archives" flag. This replaces "--glob-archives", which
+   borgmatic now treats as an alias for "--match-archives". But note that the two flags have
+   slightly different syntax. See the Borg 2 changelog for more information:
+   https://borgbackup.readthedocs.io/en/2.0.0b3/changes.html#version-2-0-0b3-2022-10-02
  * Fix for "borgmatic --archive latest" not finding the latest archive when a verbosity is set.
 
 1.7.2
