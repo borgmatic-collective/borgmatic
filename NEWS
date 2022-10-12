@@ -1,4 +1,4 @@
-1.7.3.dev0
+1.7.3
  * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg
    aborting.
  * #360: To prevent Borg hangs, unconditionally delete stale named pipes before dumping databases.
