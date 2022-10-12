@@ -360,7 +360,7 @@ def run_actions(
             **hook_context,
         )
         logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
-        dispatch.call_hooks(
+        dispatch.call_hooks_even_if_unconfigured(
             'remove_database_dumps',
             hooks,
             repository,
@@ -395,7 +395,7 @@ def run_actions(
         if json_output:  # pragma: nocover
             yield json.loads(json_output)
 
-        dispatch.call_hooks(
+        dispatch.call_hooks_even_if_unconfigured(
             'remove_database_dumps',
             hooks,
             config_filename,
@@ -556,7 +556,7 @@ def run_actions(
                     repository, arguments['restore'].archive
                 )
             )
-            dispatch.call_hooks(
+            dispatch.call_hooks_even_if_unconfigured(
                 'remove_database_dumps',
                 hooks,
                 repository,
@@ -626,7 +626,7 @@ def run_actions(
                         extract_process,
                     )
 
-            dispatch.call_hooks(
+            dispatch.call_hooks_even_if_unconfigured(
                 'remove_database_dumps',
                 hooks,
                 repository,

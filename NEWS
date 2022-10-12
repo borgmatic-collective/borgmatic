@@ -1,6 +1,7 @@
 1.7.3.dev0
  * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg
    aborting.
+ * #360: To prevent Borg hangs, unconditionally delete stale named pipes before dumping databases.
  * #587: When database hooks are enabled, auto-exclude special files from a "create" action to
    prevent Borg from hanging. You can override/prevent this behavior by explicitly setting the
    "read_special" option to true.

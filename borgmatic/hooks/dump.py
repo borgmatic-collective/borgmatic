@@ -55,7 +55,7 @@ def remove_database_dumps(dump_path, database_type_name, log_prefix, dry_run):
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
-    logger.info(
+    logger.debug(
         '{}: Removing {} database dumps{}'.format(log_prefix, database_type_name, dry_run_label)
     )
 

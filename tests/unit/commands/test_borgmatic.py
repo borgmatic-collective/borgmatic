@@ -455,7 +455,8 @@ def test_run_actions_executes_and_calls_hooks_for_create_action():
     flexmock(module.command).should_receive('execute_hook').times(
         4
     )  # Before/after extract and before/after actions.
-    flexmock(module.dispatch).should_receive('call_hooks').and_return({}).times(3)
+    flexmock(module.dispatch).should_receive('call_hooks').and_return({})
+    flexmock(module.dispatch).should_receive('call_hooks_even_if_unconfigured').and_return({})
     arguments = {
         'global': flexmock(monitoring_verbosity=1, dry_run=False),
         'create': flexmock(
