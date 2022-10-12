@@ -787,7 +787,9 @@ def make_parsers():
         '--repository',
         help='Path of repository to break the lock for, defaults to the configured repository if there is only one',
     )
-    break_lock_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    break_lock_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     borg_parser = subparsers.add_parser(
         'borg',
