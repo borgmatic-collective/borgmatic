@@ -229,7 +229,11 @@ def special_file(path):
     Return whether the given path is a special file (character device, block device, or named pipe
     / FIFO).
     '''
-    mode = os.stat(path).st_mode
+    try:
+        mode = os.stat(path).st_mode
+    except (FileNotFoundError, OSError):
+        return False
+
     return stat.S_ISCHR(mode) or stat.S_ISBLK(mode) or stat.S_ISFIFO(mode)
 
 

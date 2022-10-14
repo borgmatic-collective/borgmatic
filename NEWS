@@ -1,3 +1,6 @@
+1.7.4.dev0
+ * #596: Fix special file detection when broken symlinks are encountered.
+
 1.7.3
  * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg
    aborting.

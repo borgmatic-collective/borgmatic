@@ -338,6 +338,12 @@ def test_special_file_looks_at_file_type(character_device, block_device, fifo, e
     assert module.special_file('/dev/special') == expected_result
 
 
+def test_special_file_treats_broken_symlink_as_non_special():
+    flexmock(module.os).should_receive('stat').and_raise(FileNotFoundError)
+
+    assert module.special_file('/broken/symlink') is False
+
+
 def test_any_parent_directories_treats_parents_as_match():
     module.any_parent_directories('/foo/bar.txt', ('/foo', '/etc'))
 
