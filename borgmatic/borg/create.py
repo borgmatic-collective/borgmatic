@@ -7,7 +7,12 @@ import stat
 import tempfile
 
 from borgmatic.borg import environment, feature, flags, state
-from borgmatic.execute import DO_NOT_CAPTURE, execute_command, execute_command_with_processes
+from borgmatic.execute import (
+    DO_NOT_CAPTURE,
+    execute_command,
+    execute_command_and_capture_output,
+    execute_command_with_processes,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -259,10 +264,9 @@ def collect_special_file_paths(
     Borg would encounter during a create. These are all paths that could cause Borg to hang if its
     --read-special flag is used.
     '''
-    paths_output = execute_command(
+    paths_output = execute_command_and_capture_output(
         create_command + ('--dry-run', '--list'),
-        output_log_level=None,
-        borg_local_path=local_path,
+        capture_stderr=True,
         working_directory=working_directory,
         extra_environment=borg_environment,
     )
@@ -456,12 +460,16 @@ def create_archive(
             working_directory=working_directory,
             extra_environment=borg_environment,
         )
-
-    return execute_command(
-        create_command,
-        output_log_level,
-        output_file,
-        borg_local_path=local_path,
-        working_directory=working_directory,
-        extra_environment=borg_environment,
-    )
+    elif output_log_level is None:
+        return execute_command_and_capture_output(
+            create_command, working_directory=working_directory, extra_environment=borg_environment,
+        )
+    else:
+        execute_command(
+            create_command,
+            output_log_level,
+            output_file,
+            borg_local_path=local_path,
+            working_directory=working_directory,
+            extra_environment=borg_environment,
+        )

@@ -4,7 +4,7 @@ import logging
 import re
 
 from borgmatic.borg import environment, feature, flags, rlist
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ def list_archive(
 
         # Ask Borg to list archives. Capture its output for use below.
         archive_lines = tuple(
-            execute_command(
+            execute_command_and_capture_output(
                 rlist.make_rlist_command(
                     repository,
                     storage_config,
@@ -160,8 +160,6 @@ def list_archive(
                     local_path,
                     remote_path,
                 ),
-                output_log_level=None,
-                borg_local_path=local_path,
                 extra_environment=borg_environment,
             )
             .strip('\n')

@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +33,8 @@ def resolve_archive_name(
         + flags.make_repository_flags(repository, local_borg_version)
     )
 
-    output = execute_command(
-        full_command,
-        output_log_level=None,
-        borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+    output = execute_command_and_capture_output(
+        full_command, extra_environment=environment.make_environment(storage_config),
     )
     try:
         latest_archive = output.strip().splitlines()[-1]
@@ -117,12 +114,12 @@ def list_repository(
         repository, storage_config, local_borg_version, rlist_arguments, local_path, remote_path
     )
 
-    output = execute_command(
-        main_command,
-        output_log_level=None if rlist_arguments.json else logging.WARNING,
-        borg_local_path=local_path,
-        extra_environment=borg_environment,
-    )
-
     if rlist_arguments.json:
-        return output
+        return execute_command_and_capture_output(main_command, extra_environment=borg_environment,)
+    else:
+        execute_command(
+            main_command,
+            output_log_level=logging.WARNING,
+            borg_local_path=local_path,
+            extra_environment=borg_environment,
+        )

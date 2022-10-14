@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,16 @@ def display_repository_info(
         + flags.make_repository_flags(repository, local_borg_version)
     )
 
-    return execute_command(
-        full_command,
-        output_log_level=None if rinfo_arguments.json else logging.WARNING,
-        borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
-    )
+    extra_environment = environment.make_environment(storage_config)
+
+    if rinfo_arguments.json:
+        return execute_command_and_capture_output(
+            full_command, extra_environment=extra_environment,
+        )
+    else:
+        execute_command(
+            full_command,
+            output_log_level=logging.WARNING,
+            borg_local_path=local_path,
+            extra_environment=extra_environment,
+        )

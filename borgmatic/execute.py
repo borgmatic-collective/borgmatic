@@ -147,7 +147,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
         }
 
 
-def log_command(full_command, input_file, output_file):
+def log_command(full_command, input_file=None, output_file=None):
     '''
     Log the given command (a sequence of command/argument strings), along with its input/output file
     paths.
@@ -178,15 +178,14 @@ def execute_command(
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
-    given log level. If output log level is None, instead capture and return the output. (Implies
-    run_to_completion.) If an open output file object is given, then write stdout to the file and
-    only log stderr (but only if an output log level is set). If an open input file object is given,
-    then read stdin from the file. If shell is True, execute the command within a shell. If an extra
-    environment dict is given, then use it to augment the current environment, and pass the result
-    into the command. If a working directory is given, use that as the present working directory
-    when running the command. If a Borg local path is given, and the command matches it (regardless
-    of arguments), treat exit code 1 as a warning instead of an error. If run to completion is
-    False, then return the process for the command without executing it to completion.
+    given log level. If an open output file object is given, then write stdout to the file and only
+    log stderr. If an open input file object is given, then read stdin from the file. If shell is
+    True, execute the command within a shell. If an extra environment dict is given, then use it to
+    augment the current environment, and pass the result into the command. If a working directory is
+    given, use that as the present working directory when running the command. If a Borg local path
+    is given, and the command matches it (regardless of arguments), treat exit code 1 as a warning
+    instead of an error. If run to completion is False, then return the process for the command
+    without executing it to completion.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -194,12 +193,6 @@ def execute_command(
     environment = {**os.environ, **extra_environment} if extra_environment else None
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command
-
-    if output_log_level is None:
-        output = subprocess.check_output(
-            command, stderr=subprocess.STDOUT, shell=shell, env=environment, cwd=working_directory
-        )
-        return output.decode() if output is not None else None
 
     process = subprocess.Popen(
         command,
@@ -216,6 +209,33 @@ def execute_command(
     log_outputs(
         (process,), (input_file, output_file), output_log_level, borg_local_path=borg_local_path
     )
+
+
+def execute_command_and_capture_output(
+    full_command, capture_stderr=False, shell=False, extra_environment=None, working_directory=None,
+):
+    '''
+    Execute the given command (a sequence of command/argument strings), capturing and returning its
+    output (stdout). If capture stderr is True, then capture and return stderr in addition to
+    stdout. If shell is True, execute the command within a shell. If an extra environment dict is
+    given, then use it to augment the current environment, and pass the result into the command. If
+    a working directory is given, use that as the present working directory when running the command.
+
+    Raise subprocesses.CalledProcessError if an error occurs while running the command.
+    '''
+    log_command(full_command)
+    environment = {**os.environ, **extra_environment} if extra_environment else None
+    command = ' '.join(full_command) if shell else full_command
+
+    output = subprocess.check_output(
+        command,
+        stderr=subprocess.STDOUT if capture_stderr else None,
+        shell=shell,
+        env=environment,
+        cwd=working_directory,
+    )
+
+    return output.decode() if output is not None else None
 
 
 def execute_command_with_processes(

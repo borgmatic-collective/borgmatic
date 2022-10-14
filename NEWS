@@ -1,5 +1,7 @@
-1.7.4.dev0
- * #596: Fix special file detection when broken symlinks are encountered.
+1.7.4
+ * #596: Fix special file detection erroring when broken symlinks are encountered.
+ * #597, #598: Fix regression in which "check" action errored on certain systems ("Cannot determine
+   Borg repository ID").
 
 1.7.3
  * #357: Add "break-lock" action for removing any repository and cache locks leftover from Borg

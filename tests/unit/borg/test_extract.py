@@ -15,13 +15,6 @@ def insert_execute_command_mock(command, working_directory=None):
     ).once()
 
 
-def insert_execute_command_output_mock(command, result):
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        command, output_log_level=None, borg_local_path=command[0], extra_environment=None,
-    ).and_return(result).once()
-
-
 def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
     flexmock(module.rlist).should_receive('resolve_archive_name').and_return('archive')
     insert_execute_command_mock(('borg', 'extract', '--dry-run', 'repo::archive'))

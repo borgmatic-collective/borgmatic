@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import environment
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,8 @@ def local_borg_version(storage_config, local_path='borg'):
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
     )
-    output = execute_command(
-        full_command,
-        output_log_level=None,
-        borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+    output = execute_command_and_capture_output(
+        full_command, extra_environment=environment.make_environment(storage_config),
     )
 
     try:

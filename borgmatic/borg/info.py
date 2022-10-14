@@ -1,7 +1,7 @@
 import logging
 
 from borgmatic.borg import environment, feature, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import execute_command, execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +55,14 @@ def display_archives_info(
         )
     )
 
-    return execute_command(
-        full_command,
-        output_log_level=None if info_arguments.json else logging.WARNING,
-        borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
-    )
+    if info_arguments.json:
+        return execute_command_and_capture_output(
+            full_command, extra_environment=environment.make_environment(storage_config),
+        )
+    else:
+        execute_command(
+            full_command,
+            output_log_level=logging.WARNING,
+            borg_local_path=local_path,
+            extra_environment=environment.make_environment(storage_config),
+        )

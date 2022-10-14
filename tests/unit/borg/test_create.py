@@ -357,7 +357,7 @@ def test_any_parent_directories_treats_unrelated_paths_as_non_match():
 
 
 def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_list():
-    flexmock(module).should_receive('execute_command').and_return(
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         'Processing files ...\n- /foo\n- /bar\n- /baz'
     )
     flexmock(module).should_receive('special_file').and_return(True)
@@ -373,7 +373,9 @@ def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_
 
 
 def test_collect_special_file_paths_excludes_requested_directories():
-    flexmock(module).should_receive('execute_command').and_return('- /foo\n- /bar\n- /baz')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+        '- /foo\n- /bar\n- /baz'
+    )
     flexmock(module).should_receive('special_file').and_return(True)
     flexmock(module).should_receive('any_parent_directories').and_return(False).and_return(
         True
@@ -389,7 +391,9 @@ def test_collect_special_file_paths_excludes_requested_directories():
 
 
 def test_collect_special_file_paths_excludes_non_special_files():
-    flexmock(module).should_receive('execute_command').and_return('- /foo\n- /bar\n- /baz')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+        '- /foo\n- /bar\n- /baz'
+    )
     flexmock(module).should_receive('special_file').and_return(True).and_return(False).and_return(
         True
     )
@@ -628,11 +632,8 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
-        output_log_level=None,
-        output_file=None,
-        borg_local_path='borg',
         working_directory=None,
         extra_environment=None,
     )
@@ -709,11 +710,8 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
-        output_log_level=None,
-        output_file=None,
-        borg_local_path='borg',
         working_directory=None,
         extra_environment=None,
     )
@@ -2003,11 +2001,8 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
-        output_log_level=None,
-        output_file=None,
-        borg_local_path='borg',
         working_directory=None,
         extra_environment=None,
     ).and_return('[]')
@@ -2045,11 +2040,8 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
-        output_log_level=None,
-        output_file=None,
-        borg_local_path='borg',
         working_directory=None,
         extra_environment=None,
     ).and_return('[]')

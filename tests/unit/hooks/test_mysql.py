@@ -22,9 +22,8 @@ def test_database_names_to_dump_queries_mysql_for_database_names():
     extra_environment = flexmock()
     log_prefix = ''
     dry_run_label = ''
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('mysql', '--skip-column-names', '--batch', '--execute', 'show schemas'),
-        output_log_level=None,
         extra_environment=extra_environment,
     ).and_return('foo\nbar\nmysql\n').once()
 
@@ -200,7 +199,7 @@ def test_dump_databases_runs_mysqldump_for_all_databases():
 
 def test_database_names_to_dump_runs_mysql_with_list_options():
     database = {'name': 'all', 'list_options': '--defaults-extra-file=my.cnf'}
-    flexmock(module).should_receive('execute_command').with_args(
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'mysql',
             '--defaults-extra-file=my.cnf',
@@ -209,7 +208,6 @@ def test_database_names_to_dump_runs_mysql_with_list_options():
             '--execute',
             'show schemas',
         ),
-        output_log_level=None,
         extra_environment=None,
     ).and_return(('foo\nbar')).once()
 

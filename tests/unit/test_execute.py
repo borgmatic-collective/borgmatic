@@ -213,7 +213,20 @@ def test_execute_command_without_run_to_completion_returns_process():
     assert module.execute_command(full_command, run_to_completion=False) == process
 
 
-def test_execute_command_captures_output():
+def test_execute_command_and_capture_output_returns_stdout():
+    full_command = ['foo', 'bar']
+    expected_output = '[]'
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('check_output').with_args(
+        full_command, stderr=None, shell=False, env=None, cwd=None
+    ).and_return(flexmock(decode=lambda: expected_output)).once()
+
+    output = module.execute_command_and_capture_output(full_command)
+
+    assert output == expected_output
+
+
+def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
@@ -221,53 +234,49 @@ def test_execute_command_captures_output():
         full_command, stderr=module.subprocess.STDOUT, shell=False, env=None, cwd=None
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
-    output = module.execute_command(full_command, output_log_level=None)
+    output = module.execute_command_and_capture_output(full_command, capture_stderr=True)
 
     assert output == expected_output
 
 
-def test_execute_command_captures_output_with_shell():
+def test_execute_command_and_capture_output_returns_output_with_shell():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        'foo bar', stderr=module.subprocess.STDOUT, shell=True, env=None, cwd=None
+        'foo bar', stderr=None, shell=True, env=None, cwd=None
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
-    output = module.execute_command(full_command, output_log_level=None, shell=True)
+    output = module.execute_command_and_capture_output(full_command, shell=True)
 
     assert output == expected_output
 
 
-def test_execute_command_captures_output_with_extra_environment():
+def test_execute_command_and_capture_output_returns_output_with_extra_environment():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command,
-        stderr=module.subprocess.STDOUT,
-        shell=False,
-        env={'a': 'b', 'c': 'd'},
-        cwd=None,
+        full_command, stderr=None, shell=False, env={'a': 'b', 'c': 'd'}, cwd=None,
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
-    output = module.execute_command(
-        full_command, output_log_level=None, shell=False, extra_environment={'c': 'd'}
+    output = module.execute_command_and_capture_output(
+        full_command, shell=False, extra_environment={'c': 'd'}
     )
 
     assert output == expected_output
 
 
-def test_execute_command_captures_output_with_working_directory():
+def test_execute_command_and_capture_output_returns_output_with_working_directory():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command, stderr=module.subprocess.STDOUT, shell=False, env=None, cwd='/working'
+        full_command, stderr=None, shell=False, env=None, cwd='/working'
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
-    output = module.execute_command(
-        full_command, output_log_level=None, shell=False, working_directory='/working'
+    output = module.execute_command_and_capture_output(
+        full_command, shell=False, working_directory='/working'
     )
 
     assert output == expected_output

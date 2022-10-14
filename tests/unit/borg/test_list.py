@@ -361,11 +361,8 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.rlist).should_receive('make_rlist_command').and_return(('borg', 'list', 'repo'))
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'list', 'repo'),
-        output_log_level=None,
-        borg_local_path='borg',
-        extra_environment=None,
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list', 'repo'), extra_environment=None,
     ).and_return('archive1\narchive2').once()
     flexmock(module).should_receive('make_list_command').and_return(
         ('borg', 'list', 'repo::archive1')
@@ -559,11 +556,8 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
         remote_path=None,
     ).and_return(('borg', 'rlist', '--repo', 'repo'))
 
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'rlist', '--repo', 'repo'),
-        output_log_level=None,
-        borg_local_path='borg',
-        extra_environment=None,
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'rlist', '--repo', 'repo'), extra_environment=None,
     ).and_return('archive1\narchive2').once()
 
     flexmock(module).should_receive('make_list_command').with_args(

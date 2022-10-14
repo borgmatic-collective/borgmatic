@@ -1,6 +1,10 @@
 import logging
 
-from borgmatic.execute import execute_command, execute_command_with_processes
+from borgmatic.execute import (
+    execute_command,
+    execute_command_and_capture_output,
+    execute_command_with_processes,
+)
 from borgmatic.hooks import dump
 
 logger = logging.getLogger(__name__)
@@ -42,8 +46,8 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
     logger.debug(
         '{}: Querying for "all" MySQL databases to dump{}'.format(log_prefix, dry_run_label)
     )
-    show_output = execute_command(
-        show_command, output_log_level=None, extra_environment=extra_environment
+    show_output = execute_command_and_capture_output(
+        show_command, extra_environment=extra_environment
     )
 
     return tuple(
