@@ -220,8 +220,8 @@ such files. Common directories to exclude are `/dev` and `/run`, but that may
 not be exhaustive. <span class="minilink minilink-addedin">New in version
 1.7.3</span> When database hooks are enabled, borgmatic automatically excludes
 special files that may cause Borg to hang, so you no longer need to manually
-exclude them. You can override/prevent this behavior by explicitly setting
-`read_special` to true.
+exclude them. (This includes symlinks with special files as a destination.) You
+can override/prevent this behavior by explicitly setting `read_special` to true.
 
 
 ### Manual restoration
