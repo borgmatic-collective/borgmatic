@@ -21,11 +21,13 @@ from borgmatic.config import normalize as module
             {'location': {'source_directories': ['foo', 'bar']}},
             False,
         ),
+        ({'location': None}, {'location': None}, False,),
         (
             {'storage': {'compression': 'yes_please'}},
             {'storage': {'compression': 'yes_please'}},
             False,
         ),
+        ({'storage': None}, {'storage': None}, False,),
         (
             {'hooks': {'healthchecks': 'https://example.com'}},
             {'hooks': {'healthchecks': {'ping_url': 'https://example.com'}}},
@@ -46,11 +48,18 @@ from borgmatic.config import normalize as module
             {'hooks': {'cronhub': {'ping_url': 'https://example.com'}}},
             False,
         ),
+        ({'hooks': None}, {'hooks': None}, False,),
         (
             {'consistency': {'checks': ['archives']}},
             {'consistency': {'checks': [{'name': 'archives'}]}},
             False,
         ),
+        (
+            {'consistency': {'checks': ['archives']}},
+            {'consistency': {'checks': [{'name': 'archives'}]}},
+            False,
+        ),
+        ({'consistency': None}, {'consistency': None}, False,),
         ({'location': {'numeric_owner': False}}, {'location': {'numeric_ids': False}}, False,),
         ({'location': {'bsd_flags': False}}, {'location': {'flags': False}}, False,),
         (

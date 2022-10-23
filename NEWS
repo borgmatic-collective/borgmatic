@@ -1,3 +1,6 @@
+1.7.5.dev0
+ * #604: Fix traceback when a configuration section is present but lacking any options.
+
 1.7.4
  * #596: Fix special file detection erroring when broken symlinks are encountered.
  * #597, #598: Fix regression in which "check" action errored on certain systems ("Cannot determine
