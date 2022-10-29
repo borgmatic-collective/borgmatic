@@ -106,11 +106,60 @@ But if you do want to merge in a YAML key *and* its values, keep reading!
 
 ## Include merging
 
-If you need to get even fancier and pull in common configuration options while
-potentially overriding individual options, you can perform a YAML merge of
-included configuration using the YAML `<<` key. For instance, here's an
-example of a main configuration file that pulls in two retention options via
-an include and then overrides one of them locally:
+If you need to get even fancier and merge in common configuration options, you
+can perform a YAML merge of included configuration using the YAML `<<` key.
+For instance, here's an example of a main configuration file that pulls in
+retention and consistency options via a single include:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   ...
+```
+
+This is what `common.yaml` might look like:
+
+```yaml
+retention:
+    keep_hourly: 24
+    keep_daily: 7
+
+consistency:
+    checks:
+        - name: repository
+```
+
+Once this include gets merged in, the resulting configuration would have all
+of the `location` options from the original configuration file *and* the
+`retention` and `consistency` options from the include.
+
+Prior to borgmatic version 1.6.0, when there's a section collision between the
+local file and the merged include, the local file's section takes precedence.
+So if the `retention` section appears in both the local file and the include
+file, the included `retention` is ignored in favor of the local `retention`.
+But see below about deep merge in version 1.6.0+.
+
+Note that this `<<` include merging syntax is only for merging in mappings
+(configuration options and their values). But if you'd like to include a
+single value directly, please see the section above about standard includes.
+
+Additionally, there is a limitation preventing multiple `<<` include merges
+per section. So for instance, that means you can do one `<<` merge at the
+global level, another `<<` within each configuration section, etc. (This is a
+YAML limitation.)
+
+
+### Deep merge
+
+<span class="minilink minilink-addedin">New in version 1.6.0</span> borgmatic
+performs a deep merge of merged include files, meaning that values are merged
+at all levels in the two configuration files. This allows you to include
+common configuration—up to full borgmatic configuration files—while overriding
+only the parts you want to customize.
+
+For instance, here's an example of a main configuration file that pulls in two
+retention options via an include and then overrides one of them locally:
 
 ```yaml
 <<: !include /etc/borgmatic/common.yaml
@@ -136,24 +185,8 @@ Once this include gets merged in, the resulting configuration would have a
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence.
 
-Note that this `<<` include merging syntax is only for merging in mappings
-(configuration options and their values). But if you'd like to include a
-single value directly, please see the section above about standard includes.
-
-Additionally, there is a limitation preventing multiple `<<` include merges
-per section. So for instance, that means you can do one `<<` merge at the
-global level, another `<<` within each configuration section, etc. (This is a
-YAML limitation.)
-
-
-### Deep merge
-
-<span class="minilink minilink-addedin">New in version 1.6.0</span> borgmatic
-performs a deep merge of merged include files, meaning that values are merged
-at all levels in the two configuration files. Colliding list values are
-appended together. This allows you to include common configuration—up to full
-borgmatic configuration files—while overriding only the parts you want to
-customize.
+<span class="minilink minilink-addedin">New in version 1.6.1</span> Colliding
+list values are appended together.
 
 
 ## Configuration overrides
