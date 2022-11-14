@@ -44,9 +44,11 @@ consistency checks with `check` on a much less frequent basis (e.g. with
 
 ### Consistency check configuration
 
-Another option is to customize your consistency checks. The default
-consistency checks run both full-repository checks and per-archive checks
-within each repository no more than once a month.
+Another option is to customize your consistency checks. By default, if you
+omit consistency checks from configuration, borgmatic runs default consistency
+checks of full-repository checks (`repository`) and per-archive checks
+(`archives`) within each repository, no more than once a month. This is
+equivalent to what `borg check` does if run without options.
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
