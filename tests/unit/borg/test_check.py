@@ -265,6 +265,14 @@ def test_make_check_flags_with_archives_check_and_last_includes_last_flag():
     assert flags == ('--archives-only', '--last', '3')
 
 
+def test_make_check_flags_with_data_check_and_last_includes_last_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('data',), check_last=3)
+
+    assert flags == ('--archives-only', '--last', '3', '--verify-data')
+
+
 def test_make_check_flags_with_repository_check_and_last_omits_last_flag():
     flexmock(module.feature).should_receive('available').and_return(True)
 
@@ -287,6 +295,14 @@ def test_make_check_flags_with_archives_check_and_prefix_includes_match_archives
     flags = module.make_check_flags('1.2.3', ('archives',), prefix='foo-')
 
     assert flags == ('--archives-only', '--match-archives', 'sh:foo-*')
+
+
+def test_make_check_flags_with_data_check_and_prefix_includes_match_archives_flag():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    flags = module.make_check_flags('1.2.3', ('data',), prefix='foo-')
+
+    assert flags == ('--archives-only', '--match-archives', 'sh:foo-*', '--verify-data')
 
 
 def test_make_check_flags_with_archives_check_and_empty_prefix_omits_match_archives_flag():

@@ -166,6 +166,12 @@ def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
     "--last" flag. And if a prefix value is given and "archives" is in checks, then include a
     "--match-archives" flag.
     '''
+    if 'data' in checks:
+        data_flags = ('--verify-data',)
+        checks += ('archives',)
+    else:
+        data_flags = ()
+
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
@@ -176,17 +182,13 @@ def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
         last_flags = ()
         match_archives_flags = ()
         if check_last:
-            logger.info('Ignoring check_last option, as "archives" is not in consistency checks')
-        if prefix:
-            logger.info(
-                'Ignoring consistency prefix option, as "archives" is not in consistency checks'
+            logger.warning(
+                'Ignoring check_last option, as "archives" or "data" are not in consistency checks'
             )
-
-    if 'data' in checks:
-        data_flags = ('--verify-data',)
-        checks += ('archives',)
-    else:
-        data_flags = ()
+        if prefix:
+            logger.warning(
+                'Ignoring consistency prefix option, as "archives" or "data" are not in consistency checks'
+            )
 
     common_flags = last_flags + match_archives_flags + data_flags
 
