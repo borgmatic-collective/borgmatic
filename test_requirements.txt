@@ -14,8 +14,8 @@ py==1.10.0
 pycodestyle==2.8.0
 pyflakes==2.4.0
 jsonschema==3.2.0
-pytest==6.2.5
-pytest-cov==3.0.0
+pytest==7.2.0
+pytest-cov==4.0.0
 regex; python_version >= '3.8'
 requests==2.25.0
 ruamel.yaml>0.15.0,<0.18.0
