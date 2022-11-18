@@ -1,4 +1,5 @@
 1.7.5.dev0
+ * #311: Override PostgreSQL dump/restore commands via configuration options.
  * #604: Fix traceback when a configuration section is present but lacking any options.
  * #607: Clarify examples in include merging and deep merging documentation.
  * #611: Fix "data" consistency check to support "check_last" and consistency "prefix" options.

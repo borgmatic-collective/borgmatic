@@ -59,12 +59,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         default_dump_command = 'pg_dumpall' if all_databases else 'pg_dump'
         dump_command = database.get('pg_dump_command') or default_dump_command
         command = (
-            (
-                dump_command,
-                '--no-password',
-                '--clean',
-                '--if-exists',
-            )
+            (dump_command, '--no-password', '--clean', '--if-exists',)
             + (('--host', database['hostname']) if 'hostname' in database else ())
             + (('--port', str(database['port'])) if 'port' in database else ())
             + (('--username', database['username']) if 'username' in database else ())
