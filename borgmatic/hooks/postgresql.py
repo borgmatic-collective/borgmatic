@@ -56,9 +56,11 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         )
         all_databases = bool(name == 'all')
         dump_format = database.get('format', 'custom')
+        default_dump_command = 'pg_dumpall' if all_databases else 'pg_dump'
+        dump_command = database.get('pg_dump_command') or default_dump_command
         command = (
             (
-                'pg_dumpall' if all_databases else 'pg_dump',
+                dump_command,
                 '--no-password',
                 '--clean',
                 '--if-exists',
@@ -140,16 +142,18 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     dump_filename = dump.make_database_dump_filename(
         make_dump_path(location_config), database['name'], database.get('hostname')
     )
+    psql_command = database.get('psql_command') or 'psql'
     analyze_command = (
-        ('psql', '--no-password', '--quiet')
+        (psql_command, '--no-password', '--quiet')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
         + (('--dbname', database['name']) if not all_databases else ())
         + ('--command', 'ANALYZE')
     )
+    pg_restore_command = database.get('pg_restore_command') or 'pg_restore'
     restore_command = (
-        ('psql' if all_databases else 'pg_restore', '--no-password')
+        (psql_command if all_databases else pg_restore_command, '--no-password')
         + (
             ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
             if not all_databases
