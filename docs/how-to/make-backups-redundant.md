@@ -42,3 +42,13 @@ potentially across providers.
 See [Borg repository URLs
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls)
 for more information on how to specify local and remote repository paths.
+
+### Different options per repository
+
+What if you want borgmatic to backup to multiple repositories—while also
+setting different options for each one? In that case, you'll need to use
+[a separate borgmatic configuration file for each
+repository](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/)
+instead of the multiple repositories in one configuration file as described
+above. That's because all of the repositories in a particular configuration
+file get the same options applied.
