@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
@@ -52,6 +53,7 @@ def prune_archives(
     retention config dict, prune Borg archives according to the retention policy specified in that
     configuration.
     '''
+    borgmatic.logger.add_custom_log_levels()
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('prune', '')
@@ -75,8 +77,8 @@ def prune_archives(
         + flags.make_repository_flags(repository, local_borg_version)
     )
 
-    if (stats or list_archives) and logger.getEffectiveLevel() == logging.WARNING:
-        output_log_level = logging.WARNING
+    if stats or list_archives:
+        output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
 

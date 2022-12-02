@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command, execute_command_and_capture_output
 
@@ -19,6 +20,7 @@ def display_repository_info(
     arguments to the rinfo action, display summary information for the Borg repository or return
     JSON summary information.
     '''
+    borgmatic.logger.add_custom_log_levels()
     lock_wait = storage_config.get('lock_wait', None)
 
     full_command = (
@@ -53,7 +55,7 @@ def display_repository_info(
     else:
         execute_command(
             full_command,
-            output_log_level=logging.WARNING,
+            output_log_level=logging.ANSWER,
             borg_local_path=local_path,
             extra_environment=extra_environment,
         )

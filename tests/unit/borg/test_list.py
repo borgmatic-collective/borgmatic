@@ -254,6 +254,9 @@ def test_make_find_paths_adds_globs_to_path_fragments():
 
 
 def test_list_archive_calls_borg_with_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(
         archive='archive',
         paths=None,
@@ -279,7 +282,7 @@ def test_list_archive_calls_borg_with_parameters():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
@@ -293,6 +296,9 @@ def test_list_archive_calls_borg_with_parameters():
 
 
 def test_list_archive_with_archive_and_json_errors():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(archive='archive', paths=None, json=True, find_paths=None)
 
     flexmock(module.feature).should_receive('available').and_return(False)
@@ -307,6 +313,9 @@ def test_list_archive_with_archive_and_json_errors():
 
 
 def test_list_archive_calls_borg_with_local_path():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(
         archive='archive',
         paths=None,
@@ -332,7 +341,7 @@ def test_list_archive_calls_borg_with_local_path():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg2', 'list', 'repo::archive'),
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg2',
         extra_environment=None,
     ).once()
@@ -347,6 +356,9 @@ def test_list_archive_calls_borg_with_local_path():
 
 
 def test_list_archive_calls_borg_multiple_times_with_find_paths():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     glob_paths = ('**/*foo.txt*/**',)
     list_arguments = argparse.Namespace(
         archive=None,
@@ -371,13 +383,13 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive1') + glob_paths,
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive2') + glob_paths,
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
@@ -391,6 +403,9 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
 
 
 def test_list_archive_calls_borg_with_archive():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(
         archive='archive',
         paths=None,
@@ -416,7 +431,7 @@ def test_list_archive_calls_borg_with_archive():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
@@ -430,6 +445,9 @@ def test_list_archive_calls_borg_with_archive():
 
 
 def test_list_archive_without_archive_delegates_to_list_repository():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(
         archive=None,
         short=None,
@@ -457,6 +475,9 @@ def test_list_archive_without_archive_delegates_to_list_repository():
 
 
 def test_list_archive_with_borg_features_without_archive_delegates_to_list_repository():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     list_arguments = argparse.Namespace(
         archive=None,
         short=None,
@@ -487,6 +508,9 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
     'archive_filter_flag', ('prefix', 'match_archives', 'sort_by', 'first', 'last',),
 )
 def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_flag,):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     default_filter_flags = {
         'prefix': None,
         'match_archives': None,
@@ -513,7 +537,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_fl
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
@@ -534,6 +558,9 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_fl
 def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_rlist(
     archive_filter_flag,
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.logger).answer = lambda message: None
     default_filter_flags = {
         'prefix': None,
         'match_archives': None,
@@ -600,13 +627,13 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--repo', 'repo', 'archive1') + glob_paths,
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--repo', 'repo', 'archive2') + glob_paths,
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
     ).once()

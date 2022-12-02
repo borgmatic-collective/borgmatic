@@ -1,6 +1,7 @@
 import logging
 import os
 
+import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -30,6 +31,7 @@ def export_tar_archive(
 
     If the destination path is "-", then stream the output to stdout instead of to a file.
     '''
+    borgmatic.logger.add_custom_log_levels()
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
 
@@ -53,8 +55,8 @@ def export_tar_archive(
         + (tuple(paths) if paths else ())
     )
 
-    if list_files and logger.getEffectiveLevel() == logging.WARNING:
-        output_log_level = logging.WARNING
+    if list_files:
+        output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
 

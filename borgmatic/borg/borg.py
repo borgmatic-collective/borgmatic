@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
@@ -25,6 +26,7 @@ def run_arbitrary_borg(
     sequence of arbitrary command-line Borg options, and an optional archive name, run an arbitrary
     Borg command on the given repository/archive.
     '''
+    borgmatic.logger.add_custom_log_levels()
     lock_wait = storage_config.get('lock_wait', None)
 
     try:
@@ -60,7 +62,7 @@ def run_arbitrary_borg(
 
     return execute_command(
         full_command,
-        output_log_level=logging.WARNING,
+        output_log_level=logging.ANSWER,
         borg_local_path=local_path,
         extra_environment=environment.make_environment(storage_config),
     )

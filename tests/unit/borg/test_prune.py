@@ -78,6 +78,8 @@ PRUNE_COMMAND = ('borg', 'prune', '--keep-daily', '1', '--keep-weekly', '2', '--
 
 
 def test_prune_archives_calls_borg_with_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('repo',), logging.INFO)
@@ -92,6 +94,8 @@ def test_prune_archives_calls_borg_with_parameters():
 
 
 def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('--info', 'repo'), logging.INFO)
@@ -107,6 +111,8 @@ def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
 
 
 def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('--debug', '--show-rc', 'repo'), logging.INFO)
@@ -122,6 +128,8 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
 
 
 def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('--dry-run', 'repo'), logging.INFO)
@@ -136,6 +144,8 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
 
 
 def test_prune_archives_with_local_path_calls_borg_via_local_path():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1',) + PRUNE_COMMAND[1:] + ('repo',), logging.INFO)
@@ -151,6 +161,8 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
 
 
 def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('--remote-path', 'borg1', 'repo'), logging.INFO)
@@ -165,10 +177,12 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     )
 
 
-def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_warning_output_log_level():
+def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_answer_output_log_level():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), logging.WARNING)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', 'repo'), module.borgmatic.logger.ANSWER)
 
     module.prune_archives(
         dry_run=False,
@@ -180,42 +194,12 @@ def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_warning_o
     )
 
 
-def test_prune_archives_with_stats_and_log_info_calls_borg_with_stats_parameter_and_info_output_log_level():
+def test_prune_archives_with_files_calls_borg_with_list_parameter_and_answer_output_log_level():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_logging_mock(logging.INFO)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--stats', '--info', 'repo'), logging.INFO)
-
-    module.prune_archives(
-        dry_run=False,
-        repository='repo',
-        storage_config={},
-        retention_config=flexmock(),
-        local_borg_version='1.2.3',
-        stats=True,
-    )
-
-
-def test_prune_archives_with_files_calls_borg_with_list_parameter_and_warning_output_log_level():
-    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(PRUNE_COMMAND + ('--list', 'repo'), logging.WARNING)
-
-    module.prune_archives(
-        dry_run=False,
-        repository='repo',
-        storage_config={},
-        retention_config=flexmock(),
-        local_borg_version='1.2.3',
-        list_archives=True,
-    )
-
-
-def test_prune_archives_with_files_and_log_info_calls_borg_with_list_parameter_and_info_output_log_level():
-    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_logging_mock(logging.INFO)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--info', '--list', 'repo'), logging.INFO)
+    insert_execute_command_mock(PRUNE_COMMAND + ('--list', 'repo'), module.borgmatic.logger.ANSWER)
 
     module.prune_archives(
         dry_run=False,
@@ -228,6 +212,8 @@ def test_prune_archives_with_files_and_log_info_calls_borg_with_list_parameter_a
 
 
 def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     storage_config = {'umask': '077'}
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -243,6 +229,8 @@ def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
 
 
 def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     storage_config = {'lock_wait': 5}
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -258,6 +246,8 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 
 
 def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(PRUNE_COMMAND + ('--extra', '--options', 'repo'), logging.INFO)

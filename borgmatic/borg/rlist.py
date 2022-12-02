@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command, execute_command_and_capture_output
 
@@ -108,6 +109,7 @@ def list_repository(
     arguments to the list action, and local and remote Borg paths, display the output of listing
     Borg archives in the given repository (or return JSON output).
     '''
+    borgmatic.logger.add_custom_log_levels()
     borg_environment = environment.make_environment(storage_config)
 
     main_command = make_rlist_command(
@@ -119,7 +121,7 @@ def list_repository(
     else:
         execute_command(
             main_command,
-            output_log_level=logging.WARNING,
+            output_log_level=logging.ANSWER,
             borg_local_path=local_path,
             extra_environment=borg_environment,
         )

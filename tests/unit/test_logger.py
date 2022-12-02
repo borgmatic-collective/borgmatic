@@ -1,4 +1,5 @@
 import logging
+import sys
 
 import pytest
 from flexmock import flexmock
@@ -125,6 +126,8 @@ def test_multi_stream_handler_logs_to_handler_for_log_level():
 
 
 def test_console_color_formatter_format_includes_log_message():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     plain_message = 'uh oh'
     record = flexmock(levelno=logging.CRITICAL, msg=plain_message)
 
@@ -142,7 +145,38 @@ def test_color_text_without_color_does_not_raise():
     module.color_text(None, 'hi')
 
 
+def test_add_logging_level_adds_level_name_and_sets_global_attributes_and_methods():
+    logger = flexmock()
+    flexmock(module.logging).should_receive('getLoggerClass').and_return(logger)
+    flexmock(module.logging).should_receive('addLevelName').with_args(99, 'PLAID')
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_call('setattr')
+    builtins.should_receive('setattr').with_args(module.logging, 'PLAID', 99).once()
+    builtins.should_receive('setattr').with_args(logger, 'plaid', object).once()
+    builtins.should_receive('setattr').with_args(logging, 'plaid', object).once()
+
+    module.add_logging_level('PLAID', 99)
+
+
+def test_add_logging_level_skips_global_setting_if_already_set():
+    logger = flexmock()
+    flexmock(module.logging).should_receive('getLoggerClass').and_return(logger)
+    flexmock(module.logging).PLAID = 99
+    flexmock(logger).plaid = flexmock()
+    flexmock(logging).plaid = flexmock()
+    flexmock(module.logging).should_receive('addLevelName').never()
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_call('setattr')
+    builtins.should_receive('setattr').with_args(module.logging, 'PLAID', 99).never()
+    builtins.should_receive('setattr').with_args(logger, 'plaid', object).never()
+    builtins.should_receive('setattr').with_args(logging, 'plaid', object).never()
+
+    module.add_logging_level('PLAID', 99)
+
+
 def test_configure_logging_probes_for_log_socket_on_linux():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -161,6 +195,8 @@ def test_configure_logging_probes_for_log_socket_on_linux():
 
 
 def test_configure_logging_probes_for_log_socket_on_macos():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -180,6 +216,8 @@ def test_configure_logging_probes_for_log_socket_on_macos():
 
 
 def test_configure_logging_probes_for_log_socket_on_freebsd():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -200,6 +238,8 @@ def test_configure_logging_probes_for_log_socket_on_freebsd():
 
 
 def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -213,6 +253,8 @@ def test_configure_logging_sets_global_logger_to_most_verbose_log_level():
 
 
 def test_configure_logging_skips_syslog_if_not_found():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -227,6 +269,8 @@ def test_configure_logging_skips_syslog_if_not_found():
 
 
 def test_configure_logging_skips_syslog_if_interactive_console():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -242,6 +286,8 @@ def test_configure_logging_skips_syslog_if_interactive_console():
 
 
 def test_configure_logging_to_logfile_instead_of_syslog():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
@@ -264,6 +310,8 @@ def test_configure_logging_to_logfile_instead_of_syslog():
 
 
 def test_configure_logging_skips_logfile_if_argument_is_none():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )

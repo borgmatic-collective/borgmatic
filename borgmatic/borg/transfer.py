@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
@@ -19,6 +20,8 @@ def transfer_archives(
     Given a dry-run flag, a local or remote repository path, a storage config dict, the local Borg
     version, and the arguments to the transfer action, transfer archives to the given repository.
     '''
+    borgmatic.logger.add_custom_log_levels()
+
     full_command = (
         (local_path, 'transfer')
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -41,7 +44,7 @@ def transfer_archives(
 
     return execute_command(
         full_command,
-        output_log_level=logging.WARNING,
+        output_log_level=logging.ANSWER,
         borg_local_path=local_path,
         extra_environment=environment.make_environment(storage_config),
     )

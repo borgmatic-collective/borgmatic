@@ -3,6 +3,7 @@ import copy
 import logging
 import re
 
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, rlist
 from borgmatic.execute import execute_command, execute_command_and_capture_output
 
@@ -99,6 +100,8 @@ def list_archive(
     list the files by searching across multiple archives. If neither find_paths nor archive name
     are given, instead list the archives in the given repository.
     '''
+    borgmatic.logger.add_custom_log_levels()
+
     if not list_arguments.archive and not list_arguments.find_paths:
         if feature.available(feature.Feature.RLIST, local_borg_version):
             logger.warning(
@@ -170,7 +173,7 @@ def list_archive(
 
     # For each archive listed by Borg, run list on the contents of that archive.
     for archive in archive_lines:
-        logger.warning(f'{repository}: Listing archive {archive}')
+        logger.answer(f'{repository}: Listing archive {archive}')
 
         archive_arguments = copy.copy(list_arguments)
         archive_arguments.archive = archive
@@ -191,7 +194,7 @@ def list_archive(
 
         execute_command(
             main_command,
-            output_log_level=logging.WARNING,
+            output_log_level=logging.ANSWER,
             borg_local_path=local_path,
             extra_environment=borg_environment,
         )

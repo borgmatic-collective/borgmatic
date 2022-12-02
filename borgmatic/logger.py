@@ -85,18 +85,19 @@ class Multi_stream_handler(logging.Handler):
             handler.setLevel(level)
 
 
-LOG_LEVEL_TO_COLOR = {
-    logging.CRITICAL: colorama.Fore.RED,
-    logging.ERROR: colorama.Fore.RED,
-    logging.WARN: colorama.Fore.YELLOW,
-    logging.INFO: colorama.Fore.GREEN,
-    logging.DEBUG: colorama.Fore.CYAN,
-}
-
-
 class Console_color_formatter(logging.Formatter):
     def format(self, record):
-        color = LOG_LEVEL_TO_COLOR.get(record.levelno)
+        add_custom_log_levels()
+
+        color = {
+            logging.CRITICAL: colorama.Fore.RED,
+            logging.ERROR: colorama.Fore.RED,
+            logging.WARN: colorama.Fore.YELLOW,
+            logging.ANSWER: colorama.Fore.MAGENTA,
+            logging.INFO: colorama.Fore.GREEN,
+            logging.DEBUG: colorama.Fore.CYAN,
+        }.get(record.levelno)
+
         return color_text(color, record.msg)
 
 
@@ -108,6 +109,45 @@ def color_text(color, message):
         return message
 
     return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
+
+
+def add_logging_level(level_name, level_number):
+    '''
+    Globally add a custom logging level based on the given (all uppercase) level name and number.
+    Do this idempotently.
+
+    Inspired by https://stackoverflow.com/questions/2183233/how-to-add-a-custom-loglevel-to-pythons-logging-facility/35804945#35804945
+    '''
+    method_name = level_name.lower()
+
+    if not hasattr(logging, level_name):
+        logging.addLevelName(level_number, level_name)
+        setattr(logging, level_name, level_number)
+
+    if not hasattr(logging, method_name):
+
+        def log_for_level(self, message, *args, **kwargs):  # pragma: no cover
+            if self.isEnabledFor(level_number):
+                self._log(level_number, message, args, **kwargs)
+
+        setattr(logging.getLoggerClass(), method_name, log_for_level)
+
+    if not hasattr(logging.getLoggerClass(), method_name):
+
+        def log_to_root(message, *args, **kwargs):  # pragma: no cover
+            logging.log(level_number, message, *args, **kwargs)
+
+        setattr(logging, method_name, log_to_root)
+
+
+ANSWER = logging.WARN - 5
+
+
+def add_custom_log_levels():  # pragma: no cover
+    '''
+    Add a custom log level between WARN and INFO for user-requested answers.
+    '''
+    add_logging_level('ANSWER', ANSWER)
 
 
 def configure_logging(
@@ -130,6 +170,8 @@ def configure_logging(
     if monitoring_log_level is None:
         monitoring_log_level = console_log_level
 
+    add_custom_log_levels()
+
     # Log certain log levels to console stderr and others to stdout. This supports use cases like
     # grepping (non-error) output.
     console_error_handler = logging.StreamHandler(sys.stderr)
@@ -138,7 +180,8 @@ def configure_logging(
         {
             logging.CRITICAL: console_error_handler,
             logging.ERROR: console_error_handler,
-            logging.WARN: console_standard_handler,
+            logging.WARN: console_error_handler,
+            logging.ANSWER: console_standard_handler,
             logging.INFO: console_standard_handler,
             logging.DEBUG: console_standard_handler,
         }

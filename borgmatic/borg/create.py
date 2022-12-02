@@ -6,6 +6,7 @@ import pathlib
 import stat
 import tempfile
 
+import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, state
 from borgmatic.execute import (
     DO_NOT_CAPTURE,
@@ -305,6 +306,7 @@ def create_archive(
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
     '''
+    borgmatic.logger.add_custom_log_levels()
     borgmatic_source_directories = expand_directories(
         collect_borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
     )
@@ -406,8 +408,8 @@ def create_archive(
 
     if json:
         output_log_level = None
-    elif (stats or list_files) and logger.getEffectiveLevel() == logging.WARNING:
-        output_log_level = logging.WARNING
+    elif list_files or (stats and not dry_run):
+        output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
 

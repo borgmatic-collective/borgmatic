@@ -33,7 +33,7 @@ from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.hooks import command, dispatch, dump, monitor
-from borgmatic.logger import configure_logging, should_do_markup
+from borgmatic.logger import add_custom_log_levels, configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -244,6 +244,7 @@ def run_actions(
     action or a hook. Raise ValueError if the arguments or configuration passed to action are
     invalid.
     '''
+    add_custom_log_levels()
     repository = os.path.expanduser(repository_path)
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
@@ -651,7 +652,7 @@ def run_actions(
         ):
             rlist_arguments = copy.copy(arguments['rlist'])
             if not rlist_arguments.json:  # pragma: nocover
-                logger.warning('{}: Listing repository'.format(repository))
+                logger.answer('{}: Listing repository'.format(repository))
             json_output = borg_rlist.list_repository(
                 repository,
                 storage,
@@ -669,9 +670,9 @@ def run_actions(
             list_arguments = copy.copy(arguments['list'])
             if not list_arguments.json:  # pragma: nocover
                 if list_arguments.find_paths:
-                    logger.warning('{}: Searching archives'.format(repository))
+                    logger.answer('{}: Searching archives'.format(repository))
                 elif not list_arguments.archive:
-                    logger.warning('{}: Listing archives'.format(repository))
+                    logger.answer('{}: Listing archives'.format(repository))
             list_arguments.archive = borg_rlist.resolve_archive_name(
                 repository,
                 list_arguments.archive,
@@ -696,7 +697,7 @@ def run_actions(
         ):
             rinfo_arguments = copy.copy(arguments['rinfo'])
             if not rinfo_arguments.json:  # pragma: nocover
-                logger.warning('{}: Displaying repository summary information'.format(repository))
+                logger.answer('{}: Displaying repository summary information'.format(repository))
             json_output = borg_rinfo.display_repository_info(
                 repository,
                 storage,
@@ -713,7 +714,7 @@ def run_actions(
         ):
             info_arguments = copy.copy(arguments['info'])
             if not info_arguments.json:  # pragma: nocover
-                logger.warning('{}: Displaying archive summary information'.format(repository))
+                logger.answer('{}: Displaying archive summary information'.format(repository))
             info_arguments.archive = borg_rlist.resolve_archive_name(
                 repository,
                 info_arguments.archive,
@@ -736,7 +737,7 @@ def run_actions(
         if arguments['break-lock'].repository is None or validate.repositories_match(
             repository, arguments['break-lock'].repository
         ):
-            logger.warning(f'{repository}: Breaking repository and cache locks')
+            logger.info(f'{repository}: Breaking repository and cache locks')
             borg_break_lock.break_lock(
                 repository,
                 storage,
@@ -748,7 +749,7 @@ def run_actions(
         if arguments['borg'].repository is None or validate.repositories_match(
             repository, arguments['borg'].repository
         ):
-            logger.warning('{}: Running arbitrary Borg command'.format(repository))
+            logger.info('{}: Running arbitrary Borg command'.format(repository))
             archive_name = borg_rlist.resolve_archive_name(
                 repository,
                 arguments['borg'].archive,

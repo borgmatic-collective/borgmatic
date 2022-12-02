@@ -413,6 +413,8 @@ REPO_ARCHIVE_WITH_PATHS = (f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'bar')
 
 
 def test_create_archive_calls_borg_with_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -452,6 +454,8 @@ def test_create_archive_calls_borg_with_parameters():
 
 
 def test_create_archive_calls_borg_with_environment():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -492,6 +496,8 @@ def test_create_archive_calls_borg_with_environment():
 
 
 def test_create_archive_with_patterns_calls_borg_with_patterns_including_converted_source_directories():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     pattern_flags = ('--patterns-from', 'patterns')
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -534,6 +540,8 @@ def test_create_archive_with_patterns_calls_borg_with_patterns_including_convert
 
 
 def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     exclude_flags = ('--exclude-from', 'excludes')
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -576,6 +584,8 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
 
 
 def test_create_archive_with_log_info_calls_borg_with_info_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -616,6 +626,8 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
 
 
 def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -654,6 +666,8 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
 
 
 def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -694,6 +708,8 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
 
 
 def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -732,6 +748,8 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
 
 
 def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -773,6 +791,8 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
 def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_parameter():
     # --dry-run and --stats are mutually exclusive, see:
     # https://borgbackup.readthedocs.io/en/stable/usage/create.html#description
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -814,6 +834,8 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
 
 
 def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_interval_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -853,6 +875,8 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
 
 
 def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -892,6 +916,8 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
 
 
 def test_create_archive_with_compression_calls_borg_with_compression_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -936,6 +962,8 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
 def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_parameters(
     feature_available, option_flag
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -975,6 +1003,8 @@ def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_
 
 
 def test_create_archive_with_working_directory_calls_borg_with_working_directory():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1017,6 +1047,8 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
 
 
 def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1062,6 +1094,8 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
 def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
     feature_available, option_flag
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1102,6 +1136,8 @@ def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
 
 
 def test_create_archive_with_read_special_calls_borg_with_read_special_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1158,6 +1194,8 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
 def test_create_archive_with_basic_option_calls_borg_with_corresponding_parameter(
     option_name, option_value
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     option_flag = '--no' + option_name.replace('', '') if option_value is False else None
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -1210,6 +1248,8 @@ def test_create_archive_with_basic_option_calls_borg_with_corresponding_paramete
 def test_create_archive_with_atime_option_calls_borg_with_corresponding_parameter(
     option_value, feature_available, option_flag
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1261,6 +1301,8 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
 def test_create_archive_with_flags_option_calls_borg_with_corresponding_parameter(
     option_value, feature_available, option_flag
 ):
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1301,6 +1343,8 @@ def test_create_archive_with_flags_option_calls_borg_with_corresponding_paramete
 
 
 def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1341,6 +1385,8 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
 
 
 def test_create_archive_with_local_path_calls_borg_via_local_path():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1381,6 +1427,8 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
 
 
 def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1421,6 +1469,8 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
 
 
 def test_create_archive_with_umask_calls_borg_with_umask_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1460,6 +1510,8 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
 
 
 def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1498,7 +1550,9 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     )
 
 
-def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_output_log_level():
+def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_output_log_level():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1517,7 +1571,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_o
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--stats',),
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',
         working_directory=None,
@@ -1538,48 +1592,9 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_warning_o
     )
 
 
-def test_create_archive_with_stats_and_log_info_calls_borg_with_stats_parameter_and_info_output_log_level():
-    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
-    flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module).should_receive('pattern_root_directories').and_return([])
-    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
-    flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
-    )
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--info', '--stats'),
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        working_directory=None,
-        extra_environment=None,
-    )
-    insert_logging_mock(logging.INFO)
-
-    module.create_archive(
-        dry_run=False,
-        repository='repo',
-        location_config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        storage_config={},
-        local_borg_version='1.2.3',
-        stats=True,
-    )
-
-
-def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_output_log_level():
+def test_create_archive_with_files_calls_borg_with_list_parameter_and_answer_output_log_level():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1598,53 +1613,12 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_warning_ou
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'create', '--list', '--filter', 'AMEx-') + REPO_ARCHIVE_WITH_PATHS,
-        output_log_level=logging.WARNING,
+        output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',
         working_directory=None,
         extra_environment=None,
     )
-
-    module.create_archive(
-        dry_run=False,
-        repository='repo',
-        location_config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-        },
-        storage_config={},
-        local_borg_version='1.2.3',
-        list_files=True,
-    )
-
-
-def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_and_info_output_log_level():
-    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
-    flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module).should_receive('pattern_root_directories').and_return([])
-    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
-    flexmock(module).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
-        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
-    )
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AMEx-') + REPO_ARCHIVE_WITH_PATHS + ('--info',),
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        working_directory=None,
-        extra_environment=None,
-    )
-    insert_logging_mock(logging.INFO)
 
     module.create_archive(
         dry_run=False,
@@ -1661,6 +1635,8 @@ def test_create_archive_with_files_and_log_info_calls_borg_with_list_parameter_a
 
 
 def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_parameter_and_no_list():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1702,6 +1678,8 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
 
 
 def test_create_archive_with_progress_calls_borg_with_progress_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1742,6 +1720,8 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
 
 
 def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progress_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -1800,6 +1780,8 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
 
 
 def test_create_archive_with_stream_processes_ignores_read_special_false_and_logs_warnings():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -1860,6 +1842,8 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
 
 
 def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -1924,6 +1908,8 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
 
 
 def test_create_archive_with_stream_processes_and_read_special_does_not_add_special_files_to_excludes():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -1985,6 +1971,8 @@ def test_create_archive_with_stream_processes_and_read_special_does_not_add_spec
 
 
 def test_create_archive_with_json_calls_borg_with_json_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2024,6 +2012,8 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
 
 
 def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2064,6 +2054,8 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
 
 
 def test_create_archive_with_source_directories_glob_expands():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'food'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2104,6 +2096,8 @@ def test_create_archive_with_source_directories_glob_expands():
 
 
 def test_create_archive_with_non_matching_source_directories_glob_passes_through():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo*',))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2144,6 +2138,8 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
 
 
 def test_create_archive_with_glob_calls_borg_with_expanded_directories():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'food'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2183,6 +2179,8 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
 
 
 def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2222,6 +2220,8 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
 
 
 def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     repository_archive_pattern = 'repo::Documents_{hostname}-{now}'
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -2262,6 +2262,8 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
 
 
 def test_create_archive_with_repository_accepts_borg_placeholders():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
@@ -2302,6 +2304,8 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
 
 
 def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2341,6 +2345,8 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
 
 
 def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read_special():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))

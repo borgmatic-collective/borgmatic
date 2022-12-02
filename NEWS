@@ -1,3 +1,6 @@
+1.7.6.dev0
+ * #602: Fix logs that interfere with JSON output by making warnings go to stderr instead of stdout.
+
 1.7.5
  * #311: Override PostgreSQL dump/restore commands via configuration options.
  * #604: Fix traceback when a configuration section is present but lacking any options.
