@@ -173,7 +173,7 @@ used in Borg 1, thereby making deduplication work across transferred archives
 and new archives. Note that `repokey-blake2-chacha20-poly1305` may be faster
 than `repokey-blake2-aes-ocb` on certain platforms like ARM64. Read about
 [Borg encryption
-modes](https://borgbackup.readthedocs.io/en/2.0.0b3/usage/rcreate.html#encryption-mode-tldr)
+modes](https://borgbackup.readthedocs.io/en/2.0.0b4/usage/rcreate.html#encryption-mode-tldr)
 for the menu of available encryption modes.
 
 To transfer data from your original Borg 1 repository to your newly created
@@ -194,9 +194,9 @@ might take a while), and the final command with `--dry-run` again provides
 confirmation of success—or tells you if something hasn't been transferred yet.
 
 Note that by omitting the `--upgrader` flag, you can also do archive transfers
-between Borg 2 repositories without upgrading, even down to individual
+between related Borg 2 repositories without upgrading, even down to individual
 archives. For more on that functionality, see the [Borg transfer
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b3/usage/transfer.html).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b4/usage/transfer.html).
 
 That's it! Now you can use your new Borg 2 repository as normal with
 borgmatic. If you've got multiple repositories, repeat the above process for
