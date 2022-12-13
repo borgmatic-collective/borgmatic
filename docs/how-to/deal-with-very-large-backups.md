@@ -67,7 +67,10 @@ Here are the available checks from fastest to slowest:
  * `repository`: Checks the consistency of the repository itself.
  * `archives`: Checks all of the archives in the repository.
  * `extract`: Performs an extraction dry-run of the most recent archive.
- * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data (implies `archives` as well).
+ * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data.
+
+Note that the `data` check is a more thorough version of the `archives` check,
+so enabling the `data` check implicitly enables the `archives` check as well.
 
 See [Borg's check
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html)
