@@ -105,17 +105,18 @@ offerings, but do not currently fund borgmatic development or hosting.
 ### Issues
 
 You've got issues? Or an idea for a feature enhancement? We've got an [issue
-tracker](https://projects.torsion.org/borgmatic-collective/borgmatic/issues). In order to
-create a new issue or comment on an issue, you'll need to [login
-first](https://projects.torsion.org/user/login). Note that you can login with
-an existing GitHub account if you prefer.
+tracker](https://projects.torsion.org/borgmatic-collective/borgmatic/issues).
+In order to create a new issue or comment on an issue, you'll need to
+[register](https://projects.torsion.org/user/sign_up?invite_code=borgmatic)
+and [login](https://projects.torsion.org/user/login) first. If you prefer to
+use an existing GitHub account, you can skip account creation and login
+directly.
 
-If you'd like to chat with borgmatic developers or users, head on over to the
-`#borgmatic` IRC channel on Libera Chat, either via <a
-href="https://web.libera.chat/#borgmatic">web chat</a> or a
-native <a href="ircs://irc.libera.chat:6697">IRC client</a>. If you
-don't get a response right away, please hang around a while—or file a ticket
-instead.
+To chat with borgmatic developers or users, head on over to the `#borgmatic`
+IRC channel on Libera Chat, either via <a
+href="https://web.libera.chat/#borgmatic">web chat</a> or a native <a
+href="ircs://irc.libera.chat:6697">IRC client</a>. If you don't get a response
+right away, please hang around a while—or file a ticket instead.
 
 Also see the [security
 policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
