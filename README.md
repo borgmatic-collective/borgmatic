@@ -136,10 +136,15 @@ borgmatic is licensed under the GNU General Public License version 3 or any
 later version.
 
 If you'd like to contribute to borgmatic development, please feel free to
-submit a [Pull Request](https://projects.torsion.org/borgmatic-collective/borgmatic/pulls)
-or open an [issue](https://projects.torsion.org/borgmatic-collective/borgmatic/issues) first
-to discuss your idea. We also accept Pull Requests on GitHub, if that's more
-your thing. In general, contributions are very welcome. We don't bite! 
+submit a [Pull
+Request](https://projects.torsion.org/borgmatic-collective/borgmatic/pulls) or
+open an
+[issue](https://projects.torsion.org/borgmatic-collective/borgmatic/issues) to
+discuss your idea. Note that you'll need to
+[register](https://projects.torsion.org/user/sign_up?invite_code=borgmatic)
+and [login](https://projects.torsion.org/user/login) first. We also accept
+Pull Requests on GitHub, if that's more your thing. In general, contributions
+are very welcome. We don't bite!
 
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
