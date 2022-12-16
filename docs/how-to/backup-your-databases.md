@@ -76,6 +76,9 @@ hooks:
           options: "--ssl"
 ```
 
+
+### All databases
+
 If you want to dump all databases on a host, use `all` for the database name:
 
 ```yaml
@@ -91,9 +94,30 @@ hooks:
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
-If you would like to backup databases only and not source directories, you can
-specify an empty `source_directories` value (as it is a mandatory field prior
-to borgmatic 1.7.1):
+<span class="minilink minilink-addedin">New in version 1.7.6</span> With
+PostgreSQL and MySQL, you can optionally dump "all" databases to separate
+files instead of one combined dump file, allowing more convenient restores of
+individual databases. Enable this by specifying your desired database dump
+`format`:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: all
+          format: custom
+    mysql_databases:
+        - name: all
+          format: sql
+```
+
+### No source directories
+
+<span class="minilink minilink-addedin">New in version 1.7.1</span> If you
+would like to backup databases only and not source directories, you can omit
+`source_directories` entirely.
+
+In older versions of borgmatic, instead specify an empty `source_directories`
+value, as it is a mandatory option prior to version 1.7.1:
 
 ```yaml
 location:
@@ -103,8 +127,7 @@ hooks:
         - name: all
 ```
 
-<span class="minilink minilink-addedin">New in version 1.7.1</span> You can
-omit `source_directories` entirely.
+
 
 ### External passwords
 

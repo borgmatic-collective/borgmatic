@@ -691,10 +691,13 @@ properties:
                             type: string
                             description: |
                                 Database name (required if using this hook). Or
-                                "all" to dump all databases on the host. Note
-                                that using this database hook implicitly enables
-                                both read_special and one_file_system (see
-                                above) to support dump and restore streaming.
+                                "all" to dump all databases on the host. (Also
+                                set the "format" to dump each database to a
+                                separate file instead of one combined file.)
+                                Note that using this database hook implicitly
+                                enables both read_special and one_file_system
+                                (see above) to support dump and restore
+                                streaming.
                             example: users
                         hostname:
                             type: string
@@ -729,9 +732,14 @@ properties:
                             description: |
                                 Database dump output format. One of "plain",
                                 "custom", "directory", or "tar". Defaults to
-                                "custom" (unlike raw pg_dump). See pg_dump
-                                documentation for details. Note that format is
-                                ignored when the database name is "all".
+                                "custom" (unlike raw pg_dump) for a single
+                                database. Or, when database name is "all" and
+                                format is blank, dumps all databases to a single
+                                file. But if a format is specified with an "all"
+                                database name, dumps each database to a separate
+                                file of that format, allowing more convenient
+                                restores of individual databases. See the
+                                pg_dump documentation for more about formats.
                             example: directory
                         ssl_mode:
                             type: string

@@ -1,6 +1,11 @@
+import csv
 import logging
 
-from borgmatic.execute import execute_command, execute_command_with_processes
+from borgmatic.execute import (
+    execute_command,
+    execute_command_and_capture_output,
+    execute_command_with_processes,
+)
 from borgmatic.hooks import dump
 
 logger = logging.getLogger(__name__)
@@ -34,6 +39,44 @@ def make_extra_environment(database):
     return extra
 
 
+EXCLUDED_DATABASE_NAMES = ('template0', 'template1')
+
+
+def database_names_to_dump(database, extra_environment, log_prefix, dry_run_label):
+    '''
+    Given a requested database config, return the corresponding sequence of database names to dump.
+    In the case of "all" when a database format is given, query for the names of databases on the
+    configured host and return them. For "all" without a database format, just return a sequence
+    containing "all".
+    '''
+    requested_name = database['name']
+
+    if requested_name != 'all':
+        return (requested_name,)
+    if not database.get('format'):
+        return ('all',)
+
+    list_command = (
+        ('psql', '--list', '--no-password', '--csv', '--tuples-only')
+        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--port', str(database['port'])) if 'port' in database else ())
+        + (('--username', database['username']) if 'username' in database else ())
+        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+    )
+    logger.debug(
+        '{}: Querying for "all" PostgreSQL databases to dump{}'.format(log_prefix, dry_run_label)
+    )
+    list_output = execute_command_and_capture_output(
+        list_command, extra_environment=extra_environment
+    )
+
+    return tuple(
+        row[0]
+        for row in csv.reader(list_output.splitlines(), delimiter=',', quotechar='"')
+        if row[0] not in EXCLUDED_DATABASE_NAMES
+    )
+
+
 def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     Dump the given PostgreSQL databases to a named pipe. The databases are supplied as a sequence of
@@ -43,6 +86,8 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
+
+    Raise ValueError if the databases to dump cannot be determined.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -50,48 +95,59 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     logger.info('{}: Dumping PostgreSQL databases{}'.format(log_prefix, dry_run_label))
 
     for database in databases:
-        name = database['name']
-        dump_filename = dump.make_database_dump_filename(
-            make_dump_path(location_config), name, database.get('hostname')
-        )
-        all_databases = bool(name == 'all')
-        dump_format = database.get('format', 'custom')
-        default_dump_command = 'pg_dumpall' if all_databases else 'pg_dump'
-        dump_command = database.get('pg_dump_command') or default_dump_command
-        command = (
-            (dump_command, '--no-password', '--clean', '--if-exists',)
-            + (('--host', database['hostname']) if 'hostname' in database else ())
-            + (('--port', str(database['port'])) if 'port' in database else ())
-            + (('--username', database['username']) if 'username' in database else ())
-            + (() if all_databases else ('--format', dump_format))
-            + (('--file', dump_filename) if dump_format == 'directory' else ())
-            + (tuple(database['options'].split(' ')) if 'options' in database else ())
-            + (() if all_databases else (name,))
-            # Use shell redirection rather than the --file flag to sidestep synchronization issues
-            # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
-            # format in a particular, a named destination is required, and redirection doesn't work.
-            + (('>', dump_filename) if dump_format != 'directory' else ())
-        )
         extra_environment = make_extra_environment(database)
-
-        logger.debug(
-            '{}: Dumping PostgreSQL database {} to {}{}'.format(
-                log_prefix, name, dump_filename, dry_run_label
-            )
+        dump_path = make_dump_path(location_config)
+        dump_database_names = database_names_to_dump(
+            database, extra_environment, log_prefix, dry_run_label
         )
-        if dry_run:
-            continue
 
-        if dump_format == 'directory':
-            dump.create_parent_directory_for_dump(dump_filename)
-        else:
-            dump.create_named_pipe_for_dump(dump_filename)
+        if not dump_database_names:
+            raise ValueError('Cannot find any PostgreSQL databases to dump.')
 
-        processes.append(
-            execute_command(
-                command, shell=True, extra_environment=extra_environment, run_to_completion=False
+        for database_name in dump_database_names:
+            dump_format = database.get('format', None if database_name == 'all' else 'custom')
+            default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
+            dump_command = database.get('pg_dump_command') or default_dump_command
+            dump_filename = dump.make_database_dump_filename(
+                dump_path, database_name, database.get('hostname')
             )
-        )
+
+            command = (
+                (dump_command, '--no-password', '--clean', '--if-exists',)
+                + (('--host', database['hostname']) if 'hostname' in database else ())
+                + (('--port', str(database['port'])) if 'port' in database else ())
+                + (('--username', database['username']) if 'username' in database else ())
+                + (('--format', dump_format) if dump_format else ())
+                + (('--file', dump_filename) if dump_format == 'directory' else ())
+                + (tuple(database['options'].split(' ')) if 'options' in database else ())
+                + (() if database_name == 'all' else (database_name,))
+                # Use shell redirection rather than the --file flag to sidestep synchronization issues
+                # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
+                # format in a particular, a named destination is required, and redirection doesn't work.
+                + (('>', dump_filename) if dump_format != 'directory' else ())
+            )
+
+            logger.debug(
+                '{}: Dumping PostgreSQL database "{}" to {}{}'.format(
+                    log_prefix, database_name, dump_filename, dry_run_label
+                )
+            )
+            if dry_run:
+                continue
+
+            if dump_format == 'directory':
+                dump.create_parent_directory_for_dump(dump_filename)
+            else:
+                dump.create_named_pipe_for_dump(dump_filename)
+
+            processes.append(
+                execute_command(
+                    command,
+                    shell=True,
+                    extra_environment=extra_environment,
+                    run_to_completion=False,
+                )
+            )
 
     return processes
 

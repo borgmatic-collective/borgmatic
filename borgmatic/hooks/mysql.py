@@ -24,7 +24,7 @@ SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 's
 
 def database_names_to_dump(database, extra_environment, log_prefix, dry_run_label):
     '''
-    Given a requested database name, return the corresponding sequence of database names to dump.
+    Given a requested database config, return the corresponding sequence of database names to dump.
     In the case of "all", query for the names of databases on the configured host and return them,
     excluding any system databases that will cause problems during restore.
     '''
