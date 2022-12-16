@@ -104,23 +104,37 @@ offerings, but do not currently fund borgmatic development or hosting.
 
 ### Issues
 
-You've got issues? Or an idea for a feature enhancement? We've got an [issue
+Are you experiencing an issue with borgmatic? Or do you have an idea for a
+feature enhancement? Head on over to our [issue
 tracker](https://projects.torsion.org/borgmatic-collective/borgmatic/issues).
-In order to create a new issue or comment on an issue, you'll need to
+In order to create a new issue or add a comment, you'll need to
 [register](https://projects.torsion.org/user/sign_up?invite_code=borgmatic)
-and [login](https://projects.torsion.org/user/login) first. If you prefer to
-use an existing GitHub account, you can skip account creation and login
-directly.
+first. If you prefer to use an existing GitHub account, you can skip account
+creation and [login directly](https://projects.torsion.org/user/login).
 
-To chat with borgmatic developers or users, head on over to the `#borgmatic`
+Also see the [security
+policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
+issues.
+
+
+### Social
+
+Check out the [Borg subreddit](https://www.reddit.com/r/BorgBackup/) for
+general Borg and borgmatic discussion and support.
+
+Also follow [borgmatic on Mastodon](https://fosstodon.org/@borgmatic).
+
+
+### Chat
+
+To chat with borgmatic developers or users, check out the `#borgmatic`
 IRC channel on Libera Chat, either via <a
 href="https://web.libera.chat/#borgmatic">web chat</a> or a native <a
 href="ircs://irc.libera.chat:6697">IRC client</a>. If you don't get a response
 right away, please hang around a while—or file a ticket instead.
 
-Also see the [security
-policy](https://torsion.org/borgmatic/docs/security-policy/) for any security
-issues.
+
+### Other
 
 Other questions or comments? Contact
 [witten@torsion.org](mailto:witten@torsion.org).
@@ -142,9 +156,8 @@ open an
 [issue](https://projects.torsion.org/borgmatic-collective/borgmatic/issues) to
 discuss your idea. Note that you'll need to
 [register](https://projects.torsion.org/user/sign_up?invite_code=borgmatic)
-and [login](https://projects.torsion.org/user/login) first. We also accept
-Pull Requests on GitHub, if that's more your thing. In general, contributions
-are very welcome. We don't bite!
+first. We also accept Pull Requests on GitHub, if that's more your thing. In
+general, contributions are very welcome. We don't bite!
 
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
