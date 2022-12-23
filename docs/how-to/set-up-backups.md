@@ -257,9 +257,9 @@ See `borgmatic --help` and `borgmatic create --help` for more information.
 
 If you omit `create` and other actions, borgmatic runs through a set of
 default actions: `prune` any old backups as per the configured retention
-policy, `compact` segments to free up space (with Borg 1.2+, Borgmatic 1.5.23+), `create` a
-backup, *and* `check` backups for consistency problems due to things like file
-damage. For instance:
+policy, `compact` segments to free up space (with Borg 1.2+, borgmatic
+1.5.23+), `create` a backup, *and* `check` backups for consistency problems
+due to things like file damage. For instance:
 
 ```bash
 sudo borgmatic --verbosity 1 --list --stats

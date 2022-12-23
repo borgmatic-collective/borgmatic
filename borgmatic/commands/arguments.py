@@ -337,8 +337,8 @@ def make_parsers():
     compact_parser = subparsers.add_parser(
         'compact',
         aliases=SUBPARSER_ALIASES['compact'],
-        help='Compact segments to free space (Borg 1.2+, Borgmatic 1.5.23+ only)',
-        description='Compact segments to free space (Borg 1.2+, Borgmatic 1.5.23+ only)',
+        help='Compact segments to free space (Borg 1.2+, borgmatic 1.5.23+ only)',
+        description='Compact segments to free space (Borg 1.2+, borgmatic 1.5.23+ only)',
         add_help=False,
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
