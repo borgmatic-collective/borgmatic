@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 
@@ -6,43 +7,17 @@ import ruamel.yaml
 logger = logging.getLogger(__name__)
 
 
-class Yaml_with_loader_stream(ruamel.yaml.YAML):
+def include_configuration(loader, filename_node, include_directory):
     '''
-    A derived class of ruamel.yaml.YAML that simply tacks the loaded stream (file object) onto the
-    loader class so that it's available anywhere that's passed a loader (in this case,
-    include_configuration() below).
-    '''
-
-    def get_constructor_parser(self, stream):
-        constructor, parser = super(Yaml_with_loader_stream, self).get_constructor_parser(stream)
-        constructor.loader.stream = stream
-        return constructor, parser
-
-
-def load_configuration(filename):
-    '''
-    Load the given configuration file and return its contents as a data structure of nested dicts
-    and lists.
-
-    Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
-    if there are too many recursive includes.
-    '''
-    yaml = Yaml_with_loader_stream(typ='safe')
-    yaml.Constructor = Include_constructor
-
-    return yaml.load(open(filename))
-
-
-def include_configuration(loader, filename_node):
-    '''
-    Load the given YAML filename (ignoring the given loader so we can use our own) and return its
-    contents as a data structure of nested dicts and lists. If the filename is relative, probe for
-    it within 1. the current working directory and 2. the directory containing the YAML file doing
-    the including.
+    Given a ruamel.yaml.loader.Loader, a ruamel.yaml.serializer.ScalarNode containing the included
+    filename, and an include directory path to search for matching files, load the given YAML
+    filename (ignoring the given loader so we can use our own) and return its contents as a data
+    structure of nested dicts and lists. If the filename is relative, probe for it within 1. the
+    current working directory and 2. the given include directory.
 
     Raise FileNotFoundError if an included file was not found.
     '''
-    include_directories = [os.getcwd(), os.path.abspath(os.path.dirname(loader.stream.name))]
+    include_directories = [os.getcwd(), os.path.abspath(include_directory)]
     include_filename = os.path.expanduser(filename_node.value)
 
     if not os.path.isabs(include_filename):
@@ -60,6 +35,70 @@ def include_configuration(loader, filename_node):
             )
 
     return load_configuration(include_filename)
+
+
+class Include_constructor(ruamel.yaml.SafeConstructor):
+    '''
+    A YAML "constructor" (a ruamel.yaml concept) that supports a custom "!include" tag for including
+    separate YAML configuration files. Example syntax: `retention: !include common.yaml`
+    '''
+
+    def __init__(self, preserve_quotes=None, loader=None, include_directory=None):
+        super(Include_constructor, self).__init__(preserve_quotes, loader)
+        self.add_constructor(
+            '!include',
+            functools.partial(include_configuration, include_directory=include_directory),
+        )
+
+    def flatten_mapping(self, node):
+        '''
+        Support the special case of deep merging included configuration into an existing mapping
+        using the YAML '<<' merge key. Example syntax:
+
+        ```
+        retention:
+            keep_daily: 1
+
+        <<: !include common.yaml
+        ```
+
+        These includes are deep merged into the current configuration file. For instance, in this
+        example, any "retention" options in common.yaml will get merged into the "retention" section
+        in the example configuration file.
+        '''
+        representer = ruamel.yaml.representer.SafeRepresenter()
+
+        for index, (key_node, value_node) in enumerate(node.value):
+            if key_node.tag == u'tag:yaml.org,2002:merge' and value_node.tag == '!include':
+                included_value = representer.represent_data(self.construct_object(value_node))
+                node.value[index] = (key_node, included_value)
+
+        super(Include_constructor, self).flatten_mapping(node)
+
+        node.value = deep_merge_nodes(node.value)
+
+
+def load_configuration(filename):
+    '''
+    Load the given configuration file and return its contents as a data structure of nested dicts
+    and lists.
+
+    Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
+    if there are too many recursive includes.
+    '''
+    # Use an embedded derived class for the include constructor so as to capture the filename
+    # value. (functools.partial doesn't work for this use case because yaml.Constructor has to be
+    # an actual class.)
+    class Include_constructor_with_include_directory(Include_constructor):
+        def __init__(self, preserve_quotes=None, loader=None):
+            super(Include_constructor_with_include_directory, self).__init__(
+                preserve_quotes, loader, include_directory=os.path.dirname(filename)
+            )
+
+    yaml = ruamel.yaml.YAML(typ='safe')
+    yaml.Constructor = Include_constructor_with_include_directory
+
+    return yaml.load(open(filename))
 
 
 DELETED_NODE = object()
@@ -175,41 +214,3 @@ def deep_merge_nodes(nodes):
     return [
         replaced_nodes.get(node, node) for node in nodes if replaced_nodes.get(node) != DELETED_NODE
     ]
-
-
-class Include_constructor(ruamel.yaml.SafeConstructor):
-    '''
-    A YAML "constructor" (a ruamel.yaml concept) that supports a custom "!include" tag for including
-    separate YAML configuration files. Example syntax: `retention: !include common.yaml`
-    '''
-
-    def __init__(self, preserve_quotes=None, loader=None):
-        super(Include_constructor, self).__init__(preserve_quotes, loader)
-        self.add_constructor('!include', include_configuration)
-
-    def flatten_mapping(self, node):
-        '''
-        Support the special case of deep merging included configuration into an existing mapping
-        using the YAML '<<' merge key. Example syntax:
-
-        ```
-        retention:
-            keep_daily: 1
-
-        <<: !include common.yaml
-        ```
-
-        These includes are deep merged into the current configuration file. For instance, in this
-        example, any "retention" options in common.yaml will get merged into the "retention" section
-        in the example configuration file.
-        '''
-        representer = ruamel.yaml.representer.SafeRepresenter()
-
-        for index, (key_node, value_node) in enumerate(node.value):
-            if key_node.tag == u'tag:yaml.org,2002:merge' and value_node.tag == '!include':
-                included_value = representer.represent_data(self.construct_object(value_node))
-                node.value[index] = (key_node, included_value)
-
-        super(Include_constructor, self).flatten_mapping(node)
-
-        node.value = deep_merge_nodes(node.value)

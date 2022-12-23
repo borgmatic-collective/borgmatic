@@ -3,6 +3,7 @@
    dump file, allowing more convenient restores of individual databases. You can enable this by
    specifying the database dump "format" option when the database is named "all".
  * #602: Fix logs that interfere with JSON output by making warnings go to stderr instead of stdout.
+ * #622: Fix traceback when include merging on ARM64.
 
 1.7.5
  * #311: Override PostgreSQL dump/restore commands via configuration options.
