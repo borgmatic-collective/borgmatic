@@ -1790,7 +1790,7 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
     flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_pattern_file').and_return(flexmock(name='/tmp/excludes'))
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module.logger).should_receive('warning').twice()
@@ -1800,7 +1800,7 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').and_return(())
+    flexmock(module).should_receive('collect_special_file_paths').and_return(("/dev/null",))
     create_command = (
         'borg',
         'create',

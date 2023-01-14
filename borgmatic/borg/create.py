@@ -430,18 +430,17 @@ def create_archive(
             borg_environment,
             skip_directories=borgmatic_source_directories,
         )
-        logger.warning(
-            f'{repository}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
-        )
 
-        exclude_file = write_pattern_file(
-            expand_home_directories(
-                tuple(location_config.get('exclude_patterns') or ()) + special_file_paths
-            ),
-            pattern_file=exclude_file,
-        )
-
-        if exclude_file:
+        if special_file_paths:
+            logger.warning(
+                f'{repository}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
+            )
+            exclude_file = write_pattern_file(
+                expand_home_directories(
+                    tuple(location_config.get('exclude_patterns') or ()) + special_file_paths
+                ),
+                pattern_file=exclude_file,
+            )
             create_command += make_exclude_flags(location_config, exclude_file.name)
 
     create_command += (
