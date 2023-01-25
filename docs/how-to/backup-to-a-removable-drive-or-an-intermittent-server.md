@@ -68,6 +68,9 @@ borgmatic. borgmatic logs the soft failure, skips all further actions in that
 configurable file, and proceeds onward to any other borgmatic configuration
 files you may have.
 
+Note that `before_backup` only runs on the `create` action. See below about
+optionally using `before_actions` instead.
+
 You can imagine a similar check for the sometimes-online server case:
 
 ```yaml
@@ -92,6 +95,12 @@ hooks:
 ```
 
 (Writing the battery script is left as an exercise to the reader.)
+
+<span class="minilink minilink-addedin">New in version 1.7.0</span> The
+`before_actions` and `after_actions` hooks run before/after all the actions
+(like `create`, `prune`, etc.) for each repository. So if you'd like your soft
+failure command hook to run regardless of action, consider using
+`before_actions` instead of `before_backup`.
 
 
 ## Caveats and details
