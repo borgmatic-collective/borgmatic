@@ -42,12 +42,22 @@ hooks:
           hostname: postgresql
           username: postgres
           password: test
+        - name: all
+          format: custom
+          hostname: postgresql
+          username: postgres
+          password: test
     mysql_databases:
         - name: test
           hostname: mysql
           username: root
           password: test
         - name: all
+          hostname: mysql
+          username: root
+          password: test
+        - name: all
+          format: sql
           hostname: mysql
           username: root
           password: test

@@ -49,7 +49,8 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
     process with the requested log level. Additionally, raise a CalledProcessError if a process
-    exits with an error (or a warning for exit code 1, if that process matches the Borg local path).
+    exits with an error (or a warning for exit code 1, if that process does not match the Borg local
+    path).
 
     If output log level is None, then instead of logging, capture output for each process and return
     it as a dict from the process to its output.

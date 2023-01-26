@@ -34,167 +34,85 @@ def test_database_names_to_dump_queries_mysql_for_database_names():
     assert names == ('foo', 'bar')
 
 
-def test_dump_databases_runs_mysqldump_for_each_database():
+def test_dump_databases_dumps_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
-    ).and_return('databases/localhost/bar')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
         ('bar',)
     )
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     for name, process in zip(('foo', 'bar'), processes):
-        flexmock(module).should_receive('execute_command').with_args(
-            (
-                'mysqldump',
-                '--add-drop-database',
-                '--databases',
-                name,
-                '>',
-                'databases/localhost/{}'.format(name),
-            ),
-            shell=True,
-            extra_environment=None,
-            run_to_completion=False,
+        flexmock(module).should_receive('execute_dump_command').with_args(
+            database={'name': name},
+            log_prefix=object,
+            dump_path=object,
+            database_names=(name,),
+            extra_environment=object,
+            dry_run=object,
+            dry_run_label=object,
         ).and_return(process).once()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
 
 
-def test_dump_databases_with_dry_run_skips_mysqldump():
-    databases = [{'name': 'foo'}, {'name': 'bar'}]
+def test_dump_databases_dumps_with_password():
+    database = {'name': 'foo', 'username': 'root', 'password': 'trustsome1'}
+    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
-    ).and_return('databases/localhost/bar')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
         ('bar',)
     )
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
-    flexmock(module).should_receive('execute_command').never()
 
-    module.dump_databases(databases, 'test.yaml', {}, dry_run=True)
-
-
-def test_dump_databases_runs_mysqldump_with_hostname_and_port():
-    databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
-    process = flexmock()
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/database.example.org/foo'
-    )
-    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
-
-    flexmock(module).should_receive('execute_command').with_args(
-        (
-            'mysqldump',
-            '--add-drop-database',
-            '--host',
-            'database.example.org',
-            '--port',
-            '5433',
-            '--protocol',
-            'tcp',
-            '--databases',
-            'foo',
-            '>',
-            'databases/database.example.org/foo',
-        ),
-        shell=True,
-        extra_environment=None,
-        run_to_completion=False,
-    ).and_return(process).once()
-
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
-
-
-def test_dump_databases_runs_mysqldump_with_username_and_password():
-    databases = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
-    process = flexmock()
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
-    )
-    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
-
-    flexmock(module).should_receive('execute_command').with_args(
-        (
-            'mysqldump',
-            '--add-drop-database',
-            '--user',
-            'root',
-            '--databases',
-            'foo',
-            '>',
-            'databases/localhost/foo',
-        ),
-        shell=True,
+    flexmock(module).should_receive('execute_dump_command').with_args(
+        database=database,
+        log_prefix=object,
+        dump_path=object,
+        database_names=('foo',),
         extra_environment={'MYSQL_PWD': 'trustsome1'},
-        run_to_completion=False,
+        dry_run=object,
+        dry_run_label=object,
     ).and_return(process).once()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+    assert module.dump_databases([database], 'test.yaml', {}, dry_run=False) == [process]
 
 
-def test_dump_databases_runs_mysqldump_with_options():
-    databases = [{'name': 'foo', 'options': '--stuff=such'}]
-    process = flexmock()
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/foo'
-    )
-    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
-
-    flexmock(module).should_receive('execute_command').with_args(
-        (
-            'mysqldump',
-            '--stuff=such',
-            '--add-drop-database',
-            '--databases',
-            'foo',
-            '>',
-            'databases/localhost/foo',
-        ),
-        shell=True,
-        extra_environment=None,
-        run_to_completion=False,
-    ).and_return(process).once()
-
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
-
-
-def test_dump_databases_runs_mysqldump_for_all_databases():
+def test_dump_databases_dumps_all_databases_at_once():
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
-        'databases/localhost/all'
-    )
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
-    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
-
-    flexmock(module).should_receive('execute_command').with_args(
-        (
-            'mysqldump',
-            '--add-drop-database',
-            '--databases',
-            'foo',
-            'bar',
-            '>',
-            'databases/localhost/all',
-        ),
-        shell=True,
-        extra_environment=None,
-        run_to_completion=False,
+    flexmock(module).should_receive('execute_dump_command').with_args(
+        database={'name': 'all'},
+        log_prefix=object,
+        dump_path=object,
+        database_names=('foo', 'bar'),
+        extra_environment=object,
+        dry_run=object,
+        dry_run_label=object,
     ).and_return(process).once()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+
+
+def test_dump_databases_dumps_all_databases_separately_when_format_configured():
+    databases = [{'name': 'all', 'format': 'sql'}]
+    processes = [flexmock(), flexmock()]
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
+
+    for name, process in zip(('foo', 'bar'), processes):
+        flexmock(module).should_receive('execute_dump_command').with_args(
+            database={'name': name, 'format': 'sql'},
+            log_prefix=object,
+            dump_path=object,
+            database_names=(name,),
+            extra_environment=object,
+            dry_run=object,
+            dry_run_label=object,
+        ).and_return(process).once()
+
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
 
 
 def test_database_names_to_dump_runs_mysql_with_list_options():
@@ -212,6 +130,168 @@ def test_database_names_to_dump_runs_mysql_with_list_options():
     ).and_return(('foo\nbar')).once()
 
     assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+
+
+def test_execute_dump_command_runs_mysqldump():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('mysqldump', '--add-drop-database', '--databases', 'foo', '>', 'dump',),
+        shell=True,
+        extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo'},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysqldump',
+            '--add-drop-database',
+            '--host',
+            'database.example.org',
+            '--port',
+            '5433',
+            '--protocol',
+            'tcp',
+            '--databases',
+            'foo',
+            '>',
+            'dump',
+        ),
+        shell=True,
+        extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'hostname': 'database.example.org', 'port': 5433},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_with_username_and_password():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('mysqldump', '--add-drop-database', '--user', 'root', '--databases', 'foo', '>', 'dump',),
+        shell=True,
+        extra_environment={'MYSQL_PWD': 'trustsome1'},
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'username': 'root', 'password': 'trustsome1'},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment={'MYSQL_PWD': 'trustsome1'},
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_runs_mysqldump_with_options():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('mysqldump', '--stuff=such', '--add-drop-database', '--databases', 'foo', '>', 'dump',),
+        shell=True,
+        extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'options': '--stuff=such'},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_with_duplicate_dump_skips_mysqldump():
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module).should_receive('execute_command').never()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo'},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=True,
+            dry_run_label='SO DRY',
+        )
+        is None
+    )
+
+
+def test_execute_dump_command_with_dry_run_skips_mysqldump():
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').never()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo'},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=True,
+            dry_run_label='SO DRY',
+        )
+        is None
+    )
 
 
 def test_dump_databases_errors_for_missing_all_databases():

@@ -253,6 +253,19 @@ def test_make_find_paths_adds_globs_to_path_fragments():
     assert module.make_find_paths(('foo.txt',)) == ('sh:**/*foo.txt*/**',)
 
 
+def test_capture_archive_listing_does_not_raise():
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return('')
+    flexmock(module).should_receive('make_list_command')
+
+    module.capture_archive_listing(
+        repository='repo',
+        archive='archive',
+        storage_config=flexmock(),
+        local_borg_version=flexmock(),
+    )
+
+
 def test_list_archive_calls_borg_with_parameters():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER

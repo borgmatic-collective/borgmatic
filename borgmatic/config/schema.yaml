@@ -855,6 +855,19 @@ properties:
                                 configured to trust the configured username
                                 without a password.
                             example: trustsome1
+                        format:
+                            type: string
+                            enum: ['sql']
+                            description: |
+                                Database dump output format. Currenly only "sql"
+                                is supported. Defaults to "sql" for a single
+                                database. Or, when database name is "all" and
+                                format is blank, dumps all databases to a single
+                                file. But if a format is specified with an "all"
+                                database name, dumps each database to a separate
+                                file of that format, allowing more convenient
+                                restores of individual databases.
+                            example: directory
                         list_options:
                             type: string
                             description: |

@@ -56,6 +56,7 @@ def test_dump_databases_runs_pg_dump_for_each_database():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     for name, process in zip(('foo', 'bar'), processes):
@@ -79,7 +80,7 @@ def test_dump_databases_runs_pg_dump_for_each_database():
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
 
 
-def test_dump_databases_runs_raises_when_no_database_names_to_dump():
+def test_dump_databases_raises_when_no_database_names_to_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -87,6 +88,23 @@ def test_dump_databases_runs_raises_when_no_database_names_to_dump():
 
     with pytest.raises(ValueError):
         module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+
+
+def test_dump_databases_with_dupliate_dump_skips_pg_dump():
+    databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
+        ('bar',)
+    )
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/foo'
+    ).and_return('databases/localhost/bar')
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
+    flexmock(module).should_receive('execute_command').never()
+
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == []
 
 
 def test_dump_databases_with_dry_run_skips_pg_dump():
@@ -99,6 +117,7 @@ def test_dump_databases_with_dry_run_skips_pg_dump():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     ).and_return('databases/localhost/bar')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -114,6 +133,7 @@ def test_dump_databases_runs_pg_dump_with_hostname_and_port():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/database.example.org/foo'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -151,6 +171,7 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -207,6 +228,7 @@ def test_dump_databases_runs_pg_dump_with_directory_format():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
 
@@ -239,6 +261,7 @@ def test_dump_databases_runs_pg_dump_with_options():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -271,6 +294,7 @@ def test_dump_databases_runs_pg_dumpall_for_all_databases():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -292,6 +316,7 @@ def test_dump_databases_runs_non_default_pg_dump():
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/foo'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(

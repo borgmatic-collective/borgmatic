@@ -1,5 +1,6 @@
 import csv
 import logging
+import os
 
 from borgmatic.execute import (
     execute_command,
@@ -111,6 +112,11 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             dump_filename = dump.make_database_dump_filename(
                 dump_path, database_name, database.get('hostname')
             )
+            if os.path.exists(dump_filename):
+                logger.warning(
+                    f'{log_prefix}: Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}'
+                )
+                continue
 
             command = (
                 (dump_command, '--no-password', '--clean', '--if-exists',)
@@ -128,9 +134,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             )
 
             logger.debug(
-                '{}: Dumping PostgreSQL database "{}" to {}{}'.format(
-                    log_prefix, database_name, dump_filename, dry_run_label
-                )
+                f'{log_prefix}: Dumping PostgreSQL database "{database_name}" to {dump_filename}{dry_run_label}'
             )
             if dry_run:
                 continue

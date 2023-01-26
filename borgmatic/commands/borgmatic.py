@@ -1,5 +1,4 @@
 import collections
-import copy
 import json
 import logging
 import os
@@ -11,28 +10,28 @@ from subprocess import CalledProcessError
 import colorama
 import pkg_resources
 
+import borgmatic.actions.borg
+import borgmatic.actions.break_lock
+import borgmatic.actions.check
+import borgmatic.actions.compact
+import borgmatic.actions.create
+import borgmatic.actions.export_tar
+import borgmatic.actions.extract
+import borgmatic.actions.info
+import borgmatic.actions.list
+import borgmatic.actions.mount
+import borgmatic.actions.prune
+import borgmatic.actions.rcreate
+import borgmatic.actions.restore
+import borgmatic.actions.rinfo
+import borgmatic.actions.rlist
+import borgmatic.actions.transfer
 import borgmatic.commands.completion
-from borgmatic.borg import borg as borg_borg
-from borgmatic.borg import break_lock as borg_break_lock
-from borgmatic.borg import check as borg_check
-from borgmatic.borg import compact as borg_compact
-from borgmatic.borg import create as borg_create
-from borgmatic.borg import export_tar as borg_export_tar
-from borgmatic.borg import extract as borg_extract
-from borgmatic.borg import feature as borg_feature
-from borgmatic.borg import info as borg_info
-from borgmatic.borg import list as borg_list
-from borgmatic.borg import mount as borg_mount
-from borgmatic.borg import prune as borg_prune
-from borgmatic.borg import rcreate as borg_rcreate
-from borgmatic.borg import rinfo as borg_rinfo
-from borgmatic.borg import rlist as borg_rlist
-from borgmatic.borg import transfer as borg_transfer
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
-from borgmatic.hooks import command, dispatch, dump, monitor
+from borgmatic.hooks import command, dispatch, monitor
 from borgmatic.logger import add_custom_log_levels, configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -264,509 +263,154 @@ def run_actions(
     )
 
     if 'rcreate' in arguments:
-        logger.info('{}: Creating repository'.format(repository))
-        borg_rcreate.create_repository(
-            global_arguments.dry_run,
+        borgmatic.actions.rcreate.run_rcreate(
             repository,
             storage,
             local_borg_version,
-            arguments['rcreate'].encryption_mode,
-            arguments['rcreate'].source_repository,
-            arguments['rcreate'].copy_crypt_key,
-            arguments['rcreate'].append_only,
-            arguments['rcreate'].storage_quota,
-            arguments['rcreate'].make_parent_dirs,
-            local_path=local_path,
-            remote_path=remote_path,
+            arguments['rcreate'],
+            global_arguments,
+            local_path,
+            remote_path,
         )
     if 'transfer' in arguments:
-        logger.info(f'{repository}: Transferring archives to repository')
-        borg_transfer.transfer_archives(
-            global_arguments.dry_run,
+        borgmatic.actions.transfer.run_transfer(
             repository,
             storage,
             local_borg_version,
-            transfer_arguments=arguments['transfer'],
-            local_path=local_path,
-            remote_path=remote_path,
+            arguments['transfer'],
+            global_arguments,
+            local_path,
+            remote_path,
         )
     if 'prune' in arguments:
-        command.execute_hook(
-            hooks.get('before_prune'),
-            hooks.get('umask'),
+        borgmatic.actions.prune.run_prune(
             config_filename,
-            'pre-prune',
-            global_arguments.dry_run,
-            **hook_context,
-        )
-        logger.info('{}: Pruning archives{}'.format(repository, dry_run_label))
-        borg_prune.prune_archives(
-            global_arguments.dry_run,
             repository,
             storage,
             retention,
+            hooks,
+            hook_context,
             local_borg_version,
-            local_path=local_path,
-            remote_path=remote_path,
-            stats=arguments['prune'].stats,
-            list_archives=arguments['prune'].list_archives,
-        )
-        command.execute_hook(
-            hooks.get('after_prune'),
-            hooks.get('umask'),
-            config_filename,
-            'post-prune',
-            global_arguments.dry_run,
-            **hook_context,
+            arguments['prune'],
+            global_arguments,
+            dry_run_label,
+            local_path,
+            remote_path,
         )
     if 'compact' in arguments:
-        command.execute_hook(
-            hooks.get('before_compact'),
-            hooks.get('umask'),
+        borgmatic.actions.compact.run_compact(
             config_filename,
-            'pre-compact',
-            global_arguments.dry_run,
-        )
-        if borg_feature.available(borg_feature.Feature.COMPACT, local_borg_version):
-            logger.info('{}: Compacting segments{}'.format(repository, dry_run_label))
-            borg_compact.compact_segments(
-                global_arguments.dry_run,
-                repository,
-                storage,
-                local_borg_version,
-                local_path=local_path,
-                remote_path=remote_path,
-                progress=arguments['compact'].progress,
-                cleanup_commits=arguments['compact'].cleanup_commits,
-                threshold=arguments['compact'].threshold,
-            )
-        else:  # pragma: nocover
-            logger.info(
-                '{}: Skipping compact (only available/needed in Borg 1.2+)'.format(repository)
-            )
-        command.execute_hook(
-            hooks.get('after_compact'),
-            hooks.get('umask'),
-            config_filename,
-            'post-compact',
-            global_arguments.dry_run,
+            repository,
+            storage,
+            retention,
+            hooks,
+            hook_context,
+            local_borg_version,
+            arguments['compact'],
+            global_arguments,
+            dry_run_label,
+            local_path,
+            remote_path,
         )
     if 'create' in arguments:
-        command.execute_hook(
-            hooks.get('before_backup'),
-            hooks.get('umask'),
+        yield from borgmatic.actions.create.run_create(
             config_filename,
-            'pre-backup',
-            global_arguments.dry_run,
-            **hook_context,
-        )
-        logger.info('{}: Creating archive{}'.format(repository, dry_run_label))
-        dispatch.call_hooks_even_if_unconfigured(
-            'remove_database_dumps',
-            hooks,
-            repository,
-            dump.DATABASE_HOOK_NAMES,
-            location,
-            global_arguments.dry_run,
-        )
-        active_dumps = dispatch.call_hooks(
-            'dump_databases',
-            hooks,
-            repository,
-            dump.DATABASE_HOOK_NAMES,
-            location,
-            global_arguments.dry_run,
-        )
-        stream_processes = [process for processes in active_dumps.values() for process in processes]
-
-        json_output = borg_create.create_archive(
-            global_arguments.dry_run,
             repository,
             location,
             storage,
-            local_borg_version,
-            local_path=local_path,
-            remote_path=remote_path,
-            progress=arguments['create'].progress,
-            stats=arguments['create'].stats,
-            json=arguments['create'].json,
-            list_files=arguments['create'].list_files,
-            stream_processes=stream_processes,
-        )
-        if json_output:  # pragma: nocover
-            yield json.loads(json_output)
-
-        dispatch.call_hooks_even_if_unconfigured(
-            'remove_database_dumps',
             hooks,
-            config_filename,
-            dump.DATABASE_HOOK_NAMES,
-            location,
-            global_arguments.dry_run,
+            hook_context,
+            local_borg_version,
+            arguments['create'],
+            global_arguments,
+            dry_run_label,
+            local_path,
+            remote_path,
         )
-        command.execute_hook(
-            hooks.get('after_backup'),
-            hooks.get('umask'),
-            config_filename,
-            'post-backup',
-            global_arguments.dry_run,
-            **hook_context,
-        )
-
     if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
-        command.execute_hook(
-            hooks.get('before_check'),
-            hooks.get('umask'),
+        borgmatic.actions.check.run_check(
             config_filename,
-            'pre-check',
-            global_arguments.dry_run,
-            **hook_context,
-        )
-        logger.info('{}: Running consistency checks'.format(repository))
-        borg_check.check_archives(
             repository,
             location,
             storage,
             consistency,
+            hooks,
+            hook_context,
             local_borg_version,
-            local_path=local_path,
-            remote_path=remote_path,
-            progress=arguments['check'].progress,
-            repair=arguments['check'].repair,
-            only_checks=arguments['check'].only,
-            force=arguments['check'].force,
-        )
-        command.execute_hook(
-            hooks.get('after_check'),
-            hooks.get('umask'),
-            config_filename,
-            'post-check',
-            global_arguments.dry_run,
-            **hook_context,
+            arguments['check'],
+            global_arguments,
+            local_path,
+            remote_path,
         )
     if 'extract' in arguments:
-        command.execute_hook(
-            hooks.get('before_extract'),
-            hooks.get('umask'),
+        borgmatic.actions.extract.run_extract(
             config_filename,
-            'pre-extract',
-            global_arguments.dry_run,
-            **hook_context,
-        )
-        if arguments['extract'].repository is None or validate.repositories_match(
-            repository, arguments['extract'].repository
-        ):
-            logger.info(
-                '{}: Extracting archive {}'.format(repository, arguments['extract'].archive)
-            )
-            borg_extract.extract_archive(
-                global_arguments.dry_run,
-                repository,
-                borg_rlist.resolve_archive_name(
-                    repository,
-                    arguments['extract'].archive,
-                    storage,
-                    local_borg_version,
-                    local_path,
-                    remote_path,
-                ),
-                arguments['extract'].paths,
-                location,
-                storage,
-                local_borg_version,
-                local_path=local_path,
-                remote_path=remote_path,
-                destination_path=arguments['extract'].destination,
-                strip_components=arguments['extract'].strip_components,
-                progress=arguments['extract'].progress,
-            )
-        command.execute_hook(
-            hooks.get('after_extract'),
-            hooks.get('umask'),
-            config_filename,
-            'post-extract',
-            global_arguments.dry_run,
-            **hook_context,
+            repository,
+            location,
+            storage,
+            hooks,
+            hook_context,
+            local_borg_version,
+            arguments['extract'],
+            global_arguments,
+            local_path,
+            remote_path,
         )
     if 'export-tar' in arguments:
-        if arguments['export-tar'].repository is None or validate.repositories_match(
-            repository, arguments['export-tar'].repository
-        ):
-            logger.info(
-                '{}: Exporting archive {} as tar file'.format(
-                    repository, arguments['export-tar'].archive
-                )
-            )
-            borg_export_tar.export_tar_archive(
-                global_arguments.dry_run,
-                repository,
-                borg_rlist.resolve_archive_name(
-                    repository,
-                    arguments['export-tar'].archive,
-                    storage,
-                    local_borg_version,
-                    local_path,
-                    remote_path,
-                ),
-                arguments['export-tar'].paths,
-                arguments['export-tar'].destination,
-                storage,
-                local_borg_version,
-                local_path=local_path,
-                remote_path=remote_path,
-                tar_filter=arguments['export-tar'].tar_filter,
-                list_files=arguments['export-tar'].list_files,
-                strip_components=arguments['export-tar'].strip_components,
-            )
+        borgmatic.actions.export_tar.run_export_tar(
+            repository,
+            storage,
+            local_borg_version,
+            arguments['export-tar'],
+            global_arguments,
+            local_path,
+            remote_path,
+        )
     if 'mount' in arguments:
-        if arguments['mount'].repository is None or validate.repositories_match(
-            repository, arguments['mount'].repository
-        ):
-            if arguments['mount'].archive:
-                logger.info(
-                    '{}: Mounting archive {}'.format(repository, arguments['mount'].archive)
-                )
-            else:  # pragma: nocover
-                logger.info('{}: Mounting repository'.format(repository))
-
-            borg_mount.mount_archive(
-                repository,
-                borg_rlist.resolve_archive_name(
-                    repository,
-                    arguments['mount'].archive,
-                    storage,
-                    local_borg_version,
-                    local_path,
-                    remote_path,
-                ),
-                arguments['mount'].mount_point,
-                arguments['mount'].paths,
-                arguments['mount'].foreground,
-                arguments['mount'].options,
-                storage,
-                local_borg_version,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
-    if 'restore' in arguments:  # pragma: nocover
-        if arguments['restore'].repository is None or validate.repositories_match(
-            repository, arguments['restore'].repository
-        ):
-            logger.info(
-                '{}: Restoring databases from archive {}'.format(
-                    repository, arguments['restore'].archive
-                )
-            )
-            dispatch.call_hooks_even_if_unconfigured(
-                'remove_database_dumps',
-                hooks,
-                repository,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
-
-            restore_names = arguments['restore'].databases or []
-            if 'all' in restore_names:
-                restore_names = []
-
-            archive_name = borg_rlist.resolve_archive_name(
-                repository,
-                arguments['restore'].archive,
-                storage,
-                local_borg_version,
-                local_path,
-                remote_path,
-            )
-            found_names = set()
-
-            for hook_name, per_hook_restore_databases in hooks.items():
-                if hook_name not in dump.DATABASE_HOOK_NAMES:
-                    continue
-
-                for restore_database in per_hook_restore_databases:
-                    database_name = restore_database['name']
-                    if restore_names and database_name not in restore_names:
-                        continue
-
-                    found_names.add(database_name)
-                    dump_pattern = dispatch.call_hooks(
-                        'make_database_dump_pattern',
-                        hooks,
-                        repository,
-                        dump.DATABASE_HOOK_NAMES,
-                        location,
-                        database_name,
-                    )[hook_name]
-
-                    # Kick off a single database extract to stdout.
-                    extract_process = borg_extract.extract_archive(
-                        dry_run=global_arguments.dry_run,
-                        repository=repository,
-                        archive=archive_name,
-                        paths=dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
-                        location_config=location,
-                        storage_config=storage,
-                        local_borg_version=local_borg_version,
-                        local_path=local_path,
-                        remote_path=remote_path,
-                        destination_path='/',
-                        # A directory format dump isn't a single file, and therefore can't extract
-                        # to stdout. In this case, the extract_process return value is None.
-                        extract_to_stdout=bool(restore_database.get('format') != 'directory'),
-                    )
-
-                    # Run a single database restore, consuming the extract stdout (if any).
-                    dispatch.call_hooks(
-                        'restore_database_dump',
-                        {hook_name: [restore_database]},
-                        repository,
-                        dump.DATABASE_HOOK_NAMES,
-                        location,
-                        global_arguments.dry_run,
-                        extract_process,
-                    )
-
-            dispatch.call_hooks_even_if_unconfigured(
-                'remove_database_dumps',
-                hooks,
-                repository,
-                dump.DATABASE_HOOK_NAMES,
-                location,
-                global_arguments.dry_run,
-            )
-
-            if not restore_names and not found_names:
-                raise ValueError('No databases were found to restore')
-
-            missing_names = sorted(set(restore_names) - found_names)
-            if missing_names:
-                raise ValueError(
-                    'Cannot restore database(s) {} missing from borgmatic\'s configuration'.format(
-                        ', '.join(missing_names)
-                    )
-                )
+        borgmatic.actions.mount.run_mount(
+            repository, storage, local_borg_version, arguments['mount'], local_path, remote_path,
+        )
+    if 'restore' in arguments:
+        borgmatic.actions.restore.run_restore(
+            repository,
+            location,
+            storage,
+            hooks,
+            local_borg_version,
+            arguments['restore'],
+            global_arguments,
+            local_path,
+            remote_path,
+        )
     if 'rlist' in arguments:
-        if arguments['rlist'].repository is None or validate.repositories_match(
-            repository, arguments['rlist'].repository
-        ):
-            rlist_arguments = copy.copy(arguments['rlist'])
-            if not rlist_arguments.json:  # pragma: nocover
-                logger.answer('{}: Listing repository'.format(repository))
-            json_output = borg_rlist.list_repository(
-                repository,
-                storage,
-                local_borg_version,
-                rlist_arguments=rlist_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
-            if json_output:  # pragma: nocover
-                yield json.loads(json_output)
+        yield from borgmatic.actions.rlist.run_rlist(
+            repository, storage, local_borg_version, arguments['rlist'], local_path, remote_path,
+        )
     if 'list' in arguments:
-        if arguments['list'].repository is None or validate.repositories_match(
-            repository, arguments['list'].repository
-        ):
-            list_arguments = copy.copy(arguments['list'])
-            if not list_arguments.json:  # pragma: nocover
-                if list_arguments.find_paths:
-                    logger.answer('{}: Searching archives'.format(repository))
-                elif not list_arguments.archive:
-                    logger.answer('{}: Listing archives'.format(repository))
-            list_arguments.archive = borg_rlist.resolve_archive_name(
-                repository,
-                list_arguments.archive,
-                storage,
-                local_borg_version,
-                local_path,
-                remote_path,
-            )
-            json_output = borg_list.list_archive(
-                repository,
-                storage,
-                local_borg_version,
-                list_arguments=list_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
-            if json_output:  # pragma: nocover
-                yield json.loads(json_output)
+        yield from borgmatic.actions.list.run_list(
+            repository, storage, local_borg_version, arguments['list'], local_path, remote_path,
+        )
     if 'rinfo' in arguments:
-        if arguments['rinfo'].repository is None or validate.repositories_match(
-            repository, arguments['rinfo'].repository
-        ):
-            rinfo_arguments = copy.copy(arguments['rinfo'])
-            if not rinfo_arguments.json:  # pragma: nocover
-                logger.answer('{}: Displaying repository summary information'.format(repository))
-            json_output = borg_rinfo.display_repository_info(
-                repository,
-                storage,
-                local_borg_version,
-                rinfo_arguments=rinfo_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
-            if json_output:  # pragma: nocover
-                yield json.loads(json_output)
+        yield from borgmatic.actions.rinfo.run_rinfo(
+            repository, storage, local_borg_version, arguments['rinfo'], local_path, remote_path,
+        )
     if 'info' in arguments:
-        if arguments['info'].repository is None or validate.repositories_match(
-            repository, arguments['info'].repository
-        ):
-            info_arguments = copy.copy(arguments['info'])
-            if not info_arguments.json:  # pragma: nocover
-                logger.answer('{}: Displaying archive summary information'.format(repository))
-            info_arguments.archive = borg_rlist.resolve_archive_name(
-                repository,
-                info_arguments.archive,
-                storage,
-                local_borg_version,
-                local_path,
-                remote_path,
-            )
-            json_output = borg_info.display_archives_info(
-                repository,
-                storage,
-                local_borg_version,
-                info_arguments=info_arguments,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
-            if json_output:  # pragma: nocover
-                yield json.loads(json_output)
+        yield from borgmatic.actions.info.run_info(
+            repository, storage, local_borg_version, arguments['info'], local_path, remote_path,
+        )
     if 'break-lock' in arguments:
-        if arguments['break-lock'].repository is None or validate.repositories_match(
-            repository, arguments['break-lock'].repository
-        ):
-            logger.info(f'{repository}: Breaking repository and cache locks')
-            borg_break_lock.break_lock(
-                repository,
-                storage,
-                local_borg_version,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
+        borgmatic.actions.break_lock.run_break_lock(
+            repository,
+            storage,
+            local_borg_version,
+            arguments['break-lock'],
+            local_path,
+            remote_path,
+        )
     if 'borg' in arguments:
-        if arguments['borg'].repository is None or validate.repositories_match(
-            repository, arguments['borg'].repository
-        ):
-            logger.info('{}: Running arbitrary Borg command'.format(repository))
-            archive_name = borg_rlist.resolve_archive_name(
-                repository,
-                arguments['borg'].archive,
-                storage,
-                local_borg_version,
-                local_path,
-                remote_path,
-            )
-            borg_borg.run_arbitrary_borg(
-                repository,
-                storage,
-                local_borg_version,
-                options=arguments['borg'].options,
-                archive=archive_name,
-                local_path=local_path,
-                remote_path=remote_path,
-            )
+        borgmatic.actions.borg.run_borg(
+            repository, storage, local_borg_version, arguments['borg'], local_path, remote_path,
+        )
 
     command.execute_hook(
         hooks.get('after_actions'),

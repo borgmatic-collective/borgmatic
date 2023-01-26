@@ -1,4 +1,6 @@
+import copy
 import logging
+import os
 
 from borgmatic.execute import (
     execute_command,
@@ -28,10 +30,8 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
     In the case of "all", query for the names of databases on the configured host and return them,
     excluding any system databases that will cause problems during restore.
     '''
-    requested_name = database['name']
-
-    if requested_name != 'all':
-        return (requested_name,)
+    if database['name'] != 'all':
+        return (database['name'],)
 
     show_command = (
         ('mysql',)
@@ -57,6 +57,55 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
     )
 
 
+def execute_dump_command(
+    database, log_prefix, dump_path, database_names, extra_environment, dry_run, dry_run_label
+):
+    '''
+    Kick off a dump for the given MySQL/MariaDB database (provided as a configuration dict) to a
+    named pipe constructed from the given dump path and database names. Use the given log prefix in
+    any log entries.
+
+    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
+    this is a dry run, then don't actually dump anything and return None.
+    '''
+    database_name = database['name']
+    dump_filename = dump.make_database_dump_filename(
+        dump_path, database['name'], database.get('hostname')
+    )
+    if os.path.exists(dump_filename):
+        logger.warning(
+            f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
+        )
+        return None
+
+    dump_command = (
+        ('mysqldump',)
+        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + ('--add-drop-database',)
+        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--port', str(database['port'])) if 'port' in database else ())
+        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--user', database['username']) if 'username' in database else ())
+        + ('--databases',)
+        + database_names
+        # Use shell redirection rather than execute_command(output_file=open(...)) to prevent
+        # the open() call on a named pipe from hanging the main borgmatic process.
+        + ('>', dump_filename)
+    )
+
+    logger.debug(
+        f'{log_prefix}: Dumping MySQL database "{database_name}" to {dump_filename}{dry_run_label}'
+    )
+    if dry_run:
+        return None
+
+    dump.create_named_pipe_for_dump(dump_filename)
+
+    return execute_command(
+        dump_command, shell=True, extra_environment=extra_environment, run_to_completion=False,
+    )
+
+
 def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     Dump the given MySQL/MariaDB databases to a named pipe. The databases are supplied as a sequence
@@ -73,10 +122,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     logger.info('{}: Dumping MySQL databases{}'.format(log_prefix, dry_run_label))
 
     for database in databases:
-        requested_name = database['name']
-        dump_filename = dump.make_database_dump_filename(
-            make_dump_path(location_config), requested_name, database.get('hostname')
-        )
+        dump_path = make_dump_path(location_config)
         extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
         dump_database_names = database_names_to_dump(
             database, extra_environment, log_prefix, dry_run_label
@@ -84,41 +130,35 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         if not dump_database_names:
             raise ValueError('Cannot find any MySQL databases to dump.')
 
-        dump_command = (
-            ('mysqldump',)
-            + (tuple(database['options'].split(' ')) if 'options' in database else ())
-            + ('--add-drop-database',)
-            + (('--host', database['hostname']) if 'hostname' in database else ())
-            + (('--port', str(database['port'])) if 'port' in database else ())
-            + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-            + (('--user', database['username']) if 'username' in database else ())
-            + ('--databases',)
-            + dump_database_names
-            # Use shell redirection rather than execute_command(output_file=open(...)) to prevent
-            # the open() call on a named pipe from hanging the main borgmatic process.
-            + ('>', dump_filename)
-        )
-
-        logger.debug(
-            '{}: Dumping MySQL database {} to {}{}'.format(
-                log_prefix, requested_name, dump_filename, dry_run_label
+        if database['name'] == 'all' and database.get('format'):
+            for dump_name in dump_database_names:
+                renamed_database = copy.copy(database)
+                renamed_database['name'] = dump_name
+                processes.append(
+                    execute_dump_command(
+                        renamed_database,
+                        log_prefix,
+                        dump_path,
+                        (dump_name,),
+                        extra_environment,
+                        dry_run,
+                        dry_run_label,
+                    )
+                )
+        else:
+            processes.append(
+                execute_dump_command(
+                    database,
+                    log_prefix,
+                    dump_path,
+                    dump_database_names,
+                    extra_environment,
+                    dry_run,
+                    dry_run_label,
+                )
             )
-        )
-        if dry_run:
-            continue
 
-        dump.create_named_pipe_for_dump(dump_filename)
-
-        processes.append(
-            execute_command(
-                dump_command,
-                shell=True,
-                extra_environment=extra_environment,
-                run_to_completion=False,
-            )
-        )
-
-    return processes
+    return [process for process in processes if process]
 
 
 def remove_database_dumps(databases, log_prefix, location_config, dry_run):  # pragma: no cover
