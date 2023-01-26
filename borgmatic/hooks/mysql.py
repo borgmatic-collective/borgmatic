@@ -197,6 +197,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     database = database_config[0]
     restore_command = (
         ('mysql', '--batch')
+        + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())

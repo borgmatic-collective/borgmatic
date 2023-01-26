@@ -76,6 +76,11 @@ hooks:
           options: "--ssl"
 ```
 
+See your [borgmatic configuration
+file](https://torsion.org/borgmatic/docs/reference/configuration/) for
+additional customization of the options passed to database commands (when
+listing databases, restoring databases, etc.).
+
 
 ### All databases
 

@@ -806,6 +806,30 @@ properties:
                                 any validation on them. See pg_dump
                                 documentation for details.
                             example: --role=someone
+                        list_options:
+                            type: string
+                            description: |
+                                Additional psql options to pass directly to the
+                                psql command that lists available databases,
+                                without performing any validation on them. See
+                                psql documentation for details.
+                            example: --role=someone
+                        restore_options:
+                            type: string
+                            description: |
+                                Additional pg_restore/psql options to pass
+                                directly to the restore command, without
+                                performing any validation on them. See
+                                pg_restore/psql documentation for details.
+                            example: --role=someone
+                        analyze_options:
+                            type: string
+                            description: |
+                                Additional psql options to pass directly to the
+                                analyze command run after a restore, without
+                                performing any validation on them. See psql
+                                documentation for details.
+                            example: --role=someone
                 description: |
                     List of one or more PostgreSQL databases to dump before
                     creating a backup, run once per configuration file. The
@@ -868,14 +892,6 @@ properties:
                                 file of that format, allowing more convenient
                                 restores of individual databases.
                             example: directory
-                        list_options:
-                            type: string
-                            description: |
-                                Additional mysql options to pass directly to
-                                the mysql command that lists available
-                                databases, without performing any validation on
-                                them. See mysql documentation for details.
-                            example: --defaults-extra-file=my.cnf
                         options:
                             type: string
                             description: |
@@ -884,6 +900,22 @@ properties:
                                 validation on them. See mysqldump documentation
                                 for details.
                             example: --skip-comments
+                        list_options:
+                            type: string
+                            description: |
+                                Additional mysql options to pass directly to
+                                the mysql command that lists available
+                                databases, without performing any validation on
+                                them. See mysql documentation for details.
+                            example: --defaults-extra-file=my.cnf
+                        restore_options:
+                            type: string
+                            description: |
+                                Additional mysql options to pass directly to
+                                the mysql command that restores database dumps,
+                                without performing any validation on them. See
+                                mysql documentation for details.
+                            example: --defaults-extra-file=my.cnf
                 description: |
                     List of one or more MySQL/MariaDB databases to dump before
                     creating a backup, run once per configuration file. The
@@ -956,7 +988,15 @@ properties:
                                 directly to the dump command, without performing
                                 any validation on them. See mongodump
                                 documentation for details.
-                            example: --role=someone
+                            example: --dumpDbUsersAndRoles
+                        restore_options:
+                            type: string
+                            description: |
+                                Additional mongorestore options to pass
+                                directly to the dump command, without performing
+                                any validation on them. See mongorestore
+                                documentation for details.
+                            example: --restoreDbUsersAndRoles
                 description: |
                     List of one or more MongoDB databases to dump before
                     creating a backup, run once per configuration file. The

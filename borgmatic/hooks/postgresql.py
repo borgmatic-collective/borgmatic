@@ -62,7 +62,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
-        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug(
         '{}: Querying for "all" PostgreSQL databases to dump{}'.format(log_prefix, dry_run_label)
@@ -204,6 +204,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
         + (('--dbname', database['name']) if not all_databases else ())
+        + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
     )
     pg_restore_command = database.get('pg_restore_command') or 'pg_restore'
@@ -217,6 +218,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
+        + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
     )
     extra_environment = make_extra_environment(database)

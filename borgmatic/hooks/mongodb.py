@@ -160,4 +160,6 @@ def build_restore_command(extract_process, database, dump_filename):
         command.extend(('--password', database['password']))
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
+    if 'restore_options' in database:
+        command.extend(database['restore_options'].split(' '))
     return command

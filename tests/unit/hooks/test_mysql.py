@@ -336,6 +336,23 @@ def test_restore_database_dump_errors_on_multiple_database_config():
         )
 
 
+def test_restore_database_dump_runs_mysql_with_options():
+    database_config = [{'name': 'foo', 'restore_options': '--harder'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('mysql', '--batch', '--harder'),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment=None,
+    ).once()
+
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+    )
+
+
 def test_restore_database_dump_runs_mysql_with_hostname_and_port():
     database_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     extract_process = flexmock(stdout=flexmock())
