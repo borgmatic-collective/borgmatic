@@ -257,13 +257,13 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
 
 
 def test_restore_database_dump_runs_mongorestore_with_options():
-    database_config = [{'name': 'foo', 'restore_options': '--harder',}]
+    database_config = [{'name': 'foo', 'restore_options': '--harder'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ['mongorestore', '--archive', '--drop', '--db', 'foo', '--harder',],
+        ['mongorestore', '--archive', '--drop', '--db', 'foo', '--harder'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
