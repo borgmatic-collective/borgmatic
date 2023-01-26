@@ -171,15 +171,15 @@ borgmatic rlist
 That should yield output looking something like:
 
 ```text
-host-2019-01-01T04:05:06.070809      Tue, 2019-01-01 04:05:06 [...]
-host-2019-01-02T04:06:07.080910      Wed, 2019-01-02 04:06:07 [...]
+host-2023-01-01T04:05:06.070809      Tue, 2023-01-01 04:05:06 [...]
+host-2023-01-02T04:06:07.080910      Wed, 2023-01-02 04:06:07 [...]
 ```
 
 Assuming that you want to restore all database dumps from the archive with the
 most up-to-date files and therefore the latest timestamp, run a command like:
 
 ```bash
-borgmatic restore --archive host-2019-01-02T04:06:07.080910
+borgmatic restore --archive host-2023-01-02T04:06:07.080910
 ```
 
 (No borgmatic `restore` action? Upgrade borgmatic!)
@@ -208,7 +208,7 @@ But if you have multiple repositories configured, then you'll need to specify
 the repository path containing the archive to restore. Here's an example:
 
 ```bash
-borgmatic restore --repository repo.borg --archive host-2019-...
+borgmatic restore --repository repo.borg --archive host-2023-...
 ```
 
 ### Restore particular databases
@@ -218,8 +218,38 @@ restore one of them, use the `--database` flag to select one or more
 databases. For instance:
 
 ```bash
-borgmatic restore --archive host-2019-... --database users
+borgmatic restore --archive host-2023-... --database users
 ```
+
+<span class="minilink minilink-addedin">New in version 1.7.6</span> You can
+also restore individual databases even if you dumped them as "all"—as long as
+you dumped them into separate files via use of the "format" option. See above
+for more information.
+
+
+### Restore all databases
+
+To restore all databases:
+
+```bash
+borgmatic restore --archive host-2023-... --database all
+```
+
+Or just omit the `--database` flag entirely:
+
+
+```bash
+borgmatic restore --archive host-2023-...
+```
+
+Prior to borgmatic version 1.7.6, this restores a combined "all" database
+dump from the archive.
+
+<span class="minilink minilink-addedin">New in version 1.7.6</span> Restoring
+"all" databases restores each database found in the selected archive. That
+includes any combined dump file named "all" and any other individual database
+dumps found in the archive.
+
 
 ### Limitations
 
