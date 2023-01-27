@@ -1,4 +1,4 @@
-FROM alpine:3.16.0 as borgmatic
+FROM alpine:3.17.1 as borgmatic
 
 COPY . /app
 RUN apk add --no-cache py3-pip py3-ruamel.yaml py3-ruamel.yaml.clib
@@ -8,7 +8,7 @@ RUN borgmatic --help > /command-line.txt \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
            && borgmatic "$action" --help >> /command-line.txt; done
 
-FROM node:18.4.0-alpine as html
+FROM node:19.5.0-alpine as html
 
 ARG ENVIRONMENT=production
 
@@ -27,7 +27,7 @@ COPY . /source
 RUN NODE_ENV=${ENVIRONMENT} npx eleventy --input=/source/docs --output=/output/docs \
   && mv /output/docs/index.html /output/index.html
 
-FROM nginx:1.22.0-alpine
+FROM nginx:1.22.1-alpine
 
 COPY --from=html /output /usr/share/nginx/html
 COPY --from=borgmatic /etc/borgmatic/config.yaml /usr/share/nginx/html/docs/reference/config.yaml

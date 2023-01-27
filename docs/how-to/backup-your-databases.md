@@ -240,7 +240,7 @@ To restore all databases:
 borgmatic restore --archive host-2023-... --database all
 ```
 
-Or just omit the `--database` flag entirely:
+Or omit the `--database` flag entirely:
 
 
 ```bash
