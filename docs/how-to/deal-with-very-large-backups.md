@@ -60,7 +60,15 @@ consistency:
         - name: repository
 ```
 
-(Prior to borgmatic 1.6.2, `checks` was a plain list of strings without the `name:` part.)
+<span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
+was a plain list of strings without the `name:` part. For example:
+
+```yaml
+consistency:
+    checks:
+        - repository
+```
+
 
 Here are the available checks from fastest to slowest:
 
@@ -125,7 +133,16 @@ consistency:
         - name: disabled
 ```
 
-Or, if you have multiple repositories in your borgmatic configuration file,
+<span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
+was a plain list of strings without the `name:` part. For instance:
+
+```yaml
+consistency:
+    checks:
+        - disabled
+```
+
+If you have multiple repositories in your borgmatic configuration file,
 you can keep running consistency checks, but only against a subset of the
 repositories:
 
