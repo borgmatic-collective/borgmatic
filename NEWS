@@ -1,4 +1,6 @@
 1.7.7
+ * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped
+   MySQL databases get dropped right before restore.
  * #643: Fix for potential data loss (data not getting backed up) when dumping large "directory"
    format PostgreSQL/MongoDB databases. Prior to the fix, these dumps would not finish writing to
    disk before Borg consumed them. Now, the dumping process completes before Borg starts. This only

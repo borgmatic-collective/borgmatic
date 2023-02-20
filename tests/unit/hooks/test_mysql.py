@@ -159,6 +159,33 @@ def test_execute_dump_command_runs_mysqldump():
     )
 
 
+def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        ('mysqldump', '--databases', 'foo', '>', 'dump',),
+        shell=True,
+        extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'add_drop_database': False},
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
 def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
     process = flexmock()
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return('dump')

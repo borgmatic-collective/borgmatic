@@ -892,6 +892,13 @@ properties:
                                 file of that format, allowing more convenient
                                 restores of individual databases.
                             example: directory
+                        add_drop_database:
+                            type: boolean
+                            description: |
+                                Use the "--add-drop-database" flag with
+                                mysqldump, causing the database to be dropped
+                                right before restore. Defaults to true.
+                            example: false
                         options:
                             type: string
                             description: |

@@ -81,7 +81,7 @@ def execute_dump_command(
     dump_command = (
         ('mysqldump',)
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
-        + ('--add-drop-database',)
+        + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
