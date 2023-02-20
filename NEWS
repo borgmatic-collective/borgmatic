@@ -1,3 +1,12 @@
+1.7.7
+ * #643: Fix for potential data loss (data not getting backed up) when dumping large "directory"
+   format PostgreSQL/MongoDB databases. Prior to the fix, these dumps would not finish writing to
+   disk before Borg consumed them. Now, the dumping process completes before Borg starts. This only
+   applies to "directory" format databases; other formats still stream to Borg without using
+   temporary disk space.
+ * Fix MongoDB "directory" format to work with mongodump/mongorestore without error. Prior to this
+   fix, only the "archive" format worked.
+
 1.7.6
  * #393, #438, #560: Optionally dump "all" PostgreSQL/MySQL databases to separate files instead of
    one combined dump file, allowing more convenient restores of individual databases. You can enable

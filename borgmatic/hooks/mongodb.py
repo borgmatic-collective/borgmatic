@@ -45,13 +45,14 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         if dry_run:
             continue
 
+        command = build_dump_command(database, dump_filename, dump_format)
+
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
+            execute_command(command, shell=True)
         else:
             dump.create_named_pipe_for_dump(dump_filename)
-
-        command = build_dump_command(database, dump_filename, dump_format)
-        processes.append(execute_command(command, shell=True, run_to_completion=False))
+            processes.append(execute_command(command, shell=True, run_to_completion=False))
 
     return processes
 
@@ -61,9 +62,9 @@ def build_dump_command(database, dump_filename, dump_format):
     Return the mongodump command from a single database configuration.
     '''
     all_databases = database['name'] == 'all'
-    command = ['mongodump', '--archive']
+    command = ['mongodump']
     if dump_format == 'directory':
-        command.append(dump_filename)
+        command.extend(('--out', dump_filename))
     if 'hostname' in database:
         command.extend(('--host', database['hostname']))
     if 'port' in database:
@@ -79,7 +80,7 @@ def build_dump_command(database, dump_filename, dump_format):
     if 'options' in database:
         command.extend(database['options'].split(' '))
     if dump_format != 'directory':
-        command.extend(('>', dump_filename))
+        command.extend(('--archive', '>', dump_filename))
     return command
 
 
@@ -145,9 +146,11 @@ def build_restore_command(extract_process, database, dump_filename):
     '''
     Return the mongorestore command from a single database configuration.
     '''
-    command = ['mongorestore', '--archive']
-    if not extract_process:
-        command.append(dump_filename)
+    command = ['mongorestore']
+    if extract_process:
+        command.append('--archive')
+    else:
+        command.extend(('--dir', dump_filename))
     if database['name'] != 'all':
         command.extend(('--drop', '--db', database['name']))
     if 'hostname' in database:

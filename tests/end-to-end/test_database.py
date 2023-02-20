@@ -14,6 +14,7 @@ def write_configuration(
     repository_path,
     borgmatic_source_directory,
     postgresql_dump_format='custom',
+    mongodb_dump_format='archive',
 ):
     '''
     Write out borgmatic configuration into a file at the config path. Set the options so as to work
@@ -67,6 +68,7 @@ hooks:
           username: root
           password: test
           authentication_database: admin
+          format: {mongodb_dump_format}
         - name: all
           hostname: mongodb
           username: root
@@ -136,6 +138,7 @@ def test_database_dump_and_restore_with_directory_format():
             repository_path,
             borgmatic_source_directory,
             postgresql_dump_format='directory',
+            mongodb_dump_format='directory',
         )
 
         subprocess.check_call(

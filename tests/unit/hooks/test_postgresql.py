@@ -270,7 +270,6 @@ def test_make_extra_environment_maps_options_to_environment():
 
 def test_dump_databases_runs_pg_dump_with_directory_format():
     databases = [{'name': 'foo', 'format': 'directory'}]
-    process = flexmock()
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
@@ -295,10 +294,9 @@ def test_dump_databases_runs_pg_dump_with_directory_format():
         ),
         shell=True,
         extra_environment={'PGSSLMODE': 'disable'},
-        run_to_completion=False,
-    ).and_return(process).once()
+    ).and_return(flexmock()).once()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == []
 
 
 def test_dump_databases_runs_pg_dump_with_options():
