@@ -1029,6 +1029,16 @@ properties:
                         description: |
                             The address of your self-hosted ntfy.sh instance.
                         example: https://ntfy.your-domain.com
+                    username:
+                        type: string
+                        description: |
+                            The username used for authentication.
+                        example: testuser
+                    password:
+                        type: string
+                        description: |
+                            The password used for authentication.
+                        example: fakepassword
                     start:
                         type: object
                         properties:

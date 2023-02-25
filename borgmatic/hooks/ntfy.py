@@ -56,10 +56,26 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
             'X-Tags': state_config.get('tags'),
         }
 
+        username = hook_config.get('username')
+        password = hook_config.get('password')
+
+        auth = None
+        if (username and password) is not None:
+            auth = requests.auth.HTTPBasicAuth(username, password)
+            logger.info(f'{config_filename}: Using basic auth with user {username} for Ntfy')
+        elif username is not None:
+            logger.warn(
+                f'{config_filename}: Password missing for Ntfy authentication, defaulting to no auth'
+            )
+        elif password is not None:
+            logger.warn(
+                f'{config_filename}: Username missing for Ntfy authentication, defaulting to no auth'
+            )
+
         if not dry_run:
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
-                response = requests.post(f'{base_url}/{topic}', headers=headers)
+                response = requests.post(f'{base_url}/{topic}', headers=headers, auth=auth)
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
