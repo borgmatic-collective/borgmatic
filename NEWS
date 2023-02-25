@@ -1,3 +1,6 @@
+1.7.8.dev0
+ * #621: Add optional authentication to the ntfy monitoring hook.
+
 1.7.7
  * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped
    MySQL databases get dropped right before restore.

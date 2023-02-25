@@ -62,14 +62,14 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
         auth = None
         if (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)
-            logger.info(f'{config_filename}: Using basic auth with user {username} for Ntfy')
+            logger.info(f'{config_filename}: Using basic auth with user {username} for ntfy')
         elif username is not None:
-            logger.warn(
-                f'{config_filename}: Password missing for Ntfy authentication, defaulting to no auth'
+            logger.warning(
+                f'{config_filename}: Password missing for ntfy authentication, defaulting to no auth'
             )
         elif password is not None:
-            logger.warn(
-                f'{config_filename}: Username missing for Ntfy authentication, defaulting to no auth'
+            logger.warning(
+                f'{config_filename}: Username missing for ntfy authentication, defaulting to no auth'
             )
 
         if not dry_run:
@@ -79,7 +79,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
-                logger.warning(f'{config_filename}: Ntfy error: {error}')
+                logger.warning(f'{config_filename}: ntfy error: {error}')
 
 
 def destroy_monitor(
