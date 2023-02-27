@@ -6,6 +6,9 @@
    action.
  * Fix the "create" action with the "--dry-run" flag querying for databases when a PostgreSQL/MySQL
    "all" database is configured. Now, these queries are skipped due to the dry run.
+ * Add "--repository" flag to the "rcreate" action to optionally select one configured repository to
+   create.
+ * Add "--progress" flag to the "transfer" action, new in Borg 2.0.0b5.
 
 1.7.7
  * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped

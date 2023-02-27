@@ -169,12 +169,21 @@ The `--source-repository` flag is necessary to reuse key material from your
 Borg 1 repository so that the subsequent data transfer can work.
 
 The `--encryption` value above selects the same chunk ID algorithm (`blake2`)
-used in Borg 1, thereby making deduplication work across transferred archives
-and new archives. Note that `repokey-blake2-chacha20-poly1305` may be faster
-than `repokey-blake2-aes-ocb` on certain platforms like ARM64. Read about
-[Borg encryption
+commonly used in Borg 1, thereby making deduplication work across transferred
+archives and new archives.
+
+If you get an error about "You must keep the same ID hash" from Borg, that
+means the encryption value you specified doesn't correspond to your source
+repository's chunk ID algorithm. In that case, try not using `blake2`:
+
+```bash
+borgmatic rcreate --verbosity 1 --encryption repokey-aes-ocb \
+    --source-repository original.borg --repository upgraded.borg
+```
+
+Read about [Borg encryption
 modes](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/rcreate.html#encryption-mode-tldr)
-for the menu of available encryption modes.
+for more details.
 
 To transfer data from your original Borg 1 repository to your newly created
 Borg 2 repository:

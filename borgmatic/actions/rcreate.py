@@ -1,6 +1,7 @@
 import logging
 
 import borgmatic.borg.rcreate
+import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,11 @@ def run_rcreate(
     '''
     Run the "rcreate" action for the given repository.
     '''
+    if rcreate_arguments.repository and not borgmatic.config.validate.repositories_match(
+        repository, rcreate_arguments.repository
+    ):
+        return
+
     logger.info('{}: Creating repository'.format(repository))
     borgmatic.borg.rcreate.create_repository(
         global_arguments.dry_run,

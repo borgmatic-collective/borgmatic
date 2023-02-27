@@ -248,6 +248,10 @@ def make_parsers():
         help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
+        '--repository',
+        help='Path of the new repository to create (must be already specified in a borgmatic configuration file), defaults to the configured repository if there is only one',
+    )
+    rcreate_group.add_argument(
         '--copy-crypt-key',
         action='store_true',
         help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key (Borg 2.x+ only)',
@@ -291,6 +295,12 @@ def make_parsers():
     transfer_group.add_argument(
         '--upgrader',
         help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
+    )
+    transfer_group.add_argument(
+        '--progress',
+        default=False,
+        action='store_true',
+        help='Display progress as each archive is transferred',
     )
     transfer_group.add_argument(
         '-a',
