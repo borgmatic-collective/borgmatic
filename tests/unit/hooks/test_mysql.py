@@ -9,26 +9,36 @@ from borgmatic.hooks import mysql as module
 def test_database_names_to_dump_passes_through_name():
     extra_environment = flexmock()
     log_prefix = ''
-    dry_run_label = ''
 
     names = module.database_names_to_dump(
-        {'name': 'foo'}, extra_environment, log_prefix, dry_run_label
+        {'name': 'foo'}, extra_environment, log_prefix, dry_run=False
     )
 
     assert names == ('foo',)
 
 
+def test_database_names_to_dump_bails_for_dry_run():
+    extra_environment = flexmock()
+    log_prefix = ''
+    flexmock(module).should_receive('execute_command_and_capture_output').never()
+
+    names = module.database_names_to_dump(
+        {'name': 'all'}, extra_environment, log_prefix, dry_run=True
+    )
+
+    assert names == ()
+
+
 def test_database_names_to_dump_queries_mysql_for_database_names():
     extra_environment = flexmock()
     log_prefix = ''
-    dry_run_label = ''
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('mysql', '--skip-column-names', '--batch', '--execute', 'show schemas'),
         extra_environment=extra_environment,
     ).and_return('foo\nbar\nmysql\n').once()
 
     names = module.database_names_to_dump(
-        {'name': 'all'}, extra_environment, log_prefix, dry_run_label
+        {'name': 'all'}, extra_environment, log_prefix, dry_run=False
     )
 
     assert names == ('foo', 'bar')
@@ -323,7 +333,6 @@ def test_execute_dump_command_with_dry_run_skips_mysqldump():
 
 def test_dump_databases_errors_for_missing_all_databases():
     databases = [{'name': 'all'}]
-    process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
         'databases/localhost/all'
@@ -331,7 +340,18 @@ def test_dump_databases_errors_for_missing_all_databases():
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
     with pytest.raises(ValueError):
-        assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
+        assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+
+
+def test_dump_databases_does_not_error_for_missing_all_databases_with_dry_run():
+    databases = [{'name': 'all'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.dump).should_receive('make_database_dump_filename').and_return(
+        'databases/localhost/all'
+    )
+    flexmock(module).should_receive('database_names_to_dump').and_return(())
+
+    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
 
 
 def test_restore_database_dump_runs_mysql_to_restore():

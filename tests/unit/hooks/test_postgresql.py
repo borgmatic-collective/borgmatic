@@ -9,19 +9,32 @@ from borgmatic.hooks import postgresql as module
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == ('foo',)
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+        'foo',
+    )
 
 
 def test_database_names_to_dump_passes_through_individual_database_name_with_format():
     database = {'name': 'foo', 'format': 'custom'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == ('foo',)
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+        'foo',
+    )
 
 
 def test_database_names_to_dump_passes_through_all_without_format():
     database = {'name': 'all'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == ('all',)
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+        'all',
+    )
+
+
+def test_database_names_to_dump_with_all_and_format_and_dry_run_bails():
+    database = {'name': 'all', 'format': 'custom'}
+    flexmock(module).should_receive('execute_command_and_capture_output').never()
+
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=True) == ()
 
 
 def test_database_names_to_dump_with_all_and_format_lists_databases():
@@ -30,7 +43,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases():
         'foo,test,\nbar,test,"stuff and such"'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == (
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -53,7 +66,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == (
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -66,7 +79,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == (
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -79,7 +92,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_options
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == (
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -91,7 +104,9 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
         'foo,test,\ntemplate0,test,blah'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), flexmock()) == ('foo',)
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+        'foo',
+    )
 
 
 def test_dump_databases_runs_pg_dump_for_each_database():
@@ -137,6 +152,15 @@ def test_dump_databases_raises_when_no_database_names_to_dump():
 
     with pytest.raises(ValueError):
         module.dump_databases(databases, 'test.yaml', {}, dry_run=False)
+
+
+def test_dump_databases_does_not_raise_when_no_database_names_to_dump():
+    databases = [{'name': 'foo'}, {'name': 'bar'}]
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(())
+
+    module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
 
 
 def test_dump_databases_with_duplicate_dump_skips_pg_dump():

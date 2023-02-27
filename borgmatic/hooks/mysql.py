@@ -24,7 +24,7 @@ def make_dump_path(location_config):  # pragma: no cover
 SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
 
 
-def database_names_to_dump(database, extra_environment, log_prefix, dry_run_label):
+def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     '''
     Given a requested database config, return the corresponding sequence of database names to dump.
     In the case of "all", query for the names of databases on the configured host and return them,
@@ -32,6 +32,8 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
     '''
     if database['name'] != 'all':
         return (database['name'],)
+    if dry_run:
+        return ()
 
     show_command = (
         ('mysql',)
@@ -43,9 +45,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
-    logger.debug(
-        '{}: Querying for "all" MySQL databases to dump{}'.format(log_prefix, dry_run_label)
-    )
+    logger.debug(f'{log_prefix}: Querying for "all" MySQL databases to dump')
     show_output = execute_command_and_capture_output(
         show_command, extra_environment=extra_environment
     )
@@ -125,9 +125,13 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         dump_path = make_dump_path(location_config)
         extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
         dump_database_names = database_names_to_dump(
-            database, extra_environment, log_prefix, dry_run_label
+            database, extra_environment, log_prefix, dry_run
         )
+
         if not dump_database_names:
+            if dry_run:
+                continue
+
             raise ValueError('Cannot find any MySQL databases to dump.')
 
         if database['name'] == 'all' and database.get('format'):

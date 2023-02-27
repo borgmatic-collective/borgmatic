@@ -43,7 +43,7 @@ def make_extra_environment(database):
 EXCLUDED_DATABASE_NAMES = ('template0', 'template1')
 
 
-def database_names_to_dump(database, extra_environment, log_prefix, dry_run_label):
+def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     '''
     Given a requested database config, return the corresponding sequence of database names to dump.
     In the case of "all" when a database format is given, query for the names of databases on the
@@ -56,6 +56,8 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
         return (requested_name,)
     if not database.get('format'):
         return ('all',)
+    if dry_run:
+        return ()
 
     list_command = (
         ('psql', '--list', '--no-password', '--csv', '--tuples-only')
@@ -64,9 +66,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run_labe
         + (('--username', database['username']) if 'username' in database else ())
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
-    logger.debug(
-        '{}: Querying for "all" PostgreSQL databases to dump{}'.format(log_prefix, dry_run_label)
-    )
+    logger.debug(f'{log_prefix}: Querying for "all" PostgreSQL databases to dump')
     list_output = execute_command_and_capture_output(
         list_command, extra_environment=extra_environment
     )
@@ -99,10 +99,13 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         extra_environment = make_extra_environment(database)
         dump_path = make_dump_path(location_config)
         dump_database_names = database_names_to_dump(
-            database, extra_environment, log_prefix, dry_run_label
+            database, extra_environment, log_prefix, dry_run
         )
 
         if not dump_database_names:
+            if dry_run:
+                continue
+
             raise ValueError('Cannot find any PostgreSQL databases to dump.')
 
         for database_name in dump_database_names:

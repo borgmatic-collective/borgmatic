@@ -4,6 +4,8 @@
    This lines up with the new behavior in Borg 2.0.0b5.
  * Internally support new Borg 2.0.0b5 "--filter" status characters / item flags for the "create"
    action.
+ * Fix the "create" action with the "--dry-run" flag querying for databases when a PostgreSQL/MySQL
+   "all" database is configured. Now, these queries are skipped due to the dry run.
 
 1.7.7
  * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped
