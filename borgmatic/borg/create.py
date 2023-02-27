@@ -337,6 +337,7 @@ def create_archive(
         expand_home_directories(location_config.get('exclude_patterns'))
     )
     checkpoint_interval = storage_config.get('checkpoint_interval', None)
+    checkpoint_volume = storage_config.get('checkpoint_volume', None)
     chunker_params = storage_config.get('chunker_params', None)
     compression = storage_config.get('compression', None)
     upload_rate_limit = storage_config.get('upload_rate_limit', None)
@@ -381,6 +382,7 @@ def create_archive(
         + make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
         + make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
+        + (('--checkpoint-volume', str(checkpoint_volume)) if checkpoint_volume else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
         + upload_ratelimit_flags

@@ -9,6 +9,8 @@
  * Add "--repository" flag to the "rcreate" action to optionally select one configured repository to
    create.
  * Add "--progress" flag to the "transfer" action, new in Borg 2.0.0b5.
+ * Add "checkpoint_volume" configuration option to creates checkpoints every specified number of
+   bytes during a long-running backup, new in Borg 2.0.0b5.
 
 1.7.7
  * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped

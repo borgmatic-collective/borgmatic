@@ -240,6 +240,16 @@ properties:
                     for details. Defaults to checkpoints every 1800 seconds (30
                     minutes).
                 example: 1800
+            checkpoint_volume:
+                type: integer
+                description: |
+                    Number of backed up bytes between each checkpoint during a
+                    long-running backup. Only supported with Borg 2+. See
+                    https://borgbackup.readthedocs.io/en/stable/faq.html
+                    for details. Defaults to only time-based checkpointing (see
+                    "checkpoint_interval") instead of volume-based
+                    checkpointing.
+                example: 1048576
             chunker_params:
                 type: string
                 description: |
