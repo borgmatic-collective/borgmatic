@@ -422,6 +422,13 @@ def test_parse_arguments_with_list_flag_but_no_relevant_action_raises_value_erro
         module.parse_arguments('--list', 'rcreate')
 
 
+def test_parse_arguments_disallows_list_with_progress_for_create_action():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('create', '--list', '--progress')
+
+
 def test_parse_arguments_allows_json_with_list_or_info():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

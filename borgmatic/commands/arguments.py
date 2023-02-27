@@ -833,6 +833,11 @@ def parse_arguments(*unparsed_arguments):
             'The --excludes flag has been replaced with exclude_patterns in configuration.'
         )
 
+    if 'create' in arguments and arguments['create'].list_files and arguments['create'].progress:
+        raise ValueError(
+            'With the create action, only one of --list (--files) and --progress flags can be used.'
+        )
+
     if (
         ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
