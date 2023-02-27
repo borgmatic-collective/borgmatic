@@ -275,7 +275,7 @@ def collect_special_file_paths(
     paths = tuple(
         path_line.split(' ', 1)[1]
         for path_line in paths_output.split('\n')
-        if path_line and path_line.startswith('- ')
+        if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
 
     return tuple(

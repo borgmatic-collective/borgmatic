@@ -358,7 +358,7 @@ def test_any_parent_directories_treats_unrelated_paths_as_non_match():
 
 def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_list():
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        'Processing files ...\n- /foo\n- /bar\n- /baz'
+        'Processing files ...\n- /foo\n+ /bar\n- /baz'
     )
     flexmock(module).should_receive('special_file').and_return(True)
     flexmock(module).should_receive('any_parent_directories').and_return(False)
@@ -374,7 +374,7 @@ def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_
 
 def test_collect_special_file_paths_excludes_requested_directories():
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        '- /foo\n- /bar\n- /baz'
+        '+ /foo\n- /bar\n- /baz'
     )
     flexmock(module).should_receive('special_file').and_return(True)
     flexmock(module).should_receive('any_parent_directories').and_return(False).and_return(
@@ -392,7 +392,7 @@ def test_collect_special_file_paths_excludes_requested_directories():
 
 def test_collect_special_file_paths_excludes_non_special_files():
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
-        '- /foo\n- /bar\n- /baz'
+        '+ /foo\n+ /bar\n+ /baz'
     )
     flexmock(module).should_receive('special_file').and_return(True).and_return(False).and_return(
         True
