@@ -399,7 +399,7 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AMEx-') if list_files and not json and not progress else ())
+        + (('--list', '--filter', 'AMEx+-') if list_files and not json and not progress else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)

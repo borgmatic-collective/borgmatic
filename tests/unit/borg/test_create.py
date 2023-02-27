@@ -1612,7 +1612,7 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_answer_out
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'AMEx-') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--list', '--filter', 'AMEx+-') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',

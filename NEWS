@@ -2,6 +2,8 @@
  * #621: Add optional authentication to the ntfy monitoring hook.
  * With the "create" action, only one of "--list" ("--files") and "--progress" flags can be used.
    This lines up with the new behavior in Borg 2.0.0b5.
+ * Internally support new Borg 2.0.0b5 "--filter" status characters / item flags for the "create"
+   action.
 
 1.7.7
  * #642: Add MySQL database hook "add_drop_database" configuration option to control whether dumped
