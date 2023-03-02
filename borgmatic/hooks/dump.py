@@ -6,7 +6,12 @@ from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
-DATABASE_HOOK_NAMES = ('postgresql_databases', 'mysql_databases', 'mongodb_databases')
+DATABASE_HOOK_NAMES = (
+    'postgresql_databases',
+    'mysql_databases',
+    'mongodb_databases',
+    'sqlite_databases',
+)
 
 
 def make_database_dump_path(borgmatic_source_directory, database_hook_name):
