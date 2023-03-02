@@ -196,6 +196,27 @@ def make_exclude_flags(location_config, exclude_filename=None):
     )
 
 
+def make_list_filter_flags(local_borg_version, dry_run):
+    '''
+    Given the local Borg version and whether this is a dry run, return the corresponding flags for
+    passing to "--list --filter". The general idea is that excludes are shown for a dry run or when
+    the verbosity is debug.
+    '''
+    base_flags = 'AME'
+    show_excludes = logger.isEnabledFor(logging.DEBUG)
+
+    if feature.available(feature.Feature.EXCLUDED_FILES_MINUS, local_borg_version):
+        if show_excludes or dry_run:
+            return f'{base_flags}+-'
+        else:
+            return base_flags
+
+    if show_excludes:
+        return f'{base_flags}x-'
+    else:
+        return f'{base_flags}-'
+
+
 DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
 
 
@@ -343,6 +364,7 @@ def create_archive(
     upload_rate_limit = storage_config.get('upload_rate_limit', None)
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
+    list_filter_flags = make_list_filter_flags(local_borg_version, dry_run)
     files_cache = location_config.get('files_cache')
     archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
@@ -401,7 +423,11 @@ def create_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--list', '--filter', 'AMEx+-') if list_files and not json and not progress else ())
+        + (
+            ('--list', '--filter', list_filter_flags)
+            if list_files and not json and not progress
+            else ()
+        )
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)

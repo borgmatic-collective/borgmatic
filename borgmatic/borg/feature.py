@@ -14,6 +14,7 @@ class Feature(Enum):
     RLIST = 8
     RINFO = 9
     MATCH_ARCHIVES = 10
+    EXCLUDED_FILES_MINUS = 11
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -27,6 +28,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.RLIST: parse_version('2.0.0a2'),  # borg rlist
     Feature.RINFO: parse_version('2.0.0a2'),  # borg rinfo
     Feature.MATCH_ARCHIVES: parse_version('2.0.0b3'),  # borg --match-archives
+    Feature.EXCLUDED_FILES_MINUS: parse_version('2.0.0b5'),  # --list --filter uses "-" for excludes
 }
 
 

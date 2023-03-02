@@ -1,4 +1,6 @@
 1.7.8.dev0
+ * #620: With the "create" action and the "--list" ("--files") flag, only show excluded files at
+   verbosity 2.
  * #621: Add optional authentication to the ntfy monitoring hook.
  * With the "create" action, only one of "--list" ("--files") and "--progress" flags can be used.
    This lines up with the new behavior in Borg 2.0.0b5.
