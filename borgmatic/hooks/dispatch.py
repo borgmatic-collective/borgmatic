@@ -9,6 +9,7 @@ from borgmatic.hooks import (
     ntfy,
     pagerduty,
     postgresql,
+    snapper,
     sqlite,
 )
 
@@ -23,6 +24,7 @@ HOOK_NAME_TO_MODULE = {
     'ntfy': ntfy,
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
+    'snapper': snapper,
     'sqlite_databases': sqlite,
 }
 

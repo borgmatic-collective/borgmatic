@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from functools import reduce
 
 try:
     import importlib_metadata
@@ -13,6 +14,7 @@ import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
+import borgmatic.hooks.prepare
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +101,19 @@ def run_create(
         location, global_arguments.used_config_paths, global_arguments.dry_run
     )
     stream_processes = [process for processes in active_dumps.values() for process in processes]
+
+    source_directories_dict = borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
+        'prepare_source_directories',
+        hooks,
+        repository,
+        borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
+        location.get("source_directories", []),
+    )
+    source_directories = reduce(
+        lambda x, y: x + y if y else x, source_directories_dict.values(), []
+    )
+    if source_directories:
+        location["source_directories"] = source_directories
 
     json_output = borgmatic.borg.create.create_archive(
         global_arguments.dry_run,
