@@ -74,8 +74,8 @@ hooks:
           username: root
           password: test
     sqlite_databases:
-        - path: /tmp/sqlite_test.db
         - name: sqlite_test
+          path: /tmp/sqlite_test.db
 '''
 
     with open(config_path, 'w') as config_file:
