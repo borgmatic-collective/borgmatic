@@ -17,7 +17,7 @@ def make_dump_path(location_config):  # pragma: no cover
     )
 
 
-def dump_databases(databases, log_prefix, location_config, dry_run):  # pragma: no cover
+def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     Dump the given SQLite3 databases to a file. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given log prefix in any log
@@ -29,11 +29,13 @@ def dump_databases(databases, log_prefix, location_config, dry_run):  # pragma: 
 
     logger.info('{}: Dumping SQLite databases{}'.format(log_prefix, dry_run_label))
 
+    if databases[0]['name'] == 'all':
+        logger.warning('The "all" database name has no meaning for SQLite3 databases')
+
     for database in databases:
         database_path = database['path']
-        database_filename = database['name']
         dump_path = make_dump_path(location_config)
-        dump_filename = dump.make_database_dump_filename(dump_path, database_filename)
+        dump_filename = dump.make_database_dump_filename(dump_path, database['name'])
         if os.path.exists(dump_filename):
             logger.warning(
                 f'{log_prefix}: Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
@@ -98,13 +100,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     if dry_run:
         return
 
-    remove_command = (
-        'rm',
-        database_path,
-    )
     try:
-        execute_command(remove_command, shell=True)
-    except CalledProcessError:
+        execute_command(('rm', database_path), shell=True)
+    except CalledProcessError:  # pragma: no cover
         logger.info(f'{log_prefix}: Database does not exist at {database_path}, skipping removal')
 
     restore_command = (

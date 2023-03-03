@@ -938,24 +938,24 @@ properties:
                     required: ['path','name']
                     additionalProperties: false
                     properties:
+                        name:
+                            type: string
+                            description: |
+                                This is used to tag the database dump file 
+                                with a name. It is not the path to the database 
+                                file itself. The name "all" has no special 
+                                meaning for SQLite databases.
+                            example: users
                         path:
                             type: string
                             description: |
                                 Path to the SQLite database file to dump. If
                                 relative, it is relative to the current working
-                                directory. If absolute, it is relative to the
-                                root of the filesystem. Note that using this
+                                directory. Note that using this
                                 database hook implicitly enables both
                                 read_special and one_file_system (see above) to
                                 support dump and restore streaming.
                             example: /var/lib/sqlite/users.db
-                        name:
-                            type: string
-                            description: |
-                                This is used to tag the database dump file with
-                                a name. It is not used to identify the database
-                                file itself.
-                            example: users
             mongodb_databases:
                 type: array
                 items:
