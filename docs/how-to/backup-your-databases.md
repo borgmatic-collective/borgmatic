@@ -15,8 +15,7 @@ consistent snapshot that is more suited for backups.
 
 Fortunately, borgmatic includes built-in support for creating database dumps
 prior to running backups. For example, here is everything you need to dump and
-backup a couple of local PostgreSQL databases, a MySQL/MariaDB database, a
-MongoDB database, and a SQLite database:
+backup a couple of local PostgreSQL databases and a MySQL/MariaDB database.
 
 ```yaml
 hooks:
@@ -25,8 +24,22 @@ hooks:
         - name: orders
     mysql_databases:
         - name: posts
+```
+
+<span class="minilink minilink-addedin">New in version 1.5.22</span> You can
+also dump MongoDB databases. For example:
+
+```yaml
+hooks:
     mongodb_databases:
         - name: messages
+```
+
+<span class="minilink minilink-addedin">New in version 1.7.9</span>
+Additionally, you can dump SQLite databases. For example:
+
+```yaml
+hooks:
     sqlite_databases:
         - name: mydb
           path: /var/lib/sqlite3/mydb.sqlite
@@ -104,6 +117,8 @@ hooks:
 
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
+
+The SQLite hook in particular does not consider "all" a special database name.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> With
 PostgreSQL and MySQL, you can optionally dump "all" databases to separate
