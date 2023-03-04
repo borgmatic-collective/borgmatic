@@ -79,21 +79,10 @@
 	border-bottom: 1px solid #ddd;
 	margin-bottom: 0.25em; /* 4px /16 */
 }
-@media (prefers-color-scheme: dark) {
-  .elv-toc-list > li > a {
-    color: #fff;
-    border-color: #444;
-  }
-}
 
 /* Active links */
 .elv-toc-list li.elv-toc-active > a {
 	background-color: #dff7ff;
-}
-@media (prefers-color-scheme: dark) {
-  .elv-toc-list li.elv-toc-active > a {
-    background-color: #353535;
-  }
 }
 .elv-toc-list ul .elv-toc-active > a:after {
 	content: "";
