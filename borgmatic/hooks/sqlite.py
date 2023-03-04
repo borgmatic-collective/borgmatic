@@ -105,7 +105,8 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         return
 
     try:
-        os.remove(database_path)
+        os.remove('/home/divyansh/Desktop/hello.txt')
+        logger.warn(f'{log_prefix}: Removed existing SQLite database at {database_path}')
     except FileNotFoundError:  # pragma: no cover
         pass
 

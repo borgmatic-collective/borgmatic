@@ -96,6 +96,8 @@ def test_restore_database_dump_restores_database():
 
     flexmock(module).should_receive('execute_command_with_processes').once()
 
+    flexmock(module.os).should_receive('remove').once()
+
     module.restore_database_dump(
         database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
     )
@@ -106,6 +108,7 @@ def test_restore_database_dump_does_not_restore_database_if_dry_run():
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').never()
+    flexmock(module.os).should_receive('remove').never()
 
     module.restore_database_dump(
         database_config, 'test.yaml', {}, dry_run=True, extract_process=extract_process
