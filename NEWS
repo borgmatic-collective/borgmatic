@@ -1,3 +1,6 @@
+1.7.9.dev0
+ * #295: Add a SQLite database dump/restore hook.
+
 1.7.8
  * #620: With the "create" action and the "--list" ("--files") flag, only show excluded files at
    verbosity 2.

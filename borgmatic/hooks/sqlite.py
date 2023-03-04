@@ -106,7 +106,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
 
     try:
         os.remove(database_path)
-        logger.warn(f'{log_prefix}: Removed existing SQLite database at {database_path}')
+        logger.warning(f'{log_prefix}: Removed existing SQLite database at {database_path}')
     except FileNotFoundError:  # pragma: no cover
         pass
 

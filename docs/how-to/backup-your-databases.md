@@ -16,7 +16,7 @@ consistent snapshot that is more suited for backups.
 Fortunately, borgmatic includes built-in support for creating database dumps
 prior to running backups. For example, here is everything you need to dump and
 backup a couple of local PostgreSQL databases, a MySQL/MariaDB database, a
-MongoDB database and a SQLite database:
+MongoDB database, and a SQLite database:
 
 ```yaml
 hooks:
@@ -29,7 +29,7 @@ hooks:
         - name: messages
     sqlite_databases:
         - name: mydb
-          path: /var/lib/sqlite3/mydb.sqlite          
+          path: /var/lib/sqlite3/mydb.sqlite
 ```
 
 As part of each backup, borgmatic streams a database dump for each configured
@@ -160,11 +160,11 @@ bring back any missing configuration files in order to restore a database.
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL, MySQL/MariaDB, MongoDB and SQLite databases
-directly. But see below about general-purpose preparation and cleanup hooks as
-a work-around with other database systems. Also, please [file a
-ticket](https://torsion.org/borgmatic/#issues) for additional database systems
-that you'd like supported.
+As of now, borgmatic supports PostgreSQL, MySQL/MariaDB, MongoDB, and SQLite
+databases directly. But see below about general-purpose preparation and
+cleanup hooks as a work-around with other database systems. Also, please [file
+a ticket](https://torsion.org/borgmatic/#issues) for additional database
+systems that you'd like supported.
 
 
 ## Database restoration
