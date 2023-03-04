@@ -73,6 +73,9 @@ hooks:
           hostname: mongodb
           username: root
           password: test
+    sqlite_databases:
+        - name: sqlite_test
+          path: /tmp/sqlite_test.db
 '''
 
     with open(config_path, 'w') as config_file:
