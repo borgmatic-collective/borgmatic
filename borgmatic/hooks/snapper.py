@@ -21,7 +21,7 @@ def _available_configs() -> dict[Path, str]:
     return {Path(c["subvolume"]): c["config"] for c in configs}
 
 
-def prepare_source_directories(hook_config, log_prefix, src_dirs):
+def prepare_source_directories(hook_config, _log_prefix, src_dirs):
     '''
     Alter source directory list to use the latest snapper snapshot for each configured path
     '''
@@ -52,15 +52,15 @@ def prepare_source_directories(hook_config, log_prefix, src_dirs):
                 continue
         config = _available_configs()[snapper_dir]
         available_snapshots = _call_snapper("-c", config, "list", "--disable-used-space")
-        if not available_snapshots:
-            msg += "but there aren't any snapshots available"
-            if fail:
-                raise ValueError(msg)
-            else:
-                logger.warning(msg)
-                continue
         latest_snapshot_number = str(available_snapshots[config][-1]["number"])
         new_src_dir = snapper_dir / ".snapshots" / latest_snapshot_number / "snapshot"
+        if not new_src_dir.exists():
+            msg = (
+                f"Detected snapshot number {latest_snapshot_number} to be the latest for "
+                f"source directory {snapper_dir}, but the deduced directory ({new_src_dir}) is not present. "
+                f"Likely causes are .snapshots not being mounted properly or no snapshots have been taken yet"
+            )
+            raise ValueError(msg)
         processed_dirs.add(snapper_dir)
         altered_dirs.add(new_src_dir)
     return list(map(str, altered_dirs | (src_dirs - processed_dirs)))
