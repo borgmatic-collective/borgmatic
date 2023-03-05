@@ -40,11 +40,9 @@ def test_run_configuration_logs_monitor_start_error():
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_raise(OSError).and_return(
         None
-    ).and_return(None)
-    expected_results = [flexmock(), flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(
-        [expected_results[0]]
-    ).and_return([expected_results[1]])
+    ).and_return(None).and_return(None)
+    expected_results = [flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').never()
     config = {'location': {'repositories': ['foo']}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
