@@ -153,16 +153,17 @@ def run_configuration(config_filename, config, arguments):
                 error_repository = repository_path
 
     try:
-        # send logs irrespective of error
-        dispatch.call_hooks(
-            'ping_monitor',
-            hooks,
-            config_filename,
-            monitor.MONITOR_HOOK_NAMES,
-            monitor.State.LOG,
-            monitoring_log_level,
-            global_arguments.dry_run,
-        )
+        if using_primary_action:
+            # send logs irrespective of error
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.LOG,
+                monitoring_log_level,
+                global_arguments.dry_run,
+            )
     except (OSError, CalledProcessError) as error:
         if command.considered_soft_failure(config_filename, error):
             return
