@@ -285,11 +285,6 @@ footer.elv-layout {
 .elv-hero {
 	background-color: #222;
 }
-@media (prefers-color-scheme: dark) {
-	.elv-hero {
-		background-color: #292929;
-	}
-}
 .elv-hero img,
 .elv-hero svg {
 	width: 42.95774646vh;

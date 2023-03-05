@@ -12,16 +12,6 @@
 	line-height: 1.285714285714; /* 18px /14 */
 	font-family: system-ui, -apple-system, sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  .minilink {
-    background-color: #222;
-    /*
-      !important to override .elv-callout a
-      see _includes/components/callout.css
-     */
-    color: #fff !important;
-  }
-}
 table .minilink {
 	margin-top: 6px;
 }
@@ -31,12 +21,6 @@ table .minilink {
 .minilink[href]:hover,
 .minilink[href]:focus {
 	background-color: #bbb;
-}
-@media (prefers-color-scheme: dark) {
-  .minilink[href]:hover,
-  .minilink[href]:focus {
-    background-color: #444;
-  }
 }
 pre + .minilink {
 	color: #fff;
@@ -73,11 +57,6 @@ h4 .minilink {
 .minilink-addedin {
 	text-transform: none;
 	box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
-}
-@media (prefers-color-scheme: dark) {
-  .minilink-addedin {
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
-  }
 }
 .minilink-addedin:not(:first-child) {
 	margin-left: .5em;
