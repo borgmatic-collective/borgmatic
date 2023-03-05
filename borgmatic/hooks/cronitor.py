@@ -10,6 +10,7 @@ MONITOR_STATE_TO_CRONITOR = {
     monitor.State.START: 'run',
     monitor.State.FINISH: 'complete',
     monitor.State.FAIL: 'fail',
+    monitor.State.LOG: 'log',
 }
 
 

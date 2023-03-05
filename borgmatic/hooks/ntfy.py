@@ -10,6 +10,7 @@ MONITOR_STATE_TO_NTFY = {
     monitor.State.START: None,
     monitor.State.FINISH: None,
     monitor.State.FAIL: None,
+    monitor.State.LOG: None,
 }
 
 

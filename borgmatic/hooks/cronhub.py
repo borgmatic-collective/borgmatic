@@ -10,6 +10,7 @@ MONITOR_STATE_TO_CRONHUB = {
     monitor.State.START: 'start',
     monitor.State.FINISH: 'finish',
     monitor.State.FAIL: 'fail',
+    monitor.State.LOG: 'log',
 }
 
 
