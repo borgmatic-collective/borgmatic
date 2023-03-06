@@ -27,6 +27,14 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     Ping the configured Cronhub URL, modified with the monitor.State. Use the given configuration
     filename in any log entries. If this is a dry run, then don't actually ping anything.
     '''
+    if state not in MONITOR_STATE_TO_CRONHUB:
+        logger.debug(
+            '{}: Ignoring unsupported monitoring {} in Cronhub hook'.format(
+                config_filename, state.name.lower()
+            )
+        )
+        return
+
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
     formatted_state = '/{}/'.format(MONITOR_STATE_TO_CRONHUB[state])
     ping_url = (
