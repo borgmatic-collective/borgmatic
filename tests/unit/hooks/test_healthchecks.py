@@ -184,6 +184,23 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
     )
 
 
+def test_ping_monitor_hits_ping_url_for_log_state():
+    hook_config = {'ping_url': 'https://example.com'}
+    payload = 'data'
+    flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/log', data=payload.encode('utf'), verify=True
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        'config.yaml',
+        state=module.monitor.State.LOG,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
 def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
     hook_config = {'ping_url': 'abcd-efgh-ijkl-mnop'}
     payload = 'data'

@@ -40,7 +40,7 @@ def test_run_configuration_logs_monitor_start_error():
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_raise(OSError).and_return(
         None
-    ).and_return(None)
+    ).and_return(None).and_return(None)
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').never()
@@ -99,12 +99,47 @@ def test_run_configuration_bails_for_actions_soft_failure():
     assert results == []
 
 
-def test_run_configuration_logs_monitor_finish_error():
+def test_run_configuration_logs_monitor_log_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
         None
     ).and_raise(OSError)
+    expected_results = [flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    flexmock(module).should_receive('run_actions').and_return([])
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+
+    results = list(module.run_configuration('test.yaml', config, arguments))
+
+    assert results == expected_results
+
+
+def test_run_configuration_bails_for_monitor_log_soft_failure():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
+    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
+        None
+    ).and_raise(error)
+    flexmock(module).should_receive('log_error_records').never()
+    flexmock(module).should_receive('run_actions').and_return([])
+    flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
+    config = {'location': {'repositories': ['foo']}}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+
+    results = list(module.run_configuration('test.yaml', config, arguments))
+
+    assert results == []
+
+
+def test_run_configuration_logs_monitor_finish_error():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
+        None
+    ).and_return(None).and_raise(OSError)
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').and_return([])
@@ -122,7 +157,7 @@ def test_run_configuration_bails_for_monitor_finish_soft_failure():
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
         None
-    ).and_raise(error)
+    ).and_raise(None).and_raise(error)
     flexmock(module).should_receive('log_error_records').never()
     flexmock(module).should_receive('run_actions').and_return([])
     flexmock(module.command).should_receive('considered_soft_failure').and_return(True)

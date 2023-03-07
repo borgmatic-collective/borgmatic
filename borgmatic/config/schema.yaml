@@ -951,9 +951,9 @@ properties:
                         name:
                             type: string
                             description: |
-                                This is used to tag the database dump file 
-                                with a name. It is not the path to the database 
-                                file itself. The name "all" has no special 
+                                This is used to tag the database dump file
+                                with a name. It is not the path to the database
+                                file itself. The name "all" has no special
                                 meaning for SQLite databases.
                             example: users
                         path:
@@ -1168,7 +1168,7 @@ properties:
                         type: string
                         description: |
                             Healthchecks ping URL or UUID to notify when a
-                            backup begins, ends, or errors.
+                            backup begins, ends, errors or just to send logs.
                         example: https://hc-ping.com/your-uuid-here
                     verify_tls:
                         type: boolean
@@ -1199,6 +1199,7 @@ properties:
                                 - start
                                 - finish
                                 - fail
+                                - log
                             uniqueItems: true
                         description: |
                             List of one or more monitoring states to ping for:
