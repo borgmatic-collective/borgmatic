@@ -74,6 +74,13 @@ run the `extract` command above, borgmatic will extract `/var/path/1` and
 `/var/path/2`.
 
 
+### Searching for files
+
+If you're not sure which archive contains the files you're looking for, you
+can [search across
+archives](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#searching-for-a-file).
+
+
 ## Extract to a particular destination
 
 By default, borgmatic extracts files into the current directory. To instead
