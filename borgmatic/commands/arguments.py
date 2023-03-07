@@ -611,7 +611,7 @@ def make_parsers():
         metavar='NAME',
         nargs='+',
         dest='databases',
-        help='Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic\'s configuration',
+        help="Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic's configuration",
     )
     restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
@@ -805,7 +805,7 @@ def make_parsers():
         'borg',
         aliases=SUBPARSER_ALIASES['borg'],
         help='Run an arbitrary Borg command',
-        description='Run an arbitrary Borg command based on borgmatic\'s configuration',
+        description="Run an arbitrary Borg command based on borgmatic's configuration",
         add_help=False,
     )
     borg_group = borg_parser.add_argument_group('borg arguments')

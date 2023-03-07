@@ -1916,7 +1916,7 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').and_return(("/dev/null",))
+    flexmock(module).should_receive('collect_special_file_paths').and_return(('/dev/null',))
     create_command = (
         'borg',
         'create',

@@ -5,6 +5,7 @@ click==7.1.2; python_version >= '3.8'
 colorama==0.4.4
 coverage==5.3
 flake8==4.0.1
+flake8-quotes==3.3.2
 flexmock==0.10.4
 isort==5.9.1
 mccabe==0.6.1
