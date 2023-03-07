@@ -2,8 +2,6 @@ import logging
 
 import requests
 
-from borgmatic.hooks import monitor
-
 logger = logging.getLogger(__name__)
 
 
