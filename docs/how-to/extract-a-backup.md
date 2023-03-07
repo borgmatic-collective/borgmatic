@@ -20,15 +20,15 @@ borgmatic rlist
 That should yield output looking something like:
 
 ```text
-host-2019-01-01T04:05:06.070809      Tue, 2019-01-01 04:05:06 [...]
-host-2019-01-02T04:06:07.080910      Wed, 2019-01-02 04:06:07 [...]
+host-2023-01-01T04:05:06.070809      Tue, 2023-01-01 04:05:06 [...]
+host-2023-01-02T04:06:07.080910      Wed, 2023-01-02 04:06:07 [...]
 ```
 
 Assuming that you want to extract the archive with the most up-to-date files
 and therefore the latest timestamp, run a command like:
 
 ```bash
-borgmatic extract --archive host-2019-01-02T04:06:07.080910
+borgmatic extract --archive host-2023-01-02T04:06:07.080910
 ```
 
 (No borgmatic `extract` action? Upgrade borgmatic!)
@@ -54,7 +54,7 @@ But if you have multiple repositories configured, then you'll need to specify
 the repository path containing the archive to extract. Here's an example:
 
 ```bash
-borgmatic extract --repository repo.borg --archive host-2019-...
+borgmatic extract --repository repo.borg --archive host-2023-...
 ```
 
 ## Extract particular files
