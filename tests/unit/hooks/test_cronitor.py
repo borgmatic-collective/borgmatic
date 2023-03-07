@@ -91,9 +91,7 @@ def test_ping_monitor_with_other_error_logs_warning():
 
 def test_ping_monitor_with_unsupported_monitoring_state():
     hook_config = {'ping_url': 'https://example.com'}
-    flexmock(module.logger).should_receive("debug").once().with_args(
-        '{}: Ignoring unsupported monitoring {} in Cronitor hook'.format("config.yaml", "log")
-    )
+    flexmock(module.requests).should_receive('get').never()
     module.ping_monitor(
         hook_config, 'config.yaml', module.monitor.State.LOG, monitoring_log_level=1, dry_run=False,
     )

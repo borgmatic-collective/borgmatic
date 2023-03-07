@@ -29,9 +29,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     '''
     if state not in MONITOR_STATE_TO_CRONHUB:
         logger.debug(
-            '{}: Ignoring unsupported monitoring {} in Cronhub hook'.format(
-                config_filename, state.name.lower()
-            )
+            f'{config_filename}: Ignoring unsupported monitoring {state.name.lower()} in Cronhub hook'
         )
         return
 
