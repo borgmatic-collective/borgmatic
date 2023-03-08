@@ -1,6 +1,7 @@
 1.7.9.dev0
  * #295: Add a SQLite database dump/restore hook.
- * #628: Add Healthchecks "log" state to send borgmatic logs to Healthchecks without signalling
+ * #304: Run any command-line actions in the order specified instead of using a fixed ordering.
+ * #628: Add a Healthchecks "log" state to send borgmatic logs to Healthchecks without signalling
    success or failure.
 
 1.7.8

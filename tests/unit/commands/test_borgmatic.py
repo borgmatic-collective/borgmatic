@@ -778,6 +778,33 @@ def test_run_actions_runs_borg():
     )
 
 
+def test_run_actions_runs_multiple_actions_in_argument_order():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.borg).should_receive('run_borg').once().ordered()
+    flexmock(borgmatic.actions.restore).should_receive('run_restore').once().ordered()
+
+    tuple(
+        module.run_actions(
+            arguments={
+                'global': flexmock(dry_run=False),
+                'borg': flexmock(),
+                'restore': flexmock(),
+            },
+            config_filename=flexmock(),
+            location={'repositories': []},
+            storage=flexmock(),
+            retention=flexmock(),
+            consistency=flexmock(),
+            hooks={},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository_path='repo',
+        )
+    )
+
+
 def test_load_configurations_collects_parsed_configurations_and_logs():
     configuration = flexmock()
     other_configuration = flexmock()

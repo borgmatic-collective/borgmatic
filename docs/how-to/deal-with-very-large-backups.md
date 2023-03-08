@@ -36,10 +36,16 @@ skipping certain actions while running others. For instance, this skips
 borgmatic create check
 ```
 
-Or, you can make backups with `create` on a frequent schedule (e.g. with
-`borgmatic create` called from one cron job), while only running expensive
-consistency checks with `check` on a much less frequent basis (e.g. with
-`borgmatic check` called from a separate cron job).
+<span class="minilink minilink-addedin">New in version 1.7.9</span> borgmatic
+now respects your specified command-line action order, running actions in the
+order you specify. In previous versions, borgmatic ran your specified actions
+in a fixed ordering regardless of the order they appeared on the command-line.
+
+But instead of running actions together, another option is to run backups with
+`create` on a frequent schedule (e.g. with `borgmatic create` called from one
+cron job), while only running expensive consistency checks with `check` on a
+much less frequent basis (e.g. with `borgmatic check` called from a separate
+cron job).
 
 
 ### Consistency check configuration

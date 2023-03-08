@@ -46,11 +46,12 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
     if 'borg' in unparsed_arguments:
         subparsers = {'borg': subparsers['borg']}
 
-    for subparser_name, subparser in subparsers.items():
-        if subparser_name not in remaining_arguments:
-            continue
+    for argument in remaining_arguments:
+        canonical_name = alias_to_subparser_name.get(argument, argument)
+        subparser = subparsers.get(canonical_name)
 
-        canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
+        if not subparser:
+            continue
 
         # If a parsed value happens to be the same as the name of a subparser, remove it from the
         # remaining arguments. This prevents, for instance, "check --only extract" from triggering
