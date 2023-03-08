@@ -44,8 +44,8 @@ LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 def run_configuration(config_filename, config, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, and command-line arguments as a
-    dict from subparser name to a namespace of parsed arguments, execute the defined prune, compact,
-    create, check, and/or other actions.
+    dict from subparser name to a namespace of parsed arguments, execute the defined create, prune,
+    compact, check, and/or other actions.
 
     Yield a combination of:
 
@@ -64,7 +64,7 @@ def run_configuration(config_filename, config, arguments):
     retry_wait = storage.get('retry_wait', 0)
     encountered_error = None
     error_repository = ''
-    using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
+    using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     try:
@@ -302,6 +302,21 @@ def run_actions(
                 local_path,
                 remote_path,
             )
+        elif action_name == 'create':
+            yield from borgmatic.actions.create.run_create(
+                config_filename,
+                repository,
+                location,
+                storage,
+                hooks,
+                hook_context,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                dry_run_label,
+                local_path,
+                remote_path,
+            )
         elif action_name == 'prune':
             borgmatic.actions.prune.run_prune(
                 config_filename,
@@ -323,21 +338,6 @@ def run_actions(
                 repository,
                 storage,
                 retention,
-                hooks,
-                hook_context,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                dry_run_label,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'create':
-            yield from borgmatic.actions.create.run_create(
-                config_filename,
-                repository,
-                location,
-                storage,
                 hooks,
                 hook_context,
                 local_borg_version,

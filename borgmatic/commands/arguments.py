@@ -68,9 +68,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
         arguments[canonical_name] = parsed
 
-    # If no actions are explicitly requested, assume defaults: prune, compact, create, and check.
+    # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
-        for subparser_name in ('prune', 'compact', 'create', 'check'):
+        for subparser_name in ('create', 'prune', 'compact', 'check'):
             subparser = subparsers[subparser_name]
             parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
             arguments[subparser_name] = parsed
@@ -216,7 +216,7 @@ def make_parsers():
     top_level_parser = ArgumentParser(
         description='''
             Simple, configuration-driven backup software for servers and workstations. If none of
-            the action options are given, then borgmatic defaults to: prune, compact, create, and
+            the action options are given, then borgmatic defaults to: create, prune, compact, and
             check.
             ''',
         parents=[global_parser],
@@ -225,7 +225,7 @@ def make_parsers():
     subparsers = top_level_parser.add_subparsers(
         title='actions',
         metavar='',
-        help='Specify zero or more actions. Defaults to prune, compact, create, and check. Use --help with action for details:',
+        help='Specify zero or more actions. Defaults to creat, prune, compact, and check. Use --help with action for details:',
     )
     rcreate_parser = subparsers.add_parser(
         'rcreate',

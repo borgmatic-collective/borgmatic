@@ -9,28 +9,32 @@ eleventyNavigation:
 
 Borg itself is great for efficiently de-duplicating data across successive
 backup archives, even when dealing with very large repositories. But you may
-find that while borgmatic's default mode of `prune`, `compact`, `create`, and
-`check` works well on small repositories, it's not so great on larger ones.
-That's because running the default pruning, compact, and consistency checks
-take a long time on large repositories.
+find that while borgmatic's default actions of `create`, `prune`, `compact`,
+and `check` works well on small repositories, it's not so great on larger
+ones. That's because running the default pruning, compact, and consistency
+checks take a long time on large repositories.
+
+<span class="minilink minilink-addedin">Prior to version 1.7.9</span> The
+default action ordering was `prune`, `compact`, `create`, and `check`.
 
 ### A la carte actions
 
-If you find yourself in this situation, you have some options. First, you can
-run borgmatic's `prune`, `compact`, `create`, or `check` actions separately.
-For instance, the following optional actions are available:
+If you find yourself wanting to customize the actions, you have some options.
+First, you can run borgmatic's `prune`, `compact`, `create`, or `check`
+actions separately. For instance, the following optional actions are
+available (among others):
 
 ```bash
+borgmatic create
 borgmatic prune
 borgmatic compact
-borgmatic create
 borgmatic check
 ```
 
-You can run with only one of these actions provided, or you can mix and match
-any number of them in a single borgmatic run. This supports approaches like
-skipping certain actions while running others. For instance, this skips
-`prune` and `compact` and only runs `create` and `check`:
+You can run borgmatic with only one of these actions provided, or you can mix
+and match any number of them in a single borgmatic run. This supports
+approaches like skipping certain actions while running others. For instance,
+this skips `prune` and `compact` and only runs `create` and `check`:
 
 ```bash
 borgmatic create check

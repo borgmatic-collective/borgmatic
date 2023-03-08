@@ -369,6 +369,11 @@ properties:
                         description: |
                           Extra command-line options to pass to "borg init".
                         example: "--extra-option"
+                    create:
+                        type: string
+                        description: |
+                          Extra command-line options to pass to "borg create".
+                        example: "--extra-option"
                     prune:
                         type: string
                         description: |
@@ -378,11 +383,6 @@ properties:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg compact".
-                        example: "--extra-option"
-                    create:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg create".
                         example: "--extra-option"
                     check:
                         type: string
@@ -663,11 +663,11 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    when an exception occurs during a "prune", "compact",
-                    "create", or "check" action or an associated before/after
+                    when an exception occurs during a "create", "prune",
+                    "compact", or "check" action or an associated before/after
                     hook.
                 example:
-                    - echo "Error during prune/compact/create/check."
+                    - echo "Error during create/prune/compact/check."
             before_everything:
                 type: array
                 items:

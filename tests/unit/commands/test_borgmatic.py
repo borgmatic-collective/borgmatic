@@ -436,6 +436,30 @@ def test_run_actions_runs_transfer():
     )
 
 
+def test_run_actions_runs_create():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    expected = flexmock()
+    flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
+
+    result = tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False), 'create': flexmock()},
+            config_filename=flexmock(),
+            location={'repositories': []},
+            storage=flexmock(),
+            retention=flexmock(),
+            consistency=flexmock(),
+            hooks={},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository_path='repo',
+        )
+    )
+    assert result == (expected,)
+
+
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
@@ -478,30 +502,6 @@ def test_run_actions_runs_compact():
             repository_path='repo',
         )
     )
-
-
-def test_run_actions_runs_create():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module.command).should_receive('execute_hook')
-    expected = flexmock()
-    flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
-
-    result = tuple(
-        module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'create': flexmock()},
-            config_filename=flexmock(),
-            location={'repositories': []},
-            storage=flexmock(),
-            retention=flexmock(),
-            consistency=flexmock(),
-            hooks={},
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository_path='repo',
-        )
-    )
-    assert result == (expected,)
 
 
 def test_run_actions_runs_check_when_repository_enabled_for_checks():
