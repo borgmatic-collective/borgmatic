@@ -91,19 +91,19 @@ example, to search only the last five archives:
 borgmatic list --find foo.txt --last 5
 ```
 
-## Monitoring mysql backup size
+## Listing database dumps
 
-If you have enabled borgmatic's native mysql hook you can query the size of your sql backups from the host you're backing up itself. This works even when using an append-only access key like you can use on borgbase.com.
+If you have enabled borgmatic's [database
+hooks](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/), you
+can list backed up database dumps via borgmatic. For example:
 
-For example: 
 ```bash 
-borgmatic list --archive latest --no-color | grep  root/.borgmatic/mysql_databases/localhost/
+borgmatic list --archive latest --find .borgmatic/*_databases
 ```
 
-Note that the `localhost` part of the path in the regex is dependent on how your config looks. If you connect to an external database your config, change to the regexp accordingly because the path will be different. 
+This gives you a listing of all database dump files contained in the latest
+archive, complete with file sizes.
 
-An additional caveat is that when you specify "all" for your database config, there will be one file named "all.sql" in the localhost folder. 
-Specify your database names in config individually to have one file per database.
 
 ## Logging
 

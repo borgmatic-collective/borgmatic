@@ -316,7 +316,10 @@ user and you're extracting to `/tmp`, then the dump will be in
 `/tmp/root/.borgmatic`.
 
 After extraction, you can manually restore the dump file using native database
-commands like `pg_restore`, `mysql`, `mongorestore` or similar.
+commands like `pg_restore`, `mysql`, `mongorestore`, `sqlite`, or similar.
+
+Also see the documentation on [listing database
+dumps](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#listing-database-dumps).
 
 
 ## Preparation and cleanup hooks
