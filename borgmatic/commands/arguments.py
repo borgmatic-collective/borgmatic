@@ -476,10 +476,9 @@ def make_parsers():
     )
     extract_group.add_argument(
         '--strip-components',
-        type=int,
+        type=lambda number: number if number == 'all' else int(number),
         metavar='NUMBER',
-        dest='strip_components',
-        help='Number of leading path components to remove from each extracted path. Skip paths with fewer elements',
+        help='Number of leading path components to remove from each extracted path or "all" to strip all leading path components. Skip paths with fewer elements',
     )
     extract_group.add_argument(
         '--progress',

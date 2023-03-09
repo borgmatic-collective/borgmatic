@@ -87,6 +87,13 @@ def extract_archive(
     else:
         numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_ids') else ()
 
+    if strip_components == 'all':
+        if not paths:
+            raise ValueError('The --strip-components flag with "all" requires at least one --path')
+
+        # Calculate the maximum number of leading path components of the given paths.
+        strip_components = max(0, *(len(path.split(os.path.sep)) - 1 for path in paths))
+
     full_command = (
         (local_path, 'extract')
         + (('--remote-path', remote_path) if remote_path else ())

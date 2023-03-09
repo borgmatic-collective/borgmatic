@@ -6,6 +6,8 @@
  * #304: Run any command-line actions in the order specified instead of using a fixed ordering.
  * #628: Add a Healthchecks "log" state to send borgmatic logs to Healthchecks without signalling
    success or failure.
+ * #647: Add "--strip-components all" feature on the "extract" action to remove leading path
+   components of files you extract. Must be used with the "--path" flag.
 
 1.7.8
  * #620: With the "create" action and the "--list" ("--files") flag, only show excluded files at
