@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import shutil
 from copy import copy
 from functools import cache
 from pathlib import Path
@@ -64,3 +66,41 @@ def prepare_source_directories(hook_config, _log_prefix, src_dirs):
         processed_dirs.add(snapper_dir)
         altered_dirs.add(new_src_dir)
     return list(map(str, altered_dirs | (src_dirs - processed_dirs)))
+
+
+def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
+    src_dirs = set(map(Path, src_dirs))
+    destination_path = Path(destination_path) if destination_path else Path(os.getcwd())
+    if hook_config["include"] == "all":
+        snapper_dirs = copy(src_dirs)
+    else:
+        include_dirs = set(map(Path, hook_config["include"]))
+        snapper_dirs = src_dirs & include_dirs
+    if hook_config.get("exclude"):
+        exclude_dirs = set(map(Path, hook_config["exclude"]))
+        snapper_dirs -= exclude_dirs
+
+    for snapper_dir in snapper_dirs:
+        # remove leading slash to allow joining with other paths
+        if snapper_dir.is_absolute():
+            snapper_dir = Path(str(snapper_dir)[1:])
+        dest_snapper_dir = destination_path / snapper_dir
+        if len(os.listdir(dest_snapper_dir)) != 1:
+            continue
+        snap_dir = dest_snapper_dir / ".snapshots"
+        if not snap_dir.is_dir() or len(os.listdir(snap_dir)) != 1:
+            continue
+        snap_number_dir = next(snap_dir.iterdir())
+        if not snap_number_dir.is_dir() or not snap_number_dir.name.isdigit():
+            continue
+
+        final_snap_dir = snap_number_dir / "snapshot"
+        if not final_snap_dir.is_dir():
+            continue
+
+        logger.info(f"{log_prefix}: assuming full system restore: renaming "
+                    f"{final_snap_dir} -> {destination_path / snapper_dir}")
+        tmp_snapper_dir = f"{snapper_dir}_"
+        final_snap_dir.rename(destination_path / tmp_snapper_dir)
+        shutil.rmtree(destination_path / snapper_dir)
+        (destination_path / tmp_snapper_dir).rename(destination_path / snapper_dir)

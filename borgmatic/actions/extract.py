@@ -4,6 +4,8 @@ import borgmatic.borg.extract
 import borgmatic.borg.rlist
 import borgmatic.config.validate
 import borgmatic.hooks.command
+import borgmatic.hooks.dispatch
+import borgmatic.hooks.prepare
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +63,14 @@ def run_extract(
             strip_components=extract_arguments.strip_components,
             progress=extract_arguments.progress,
         )
+    borgmatic.hooks.dispatch.call_hooks(
+        'fix_extracted_dirs',
+        hooks,
+        repository,
+        borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
+        location['source_directories'],
+        extract_arguments.destination,
+    )
     borgmatic.hooks.command.execute_hook(
         hooks.get('after_extract'),
         hooks.get('umask'),
