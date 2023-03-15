@@ -334,6 +334,10 @@ def make_parsers():
     )
     prune_group = prune_parser.add_argument_group('prune arguments')
     prune_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file)',
+    )
+    prune_group.add_argument(
         '--stats',
         dest='stats',
         default=False,

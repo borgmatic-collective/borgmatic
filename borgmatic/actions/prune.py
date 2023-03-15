@@ -1,6 +1,7 @@
 import logging
 
 import borgmatic.borg.prune
+import borgmatic.config.validate
 import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,11 @@ def run_prune(
     '''
     Run the "prune" action for the given repository.
     '''
+    if prune_arguments.repository and not borgmatic.config.validate.repositories_match(
+        repository, prune_arguments.repository
+    ):
+        return
+
     borgmatic.hooks.command.execute_hook(
         hooks.get('before_prune'),
         hooks.get('umask'),
