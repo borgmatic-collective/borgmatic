@@ -26,7 +26,7 @@ make sure your changes work.
 
 ```bash
 cd borgmatic/
-pip3 install --editable --user .
+pip3 install --user --editable .
 ```
 
 Note that this will typically install the borgmatic commands into
