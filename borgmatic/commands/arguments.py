@@ -334,6 +334,10 @@ def make_parsers():
     )
     prune_group = prune_parser.add_argument_group('prune arguments')
     prune_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file)',
+    )
+    prune_group.add_argument(
         '--stats',
         dest='stats',
         default=False,
@@ -353,6 +357,10 @@ def make_parsers():
         add_help=False,
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
+    compact_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to compact (must be already specified in a borgmatic configuration file)',
+    )
     compact_group.add_argument(
         '--progress',
         dest='progress',
@@ -386,6 +394,10 @@ def make_parsers():
     )
     create_group = create_parser.add_argument_group('create arguments')
     create_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to backup to (must be already specified in a borgmatic configuration file)',
+    )
+    create_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
@@ -415,6 +427,10 @@ def make_parsers():
         add_help=False,
     )
     check_group = check_parser.add_argument_group('check arguments')
+    check_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to check (must be already specified in a borgmatic configuration file)',
+    )
     check_group.add_argument(
         '--progress',
         dest='progress',

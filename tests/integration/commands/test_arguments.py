@@ -254,13 +254,6 @@ def test_parse_arguments_allows_init_and_create():
     module.parse_arguments('--config', 'myconfig', 'init', '--encryption', 'repokey', 'create')
 
 
-def test_parse_arguments_disallows_repository_unless_action_consumes_it():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(SystemExit):
-        module.parse_arguments('--config', 'myconfig', '--repository', 'test.borg')
-
-
 def test_parse_arguments_allows_repository_with_extract():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

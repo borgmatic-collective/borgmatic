@@ -2,6 +2,7 @@ import json
 import logging
 
 import borgmatic.borg.create
+import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
@@ -28,6 +29,11 @@ def run_create(
 
     If create_arguments.json is True, yield the JSON output from creating the archive.
     '''
+    if create_arguments.repository and not borgmatic.config.validate.repositories_match(
+        repository, create_arguments.repository
+    ):
+        return
+
     borgmatic.hooks.command.execute_hook(
         hooks.get('before_backup'),
         hooks.get('umask'),

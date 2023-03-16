@@ -1,6 +1,7 @@
 import logging
 
 import borgmatic.borg.check
+import borgmatic.config.validate
 import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,11 @@ def run_check(
     '''
     Run the "check" action for the given repository.
     '''
+    if check_arguments.repository and not borgmatic.config.validate.repositories_match(
+        repository, check_arguments.repository
+    ):
+        return
+
     borgmatic.hooks.command.execute_hook(
         hooks.get('before_check'),
         hooks.get('umask'),
