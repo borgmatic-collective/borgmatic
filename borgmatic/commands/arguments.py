@@ -420,6 +420,10 @@ def make_parsers():
     )
     check_group = check_parser.add_argument_group('check arguments')
     check_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to check (must be already specified in a borgmatic configuration file)',
+    )
+    check_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
