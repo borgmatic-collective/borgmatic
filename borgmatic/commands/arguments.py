@@ -358,6 +358,10 @@ def make_parsers():
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
     compact_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to compact (must be already specified in a borgmatic configuration file)',
+    )
+    compact_group.add_argument(
         '--progress',
         dest='progress',
         default=False,

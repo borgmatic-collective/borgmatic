@@ -2,6 +2,7 @@ import logging
 
 import borgmatic.borg.compact
 import borgmatic.borg.feature
+import borgmatic.config.validate
 import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,11 @@ def run_compact(
     '''
     Run the "compact" action for the given repository.
     '''
+    if compact_arguments.repository and not borgmatic.config.validate.repositories_match(
+        repository, compact_arguments.repository
+    ):
+        return
+
     borgmatic.hooks.command.execute_hook(
         hooks.get('before_compact'),
         hooks.get('umask'),
