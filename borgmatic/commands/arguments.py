@@ -394,6 +394,10 @@ def make_parsers():
     )
     create_group = create_parser.add_argument_group('create arguments')
     create_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to backup to (must be already specified in a borgmatic configuration file)',
+    )
+    create_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
