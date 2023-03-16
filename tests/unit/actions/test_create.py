@@ -39,7 +39,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     )
 
 
-def test_run_create_runs_with_select_repository():
+def test_run_create_runs_with_selected_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive(
         'repositories_match'

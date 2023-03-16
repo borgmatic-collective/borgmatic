@@ -3,7 +3,7 @@ from flexmock import flexmock
 from borgmatic.actions import prune as module
 
 
-def test_run_prune_calls_hooks_of_configured_repository():
+def test_run_prune_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').once()
@@ -27,7 +27,7 @@ def test_run_prune_calls_hooks_of_configured_repository():
     )
 
 
-def test_run_prune_runs_with_select_repository():
+def test_run_prune_runs_with_selected_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive(
         'repositories_match'

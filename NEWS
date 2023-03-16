@@ -4,6 +4,8 @@
    "create", "prune", "compact", "check". If you'd like to retain the old ordering ("prune" and
    "compact" first), then specify actions explicitly on the command-line.
  * #304: Run any command-line actions in the order specified instead of using a fixed ordering.
+ * #564: Add "--repository" flag to all actions where it makes sense, so you can run borgmatic on
+   a single configured repository instead of all of them.
  * #628: Add a Healthchecks "log" state to send borgmatic logs to Healthchecks without signalling
    success or failure.
  * #647: Add "--strip-components all" feature on the "extract" action to remove leading path
