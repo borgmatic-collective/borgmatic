@@ -6,7 +6,8 @@ from borgmatic.actions import compact as module
 def test_compact_actions_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.borg.compact).should_receive('compact_segments')
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     compact_arguments = flexmock(
         repository=None, progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
@@ -31,11 +32,13 @@ def test_compact_actions_calls_hooks_for_configured_repository():
 
 def test_compact_runs_with_select_repository():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(True)
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.borg.compact).should_receive('compact_segments')
+    flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').once()
     compact_arguments = flexmock(
-        repository='repo', progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
+        repository=flexmock(), progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -58,12 +61,12 @@ def test_compact_runs_with_select_repository():
 def test_compact_bails_if_repository_does_not_match():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(
-        False
-    )
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(False)
     flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').never()
     compact_arguments = flexmock(
-        repository='repo2', progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
+        repository=flexmock(), progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 

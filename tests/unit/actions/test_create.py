@@ -3,8 +3,9 @@ from flexmock import flexmock
 from borgmatic.actions import create as module
 
 
-def test_run_create_executes_and_calls_hooks():
+def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
@@ -12,7 +13,7 @@ def test_run_create_executes_and_calls_hooks():
         'call_hooks_even_if_unconfigured'
     ).and_return({})
     create_arguments = flexmock(
-        repository=flexmock(),
+        repository=None,
         progress=flexmock(),
         stats=flexmock(),
         json=flexmock(),

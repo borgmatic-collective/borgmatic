@@ -5,7 +5,8 @@ from borgmatic.actions import prune as module
 
 def test_run_prune_calls_hooks_of_configured_repository():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.borg.prune).should_receive('prune_archives')
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     prune_arguments = flexmock(repository=None, stats=flexmock(), list_archives=flexmock())
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -28,8 +29,10 @@ def test_run_prune_calls_hooks_of_configured_repository():
 
 def test_run_prune_runs_with_select_repository():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
-    flexmock(module.borgmatic.borg.prune).should_receive('prune_archives')
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(True)
+    flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').once()
     prune_arguments = flexmock(repository=flexmock(), stats=flexmock(), list_archives=flexmock())
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -51,9 +54,9 @@ def test_run_prune_runs_with_select_repository():
 
 def test_run_prune_bails_if_repository_does_not_match():
     flexmock(module.logger).answer = lambda message: None
-    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(
-        False
-    )
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(False)
     flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').never()
     prune_arguments = flexmock(repository=flexmock(), stats=flexmock(), list_archives=flexmock())
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
