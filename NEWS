@@ -1,4 +1,4 @@
-1.7.9.dev0
+1.7.9
  * #295: Add a SQLite database dump/restore hook.
  * #304: Change the default action order when no actions are specified on the command-line to:
    "create", "prune", "compact", "check". If you'd like to retain the old ordering ("prune" and
