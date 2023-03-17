@@ -202,6 +202,12 @@ properties:
                     path prevents "borgmatic restore" from finding any database
                     dumps created before the change. Defaults to ~/.borgmatic
                 example: /tmp/borgmatic
+            source_directories_must_exist:
+                type: boolean
+                description: |
+                    If true, then source directories must exist, otherwise an
+                    error is raised. Defaults to false.
+                example: true
     storage:
         type: object
         description: |
