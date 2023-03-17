@@ -318,7 +318,7 @@ properties:
             borg_files_cache_ttl:
                 type: integer
                 description: |
-                    Maximum time to live (ttl) for entries in the borg files
+                    Maximum time to live (ttl) for entries in the Borg files
                     cache.
                 example: 20
             borg_security_directory:
