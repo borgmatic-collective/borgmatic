@@ -57,8 +57,8 @@ cron job).
 Another option is to customize your consistency checks. By default, if you
 omit consistency checks from configuration, borgmatic runs full-repository
 checks (`repository`) and per-archive checks (`archives`) within each
-repository, no more than once a month. This is equivalent to what `borg check`
-does if run without options.
+repository. (Although see below about check frequency.) This is equivalent to
+what `borg check` does if run without options.
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
@@ -70,8 +70,9 @@ consistency:
         - name: repository
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
-was a plain list of strings without the `name:` part. For example:
+<span class="minilink minilink-addedin">Prior to version 1.6.2</span> The
+`checks` option was a plain list of strings without the `name:` part, and
+borgmatic ran each configured check every time checks were run. For example:
 
 ```yaml
 consistency:
@@ -112,8 +113,13 @@ consistency:
 This tells borgmatic to run the `repository` consistency check at most once
 every two weeks for a given repository and the `archives` check at most once a
 month. The `frequency` value is a number followed by a unit of time, e.g. "3
-days", "1 week", "2 months", etc. The `frequency` defaults to `always`, which
-means run this check every time checks run.
+days", "1 week", "2 months", etc.
+
+The `frequency` defaults to `always` for a check configured without a
+`frequency`, which means run this check every time checks run. But if you omit
+consistency checks from configuration entirely, borgmatic runs full-repository
+checks (`repository`) and per-archive checks (`archives`) within each
+repository, at most once a month.
 
 Unlike a real scheduler like cron, borgmatic only makes a best effort to run
 checks on the configured frequency. It compares that frequency with how long
