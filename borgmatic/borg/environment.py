@@ -2,6 +2,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_base_directory': 'BORG_BASE_DIR',
     'borg_config_directory': 'BORG_CONFIG_DIR',
     'borg_cache_directory': 'BORG_CACHE_DIR',
+    'borg_files_cache_ttl': 'BORG_FILES_CACHE_TTL',
     'borg_security_directory': 'BORG_SECURITY_DIR',
     'borg_keys_directory': 'BORG_KEYS_DIR',
     'encryption_passcommand': 'BORG_PASSCOMMAND',
@@ -27,7 +28,7 @@ def make_environment(storage_config):
         value = storage_config.get(option_name)
 
         if value:
-            environment[environment_variable_name] = value
+            environment[environment_variable_name] = str(value)
 
     for (
         option_name,
