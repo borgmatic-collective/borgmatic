@@ -317,9 +317,7 @@ def check_all_source_directories_exist(source_directories):
         if not os.path.exists(source_directory)
     ]
     if missing_directories:
-        raise ValueError(
-            'Source directories do not exist: {}'.format(', '.join(missing_directories))
-        )
+        raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
 
 
 def create_archive(
@@ -509,7 +507,9 @@ def create_archive(
         )
     elif output_log_level is None:
         return execute_command_and_capture_output(
-            create_command, working_directory=working_directory, extra_environment=borg_environment,
+            create_command,
+            working_directory=working_directory,
+            extra_environment=borg_environment,
         )
     else:
         execute_command(
