@@ -207,7 +207,6 @@ def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
 
 
 def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
-
     exclude_flags = module.make_exclude_flags(
         location_config={'exclude_from': ['excludes', 'other']}
     )
@@ -2530,3 +2529,27 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read
         local_borg_version='1.2.3',
         stream_processes=processes,
     )
+
+
+def test_create_archive_with_non_existent_directory_and_source_directories_must_exist_raises_error():
+    """
+    If a source directory doesn't exist and source_directories_must_exist is True, raise an error.
+    """
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    with pytest.raises(ValueError):
+        module.create_archive(
+            dry_run=False,
+            repository='repo',
+            location_config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'exclude_patterns': None,
+                'source_directories_must_exist': True,
+            },
+            storage_config={},
+            local_borg_version='1.2.3',
+        )
