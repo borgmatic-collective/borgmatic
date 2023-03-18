@@ -2532,9 +2532,9 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read
 
 
 def test_create_archive_with_non_existent_directory_and_source_directories_must_exist_raises_error():
-    """
+    '''
     If a source directory doesn't exist and source_directories_must_exist is True, raise an error.
-    """
+    '''
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
