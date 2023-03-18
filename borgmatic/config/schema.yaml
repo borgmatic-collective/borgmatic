@@ -315,6 +315,12 @@ properties:
                     Path for Borg cache files. Defaults to
                     $borg_base_directory/.cache/borg
                 example: /path/to/base/cache
+            borg_files_cache_ttl:
+                type: integer
+                description: |
+                    Maximum time to live (ttl) for entries in the Borg files
+                    cache.
+                example: 20
             borg_security_directory:
                 type: string
                 description: |
