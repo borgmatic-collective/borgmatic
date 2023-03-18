@@ -507,9 +507,7 @@ def create_archive(
         )
     elif output_log_level is None:
         return execute_command_and_capture_output(
-            create_command,
-            working_directory=working_directory,
-            extra_environment=borg_environment,
+            create_command, working_directory=working_directory, extra_environment=borg_environment,
         )
     else:
         execute_command(

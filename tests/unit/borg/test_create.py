@@ -1053,8 +1053,7 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
 
 
 @pytest.mark.parametrize(
-    'feature_available,option_flag',
-    ((True, '--upload-ratelimit'), (False, '--remote-ratelimit')),
+    'feature_available,option_flag', ((True, '--upload-ratelimit'), (False, '--remote-ratelimit')),
 )
 def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_parameters(
     feature_available, option_flag
@@ -1189,8 +1188,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
 
 
 @pytest.mark.parametrize(
-    'feature_available,option_flag',
-    ((True, '--numeric-ids'), (False, '--numeric-owner')),
+    'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner')),
 )
 def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
     feature_available, option_flag
@@ -1292,12 +1290,7 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
 
 @pytest.mark.parametrize(
     'option_name,option_value',
-    (
-        ('ctime', True),
-        ('ctime', False),
-        ('birthtime', True),
-        ('birthtime', False),
-    ),
+    (('ctime', True), ('ctime', False), ('birthtime', True), ('birthtime', False),),
 )
 def test_create_archive_with_basic_option_calls_borg_with_corresponding_parameter(
     option_name, option_value
@@ -1773,12 +1766,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create')
-        + REPO_ARCHIVE_WITH_PATHS
-        + (
-            '--info',
-            '--progress',
-        ),
+        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--info', '--progress',),
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path='borg',
