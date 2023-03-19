@@ -47,7 +47,11 @@ def export_tar_archive(
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
         + flags.make_repository_archive_flags(
-            repository if ':' in repository else os.path.abspath(repository),
+            os.path.abspath(repository)
+            if ':' not in repository
+            else os.path.abspath(repository[7:])
+            if repository.startswith('file://')
+            else repository,
             archive,
             local_borg_version,
         )

@@ -100,7 +100,11 @@ def extract_archive(
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
-            repository if ':' in repository else os.path.abspath(repository),
+            os.path.abspath(repository)
+            if ':' not in repository
+            else os.path.abspath(repository[7:])
+            if repository.startswith('file://')
+            else repository,
             archive,
             local_borg_version,
         )
