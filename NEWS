@@ -1,6 +1,6 @@
 1.7.10.dev0
- * #501: Optionally error if a source directory does not exist when "source_directories_must_exist"
-   option in location configuration section is true.
+ * #501: Optionally error if a source directory does not exist via "source_directories_must_exist"
+   option in borgmatic's location configuration.
  * #618: Support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option in
    borgmatic's storage configuration.
 
