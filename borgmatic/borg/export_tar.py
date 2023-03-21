@@ -1,5 +1,4 @@
 import logging
-import os
 
 import borgmatic.logger
 from borgmatic.borg import environment, flags
