@@ -1,4 +1,5 @@
 import logging
+import os
 
 
 def normalize(config_filename, config):
@@ -68,20 +69,25 @@ def normalize(config_filename, config):
                         )
                     )
                 )
-            if ':' in repository and not repository.startswith('ssh://'):
-                rewritten_repository = (
-                    f"ssh://{repository.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
-                )
-                logs.append(
-                    logging.makeLogRecord(
-                        dict(
-                            levelno=logging.WARNING,
-                            levelname='WARNING',
-                            msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated. Interpreting "{repository}" as "{rewritten_repository}"',
+            if ':' in repository:
+                if repository.startswith('file://'):
+                    config['location']['repositories'].append(
+                        os.path.abspath(repository.partition('file://')[-1])
+                    )
+                elif repository.startswith('ssh://'):
+                    config['location']['repositories'].append(repository)
+                else:
+                    rewritten_repository = f"ssh://{repository.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
+                    logs.append(
+                        logging.makeLogRecord(
+                            dict(
+                                levelno=logging.WARNING,
+                                levelname='WARNING',
+                                msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated. Interpreting "{repository}" as "{rewritten_repository}"',
+                            )
                         )
                     )
-                )
-                config['location']['repositories'].append(rewritten_repository)
+                    config['location']['repositories'].append(rewritten_repository)
             else:
                 config['location']['repositories'].append(repository)
 

@@ -87,6 +87,11 @@ from borgmatic.config import normalize as module
             {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
             False,
         ),
+        (
+            {'location': {'repositories': ['file:///repo']}},
+            {'location': {'repositories': ['/repo']}},
+            False,
+        ),
     ),
 )
 def test_normalize_applies_hard_coded_normalization_to_config(

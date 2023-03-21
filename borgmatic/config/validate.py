@@ -126,11 +126,14 @@ def normalize_repository_path(repository):
     '''
     Given a repository path, return the absolute path of it (for local repositories).
     '''
-    # A colon in the repository indicates it's a remote repository. Bail.
-    if ':' in repository:
+    # A colon in the repository could mean that it's either a file:// URL or a remote repository.
+    # If it's a remote repository, we don't want to normalize it. If it's a file:// URL, we do.
+    if ':' not in repository:
+        return os.path.abspath(repository)
+    elif repository.startswith('file://'):
+        return os.path.abspath(repository.partition('file://')[-1])
+    else:
         return repository
-
-    return os.path.abspath(repository)
 
 
 def repositories_match(first, second):
