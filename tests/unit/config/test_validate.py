@@ -83,6 +83,13 @@ def test_normalize_repository_path_passes_through_remote_repository():
     module.normalize_repository_path(repository) == repository
 
 
+def test_normalize_repository_path_passes_through_file_repository():
+    repository = 'file:///foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').and_return('/foo/bar/test.borg')
+
+    module.normalize_repository_path(repository) == '/foo/bar/test.borg'
+
+
 def test_normalize_repository_path_passes_through_absolute_repository():
     repository = '/foo/bar/test.borg'
     flexmock(module.os.path).should_receive('abspath').and_return(repository)

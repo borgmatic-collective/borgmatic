@@ -71,7 +71,9 @@ def normalize(config_filename, config):
                 )
             if ':' in repository:
                 if repository.startswith('file://'):
-                    config['location']['repositories'].append(os.path.abspath(repository[7:]))
+                    config['location']['repositories'].append(
+                        os.path.abspath(repository.partition('file://')[-1])
+                    )
                 elif repository.startswith('ssh://'):
                     config['location']['repositories'].append(repository)
                 else:

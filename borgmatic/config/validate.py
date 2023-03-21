@@ -131,7 +131,7 @@ def normalize_repository_path(repository):
     if ':' not in repository:
         return os.path.abspath(repository)
     elif repository.startswith('file://'):
-        return os.path.abspath(repository[7:])
+        return os.path.abspath(repository.partition('file://')[-1])
     else:
         return repository
 
