@@ -87,3 +87,11 @@ def test_ping_monitor_with_other_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_ping_monitor_with_unsupported_monitoring_state():
+    hook_config = {'ping_url': 'https://example.com'}
+    flexmock(module.requests).should_receive('get').never()
+    module.ping_monitor(
+        hook_config, 'config.yaml', module.monitor.State.LOG, monitoring_log_level=1, dry_run=False,
+    )

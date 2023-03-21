@@ -312,6 +312,57 @@ def test_extract_archive_calls_borg_with_strip_components():
     )
 
 
+def test_extract_archive_calls_borg_with_strip_components_calculated_from_all():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    insert_execute_command_mock(
+        (
+            'borg',
+            'extract',
+            '--strip-components',
+            '2',
+            'repo::archive',
+            'foo/bar/baz.txt',
+            'foo/bar.txt',
+        )
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        paths=['foo/bar/baz.txt', 'foo/bar.txt'],
+        location_config={},
+        storage_config={},
+        local_borg_version='1.2.3',
+        strip_components='all',
+    )
+
+
+def test_extract_archive_with_strip_components_all_and_no_paths_raises():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+    flexmock(module).should_receive('execute_command').never()
+
+    with pytest.raises(ValueError):
+        module.extract_archive(
+            dry_run=False,
+            repository='repo',
+            archive='archive',
+            paths=None,
+            location_config={},
+            storage_config={},
+            local_borg_version='1.2.3',
+            strip_components='all',
+        )
+
+
 def test_extract_archive_calls_borg_with_progress_parameter():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module.environment).should_receive('make_environment')

@@ -306,6 +306,20 @@ def collect_special_file_paths(
     )
 
 
+def check_all_source_directories_exist(source_directories):
+    '''
+    Given a sequence of source directories, check that they all exist. If any do not, raise an
+    exception.
+    '''
+    missing_directories = [
+        source_directory
+        for source_directory in source_directories
+        if not os.path.exists(source_directory)
+    ]
+    if missing_directories:
+        raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
+
+
 def create_archive(
     dry_run,
     repository,
@@ -331,6 +345,8 @@ def create_archive(
     borgmatic_source_directories = expand_directories(
         collect_borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
     )
+    if location_config.get('source_directories_must_exist', False):
+        check_all_source_directories_exist(location_config.get('source_directories'))
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(

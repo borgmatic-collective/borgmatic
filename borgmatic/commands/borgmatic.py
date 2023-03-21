@@ -44,8 +44,8 @@ LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 def run_configuration(config_filename, config, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, and command-line arguments as a
-    dict from subparser name to a namespace of parsed arguments, execute the defined prune, compact,
-    create, check, and/or other actions.
+    dict from subparser name to a namespace of parsed arguments, execute the defined create, prune,
+    compact, check, and/or other actions.
 
     Yield a combination of:
 
@@ -64,7 +64,7 @@ def run_configuration(config_filename, config, arguments):
     retry_wait = storage.get('retry_wait', 0)
     encountered_error = None
     error_repository = ''
-    using_primary_action = {'prune', 'compact', 'create', 'check'}.intersection(arguments)
+    using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
 
     try:
@@ -151,6 +151,25 @@ def run_configuration(config_filename, config, arguments):
                 )
                 encountered_error = error
                 error_repository = repository_path
+
+    try:
+        if using_primary_action:
+            # send logs irrespective of error
+            dispatch.call_hooks(
+                'ping_monitor',
+                hooks,
+                config_filename,
+                monitor.MONITOR_HOOK_NAMES,
+                monitor.State.LOG,
+                monitoring_log_level,
+                global_arguments.dry_run,
+            )
+    except (OSError, CalledProcessError) as error:
+        if command.considered_soft_failure(config_filename, error):
+            return
+
+        encountered_error = error
+        yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
 
     if not encountered_error:
         try:
@@ -262,155 +281,162 @@ def run_actions(
         **hook_context,
     )
 
-    if 'rcreate' in arguments:
-        borgmatic.actions.rcreate.run_rcreate(
-            repository,
-            storage,
-            local_borg_version,
-            arguments['rcreate'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'transfer' in arguments:
-        borgmatic.actions.transfer.run_transfer(
-            repository,
-            storage,
-            local_borg_version,
-            arguments['transfer'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'prune' in arguments:
-        borgmatic.actions.prune.run_prune(
-            config_filename,
-            repository,
-            storage,
-            retention,
-            hooks,
-            hook_context,
-            local_borg_version,
-            arguments['prune'],
-            global_arguments,
-            dry_run_label,
-            local_path,
-            remote_path,
-        )
-    if 'compact' in arguments:
-        borgmatic.actions.compact.run_compact(
-            config_filename,
-            repository,
-            storage,
-            retention,
-            hooks,
-            hook_context,
-            local_borg_version,
-            arguments['compact'],
-            global_arguments,
-            dry_run_label,
-            local_path,
-            remote_path,
-        )
-    if 'create' in arguments:
-        yield from borgmatic.actions.create.run_create(
-            config_filename,
-            repository,
-            location,
-            storage,
-            hooks,
-            hook_context,
-            local_borg_version,
-            arguments['create'],
-            global_arguments,
-            dry_run_label,
-            local_path,
-            remote_path,
-        )
-    if 'check' in arguments and checks.repository_enabled_for_checks(repository, consistency):
-        borgmatic.actions.check.run_check(
-            config_filename,
-            repository,
-            location,
-            storage,
-            consistency,
-            hooks,
-            hook_context,
-            local_borg_version,
-            arguments['check'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'extract' in arguments:
-        borgmatic.actions.extract.run_extract(
-            config_filename,
-            repository,
-            location,
-            storage,
-            hooks,
-            hook_context,
-            local_borg_version,
-            arguments['extract'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'export-tar' in arguments:
-        borgmatic.actions.export_tar.run_export_tar(
-            repository,
-            storage,
-            local_borg_version,
-            arguments['export-tar'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'mount' in arguments:
-        borgmatic.actions.mount.run_mount(
-            repository, storage, local_borg_version, arguments['mount'], local_path, remote_path,
-        )
-    if 'restore' in arguments:
-        borgmatic.actions.restore.run_restore(
-            repository,
-            location,
-            storage,
-            hooks,
-            local_borg_version,
-            arguments['restore'],
-            global_arguments,
-            local_path,
-            remote_path,
-        )
-    if 'rlist' in arguments:
-        yield from borgmatic.actions.rlist.run_rlist(
-            repository, storage, local_borg_version, arguments['rlist'], local_path, remote_path,
-        )
-    if 'list' in arguments:
-        yield from borgmatic.actions.list.run_list(
-            repository, storage, local_borg_version, arguments['list'], local_path, remote_path,
-        )
-    if 'rinfo' in arguments:
-        yield from borgmatic.actions.rinfo.run_rinfo(
-            repository, storage, local_borg_version, arguments['rinfo'], local_path, remote_path,
-        )
-    if 'info' in arguments:
-        yield from borgmatic.actions.info.run_info(
-            repository, storage, local_borg_version, arguments['info'], local_path, remote_path,
-        )
-    if 'break-lock' in arguments:
-        borgmatic.actions.break_lock.run_break_lock(
-            repository,
-            storage,
-            local_borg_version,
-            arguments['break-lock'],
-            local_path,
-            remote_path,
-        )
-    if 'borg' in arguments:
-        borgmatic.actions.borg.run_borg(
-            repository, storage, local_borg_version, arguments['borg'], local_path, remote_path,
-        )
+    for (action_name, action_arguments) in arguments.items():
+        if action_name == 'rcreate':
+            borgmatic.actions.rcreate.run_rcreate(
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'transfer':
+            borgmatic.actions.transfer.run_transfer(
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'create':
+            yield from borgmatic.actions.create.run_create(
+                config_filename,
+                repository,
+                location,
+                storage,
+                hooks,
+                hook_context,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                dry_run_label,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'prune':
+            borgmatic.actions.prune.run_prune(
+                config_filename,
+                repository,
+                storage,
+                retention,
+                hooks,
+                hook_context,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                dry_run_label,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'compact':
+            borgmatic.actions.compact.run_compact(
+                config_filename,
+                repository,
+                storage,
+                retention,
+                hooks,
+                hook_context,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                dry_run_label,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'check':
+            if checks.repository_enabled_for_checks(repository, consistency):
+                borgmatic.actions.check.run_check(
+                    config_filename,
+                    repository,
+                    location,
+                    storage,
+                    consistency,
+                    hooks,
+                    hook_context,
+                    local_borg_version,
+                    action_arguments,
+                    global_arguments,
+                    local_path,
+                    remote_path,
+                )
+        elif action_name == 'extract':
+            borgmatic.actions.extract.run_extract(
+                config_filename,
+                repository,
+                location,
+                storage,
+                hooks,
+                hook_context,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'export-tar':
+            borgmatic.actions.export_tar.run_export_tar(
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'mount':
+            borgmatic.actions.mount.run_mount(
+                repository,
+                storage,
+                local_borg_version,
+                arguments['mount'],
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'restore':
+            borgmatic.actions.restore.run_restore(
+                repository,
+                location,
+                storage,
+                hooks,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'rlist':
+            yield from borgmatic.actions.rlist.run_rlist(
+                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+            )
+        elif action_name == 'list':
+            yield from borgmatic.actions.list.run_list(
+                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+            )
+        elif action_name == 'rinfo':
+            yield from borgmatic.actions.rinfo.run_rinfo(
+                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+            )
+        elif action_name == 'info':
+            yield from borgmatic.actions.info.run_info(
+                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+            )
+        elif action_name == 'break-lock':
+            borgmatic.actions.break_lock.run_break_lock(
+                repository,
+                storage,
+                local_borg_version,
+                arguments['break-lock'],
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'borg':
+            borgmatic.actions.borg.run_borg(
+                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+            )
 
     command.execute_hook(
         hooks.get('after_actions'),

@@ -139,7 +139,7 @@ def filter_checks_on_frequency(
         if datetime.datetime.now() < check_time + frequency_delta:
             remaining = check_time + frequency_delta - datetime.datetime.now()
             logger.info(
-                f"Skipping {check} check due to configured frequency; {remaining} until next check"
+                f'Skipping {check} check due to configured frequency; {remaining} until next check'
             )
             filtered_checks.remove(check)
 

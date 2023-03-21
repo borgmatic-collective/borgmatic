@@ -9,37 +9,47 @@ eleventyNavigation:
 
 Borg itself is great for efficiently de-duplicating data across successive
 backup archives, even when dealing with very large repositories. But you may
-find that while borgmatic's default mode of `prune`, `compact`, `create`, and
-`check` works well on small repositories, it's not so great on larger ones.
-That's because running the default pruning, compact, and consistency checks
-take a long time on large repositories.
+find that while borgmatic's default actions of `create`, `prune`, `compact`,
+and `check` works well on small repositories, it's not so great on larger
+ones. That's because running the default pruning, compact, and consistency
+checks take a long time on large repositories.
+
+<span class="minilink minilink-addedin">Prior to version 1.7.9</span> The
+default action ordering was `prune`, `compact`, `create`, and `check`.
 
 ### A la carte actions
 
-If you find yourself in this situation, you have some options. First, you can
-run borgmatic's `prune`, `compact`, `create`, or `check` actions separately.
-For instance, the following optional actions are available:
+If you find yourself wanting to customize the actions, you have some options.
+First, you can run borgmatic's `prune`, `compact`, `create`, or `check`
+actions separately. For instance, the following optional actions are
+available (among others):
 
 ```bash
+borgmatic create
 borgmatic prune
 borgmatic compact
-borgmatic create
 borgmatic check
 ```
 
-You can run with only one of these actions provided, or you can mix and match
-any number of them in a single borgmatic run. This supports approaches like
-skipping certain actions while running others. For instance, this skips
-`prune` and `compact` and only runs `create` and `check`:
+You can run borgmatic with only one of these actions provided, or you can mix
+and match any number of them in a single borgmatic run. This supports
+approaches like skipping certain actions while running others. For instance,
+this skips `prune` and `compact` and only runs `create` and `check`:
 
 ```bash
 borgmatic create check
 ```
 
-Or, you can make backups with `create` on a frequent schedule (e.g. with
-`borgmatic create` called from one cron job), while only running expensive
-consistency checks with `check` on a much less frequent basis (e.g. with
-`borgmatic check` called from a separate cron job).
+<span class="minilink minilink-addedin">New in version 1.7.9</span> borgmatic
+now respects your specified command-line action order, running actions in the
+order you specify. In previous versions, borgmatic ran your specified actions
+in a fixed ordering regardless of the order they appeared on the command-line.
+
+But instead of running actions together, another option is to run backups with
+`create` on a frequent schedule (e.g. with `borgmatic create` called from one
+cron job), while only running expensive consistency checks with `check` on a
+much less frequent basis (e.g. with `borgmatic check` called from a separate
+cron job).
 
 
 ### Consistency check configuration
@@ -47,8 +57,8 @@ consistency checks with `check` on a much less frequent basis (e.g. with
 Another option is to customize your consistency checks. By default, if you
 omit consistency checks from configuration, borgmatic runs full-repository
 checks (`repository`) and per-archive checks (`archives`) within each
-repository, no more than once a month. This is equivalent to what `borg check`
-does if run without options.
+repository. (Although see below about check frequency.) This is equivalent to
+what `borg check` does if run without options.
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
@@ -60,8 +70,9 @@ consistency:
         - name: repository
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
-was a plain list of strings without the `name:` part. For example:
+<span class="minilink minilink-addedin">Prior to version 1.6.2</span> The
+`checks` option was a plain list of strings without the `name:` part, and
+borgmatic ran each configured check every time checks were run. For example:
 
 ```yaml
 consistency:
@@ -102,8 +113,13 @@ consistency:
 This tells borgmatic to run the `repository` consistency check at most once
 every two weeks for a given repository and the `archives` check at most once a
 month. The `frequency` value is a number followed by a unit of time, e.g. "3
-days", "1 week", "2 months", etc. The `frequency` defaults to `always`, which
-means run this check every time checks run.
+days", "1 week", "2 months", etc.
+
+The `frequency` defaults to `always` for a check configured without a
+`frequency`, which means run this check every time checks run. But if you omit
+consistency checks from configuration entirely, borgmatic runs full-repository
+checks (`repository`) and per-archive checks (`archives`) within each
+repository, at most once a month.
 
 Unlike a real scheduler like cron, borgmatic only makes a best effort to run
 checks on the configured frequency. It compares that frequency with how long

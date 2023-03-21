@@ -46,11 +46,12 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
     if 'borg' in unparsed_arguments:
         subparsers = {'borg': subparsers['borg']}
 
-    for subparser_name, subparser in subparsers.items():
-        if subparser_name not in remaining_arguments:
-            continue
+    for argument in remaining_arguments:
+        canonical_name = alias_to_subparser_name.get(argument, argument)
+        subparser = subparsers.get(canonical_name)
 
-        canonical_name = alias_to_subparser_name.get(subparser_name, subparser_name)
+        if not subparser:
+            continue
 
         # If a parsed value happens to be the same as the name of a subparser, remove it from the
         # remaining arguments. This prevents, for instance, "check --only extract" from triggering
@@ -67,9 +68,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
         arguments[canonical_name] = parsed
 
-    # If no actions are explicitly requested, assume defaults: prune, compact, create, and check.
+    # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
-        for subparser_name in ('prune', 'compact', 'create', 'check'):
+        for subparser_name in ('create', 'prune', 'compact', 'check'):
             subparser = subparsers[subparser_name]
             parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
             arguments[subparser_name] = parsed
@@ -215,7 +216,7 @@ def make_parsers():
     top_level_parser = ArgumentParser(
         description='''
             Simple, configuration-driven backup software for servers and workstations. If none of
-            the action options are given, then borgmatic defaults to: prune, compact, create, and
+            the action options are given, then borgmatic defaults to: create, prune, compact, and
             check.
             ''',
         parents=[global_parser],
@@ -224,7 +225,7 @@ def make_parsers():
     subparsers = top_level_parser.add_subparsers(
         title='actions',
         metavar='',
-        help='Specify zero or more actions. Defaults to prune, compact, create, and check. Use --help with action for details:',
+        help='Specify zero or more actions. Defaults to creat, prune, compact, and check. Use --help with action for details:',
     )
     rcreate_parser = subparsers.add_parser(
         'rcreate',
@@ -333,6 +334,10 @@ def make_parsers():
     )
     prune_group = prune_parser.add_argument_group('prune arguments')
     prune_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file)',
+    )
+    prune_group.add_argument(
         '--stats',
         dest='stats',
         default=False,
@@ -352,6 +357,10 @@ def make_parsers():
         add_help=False,
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
+    compact_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to compact (must be already specified in a borgmatic configuration file)',
+    )
     compact_group.add_argument(
         '--progress',
         dest='progress',
@@ -385,6 +394,10 @@ def make_parsers():
     )
     create_group = create_parser.add_argument_group('create arguments')
     create_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to backup to (must be already specified in a borgmatic configuration file)',
+    )
+    create_group.add_argument(
         '--progress',
         dest='progress',
         default=False,
@@ -414,6 +427,10 @@ def make_parsers():
         add_help=False,
     )
     check_group = check_parser.add_argument_group('check arguments')
+    check_group.add_argument(
+        '--repository',
+        help='Path of specific existing repository to check (must be already specified in a borgmatic configuration file)',
+    )
     check_group.add_argument(
         '--progress',
         dest='progress',
@@ -475,10 +492,9 @@ def make_parsers():
     )
     extract_group.add_argument(
         '--strip-components',
-        type=int,
+        type=lambda number: number if number == 'all' else int(number),
         metavar='NUMBER',
-        dest='strip_components',
-        help='Number of leading path components to remove from each extracted path. Skip paths with fewer elements',
+        help='Number of leading path components to remove from each extracted path or "all" to strip all leading path components. Skip paths with fewer elements',
     )
     extract_group.add_argument(
         '--progress',
@@ -611,7 +627,7 @@ def make_parsers():
         metavar='NAME',
         nargs='+',
         dest='databases',
-        help='Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic\'s configuration',
+        help="Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic's configuration",
     )
     restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
@@ -805,7 +821,7 @@ def make_parsers():
         'borg',
         aliases=SUBPARSER_ALIASES['borg'],
         help='Run an arbitrary Borg command',
-        description='Run an arbitrary Borg command based on borgmatic\'s configuration',
+        description="Run an arbitrary Borg command based on borgmatic's configuration",
         add_help=False,
     )
     borg_group = borg_parser.add_argument_group('borg arguments')

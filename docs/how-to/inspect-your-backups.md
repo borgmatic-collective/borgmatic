@@ -91,6 +91,19 @@ example, to search only the last five archives:
 borgmatic list --find foo.txt --last 5
 ```
 
+## Listing database dumps
+
+If you have enabled borgmatic's [database
+hooks](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/), you
+can list backed up database dumps via borgmatic. For example:
+
+```bash 
+borgmatic list --archive latest --find .borgmatic/*_databases
+```
+
+This gives you a listing of all database dump files contained in the latest
+archive, complete with file sizes.
+
 
 ## Logging
 

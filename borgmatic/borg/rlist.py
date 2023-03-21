@@ -17,7 +17,7 @@ def resolve_archive_name(
 
     Raise ValueError if "latest" is given but there are no archives in the repository.
     '''
-    if archive != "latest":
+    if archive != 'latest':
         return archive
 
     lock_wait = storage_config.get('lock_wait', None)

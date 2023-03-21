@@ -32,3 +32,8 @@ def test_make_environment_with_relocated_repo_access_should_override_default():
     environment = module.make_environment({'relocated_repo_access_is_ok': True})
 
     assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'yes'
+
+
+def test_make_environment_with_integer_variable_value():
+    environment = module.make_environment({'borg_files_cache_ttl': 40})
+    assert environment.get('BORG_FILES_CACHE_TTL') == '40'

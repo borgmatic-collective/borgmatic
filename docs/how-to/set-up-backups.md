@@ -94,6 +94,7 @@ installing borgmatic:
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [macOS (via Homebrew)](https://formulae.brew.sh/formula/borgmatic)
  * [macOS (via MacPorts)](https://ports.macports.org/port/borgmatic/)
+ * [NixOS](https://search.nixos.org/packages?show=borgmatic&sort=relevance&type=packages&query=borgmatic)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
  * [virtualenv](https://virtualenv.pypa.io/en/stable/)
 

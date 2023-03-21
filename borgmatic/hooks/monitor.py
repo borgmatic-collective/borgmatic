@@ -7,3 +7,4 @@ class State(Enum):
     START = 1
     FINISH = 2
     FAIL = 3
+    LOG = 4

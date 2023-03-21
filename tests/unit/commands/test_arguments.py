@@ -1,3 +1,5 @@
+import collections
+
 from flexmock import flexmock
 
 from borgmatic.commands import arguments as module
@@ -67,6 +69,26 @@ def test_parse_subparser_arguments_consumes_multiple_subparser_arguments():
     )
 
     assert arguments == {'action': action_namespace, 'other': other_namespace}
+    assert remaining_arguments == []
+
+
+def test_parse_subparser_arguments_respects_command_line_action_ordering():
+    other_namespace = flexmock()
+    action_namespace = flexmock(foo=True)
+    subparsers = {
+        'action': flexmock(
+            parse_known_args=lambda arguments: (action_namespace, ['action', '--foo', 'true'])
+        ),
+        'other': flexmock(parse_known_args=lambda arguments: (other_namespace, ['other'])),
+    }
+
+    arguments, remaining_arguments = module.parse_subparser_arguments(
+        ('other', '--foo', 'true', 'action'), subparsers
+    )
+
+    assert arguments == collections.OrderedDict(
+        [('other', other_namespace), ('action', action_namespace)]
+    )
     assert remaining_arguments == []
 
 

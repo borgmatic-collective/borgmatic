@@ -1,5 +1,22 @@
-1.7.9.dev0
+1.7.10.dev0
+ * #501: Optionally error if a source directory does not exist via "source_directories_must_exist"
+   option in borgmatic's location configuration.
+ * #618: Support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option in
+   borgmatic's storage configuration.
+
+1.7.9
  * #295: Add a SQLite database dump/restore hook.
+ * #304: Change the default action order when no actions are specified on the command-line to:
+   "create", "prune", "compact", "check". If you'd like to retain the old ordering ("prune" and
+   "compact" first), then specify actions explicitly on the command-line.
+ * #304: Run any command-line actions in the order specified instead of using a fixed ordering.
+ * #564: Add "--repository" flag to all actions where it makes sense, so you can run borgmatic on
+   a single configured repository instead of all of them.
+ * #628: Add a Healthchecks "log" state to send borgmatic logs to Healthchecks without signalling
+   success or failure.
+ * #647: Add "--strip-components all" feature on the "extract" action to remove leading path
+   components of files you extract. Must be used with the "--path" flag.
+ * Add support for Python 3.11.
 
 1.7.8
  * #620: With the "create" action and the "--list" ("--files") flag, only show excluded files at

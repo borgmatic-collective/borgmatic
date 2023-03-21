@@ -10,6 +10,7 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
     monitor.State.START: 'start',
     monitor.State.FINISH: None,  # Healthchecks doesn't append to the URL for the finished state.
     monitor.State.FAIL: 'fail',
+    monitor.State.LOG: 'log',
 }
 
 PAYLOAD_TRUNCATION_INDICATOR = '...\n'
@@ -117,7 +118,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     )
     logger.debug('{}: Using Healthchecks ping URL {}'.format(config_filename, ping_url))
 
-    if state in (monitor.State.FINISH, monitor.State.FAIL):
+    if state in (monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG):
         payload = format_buffered_logs_for_payload()
     else:
         payload = ''

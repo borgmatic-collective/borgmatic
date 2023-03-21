@@ -202,6 +202,12 @@ properties:
                     path prevents "borgmatic restore" from finding any database
                     dumps created before the change. Defaults to ~/.borgmatic
                 example: /tmp/borgmatic
+            source_directories_must_exist:
+                type: boolean
+                description: |
+                    If true, then source directories must exist, otherwise an
+                    error is raised. Defaults to false.
+                example: true
     storage:
         type: object
         description: |
@@ -315,6 +321,12 @@ properties:
                     Path for Borg cache files. Defaults to
                     $borg_base_directory/.cache/borg
                 example: /path/to/base/cache
+            borg_files_cache_ttl:
+                type: integer
+                description: |
+                    Maximum time to live (ttl) for entries in the Borg files
+                    cache.
+                example: 20
             borg_security_directory:
                 type: string
                 description: |
@@ -369,6 +381,11 @@ properties:
                         description: |
                           Extra command-line options to pass to "borg init".
                         example: "--extra-option"
+                    create:
+                        type: string
+                        description: |
+                          Extra command-line options to pass to "borg create".
+                        example: "--extra-option"
                     prune:
                         type: string
                         description: |
@@ -378,11 +395,6 @@ properties:
                         type: string
                         description: |
                           Extra command-line options to pass to "borg compact".
-                        example: "--extra-option"
-                    create:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg create".
                         example: "--extra-option"
                     check:
                         type: string
@@ -663,11 +675,11 @@ properties:
                     type: string
                 description: |
                     List of one or more shell commands or scripts to execute
-                    when an exception occurs during a "prune", "compact",
-                    "create", or "check" action or an associated before/after
+                    when an exception occurs during a "create", "prune",
+                    "compact", or "check" action or an associated before/after
                     hook.
                 example:
-                    - echo "Error during prune/compact/create/check."
+                    - echo "Error during create/prune/compact/check."
             before_everything:
                 type: array
                 items:
@@ -951,9 +963,9 @@ properties:
                         name:
                             type: string
                             description: |
-                                This is used to tag the database dump file 
-                                with a name. It is not the path to the database 
-                                file itself. The name "all" has no special 
+                                This is used to tag the database dump file
+                                with a name. It is not the path to the database
+                                file itself. The name "all" has no special
                                 meaning for SQLite databases.
                             example: users
                         path:
@@ -1168,7 +1180,7 @@ properties:
                         type: string
                         description: |
                             Healthchecks ping URL or UUID to notify when a
-                            backup begins, ends, or errors.
+                            backup begins, ends, errors or just to send logs.
                         example: https://hc-ping.com/your-uuid-here
                     verify_tls:
                         type: boolean
@@ -1180,7 +1192,8 @@ properties:
                         type: boolean
                         description: |
                             Send borgmatic logs to Healthchecks as part the
-                            "finish" state. Defaults to true.
+                            "finish", "fail", and "log" states. Defaults to
+                            true.
                         example: false
                     ping_body_limit:
                         type: integer
@@ -1199,10 +1212,11 @@ properties:
                                 - start
                                 - finish
                                 - fail
+                                - log
                             uniqueItems: true
                         description: |
                             List of one or more monitoring states to ping for:
-                            "start", "finish", and/or "fail". Defaults to
+                            "start", "finish", "fail", and/or "log". Defaults to
                             pinging for all states.
                         example:
                             - finish

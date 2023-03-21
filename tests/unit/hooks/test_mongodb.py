@@ -72,7 +72,7 @@ def test_dump_databases_runs_mongodump_with_username_and_password():
             'name': 'foo',
             'username': 'mongo',
             'password': 'trustsome1',
-            'authentication_database': "admin",
+            'authentication_database': 'admin',
         }
     ]
     process = flexmock()

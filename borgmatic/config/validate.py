@@ -189,5 +189,5 @@ def guard_single_repository_selected(repository, configurations):
 
     if count != 1:
         raise ValueError(
-            'Can\'t determine which repository to use. Use --repository to disambiguate'
+            "Can't determine which repository to use. Use --repository to disambiguate"
         )

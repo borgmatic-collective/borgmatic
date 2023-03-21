@@ -2,15 +2,7 @@ import logging
 
 import requests
 
-from borgmatic.hooks import monitor
-
 logger = logging.getLogger(__name__)
-
-MONITOR_STATE_TO_NTFY = {
-    monitor.State.START: None,
-    monitor.State.FINISH: None,
-    monitor.State.FAIL: None,
-}
 
 
 def initialize_monitor(

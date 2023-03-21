@@ -81,8 +81,8 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 Your first step is to [install and configure
 borgmatic](https://torsion.org/borgmatic/docs/how-to/set-up-backups/).
 
-For additional documentation, check out the links above for <a
-href="https://torsion.org/borgmatic/#documentation">borgmatic how-to and
+For additional documentation, check out the links above (left panel on wide screens)
+for <a href="https://torsion.org/borgmatic/#documentation">borgmatic how-to and
 reference guides</a>.
 
 
