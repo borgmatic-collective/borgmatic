@@ -615,9 +615,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
         if error_logs:
-            yield from log_error_records(
-                '{}: Error running configuration file'.format(config_filename)
-            )
+            yield from log_error_records('{}: An error occurred'.format(config_filename))
             yield from error_logs
         else:
             yield logging.makeLogRecord(
