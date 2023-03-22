@@ -5,6 +5,7 @@
  * #618: Add support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option
    in borgmatic's storage configuration.
  * #623: Fix confusing message when an error occurs running actions for a configuration file.
+ * #655: Fix error when databases are configured and a source directory doesn't exist.
 
 1.7.9
  * #295: Add a SQLite database dump/restore hook.

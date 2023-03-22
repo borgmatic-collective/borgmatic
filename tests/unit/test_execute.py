@@ -239,7 +239,7 @@ def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr()
     assert output == expected_output
 
 
-def test_execute_command_and_capture_output_returns_output_when_error_code_is_one():
+def test_execute_command_and_capture_output_returns_output_when_process_error_is_not_considered_an_error():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     err_output = b'[]'

@@ -117,7 +117,7 @@ def list_repository(
     )
 
     if rlist_arguments.json:
-        return execute_command_and_capture_output(main_command, extra_environment=borg_environment,)
+        return execute_command_and_capture_output(main_command, extra_environment=borg_environment)
     else:
         execute_command(
             main_command,
