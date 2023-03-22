@@ -220,10 +220,8 @@ def execute_command_and_capture_output(
     stdout. If shell is True, execute the command within a shell. If an extra environment dict is
     given, then use it to augment the current environment, and pass the result into the command. If
     a working directory is given, use that as the present working directory when running the command.
-    If raise on exit code one is False, then treat exit code 1 as a warning instead of an error.
 
-    Raise subprocesses.CalledProcessError if an error occurs while running the command, or if the
-    command exits with a non-zero exit code and raise on exit code one is True.
+    Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
     log_command(full_command)
     environment = {**os.environ, **extra_environment} if extra_environment else None
@@ -239,7 +237,7 @@ def execute_command_and_capture_output(
         )
         logger.warning('Command output: {}'.format(output))
     except subprocess.CalledProcessError as error:
-        if exit_code_indicates_error(error.returncode):
+        if exit_code_indicates_error(command, error.returncode):
             raise
         output = error.output
         logger.warning('Command output: {}'.format(output))

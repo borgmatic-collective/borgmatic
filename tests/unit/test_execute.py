@@ -254,7 +254,7 @@ def test_execute_command_and_capture_output_returns_output_when_error_code_is_on
     assert output == expected_output
 
 
-def test_execute_command_and_capture_output_returns_output_when_error_code_not_one():
+def test_execute_command_and_capture_output_raises_when_command_errors():
     full_command = ['foo', 'bar']
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
