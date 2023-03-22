@@ -291,7 +291,6 @@ def collect_special_file_paths(
         capture_stderr=True,
         working_directory=working_directory,
         extra_environment=borg_environment,
-        treat_exit_code_warning_as_error=False,
     )
 
     paths = tuple(
