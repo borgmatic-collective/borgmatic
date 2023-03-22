@@ -84,10 +84,9 @@ def normalize(config_filename, config):
                         }
                     )
                 elif repository.startswith('ssh://'):
-                    config['location']['repositories'].append({
-                        'path': repository,
-                        'label': repository_dict.get('label', None),
-                    })
+                    config['location']['repositories'].append(
+                        {'path': repository, 'label': repository_dict.get('label', None),}
+                    )
                 else:
                     rewritten_repository = f"ssh://{repository.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
                     logs.append(
@@ -99,16 +98,12 @@ def normalize(config_filename, config):
                             )
                         )
                     )
-                    config['location']['repositories'].append({
-                        'path': rewritten_repository,
-                        'label': repository_dict.get('label', None),
-                    })
+                    config['location']['repositories'].append(
+                        {'path': rewritten_repository, 'label': repository_dict.get('label', None),}
+                    )
             else:
                 config['location']['repositories'].append(
-                    {
-                        'path': repository,
-                        'label': repository_dict.get('label', None),
-                    }
+                    {'path': repository, 'label': repository_dict.get('label', None),}
                 )
 
     return logs

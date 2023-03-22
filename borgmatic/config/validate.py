@@ -141,10 +141,13 @@ def repositories_match(first, second):
     Given two repository dicts with keys 'path' (relative and/or absolute),
     and 'label', return whether they match.
     '''
-    if isinstance(first,str) and isinstance(second,str):
+    if isinstance(first, str) and isinstance(second, str):
         return normalize_repository_path(first) == normalize_repository_path(second)
-    elif isinstance(first,dict) and isinstance(second,str):
-        return (second == first.get('label')) or (normalize_repository_path(second) == normalize_repository_path(first.get('path')))
+    elif isinstance(first, dict) and isinstance(second, str):
+        return (second == first.get('label')) or (
+            normalize_repository_path(second) == normalize_repository_path(first.get('path'))
+        )
+
 
 def guard_configuration_contains_repository(repository, configurations):
     '''
