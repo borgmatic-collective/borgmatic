@@ -138,10 +138,10 @@ def test_log_outputs_kills_other_processes_when_one_errors():
 
     process = subprocess.Popen(['grep'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
-        process, None, 'borg'
+        ['grep'], None, 'borg'
     ).and_return(False)
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
-        process, 2, 'borg'
+        ['grep'], 2, 'borg'
     ).and_return(True)
     other_process = subprocess.Popen(
         ['sleep', '2'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -245,10 +245,10 @@ def test_log_outputs_truncates_long_error_output():
 
     process = subprocess.Popen(['grep'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
-        process, None, 'borg'
+        ['grep'], None, 'borg'
     ).and_return(False)
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
-        process, 2, 'borg'
+        ['grep'], 2, 'borg'
     ).and_return(True)
     flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
 
