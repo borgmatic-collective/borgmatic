@@ -138,10 +138,13 @@ def normalize_repository_path(repository):
 
 def repositories_match(first, second):
     '''
-    Given two repository paths (relative and/or absolute), return whether they match.
+    Given two repository dicts with keys 'path' (relative and/or absolute),
+    and 'label', return whether they match.
     '''
-    return normalize_repository_path(first) == normalize_repository_path(second)
-
+    if isinstance(first,str) and isinstance(second,str):
+        return normalize_repository_path(first) == normalize_repository_path(second)
+    elif isinstance(first,dict) and isinstance(second,str):
+        return (second == first.get('label')) or (normalize_repository_path(second) == normalize_repository_path(first.get('path')))
 
 def guard_configuration_contains_repository(repository, configurations):
     '''
@@ -160,7 +163,7 @@ def guard_configuration_contains_repository(repository, configurations):
             config_repository
             for config in configurations.values()
             for config_repository in config['location']['repositories']
-            if repositories_match(repository, config_repository)
+            if repositories_match(config_repository, repository)
         )
     )
 

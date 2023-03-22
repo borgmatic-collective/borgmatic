@@ -56,9 +56,13 @@ def normalize(config_filename, config):
 
     # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
     repositories = location.get('repositories')
+    if isinstance(repositories[0], str):
+        config['location']['repositories'] = [{'path': repository} for repository in repositories]
+        repositories = config['location']['repositories']
     if repositories:
         config['location']['repositories'] = []
-        for repository in repositories:
+        for repository_dict in repositories:
+            repository = repository_dict['path']
             if '~' in repository:
                 logs.append(
                     logging.makeLogRecord(
@@ -71,11 +75,19 @@ def normalize(config_filename, config):
                 )
             if ':' in repository:
                 if repository.startswith('file://'):
+                    updated_repository_path = os.path.abspath(repository.partition('file://')[-1])
+
                     config['location']['repositories'].append(
-                        os.path.abspath(repository.partition('file://')[-1])
+                        {
+                            'path': updated_repository_path,
+                            'label': repository_dict.get('label', None),
+                        }
                     )
                 elif repository.startswith('ssh://'):
-                    config['location']['repositories'].append(repository)
+                    config['location']['repositories'].append({
+                        'path': repository,
+                        'label': repository_dict.get('label', None),
+                    })
                 else:
                     rewritten_repository = f"ssh://{repository.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
                     logs.append(
@@ -87,8 +99,16 @@ def normalize(config_filename, config):
                             )
                         )
                     )
-                    config['location']['repositories'].append(rewritten_repository)
+                    config['location']['repositories'].append({
+                        'path': rewritten_repository,
+                        'label': repository_dict.get('label', None),
+                    })
             else:
-                config['location']['repositories'].append(repository)
+                config['location']['repositories'].append(
+                    {
+                        'path': repository,
+                        'label': repository_dict.get('label', None),
+                    }
+                )
 
     return logs

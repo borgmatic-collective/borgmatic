@@ -29,19 +29,30 @@ properties:
             repositories:
                 type: array
                 items:
-                    type: string
-                description: |
-                    Paths to local or remote repositories (required). Tildes are
-                    expanded. Multiple repositories are backed up to in
-                    sequence. Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. See ssh_command for
-                    SSH options like identity file or port. If systemd service
-                    is used, then add local repository paths in the systemd
-                    service file to the ReadWritePaths list.
-                example:
-                    - ssh://user@backupserver/./sourcehostname.borg
-                    - ssh://user@backupserver/./{fqdn}
-                    - /var/local/backups/local.borg
+                    type: object 
+                    required:
+                        - path
+                    properties:
+                        path:
+                            type: string
+                            description: |
+                                Path to local or remote repository (required). 
+                                are expanded. Multiple repositories are backed up to
+                                in sequence. Borg placeholders can be used. See the
+                                output of "borg help placeholders" for details. See
+                                ssh_command for SSH options like identity file or
+                                port. If systemd service is used, then add local
+                                repository paths in the systemd service file to the
+                                ReadWritePaths list.                                
+                            example:
+                                - ssh://user@backupserver/./sourcehostname.borg
+                                - ssh://user@backupserver/./{fqdn}
+                                - /var/local/backups/local.borg
+                        label:
+                            type: string
+                            description: |
+                                Optional label for the repository.
+                            example: backupserver
             working_directory:
                 type: string
                 description: |

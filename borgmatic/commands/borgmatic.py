@@ -108,7 +108,7 @@ def run_configuration(config_filename, config, arguments):
             repo_queue.put((repo, 0),)
 
         while not repo_queue.empty():
-            repository_path, retry_num = repo_queue.get()
+            repository, retry_num = repo_queue.get()
             timeout = retry_num * retry_wait
             if timeout:
                 logger.warning(f'{config_filename}: Sleeping {timeout}s before next retry')
@@ -125,14 +125,14 @@ def run_configuration(config_filename, config, arguments):
                     local_path=local_path,
                     remote_path=remote_path,
                     local_borg_version=local_borg_version,
-                    repository_path=repository_path,
+                    repository=repository,
                 )
             except (OSError, CalledProcessError, ValueError) as error:
                 if retry_num < retries:
-                    repo_queue.put((repository_path, retry_num + 1),)
+                    repo_queue.put((repository, retry_num + 1),)
                     tuple(  # Consume the generator so as to trigger logging.
                         log_error_records(
-                            '{}: Error running actions for repository'.format(repository_path),
+                            '{}: Error running actions for repository'.format(repository['path']),
                             error,
                             levelno=logging.WARNING,
                             log_command_error_output=True,
@@ -147,10 +147,10 @@ def run_configuration(config_filename, config, arguments):
                     return
 
                 yield from log_error_records(
-                    '{}: Error running actions for repository'.format(repository_path), error
+                    '{}: Error running actions for repository'.format(repository['path']), error
                 )
                 encountered_error = error
-                error_repository = repository_path
+                error_repository = repository['path']
 
     try:
         if using_primary_action:
@@ -248,7 +248,7 @@ def run_actions(
     local_path,
     remote_path,
     local_borg_version,
-    repository_path,
+    repository,
 ):
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
@@ -263,13 +263,13 @@ def run_actions(
     invalid.
     '''
     add_custom_log_levels()
-    repository = os.path.expanduser(repository_path)
+    repository_path = os.path.expanduser(repository['path'])
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
     hook_context = {
         'repository': repository_path,
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
-        'repositories': ','.join(location['repositories']),
+        'repositories': ','.join([repo['path'] for repo in location['repositories']]),
     }
 
     command.execute_hook(
