@@ -11,7 +11,7 @@ ERROR_OUTPUT_MAX_LINE_COUNT = 25
 BORG_ERROR_EXIT_CODE = 2
 
 
-def exit_code_indicates_error(process, exit_code, borg_local_path=None):
+def exit_code_indicates_error(command, exit_code, borg_local_path=None):
     '''
     Return True if the given exit code from running a command corresponds to an error. If a Borg
     local path is given and matches the process' command, then treat exit code 1 as a warning
@@ -19,8 +19,6 @@ def exit_code_indicates_error(process, exit_code, borg_local_path=None):
     '''
     if exit_code is None:
         return False
-
-    command = process.args.split(' ') if isinstance(process.args, str) else process.args
 
     if borg_local_path and command[0] == borg_local_path:
         return bool(exit_code < 0 or exit_code >= BORG_ERROR_EXIT_CODE)
@@ -121,8 +119,9 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
             if exit_code is None:
                 still_running = True
 
+            command = process.args.split(' ') if isinstance(process.args, str) else process.args
             # If any process errors, then raise accordingly.
-            if exit_code_indicates_error(process, exit_code, borg_local_path):
+            if exit_code_indicates_error(command, exit_code, borg_local_path):
                 # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
                 output_buffer = output_buffer_for_process(process, exclude_stdouts)
@@ -213,12 +212,7 @@ def execute_command(
 
 
 def execute_command_and_capture_output(
-    full_command,
-    capture_stderr=False,
-    shell=False,
-    extra_environment=None,
-    working_directory=None,
-    raise_on_exit_code_one=True,
+    full_command, capture_stderr=False, shell=False, extra_environment=None, working_directory=None,
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
@@ -244,10 +238,10 @@ def execute_command_and_capture_output(
             cwd=working_directory,
         )
         logger.warning('Command output: {}'.format(output))
-    except subprocess.CalledProcessError as e:
-        if raise_on_exit_code_one or e.returncode != 1:
+    except subprocess.CalledProcessError as error:
+        if exit_code_indicates_error(error.returncode):
             raise
-        output = e.output
+        output = error.output
         logger.warning('Command output: {}'.format(output))
 
     return output.decode() if output is not None else None
