@@ -239,6 +239,32 @@ def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr()
     assert output == expected_output
 
 
+def test_execute_command_and_capture_output_returns_output_with_raise_on_exit_code_one_false():
+    full_command = ['foo', 'bar']
+    expected_output = '[]'
+    err_output = b'[]'
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('check_output').with_args(
+        full_command, stderr=None, shell=False, env=None, cwd=None
+    ).and_raise(subprocess.CalledProcessError(1, full_command, err_output)).once()
+
+    output = module.execute_command_and_capture_output(full_command, raise_on_exit_code_one=False)
+
+    assert output == expected_output
+
+
+def test_execute_command_and_capture_output_returns_output_with_raise_on_exit_code_one_false_and_exit_code_not_one():
+    full_command = ['foo', 'bar']
+    expected_output = '[]'
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('check_output').with_args(
+        full_command, stderr=None, shell=False, env=None, cwd=None
+    ).and_raise(subprocess.CalledProcessError(2, full_command, expected_output)).once()
+
+    with pytest.raises(subprocess.CalledProcessError):
+        module.execute_command_and_capture_output(full_command, raise_on_exit_code_one=False)
+
+
 def test_execute_command_and_capture_output_returns_output_with_shell():
     full_command = ['foo', 'bar']
     expected_output = '[]'

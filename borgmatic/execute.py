@@ -213,7 +213,12 @@ def execute_command(
 
 
 def execute_command_and_capture_output(
-    full_command, capture_stderr=False, shell=False, extra_environment=None, working_directory=None,
+    full_command,
+    capture_stderr=False,
+    shell=False,
+    extra_environment=None,
+    working_directory=None,
+    raise_on_exit_code_one=True,
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
@@ -221,20 +226,29 @@ def execute_command_and_capture_output(
     stdout. If shell is True, execute the command within a shell. If an extra environment dict is
     given, then use it to augment the current environment, and pass the result into the command. If
     a working directory is given, use that as the present working directory when running the command.
+    If raise on exit code one is False, then treat exit code 1 as a warning instead of an error.
 
-    Raise subprocesses.CalledProcessError if an error occurs while running the command.
+    Raise subprocesses.CalledProcessError if an error occurs while running the command, or if the
+    command exits with a non-zero exit code and raise on exit code one is True.
     '''
     log_command(full_command)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     command = ' '.join(full_command) if shell else full_command
 
-    output = subprocess.check_output(
-        command,
-        stderr=subprocess.STDOUT if capture_stderr else None,
-        shell=shell,
-        env=environment,
-        cwd=working_directory,
-    )
+    try:
+        output = subprocess.check_output(
+            command,
+            stderr=subprocess.STDOUT if capture_stderr else None,
+            shell=shell,
+            env=environment,
+            cwd=working_directory,
+        )
+        logger.warning('Command output: {}'.format(output))
+    except subprocess.CalledProcessError as e:
+        if raise_on_exit_code_one or e.returncode != 1:
+            raise
+        output = e.output
+        logger.warning('Command output: {}'.format(output))
 
     return output.decode() if output is not None else None
 
