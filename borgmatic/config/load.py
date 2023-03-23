@@ -81,7 +81,8 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
 def load_configuration(filename):
     '''
     Load the given configuration file and return its contents as a data structure of nested dicts
-    and lists.
+    and lists. Also, replace any "{constant}" strings with the value of the "constant" key in the
+    "constants" section of the configuration file.
 
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
@@ -98,7 +99,15 @@ def load_configuration(filename):
     yaml = ruamel.yaml.YAML(typ='safe')
     yaml.Constructor = Include_constructor_with_include_directory
 
-    return yaml.load(open(filename))
+    with open(filename) as f:
+        file_contents = f.read()
+        config = yaml.load(file_contents)
+        if config and 'constants' in config:
+            for key, value in config['constants'].items():
+                file_contents = file_contents.replace(f'{{{key}}}', str(value))
+            config = yaml.load(file_contents)
+            del config['constants']
+        return config
 
 
 DELETED_NODE = object()
