@@ -23,8 +23,8 @@ services:
       - "/app/borgmatic.egg-info"
     tty: true
     working_dir: /app
-    command:
-      - /app/scripts/run-full-tests
+    entrypoint: /app/scripts/run-full-tests
+    command: --end-to-end-only
     depends_on:
       - postgresql
       - mysql

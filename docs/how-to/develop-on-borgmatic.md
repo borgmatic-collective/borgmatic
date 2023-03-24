@@ -87,7 +87,7 @@ If you would like to run the full test suite, first install Docker and [Docker
 Compose](https://docs.docker.com/compose/install/). Then run:
 
 ```bash
-scripts/run-full-dev-tests
+scripts/run-end-to-end-dev-tests
 ```
 
 Note that this scripts assumes you have permission to run Docker. If you

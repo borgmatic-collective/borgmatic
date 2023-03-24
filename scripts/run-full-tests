@@ -3,12 +3,12 @@
 # This script installs test dependencies and runs all tests, including end-to-end tests. It
 # is designed to run inside a test container, and presumes that other test infrastructure like
 # databases are already running. Therefore, on a developer machine, you should not run this script
-# directly. Instead, run scripts/run-full-dev-tests
+# directly. Instead, run scripts/run-end-to-end-dev-tests
 #
 # For more information, see:
 # https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/
 
-set -e
+set -ex
 
 apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client mongodb-tools \
     py3-ruamel.yaml py3-ruamel.yaml.clib bash sqlite
@@ -17,5 +17,9 @@ apk add --no-cache py3-typed-ast py3-regex || true
 python3 -m pip install --no-cache --upgrade pip==22.2.2 setuptools==64.0.1
 pip3 install --ignore-installed tox==3.25.1
 export COVERAGE_FILE=/tmp/.coverage
-tox --workdir /tmp/.tox --sitepackages
+
+if [ "$1" != "--end-to-end-only" ] ; then
+    tox --workdir /tmp/.tox --sitepackages
+fi
+
 tox --workdir /tmp/.tox --sitepackages -e end-to-end

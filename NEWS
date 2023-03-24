@@ -10,6 +10,8 @@
  * #655: Fix error when databases are configured and a source directory doesn't exist.
  * Add code style plugins to enforce use of Python f-strings and prevent single-letter variables.
    To join in the pedantry, refresh your test environment with "tox --recreate".
+ * Rename scripts/run-full-dev-tests to scripts/run-end-to-end-dev-tests and make it run end-to-end
+   tests only. Continue using tox to run unit and integration tests.
 
 1.7.9
  * #295: Add a SQLite database dump/restore hook.
