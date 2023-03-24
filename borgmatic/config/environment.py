@@ -14,11 +14,14 @@ def _resolve_string(matcher):
     if matcher.group('escape') is not None:
         # in case of escaped envvar, unescape it
         return matcher.group('variable')
+
     # resolve the env var
     name, default = matcher.group('name'), matcher.group('default')
     out = os.getenv(name, default=default)
+
     if out is None:
-        raise ValueError('Cannot find variable ${name} in environment'.format(name=name))
+        raise ValueError(f'Cannot find variable {name} in environment')
+
     return out
 
 

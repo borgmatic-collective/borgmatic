@@ -154,8 +154,8 @@ def log_command(full_command, input_file=None, output_file=None):
     '''
     logger.debug(
         ' '.join(full_command)
-        + (' < {}'.format(getattr(input_file, 'name', '')) if input_file else '')
-        + (' > {}'.format(getattr(output_file, 'name', '')) if output_file else '')
+        + (f" < {getattr(input_file, 'name', '')}" if input_file else '')
+        + (f" > {getattr(output_file, 'name', '')}" if output_file else '')
     )
 
 
@@ -235,12 +235,12 @@ def execute_command_and_capture_output(
             env=environment,
             cwd=working_directory,
         )
-        logger.warning('Command output: {}'.format(output))
+        logger.warning(f'Command output: {output}')
     except subprocess.CalledProcessError as error:
         if exit_code_indicates_error(command, error.returncode):
             raise
         output = error.output
-        logger.warning('Command output: {}'.format(output))
+        logger.warning(f'Command output: {output}')
 
     return output.decode() if output is not None else None
 

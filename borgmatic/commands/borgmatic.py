@@ -70,9 +70,7 @@ def run_configuration(config_filename, config, arguments):
     try:
         local_borg_version = borg_version.local_borg_version(storage, local_path)
     except (OSError, CalledProcessError, ValueError) as error:
-        yield from log_error_records(
-            '{}: Error getting local Borg version'.format(config_filename), error
-        )
+        yield from log_error_records(f'{config_filename}: Error getting local Borg version', error)
         return
 
     try:
@@ -100,7 +98,7 @@ def run_configuration(config_filename, config, arguments):
             return
 
         encountered_error = error
-        yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
+        yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
 
     if not encountered_error:
         repo_queue = Queue()
@@ -132,7 +130,7 @@ def run_configuration(config_filename, config, arguments):
                     repo_queue.put((repository_path, retry_num + 1),)
                     tuple(  # Consume the generator so as to trigger logging.
                         log_error_records(
-                            '{}: Error running actions for repository'.format(repository_path),
+                            f'{repository_path}: Error running actions for repository',
                             error,
                             levelno=logging.WARNING,
                             log_command_error_output=True,
@@ -147,7 +145,7 @@ def run_configuration(config_filename, config, arguments):
                     return
 
                 yield from log_error_records(
-                    '{}: Error running actions for repository'.format(repository_path), error
+                    f'{repository_path}: Error running actions for repository', error
                 )
                 encountered_error = error
                 error_repository = repository_path
@@ -169,7 +167,7 @@ def run_configuration(config_filename, config, arguments):
             return
 
         encountered_error = error
-        yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
+        yield from log_error_records(f'{repository_path}: Error pinging monitor', error)
 
     if not encountered_error:
         try:
@@ -196,7 +194,7 @@ def run_configuration(config_filename, config, arguments):
                 return
 
             encountered_error = error
-            yield from log_error_records('{}: Error pinging monitor'.format(config_filename), error)
+            yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
 
     if encountered_error and using_primary_action:
         try:
@@ -231,9 +229,7 @@ def run_configuration(config_filename, config, arguments):
             if command.considered_soft_failure(config_filename, error):
                 return
 
-            yield from log_error_records(
-                '{}: Error running on-error hook'.format(config_filename), error
-            )
+            yield from log_error_records(f'{config_filename}: Error running on-error hook', error)
 
 
 def run_actions(
@@ -472,9 +468,7 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
                         dict(
                             levelno=logging.WARNING,
                             levelname='WARNING',
-                            msg='{}: Insufficient permissions to read configuration file'.format(
-                                config_filename
-                            ),
+                            msg=f'{config_filename}: Insufficient permissions to read configuration file',
                         )
                     ),
                 ]
@@ -486,7 +480,7 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
                         dict(
                             levelno=logging.CRITICAL,
                             levelname='CRITICAL',
-                            msg='{}: Error parsing configuration file'.format(config_filename),
+                            msg=f'{config_filename}: Error parsing configuration file',
                         )
                     ),
                     logging.makeLogRecord(
@@ -587,9 +581,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
 
     if not configs:
         yield from log_error_records(
-            '{}: No valid configuration files found'.format(
-                ' '.join(arguments['global'].config_paths)
-            )
+            r"{' '.join(arguments['global'].config_paths)}: No valid configuration files found",
         )
         return
 
@@ -615,21 +607,21 @@ def collect_configuration_run_summary_logs(configs, arguments):
         error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
         if error_logs:
-            yield from log_error_records('{}: An error occurred'.format(config_filename))
+            yield from log_error_records(f'{config_filename}: An error occurred')
             yield from error_logs
         else:
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,
                     levelname='INFO',
-                    msg='{}: Successfully ran configuration file'.format(config_filename),
+                    msg=f'{config_filename}: Successfully ran configuration file',
                 )
             )
             if results:
                 json_results.extend(results)
 
     if 'umount' in arguments:
-        logger.info('Unmounting mount point {}'.format(arguments['umount'].mount_point))
+        logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
         try:
             borg_umount.unmount_archive(
                 mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs),
@@ -677,7 +669,7 @@ def main():  # pragma: no cover
         if error.code == 0:
             raise error
         configure_logging(logging.CRITICAL)
-        logger.critical('Error parsing arguments: {}'.format(' '.join(sys.argv)))
+        logger.critical(f"Error parsing arguments: {' '.join(sys.argv)}")
         exit_with_help_link()
 
     global_arguments = arguments['global']
@@ -710,7 +702,7 @@ def main():  # pragma: no cover
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)
-        logger.critical('Error configuring logging: {}'.format(error))
+        logger.critical(f'Error configuring logging: {error}')
         exit_with_help_link()
 
     logger.debug('Ensuring legacy configuration is upgraded')

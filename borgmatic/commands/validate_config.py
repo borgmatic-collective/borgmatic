@@ -21,9 +21,7 @@ def parse_arguments(*arguments):
         nargs='+',
         dest='config_paths',
         default=config_paths,
-        help='Configuration filenames or directories, defaults to: {}'.format(
-            ' '.join(config_paths)
-        ),
+        help=f'Configuration filenames or directories, defaults to: {config_paths}',
     )
 
     return parser.parse_args(arguments)
@@ -44,13 +42,11 @@ def main():  # pragma: no cover
         try:
             validate.parse_configuration(config_filename, validate.schema_filename())
         except (ValueError, OSError, validate.Validation_error) as error:
-            logging.critical('{}: Error parsing configuration file'.format(config_filename))
+            logging.critical(f'{config_filename}: Error parsing configuration file')
             logging.critical(error)
             found_issues = True
 
     if found_issues:
         sys.exit(1)
     else:
-        logger.info(
-            'All given configuration files are valid: {}'.format(', '.join(config_filenames))
-        )
+        logger.info(f"All given configuration files are valid: {', '.join(config_filenames)}")

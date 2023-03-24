@@ -22,9 +22,7 @@ def run_export_tar(
     if export_tar_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, export_tar_arguments.repository
     ):
-        logger.info(
-            '{}: Exporting archive {} as tar file'.format(repository, export_tar_arguments.archive)
-        )
+        logger.info(f'{repository}: Exporting archive {export_tar_arguments.archive} as tar file')
         borgmatic.borg.export_tar.export_tar_archive(
             global_arguments.dry_run,
             repository,

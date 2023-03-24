@@ -17,7 +17,7 @@ def test_dump_databases_runs_mongodump_for_each_database():
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
-            ['mongodump', '--db', name, '--archive', '>', 'databases/localhost/{}'.format(name)],
+            ['mongodump', '--db', name, '--archive', '>', f'databases/localhost/{name}'],
             shell=True,
             run_to_completion=False,
         ).and_return(process).once()

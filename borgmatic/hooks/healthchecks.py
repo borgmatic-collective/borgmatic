@@ -99,7 +99,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     ping_url = (
         hook_config['ping_url']
         if hook_config['ping_url'].startswith('http')
-        else 'https://hc-ping.com/{}'.format(hook_config['ping_url'])
+        else f"https://hc-ping.com/{hook_config['ping_url']}"
     )
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
@@ -111,12 +111,10 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
 
     healthchecks_state = MONITOR_STATE_TO_HEALTHCHECKS.get(state)
     if healthchecks_state:
-        ping_url = '{}/{}'.format(ping_url, healthchecks_state)
+        ping_url = f'{ping_url}/{healthchecks_state}'
 
-    logger.info(
-        '{}: Pinging Healthchecks {}{}'.format(config_filename, state.name.lower(), dry_run_label)
-    )
-    logger.debug('{}: Using Healthchecks ping URL {}'.format(config_filename, ping_url))
+    logger.info(f'{config_filename}: Pinging Healthchecks {state.name.lower()}{dry_run_label}')
+    logger.debug(f'{config_filename}: Using Healthchecks ping URL {ping_url}')
 
     if state in (monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG):
         payload = format_buffered_logs_for_payload()

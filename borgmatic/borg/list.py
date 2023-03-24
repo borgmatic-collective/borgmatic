@@ -113,7 +113,7 @@ def capture_archive_listing(
                     paths=[f'sh:{list_path}'],
                     find_paths=None,
                     json=None,
-                    format='{path}{NL}',
+                    format='{path}{NL}',  # noqa: FS003
                 ),
                 local_path,
                 remote_path,

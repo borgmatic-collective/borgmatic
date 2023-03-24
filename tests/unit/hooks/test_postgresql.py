@@ -134,7 +134,7 @@ def test_dump_databases_runs_pg_dump_for_each_database():
                 'custom',
                 name,
                 '>',
-                'databases/localhost/{}'.format(name),
+                f'databases/localhost/{name}',
             ),
             shell=True,
             extra_environment={'PGSSLMODE': 'disable'},

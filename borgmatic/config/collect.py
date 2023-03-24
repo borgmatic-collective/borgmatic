@@ -16,8 +16,8 @@ def get_default_config_paths(expand_home=True):
     return [
         '/etc/borgmatic/config.yaml',
         '/etc/borgmatic.d',
-        '%s/borgmatic/config.yaml' % user_config_directory,
-        '%s/borgmatic.d' % user_config_directory,
+        os.path.join(user_config_directory, 'borgmatic/config.yaml'),
+        os.path.join(user_config_directory, 'borgmatic.d'),
     ]
 
 

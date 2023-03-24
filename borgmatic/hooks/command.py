@@ -16,7 +16,7 @@ def interpolate_context(config_filename, hook_description, command, context):
     names/values, interpolate the values by "{name}" into the command and return the result.
     '''
     for name, value in context.items():
-        command = command.replace('{%s}' % name, str(value))
+        command = command.replace(f'{{{name}}}', str(value))
 
     for unsupported_variable in re.findall(r'{\w+}', command):
         logger.warning(
@@ -38,7 +38,7 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     Raise subprocesses.CalledProcessError if an error occurs in a hook.
     '''
     if not commands:
-        logger.debug('{}: No commands to run for {} hook'.format(config_filename, description))
+        logger.debug(f'{config_filename}: No commands to run for {description} hook')
         return
 
     dry_run_label = ' (dry run; not actually running hooks)' if dry_run else ''
@@ -49,19 +49,15 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     ]
 
     if len(commands) == 1:
-        logger.info(
-            '{}: Running command for {} hook{}'.format(config_filename, description, dry_run_label)
-        )
+        logger.info(f'{config_filename}: Running command for {description} hook{dry_run_label}')
     else:
         logger.info(
-            '{}: Running {} commands for {} hook{}'.format(
-                config_filename, len(commands), description, dry_run_label
-            )
+            f'{config_filename}: Running {len(commands)} commands for {description} hook{dry_run_label}',
         )
 
     if umask:
         parsed_umask = int(str(umask), 8)
-        logger.debug('{}: Set hook umask to {}'.format(config_filename, oct(parsed_umask)))
+        logger.debug(f'{config_filename}: Set hook umask to {oct(parsed_umask)}')
         original_umask = os.umask(parsed_umask)
     else:
         original_umask = None
@@ -93,9 +89,7 @@ def considered_soft_failure(config_filename, error):
 
     if exit_code == SOFT_FAIL_EXIT_CODE:
         logger.info(
-            '{}: Command hook exited with soft failure exit code ({}); skipping remaining actions'.format(
-                config_filename, SOFT_FAIL_EXIT_CODE
-            )
+            f'{config_filename}: Command hook exited with soft failure exit code ({SOFT_FAIL_EXIT_CODE}); skipping remaining actions',
         )
         return True
 

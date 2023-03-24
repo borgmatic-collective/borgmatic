@@ -42,7 +42,7 @@ def resolve_archive_name(
     except IndexError:
         raise ValueError('No archives found in the repository')
 
-    logger.debug('{}: Latest archive is {}'.format(repository, latest_archive))
+    logger.debug(f'{repository}: Latest archive is {latest_archive}')
 
     return latest_archive
 

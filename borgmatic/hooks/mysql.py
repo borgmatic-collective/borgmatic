@@ -119,7 +119,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
 
-    logger.info('{}: Dumping MySQL databases{}'.format(log_prefix, dry_run_label))
+    logger.info(f'{log_prefix}: Dumping MySQL databases{dry_run_label}')
 
     for database in databases:
         dump_path = make_dump_path(location_config)
@@ -209,9 +209,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     )
     extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
 
-    logger.debug(
-        '{}: Restoring MySQL database {}{}'.format(log_prefix, database['name'], dry_run_label)
-    )
+    logger.debug(f"{log_prefix}: Restoring MySQL database {database['name']}{dry_run_label}")
     if dry_run:
         return
 

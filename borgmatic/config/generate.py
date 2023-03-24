@@ -48,7 +48,7 @@ def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
             config, schema, indent=indent, skip_first=parent_is_sequence
         )
     else:
-        raise ValueError('Schema at level {} is unsupported: {}'.format(level, schema))
+        raise ValueError(f'Schema at level {level} is unsupported: {schema}')
 
     return config
 
@@ -84,7 +84,7 @@ def _comment_out_optional_configuration(rendered_config):
     for line in rendered_config.split('\n'):
         # Upon encountering an optional configuration option, comment out lines until the next blank
         # line.
-        if line.strip().startswith('# {}'.format(COMMENTED_OUT_SENTINEL)):
+        if line.strip().startswith(f'# {COMMENTED_OUT_SENTINEL}'):
             optional = True
             continue
 
@@ -117,9 +117,7 @@ def write_configuration(config_filename, rendered_config, mode=0o600, overwrite=
     '''
     if not overwrite and os.path.exists(config_filename):
         raise FileExistsError(
-            '{} already exists. Aborting. Use --overwrite to replace the file.'.format(
-                config_filename
-            )
+            f'{config_filename} already exists. Aborting. Use --overwrite to replace the file.'
         )
 
     try:
@@ -218,7 +216,7 @@ def remove_commented_out_sentinel(config, field_name):
     except KeyError:
         return
 
-    if last_comment_value == '# {}\n'.format(COMMENTED_OUT_SENTINEL):
+    if last_comment_value == f'# {COMMENTED_OUT_SENTINEL}\n':
         config.ca.items[field_name][RUAMEL_YAML_COMMENTS_INDEX].pop()
 
 

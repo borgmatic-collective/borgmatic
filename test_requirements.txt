@@ -6,6 +6,8 @@ colorama==0.4.4
 coverage==5.3
 flake8==4.0.1
 flake8-quotes==3.3.2
+flake8-use-fstring==1.4
+flake8-variables-names==0.0.5
 flexmock==0.10.4
 isort==5.9.1
 mccabe==0.6.1

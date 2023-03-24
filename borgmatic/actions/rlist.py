@@ -19,7 +19,8 @@ def run_rlist(
         repository, rlist_arguments.repository
     ):
         if not rlist_arguments.json:  # pragma: nocover
-            logger.answer('{}: Listing repository'.format(repository))
+            logger.answer(f'{repository}: Listing repository')
+
         json_output = borgmatic.borg.rlist.list_repository(
             repository,
             storage,

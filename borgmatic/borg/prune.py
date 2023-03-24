@@ -24,7 +24,7 @@ def make_prune_flags(retention_config, local_borg_version):
         )
     '''
     config = retention_config.copy()
-    prefix = config.pop('prefix', '{hostname}-')
+    prefix = config.pop('prefix', '{hostname}-')  # noqa: FS003
 
     if prefix:
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):

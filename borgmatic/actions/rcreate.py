@@ -23,7 +23,7 @@ def run_rcreate(
     ):
         return
 
-    logger.info('{}: Creating repository'.format(repository))
+    logger.info(f'{repository}: Creating repository')
     borgmatic.borg.rcreate.create_repository(
         global_arguments.dry_run,
         repository,
