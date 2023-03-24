@@ -225,7 +225,7 @@ def make_parsers():
     subparsers = top_level_parser.add_subparsers(
         title='actions',
         metavar='',
-        help='Specify zero or more actions. Defaults to creat, prune, compact, and check. Use --help with action for details:',
+        help='Specify zero or more actions. Defaults to create, prune, compact, and check. Use --help with action for details:',
     )
     rcreate_parser = subparsers.add_parser(
         'rcreate',
