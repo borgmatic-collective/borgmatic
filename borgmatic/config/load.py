@@ -100,8 +100,8 @@ def load_configuration(filename):
     yaml = ruamel.yaml.YAML(typ='safe')
     yaml.Constructor = Include_constructor_with_include_directory
 
-    with open(filename) as f:
-        file_contents = f.read()
+    with open(filename) as file:
+        file_contents = file.read()
         config = yaml.load(file_contents)
         if config and 'constants' in config:
             for key, value in config['constants'].items():
