@@ -189,7 +189,7 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
                     '-v',
                     '2',
                     '--override',
-                    "hooks.postgresql_databases=[{'name': 'nope'}]",
+                    "hooks.postgresql_databases=[{'name': 'nope'}]",  # noqa: FS003
                 ]
             )
     finally:

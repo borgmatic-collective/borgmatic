@@ -27,27 +27,39 @@ def test_make_prune_flags_returns_flags_from_config_plus_default_prefix_glob():
 
     result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
 
-    assert tuple(result) == BASE_PRUNE_FLAGS + (('--match-archives', 'sh:{hostname}-*'),)
+    assert tuple(result) == BASE_PRUNE_FLAGS + (
+        ('--match-archives', 'sh:{hostname}-*'),  # noqa: FS003
+    )
 
 
 def test_make_prune_flags_accepts_prefix_with_placeholders():
-    retention_config = OrderedDict((('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}')))
+    retention_config = OrderedDict(
+        (('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}'))  # noqa: FS003
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
 
     result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
 
-    expected = (('--keep-daily', '1'), ('--match-archives', 'sh:Documents_{hostname}-{now}*'))
+    expected = (
+        ('--keep-daily', '1'),
+        ('--match-archives', 'sh:Documents_{hostname}-{now}*'),  # noqa: FS003
+    )
 
     assert tuple(result) == expected
 
 
 def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives():
-    retention_config = OrderedDict((('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}')))
+    retention_config = OrderedDict(
+        (('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}'))  # noqa: FS003
+    )
     flexmock(module.feature).should_receive('available').and_return(False)
 
     result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
 
-    expected = (('--keep-daily', '1'), ('--glob-archives', 'Documents_{hostname}-{now}*'))
+    expected = (
+        ('--keep-daily', '1'),
+        ('--glob-archives', 'Documents_{hostname}-{now}*'),  # noqa: FS003
+    )
 
     assert tuple(result) == expected
 

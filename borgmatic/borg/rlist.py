@@ -42,7 +42,7 @@ def resolve_archive_name(
     except IndexError:
         raise ValueError('No archives found in the repository')
 
-    logger.debug('{}: Latest archive is {}'.format(repository, latest_archive))
+    logger.debug(f'{repository}: Latest archive is {latest_archive}')
 
     return latest_archive
 
@@ -117,7 +117,7 @@ def list_repository(
     )
 
     if rlist_arguments.json:
-        return execute_command_and_capture_output(main_command, extra_environment=borg_environment,)
+        return execute_command_and_capture_output(main_command, extra_environment=borg_environment)
     else:
         execute_command(
             main_command,

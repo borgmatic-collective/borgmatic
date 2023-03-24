@@ -20,9 +20,9 @@ def format_json_error_path_element(path_element):
     Given a path element into a JSON data structure, format it for display as a string.
     '''
     if isinstance(path_element, int):
-        return str('[{}]'.format(path_element))
+        return str(f'[{path_element}]')
 
-    return str('.{}'.format(path_element))
+    return str(f'.{path_element}')
 
 
 def format_json_error(error):
@@ -30,10 +30,10 @@ def format_json_error(error):
     Given an instance of jsonschema.exceptions.ValidationError, format it for display as a string.
     '''
     if not error.path:
-        return 'At the top level: {}'.format(error.message)
+        return f'At the top level: {error.message}'
 
     formatted_path = ''.join(format_json_error_path_element(element) for element in error.path)
-    return "At '{}': {}".format(formatted_path.lstrip('.'), error.message)
+    return f"At '{formatted_path.lstrip('.')}': {error.message}"
 
 
 class Validation_error(ValueError):
@@ -54,9 +54,10 @@ class Validation_error(ValueError):
         '''
         Render a validation error as a user-facing string.
         '''
-        return 'An error occurred while parsing a configuration file at {}:\n'.format(
-            self.config_filename
-        ) + '\n'.join(error for error in self.errors)
+        return (
+            f'An error occurred while parsing a configuration file at {self.config_filename}:\n'
+            + '\n'.join(error for error in self.errors)
+        )
 
 
 def apply_logical_validation(config_filename, parsed_configuration):
@@ -72,9 +73,7 @@ def apply_logical_validation(config_filename, parsed_configuration):
             raise Validation_error(
                 config_filename,
                 (
-                    'Unknown repository in the "consistency" section\'s "check_repositories": {}'.format(
-                        repository
-                    ),
+                    f'Unknown repository in the "consistency" section\'s "check_repositories": {repository}',
                 ),
             )
 
@@ -173,9 +172,9 @@ def guard_configuration_contains_repository(repository, configurations):
     )
 
     if count == 0:
-        raise ValueError('Repository {} not found in configuration files'.format(repository))
+        raise ValueError(f'Repository {repository} not found in configuration files')
     if count > 1:
-        raise ValueError('Repository {} found in multiple configuration files'.format(repository))
+        raise ValueError(f'Repository {repository} found in multiple configuration files')
 
 
 def guard_single_repository_selected(repository, configurations):

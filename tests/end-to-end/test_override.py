@@ -10,17 +10,15 @@ def generate_configuration(config_path, repository_path):
     to work for testing (including injecting the given repository path and tacking on an encryption
     passphrase).
     '''
-    subprocess.check_call(
-        'generate-borgmatic-config --destination {}'.format(config_path).split(' ')
-    )
+    subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
     config = (
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- ssh://user@backupserver/./{fqdn}', '')
+        .replace('- ssh://user@backupserver/./{fqdn}', '')  # noqa: FS003
         .replace('- /var/local/backups/local.borg', '')
         .replace('- /home/user/path with spaces', '')
-        .replace('- /home', '- {}'.format(config_path))
+        .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
         + 'storage:\n    encryption_passphrase: "test"'

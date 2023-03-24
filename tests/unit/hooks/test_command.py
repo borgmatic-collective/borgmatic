@@ -11,25 +11,18 @@ def test_interpolate_context_passes_through_command_without_variable():
 
 
 def test_interpolate_context_passes_through_command_with_unknown_variable():
-    assert (
-        module.interpolate_context('test.yaml', 'pre-backup', 'ls {baz}', {'foo': 'bar'})
-        == 'ls {baz}'
-    )
+    command = 'ls {baz}'  # noqa: FS003
+
+    assert module.interpolate_context('test.yaml', 'pre-backup', command, {'foo': 'bar'}) == command
 
 
 def test_interpolate_context_interpolates_variables():
+    command = 'ls {foo}{baz} {baz}'  # noqa: FS003
     context = {'foo': 'bar', 'baz': 'quux'}
 
     assert (
-        module.interpolate_context('test.yaml', 'pre-backup', 'ls {foo}{baz} {baz}', context)
-        == 'ls barquux quux'
+        module.interpolate_context('test.yaml', 'pre-backup', command, context) == 'ls barquux quux'
     )
-
-
-def test_interpolate_context_does_not_touch_unknown_variables():
-    context = {'foo': 'bar', 'baz': 'quux'}
-
-    assert module.interpolate_context('test.yaml', 'pre-backup', 'ls {wtf}', context) == 'ls {wtf}'
 
 
 def test_execute_hook_invokes_each_command():

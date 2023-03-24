@@ -449,7 +449,7 @@ def test_collect_special_file_paths_excludes_non_special_files():
     ) == ('/foo', '/baz')
 
 
-DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
 REPO_ARCHIVE_WITH_PATHS = (f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'bar')
 
 
@@ -2193,7 +2193,7 @@ def test_create_archive_with_source_directories_glob_expands():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
+        ('borg', 'create', f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'food'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -2236,7 +2236,7 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo*'),
+        ('borg', 'create', f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo*'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -2279,7 +2279,7 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', 'repo::{}'.format(DEFAULT_ARCHIVE_NAME), 'foo', 'food'),
+        ('borg', 'create', f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'food'),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -2345,7 +2345,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
 def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    repository_archive_pattern = 'repo::Documents_{hostname}-{now}'
+    repository_archive_pattern = 'repo::Documents_{hostname}-{now}'  # noqa: FS003
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2380,7 +2380,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},
+        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
     )
 
@@ -2388,7 +2388,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
 def test_create_archive_with_repository_accepts_borg_placeholders():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'
+    repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'  # noqa: FS003
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -2417,13 +2417,13 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
 
     module.create_archive(
         dry_run=False,
-        repository='{fqdn}',
+        repository='{fqdn}',  # noqa: FS003
         location_config={
             'source_directories': ['foo', 'bar'],
-            'repositories': ['{fqdn}'],
+            'repositories': ['{fqdn}'],  # noqa: FS003
             'exclude_patterns': None,
         },
-        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},
+        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
     )
 

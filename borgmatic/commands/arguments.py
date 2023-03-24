@@ -131,9 +131,7 @@ def make_parsers():
         nargs='*',
         dest='config_paths',
         default=config_paths,
-        help='Configuration filenames or directories, defaults to: {}'.format(
-            ' '.join(unexpanded_config_paths)
-        ),
+        help=f"Configuration filenames or directories, defaults to: {' '.join(unexpanded_config_paths)}",
     )
     global_group.add_argument(
         '--excludes',

@@ -13,7 +13,7 @@ def test_format_json_error_path_element_formats_property():
 
 
 def test_format_json_error_formats_error_including_path():
-    flexmock(module).format_json_error_path_element = lambda element: '.{}'.format(element)
+    flexmock(module).format_json_error_path_element = lambda element: f'.{element}'
     error = flexmock(message='oops', path=['foo', 'bar'])
 
     assert module.format_json_error(error) == "At 'foo.bar': oops"
@@ -66,9 +66,9 @@ def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_pref
     module.apply_logical_validation(
         'config.yaml',
         {
-            'storage': {'archive_name_format': '{hostname}-{now}'},
-            'retention': {'prefix': '{hostname}-'},
-            'consistency': {'prefix': '{hostname}-'},
+            'storage': {'archive_name_format': '{hostname}-{now}'},  # noqa: FS003
+            'retention': {'prefix': '{hostname}-'},  # noqa: FS003
+            'consistency': {'prefix': '{hostname}-'},  # noqa: FS003
         },
     )
 

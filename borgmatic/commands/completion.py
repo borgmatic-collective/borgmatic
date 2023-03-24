@@ -34,7 +34,7 @@ def bash_completion():
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
-            '        then cat << EOF\n%s\nEOF' % UPGRADE_MESSAGE,
+            f'        then cat << EOF\n{UPGRADE_MESSAGE}\nEOF',
             '    fi',
             '}',
             'complete_borgmatic() {',
@@ -48,7 +48,7 @@ def bash_completion():
             for action, subparser in subparsers.choices.items()
         )
         + (
-            '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'
+            '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'  # noqa: FS003
             % (actions, global_flags),
             '    (check_version &)',
             '}',

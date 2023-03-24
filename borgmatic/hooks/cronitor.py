@@ -34,12 +34,10 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
         return
 
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
-    ping_url = '{}/{}'.format(hook_config['ping_url'], MONITOR_STATE_TO_CRONITOR[state])
+    ping_url = f"{hook_config['ping_url']}/{MONITOR_STATE_TO_CRONITOR[state]}"
 
-    logger.info(
-        '{}: Pinging Cronitor {}{}'.format(config_filename, state.name.lower(), dry_run_label)
-    )
-    logger.debug('{}: Using Cronitor ping URL {}'.format(config_filename, ping_url))
+    logger.info(f'{config_filename}: Pinging Cronitor {state.name.lower()}{dry_run_label}')
+    logger.debug(f'{config_filename}: Using Cronitor ping URL {ping_url}')
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)

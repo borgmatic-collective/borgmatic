@@ -43,9 +43,9 @@ def call_hook(function_name, hooks, log_prefix, hook_name, *args, **kwargs):
     try:
         module = HOOK_NAME_TO_MODULE[hook_name]
     except KeyError:
-        raise ValueError('Unknown hook name: {}'.format(hook_name))
+        raise ValueError(f'Unknown hook name: {hook_name}')
 
-    logger.debug('{}: Calling {} hook function {}'.format(log_prefix, hook_name, function_name))
+    logger.debug(f'{log_prefix}: Calling {hook_name} hook function {function_name}')
     return getattr(module, function_name)(config, log_prefix, *args, **kwargs)
 
 

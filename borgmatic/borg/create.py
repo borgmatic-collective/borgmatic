@@ -217,7 +217,7 @@ def make_list_filter_flags(local_borg_version, dry_run):
         return f'{base_flags}-'
 
 
-DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'
+DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
 
 
 def collect_borgmatic_source_directories(borgmatic_source_directory):

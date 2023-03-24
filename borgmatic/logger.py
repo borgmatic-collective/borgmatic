@@ -108,7 +108,7 @@ def color_text(color, message):
     if not color:
         return message
 
-    return '{}{}{}'.format(color, message, colorama.Style.RESET_ALL)
+    return f'{color}{message}{colorama.Style.RESET_ALL}'
 
 
 def add_logging_level(level_name, level_number):

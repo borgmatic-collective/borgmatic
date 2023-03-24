@@ -10,7 +10,7 @@ def make_flags(name, value):
     if not value:
         return ()
 
-    flag = '--{}'.format(name.replace('_', '-'))
+    flag = f"--{name.replace('_', '-')}"
 
     if value is True:
         return (flag,)

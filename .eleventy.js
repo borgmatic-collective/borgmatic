@@ -1,4 +1,5 @@
 const pluginSyntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
+const codeClipboard = require("eleventy-plugin-code-clipboard");
 const inclusiveLangPlugin = require("@11ty/eleventy-plugin-inclusive-language");
 const navigationPlugin = require("@11ty/eleventy-navigation");
 
@@ -6,6 +7,7 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPlugin(pluginSyntaxHighlight);
     eleventyConfig.addPlugin(inclusiveLangPlugin);
     eleventyConfig.addPlugin(navigationPlugin);
+    eleventyConfig.addPlugin(codeClipboard);
 
     let markdownIt = require("markdown-it");
     let markdownItAnchor = require("markdown-it-anchor");
@@ -31,6 +33,7 @@ module.exports = function(eleventyConfig) {
         markdownIt(markdownItOptions)
             .use(markdownItAnchor, markdownItAnchorOptions)
             .use(markdownItReplaceLink)
+            .use(codeClipboard.markdownItCopyButton)
     );
 
     eleventyConfig.addPassthroughCopy({"docs/static": "static"});

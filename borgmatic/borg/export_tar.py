@@ -56,7 +56,7 @@ def export_tar_archive(
         output_log_level = logging.INFO
 
     if dry_run:
-        logging.info('{}: Skipping export to tar file (dry run)'.format(repository))
+        logging.info(f'{repository}: Skipping export to tar file (dry run)')
         return
 
     execute_command(

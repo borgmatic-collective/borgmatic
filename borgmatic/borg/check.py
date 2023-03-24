@@ -12,7 +12,7 @@ DEFAULT_CHECKS = (
     {'name': 'repository', 'frequency': '1 month'},
     {'name': 'archives', 'frequency': '1 month'},
 )
-DEFAULT_PREFIX = '{hostname}-'
+DEFAULT_PREFIX = '{hostname}-'  # noqa: FS003
 
 
 logger = logging.getLogger(__name__)
@@ -196,7 +196,7 @@ def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
         return common_flags
 
     return (
-        tuple('--{}-only'.format(check) for check in checks if check in ('repository', 'archives'))
+        tuple(f'--{check}-only' for check in checks if check in ('repository', 'archives'))
         + common_flags
     )
 

@@ -7,32 +7,32 @@ from borgmatic import execute as module
 
 
 @pytest.mark.parametrize(
-    'process,exit_code,borg_local_path,expected_result',
+    'command,exit_code,borg_local_path,expected_result',
     (
-        (flexmock(args=['grep']), 2, None, True),
-        (flexmock(args=['grep']), 2, 'borg', True),
-        (flexmock(args=['borg']), 2, 'borg', True),
-        (flexmock(args=['borg1']), 2, 'borg1', True),
-        (flexmock(args=['grep']), 1, None, True),
-        (flexmock(args=['grep']), 1, 'borg', True),
-        (flexmock(args=['borg']), 1, 'borg', False),
-        (flexmock(args=['borg1']), 1, 'borg1', False),
-        (flexmock(args=['grep']), 0, None, False),
-        (flexmock(args=['grep']), 0, 'borg', False),
-        (flexmock(args=['borg']), 0, 'borg', False),
-        (flexmock(args=['borg1']), 0, 'borg1', False),
+        (['grep'], 2, None, True),
+        (['grep'], 2, 'borg', True),
+        (['borg'], 2, 'borg', True),
+        (['borg1'], 2, 'borg1', True),
+        (['grep'], 1, None, True),
+        (['grep'], 1, 'borg', True),
+        (['borg'], 1, 'borg', False),
+        (['borg1'], 1, 'borg1', False),
+        (['grep'], 0, None, False),
+        (['grep'], 0, 'borg', False),
+        (['borg'], 0, 'borg', False),
+        (['borg1'], 0, 'borg1', False),
         # -9 exit code occurs when child process get SIGKILLed.
-        (flexmock(args=['grep']), -9, None, True),
-        (flexmock(args=['grep']), -9, 'borg', True),
-        (flexmock(args=['borg']), -9, 'borg', True),
-        (flexmock(args=['borg1']), -9, 'borg1', True),
-        (flexmock(args=['borg']), None, None, False),
+        (['grep'], -9, None, True),
+        (['grep'], -9, 'borg', True),
+        (['borg'], -9, 'borg', True),
+        (['borg1'], -9, 'borg1', True),
+        (['borg'], None, None, False),
     ),
 )
 def test_exit_code_indicates_error_respects_exit_code_and_borg_local_path(
-    process, exit_code, borg_local_path, expected_result
+    command, exit_code, borg_local_path, expected_result
 ):
-    assert module.exit_code_indicates_error(process, exit_code, borg_local_path) is expected_result
+    assert module.exit_code_indicates_error(command, exit_code, borg_local_path) is expected_result
 
 
 def test_command_for_process_converts_sequence_command_to_string():
@@ -237,6 +237,34 @@ def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr()
     output = module.execute_command_and_capture_output(full_command, capture_stderr=True)
 
     assert output == expected_output
+
+
+def test_execute_command_and_capture_output_returns_output_when_process_error_is_not_considered_an_error():
+    full_command = ['foo', 'bar']
+    expected_output = '[]'
+    err_output = b'[]'
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('check_output').with_args(
+        full_command, stderr=None, shell=False, env=None, cwd=None
+    ).and_raise(subprocess.CalledProcessError(1, full_command, err_output)).once()
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(False).once()
+
+    output = module.execute_command_and_capture_output(full_command)
+
+    assert output == expected_output
+
+
+def test_execute_command_and_capture_output_raises_when_command_errors():
+    full_command = ['foo', 'bar']
+    expected_output = '[]'
+    flexmock(module.os, environ={'a': 'b'})
+    flexmock(module.subprocess).should_receive('check_output').with_args(
+        full_command, stderr=None, shell=False, env=None, cwd=None
+    ).and_raise(subprocess.CalledProcessError(2, full_command, expected_output)).once()
+    flexmock(module).should_receive('exit_code_indicates_error').and_return(True).once()
+
+    with pytest.raises(subprocess.CalledProcessError):
+        module.execute_command_and_capture_output(full_command)
 
 
 def test_execute_command_and_capture_output_returns_output_with_shell():

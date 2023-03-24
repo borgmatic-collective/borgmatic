@@ -255,11 +255,8 @@ def run_restore(
     ):
         return
 
-    logger.info(
-        '{}: Restoring databases from archive {}'.format(
-            repository['path'], restore_arguments.archive
-        )
-    )
+    logger.info(f'{repository["path"]}: Restoring databases from archive {restore_arguments.archive}')
+
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
