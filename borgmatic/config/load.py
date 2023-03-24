@@ -1,4 +1,5 @@
 import functools
+import json
 import logging
 import os
 
@@ -104,7 +105,8 @@ def load_configuration(filename):
         config = yaml.load(file_contents)
         if config and 'constants' in config:
             for key, value in config['constants'].items():
-                file_contents = file_contents.replace(f'{{{key}}}', str(value))
+                value = json.dumps(value)
+                file_contents = file_contents.replace(f'{{{key}}}', value)
             config = yaml.load(file_contents)
             del config['constants']
         return config

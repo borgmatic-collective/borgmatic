@@ -30,6 +30,21 @@ def test_load_configuration_replaces_constants():
     assert module.load_configuration('config.yaml') == {'key': 'value'}
 
 
+def test_load_configuration_replaces_complex_constants():
+    builtins = flexmock(sys.modules['builtins'])
+    config_file = io.StringIO(
+        '''
+        constants:
+            key:
+                subkey: value
+        key: {key}
+        '''
+    )
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    assert module.load_configuration('config.yaml') == {'key': {'subkey': 'value'}}
+
+
 def test_load_configuration_inlines_include_relative_to_current_directory():
     builtins = flexmock(sys.modules['builtins'])
     flexmock(module.os).should_receive('getcwd').and_return('/tmp')
