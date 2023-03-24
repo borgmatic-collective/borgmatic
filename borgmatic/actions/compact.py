@@ -52,13 +52,7 @@ def run_compact(
             threshold=compact_arguments.threshold,
         )
     else:  # pragma: nocover
-<<<<<<< HEAD
-        logger.info(
-            '{}: Skipping compact (only available/needed in Borg 1.2+)'.format(repository['path'])
-        )
-=======
-        logger.info(f'{repository}: Skipping compact (only available/needed in Borg 1.2+)')
->>>>>>> f42890430c59a40a17d9a68a193d6a09674770cb
+        logger.info(f'{repository["path"]}: Skipping compact (only available/needed in Borg 1.2+)')
     borgmatic.hooks.command.execute_hook(
         hooks.get('after_compact'),
         hooks.get('umask'),

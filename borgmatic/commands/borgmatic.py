@@ -169,7 +169,7 @@ def run_configuration(config_filename, config, arguments):
             return
 
         encountered_error = error
-        yield from log_error_records(f'{repository_path}: Error pinging monitor', error)
+        yield from log_error_records(f'{repository["path"]}: Error pinging monitor', error)
 
     if not encountered_error:
         try:

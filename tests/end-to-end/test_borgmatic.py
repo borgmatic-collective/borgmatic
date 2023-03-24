@@ -19,7 +19,7 @@ def generate_configuration(config_path, repository_path):
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
         .replace('- path: /mnt/backup', '')
         .replace('label: local', '')
-        .replace('- /home', '- {}'.format(config_path))
+        .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
         + 'storage:\n    encryption_passphrase: "test"'
