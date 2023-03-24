@@ -5,6 +5,8 @@
  * #618: Add support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option
    in borgmatic's storage configuration.
  * #623: Fix confusing message when an error occurs running actions for a configuration file.
+ * #649: Add documentation on backing up a database running in a container:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
  * #655: Fix error when databases are configured and a source directory doesn't exist.
  * Add code style plugins to enforce use of Python f-strings and prevent single-letter variables.
    To join in the pedantry, refresh your test environment with "tox --recreate".

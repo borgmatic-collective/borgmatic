@@ -136,6 +136,53 @@ hooks:
           format: sql
 ```
 
+### Containers
+
+If your database is running within a Docker container and borgmatic is too, no
+problem—simply configure borgmatic to connect to the container's name on its
+exposed port. For instance:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: your-database-container-name
+          port: 5433
+          username: postgres
+          password: trustsome1
+```
+
+But what if borgmatic is running on the host? You can still connect to a
+database container if its ports are properly exposed to the host. For
+instance, when running the database container with Docker, you can specify
+`--publish 127.0.0.1:5433:5432` so that it exposes the container's port 5432
+to port 5433 on the host (only reachable on localhost, in this case). Or the
+same thing with Docker Compose:
+
+```yaml
+services:
+   your-database-container-name:
+       image: postgres
+       ports:
+           - 127.0.0.1:5433:5432
+```
+
+And then you can connect to the database from borgmatic running on the host:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: 127.0.0.1
+          port: 5433
+          username: postgres
+          password: trustsome1
+```
+
+Of course, alter the ports in these examples to suit your particular database
+system.
+
+
 ### No source directories
 
 <span class="minilink minilink-addedin">New in version 1.7.1</span> If you
@@ -152,7 +199,6 @@ hooks:
     mysql_databases:
         - name: all
 ```
-
 
 
 ### External passwords
