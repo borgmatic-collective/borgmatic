@@ -409,7 +409,7 @@ def test_run_actions_runs_rcreate():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -431,7 +431,7 @@ def test_run_actions_runs_transfer():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -454,7 +454,7 @@ def test_run_actions_runs_create():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
     assert result == (expected,)
@@ -477,7 +477,7 @@ def test_run_actions_runs_prune():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -499,7 +499,7 @@ def test_run_actions_runs_compact():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -522,7 +522,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -545,7 +545,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -567,7 +567,7 @@ def test_run_actions_runs_extract():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -589,7 +589,7 @@ def test_run_actions_runs_export_tar():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -611,7 +611,7 @@ def test_run_actions_runs_mount():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -633,7 +633,7 @@ def test_run_actions_runs_restore():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -656,7 +656,7 @@ def test_run_actions_runs_rlist():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
     assert result == (expected,)
@@ -680,7 +680,7 @@ def test_run_actions_runs_list():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
     assert result == (expected,)
@@ -704,7 +704,7 @@ def test_run_actions_runs_rinfo():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
     assert result == (expected,)
@@ -728,7 +728,7 @@ def test_run_actions_runs_info():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
     assert result == (expected,)
@@ -751,7 +751,7 @@ def test_run_actions_runs_break_lock():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -773,7 +773,7 @@ def test_run_actions_runs_borg():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 
@@ -800,7 +800,7 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
-            repository_path='repo',
+            repository='repo',
         )
     )
 

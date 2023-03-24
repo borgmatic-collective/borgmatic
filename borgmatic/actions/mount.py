@@ -17,14 +17,16 @@ def run_mount(
         repository, mount_arguments.repository
     ):
         if mount_arguments.archive:
-            logger.info('{}: Mounting archive {}'.format(repository, mount_arguments.archive))
+            logger.info(
+                '{}: Mounting archive {}'.format(repository['path'], mount_arguments.archive)
+            )
         else:  # pragma: nocover
-            logger.info('{}: Mounting repository'.format(repository))
+            logger.info('{}: Mounting repository'.format(repository['path']))
 
         borgmatic.borg.mount.mount_archive(
-            repository,
+            repository['path'],
             borgmatic.borg.rlist.resolve_archive_name(
-                repository,
+                repository['path'],
                 mount_arguments.archive,
                 storage,
                 local_borg_version,

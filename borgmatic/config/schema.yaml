@@ -36,23 +36,33 @@ properties:
                         path:
                             type: string
                             description: |
-                                Path to local or remote repository (required). 
-                                are expanded. Multiple repositories are backed up to
-                                in sequence. Borg placeholders can be used. See the
-                                output of "borg help placeholders" for details. See
-                                ssh_command for SSH options like identity file or
-                                port. If systemd service is used, then add local
-                                repository paths in the systemd service file to the
-                                ReadWritePaths list.                                
-                            example:
-                                - ssh://user@backupserver/./sourcehostname.borg
-                                - ssh://user@backupserver/./{fqdn}
-                                - /var/local/backups/local.borg
+                                Path to local or remote repository
+                                (required). Tildes are expanded.
+                                Multiple repositories are backed up
+                                to in sequence. Borg placeholders
+                                can be used. See the output of
+                                "borg help placeholders" for
+                                details. See ssh_command for SSH
+                                options like identity file or port.
+                                If systemd service is used, then
+                                add local repository paths in the
+                                systemd service file to the
+                                ReadWritePaths list.
+                            example: ssh://user@backupserver/./{fqdn}
                         label:
                             type: string
                             description: |
-                                Optional label for the repository.
+                                Optional label for the repository. This 
+                                can be used with the --repository option 
+                                to select a repository to backup to. 
+                                If not specified, the repository path is 
+                                used as the label.
                             example: backupserver
+                example:
+                    - path: ssh://user@backupserver/./{fqdn}
+                      label: backupserver
+                    - path: /mnt/backup
+                      label: local
             working_directory:
                 type: string
                 description: |

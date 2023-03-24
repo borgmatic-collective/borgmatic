@@ -20,9 +20,9 @@ def run_info(
         repository, info_arguments.repository
     ):
         if not info_arguments.json:  # pragma: nocover
-            logger.answer(f'{repository}: Displaying archive summary information')
+            logger.answer(f'{repository["path"]}: Displaying archive summary information')
         info_arguments.archive = borgmatic.borg.rlist.resolve_archive_name(
-            repository,
+            repository['path'],
             info_arguments.archive,
             storage,
             local_borg_version,
@@ -30,7 +30,7 @@ def run_info(
             remote_path,
         )
         json_output = borgmatic.borg.info.display_archives_info(
-            repository,
+            repository['path'],
             storage,
             local_borg_version,
             info_arguments=info_arguments,

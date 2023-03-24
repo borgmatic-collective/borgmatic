@@ -19,9 +19,11 @@ def run_rinfo(
         repository, rinfo_arguments.repository
     ):
         if not rinfo_arguments.json:  # pragma: nocover
-            logger.answer('{}: Displaying repository summary information'.format(repository))
+            logger.answer(
+                '{}: Displaying repository summary information'.format(repository['path'])
+            )
         json_output = borgmatic.borg.rinfo.display_repository_info(
-            repository,
+            repository['path'],
             storage,
             local_borg_version,
             rinfo_arguments=rinfo_arguments,

@@ -69,27 +69,27 @@ from borgmatic.config import normalize as module
         ),
         (
             {'location': {'repositories': ['foo@bar:/repo']}},
-            {'location': {'repositories': ['ssh://foo@bar/repo']}},
+            {'location': {'repositories': [{'path': 'ssh://foo@bar/repo', 'label': ''}]}},
             True,
         ),
         (
             {'location': {'repositories': ['foo@bar:repo']}},
-            {'location': {'repositories': ['ssh://foo@bar/./repo']}},
+            {'location': {'repositories': [{'path': 'ssh://foo@bar/./repo', 'label': ''}]}},
             True,
         ),
         (
             {'location': {'repositories': ['foo@bar:~/repo']}},
-            {'location': {'repositories': ['ssh://foo@bar/~/repo']}},
+            {'location': {'repositories': [{'path': 'ssh://foo@bar/~/repo', 'label': ''}]}},
             True,
         ),
         (
             {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
-            {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
+            {'location': {'repositories': [{'path': 'ssh://foo@bar:1234/repo', 'label': ''}]}},
             False,
         ),
         (
             {'location': {'repositories': ['file:///repo']}},
-            {'location': {'repositories': ['/repo']}},
+            {'location': {'repositories': [{'path': '/repo', 'label': ''}]}},
             False,
         ),
     ),

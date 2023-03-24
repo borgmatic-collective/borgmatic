@@ -13,7 +13,7 @@ def test_run_prune_calls_hooks_for_configured_repository():
 
     module.run_prune(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         retention={},
         hooks={},
@@ -38,7 +38,7 @@ def test_run_prune_runs_with_selected_repository():
 
     module.run_prune(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         retention={},
         hooks={},

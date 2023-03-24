@@ -109,6 +109,8 @@ def run_configuration(config_filename, config, arguments):
 
         while not repo_queue.empty():
             repository, retry_num = repo_queue.get()
+            if isinstance(repository, str):
+                repository = {'path': repository}
             timeout = retry_num * retry_wait
             if timeout:
                 logger.warning(f'{config_filename}: Sleeping {timeout}s before next retry')
@@ -263,6 +265,8 @@ def run_actions(
     invalid.
     '''
     add_custom_log_levels()
+    if isinstance(repository, str):
+        repository = {'path': repository}
     repository_path = os.path.expanduser(repository['path'])
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''

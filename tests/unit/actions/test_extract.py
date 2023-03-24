@@ -20,7 +20,7 @@ def test_run_extract_calls_hooks():
 
     module.run_extract(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         hooks={},
