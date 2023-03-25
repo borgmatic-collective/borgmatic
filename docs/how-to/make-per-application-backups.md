@@ -255,3 +255,60 @@ Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
 
 An alternate to command-line overrides is passing in your values via [environment variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+
+
+## Constants
+
+<span class="minilink minilink-addedin">New in version 1.7.10</span> Another
+tool is borgmatic's support for defining custom constants. This is similar to
+the [variable interpolation
+feature](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)
+for command hooks, but the constants feature lets you substitute your own
+custom values into anywhere in the entire configuration file. (Constants don't
+work across includes or separate configuration files though.)
+
+Here's an example usage:
+
+```yaml
+constants:
+    user: foo
+    my_prefix: bar-
+
+location:
+    source_directories:
+        - /home/{user}/.config
+        - /home/{user}/.ssh
+    ...
+
+storage:
+    archive_name_format: '{my_prefix}{now}'
+
+retention:
+    prefix: {my_prefix}
+
+consistency:
+    prefix: {my_prefix}
+```
+
+In this example, when borgmatic runs, all instances of `{user}` get replaced
+with `foo` and all instances of `{my_prefix}` get replaced with `bar-`. (And
+in this particular example, `{now}` doesn't get replaced with anything, but
+gets passed directly to Borg.) After substitution, the logical result looks
+something like this:
+
+```yaml
+location:
+    source_directories:
+        - /home/foo/.config
+        - /home/foo/.ssh
+    ...
+
+storage:
+    archive_name_format: 'bar-{now}'
+
+retention:
+    prefix: bar-
+
+consistency:
+    prefix: bar-
+```
