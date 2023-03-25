@@ -106,7 +106,7 @@ def load_configuration(filename):
         if config and 'constants' in config:
             for key, value in config['constants'].items():
                 value = json.dumps(value)
-                file_contents = file_contents.replace(f'{{{key}}}', value)
+                file_contents = file_contents.replace(f'{{{key}}}', value.strip('"'))
             config = yaml.load(file_contents)
             del config['constants']
         return config
