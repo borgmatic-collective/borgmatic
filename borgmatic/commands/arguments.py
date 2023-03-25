@@ -360,16 +360,16 @@ def make_parsers():
         '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
     )
     prune_group.add_argument(
-        '--oldest', metavar='TIMESPAN', help='Consider archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--oldest', metavar='TIMESPAN', help='Prune archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     prune_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='Consider archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='Prune archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     prune_group.add_argument(
-        '--older', metavar='TIMESPAN', help='Consider archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+        '--older', metavar='TIMESPAN', help='Prune archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
     )
     prune_group.add_argument(
-        '--newer', metavar='TIMESPAN', help='Consider archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+        '--newer', metavar='TIMESPAN', help='Prune archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
     )
     prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
