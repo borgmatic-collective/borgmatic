@@ -4,7 +4,7 @@
  * #576: Add support for "file://" paths within "repositories" option.
  * #612: Define and use custom constants in borgmatic configuration files. See the documentation for
    more information:
-   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#constants
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#constant-interpolation
  * #618: Add support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option
    in borgmatic's storage configuration.
  * #623: Fix confusing message when an error occurs running actions for a configuration file.

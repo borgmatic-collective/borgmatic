@@ -257,7 +257,7 @@ that your shell may interpret.
 An alternate to command-line overrides is passing in your values via [environment variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
 
 
-## Constants
+## Constant interpolation
 
 <span class="minilink minilink-addedin">New in version 1.7.10</span> Another
 tool is borgmatic's support for defining custom constants. This is similar to
@@ -312,3 +312,6 @@ retention:
 consistency:
     prefix: bar-
 ```
+
+An alternate to constants is passing in your values via [environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
