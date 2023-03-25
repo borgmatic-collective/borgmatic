@@ -3,6 +3,17 @@ required:
     - location
 additionalProperties: false
 properties:
+    constants:
+        type: object
+        description: |
+            Constants to use in the configuration file. All occurences of the
+            constant name within culy braces will be replaced with the value.
+            For example, if you have a constant named "hostname" with the value
+            "myhostname", then the string "{hostname}" will be replaced with
+            "myhostname" in the configuration file.
+        example:
+            hostname: myhostname
+            prefix: myprefix
     location:
         type: object
         description: |
