@@ -35,6 +35,7 @@ def run_mount(
             mount_arguments.paths,
             mount_arguments.foreground,
             mount_arguments.options,
+            mount_arguments,
             storage,
             local_borg_version,
             local_path=local_path,

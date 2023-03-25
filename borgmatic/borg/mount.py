@@ -13,6 +13,7 @@ def mount_archive(
     paths,
     foreground,
     options,
+    mount_arguments,
     storage_config,
     local_borg_version,
     local_path='borg',
@@ -35,6 +36,12 @@ def mount_archive(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--foreground',) if foreground else ())
+        + (flags.make_flags('first', mount_arguments.first) if mount_arguments.first else ())
+        + (flags.make_flags('last', mount_arguments.last) if mount_arguments.last else ())
+        + (flags.make_flags('newest', mount_arguments.newest) if mount_arguments.newest else ())
+        + (flags.make_flags('oldest', mount_arguments.oldest) if mount_arguments.oldest else ())
+        + (flags.make_flags('older', mount_arguments.older) if mount_arguments.older else ())
+        + (flags.make_flags('newer', mount_arguments.newer) if mount_arguments.newer else ())
         + (('-o', options) if options else ())
         + (
             (

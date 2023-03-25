@@ -43,6 +43,7 @@ def prune_archives(
     storage_config,
     retention_config,
     local_borg_version,
+    prune_arguments,
     local_path='borg',
     remote_path=None,
     stats=False,
@@ -71,6 +72,10 @@ def prune_archives(
         + (('--stats',) if stats and not dry_run else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--list',) if list_archives else ())
+        + (flags.make_flags('newest', prune_arguments.newest) if prune_arguments.newest else ())
+        + (flags.make_flags('oldest', prune_arguments.oldest) if prune_arguments.oldest else ())
+        + (flags.make_flags('older', prune_arguments.older) if prune_arguments.older else ())
+        + (flags.make_flags('newer', prune_arguments.newer) if prune_arguments.newer else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())

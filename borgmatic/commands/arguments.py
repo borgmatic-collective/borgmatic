@@ -322,6 +322,18 @@ def make_parsers():
         '--last', metavar='N', help='Only transfer last N archives after other filters are applied'
     )
     transfer_group.add_argument(
+        '--oldest', metavar='TIMESPAN', help='Transfer archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    transfer_group.add_argument(
+        '--newest', metavar='TIMESPAN', help='Transfer archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    transfer_group.add_argument(
+        '--older', metavar='TIMESPAN', help='Transfer archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    transfer_group.add_argument(
+        '--newer', metavar='TIMESPAN', help='Transfer archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    transfer_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -346,6 +358,18 @@ def make_parsers():
     )
     prune_group.add_argument(
         '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
+    )
+    prune_group.add_argument(
+        '--oldest', metavar='TIMESPAN', help='Consider archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    prune_group.add_argument(
+        '--newest', metavar='TIMESPAN', help='Consider archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    prune_group.add_argument(
+        '--older', metavar='TIMESPAN', help='Consider archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    prune_group.add_argument(
+        '--newer', metavar='TIMESPAN', help='Consider archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
     )
     prune_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
@@ -587,6 +611,26 @@ def make_parsers():
         action='store_true',
         help='Stay in foreground until ctrl-C is pressed',
     )
+    mount_group.add_argument(
+        '--first',
+        metavar='N',
+        help='Mount first N archives after other filters are applied',
+    )
+    mount_group.add_argument(
+        '--last', metavar='N', help='Mount last N archives after other filters are applied'
+    )
+    mount_group.add_argument(
+        '--oldest', metavar='TIMESPAN', help='Mount archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    mount_group.add_argument(
+        '--newest', metavar='TIMESPAN', help='Mount archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    mount_group.add_argument(
+        '--older', metavar='TIMESPAN', help='Mount archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    mount_group.add_argument(
+        '--newer', metavar='TIMESPAN', help='Mount archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
     mount_group.add_argument('--options', dest='options', help='Extra Borg mount options')
     mount_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
@@ -669,6 +713,18 @@ def make_parsers():
     )
     rlist_group.add_argument(
         '--last', metavar='N', help='List last N archives after other filters are applied'
+    )
+    rlist_group.add_argument(
+        '--oldest', metavar='TIMESPAN', help='List archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    rlist_group.add_argument(
+        '--newest', metavar='TIMESPAN', help='List archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    rlist_group.add_argument(
+        '--older', metavar='TIMESPAN', help='List archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    rlist_group.add_argument(
+        '--newer', metavar='TIMESPAN', help='List archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
     )
     rlist_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
@@ -798,6 +854,18 @@ def make_parsers():
     )
     info_group.add_argument(
         '--last', metavar='N', help='Show info for last N archives after other filters are applied'
+    )
+    info_group.add_argument(
+        '--oldest', metavar='TIMESPAN', help='Show info for archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    info_group.add_argument(
+        '--newest', metavar='TIMESPAN', help='Show info for archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+    )
+    info_group.add_argument(
+        '--older', metavar='TIMESPAN', help='Show info for archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
+    )
+    info_group.add_argument(
+        '--newer', metavar='TIMESPAN', help='Show info for archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
     )
     info_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
