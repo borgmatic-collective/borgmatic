@@ -138,7 +138,7 @@ def normalize_repository_path(repository):
 def repositories_match(first, second):
     '''
     Given two repository dicts with keys 'path' (relative and/or absolute),
-    and 'label', return whether they match.
+    and 'label', or two repository paths, return whether they match.
     '''
     if isinstance(first, str):
         first = {'path': first, 'label': first}

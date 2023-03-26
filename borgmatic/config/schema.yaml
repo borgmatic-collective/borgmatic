@@ -53,7 +53,7 @@ properties:
                             type: string
                             description: |
                                 Optional label for the repository. This 
-                                can be used with the --repository option 
+                                can be used with the --repository flag 
                                 to select a repository to backup to. 
                                 If not specified, the repository path is 
                                 used as the label.
