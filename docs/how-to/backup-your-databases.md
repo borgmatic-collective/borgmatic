@@ -380,6 +380,23 @@ dumps with any database system.
 
 ## Troubleshooting
 
+### PostgreSQL/MySQL authentication errors
+
+With PostgreSQL and MySQL/MariaDB, if you're getting authentication errors
+when borgmatic tries to connect to your database, a natural reaction is to
+increase your borgmatic verbosity with `--verbosity 2` and go looking in the
+logs. You'll notice however that your database password does not show up in
+the logs. This is likely not the cause of the authentication problem unless
+you mistyped your password, however; borgmatic passes your password to the
+database via an environment variable that does not appear in the logs.
+
+The cause of an authentication error is often on the database side—in the
+configuration of which users are allowed to connect and how they are
+authenticated. For instance, with PostgreSQL, check your
+[pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
+file for that configuration.
+
+
 ### MySQL table lock errors
 
 If you encounter table lock errors during a database dump with MySQL/MariaDB,
