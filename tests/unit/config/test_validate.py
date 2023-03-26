@@ -121,6 +121,16 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
 
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_label_in_config():
+
+    module.guard_configuration_contains_repository(
+        repository='repo',
+        configurations={
+            'config.yaml': {'location': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}}
+        },
+    )
+
+
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
     module.guard_configuration_contains_repository(
         repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
