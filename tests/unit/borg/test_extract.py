@@ -23,7 +23,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -32,7 +32,7 @@ def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(('repo',))
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -45,7 +45,7 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -60,7 +60,7 @@ def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_param
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -74,7 +74,7 @@ def test_extract_last_archive_dry_run_calls_borg_via_local_path():
     module.extract_last_archive_dry_run(
         storage_config={},
         local_borg_version='1.2.3',
-        repository='repo',
+        repository_path='repo',
         lock_wait=None,
         local_path='borg1',
     )
@@ -92,7 +92,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_remote_path_parameters():
     module.extract_last_archive_dry_run(
         storage_config={},
         local_borg_version='1.2.3',
-        repository='repo',
+        repository_path='repo',
         lock_wait=None,
         remote_path='borg1',
     )
@@ -108,7 +108,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=5
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=5
     )
 
 

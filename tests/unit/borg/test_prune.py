@@ -98,7 +98,7 @@ def test_prune_archives_calls_borg_with_parameters():
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -114,7 +114,7 @@ def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
     insert_logging_mock(logging.INFO)
 
     module.prune_archives(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         dry_run=False,
         retention_config=flexmock(),
@@ -131,7 +131,7 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
     insert_logging_mock(logging.DEBUG)
 
     module.prune_archives(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         dry_run=False,
         retention_config=flexmock(),
@@ -147,7 +147,7 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
     insert_execute_command_mock(PRUNE_COMMAND + ('--dry-run', 'repo'), logging.INFO)
 
     module.prune_archives(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         dry_run=True,
         retention_config=flexmock(),
@@ -164,7 +164,7 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -181,7 +181,7 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -198,7 +198,7 @@ def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_answer_ou
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -215,7 +215,7 @@ def test_prune_archives_with_files_calls_borg_with_list_parameter_and_answer_out
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -233,7 +233,7 @@ def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config=storage_config,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -250,7 +250,7 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config=storage_config,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
@@ -266,7 +266,7 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
 
     module.prune_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={'extra_borg_options': {'prune': '--extra --options'}},
         retention_config=flexmock(),
         local_borg_version='1.2.3',

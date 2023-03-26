@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def transfer_archives(
     dry_run,
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     transfer_arguments,
@@ -38,7 +38,7 @@ def transfer_archives(
             transfer_arguments,
             excludes=('repository', 'source_repository', 'archive', 'match_archives'),
         )
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
         + flags.make_flags('other-repo', transfer_arguments.source_repository)
         + flags.make_flags('dry-run', dry_run)
     )

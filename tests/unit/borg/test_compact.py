@@ -25,7 +25,7 @@ def test_compact_segments_calls_borg_with_parameters():
     insert_execute_command_mock(COMPACT_COMMAND + ('repo',), logging.INFO)
 
     module.compact_segments(
-        dry_run=False, repository='repo', storage_config={}, local_borg_version='1.2.3'
+        dry_run=False, repository_path='repo', storage_config={}, local_borg_version='1.2.3'
     )
 
 
@@ -35,7 +35,7 @@ def test_compact_segments_with_log_info_calls_borg_with_info_parameter():
     insert_logging_mock(logging.INFO)
 
     module.compact_segments(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', dry_run=False
+        repository_path='repo', storage_config={}, local_borg_version='1.2.3', dry_run=False
     )
 
 
@@ -45,7 +45,7 @@ def test_compact_segments_with_log_debug_calls_borg_with_debug_parameter():
     insert_logging_mock(logging.DEBUG)
 
     module.compact_segments(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', dry_run=False
+        repository_path='repo', storage_config={}, local_borg_version='1.2.3', dry_run=False
     )
 
 
@@ -53,7 +53,7 @@ def test_compact_segments_with_dry_run_skips_borg_call():
     flexmock(module).should_receive('execute_command').never()
 
     module.compact_segments(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', dry_run=True
+        repository_path='repo', storage_config={}, local_borg_version='1.2.3', dry_run=True
     )
 
 
@@ -63,7 +63,7 @@ def test_compact_segments_with_local_path_calls_borg_via_local_path():
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         local_path='borg1',
@@ -76,7 +76,7 @@ def test_compact_segments_with_remote_path_calls_borg_with_remote_path_parameter
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         remote_path='borg1',
@@ -89,7 +89,7 @@ def test_compact_segments_with_progress_calls_borg_with_progress_parameter():
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         progress=True,
@@ -102,7 +102,7 @@ def test_compact_segments_with_cleanup_commits_calls_borg_with_cleanup_commits_p
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         cleanup_commits=True,
@@ -115,7 +115,7 @@ def test_compact_segments_with_threshold_calls_borg_with_threshold_parameter():
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         threshold=20,
@@ -128,7 +128,10 @@ def test_compact_segments_with_umask_calls_borg_with_umask_parameters():
     insert_execute_command_mock(COMPACT_COMMAND + ('--umask', '077', 'repo'), logging.INFO)
 
     module.compact_segments(
-        dry_run=False, repository='repo', storage_config=storage_config, local_borg_version='1.2.3'
+        dry_run=False,
+        repository_path='repo',
+        storage_config=storage_config,
+        local_borg_version='1.2.3',
     )
 
 
@@ -138,7 +141,10 @@ def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_parameters():
     insert_execute_command_mock(COMPACT_COMMAND + ('--lock-wait', '5', 'repo'), logging.INFO)
 
     module.compact_segments(
-        dry_run=False, repository='repo', storage_config=storage_config, local_borg_version='1.2.3'
+        dry_run=False,
+        repository_path='repo',
+        storage_config=storage_config,
+        local_borg_version='1.2.3',
     )
 
 
@@ -148,7 +154,7 @@ def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options(
 
     module.compact_segments(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={'extra_borg_options': {'compact': '--extra --options'}},
         local_borg_version='1.2.3',
     )

@@ -25,7 +25,7 @@ def test_transfer_archives_calls_borg_with_flags():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -54,7 +54,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
 
     module.transfer_archives(
         dry_run=True,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -80,7 +80,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
     insert_logging_mock(logging.INFO)
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -107,7 +107,7 @@ def test_transfer_archives_with_log_debug_calls_borg_with_debug_flag():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -136,7 +136,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -165,7 +165,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -191,7 +191,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -221,7 +221,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -252,7 +252,7 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config=storage_config,
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -278,7 +278,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flag():
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -308,7 +308,7 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
@@ -340,7 +340,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
 
     module.transfer_archives(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def extract_last_archive_dry_run(
     storage_config,
     local_borg_version,
-    repository,
+    repository_path,
     lock_wait=None,
     local_path='borg',
     remote_path=None,
@@ -30,7 +30,7 @@ def extract_last_archive_dry_run(
 
     try:
         last_archive_name = rlist.resolve_archive_name(
-            repository, 'latest', storage_config, local_borg_version, local_path, remote_path
+            repository_path, 'latest', storage_config, local_borg_version, local_path, remote_path
         )
     except ValueError:
         logger.warning('No archives found. Skipping extract consistency check.')
@@ -44,7 +44,9 @@ def extract_last_archive_dry_run(
         + lock_wait_flags
         + verbosity_flags
         + list_flag
-        + flags.make_repository_archive_flags(repository, last_archive_name, local_borg_version)
+        + flags.make_repository_archive_flags(
+            repository_path, last_archive_name, local_borg_version
+        )
     )
 
     execute_command(

@@ -50,7 +50,7 @@ def test_make_flags_from_arguments_omits_excludes():
 def test_make_repository_flags_with_borg_features_includes_repo_flag():
     flexmock(module.feature).should_receive('available').and_return(True)
 
-    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == (
+    assert module.make_repository_flags(repository_path='repo', local_borg_version='1.2.3') == (
         '--repo',
         'repo',
     )
@@ -59,14 +59,16 @@ def test_make_repository_flags_with_borg_features_includes_repo_flag():
 def test_make_repository_flags_without_borg_features_includes_omits_flag():
     flexmock(module.feature).should_receive('available').and_return(False)
 
-    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == ('repo',)
+    assert module.make_repository_flags(repository_path='repo', local_borg_version='1.2.3') == (
+        'repo',
+    )
 
 
 def test_make_repository_archive_flags_with_borg_features_separates_repository_and_archive():
     flexmock(module.feature).should_receive('available').and_return(True)
 
     assert module.make_repository_archive_flags(
-        repository='repo', archive='archive', local_borg_version='1.2.3'
+        repository_path='repo', archive='archive', local_borg_version='1.2.3'
     ) == ('--repo', 'repo', 'archive',)
 
 
@@ -74,5 +76,5 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
     flexmock(module.feature).should_receive('available').and_return(False)
 
     assert module.make_repository_archive_flags(
-        repository='repo', archive='archive', local_borg_version='1.2.3'
+        repository_path='repo', archive='archive', local_borg_version='1.2.3'
     ) == ('repo::archive',)

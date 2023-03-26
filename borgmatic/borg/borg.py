@@ -13,7 +13,7 @@ BORG_SUBCOMMANDS_WITHOUT_REPOSITORY = (('debug', 'info'), ('debug', 'convert-pro
 
 
 def run_arbitrary_borg(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     options,
@@ -44,10 +44,10 @@ def run_arbitrary_borg(
         repository_archive_flags = ()
     elif archive:
         repository_archive_flags = flags.make_repository_archive_flags(
-            repository, archive, local_borg_version
+            repository_path, archive, local_borg_version
         )
     else:
-        repository_archive_flags = flags.make_repository_flags(repository, local_borg_version)
+        repository_archive_flags = flags.make_repository_flags(repository_path, local_borg_version)
 
     full_command = (
         (local_path,)

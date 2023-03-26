@@ -23,7 +23,7 @@ def test_display_archives_info_calls_borg_with_parameters():
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -45,7 +45,7 @@ def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
     )
     insert_logging_mock(logging.INFO)
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -65,7 +65,7 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
 
     insert_logging_mock(logging.INFO)
     json_output = module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=True, prefix=None),
@@ -90,7 +90,7 @@ def test_display_archives_info_with_log_debug_calls_borg_with_debug_parameter():
     insert_logging_mock(logging.DEBUG)
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -110,7 +110,7 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
 
     insert_logging_mock(logging.DEBUG)
     json_output = module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=True, prefix=None),
@@ -131,7 +131,7 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
     ).and_return('[]')
 
     json_output = module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=True, prefix=None),
@@ -158,7 +158,7 @@ def test_display_archives_info_with_archive_calls_borg_with_match_archives_param
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive='archive', json=False, prefix=None),
@@ -180,7 +180,7 @@ def test_display_archives_info_with_local_path_calls_borg_via_local_path():
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -206,7 +206,7 @@ def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_para
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -233,7 +233,7 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config=storage_config,
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None),
@@ -258,7 +258,7 @@ def test_display_archives_info_with_prefix_calls_borg_with_match_archives_parame
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix='foo'),
@@ -284,7 +284,7 @@ def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
     )
 
     module.display_archives_info(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
         info_arguments=flexmock(archive=None, json=False, prefix=None, **{argument_name: 'value'}),

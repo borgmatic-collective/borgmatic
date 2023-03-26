@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def break_lock(
-    repository, storage_config, local_borg_version, local_path='borg', remote_path=None,
+    repository_path, storage_config, local_borg_version, local_path='borg', remote_path=None,
 ):
     '''
     Given a local or remote repository path, a storage configuration dict, the local Borg version,
@@ -24,7 +24,7 @@ def break_lock(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     borg_environment = environment.make_environment(storage_config)
