@@ -43,6 +43,23 @@ def output_buffer_for_process(process, exclude_stdouts):
     return process.stderr if process.stdout in exclude_stdouts else process.stdout
 
 
+def append_last_lines(last_lines, captured_output, line, output_log_level):
+    '''
+    Given a rolling list of last lines, a list of captured output, a line to append, and an output
+    log level, append the line to the last lines and (if necessary) the captured output. Then log
+    the line at the requested output log level.
+    '''
+    last_lines.append(line)
+
+    if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
+        last_lines.pop(0)
+
+    if output_log_level is None:
+        captured_output.append(line)
+    else:
+        logger.log(output_log_level, line)
+
+
 def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
     '''
     Given a sequence of subprocess.Popen() instances for multiple processes, log the output for each
@@ -98,15 +115,12 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
 
                     # Keep the last few lines of output in case the process errors, and we need the output for
                     # the exception below.
-                    last_lines = buffer_last_lines[ready_buffer]
-                    last_lines.append(line)
-                    if len(last_lines) > ERROR_OUTPUT_MAX_LINE_COUNT:
-                        last_lines.pop(0)
-
-                    if output_log_level is None:
-                        captured_outputs[ready_process].append(line)
-                    else:
-                        logger.log(output_log_level, line)
+                    append_last_lines(
+                        buffer_last_lines[ready_buffer],
+                        captured_outputs[ready_process],
+                        line,
+                        output_log_level,
+                    )
 
         if not still_running:
             break
@@ -125,8 +139,18 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                 # If an error occurs, include its output in the raised exception so that we don't
                 # inadvertently hide error output.
                 output_buffer = output_buffer_for_process(process, exclude_stdouts)
-
                 last_lines = buffer_last_lines[output_buffer] if output_buffer else []
+
+                # Collect any straggling output lines that came in since we last gathered output.
+                while output_buffer:  # pragma: no cover
+                    line = output_buffer.readline().rstrip().decode()
+                    if not line:
+                        break
+
+                    append_last_lines(
+                        last_lines, captured_outputs[process], line, output_log_level=logging.ERROR
+                    )
+
                 if len(last_lines) == ERROR_OUTPUT_MAX_LINE_COUNT:
                     last_lines.insert(0, '...')
 

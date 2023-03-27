@@ -149,8 +149,7 @@ def test_execute_dump_command_runs_mysqldump():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mysqldump', '--add-drop-database', '--databases', 'foo', '>', 'dump',),
-        shell=True,
+        ('mysqldump', '--add-drop-database', '--databases', 'foo', '--result-file', 'dump',),
         extra_environment=None,
         run_to_completion=False,
     ).and_return(process).once()
@@ -176,8 +175,7 @@ def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mysqldump', '--databases', 'foo', '>', 'dump',),
-        shell=True,
+        ('mysqldump', '--databases', 'foo', '--result-file', 'dump',),
         extra_environment=None,
         run_to_completion=False,
     ).and_return(process).once()
@@ -214,10 +212,9 @@ def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
             'tcp',
             '--databases',
             'foo',
-            '>',
+            '--result-file',
             'dump',
         ),
-        shell=True,
         extra_environment=None,
         run_to_completion=False,
     ).and_return(process).once()
@@ -243,8 +240,16 @@ def test_execute_dump_command_runs_mysqldump_with_username_and_password():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mysqldump', '--add-drop-database', '--user', 'root', '--databases', 'foo', '>', 'dump',),
-        shell=True,
+        (
+            'mysqldump',
+            '--add-drop-database',
+            '--user',
+            'root',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
         extra_environment={'MYSQL_PWD': 'trustsome1'},
         run_to_completion=False,
     ).and_return(process).once()
@@ -270,8 +275,15 @@ def test_execute_dump_command_runs_mysqldump_with_options():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mysqldump', '--stuff=such', '--add-drop-database', '--databases', 'foo', '>', 'dump',),
-        shell=True,
+        (
+            'mysqldump',
+            '--stuff=such',
+            '--add-drop-database',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
         extra_environment=None,
         run_to_completion=False,
     ).and_return(process).once()

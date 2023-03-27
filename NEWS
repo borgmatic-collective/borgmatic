@@ -1,4 +1,5 @@
 1.7.10.dev0
+ * #396: When a database command errors, display and log the error message instead of swallowing it.
  * #501: Optionally error if a source directory does not exist via "source_directories_must_exist"
    option in borgmatic's location configuration.
  * #576: Add support for "file://" paths within "repositories" option.

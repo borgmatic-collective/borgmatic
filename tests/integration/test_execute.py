@@ -239,7 +239,6 @@ def test_log_outputs_does_not_error_when_one_process_exits():
 
 
 def test_log_outputs_truncates_long_error_output():
-    flexmock(module).ERROR_OUTPUT_MAX_LINE_COUNT = 0
     flexmock(module.logger).should_receive('log')
     flexmock(module).should_receive('command_for_process').and_return('grep')
 
@@ -253,7 +252,7 @@ def test_log_outputs_truncates_long_error_output():
     flexmock(module).should_receive('output_buffer_for_process').and_return(process.stdout)
 
     with pytest.raises(subprocess.CalledProcessError) as error:
-        module.log_outputs(
+        flexmock(module, ERROR_OUTPUT_MAX_LINE_COUNT=0).log_outputs(
             (process,), exclude_stdouts=(), output_log_level=logging.INFO, borg_local_path='borg'
         )
 

@@ -88,9 +88,7 @@ def execute_dump_command(
         + (('--user', database['username']) if 'username' in database else ())
         + ('--databases',)
         + database_names
-        # Use shell redirection rather than execute_command(output_file=open(...)) to prevent
-        # the open() call on a named pipe from hanging the main borgmatic process.
-        + ('>', dump_filename)
+        + ('--result-file', dump_filename)
     )
 
     logger.debug(
@@ -102,7 +100,7 @@ def execute_dump_command(
     dump.create_named_pipe_for_dump(dump_filename)
 
     return execute_command(
-        dump_command, shell=True, extra_environment=extra_environment, run_to_completion=False,
+        dump_command, extra_environment=extra_environment, run_to_completion=False,
     )
 
 
