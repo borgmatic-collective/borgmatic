@@ -9,10 +9,6 @@ logger = logging.getLogger(__name__)
 def mount_archive(
     repository,
     archive,
-    mount_point,
-    paths,
-    foreground,
-    options,
     mount_arguments,
     storage_config,
     local_borg_version,
@@ -35,14 +31,13 @@ def mount_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--foreground',) if foreground else ())
-        + (flags.make_flags('first', mount_arguments.first) if mount_arguments.first else ())
-        + (flags.make_flags('last', mount_arguments.last) if mount_arguments.last else ())
-        + (flags.make_flags('newest', mount_arguments.newest) if mount_arguments.newest else ())
-        + (flags.make_flags('oldest', mount_arguments.oldest) if mount_arguments.oldest else ())
-        + (flags.make_flags('older', mount_arguments.older) if mount_arguments.older else ())
-        + (flags.make_flags('newer', mount_arguments.newer) if mount_arguments.newer else ())
-        + (('-o', options) if options else ())
+        
+        + flags.make_flags_from_arguments(
+            mount_arguments,
+            excludes=('repository', 'archive', 'mount_point', 'path', 'options'),
+        )
+
+        + (('-o', mount_arguments.options) if mount_arguments.options else ())
         + (
             (
                 flags.make_repository_flags(repository, local_borg_version)
@@ -59,14 +54,14 @@ def mount_archive(
                 else flags.make_repository_flags(repository, local_borg_version)
             )
         )
-        + (mount_point,)
-        + (tuple(paths) if paths else ())
+        + (mount_arguments.mount_point,)
+        + (tuple(mount_arguments.paths) if mount_arguments.paths else ())
     )
 
     borg_environment = environment.make_environment(storage_config)
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
-    if foreground:
+    if mount_arguments.foreground:
         execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
