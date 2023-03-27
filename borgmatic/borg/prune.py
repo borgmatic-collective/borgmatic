@@ -39,7 +39,7 @@ def make_prune_flags(retention_config, local_borg_version):
 
 def prune_archives(
     dry_run,
-    repository,
+    repository_path,
     storage_config,
     retention_config,
     local_borg_version,
@@ -74,7 +74,7 @@ def prune_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     if stats or list_archives:

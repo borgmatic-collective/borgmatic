@@ -37,9 +37,9 @@ def run_check(
         global_arguments.dry_run,
         **hook_context,
     )
-    logger.info(f'{repository}: Running consistency checks')
+    logger.info(f'{repository["path"]}: Running consistency checks')
     borgmatic.borg.check.check_archives(
-        repository,
+        repository['path'],
         location,
         storage,
         consistency,

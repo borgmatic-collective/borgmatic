@@ -322,7 +322,7 @@ def check_all_source_directories_exist(source_directories):
 
 def create_archive(
     dry_run,
-    repository,
+    repository_path,
     location_config,
     storage_config,
     local_borg_version,
@@ -411,7 +411,7 @@ def create_archive(
 
     if stream_processes and location_config.get('read_special') is False:
         logger.warning(
-            f'{repository}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
 
     create_command = (
@@ -446,7 +446,9 @@ def create_archive(
         )
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_archive_flags(repository, archive_name_format, local_borg_version)
+        + flags.make_repository_archive_flags(
+            repository_path, archive_name_format, local_borg_version
+        )
         + (sources if not pattern_file else ())
     )
 
@@ -466,7 +468,7 @@ def create_archive(
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not location_config.get('read_special'):
-        logger.debug(f'{repository}: Collecting special file paths')
+        logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_command,
             local_path,
@@ -477,7 +479,7 @@ def create_archive(
 
         if special_file_paths:
             logger.warning(
-                f'{repository}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
+                f'{repository_path}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
             )
             exclude_file = write_pattern_file(
                 expand_home_directories(

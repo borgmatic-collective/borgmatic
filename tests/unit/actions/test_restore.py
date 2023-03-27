@@ -67,7 +67,7 @@ def test_collect_archive_database_names_parses_archive_paths():
     )
 
     archive_database_names = module.collect_archive_database_names(
-        repository='repo',
+        repository={'path': 'repo'},
         archive='archive',
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
@@ -92,7 +92,7 @@ def test_collect_archive_database_names_parses_directory_format_archive_paths():
     )
 
     archive_database_names = module.collect_archive_database_names(
-        repository='repo',
+        repository={'path': 'repo'},
         archive='archive',
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
@@ -113,7 +113,7 @@ def test_collect_archive_database_names_skips_bad_archive_paths():
     )
 
     archive_database_names = module.collect_archive_database_names(
-        repository='repo',
+        repository={'path': 'repo'},
         archive='archive',
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
@@ -251,7 +251,7 @@ def test_run_restore_restores_each_database():
     flexmock(module).should_receive('ensure_databases_found')
 
     module.run_restore(
-        repository='repo',
+        repository={'path': 'repo'},
         location=flexmock(),
         storage=flexmock(),
         hooks=flexmock(),
@@ -273,7 +273,7 @@ def test_run_restore_bails_for_non_matching_repository():
     flexmock(module).should_receive('restore_single_database').never()
 
     module.run_restore(
-        repository='repo',
+        repository={'path': 'repo'},
         location=flexmock(),
         storage=flexmock(),
         hooks=flexmock(),
@@ -345,7 +345,7 @@ def test_run_restore_restores_database_configured_with_all_name():
     flexmock(module).should_receive('ensure_databases_found')
 
     module.run_restore(
-        repository='repo',
+        repository={'path': 'repo'},
         location=flexmock(),
         storage=flexmock(),
         hooks=flexmock(),
@@ -417,7 +417,7 @@ def test_run_restore_skips_missing_database():
     flexmock(module).should_receive('ensure_databases_found')
 
     module.run_restore(
-        repository='repo',
+        repository={'path': 'repo'},
         location=flexmock(),
         storage=flexmock(),
         hooks=flexmock(),
@@ -483,7 +483,7 @@ def test_run_restore_restores_databases_from_different_hooks():
     flexmock(module).should_receive('ensure_databases_found')
 
     module.run_restore(
-        repository='repo',
+        repository={'path': 'repo'},
         location=flexmock(),
         storage=flexmock(),
         hooks=flexmock(),

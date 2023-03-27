@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def resolve_archive_name(
-    repository, archive, storage_config, local_borg_version, local_path='borg', remote_path=None
+    repository_path,
+    archive,
+    storage_config,
+    local_borg_version,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
     Given a local or remote repository path, an archive name, a storage config dict, a local Borg
@@ -31,7 +36,7 @@ def resolve_archive_name(
         + flags.make_flags('lock-wait', lock_wait)
         + flags.make_flags('last', 1)
         + ('--short',)
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     output = execute_command_and_capture_output(
@@ -42,7 +47,7 @@ def resolve_archive_name(
     except IndexError:
         raise ValueError('No archives found in the repository')
 
-    logger.debug(f'{repository}: Latest archive is {latest_archive}')
+    logger.debug(f'{repository_path}: Latest archive is {latest_archive}')
 
     return latest_archive
 
@@ -51,7 +56,7 @@ MAKE_FLAGS_EXCLUDES = ('repository', 'prefix')
 
 
 def make_rlist_command(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     rlist_arguments,
@@ -92,12 +97,12 @@ def make_rlist_command(
             else ()
         )
         + flags.make_flags_from_arguments(rlist_arguments, excludes=MAKE_FLAGS_EXCLUDES)
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
 
 def list_repository(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     rlist_arguments,
@@ -113,7 +118,12 @@ def list_repository(
     borg_environment = environment.make_environment(storage_config)
 
     main_command = make_rlist_command(
-        repository, storage_config, local_borg_version, rlist_arguments, local_path, remote_path
+        repository_path,
+        storage_config,
+        local_borg_version,
+        rlist_arguments,
+        local_path,
+        remote_path,
     )
 
     if rlist_arguments.json:

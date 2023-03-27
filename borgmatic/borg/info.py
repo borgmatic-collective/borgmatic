@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def display_archives_info(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     info_arguments,
@@ -49,7 +49,7 @@ def display_archives_info(
         + flags.make_flags_from_arguments(
             info_arguments, excludes=('repository', 'archive', 'prefix')
         )
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
         + (
             flags.make_flags('match-archives', info_arguments.archive)
             if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)

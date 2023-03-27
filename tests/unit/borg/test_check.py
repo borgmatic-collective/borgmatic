@@ -370,7 +370,7 @@ def test_check_archives_with_progress_calls_borg_with_progress_parameter():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -400,7 +400,7 @@ def test_check_archives_with_repair_calls_borg_with_repair_parameter():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -435,7 +435,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -455,7 +455,7 @@ def test_check_archives_with_json_error_raises():
 
     with pytest.raises(ValueError):
         module.check_archives(
-            repository='repo',
+            repository_path='repo',
             location_config={},
             storage_config={},
             consistency_config=consistency_config,
@@ -473,7 +473,7 @@ def test_check_archives_with_missing_json_keys_raises():
 
     with pytest.raises(ValueError):
         module.check_archives(
-            repository='repo',
+            repository_path='repo',
             location_config={},
             storage_config={},
             consistency_config=consistency_config,
@@ -497,7 +497,7 @@ def test_check_archives_with_extract_check_calls_extract_only():
     insert_execute_command_never()
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -521,7 +521,7 @@ def test_check_archives_with_log_info_calls_borg_with_info_parameter():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -545,7 +545,7 @@ def test_check_archives_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -563,7 +563,7 @@ def test_check_archives_without_any_checks_bails():
     insert_execute_command_never()
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -589,7 +589,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -616,7 +616,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -643,7 +643,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={'lock_wait': 5},
         consistency_config=consistency_config,
@@ -670,7 +670,7 @@ def test_check_archives_with_retention_prefix():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={},
         consistency_config=consistency_config,
@@ -693,7 +693,7 @@ def test_check_archives_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module).should_receive('write_check_time')
 
     module.check_archives(
-        repository='repo',
+        repository_path='repo',
         location_config={},
         storage_config={'extra_borg_options': {'check': '--extra --options'}},
         consistency_config=consistency_config,

@@ -255,22 +255,35 @@ def run_restore(
     ):
         return
 
-    logger.info(f'{repository}: Restoring databases from archive {restore_arguments.archive}')
+    logger.info(
+        f'{repository["path"]}: Restoring databases from archive {restore_arguments.archive}'
+    )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,
     )
 
     archive_name = borgmatic.borg.rlist.resolve_archive_name(
-        repository, restore_arguments.archive, storage, local_borg_version, local_path, remote_path,
+        repository['path'],
+        restore_arguments.archive,
+        storage,
+        local_borg_version,
+        local_path,
+        remote_path,
     )
     archive_database_names = collect_archive_database_names(
-        repository, archive_name, location, storage, local_borg_version, local_path, remote_path,
+        repository['path'],
+        archive_name,
+        location,
+        storage,
+        local_borg_version,
+        local_path,
+        remote_path,
     )
     restore_names = find_databases_to_restore(restore_arguments.databases, archive_database_names)
     found_names = set()
@@ -290,7 +303,7 @@ def run_restore(
 
             found_names.add(database_name)
             restore_single_database(
-                repository,
+                repository['path'],
                 location,
                 storage,
                 hooks,
@@ -319,7 +332,7 @@ def run_restore(
             database['name'] = database_name
 
             restore_single_database(
-                repository,
+                repository['path'],
                 location,
                 storage,
                 hooks,
@@ -335,7 +348,7 @@ def run_restore(
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,

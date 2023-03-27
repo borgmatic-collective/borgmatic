@@ -20,7 +20,7 @@ def test_mount_archive_calls_borg_with_required_flags():
     insert_execute_command_mock(('borg', 'mount', 'repo', '/mnt'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive=None,
         mount_point='/mnt',
         paths=None,
@@ -39,7 +39,7 @@ def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_a
     )
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -58,7 +58,7 @@ def test_mount_archive_without_archive_calls_borg_with_repository_flags_only():
     insert_execute_command_mock(('borg', 'mount', 'repo::archive', '/mnt'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -77,7 +77,7 @@ def test_mount_archive_calls_borg_with_path_flags():
     insert_execute_command_mock(('borg', 'mount', 'repo::archive', '/mnt', 'path1', 'path2'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=['path1', 'path2'],
@@ -98,7 +98,7 @@ def test_mount_archive_calls_borg_with_remote_path_flags():
     )
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -118,7 +118,7 @@ def test_mount_archive_calls_borg_with_umask_flags():
     insert_execute_command_mock(('borg', 'mount', '--umask', '0770', 'repo::archive', '/mnt'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -137,7 +137,7 @@ def test_mount_archive_calls_borg_with_lock_wait_flags():
     insert_execute_command_mock(('borg', 'mount', '--lock-wait', '5', 'repo::archive', '/mnt'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -157,7 +157,7 @@ def test_mount_archive_with_log_info_calls_borg_with_info_parameter():
     insert_logging_mock(logging.INFO)
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -177,7 +177,7 @@ def test_mount_archive_with_log_debug_calls_borg_with_debug_flags():
     insert_logging_mock(logging.DEBUG)
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -202,7 +202,7 @@ def test_mount_archive_calls_borg_with_foreground_parameter():
     ).once()
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,
@@ -221,7 +221,7 @@ def test_mount_archive_calls_borg_with_options_flags():
     insert_execute_command_mock(('borg', 'mount', '-o', 'super_mount', 'repo::archive', '/mnt'))
 
     module.mount_archive(
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         mount_point='/mnt',
         paths=None,

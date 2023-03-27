@@ -18,7 +18,7 @@ def test_run_check_calls_hooks_for_configured_repository():
 
     module.run_check(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},
@@ -49,7 +49,7 @@ def test_run_check_runs_with_selected_repository():
 
     module.run_check(
         config_filename='test.yaml',
-        repository=flexmock(),
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},
@@ -80,7 +80,7 @@ def test_run_check_bails_if_repository_does_not_match():
 
     module.run_check(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},

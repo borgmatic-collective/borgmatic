@@ -32,7 +32,7 @@ def test_export_tar_archive_calls_borg_with_path_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=['path1', 'path2'],
         destination_path='test.tar',
@@ -53,7 +53,7 @@ def test_export_tar_archive_calls_borg_with_local_path_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -75,7 +75,7 @@ def test_export_tar_archive_calls_borg_with_remote_path_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -97,7 +97,7 @@ def test_export_tar_archive_calls_borg_with_umask_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -118,7 +118,7 @@ def test_export_tar_archive_calls_borg_with_lock_wait_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -138,7 +138,7 @@ def test_export_tar_archive_with_log_info_calls_borg_with_info_parameter():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -160,7 +160,7 @@ def test_export_tar_archive_with_log_debug_calls_borg_with_debug_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -179,7 +179,7 @@ def test_export_tar_archive_calls_borg_with_dry_run_parameter():
 
     module.export_tar_archive(
         dry_run=True,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -200,7 +200,7 @@ def test_export_tar_archive_calls_borg_with_tar_filter_parameters():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -223,7 +223,7 @@ def test_export_tar_archive_calls_borg_with_list_parameter():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -245,7 +245,7 @@ def test_export_tar_archive_calls_borg_with_strip_components_parameter():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -265,7 +265,7 @@ def test_export_tar_archive_skips_abspath_for_remote_repository_parameter():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='server:repo',
+        repository_path='server:repo',
         archive='archive',
         paths=None,
         destination_path='test.tar',
@@ -284,7 +284,7 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
 
     module.export_tar_archive(
         dry_run=False,
-        repository='repo',
+        repository_path='repo',
         archive='archive',
         paths=None,
         destination_path='-',

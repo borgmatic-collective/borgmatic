@@ -21,7 +21,10 @@ def test_run_arbitrary_borg_calls_borg_with_parameters():
     )
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=['break-lock'],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=['break-lock'],
     )
 
 
@@ -40,7 +43,10 @@ def test_run_arbitrary_borg_with_log_info_calls_borg_with_info_parameter():
     insert_logging_mock(logging.INFO)
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=['break-lock'],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=['break-lock'],
     )
 
 
@@ -59,7 +65,10 @@ def test_run_arbitrary_borg_with_log_debug_calls_borg_with_debug_parameter():
     insert_logging_mock(logging.DEBUG)
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=['break-lock'],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=['break-lock'],
     )
 
 
@@ -80,7 +89,7 @@ def test_run_arbitrary_borg_with_lock_wait_calls_borg_with_lock_wait_parameters(
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config=storage_config,
         local_borg_version='1.2.3',
         options=['break-lock'],
@@ -103,7 +112,7 @@ def test_run_arbitrary_borg_with_archive_calls_borg_with_archive_parameter():
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['break-lock'],
@@ -125,7 +134,7 @@ def test_run_arbitrary_borg_with_local_path_calls_borg_via_local_path():
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['break-lock'],
@@ -149,7 +158,7 @@ def test_run_arbitrary_borg_with_remote_path_calls_borg_with_remote_path_paramet
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['break-lock'],
@@ -171,7 +180,7 @@ def test_run_arbitrary_borg_passes_borg_specific_parameters_to_borg():
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['list', '--progress'],
@@ -192,7 +201,7 @@ def test_run_arbitrary_borg_omits_dash_dash_in_parameters_passed_to_borg():
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['--', 'break-lock'],
@@ -213,7 +222,7 @@ def test_run_arbitrary_borg_without_borg_specific_parameters_does_not_raise():
     )
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=[],
+        repository_path='repo', storage_config={}, local_borg_version='1.2.3', options=[],
     )
 
 
@@ -231,7 +240,10 @@ def test_run_arbitrary_borg_passes_key_sub_command_to_borg_before_repository():
     )
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=['key', 'export'],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=['key', 'export'],
     )
 
 
@@ -249,7 +261,7 @@ def test_run_arbitrary_borg_passes_debug_sub_command_to_borg_before_repository()
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['debug', 'dump-manifest', 'path'],
@@ -270,7 +282,10 @@ def test_run_arbitrary_borg_with_debug_info_command_does_not_pass_borg_repositor
     )
 
     module.run_arbitrary_borg(
-        repository='repo', storage_config={}, local_borg_version='1.2.3', options=['debug', 'info'],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=['debug', 'info'],
     )
 
 
@@ -288,7 +303,7 @@ def test_run_arbitrary_borg_with_debug_convert_profile_command_does_not_pass_bor
     )
 
     module.run_arbitrary_borg(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         options=['debug', 'convert-profile', 'in', 'out'],

@@ -57,9 +57,15 @@ def normalize(config_filename, config):
     # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
     repositories = location.get('repositories')
     if repositories:
+        if isinstance(repositories[0], str):
+            config['location']['repositories'] = [
+                {'path': repository} for repository in repositories
+            ]
+            repositories = config['location']['repositories']
         config['location']['repositories'] = []
-        for repository in repositories:
-            if '~' in repository:
+        for repository_dict in repositories:
+            repository_path = repository_dict['path']
+            if '~' in repository_path:
                 logs.append(
                     logging.makeLogRecord(
                         dict(
@@ -69,26 +75,31 @@ def normalize(config_filename, config):
                         )
                     )
                 )
-            if ':' in repository:
-                if repository.startswith('file://'):
-                    config['location']['repositories'].append(
-                        os.path.abspath(repository.partition('file://')[-1])
+            if ':' in repository_path:
+                if repository_path.startswith('file://'):
+                    updated_repository_path = os.path.abspath(
+                        repository_path.partition('file://')[-1]
                     )
-                elif repository.startswith('ssh://'):
-                    config['location']['repositories'].append(repository)
+                    config['location']['repositories'].append(
+                        dict(repository_dict, path=updated_repository_path,)
+                    )
+                elif repository_path.startswith('ssh://'):
+                    config['location']['repositories'].append(repository_dict)
                 else:
-                    rewritten_repository = f"ssh://{repository.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
+                    rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
                     logs.append(
                         logging.makeLogRecord(
                             dict(
                                 levelno=logging.WARNING,
                                 levelname='WARNING',
-                                msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated. Interpreting "{repository}" as "{rewritten_repository}"',
+                                msg=f'{config_filename}: Remote repository paths without ssh:// syntax are deprecated. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
                             )
                         )
                     )
-                    config['location']['repositories'].append(rewritten_repository)
+                    config['location']['repositories'].append(
+                        dict(repository_dict, path=rewritten_repository_path,)
+                    )
             else:
-                config['location']['repositories'].append(repository)
+                config['location']['repositories'].append(repository_dict)
 
     return logs

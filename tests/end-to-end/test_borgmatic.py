@@ -17,9 +17,8 @@ def generate_configuration(config_path, repository_path):
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- ssh://user@backupserver/./{fqdn}', '')  # noqa: FS003
-        .replace('- /var/local/backups/local.borg', '')
-        .replace('- /home/user/path with spaces', '')
+        .replace('- path: /mnt/backup', '')
+        .replace('label: local', '')
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')

@@ -33,7 +33,7 @@ def make_flags_from_arguments(arguments, excludes=()):
     )
 
 
-def make_repository_flags(repository, local_borg_version):
+def make_repository_flags(repository_path, local_borg_version):
     '''
     Given the path of a Borg repository and the local Borg version, return Borg-version-appropriate
     command-line flags (as a tuple) for selecting that repository.
@@ -42,17 +42,17 @@ def make_repository_flags(repository, local_borg_version):
         ('--repo',)
         if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
         else ()
-    ) + (repository,)
+    ) + (repository_path,)
 
 
-def make_repository_archive_flags(repository, archive, local_borg_version):
+def make_repository_archive_flags(repository_path, archive, local_borg_version):
     '''
     Given the path of a Borg repository, an archive name or pattern, and the local Borg version,
     return Borg-version-appropriate command-line flags (as a tuple) for selecting that repository
     and archive.
     '''
     return (
-        ('--repo', repository, archive)
+        ('--repo', repository_path, archive)
         if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-        else (f'{repository}::{archive}',)
+        else (f'{repository_path}::{archive}',)
     )

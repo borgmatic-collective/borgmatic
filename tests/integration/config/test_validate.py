@@ -63,7 +63,10 @@ def test_parse_configuration_transforms_file_into_mapping():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {'source_directories': ['/home', '/etc'], 'repositories': ['hostname.borg']},
+        'location': {
+            'source_directories': ['/home', '/etc'],
+            'repositories': [{'path': 'hostname.borg'}],
+        },
         'retention': {'keep_daily': 7, 'keep_hourly': 24, 'keep_minutely': 60},
         'consistency': {'checks': [{'name': 'repository'}, {'name': 'archives'}]},
     }
@@ -89,7 +92,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
     assert config == {
         'location': {
             'source_directories': [f'/home/{string.punctuation}'],
-            'repositories': ['test.borg'],
+            'repositories': [{'path': 'test.borg'}],
         }
     }
     assert logs == []
@@ -151,7 +154,7 @@ def test_parse_configuration_inlines_include():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
+        'location': {'source_directories': ['/home'], 'repositories': [{'path': 'hostname.borg'}]},
         'retention': {'keep_daily': 7, 'keep_hourly': 24},
     }
     assert logs == []
@@ -185,7 +188,7 @@ def test_parse_configuration_merges_include():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {'source_directories': ['/home'], 'repositories': ['hostname.borg']},
+        'location': {'source_directories': ['/home'], 'repositories': [{'path': 'hostname.borg'}]},
         'retention': {'keep_daily': 1, 'keep_hourly': 24},
     }
     assert logs == []
@@ -247,7 +250,7 @@ def test_parse_configuration_applies_overrides():
     assert config == {
         'location': {
             'source_directories': ['/home'],
-            'repositories': ['hostname.borg'],
+            'repositories': [{'path': 'hostname.borg'}],
             'local_path': 'borg2',
         }
     }
@@ -273,7 +276,7 @@ def test_parse_configuration_applies_normalization():
     assert config == {
         'location': {
             'source_directories': ['/home'],
-            'repositories': ['hostname.borg'],
+            'repositories': [{'path': 'hostname.borg'}],
             'exclude_if_present': ['.nobackup'],
         }
     }

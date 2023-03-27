@@ -17,7 +17,7 @@ def test_run_mount_does_not_raise():
     )
 
     module.run_mount(
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         local_borg_version=None,
         mount_arguments=mount_arguments,

@@ -19,7 +19,7 @@ def test_run_export_tar_does_not_raise():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_export_tar(
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         local_borg_version=None,
         export_tar_arguments=export_tar_arguments,

@@ -243,7 +243,7 @@ def read_check_time(path):
 
 
 def check_archives(
-    repository,
+    repository_path,
     location_config,
     storage_config,
     consistency_config,
@@ -268,7 +268,7 @@ def check_archives(
     try:
         borg_repository_id = json.loads(
             rinfo.display_repository_info(
-                repository,
+                repository_path,
                 storage_config,
                 local_borg_version,
                 argparse.Namespace(json=True),
@@ -277,7 +277,7 @@ def check_archives(
             )
         )['repository']['id']
     except (json.JSONDecodeError, KeyError):
-        raise ValueError(f'Cannot determine Borg repository ID for {repository}')
+        raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')
 
     checks = filter_checks_on_frequency(
         location_config,
@@ -310,7 +310,7 @@ def check_archives(
             + verbosity_flags
             + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-            + flags.make_repository_flags(repository, local_borg_version)
+            + flags.make_repository_flags(repository_path, local_borg_version)
         )
 
         borg_environment = environment.make_environment(storage_config)
@@ -329,6 +329,6 @@ def check_archives(
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(
-            storage_config, local_borg_version, repository, lock_wait, local_path, remote_path
+            storage_config, local_borg_version, repository_path, lock_wait, local_path, remote_path
         )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))
