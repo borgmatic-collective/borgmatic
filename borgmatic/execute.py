@@ -235,12 +235,10 @@ def execute_command_and_capture_output(
             env=environment,
             cwd=working_directory,
         )
-        logger.warning(f'Command output: {output}')
     except subprocess.CalledProcessError as error:
         if exit_code_indicates_error(command, error.returncode):
             raise
         output = error.output
-        logger.warning(f'Command output: {output}')
 
     return output.decode() if output is not None else None
 
