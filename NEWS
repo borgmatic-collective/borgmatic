@@ -9,6 +9,9 @@
  * #618: Add support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option
    in borgmatic's storage configuration.
  * #623: Fix confusing message when an error occurs running actions for a configuration file.
+ * #635: Add optional repository labels so you can select a repository via "--repository yourlabel"
+   at the command-line. See the configuration reference for more information:
+   https://torsion.org/borgmatic/docs/reference/configuration/
  * #649: Add documentation on backing up a database running in a container:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
  * #655: Fix error when databases are configured and a source directory doesn't exist.
