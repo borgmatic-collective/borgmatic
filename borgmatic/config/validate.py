@@ -69,7 +69,10 @@ def apply_logical_validation(config_filename, parsed_configuration):
     location_repositories = parsed_configuration.get('location', {}).get('repositories')
     check_repositories = parsed_configuration.get('consistency', {}).get('check_repositories', [])
     for repository in check_repositories:
-        if repository not in location_repositories:
+        if not any(
+            repositories_match(repository, config_repository)
+            for config_repository in location_repositories
+        ):
             raise Validation_error(
                 config_filename,
                 (
