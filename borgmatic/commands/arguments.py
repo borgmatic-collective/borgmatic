@@ -246,7 +246,7 @@ def make_parsers():
         '--source-repository',
         '--other-repo',
         metavar='KEY_REPOSITORY',
-        help='Path to an existing Borg repository whose key material should be reused (Borg 2.x+ only)',
+        help='Path to an existing Borg repository whose key material should be reused [Borg 2.x+ only]',
     )
     rcreate_group.add_argument(
         '--repository',
@@ -255,7 +255,7 @@ def make_parsers():
     rcreate_group.add_argument(
         '--copy-crypt-key',
         action='store_true',
-        help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key (Borg 2.x+ only)',
+        help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key [Borg 2.x+ only]',
     )
     rcreate_group.add_argument(
         '--append-only', action='store_true', help='Create an append-only repository',
@@ -275,8 +275,8 @@ def make_parsers():
     transfer_parser = subparsers.add_parser(
         'transfer',
         aliases=SUBPARSER_ALIASES['transfer'],
-        help='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
-        description='Transfer archives from one repository to another, optionally upgrading the transferred data (Borg 2.0+ only)',
+        help='Transfer archives from one repository to another, optionally upgrading the transferred data [Borg 2.0+ only]',
+        description='Transfer archives from one repository to another, optionally upgrading the transferred data [Borg 2.0+ only]',
         add_help=False,
     )
     transfer_group = transfer_parser.add_argument_group('transfer arguments')
@@ -325,7 +325,7 @@ def make_parsers():
         '--oldest', metavar='TIMESPAN', help='Transfer archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     transfer_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='Transfer archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='Transfer archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     transfer_group.add_argument(
         '--older', metavar='TIMESPAN', help='Transfer archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
@@ -363,7 +363,7 @@ def make_parsers():
         '--oldest', metavar='TIMESPAN', help='Prune archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     prune_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='Prune archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='Prune archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     prune_group.add_argument(
         '--older', metavar='TIMESPAN', help='Prune archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
@@ -376,8 +376,8 @@ def make_parsers():
     compact_parser = subparsers.add_parser(
         'compact',
         aliases=SUBPARSER_ALIASES['compact'],
-        help='Compact segments to free space (Borg 1.2+, borgmatic 1.5.23+ only)',
-        description='Compact segments to free space (Borg 1.2+, borgmatic 1.5.23+ only)',
+        help='Compact segments to free space [Borg 1.2+, borgmatic 1.5.23+ only]',
+        description='Compact segments to free space [Borg 1.2+, borgmatic 1.5.23+ only]',
         add_help=False,
     )
     compact_group = compact_parser.add_argument_group('compact arguments')
@@ -397,7 +397,7 @@ def make_parsers():
         dest='cleanup_commits',
         default=False,
         action='store_true',
-        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1 (flag in Borg 1.2 only)',
+        help='Cleanup commit-only 17-byte segment files left behind by Borg 1.1 [flag in Borg 1.2 only]',
     )
     compact_group.add_argument(
         '--threshold',
@@ -623,7 +623,7 @@ def make_parsers():
         '--oldest', metavar='TIMESPAN', help='Mount archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     mount_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='Mount archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='Mount archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     mount_group.add_argument(
         '--older', metavar='TIMESPAN', help='Mount archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
@@ -718,7 +718,7 @@ def make_parsers():
         '--oldest', metavar='TIMESPAN', help='List archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     rlist_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='List archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='List archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     rlist_group.add_argument(
         '--older', metavar='TIMESPAN', help='List archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
@@ -859,7 +859,7 @@ def make_parsers():
         '--oldest', metavar='TIMESPAN', help='Show info for archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     info_group.add_argument(
-        '--newest', metavar='TIMESPAN', help='Show info for archives within a time range that ends at newest archive\'s timestamp and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
+        '--newest', metavar='TIMESPAN', help='Show info for archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]'
     )
     info_group.add_argument(
         '--older', metavar='TIMESPAN', help='Show info for archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]'
