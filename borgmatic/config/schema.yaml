@@ -538,12 +538,12 @@ properties:
                 items:
                     type: string
                 description: |
-                    Paths to a subset of the repositories in the location
-                    section on which to run consistency checks. Handy in case
-                    some of your repositories are very large, and so running
-                    consistency checks on them would take too long. Defaults to
-                    running consistency checks on all repositories configured in
-                    the location section.
+                    Paths or labels for a subset of the repositories in the
+                    location section on which to run consistency checks. Handy
+                    in case some of your repositories are very large, and so
+                    running consistency checks on them would take too long.
+                    Defaults to running consistency checks on all repositories
+                    configured in the location section.
                 example:
                     - user@backupserver:sourcehostname.borg
             check_last:
