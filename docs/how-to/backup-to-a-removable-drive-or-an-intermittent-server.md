@@ -49,8 +49,11 @@ location:
         - /home
 
     repositories:
-        - /mnt/removable/backup.borg
+        - path: /mnt/removable/backup.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Then, write a `before_backup` hook in that same configuration file that uses
 the external `findmnt` utility to see whether the drive is mounted before
@@ -79,12 +82,15 @@ location:
         - /home
 
     repositories:
-        - ssh://me@buddys-server.org/./backup.borg
+        - path: ssh://me@buddys-server.org/./backup.borg
 
 hooks:
     before_backup:
       - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Or to only run backups if the battery level is high enough:
 

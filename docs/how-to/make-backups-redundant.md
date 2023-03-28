@@ -24,6 +24,9 @@ location:
         - path: /var/lib/backups/local.borg
 ```
 
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
+
 When you run borgmatic with this configuration, it invokes Borg once for each
 configured repository in sequence. (So, not in parallel.) That means—in each
 repository—borgmatic creates a single new backup archive containing all of

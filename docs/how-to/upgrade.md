@@ -145,15 +145,18 @@ like this:
 ```yaml
 location:
     repositories:
-        - original.borg
+        - path: original.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Change it to a new (not yet created) repository path:
 
 ```yaml
 location:
     repositories:
-        - upgraded.borg
+        - path: upgraded.borg
 ```
 
 Then, run the `rcreate` action (formerly `init`) to create that new Borg 2
