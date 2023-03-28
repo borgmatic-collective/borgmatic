@@ -30,3 +30,4 @@ services:
     depends_on:
       - postgresql
       - mysql
+      - mongodb
