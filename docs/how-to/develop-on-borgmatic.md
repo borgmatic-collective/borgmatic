@@ -25,7 +25,7 @@ so that you can run borgmatic commands while you're hacking on them to
 make sure your changes work.
 
 ```bash
-cd borgmatic/
+cd borgmatic
 pip3 install --user --editable .
 ```
 
@@ -51,7 +51,6 @@ pip3 install --user tox
 Finally, to actually run tests, run:
 
 ```bash
-cd borgmatic
 tox
 ```
 
