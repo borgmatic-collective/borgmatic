@@ -59,7 +59,8 @@ properties:
                     details. See ssh_command for SSH options like identity file
                     or port. If systemd service is used, then add local
                     repository paths in the systemd service file to the
-                    ReadWritePaths list.
+                    ReadWritePaths list. Prior to borgmatic 1.7.10, repositories
+                    was just a list of plain path strings.
                 example:
                     - path: ssh://user@backupserver/./sourcehostname.borg
                       label: backupserver
