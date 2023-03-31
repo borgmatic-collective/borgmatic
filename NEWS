@@ -1,5 +1,6 @@
 1.7.11.dev0
  * #662: Fix regression in which "check_repositories" option failed to match repositories.
+ * #663: Fix regression in which the "transfer" action produced a traceback.
 
 1.7.10
  * #396: When a database command errors, display and log the error message instead of swallowing it.

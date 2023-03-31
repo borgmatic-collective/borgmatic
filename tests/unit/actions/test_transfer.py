@@ -10,7 +10,7 @@ def test_run_transfer_does_not_raise():
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_transfer(
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         local_borg_version=None,
         transfer_arguments=transfer_arguments,
