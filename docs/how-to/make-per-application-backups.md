@@ -91,7 +91,7 @@ in each configuration file.
 
 Under the hood, borgmatic accomplishes this by substituting globs for certain
 ephemeral data placeholders in your `archive_name_format`—and using the result
-to filter archives for supported actions.
+to filter archives when running supported actions.
 
 For instance, let's say that you have this in your configuration:
 
@@ -101,7 +101,7 @@ location:
     archive_name_format: {hostname}-user-data-{now}
 ```
 
-borgmatic considers `{now}` an emphemeral placeholder that will probably
+borgmatic considers `{now}` an emphemeral data placeholder that will probably
 change per archive, while `{hostname}` won't. So it turns the example value
 into `{hostname}-user-data-*` and applies it to filter down the set of
 archives used for actions like `rlist`, `info`, `prune`, `check`, etc.
@@ -112,12 +112,11 @@ created for that application. Of course, this doesn't apply to actions like
 `compact` that operate on an entire repository.
 
 <span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
-limit the archives used was a `prefix` option in the `retention` section for
-matching against the start of archive names used for a `prune` action and 
-a separate `prefix` option in the `consistency` section for matching against
-the start of archive names used for a `check` action. Both of these options
-are deprecated in favor of the auto-matching behavior in newer versions of
-borgmatic mentioned above.
+limit the archives used for the `prune` action was a `prefix` option in the
+`retention` section for matching against the start of archive names. And the
+option for limiting the archives used for the `check` action was a separate
+`prefix` in the `consistency` section. Both of these options are deprecated in
+favor of the auto-matching behavior in newer versions of borgmatic.
 
 
 ## Configuration includes
