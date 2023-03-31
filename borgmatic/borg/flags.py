@@ -1,4 +1,5 @@
 import itertools
+import re
 
 from borgmatic.borg import feature
 
@@ -56,3 +57,20 @@ def make_repository_archive_flags(repository_path, archive, local_borg_version):
         if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
         else (f'{repository_path}::{archive}',)
     )
+
+
+def make_match_archives_flags(archive_name_format, local_borg_version):
+    '''
+    Return the match archives flags that would match archives created with the given archive name
+    format (if any). This is done by replacing certain archive name format placeholders for
+    ephemeral data (like "{now}") with globs.
+    '''
+    if not archive_name_format:
+        return ()
+
+    match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
+
+    if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+        return ('--match-archives', f'sh:{match_archives}')
+    else:
+        return ('--glob-archives', f'{match_archives}')

@@ -18,18 +18,17 @@ def insert_execute_command_mock(prune_command, output_log_level):
     ).once()
 
 
-BASE_PRUNE_FLAGS = (('--keep-daily', '1'), ('--keep-weekly', '2'), ('--keep-monthly', '3'))
+BASE_PRUNE_FLAGS = ('--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3')
 
 
-def test_make_prune_flags_returns_flags_from_config_plus_default_prefix_glob():
+def test_make_prune_flags_returns_flags_from_config():
     retention_config = OrderedDict((('keep_daily', 1), ('keep_weekly', 2), ('keep_monthly', 3)))
     flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
+    result = module.make_prune_flags({}, retention_config, local_borg_version='1.2.3')
 
-    assert tuple(result) == BASE_PRUNE_FLAGS + (
-        ('--match-archives', 'sh:{hostname}-*'),  # noqa: FS003
-    )
+    assert result == BASE_PRUNE_FLAGS
 
 
 def test_make_prune_flags_accepts_prefix_with_placeholders():
@@ -37,15 +36,18 @@ def test_make_prune_flags_accepts_prefix_with_placeholders():
         (('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}'))  # noqa: FS003
     )
     flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
+    result = module.make_prune_flags({}, retention_config, local_borg_version='1.2.3')
 
     expected = (
-        ('--keep-daily', '1'),
-        ('--match-archives', 'sh:Documents_{hostname}-{now}*'),  # noqa: FS003
+        '--keep-daily',
+        '1',
+        '--match-archives',
+        'sh:Documents_{hostname}-{now}*',  # noqa: FS003
     )
 
-    assert tuple(result) == expected
+    assert result == expected
 
 
 def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives():
@@ -53,37 +55,38 @@ def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives()
         (('keep_daily', 1), ('prefix', 'Documents_{hostname}-{now}'))  # noqa: FS003
     )
     flexmock(module.feature).should_receive('available').and_return(False)
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
+    result = module.make_prune_flags({}, retention_config, local_borg_version='1.2.3')
 
     expected = (
-        ('--keep-daily', '1'),
-        ('--glob-archives', 'Documents_{hostname}-{now}*'),  # noqa: FS003
+        '--keep-daily',
+        '1',
+        '--glob-archives',
+        'Documents_{hostname}-{now}*',  # noqa: FS003
     )
 
-    assert tuple(result) == expected
+    assert result == expected
 
 
-def test_make_prune_flags_treats_empty_prefix_as_no_prefix():
-    retention_config = OrderedDict((('keep_daily', 1), ('prefix', '')))
-    flexmock(module.feature).should_receive('available').and_return(True)
-
-    result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
-
-    expected = (('--keep-daily', '1'),)
-
-    assert tuple(result) == expected
-
-
-def test_make_prune_flags_treats_none_prefix_as_no_prefix():
+def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
+    storage_config = {'archive_name_format': 'bar-{now}'}  # noqa: FS003
     retention_config = OrderedDict((('keep_daily', 1), ('prefix', None)))
     flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'bar-{now}', '1.2.3'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:bar-*'))
 
-    result = module.make_prune_flags(retention_config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(storage_config, retention_config, local_borg_version='1.2.3')
 
-    expected = (('--keep-daily', '1'),)
+    expected = (
+        '--keep-daily',
+        '1',
+        '--match-archives',
+        'sh:bar-*',  # noqa: FS003
+    )
 
-    assert tuple(result) == expected
+    assert result == expected
 
 
 PRUNE_COMMAND = ('borg', 'prune', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3')
