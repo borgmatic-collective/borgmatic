@@ -37,7 +37,7 @@ def test_validation_error_string_contains_errors():
     assert 'uh oh' in result
 
 
-def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
+def test_apply_logical_validation_raises_if_unknown_repository_in_check_repositories():
     flexmock(module).format_json_error = lambda error: error.message
 
     with pytest.raises(module.Validation_error):
@@ -51,13 +51,29 @@ def test_apply_locical_validation_raises_if_unknown_repository_in_check_reposito
         )
 
 
-def test_apply_locical_validation_does_not_raise_if_known_repository_in_check_repositories():
+def test_apply_logical_validation_does_not_raise_if_known_repository_path_in_check_repositories():
     module.apply_logical_validation(
         'config.yaml',
         {
-            'location': {'repositories': ['repo.borg', 'other.borg']},
+            'location': {'repositories': [{'path': 'repo.borg'}, {'path': 'other.borg'}]},
             'retention': {'keep_secondly': 1000},
             'consistency': {'check_repositories': ['repo.borg']},
+        },
+    )
+
+
+def test_apply_logical_validation_does_not_raise_if_known_repository_label_in_check_repositories():
+    module.apply_logical_validation(
+        'config.yaml',
+        {
+            'location': {
+                'repositories': [
+                    {'path': 'repo.borg', 'label': 'my_repo'},
+                    {'path': 'other.borg', 'label': 'other_repo'},
+                ]
+            },
+            'retention': {'keep_secondly': 1000},
+            'consistency': {'check_repositories': ['my_repo']},
         },
     )
 

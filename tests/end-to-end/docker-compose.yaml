@@ -17,6 +17,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: test
   tests:
     image: alpine:3.13
+    environment:
+      TEST_CONTAINER: true
     volumes:
       - "../..:/app:ro"
     tmpfs:
@@ -28,3 +30,4 @@ services:
     depends_on:
       - postgresql
       - mysql
+      - mongodb

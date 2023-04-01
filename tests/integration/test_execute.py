@@ -147,7 +147,7 @@ def test_log_outputs_kills_other_processes_when_one_errors():
         ['sleep', '2'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     flexmock(module).should_receive('exit_code_indicates_error').with_args(
-        other_process, None, 'borg'
+        ['sleep', '2'], None, 'borg'
     ).and_return(False)
     flexmock(module).should_receive('output_buffer_for_process').with_args(process, ()).and_return(
         process.stdout

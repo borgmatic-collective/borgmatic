@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# This script is for running all tests, including end-to-end tests, on a developer machine. It sets
-# up database containers to run tests against, runs the tests, and then tears down the containers.
+# This script is for running end-to-end tests on a developer machine. It sets up database containers
+# to run tests against, runs the tests, and then tears down the containers.
 #
 # Run this script from the root directory of the borgmatic source.
 #

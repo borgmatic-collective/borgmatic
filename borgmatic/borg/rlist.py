@@ -94,7 +94,11 @@ def make_rlist_command(
                 else flags.make_flags('glob-archives', f'{rlist_arguments.prefix}*')
             )
             if rlist_arguments.prefix
-            else ()
+            else (
+                flags.make_match_archives_flags(
+                    storage_config.get('archive_name_format'), local_borg_version
+                )
+            )
         )
         + flags.make_flags_from_arguments(rlist_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + flags.make_repository_flags(repository_path, local_borg_version)

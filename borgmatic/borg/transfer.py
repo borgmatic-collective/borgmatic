@@ -34,9 +34,16 @@ def transfer_archives(
                 'match-archives', transfer_arguments.match_archives or transfer_arguments.archive
             )
         )
-        + flags.make_flags_from_arguments(
-            transfer_arguments,
-            excludes=('repository', 'source_repository', 'archive', 'match_archives'),
+        + (
+            flags.make_flags_from_arguments(
+                transfer_arguments,
+                excludes=('repository', 'source_repository', 'archive', 'match_archives'),
+            )
+            or (
+                flags.make_match_archives_flags(
+                    storage_config.get('archive_name_format'), local_borg_version
+                )
+            )
         )
         + flags.make_repository_flags(repository_path, local_borg_version)
         + flags.make_flags('other-repo', transfer_arguments.source_repository)

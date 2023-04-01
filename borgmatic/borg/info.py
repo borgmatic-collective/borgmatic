@@ -44,7 +44,11 @@ def display_archives_info(
                 else flags.make_flags('glob-archives', f'{info_arguments.prefix}*')
             )
             if info_arguments.prefix
-            else ()
+            else (
+                flags.make_match_archives_flags(
+                    storage_config.get('archive_name_format'), local_borg_version
+                )
+            )
         )
         + flags.make_flags_from_arguments(
             info_arguments, excludes=('repository', 'archive', 'prefix')

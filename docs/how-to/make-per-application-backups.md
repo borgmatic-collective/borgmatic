@@ -54,6 +54,71 @@ choice](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot),
 each entry using borgmatic's `--config` flag instead of relying on
 `/etc/borgmatic.d`.
 
+
+## Archive naming
+
+If you've got multiple borgmatic configuration files, you might want to create
+archives with different naming schemes for each one. This is especially handy
+if each configuration file is backing up to the same Borg repository but you
+still want to be able to distinguish backup archives for one application from
+another.
+
+borgmatic supports this use case with an `archive_name_format` option. The
+idea is that you define a string format containing a number of [Borg
+placeholders](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-placeholders),
+and borgmatic uses that format to name any new archive it creates. For
+instance:
+
+```yaml
+location:
+    ...
+    archive_name_format: home-directories-{now}
+```
+
+This means that when borgmatic creates an archive, its name will start with
+the string `home-directories-` and end with a timestamp for its creation time.
+If `archive_name_format` is unspecified, the default is
+`{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
+timestamp in a particular format.
+
+<span class="minilink minilink-addedin">New in version 1.7.11</span> borgmatic
+uses the `archive_name_format` option to automatically limit which archives
+get used for actions operating on multiple archives. This prevents, for
+instance, duplicate archives from showing up in `rlist` or `info` results—even
+if the same repository appears in multiple borgmatic configuration files. To
+take advantage of this feature, simply use a different `archive_name_format`
+in each configuration file.
+
+Under the hood, borgmatic accomplishes this by substituting globs for certain
+ephemeral data placeholders in your `archive_name_format`—and using the result
+to filter archives when running supported actions.
+
+For instance, let's say that you have this in your configuration:
+
+```yaml
+location:
+    ...
+    archive_name_format: {hostname}-user-data-{now}
+```
+
+borgmatic considers `{now}` an emphemeral data placeholder that will probably
+change per archive, while `{hostname}` won't. So it turns the example value
+into `{hostname}-user-data-*` and applies it to filter down the set of
+archives used for actions like `rlist`, `info`, `prune`, `check`, etc.
+
+The end result is that when borgmatic runs the actions for a particular
+application-specific configuration file, it only operates on the archives
+created for that application. Of course, this doesn't apply to actions like
+`compact` that operate on an entire repository.
+
+<span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
+limit the archives used for the `prune` action was a `prefix` option in the
+`retention` section for matching against the start of archive names. And the
+option for limiting the archives used for the `check` action was a separate
+`prefix` in the `consistency` section. Both of these options are deprecated in
+favor of the auto-matching behavior in newer versions of borgmatic.
+
+
 ## Configuration includes
 
 Once you have multiple different configuration files, you might want to share
@@ -272,7 +337,7 @@ Here's an example usage:
 ```yaml
 constants:
     user: foo
-    my_prefix: bar-
+    archive_prefix: bar
 
 location:
     source_directories:
@@ -281,20 +346,14 @@ location:
     ...
 
 storage:
-    archive_name_format: '{my_prefix}{now}'
-
-retention:
-    prefix: {my_prefix}
-
-consistency:
-    prefix: {my_prefix}
+    archive_name_format: '{archive_prefix}-{now}'
 ```
 
 In this example, when borgmatic runs, all instances of `{user}` get replaced
-with `foo` and all instances of `{my_prefix}` get replaced with `bar-`. (And
-in this particular example, `{now}` doesn't get replaced with anything, but
-gets passed directly to Borg.) After substitution, the logical result looks
-something like this:
+with `foo` and all instances of `{archive-prefix}` get replaced with `bar-`.
+(And in this particular example, `{now}` doesn't get replaced with anything,
+but gets passed directly to Borg.) After substitution, the logical result
+looks something like this:
 
 ```yaml
 location:
@@ -305,12 +364,6 @@ location:
 
 storage:
     archive_name_format: 'bar-{now}'
-
-retention:
-    prefix: bar-
-
-consistency:
-    prefix: bar-
 ```
 
 An alternate to constants is passing in your values via [environment
