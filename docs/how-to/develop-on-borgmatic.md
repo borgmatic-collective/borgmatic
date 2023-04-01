@@ -74,7 +74,8 @@ tox -e isort
 ```
 
 Similarly, if you get errors about spelling mistakes in source code, you can
-ask codespell to correct them:
+ask [codespell](https://github.com/codespell-project/codespell) to correct
+them:
 
 ```bash
 tox -e codespell
