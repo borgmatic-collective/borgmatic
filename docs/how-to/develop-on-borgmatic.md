@@ -73,6 +73,14 @@ can ask isort to order your imports for you:
 tox -e isort
 ```
 
+Similarly, if you get errors about spelling mistakes in source code, you can
+ask codespell to correct them:
+
+```bash
+tox -e codespell
+```
+
+
 ### End-to-end tests
 
 borgmatic additionally includes some end-to-end tests that integration test

@@ -147,7 +147,7 @@ def filter_checks_on_frequency(
 
 def make_check_flags(local_borg_version, storage_config, checks, check_last=None, prefix=None):
     '''
-    Given the local Borg version, a storge configuration dict, a parsed sequence of checks, the
+    Given the local Borg version, a storage configuration dict, a parsed sequence of checks, the
     check last value, and a consistency check prefix, transform the checks into tuple of
     command-line flags.
 

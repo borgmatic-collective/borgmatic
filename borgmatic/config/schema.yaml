@@ -930,14 +930,14 @@ properties:
                             type: string
                             enum: ['sql']
                             description: |
-                                Database dump output format. Currently only "sql"
-                                is supported. Defaults to "sql" for a single
-                                database. Or, when database name is "all" and
-                                format is blank, dumps all databases to a single
-                                file. But if a format is specified with an "all"
-                                database name, dumps each database to a separate
-                                file of that format, allowing more convenient
-                                restores of individual databases.
+                                Database dump output format. Currently only
+                                "sql" is supported. Defaults to "sql" for a
+                                single database. Or, when database name is "all"
+                                and format is blank, dumps all databases to a
+                                single file. But if a format is specified with
+                                an "all" database name, dumps each database to a
+                                separate file of that format, allowing more
+                                convenient restores of individual databases.
                             example: directory
                         add_drop_database:
                             type: boolean

@@ -2,6 +2,7 @@ appdirs==1.4.4; python_version >= '3.8'
 attrs==20.3.0; python_version >= '3.8'
 black==19.10b0; python_version >= '3.8'
 click==7.1.2; python_version >= '3.8'
+codespell==2.2.4
 colorama==0.4.4
 coverage==5.3
 flake8==4.0.1
