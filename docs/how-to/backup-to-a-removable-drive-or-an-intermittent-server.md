@@ -116,8 +116,8 @@ There are some caveats you should be aware of with this feature.
  * You'll generally want to put a soft failure command in the `before_backup`
    hook, so as to gate whether the backup action occurs. While a soft failure is
    also supported in the `after_backup` hook, returning a soft failure there
-   won't prevent any actions from occuring, because they've already occurred!
-   Similiarly, you can return a soft failure from an `on_error` hook, but at
+   won't prevent any actions from occurring, because they've already occurred!
+   Similarly, you can return a soft failure from an `on_error` hook, but at
    that point it's too late to prevent the error.
  * Returning a soft failure does prevent further commands in the same hook from
    executing. So, like a standard error, it is an "early out". Unlike a standard

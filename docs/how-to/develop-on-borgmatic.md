@@ -101,10 +101,10 @@ the following deviations from it:
  * For strings, prefer single quotes over double quotes.
  * Limit all lines to a maximum of 100 characters.
  * Use trailing commas within multiline values or argument lists.
- * For multiline constructs, put opening and closing delimeters on lines
+ * For multiline constructs, put opening and closing delimiters on lines
    separate from their contents.
  * Within multiline constructs, use standard four-space indentation. Don't align
-   indentation with an opening delimeter.
+   indentation with an opening delimiter.
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and

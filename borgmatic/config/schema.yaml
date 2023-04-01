@@ -6,7 +6,7 @@ properties:
     constants:
         type: object
         description: |
-            Constants to use in the configuration file. All occurences of the
+            Constants to use in the configuration file. All occurrences of the
             constant name within culy braces will be replaced with the value.
             For example, if you have a constant named "hostname" with the value
             "myhostname", then the string "{hostname}" will be replaced with
@@ -929,7 +929,7 @@ properties:
                             type: string
                             enum: ['sql']
                             description: |
-                                Database dump output format. Currenly only "sql"
+                                Database dump output format. Currently only "sql"
                                 is supported. Defaults to "sql" for a single
                                 database. Or, when database name is "all" and
                                 format is blank, dumps all databases to a single

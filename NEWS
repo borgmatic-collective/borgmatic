@@ -388,7 +388,7 @@
    configuration schema descriptions.
 
 1.5.6
- * #292: Allow before_backup and similiar hooks to exit with a soft failure without altering the
+ * #292: Allow before_backup and similar hooks to exit with a soft failure without altering the
    monitoring status on Healthchecks or other providers. Support this by waiting to ping monitoring
    services with a "start" status until after before_* hooks finish. Failures in before_* hooks
    still trigger a monitoring "fail" status.
@@ -457,7 +457,7 @@
  * For "list" and "info" actions, show repository names even at verbosity 0.
 
 1.4.22
- * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.
+ * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON output.
  * After a backup of a database dump in directory format, properly remove the dump directory.
  * In "borgmatic --help", don't expand $HOME in listing of default "--config" paths.
 
@@ -829,7 +829,7 @@
  * #77: Skip non-"*.yaml" config filenames in /etc/borgmatic.d/ so as not to parse backup files,
    editor swap files, etc.
  * #81: Document user-defined hooks run before/after backup, or on error.
- * Add code style guidelines to the documention.
+ * Add code style guidelines to the documentation.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.
