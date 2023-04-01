@@ -6,6 +6,7 @@
    auto-matching behavior (see above).
  * #662: Fix regression in which "check_repositories" option failed to match repositories.
  * #663: Fix regression in which the "transfer" action produced a traceback.
+ * Add spellchecking of source code during test runs.
 
 1.7.10
  * #396: When a database command errors, display and log the error message instead of swallowing it.
