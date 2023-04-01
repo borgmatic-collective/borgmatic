@@ -8,7 +8,7 @@ from flexmock import flexmock
 from borgmatic.config import validate as module
 
 
-def test_schema_filename_returns_plausable_path():
+def test_schema_filename_returns_plausible_path():
     schema_path = module.schema_filename()
 
     assert schema_path.endswith('/schema.yaml')

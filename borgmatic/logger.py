@@ -68,7 +68,7 @@ class Multi_stream_handler(logging.Handler):
 
     def emit(self, record):
         '''
-        Dispatch the log record to the approriate stream handler for the record's log level.
+        Dispatch the log record to the appropriate stream handler for the record's log level.
         '''
         self.log_level_to_handler[record.levelno].emit(record)
 

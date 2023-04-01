@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def make_prune_flags(storage_config, retention_config, local_borg_version):
     '''
-    Given a retention config dict mapping from option name to value, tranform it into an sequence of
+    Given a retention config dict mapping from option name to value, transform it into an sequence of
     command-line flags.
 
     For example, given a retention config of:

@@ -157,7 +157,7 @@ variable or set the `BORG_PASSPHRASE` environment variable. See the
 section](https://borgbackup.readthedocs.io/en/stable/quickstart.html#repository-encryption)
 of the Borg Quick Start for more info.
 
-Alternatively, you can specify the passphrase programatically by setting
+Alternatively, you can specify the passphrase programmatically by setting
 either the borgmatic `encryption_passcommand` configuration variable or the
 `BORG_PASSCOMMAND` environment variable. See the [Borg Security
 FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)

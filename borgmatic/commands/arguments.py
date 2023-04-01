@@ -293,7 +293,7 @@ def make_parsers():
     )
     transfer_group.add_argument(
         '--upgrader',
-        help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
+        help='Upgrader type used to convert the transferred data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
     )
     transfer_group.add_argument(
         '--progress',
