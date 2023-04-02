@@ -1,7 +1,9 @@
 1.7.11.dev0
- * #479, #588: Automatically use the "archive_name_format" option to filter which archives get used
-   for borgmatic actions that operate on multiple archives. Override this behavior with the new
-   "match_archives" option in the storage section. See the documentation for more information:
+ * #479, #588: BREAKING: Automatically use the "archive_name_format" option to filter which archives
+   get used for borgmatic actions that operate on multiple archives. Override this behavior with the
+   new "match_archives" option in the storage section. This change is "breaking" in that it silently
+   changes which archives get considered for "rlist", "prune", "check", etc. See the documentation
+   for more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#archive-naming
  * #479, #588: The "prefix" options have been deprecated in favor of the new "archive_name_format"
    auto-matching behavior and the "match_archives" option.
