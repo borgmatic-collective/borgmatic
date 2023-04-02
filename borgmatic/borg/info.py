@@ -46,7 +46,9 @@ def display_archives_info(
             if info_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    storage_config.get('archive_name_format'), local_borg_version
+                    storage_config.get('match_archives'),
+                    storage_config.get('archive_name_format'),
+                    local_borg_version,
                 )
             )
         )

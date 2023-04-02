@@ -13,7 +13,7 @@ def test_display_archives_info_calls_borg_with_parameters():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -38,7 +38,7 @@ def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -63,7 +63,7 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -88,7 +88,7 @@ def test_display_archives_info_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -114,7 +114,7 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -139,7 +139,7 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -166,7 +166,7 @@ def test_display_archives_info_with_archive_calls_borg_with_match_archives_param
         'match-archives', 'archive'
     ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -191,7 +191,7 @@ def test_display_archives_info_with_local_path_calls_borg_via_local_path():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -220,7 +220,7 @@ def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_para
         'remote-path', 'borg1'
     ).and_return(('--remote-path', 'borg1'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -249,7 +249,7 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
         ('--lock-wait', '5')
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -278,7 +278,7 @@ def test_display_archives_info_transforms_prefix_into_match_archives_parameters(
         'match-archives', 'sh:foo*'
     ).and_return(('--match-archives', 'sh:foo*'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -306,7 +306,7 @@ def test_display_archives_info_prefers_prefix_over_archive_name_format():
         'match-archives', 'sh:foo*'
     ).and_return(('--match-archives', 'sh:foo*'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -331,7 +331,7 @@ def test_display_archives_info_transforms_archive_name_format_into_match_archive
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'bar-{now}', '2.3.4'  # noqa: FS003
+        None, 'bar-{now}', '2.3.4'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
@@ -358,7 +358,7 @@ def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
     flag_name = f"--{argument_name.replace('_', ' ')}"
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '2.3.4'
+        None, None, '2.3.4'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
         (flag_name, 'value')

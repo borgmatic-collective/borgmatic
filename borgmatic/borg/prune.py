@@ -39,7 +39,9 @@ def make_prune_flags(storage_config, retention_config, local_borg_version):
     return tuple(
         element for pair in flag_pairs for element in pair
     ) + flags.make_match_archives_flags(
-        storage_config.get('archive_name_format'), local_borg_version
+        storage_config.get('match_archives'),
+        storage_config.get('archive_name_format'),
+        local_borg_version,
     )
 
 

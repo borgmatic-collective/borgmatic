@@ -183,7 +183,9 @@ def make_check_flags(local_borg_version, storage_config, checks, check_last=None
             if prefix
             else (
                 flags.make_match_archives_flags(
-                    storage_config.get('archive_name_format'), local_borg_version
+                    storage_config.get('match_archives'),
+                    storage_config.get('archive_name_format'),
+                    local_borg_version,
                 )
             )
         )

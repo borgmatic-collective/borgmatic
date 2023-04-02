@@ -59,18 +59,25 @@ def make_repository_archive_flags(repository_path, archive, local_borg_version):
     )
 
 
-def make_match_archives_flags(archive_name_format, local_borg_version):
+def make_match_archives_flags(match_archives, archive_name_format, local_borg_version):
     '''
-    Return the match archives flags that would match archives created with the given archive name
-    format (if any). This is done by replacing certain archive name format placeholders for
-    ephemeral data (like "{now}") with globs.
+    Return match archives flags based on the given match archives value, if any. If it isn't set,
+    return match archives flags to match archives created with the given archive name format, if
+    any. This is done by replacing certain archive name format placeholders for ephemeral data (like
+    "{now}") with globs.
     '''
+    if match_archives:
+        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+            return ('--match-archives', match_archives)
+        else:
+            return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
+
     if not archive_name_format:
         return ()
 
-    match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
+    derived_match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
 
     if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
-        return ('--match-archives', f'sh:{match_archives}')
+        return ('--match-archives', f'sh:{derived_match_archives}')
     else:
-        return ('--glob-archives', f'{match_archives}')
+        return ('--glob-archives', f'{derived_match_archives}')

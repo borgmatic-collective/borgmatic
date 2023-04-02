@@ -74,7 +74,7 @@ def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
     retention_config = OrderedDict((('keep_daily', 1), ('prefix', None)))
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'bar-{now}', '1.2.3'  # noqa: FS003
+        None, 'bar-{now}', '1.2.3'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:bar-*'))
 
     result = module.make_prune_flags(storage_config, retention_config, local_borg_version='1.2.3')

@@ -128,7 +128,7 @@ def test_make_rlist_command_includes_log_info():
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -147,7 +147,7 @@ def test_make_rlist_command_includes_json_but_not_info():
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -166,7 +166,7 @@ def test_make_rlist_command_includes_log_debug():
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -185,7 +185,7 @@ def test_make_rlist_command_includes_json_but_not_debug():
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -203,7 +203,7 @@ def test_make_rlist_command_includes_json_but_not_debug():
 def test_make_rlist_command_includes_json():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -223,7 +223,7 @@ def test_make_rlist_command_includes_lock_wait():
         ('--lock-wait', '5')
     ).and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -241,7 +241,7 @@ def test_make_rlist_command_includes_lock_wait():
 def test_make_rlist_command_includes_local_path():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -262,7 +262,7 @@ def test_make_rlist_command_includes_remote_path():
         ('--remote-path', 'borg2')
     ).and_return(()).and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -283,7 +283,7 @@ def test_make_rlist_command_transforms_prefix_into_match_archives():
         ('--match-archives', 'sh:foo*')
     )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -319,7 +319,7 @@ def test_make_rlist_command_prefers_prefix_over_archive_name_format():
 def test_make_rlist_command_transforms_archive_name_format_into_match_archives():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'bar-{now}', '1.2.3'  # noqa: FS003
+        None, 'bar-{now}', '1.2.3'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -337,7 +337,7 @@ def test_make_rlist_command_transforms_archive_name_format_into_match_archives()
 def test_make_rlist_command_includes_short():
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--short',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
@@ -368,7 +368,7 @@ def test_make_rlist_command_includes_short():
 def test_make_rlist_command_includes_additional_flags(argument_name):
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, '1.2.3'
+        None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
         (f"--{argument_name.replace('_', '-')}", 'value')

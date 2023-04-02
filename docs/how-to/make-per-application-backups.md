@@ -111,12 +111,30 @@ application-specific configuration file, it only operates on the archives
 created for that application. Of course, this doesn't apply to actions like
 `compact` that operate on an entire repository.
 
+If this behavior isn't quite smart enough for your needs, you can use the
+`match_archives` option to override the pattern that borgmatic uses for
+filtering archives. For example:
+
+```yaml
+location:
+    ...
+    archive_name_format: {hostname}-user-data-{now}
+    match_archives: sh:myhost-user-data-*        
+```
+
+For Borg 1.x, use a shell pattern for the `match_archives` value and see the
+[Borg patterns
+documentation](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns)
+for more information. For Borg 2.x, see the [match archives
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/help.html#borg-help-match-archives).
+
 <span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
 limit the archives used for the `prune` action was a `prefix` option in the
 `retention` section for matching against the start of archive names. And the
 option for limiting the archives used for the `check` action was a separate
 `prefix` in the `consistency` section. Both of these options are deprecated in
-favor of the auto-matching behavior in newer versions of borgmatic.
+favor of the auto-matching behavior (or `match_archives`) in newer versions of
+borgmatic.
 
 
 ## Configuration includes

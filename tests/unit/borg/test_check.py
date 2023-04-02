@@ -320,7 +320,7 @@ def test_make_check_flags_with_data_check_and_prefix_includes_match_archives_fla
 def test_make_check_flags_with_archives_check_and_empty_prefix_uses_archive_name_format_instead():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'bar-{now}', '1.2.3'  # noqa: FS003
+        None, 'bar-{now}', '1.2.3'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:bar-*'))
 
     flags = module.make_check_flags(

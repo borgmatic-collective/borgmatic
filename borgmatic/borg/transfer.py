@@ -41,7 +41,9 @@ def transfer_archives(
             )
             or (
                 flags.make_match_archives_flags(
-                    storage_config.get('archive_name_format'), local_borg_version
+                    storage_config.get('match_archives'),
+                    storage_config.get('archive_name_format'),
+                    local_borg_version,
                 )
             )
         )

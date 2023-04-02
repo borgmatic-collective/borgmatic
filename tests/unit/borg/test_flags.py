@@ -82,32 +82,49 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
 
 
 @pytest.mark.parametrize(
-    'archive_name_format,feature_available,expected_result',
+    'match_archives, archive_name_format,feature_available,expected_result',
     (
-        (None, True, ()),
-        ('', True, ()),
+        (None, None, True, ()),
+        (None, '', True, ()),
+        ('re:foo-.*', '{hostname}-{now}', True, ('--match-archives', 're:foo-.*'),),  # noqa: FS003
+        ('sh:foo-*', '{hostname}-{now}', False, ('--glob-archives', 'foo-*'),),  # noqa: FS003
+        ('foo-*', '{hostname}-{now}', False, ('--glob-archives', 'foo-*'),),  # noqa: FS003
         (
+            None,
             '{hostname}-docs-{now}',  # noqa: FS003
             True,
             ('--match-archives', 'sh:{hostname}-docs-*'),  # noqa: FS003
         ),
-        ('{utcnow}-docs-{user}', True, ('--match-archives', 'sh:*-docs-{user}')),  # noqa: FS003
-        ('{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),  # noqa: FS003
         (
+            None,
+            '{utcnow}-docs-{user}',  # noqa: FS003
+            True,
+            ('--match-archives', 'sh:*-docs-{user}'),  # noqa: FS003
+        ),
+        (None, '{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),  # noqa: FS003
+        (
+            None,
             'stuff-{now:%Y-%m-%dT%H:%M:%S.%f}',  # noqa: FS003
             True,
             ('--match-archives', 'sh:stuff-*'),
         ),
-        ('{hostname}-docs-{now}', False, ('--glob-archives', '{hostname}-docs-*')),  # noqa: FS003
-        ('{utcnow}-docs-{user}', False, ('--glob-archives', '*-docs-{user}')),  # noqa: FS003
+        (
+            None,
+            '{hostname}-docs-{now}',  # noqa: FS003
+            False,
+            ('--glob-archives', '{hostname}-docs-*'),  # noqa: FS003
+        ),
+        (None, '{utcnow}-docs-{user}', False, ('--glob-archives', '*-docs-{user}')),  # noqa: FS003
     ),
 )
 def test_make_match_archives_flags_makes_flags_with_globs(
-    archive_name_format, feature_available, expected_result
+    match_archives, archive_name_format, feature_available, expected_result
 ):
     flexmock(module.feature).should_receive('available').and_return(feature_available)
 
     assert (
-        module.make_match_archives_flags(archive_name_format, local_borg_version=flexmock())
+        module.make_match_archives_flags(
+            match_archives, archive_name_format, local_borg_version=flexmock()
+        )
         == expected_result
     )

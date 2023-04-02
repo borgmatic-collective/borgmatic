@@ -185,7 +185,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'bar-{now}', '2.3.4'  # noqa: FS003
+        None, 'bar-{now}', '2.3.4'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:bar-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
