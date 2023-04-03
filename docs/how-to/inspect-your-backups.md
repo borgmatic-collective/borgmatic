@@ -162,9 +162,9 @@ You can the `--log-file-verbosity` flag to customize the log file's log level:
 borgmatic --log-file /path/to/file.log --log-file-verbosity 2
 ```
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.7.11</span>
-Use the `--log-file-format` flag to override the default log message format.
-This format string can contain a series of named placeholders wrapped in curly
+<span class="minilink minilink-addedin">New in version 1.7.11</span> Use the
+`--log-file-format` flag to override the default log message format. This
+format string can contain a series of named placeholders wrapped in curly
 brackets. For instance, the default log format is: `[{asctime}] {levelname}:
 {message}`. This means each log message is recorded as the log time (in square
 brackets), a logging level name, a colon, and the actual log message.
