@@ -178,10 +178,12 @@ def make_parsers():
         help='Log verbose progress to monitoring integrations that support logging (from only errors to very verbose: -1, 0, 1, or 2)',
     )
     global_group.add_argument(
-        '--log-file',
+        '--log-file', type=str, help='Write log messages to this file instead of syslog',
+    )
+    global_group.add_argument(
+        '--log-file-format',
         type=str,
-        default=None,
-        help='Write log messages to this file instead of syslog',
+        help='Log format string used for log messages written to the log file',
     )
     global_group.add_argument(
         '--override',

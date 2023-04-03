@@ -7,6 +7,9 @@
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#archive-naming
  * #479, #588: The "prefix" options have been deprecated in favor of the new "archive_name_format"
    auto-matching behavior and the "match_archives" option.
+ * #658: Add "--log-file-format" flag for customizing the log message format. See the documentation
+   for more information:
+   https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#logging-to-file
  * #662: Fix regression in which the "check_repositories" option failed to match repositories.
  * #663: Fix regression in which the "transfer" action produced a traceback.
  * Add spellchecking of source code during test runs.

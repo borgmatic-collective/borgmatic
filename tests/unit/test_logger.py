@@ -285,7 +285,7 @@ def test_configure_logging_skips_syslog_if_interactive_console():
     module.configure_logging(console_log_level=logging.INFO)
 
 
-def test_configure_logging_to_logfile_instead_of_syslog():
+def test_configure_logging_to_log_file_instead_of_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(
@@ -309,7 +309,36 @@ def test_configure_logging_to_logfile_instead_of_syslog():
     )
 
 
-def test_configure_logging_skips_logfile_if_argument_is_none():
+def test_configure_logging_to_log_file_formats_with_custom_log_format():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging).should_receive('Formatter').with_args(
+        '{message}', style='{'  # noqa: FS003
+    ).once()
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.DEBUG, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+    file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
+    flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
+        '/tmp/logfile'
+    ).and_return(file_handler).once()
+
+    module.configure_logging(
+        console_log_level=logging.INFO,
+        log_file_log_level=logging.DEBUG,
+        log_file='/tmp/logfile',
+        log_file_format='{message}',  # noqa: FS003
+    )
+
+
+def test_configure_logging_skips_log_file_if_argument_is_none():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module).should_receive('Multi_stream_handler').and_return(

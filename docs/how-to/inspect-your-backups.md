@@ -154,5 +154,39 @@ borgmatic --log-file /path/to/file.log
 
 Note that if you use the `--log-file` flag, you are responsible for rotating
 the log file so it doesn't grow too large, for example with
-[logrotate](https://wiki.archlinux.org/index.php/Logrotate). Also, there is a
-`--log-file-verbosity` flag to customize the log file's log level.
+[logrotate](https://wiki.archlinux.org/index.php/Logrotate).
+
+You can the `--log-file-verbosity` flag to customize the log file's log level:
+
+```bash
+borgmatic --log-file /path/to/file.log --log-file-verbosity 2
+```
+
+<span class="minilink minilink-addedin">New in borgmatic version 1.7.11</span>
+Use the `--log-file-format` flag to override the default log message format.
+This format string can contain a series of named placeholders wrapped in curly
+brackets. For instance, the default log format is: `[{asctime}] {levelname}:
+{message}`. This means each log message is recorded as the log time (in square
+brackets), a logging level name, a colon, and the actual log message.
+
+So if you just want each log message to get logged *without* a timestamp or a
+logging level name:
+
+```bash
+borgmatic --log-file /path/to/file.log --log-file-format "{message}"
+```
+
+Here is a list of available placeholders:
+
+ * `{asctime}`: time the log message was created
+ * `{levelname}`: level of the log message (`INFO`, `DEBUG`, etc.)
+ * `{lineno}`: line number in the source file where the log message originated
+ * `{message}`: actual log message
+ * `{pathname}`: path of the source file where the log message originated
+
+See the [Python logging
+documentation](https://docs.python.org/3/library/logging.html#logrecord-attributes)
+for additional placeholders.
+
+Note that this `--log-file-format` flg only applies to the specified
+`--log-file` and not to syslog or other logging.

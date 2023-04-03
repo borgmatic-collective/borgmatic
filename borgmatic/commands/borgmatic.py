@@ -700,6 +700,7 @@ def main():  # pragma: no cover
             verbosity_to_log_level(global_arguments.log_file_verbosity),
             verbosity_to_log_level(global_arguments.monitoring_verbosity),
             global_arguments.log_file,
+            global_arguments.log_file_format,
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)

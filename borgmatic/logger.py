@@ -156,6 +156,7 @@ def configure_logging(
     log_file_log_level=None,
     monitoring_log_level=None,
     log_file=None,
+    log_file_format=None,
 ):
     '''
     Configure logging to go to both the console and (syslog or log file). Use the given log levels,
@@ -200,12 +201,18 @@ def configure_logging(
 
     if syslog_path and not interactive_console():
         syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
-        syslog_handler.setFormatter(logging.Formatter('borgmatic: %(levelname)s %(message)s'))
+        syslog_handler.setFormatter(
+            logging.Formatter('borgmatic: {levelname} {message}', style='{')  # noqa: FS003
+        )
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
     elif log_file:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
-        file_handler.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s'))
+        file_handler.setFormatter(
+            logging.Formatter(
+                log_file_format or '[{asctime}] {levelname}: {message}', style='{'  # noqa: FS003
+            )
+        )
         file_handler.setLevel(log_file_log_level)
         handlers = (console_handler, file_handler)
     else:
