@@ -26,22 +26,24 @@ def make_prune_flags(storage_config, retention_config, local_borg_version):
     config = retention_config.copy()
     prefix = config.pop('prefix', None)
 
-    if prefix:
-        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
-            config['match_archives'] = f'sh:{prefix}*'
-        else:
-            config['glob_archives'] = f'{prefix}*'
-
     flag_pairs = (
         ('--' + option_name.replace('_', '-'), str(value)) for option_name, value in config.items()
     )
 
-    return tuple(
-        element for pair in flag_pairs for element in pair
-    ) + flags.make_match_archives_flags(
-        storage_config.get('match_archives'),
-        storage_config.get('archive_name_format'),
-        local_borg_version,
+    return tuple(element for pair in flag_pairs for element in pair) + (
+        (
+            ('--match-archives', f'sh:{prefix}*')
+            if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
+            else ('--glob-archives', f'{prefix}*')
+        )
+        if prefix
+        else (
+            flags.make_match_archives_flags(
+                storage_config.get('match_archives'),
+                storage_config.get('archive_name_format'),
+                local_borg_version,
+            )
+        )
     )
 
 

@@ -69,6 +69,24 @@ def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives()
     assert result == expected
 
 
+def test_make_prune_flags_prefers_prefix_to_archive_name_format():
+    storage_config = {'archive_name_format': 'bar-{now}'}  # noqa: FS003
+    retention_config = OrderedDict((('keep_daily', 1), ('prefix', 'bar-')))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').never()
+
+    result = module.make_prune_flags(storage_config, retention_config, local_borg_version='1.2.3')
+
+    expected = (
+        '--keep-daily',
+        '1',
+        '--match-archives',
+        'sh:bar-*',  # noqa: FS003
+    )
+
+    assert result == expected
+
+
 def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
     storage_config = {'archive_name_format': 'bar-{now}'}  # noqa: FS003
     retention_config = OrderedDict((('keep_daily', 1), ('prefix', None)))
