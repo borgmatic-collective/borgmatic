@@ -70,7 +70,7 @@ and borgmatic uses that format to name any new archive it creates. For
 instance:
 
 ```yaml
-location:
+storage:
     ...
     archive_name_format: home-directories-{now}
 ```
@@ -96,7 +96,7 @@ to filter archives when running supported actions.
 For instance, let's say that you have this in your configuration:
 
 ```yaml
-location:
+storage:
     ...
     archive_name_format: {hostname}-user-data-{now}
 ```
@@ -116,7 +116,7 @@ If this behavior isn't quite smart enough for your needs, you can use the
 filtering archives. For example:
 
 ```yaml
-location:
+storage:
     ...
     archive_name_format: {hostname}-user-data-{now}
     match_archives: sh:myhost-user-data-*        
