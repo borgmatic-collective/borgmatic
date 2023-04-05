@@ -46,21 +46,18 @@ def display_archives_info(
             if info_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    storage_config.get('match_archives'),
+                    info_arguments.match_archives
+                    or info_arguments.archive
+                    or storage_config.get('match_archives'),
                     storage_config.get('archive_name_format'),
                     local_borg_version,
                 )
             )
         )
         + flags.make_flags_from_arguments(
-            info_arguments, excludes=('repository', 'archive', 'prefix')
+            info_arguments, excludes=('repository', 'archive', 'prefix', 'match_archives')
         )
         + flags.make_repository_flags(repository_path, local_borg_version)
-        + (
-            flags.make_flags('match-archives', info_arguments.archive)
-            if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
-            else flags.make_flags('glob-archives', info_arguments.archive)
-        )
     )
 
     if info_arguments.json:

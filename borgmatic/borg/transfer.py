@@ -28,12 +28,6 @@ def transfer_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', storage_config.get('lock_wait', None))
-        + (('--progress',) if transfer_arguments.progress else ())
-        + (
-            flags.make_flags(
-                'match-archives', transfer_arguments.match_archives or transfer_arguments.archive
-            )
-        )
         + (
             flags.make_flags_from_arguments(
                 transfer_arguments,
@@ -41,7 +35,9 @@ def transfer_archives(
             )
             or (
                 flags.make_match_archives_flags(
-                    storage_config.get('match_archives'),
+                    transfer_arguments.match_archives
+                    or transfer_arguments.archive
+                    or storage_config.get('match_archives'),
                     storage_config.get('archive_name_format'),
                     local_borg_version,
                 )

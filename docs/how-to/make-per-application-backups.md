@@ -128,13 +128,17 @@ documentation](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-
 for more information. For Borg 2.x, see the [match archives
 documentation](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/help.html#borg-help-match-archives).
 
+Some borgmatic command-line actions also have a `--match-archives` flag that
+overrides both the auto-matching behavior and the `match_archives`
+configuration option.
+
 <span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
 limit the archives used for the `prune` action was a `prefix` option in the
 `retention` section for matching against the start of archive names. And the
 option for limiting the archives used for the `check` action was a separate
 `prefix` in the `consistency` section. Both of these options are deprecated in
-favor of the auto-matching behavior (or `match_archives`) in newer versions of
-borgmatic.
+favor of the auto-matching behavior (or `match_archives`/`--match-archives`)
+in newer versions of borgmatic.
 
 
 ## Configuration includes

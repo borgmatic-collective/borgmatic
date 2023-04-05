@@ -29,7 +29,7 @@ def test_display_archives_info_calls_borg_with_parameters():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
     )
 
 
@@ -54,7 +54,7 @@ def test_display_archives_info_with_log_info_calls_borg_with_info_parameter():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
     )
 
 
@@ -77,7 +77,7 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=True, prefix=None),
+        info_arguments=flexmock(archive=None, json=True, prefix=None, match_archives=None),
     )
 
     assert json_output == '[]'
@@ -105,7 +105,7 @@ def test_display_archives_info_with_log_debug_calls_borg_with_debug_parameter():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
     )
 
 
@@ -128,7 +128,7 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=True, prefix=None),
+        info_arguments=flexmock(archive=None, json=True, prefix=None, match_archives=None),
     )
 
     assert json_output == '[]'
@@ -152,7 +152,7 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=True, prefix=None),
+        info_arguments=flexmock(archive=None, json=True, prefix=None, match_archives=None),
     )
 
     assert json_output == '[]'
@@ -162,17 +162,14 @@ def test_display_archives_info_with_archive_calls_borg_with_match_archives_param
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags').with_args(
-        'match-archives', 'archive'
-    ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        None, None, '2.3.4'
-    ).and_return(())
+        'archive', None, '2.3.4'
+    ).and_return(('--match-archives', 'archive'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'info', '--repo', 'repo', '--match-archives', 'archive'),
+        ('borg', 'info', '--match-archives', 'archive', '--repo', 'repo'),
         output_log_level=module.borgmatic.logger.ANSWER,
         borg_local_path='borg',
         extra_environment=None,
@@ -182,7 +179,7 @@ def test_display_archives_info_with_archive_calls_borg_with_match_archives_param
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive='archive', json=False, prefix=None),
+        info_arguments=flexmock(archive='archive', json=False, prefix=None, match_archives=None),
     )
 
 
@@ -207,7 +204,7 @@ def test_display_archives_info_with_local_path_calls_borg_via_local_path():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
         local_path='borg1',
     )
 
@@ -236,7 +233,7 @@ def test_display_archives_info_with_remote_path_calls_borg_with_remote_path_para
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
         remote_path='borg1',
     )
 
@@ -266,7 +263,7 @@ def test_display_archives_info_with_lock_wait_calls_borg_with_lock_wait_paramete
         repository_path='repo',
         storage_config=storage_config,
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
     )
 
 
@@ -347,11 +344,64 @@ def test_display_archives_info_transforms_archive_name_format_into_match_archive
         repository_path='repo',
         storage_config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None),
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
     )
 
 
-@pytest.mark.parametrize('argument_name', ('match_archives', 'sort_by', 'first', 'last'))
+def test_display_archives_with_match_archives_option_calls_borg_with_match_archives_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'sh:foo-*', 'bar-{now}', '2.3.4'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:foo-*'))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'info', '--match-archives', 'sh:foo-*', '--repo', 'repo'),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        borg_local_path='borg',
+        extra_environment=None,
+    )
+
+    module.display_archives_info(
+        repository_path='repo',
+        storage_config={
+            'archive_name_format': 'bar-{now}',  # noqa: FS003
+            'match_archives': 'sh:foo-*',
+        },
+        local_borg_version='2.3.4',
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives=None),
+    )
+
+
+def test_display_archives_with_match_archives_flag_calls_borg_with_match_archives_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'sh:foo-*', 'bar-{now}', '2.3.4'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:foo-*'))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'info', '--match-archives', 'sh:foo-*', '--repo', 'repo'),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        borg_local_path='borg',
+        extra_environment=None,
+    )
+
+    module.display_archives_info(
+        repository_path='repo',
+        storage_config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        local_borg_version='2.3.4',
+        info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives='sh:foo-*'),
+    )
+
+
+@pytest.mark.parametrize('argument_name', ('sort_by', 'first', 'last'))
 def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
@@ -376,5 +426,7 @@ def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
-        info_arguments=flexmock(archive=None, json=False, prefix=None, **{argument_name: 'value'}),
+        info_arguments=flexmock(
+            archive=None, json=False, prefix=None, match_archives=None, **{argument_name: 'value'}
+        ),
     )

@@ -124,10 +124,9 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags').with_args(
-        'match-archives', 'archive'
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'archive', 'bar-{now}', '2.3.4'  # noqa: FS003
     ).and_return(('--match-archives', 'archive'))
-    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
@@ -154,10 +153,9 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags').with_args(
-        'match-archives', 'sh:foo*'
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'sh:foo*', 'bar-{now}', '2.3.4'  # noqa: FS003
     ).and_return(('--match-archives', 'sh:foo*'))
-    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
@@ -304,7 +302,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flag():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--progress',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(

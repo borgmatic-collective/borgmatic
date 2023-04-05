@@ -652,7 +652,7 @@ def make_parsers():
         '--json', default=False, action='store_true', help='Output results as JSON'
     )
     rlist_group.add_argument(
-        '-P', '--prefix', help='Only list archive names starting with this prefix'
+        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
     )
     rlist_group.add_argument(
         '-a',
@@ -707,7 +707,7 @@ def make_parsers():
         '--json', default=False, action='store_true', help='Output results as JSON'
     )
     list_group.add_argument(
-        '-P', '--prefix', help='Only list archive names starting with this prefix'
+        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
     )
     list_group.add_argument(
         '-a',
@@ -779,7 +779,9 @@ def make_parsers():
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
     info_group.add_argument(
-        '-P', '--prefix', help='Only show info for archive names starting with this prefix'
+        '-P',
+        '--prefix',
+        help='Deprecated. Only show info for archive names starting with this prefix',
     )
     info_group.add_argument(
         '-a',
@@ -877,7 +879,17 @@ def parse_arguments(*unparsed_arguments):
         and arguments['transfer'].match_archives
     ):
         raise ValueError(
-            'With the transfer action, only one of --archive and --glob-archives flags can be used.'
+            'With the transfer action, only one of --archive and --match-archives flags can be used.'
+        )
+
+    if 'list' in arguments and (arguments['list'].prefix and arguments['list'].match_archives):
+        raise ValueError(
+            'With the list action, only one of --prefix or --match-archives flags can be used.'
+        )
+
+    if 'rlist' in arguments and (arguments['rlist'].prefix and arguments['rlist'].match_archives):
+        raise ValueError(
+            'With the rlist action, only one of --prefix or --match-archives flags can be used.'
         )
 
     if 'info' in arguments and (

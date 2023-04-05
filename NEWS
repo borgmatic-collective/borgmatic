@@ -1,3 +1,8 @@
+1.7.12.dev0
+ * #666: Fix error when running the "info" action with the "--match-archives" flag. Also fix the
+   "--match-archives" flag to correctly override the "match_archives" configuration option for
+   the "transfer", "list", "rlist", and "info" actions.
+
 1.7.11
  * #479, #588: BREAKING: Automatically use the "archive_name_format" option to filter which archives
    get used for borgmatic actions that operate on multiple archives. Override this behavior with the

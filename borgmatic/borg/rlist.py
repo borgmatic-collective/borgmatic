@@ -52,7 +52,7 @@ def resolve_archive_name(
     return latest_archive
 
 
-MAKE_FLAGS_EXCLUDES = ('repository', 'prefix')
+MAKE_FLAGS_EXCLUDES = ('repository', 'prefix', 'match_archives')
 
 
 def make_rlist_command(
@@ -96,7 +96,7 @@ def make_rlist_command(
             if rlist_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    storage_config.get('match_archives'),
+                    rlist_arguments.match_archives or storage_config.get('match_archives'),
                     storage_config.get('archive_name_format'),
                     local_borg_version,
                 )
