@@ -69,9 +69,11 @@ def test_make_list_command_does_not_duplicate_flags_or_raise():
         if argument_name.startswith('_'):
             continue
 
-        borgmatic.borg.list.make_list_command(
+        command = borgmatic.borg.list.make_list_command(
             'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
         )
+
+        assert_command_does_not_duplicate_flags(command)
 
 
 def test_make_rlist_command_does_not_duplicate_flags_or_raise():
@@ -81,9 +83,11 @@ def test_make_rlist_command_does_not_duplicate_flags_or_raise():
         if argument_name.startswith('_'):
             continue
 
-        borgmatic.borg.rlist.make_rlist_command(
+        command = borgmatic.borg.rlist.make_rlist_command(
             'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
         )
+
+        assert_command_does_not_duplicate_flags(command)
 
 
 def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
