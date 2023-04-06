@@ -267,6 +267,7 @@ def run_actions(
         'repository': repository_path,
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
         'repositories': ','.join([repo['path'] for repo in location['repositories']]),
+        'log_file': global_arguments.log_file if global_arguments.log_file else '',
     }
 
     command.execute_hook(
