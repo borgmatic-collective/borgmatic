@@ -422,6 +422,26 @@ def test_run_actions_runs_rcreate():
         )
     )
 
+def test_run_actions_adds_log_file_to_hook_context():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.rcreate).should_receive('run_rcreate').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rcreate': flexmock()},
+            config_filename=flexmock(),
+            location={'repositories': []},
+            storage=flexmock(),
+            retention=flexmock(),
+            consistency=flexmock(),
+            hooks={},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
 
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
