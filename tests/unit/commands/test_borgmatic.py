@@ -422,25 +422,27 @@ def test_run_actions_runs_rcreate():
         )
     )
 
+
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
+    expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
-        config_filename=flexmock(),
+        config_filename=object,
         repository={'path': 'repo'},
         location={'repositories': []},
-        storage=flexmock(),
+        storage=object,
         hooks={},
-        hook_context={'log_file': 'foo'},
-        local_borg_version=flexmock(),
-        create_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_file='foo'),
+        hook_context={'repository': 'repo', 'repositories': '', 'log_file': 'foo'},
+        local_borg_version=object,
+        create_arguments=object,
+        global_arguments=object,
         dry_run_label='',
-        local_path=flexmock(),
-        remote_path=flexmock(),
-    ).once()
+        local_path=object,
+        remote_path=object,
+    ).once().and_return(expected)
 
-    tuple(
+    result = tuple(
         module.run_actions(
             arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
             config_filename=flexmock(),
@@ -455,6 +457,8 @@ def test_run_actions_adds_log_file_to_hook_context():
             repository={'path': 'repo'},
         )
     )
+    assert result == (expected,)
+
 
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
