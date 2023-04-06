@@ -1,5 +1,6 @@
 1.7.12.dev0
- * #413: Add "log_file" context to command hooks. See the documentation for more information:
+ * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.
+   See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
  * #666: Fix error when running the "info" action with the "--match-archives" flag. Also fix the
    "--match-archives" flag to correctly override the "match_archives" configuration option for
