@@ -269,11 +269,7 @@ def run_actions(
         'repositories': ','.join([repo['path'] for repo in location['repositories']]),
     }
 
-    try:
-        log_file = global_arguments.log_file
-        hook_context['log_file'] = log_file
-    except AttributeError:
-        pass
+    hook_context['log_file'] = global_arguments.log_file if global_arguments.log_file else ''
 
     command.execute_hook(
         hooks.get('before_actions'),

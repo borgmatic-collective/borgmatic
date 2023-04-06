@@ -408,7 +408,7 @@ def test_run_actions_runs_rcreate():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'rcreate': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rcreate': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -425,11 +425,24 @@ def test_run_actions_runs_rcreate():
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
-    flexmock(borgmatic.actions.rcreate).should_receive('run_rcreate').once()
+    flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
+        config_filename=flexmock(),
+        repository={'path': 'repo'},
+        location={'repositories': []},
+        storage=flexmock(),
+        hooks={},
+        hook_context={'log_file': 'foo'},
+        local_borg_version=flexmock(),
+        create_arguments=flexmock(),
+        global_arguments=flexmock(dry_run=False, log_file='foo'),
+        dry_run_label='',
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ).once()
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rcreate': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -450,7 +463,7 @@ def test_run_actions_runs_transfer():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'transfer': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'transfer': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -473,7 +486,7 @@ def test_run_actions_runs_create():
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'create': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -496,7 +509,7 @@ def test_run_actions_runs_prune():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'prune': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'prune': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -518,7 +531,7 @@ def test_run_actions_runs_compact():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'compact': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'compact': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -541,7 +554,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'check': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'check': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -564,7 +577,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'check': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'check': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -586,7 +599,7 @@ def test_run_actions_runs_extract():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'extract': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'extract': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -608,7 +621,7 @@ def test_run_actions_runs_export_tar():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'export-tar': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'export-tar': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -630,7 +643,7 @@ def test_run_actions_runs_mount():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'mount': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'mount': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -652,7 +665,7 @@ def test_run_actions_runs_restore():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'restore': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'restore': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -675,7 +688,7 @@ def test_run_actions_runs_rlist():
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'rlist': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rlist': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -699,7 +712,7 @@ def test_run_actions_runs_list():
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'list': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'list': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -723,7 +736,7 @@ def test_run_actions_runs_rinfo():
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'rinfo': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rinfo': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -747,7 +760,7 @@ def test_run_actions_runs_info():
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'info': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'info': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -770,7 +783,7 @@ def test_run_actions_runs_break_lock():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'break-lock': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'break-lock': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -792,7 +805,7 @@ def test_run_actions_runs_borg():
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'borg': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'borg': flexmock()},
             config_filename=flexmock(),
             location={'repositories': []},
             storage=flexmock(),
@@ -816,7 +829,7 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
     tuple(
         module.run_actions(
             arguments={
-                'global': flexmock(dry_run=False),
+                'global': flexmock(dry_run=False, log_file='foo'),
                 'borg': flexmock(),
                 'restore': flexmock(),
             },
