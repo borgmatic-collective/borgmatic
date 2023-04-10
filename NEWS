@@ -7,6 +7,8 @@
    "match_archives" configuration option for the "transfer", "list", "rlist", and "info" actions.
  * #668: Fix error when running the "prune" action with both "archive_name_format" and "prefix"
    options set.
+ * Add optional support for running end-to-end tests and building documentation with rootless Podman
+   instead of Docker.
 
 1.7.11
  * #479, #588: BREAKING: Automatically use the "archive_name_format" option to filter which archives

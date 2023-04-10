@@ -101,6 +101,30 @@ scripts/run-end-to-end-dev-tests
 Note that this scripts assumes you have permission to run Docker. If you
 don't, then you may need to run with `sudo`.
 
+
+#### Podman
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span>
+borgmatic's end-to-end tests optionally support using
+[rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+[Podman](https://podman.io/) instead of Docker.
+
+Setting up Podman is outside the scope of this documentation, but here are
+some key points to double-check:
+
+ * Install Podman along with `podman-docker` and your desired networking
+   support.
+ * Configure `/etc/subuid` and `/etc/subgid` to map users/groups for the
+   non-root user who will run tests.
+ * Create a non-root Podman socket for that user:
+   ```bash
+   systemctl --user enable --now podman.socket
+   ```
+
+Then you'll be able to run end-to-end tests as per normal, and the test script
+will automatically use your non-root Podman socket instead of a Docker socket.
+
+
 ## Code style
 
 Start with [PEP 8](https://www.python.org/dev/peps/pep-0008/). But then, apply
@@ -149,3 +173,15 @@ http://localhost:8080 to view the documentation with your changes.
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any
 additional documentation changes to take effect.
+
+
+#### Podman
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span>
+borgmatic's developer build for documentation optionally supports using
+[rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+[Podman](https://podman.io/) instead of Docker.
+
+Setting up Podman is outside the scope of this documentation. But once you
+install `podman-docker`, then `scripts/dev-docs` should automatically use
+Podman instead of Docker.

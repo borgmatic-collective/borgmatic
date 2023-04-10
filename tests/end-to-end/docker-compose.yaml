@@ -1,22 +1,22 @@
 version: '3'
 services:
   postgresql:
-    image: postgres:13.1-alpine
+    image: docker.io/postgres:13.1-alpine
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
   mysql:
-    image: mariadb:10.5
+    image: docker.io/mariadb:10.5
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
   mongodb:
-    image: mongo:5.0.5
+    image: docker.io/mongo:5.0.5
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: test
   tests:
-    image: alpine:3.13
+    image: docker.io/alpine:3.13
     environment:
       TEST_CONTAINER: true
     volumes:
