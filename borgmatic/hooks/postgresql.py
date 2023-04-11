@@ -213,7 +213,6 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + ('--command', 'ANALYZE')
     )
     pg_restore_command = database.get('pg_restore_command') or 'pg_restore'
-    backup_schemas = ', '.join(database['schemas']) if 'schemas' in database else None
     restore_command = (
         (psql_command if all_databases else pg_restore_command, '--no-password')
         + (
@@ -224,10 +223,14 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
-        + (('--schema', backup_schemas) if backup_schemas else ())
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
     )
+
+    if database['schemas']:
+        for schema in database['schemas']:
+            restore_command += ('--schema', schema)
+
     extra_environment = make_extra_environment(database)
 
     logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
