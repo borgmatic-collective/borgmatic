@@ -276,6 +276,23 @@ include, the local file's option takes precedence.
 list values are appended together.
 
 
+## Debugging includes
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span> If you'd
+like to see what the loaded configuration looks like after includes get merged
+in, run `validate-borgmatic-config` on your configuration file:
+
+```bash
+sudo validate-borgmatic-config --show
+```
+
+You'll need to specify your configuration file with `--config` if it's not in
+a default location.
+
+This will output the merged configuration as borgmatic sees it, which can be
+helpful for understanding how your includes work in practice.
+
+
 ## Configuration overrides
 
 In more complex multi-application setups, you may want to override particular

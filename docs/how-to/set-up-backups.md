@@ -180,6 +180,9 @@ following command is available for that:
 sudo validate-borgmatic-config
 ```
 
+You'll need to specify your configuration file with `--config` if it's not in
+a default location.
+
 This command's exit status (`$?` in Bash) is zero when configuration is valid
 and non-zero otherwise.
 
