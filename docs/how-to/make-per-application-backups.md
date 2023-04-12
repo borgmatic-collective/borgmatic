@@ -285,7 +285,7 @@ included sections—without any merging occurring for them.
 <span class="minilink minilink-addedin">New in version 1.7.12</span> That's
 where the `!retain` tag comes in. Whenever you're merging an included file
 into your configuration file, you can optionally add the `!retain` tag to
-particular local mappings or sequences to retain the local values and ignore
+particular local mappings or lists to retain the local values and ignore
 included values.
 
 For instance, start with this configuration file containing the `!retain` tag
@@ -318,14 +318,13 @@ Once this include gets merged in, the resulting configuration will have a
 `keep_daily` value of `5` and nothing else in the `retention` section. That's
 because the `!retain` tag says to retain the local version of `retention` and
 ignore any values coming in from the include. But because the `repositories`
-sequence doesn't have a `!retain` tag, that sequence still gets merged
-together to contain both `common.borg` and `repo.borg`.
+list doesn't have a `!retain` tag, it still gets merged together to contain
+both `common.borg` and `repo.borg`.
 
-The `!retain` tag can only be placed on mapping and sequence nodes, and it
-goes right after the name of the option (and its colon) on the same line. The
-effects of `!retain` are recursive, meaning that if you place a `!retain` tag
-on a top-level mapping, even deeply nested values within it will not be
-merged.
+The `!retain` tag can only be placed on mappings and lists, and it goes right
+after the name of the option (and its colon) on the same line. The effects of
+`!retain` are recursive, meaning that if you place a `!retain` tag on a
+top-level mapping, even deeply nested values within it will not be merged.
 
 Additionally, the `!retain` tag only works in a configuration file that also
 performs a merge include with `<<: !include`. It doesn't make sense within,
