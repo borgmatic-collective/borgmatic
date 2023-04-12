@@ -7,6 +7,9 @@
    "match_archives" configuration option for the "transfer", "list", "rlist", and "info" actions.
  * #668: Fix error when running the "prune" action with both "archive_name_format" and "prefix"
    options set.
+ * #672: Selectively shallow merge certain mappings or sequences when including configuration files.
+   See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#shallow-merge
  * #673: View the results of configuration file merging via "validate-borgmatic-config --show" flag.
    See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#debugging-includes
