@@ -280,7 +280,7 @@ list values are appended together.
 
 Even though deep merging is generally pretty handy for included files,
 sometimes you want specific sections in the local file to take precedence over
-included sections—without any merging occuring for them.
+included sections—without any merging occurring for them.
 
 <span class="minilink minilink-addedin">New in version 1.7.12</span> That's
 where the `!retain` tag comes in. Whenever you're merging an included file
