@@ -1,4 +1,4 @@
-1.7.12.dev0
+1.7.12
  * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.
    See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
