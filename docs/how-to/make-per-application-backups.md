@@ -272,8 +272,64 @@ Once this include gets merged in, the resulting configuration would have a
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence.
 
+
+#### List merge
+
 <span class="minilink minilink-addedin">New in version 1.6.1</span> Colliding
 list values are appended together.
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span> If there
+is a list value from an include that you *don't* want in your local
+configuration file, you can omit it with an `!omit` tag. For instance:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   source_directories:
+     - !omit /home
+     - /var
+```
+
+And `common.yaml` like this:
+
+```yaml
+location:
+   source_directories:
+     - /home
+     - /etc
+```
+
+Once this include gets merged in, the resulting configuration will have a
+`source_directories` value of `/etc` and `/var`—with `/home` omitted.
+
+This feature currently only works on scalar (e.g. string or number) list items
+and will not work elsewhere in a configuration file. Be sure to put the
+`!omit` tag *before* the list item (after the dash). Putting `!omit` after the
+list item will not work, as it gets interpreted as part of the string. Here's
+an example of some things not to do:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   source_directories:
+     # Do not do this! It will not work. "!omit" belongs before "/home".
+     - /home !omit
+
+   # Do not do this either! "!omit" only works on scalar list items.
+   repositories: !omit
+     # Also do not do this for the same reason! This is a list item, but it's
+     # not a scalar.
+     - !omit path: repo.borg
+```
+
+Additionally, the `!omit` tag only works in a configuration file that also
+performs a merge include with `<<: !include`. It doesn't make sense within,
+for instance, an included configuration file itself (unless it in turn
+performs its own merge include). That's because `!omit` only applies to the
+file doing the include; it doesn't work in reverse or propagate through
+includes.
 
 
 ### Shallow merge
@@ -296,7 +352,7 @@ on the `retention` mapping:
 
 location:
    repositories:
-     - repo.borg
+     - path: repo.borg
 
 retention: !retain
     keep_daily: 5
@@ -307,7 +363,7 @@ And `common.yaml` like this:
 ```yaml
 location:
    repositories:
-     - common.borg
+     - path: common.borg
 
 retention:
     keep_hourly: 24

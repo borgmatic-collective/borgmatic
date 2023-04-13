@@ -10,6 +10,9 @@
  * #672: Selectively shallow merge certain mappings or sequences when including configuration files.
    See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#shallow-merge
+ * #672: Selectively omit list values when including configuration files. See the documentation for
+   more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#list-merge
  * #673: View the results of configuration file merging via "validate-borgmatic-config --show" flag.
    See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#debugging-includes

@@ -38,9 +38,9 @@ def include_configuration(loader, filename_node, include_directory):
     return load_configuration(include_filename)
 
 
-def retain_node_error(loader, node):
+def raise_retain_node_error(loader, node):
     '''
-    Given a ruamel.yaml.loader.Loader and a YAML node, raise an error.
+    Given a ruamel.yaml.loader.Loader and a YAML node, raise an error about "!retain" usage.
 
     Raise ValueError if a mapping or sequence node is given, as that indicates that "!retain" was
     used in a configuration file without a merge. In configuration files with a merge, mapping and
@@ -56,6 +56,19 @@ def retain_node_error(loader, node):
     raise ValueError('The !retain tag may only be used on a YAML mapping or sequence.')
 
 
+def raise_omit_node_error(loader, node):
+    '''
+    Given a ruamel.yaml.loader.Loader and a YAML node, raise an error about "!omit" usage.
+
+    Raise ValueError unconditionally, as an "!omit" node here indicates it was used in a
+    configuration file without a merge. In configuration files with a merge, nodes with "!omit"
+    tags are handled by deep_merge_nodes() below.
+    '''
+    raise ValueError(
+        'The !omit tag may only be used on a scalar (e.g., string) list element within a configuration file containing a merged !include tag.'
+    )
+
+
 class Include_constructor(ruamel.yaml.SafeConstructor):
     '''
     A YAML "constructor" (a ruamel.yaml concept) that supports a custom "!include" tag for including
@@ -68,7 +81,8 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
             '!include',
             functools.partial(include_configuration, include_directory=include_directory),
         )
-        self.add_constructor('!retain', retain_node_error)
+        self.add_constructor('!retain', raise_retain_node_error)
+        self.add_constructor('!omit', raise_omit_node_error)
 
     def flatten_mapping(self, node):
         '''
@@ -132,6 +146,16 @@ def load_configuration(filename):
             del config['constants']
 
         return config
+
+
+def filter_omitted_nodes(nodes):
+    '''
+    Given a list of nodes, return a filtered list omitting any nodes with an "!omit" tag or with a
+    value matching such nodes.
+    '''
+    omitted_values = tuple(node.value for node in nodes if node.tag == '!omit')
+
+    return [node for node in nodes if node.value not in omitted_values]
 
 
 DELETED_NODE = object()
@@ -247,7 +271,7 @@ def deep_merge_nodes(nodes):
                             b_key,
                             ruamel.yaml.nodes.SequenceNode(
                                 tag=b_value.tag,
-                                value=a_value.value + b_value.value,
+                                value=filter_omitted_nodes(a_value.value + b_value.value),
                                 start_mark=b_value.start_mark,
                                 end_mark=b_value.end_mark,
                                 flow_style=b_value.flow_style,
