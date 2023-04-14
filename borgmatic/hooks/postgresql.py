@@ -216,15 +216,17 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
     )
+    use_psql_command = all_databases or database.get('format') == 'plain'
     pg_restore_command = shlex.split(database.get('pg_restore_command') or 'pg_restore')
     restore_command = (
-        tuple(psql_command if all_databases else pg_restore_command)
+        tuple(psql_command if use_psql_command else pg_restore_command)
         + ('--no-password',)
         + (
             ('--no-psqlrc', '--set', 'ON_ERROR_STOP=on')
-            if all_databases
-            else ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
+            if use_psql_command
+            else ('--if-exists', '--exit-on-error', '--clean')
         )
+        + (('--dbname', database['name']) if not all_databases else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
