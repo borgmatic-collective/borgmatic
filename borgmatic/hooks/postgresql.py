@@ -61,7 +61,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
 
     psql_command = database.get('psql_command') or 'psql'
     list_command = (
-        (psql_command, '--list', '--no-password', '--csv', '--tuples-only')
+        (psql_command, '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
@@ -205,7 +205,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     )
     psql_command = database.get('psql_command') or 'psql'
     analyze_command = (
-        (psql_command, '--no-password', '--quiet')
+        (psql_command, '--no-password', '--no-psqlrc', '--quiet')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
@@ -219,7 +219,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (
             ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
             if not all_databases
-            else ()
+            else ('--no-psqlrc',)
         )
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
