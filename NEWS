@@ -1,6 +1,7 @@
 1.7.13.dev0
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
-   flag.
+   flag. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
 
 1.7.12
  * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.

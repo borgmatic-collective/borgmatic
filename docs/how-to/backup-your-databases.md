@@ -324,6 +324,17 @@ includes any combined dump file named "all" and any other individual database
 dumps found in the archive.
 
 
+### Restore particular schemas
+
+<span class="minilink minilink-addedin">New in version 1.7.13</span> With
+PostgreSQL and MongoDB, you can limit the restore to a single schema found
+within the database dump:
+
+```bash
+borgmatic restore --archive latest --database users --schema tentant1
+```
+
+
 ### Limitations
 
 There are a few important limitations with borgmatic's current database
