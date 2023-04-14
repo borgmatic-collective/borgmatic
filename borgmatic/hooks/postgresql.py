@@ -1,4 +1,5 @@
 import csv
+import itertools
 import logging
 import os
 
@@ -225,11 +226,12 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--username', database['username']) if 'username' in database else ())
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
+        + tuple(
+            itertools.chain.from_iterable(('--schema', schema) for schema in database['schemas'])
+            if database['schemas']
+            else ()
+        )
     )
-
-    if database['schemas']:
-        for schema in database['schemas']:
-            restore_command += ('--schema', schema)
 
     extra_environment = make_extra_environment(database)
 

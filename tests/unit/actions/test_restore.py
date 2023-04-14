@@ -233,7 +233,7 @@ def test_run_restore_restores_each_database():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'foo'},
+        database={'name': 'foo', 'schemas': None},
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
@@ -246,7 +246,7 @@ def test_run_restore_restores_each_database():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'bar'},
+        database={'name': 'bar', 'schemas': None},
     ).once()
     flexmock(module).should_receive('ensure_databases_found')
 
@@ -256,7 +256,9 @@ def test_run_restore_restores_each_database():
         storage=flexmock(),
         hooks=flexmock(),
         local_borg_version=flexmock(),
-        restore_arguments=flexmock(repository='repo', archive='archive', databases=flexmock()),
+        restore_arguments=flexmock(
+            repository='repo', archive='archive', databases=flexmock(), schemas=None
+        ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
         remote_path=flexmock(),
@@ -327,7 +329,7 @@ def test_run_restore_restores_database_configured_with_all_name():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'foo'},
+        database={'name': 'foo', 'schemas': None},
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
@@ -340,7 +342,7 @@ def test_run_restore_restores_database_configured_with_all_name():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'bar'},
+        database={'name': 'bar', 'schemas': None},
     ).once()
     flexmock(module).should_receive('ensure_databases_found')
 
@@ -350,7 +352,9 @@ def test_run_restore_restores_database_configured_with_all_name():
         storage=flexmock(),
         hooks=flexmock(),
         local_borg_version=flexmock(),
-        restore_arguments=flexmock(repository='repo', archive='archive', databases=flexmock()),
+        restore_arguments=flexmock(
+            repository='repo', archive='archive', databases=flexmock(), schemas=None
+        ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
         remote_path=flexmock(),
@@ -399,7 +403,7 @@ def test_run_restore_skips_missing_database():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'foo'},
+        database={'name': 'foo', 'schemas': None},
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
@@ -412,7 +416,7 @@ def test_run_restore_skips_missing_database():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'bar'},
+        database={'name': 'bar', 'schemas': None},
     ).never()
     flexmock(module).should_receive('ensure_databases_found')
 
@@ -422,7 +426,9 @@ def test_run_restore_skips_missing_database():
         storage=flexmock(),
         hooks=flexmock(),
         local_borg_version=flexmock(),
-        restore_arguments=flexmock(repository='repo', archive='archive', databases=flexmock()),
+        restore_arguments=flexmock(
+            repository='repo', archive='archive', databases=flexmock(), schemas=None
+        ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
         remote_path=flexmock(),
@@ -465,7 +471,7 @@ def test_run_restore_restores_databases_from_different_hooks():
         remote_path=object,
         archive_name=object,
         hook_name='postgresql_databases',
-        database={'name': 'foo'},
+        database={'name': 'foo', 'schemas': None},
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
@@ -478,7 +484,7 @@ def test_run_restore_restores_databases_from_different_hooks():
         remote_path=object,
         archive_name=object,
         hook_name='mysql_databases',
-        database={'name': 'bar'},
+        database={'name': 'bar', 'schemas': None},
     ).once()
     flexmock(module).should_receive('ensure_databases_found')
 
@@ -488,7 +494,9 @@ def test_run_restore_restores_databases_from_different_hooks():
         storage=flexmock(),
         hooks=flexmock(),
         local_borg_version=flexmock(),
-        restore_arguments=flexmock(repository='repo', archive='archive', databases=flexmock()),
+        restore_arguments=flexmock(
+            repository='repo', archive='archive', databases=flexmock(), schemas=None
+        ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
         remote_path=flexmock(),
