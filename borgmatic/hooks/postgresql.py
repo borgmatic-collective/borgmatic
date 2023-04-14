@@ -59,8 +59,9 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
+    psql_command = database.get('psql_command') or 'psql'
     list_command = (
-        ('psql', '--list', '--no-password', '--csv', '--tuples-only')
+        (psql_command, '--list', '--no-password', '--csv', '--tuples-only')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
