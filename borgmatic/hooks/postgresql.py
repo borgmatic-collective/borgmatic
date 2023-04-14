@@ -221,9 +221,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         tuple(psql_command if all_databases else pg_restore_command)
         + ('--no-password',)
         + (
-            ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
-            if not all_databases
-            else ('--no-psqlrc', '--set', 'ON_ERROR_STOP=on')
+            ('--no-psqlrc', '--set', 'ON_ERROR_STOP=on')
+            if all_databases
+            else ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
         )
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
