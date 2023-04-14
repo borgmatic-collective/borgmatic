@@ -1,6 +1,6 @@
 import copy
 
-import flexmock
+from flexmock import flexmock
 
 import borgmatic.borg.info
 import borgmatic.borg.list
