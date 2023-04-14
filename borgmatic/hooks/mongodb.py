@@ -161,4 +161,7 @@ def build_restore_command(extract_process, database, dump_filename):
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:
         command.extend(database['restore_options'].split(' '))
+    if database['schemas']:
+        for schema in database['schemas']:
+            command.extend(('--nsInclude', schema))
     return command

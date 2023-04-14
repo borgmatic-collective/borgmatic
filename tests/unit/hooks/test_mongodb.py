@@ -157,7 +157,7 @@ def test_dump_databases_runs_mongodumpall_for_all_databases():
 
 
 def test_restore_database_dump_runs_mongorestore():
-    database_config = [{'name': 'foo'}]
+    database_config = [{'name': 'foo', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -189,7 +189,9 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
 
 def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
-    database_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    database_config = [
+        {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None}
+    ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -223,6 +225,7 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
             'username': 'mongo',
             'password': 'trustsome1',
             'authentication_database': 'admin',
+            'schemas': None,
         }
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -254,7 +257,7 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
 
 
 def test_restore_database_dump_runs_mongorestore_with_options():
-    database_config = [{'name': 'foo', 'restore_options': '--harder'}]
+    database_config = [{'name': 'foo', 'restore_options': '--harder', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -271,8 +274,36 @@ def test_restore_database_dump_runs_mongorestore_with_options():
     )
 
 
+def test_restore_databases_dump_runs_mongorestore_with_schemas():
+    database_config = [{'name': 'foo', 'schemas': ['bar', 'baz']}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        [
+            'mongorestore',
+            '--archive',
+            '--drop',
+            '--db',
+            'foo',
+            '--nsInclude',
+            'bar',
+            '--nsInclude',
+            'baz',
+        ],
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+    )
+
+
 def test_restore_database_dump_runs_psql_for_all_database_dump():
-    database_config = [{'name': 'all'}]
+    database_config = [{'name': 'all', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -290,7 +321,7 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
 
 
 def test_restore_database_dump_with_dry_run_skips_restore():
-    database_config = [{'name': 'foo'}]
+    database_config = [{'name': 'foo', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
@@ -302,7 +333,7 @@ def test_restore_database_dump_with_dry_run_skips_restore():
 
 
 def test_restore_database_dump_without_extract_process_restores_from_disk():
-    database_config = [{'name': 'foo', 'format': 'directory'}]
+    database_config = [{'name': 'foo', 'format': 'directory', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return('/dump/path')

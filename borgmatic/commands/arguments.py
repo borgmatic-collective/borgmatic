@@ -630,6 +630,13 @@ def make_parsers():
         help="Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic's configuration",
     )
     restore_group.add_argument(
+        '--schema',
+        metavar='NAME',
+        nargs='+',
+        dest='schemas',
+        help='Names of schemas to restore from the database, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
+    )
+    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

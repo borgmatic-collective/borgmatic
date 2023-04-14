@@ -313,7 +313,7 @@ def run_restore(
                 remote_path,
                 archive_name,
                 found_hook_name or hook_name,
-                found_database,
+                dict(found_database, **{'schemas': restore_arguments.schemas}),
             )
 
     # For any database that weren't found via exact matches in the hooks configuration, try to
@@ -342,7 +342,7 @@ def run_restore(
                 remote_path,
                 archive_name,
                 found_hook_name or hook_name,
-                database,
+                dict(database, **{'schemas': restore_arguments.schemas}),
             )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
