@@ -607,7 +607,7 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ('psql', '--no-password', '--no-psqlrc'),
+        ('psql', '--no-password', '--no-psqlrc', '--set', 'ON_ERROR_STOP=on'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,

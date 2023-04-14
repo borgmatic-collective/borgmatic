@@ -223,7 +223,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (
             ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
             if not all_databases
-            else ('--no-psqlrc',)
+            else ('--no-psqlrc', '--set', 'ON_ERROR_STOP=on')
         )
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
