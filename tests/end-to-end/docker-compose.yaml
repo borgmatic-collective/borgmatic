@@ -23,6 +23,7 @@ services:
       - "../..:/app:ro"
     tmpfs:
       - "/app/borgmatic.egg-info"
+      - "/app/build"
     tty: true
     working_dir: /app
     entrypoint: /app/scripts/run-full-tests
