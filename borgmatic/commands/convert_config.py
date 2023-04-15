@@ -28,9 +28,7 @@ def parse_arguments(*arguments):
         '--source-config',
         dest='source_config_filename',
         default=DEFAULT_SOURCE_CONFIG_FILENAME,
-        help='Source INI-style configuration filename. Default: {}'.format(
-            DEFAULT_SOURCE_CONFIG_FILENAME
-        ),
+        help=f'Source INI-style configuration filename. Default: {DEFAULT_SOURCE_CONFIG_FILENAME}',
     )
     parser.add_argument(
         '-e',
@@ -46,9 +44,7 @@ def parse_arguments(*arguments):
         '--destination-config',
         dest='destination_config_filename',
         default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help='Destination YAML configuration filename. Default: {}'.format(
-            DEFAULT_DESTINATION_CONFIG_FILENAME
-        ),
+        help=f'Destination YAML configuration filename. Default: {DEFAULT_DESTINATION_CONFIG_FILENAME}',
     )
 
     return parser.parse_args(arguments)
@@ -59,19 +55,15 @@ TEXT_WRAP_CHARACTERS = 80
 
 def display_result(args):  # pragma: no cover
     result_lines = textwrap.wrap(
-        'Your borgmatic configuration has been upgraded. Please review the result in {}.'.format(
-            args.destination_config_filename
-        ),
+        f'Your borgmatic configuration has been upgraded. Please review the result in {args.destination_config_filename}.',
         TEXT_WRAP_CHARACTERS,
     )
 
+    excludes_phrase = (
+        f' and {args.source_excludes_filename}' if args.source_excludes_filename else ''
+    )
     delete_lines = textwrap.wrap(
-        'Once you are satisfied, you can safely delete {}{}.'.format(
-            args.source_config_filename,
-            ' and {}'.format(args.source_excludes_filename)
-            if args.source_excludes_filename
-            else '',
-        ),
+        f'Once you are satisfied, you can safely delete {args.source_config_filename}{excludes_phrase}.',
         TEXT_WRAP_CHARACTERS,
     )
 

@@ -11,7 +11,7 @@ def test_run_rlist_does_not_raise():
 
     list(
         module.run_rlist(
-            repository='repo',
+            repository={'path': 'repo'},
             storage={},
             local_borg_version=None,
             rlist_arguments=rlist_arguments,

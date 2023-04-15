@@ -27,7 +27,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
-    logger.info('{}: Dumping MongoDB databases{}'.format(log_prefix, dry_run_label))
+    logger.info(f'{log_prefix}: Dumping MongoDB databases{dry_run_label}')
 
     processes = []
     for database in databases:
@@ -38,9 +38,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
         dump_format = database.get('format', 'archive')
 
         logger.debug(
-            '{}: Dumping MongoDB database {} to {}{}'.format(
-                log_prefix, name, dump_filename, dry_run_label
-            )
+            f'{log_prefix}: Dumping MongoDB database {name} to {dump_filename}{dry_run_label}',
         )
         if dry_run:
             continue
@@ -126,9 +124,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     )
     restore_command = build_restore_command(extract_process, database, dump_filename)
 
-    logger.debug(
-        '{}: Restoring MongoDB database {}{}'.format(log_prefix, database['name'], dry_run_label)
-    )
+    logger.debug(f"{log_prefix}: Restoring MongoDB database {database['name']}{dry_run_label}")
     if dry_run:
         return
 
@@ -165,4 +161,7 @@ def build_restore_command(extract_process, database, dump_filename):
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:
         command.extend(database['restore_options'].split(' '))
+    if database['schemas']:
+        for schema in database['schemas']:
+            command.extend(('--nsInclude', schema))
     return command

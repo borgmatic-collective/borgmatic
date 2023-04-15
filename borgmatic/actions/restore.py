@@ -114,7 +114,13 @@ def restore_single_database(
 
 
 def collect_archive_database_names(
-    repository, archive, location, storage, local_borg_version, local_path, remote_path,
+    repository,
+    archive,
+    location,
+    storage,
+    local_borg_version,
+    local_path,
+    remote_path,
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a location configuration dict,
@@ -180,7 +186,7 @@ def find_databases_to_restore(requested_database_names, archive_database_names):
     if 'all' in restore_names[UNSPECIFIED_HOOK]:
         restore_names[UNSPECIFIED_HOOK].remove('all')
 
-        for (hook_name, database_names) in archive_database_names.items():
+        for hook_name, database_names in archive_database_names.items():
             restore_names.setdefault(hook_name, []).extend(database_names)
 
             # If a database is to be restored as part of "all", then remove it from restore names so
@@ -256,22 +262,34 @@ def run_restore(
         return
 
     logger.info(
-        '{}: Restoring databases from archive {}'.format(repository, restore_arguments.archive)
+        f'{repository["path"]}: Restoring databases from archive {restore_arguments.archive}'
     )
+
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,
     )
 
     archive_name = borgmatic.borg.rlist.resolve_archive_name(
-        repository, restore_arguments.archive, storage, local_borg_version, local_path, remote_path,
+        repository['path'],
+        restore_arguments.archive,
+        storage,
+        local_borg_version,
+        local_path,
+        remote_path,
     )
     archive_database_names = collect_archive_database_names(
-        repository, archive_name, location, storage, local_borg_version, local_path, remote_path,
+        repository['path'],
+        archive_name,
+        location,
+        storage,
+        local_borg_version,
+        local_path,
+        remote_path,
     )
     restore_names = find_databases_to_restore(restore_arguments.databases, archive_database_names)
     found_names = set()
@@ -291,7 +309,7 @@ def run_restore(
 
             found_names.add(database_name)
             restore_single_database(
-                repository,
+                repository['path'],
                 location,
                 storage,
                 hooks,
@@ -301,7 +319,7 @@ def run_restore(
                 remote_path,
                 archive_name,
                 found_hook_name or hook_name,
-                found_database,
+                dict(found_database, **{'schemas': restore_arguments.schemas}),
             )
 
     # For any database that weren't found via exact matches in the hooks configuration, try to
@@ -320,7 +338,7 @@ def run_restore(
             database['name'] = database_name
 
             restore_single_database(
-                repository,
+                repository['path'],
                 location,
                 storage,
                 hooks,
@@ -330,13 +348,13 @@ def run_restore(
                 remote_path,
                 archive_name,
                 found_hook_name or hook_name,
-                database,
+                dict(database, **{'schemas': restore_arguments.schemas}),
             )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,

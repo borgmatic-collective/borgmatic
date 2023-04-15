@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import flags as module
@@ -50,7 +51,7 @@ def test_make_flags_from_arguments_omits_excludes():
 def test_make_repository_flags_with_borg_features_includes_repo_flag():
     flexmock(module.feature).should_receive('available').and_return(True)
 
-    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == (
+    assert module.make_repository_flags(repository_path='repo', local_borg_version='1.2.3') == (
         '--repo',
         'repo',
     )
@@ -59,20 +60,90 @@ def test_make_repository_flags_with_borg_features_includes_repo_flag():
 def test_make_repository_flags_without_borg_features_includes_omits_flag():
     flexmock(module.feature).should_receive('available').and_return(False)
 
-    assert module.make_repository_flags(repository='repo', local_borg_version='1.2.3') == ('repo',)
+    assert module.make_repository_flags(repository_path='repo', local_borg_version='1.2.3') == (
+        'repo',
+    )
 
 
 def test_make_repository_archive_flags_with_borg_features_separates_repository_and_archive():
     flexmock(module.feature).should_receive('available').and_return(True)
 
     assert module.make_repository_archive_flags(
-        repository='repo', archive='archive', local_borg_version='1.2.3'
-    ) == ('--repo', 'repo', 'archive',)
+        repository_path='repo', archive='archive', local_borg_version='1.2.3'
+    ) == (
+        '--repo',
+        'repo',
+        'archive',
+    )
 
 
 def test_make_repository_archive_flags_with_borg_features_joins_repository_and_archive():
     flexmock(module.feature).should_receive('available').and_return(False)
 
     assert module.make_repository_archive_flags(
-        repository='repo', archive='archive', local_borg_version='1.2.3'
+        repository_path='repo', archive='archive', local_borg_version='1.2.3'
     ) == ('repo::archive',)
+
+
+@pytest.mark.parametrize(
+    'match_archives, archive_name_format,feature_available,expected_result',
+    (
+        (None, None, True, ()),
+        (None, '', True, ()),
+        (
+            're:foo-.*',
+            '{hostname}-{now}',
+            True,
+            ('--match-archives', 're:foo-.*'),
+        ),  # noqa: FS003
+        (
+            'sh:foo-*',
+            '{hostname}-{now}',
+            False,
+            ('--glob-archives', 'foo-*'),
+        ),  # noqa: FS003
+        (
+            'foo-*',
+            '{hostname}-{now}',
+            False,
+            ('--glob-archives', 'foo-*'),
+        ),  # noqa: FS003
+        (
+            None,
+            '{hostname}-docs-{now}',  # noqa: FS003
+            True,
+            ('--match-archives', 'sh:{hostname}-docs-*'),  # noqa: FS003
+        ),
+        (
+            None,
+            '{utcnow}-docs-{user}',  # noqa: FS003
+            True,
+            ('--match-archives', 'sh:*-docs-{user}'),  # noqa: FS003
+        ),
+        (None, '{fqdn}-{pid}', True, ('--match-archives', 'sh:{fqdn}-*')),  # noqa: FS003
+        (
+            None,
+            'stuff-{now:%Y-%m-%dT%H:%M:%S.%f}',  # noqa: FS003
+            True,
+            ('--match-archives', 'sh:stuff-*'),
+        ),
+        (
+            None,
+            '{hostname}-docs-{now}',  # noqa: FS003
+            False,
+            ('--glob-archives', '{hostname}-docs-*'),  # noqa: FS003
+        ),
+        (None, '{utcnow}-docs-{user}', False, ('--glob-archives', '*-docs-{user}')),  # noqa: FS003
+    ),
+)
+def test_make_match_archives_flags_makes_flags_with_globs(
+    match_archives, archive_name_format, feature_available, expected_result
+):
+    flexmock(module.feature).should_receive('available').and_return(feature_available)
+
+    assert (
+        module.make_match_archives_flags(
+            match_archives, archive_name_format, local_borg_version=flexmock()
+        )
+        == expected_result
+    )

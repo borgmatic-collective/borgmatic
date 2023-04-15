@@ -12,13 +12,17 @@ def test_run_check_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
-        repository=None, progress=flexmock(), repair=flexmock(), only=flexmock(), force=flexmock(),
+        repository=None,
+        progress=flexmock(),
+        repair=flexmock(),
+        only=flexmock(),
+        force=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_check(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},
@@ -49,7 +53,7 @@ def test_run_check_runs_with_selected_repository():
 
     module.run_check(
         config_filename='test.yaml',
-        repository=flexmock(),
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},
@@ -80,7 +84,7 @@ def test_run_check_bails_if_repository_does_not_match():
 
     module.run_check(
         config_filename='test.yaml',
-        repository='repo',
+        repository={'path': 'repo'},
         location={'repositories': ['repo']},
         storage={},
         consistency={},

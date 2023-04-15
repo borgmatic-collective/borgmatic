@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def compact_segments(
     dry_run,
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     local_path='borg',
@@ -36,11 +36,11 @@ def compact_segments(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     if dry_run:
-        logging.info(f'{repository}: Skipping compact (dry run)')
+        logging.info(f'{repository_path}: Skipping compact (dry run)')
         return
 
     execute_command(

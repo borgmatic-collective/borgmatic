@@ -53,7 +53,8 @@ This runs Borg's `rlist` command once on each configured borgmatic repository.
 (The native `borgmatic rlist` action should be preferred for most use.)
 
 What if you only want to run Borg on a single configured borgmatic repository
-when you've got several configured? Not a problem.
+when you've got several configured? Not a problem. The `--repository` argument
+lets you specify the repository to use, either by its path or its label:
 
 ```bash
 borgmatic borg --repository repo.borg break-lock

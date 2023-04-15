@@ -21,7 +21,7 @@ MAKE_FLAGS_EXCLUDES = (
 
 
 def make_list_command(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     list_arguments,
@@ -52,10 +52,10 @@ def make_list_command(
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (
             flags.make_repository_archive_flags(
-                repository, list_arguments.archive, local_borg_version
+                repository_path, list_arguments.archive, local_borg_version
             )
             if list_arguments.archive
-            else flags.make_repository_flags(repository, local_borg_version)
+            else flags.make_repository_flags(repository_path, local_borg_version)
         )
         + (tuple(list_arguments.paths) if list_arguments.paths else ())
     )
@@ -86,7 +86,7 @@ def make_find_paths(find_paths):
 
 
 def capture_archive_listing(
-    repository,
+    repository_path,
     archive,
     storage_config,
     local_borg_version,
@@ -104,16 +104,16 @@ def capture_archive_listing(
     return tuple(
         execute_command_and_capture_output(
             make_list_command(
-                repository,
+                repository_path,
                 storage_config,
                 local_borg_version,
                 argparse.Namespace(
-                    repository=repository,
+                    repository=repository_path,
                     archive=archive,
                     paths=[f'sh:{list_path}'],
                     find_paths=None,
                     json=None,
-                    format='{path}{NL}',
+                    format='{path}{NL}',  # noqa: FS003
                 ),
                 local_path,
                 remote_path,
@@ -126,7 +126,7 @@ def capture_archive_listing(
 
 
 def list_archive(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     list_arguments,
@@ -149,7 +149,7 @@ def list_archive(
             )
 
         rlist_arguments = argparse.Namespace(
-            repository=repository,
+            repository=repository_path,
             short=list_arguments.short,
             format=list_arguments.format,
             json=list_arguments.json,
@@ -160,7 +160,12 @@ def list_archive(
             last=list_arguments.last,
         )
         return rlist.list_repository(
-            repository, storage_config, local_borg_version, rlist_arguments, local_path, remote_path
+            repository_path,
+            storage_config,
+            local_borg_version,
+            rlist_arguments,
+            local_path,
+            remote_path,
         )
 
     if list_arguments.archive:
@@ -181,7 +186,7 @@ def list_archive(
     # getting a list of archives to search.
     if list_arguments.find_paths and not list_arguments.archive:
         rlist_arguments = argparse.Namespace(
-            repository=repository,
+            repository=repository_path,
             short=True,
             format=None,
             json=None,
@@ -196,7 +201,7 @@ def list_archive(
         archive_lines = tuple(
             execute_command_and_capture_output(
                 rlist.make_rlist_command(
-                    repository,
+                    repository_path,
                     storage_config,
                     local_borg_version,
                     rlist_arguments,
@@ -213,7 +218,7 @@ def list_archive(
 
     # For each archive listed by Borg, run list on the contents of that archive.
     for archive in archive_lines:
-        logger.answer(f'{repository}: Listing archive {archive}')
+        logger.answer(f'{repository_path}: Listing archive {archive}')
 
         archive_arguments = copy.copy(list_arguments)
         archive_arguments.archive = archive
@@ -224,7 +229,7 @@ def list_archive(
             setattr(archive_arguments, name, None)
 
         main_command = make_list_command(
-            repository,
+            repository_path,
             storage_config,
             local_borg_version,
             archive_arguments,

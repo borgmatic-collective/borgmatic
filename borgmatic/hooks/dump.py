@@ -33,7 +33,7 @@ def make_database_dump_filename(dump_path, name, hostname=None):
     Raise ValueError if the database name is invalid.
     '''
     if os.path.sep in name:
-        raise ValueError('Invalid database name {}'.format(name))
+        raise ValueError(f'Invalid database name {name}')
 
     return os.path.join(os.path.expanduser(dump_path), hostname or 'localhost', name)
 
@@ -60,9 +60,7 @@ def remove_database_dumps(dump_path, database_type_name, log_prefix, dry_run):
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
-    logger.debug(
-        '{}: Removing {} database dumps{}'.format(log_prefix, database_type_name, dry_run_label)
-    )
+    logger.debug(f'{log_prefix}: Removing {database_type_name} database dumps{dry_run_label}')
 
     expanded_path = os.path.expanduser(dump_path)
 
@@ -78,4 +76,4 @@ def convert_glob_patterns_to_borg_patterns(patterns):
     Convert a sequence of shell glob patterns like "/etc/*" to the corresponding Borg archive
     patterns like "sh:etc/*".
     '''
-    return ['sh:{}'.format(pattern.lstrip(os.path.sep)) for pattern in patterns]
+    return [f'sh:{pattern.lstrip(os.path.sep)}' for pattern in patterns]

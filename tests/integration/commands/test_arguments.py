@@ -465,6 +465,20 @@ def test_parse_arguments_disallows_transfer_with_both_archive_and_match_archives
         )
 
 
+def test_parse_arguments_disallows_list_with_both_prefix_and_match_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('list', '--prefix', 'foo', '--match-archives', 'sh:*bar')
+
+
+def test_parse_arguments_disallows_rlist_with_both_prefix_and_match_archives():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('rlist', '--prefix', 'foo', '--match-archives', 'sh:*bar')
+
+
 def test_parse_arguments_disallows_info_with_both_archive_and_match_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 

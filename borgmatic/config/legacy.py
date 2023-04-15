@@ -70,13 +70,11 @@ def validate_configuration_format(parser, config_format):
         section_format.name for section_format in config_format
     )
     if unknown_section_names:
-        raise ValueError(
-            'Unknown config sections found: {}'.format(', '.join(unknown_section_names))
-        )
+        raise ValueError(f"Unknown config sections found: {', '.join(unknown_section_names)}")
 
     missing_section_names = set(required_section_names) - section_names
     if missing_section_names:
-        raise ValueError('Missing config sections: {}'.format(', '.join(missing_section_names)))
+        raise ValueError(f"Missing config sections: {', '.join(missing_section_names)}")
 
     for section_format in config_format:
         if section_format.name not in section_names:
@@ -91,9 +89,7 @@ def validate_configuration_format(parser, config_format):
 
         if unexpected_option_names:
             raise ValueError(
-                'Unexpected options found in config section {}: {}'.format(
-                    section_format.name, ', '.join(sorted(unexpected_option_names))
-                )
+                f"Unexpected options found in config section {section_format.name}: {', '.join(sorted(unexpected_option_names))}",
             )
 
         missing_option_names = tuple(
@@ -105,9 +101,7 @@ def validate_configuration_format(parser, config_format):
 
         if missing_option_names:
             raise ValueError(
-                'Required options missing from config section {}: {}'.format(
-                    section_format.name, ', '.join(missing_option_names)
-                )
+                f"Required options missing from config section {section_format.name}: {', '.join(missing_option_names)}",
             )
 
 
@@ -137,7 +131,7 @@ def parse_configuration(config_filename, config_format):
     '''
     parser = RawConfigParser()
     if not parser.read(config_filename):
-        raise ValueError('Configuration file cannot be opened: {}'.format(config_filename))
+        raise ValueError(f'Configuration file cannot be opened: {config_filename}')
 
     validate_configuration_format(parser, config_format)
 

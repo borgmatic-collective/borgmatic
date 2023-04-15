@@ -13,7 +13,7 @@ RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
 
 def create_repository(
     dry_run,
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     encryption_mode,
@@ -33,14 +33,14 @@ def create_repository(
     '''
     try:
         rinfo.display_repository_info(
-            repository,
+            repository_path,
             storage_config,
             local_borg_version,
             argparse.Namespace(json=True),
             local_path,
             remote_path,
         )
-        logger.info(f'{repository}: Repository already exists. Skipping creation.')
+        logger.info(f'{repository_path}: Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:
         if error.returncode != RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
@@ -65,11 +65,11 @@ def create_repository(
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     if dry_run:
-        logging.info(f'{repository}: Skipping repository creation (dry run)')
+        logging.info(f'{repository_path}: Skipping repository creation (dry run)')
         return
 
     # Do not capture output here, so as to support interactive prompts.

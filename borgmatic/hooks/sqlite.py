@@ -26,7 +26,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
 
-    logger.info('{}: Dumping SQLite databases{}'.format(log_prefix, dry_run_label))
+    logger.info(f'{log_prefix}: Dumping SQLite databases{dry_run_label}')
 
     for database in databases:
         database_path = database['path']

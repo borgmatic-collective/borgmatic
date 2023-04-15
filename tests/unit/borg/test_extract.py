@@ -11,7 +11,9 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(command, working_directory=None):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        command, working_directory=working_directory, extra_environment=None,
+        command,
+        working_directory=working_directory,
+        extra_environment=None,
     ).once()
 
 
@@ -23,7 +25,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -32,7 +34,7 @@ def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(('repo',))
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -45,7 +47,7 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -60,7 +62,7 @@ def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_param
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=None
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=None
     )
 
 
@@ -74,7 +76,7 @@ def test_extract_last_archive_dry_run_calls_borg_via_local_path():
     module.extract_last_archive_dry_run(
         storage_config={},
         local_borg_version='1.2.3',
-        repository='repo',
+        repository_path='repo',
         lock_wait=None,
         local_path='borg1',
     )
@@ -92,7 +94,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_remote_path_parameters():
     module.extract_last_archive_dry_run(
         storage_config={},
         local_borg_version='1.2.3',
-        repository='repo',
+        repository_path='repo',
         lock_wait=None,
         remote_path='borg1',
     )
@@ -108,7 +110,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_parameters():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={}, local_borg_version='1.2.3', repository='repo', lock_wait=5
+        storage_config={}, local_borg_version='1.2.3', repository_path='repo', lock_wait=5
     )
 
 
@@ -152,7 +154,11 @@ def test_extract_archive_calls_borg_with_remote_path_parameters():
 
 
 @pytest.mark.parametrize(
-    'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner'),),
+    'feature_available,option_flag',
+    (
+        (True, '--numeric-ids'),
+        (False, '--numeric-owner'),
+    ),
 )
 def test_extract_archive_calls_borg_with_numeric_ids_parameter(feature_available, option_flag):
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
@@ -441,7 +447,9 @@ def test_extract_archive_skips_abspath_for_remote_repository():
     flexmock(module.os.path).should_receive('abspath').never()
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'extract', 'server:repo::archive'), working_directory=None, extra_environment=None,
+        ('borg', 'extract', 'server:repo::archive'),
+        working_directory=None,
+        extra_environment=None,
     ).once()
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(

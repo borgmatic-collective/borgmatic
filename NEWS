@@ -1,10 +1,66 @@
-1.7.10.dev0
+1.7.13.dev0
+ * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
+   flag. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
+
+1.7.12
+ * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.
+   See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
+ * #666, #670: Fix error when running the "info" action with the "--match-archives" or "--archive"
+   flags. Also fix the "--match-archives"/"--archive" flags to correctly override the
+   "match_archives" configuration option for the "transfer", "list", "rlist", and "info" actions.
+ * #668: Fix error when running the "prune" action with both "archive_name_format" and "prefix"
+   options set.
+ * #672: Selectively shallow merge certain mappings or sequences when including configuration files.
+   See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#shallow-merge
+ * #672: Selectively omit list values when including configuration files. See the documentation for
+   more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#list-merge
+ * #673: View the results of configuration file merging via "validate-borgmatic-config --show" flag.
+   See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#debugging-includes
+ * Add optional support for running end-to-end tests and building documentation with rootless Podman
+   instead of Docker.
+
+1.7.11
+ * #479, #588: BREAKING: Automatically use the "archive_name_format" option to filter which archives
+   get used for borgmatic actions that operate on multiple archives. Override this behavior with the
+   new "match_archives" option in the storage section. This change is "breaking" in that it silently
+   changes which archives get considered for "rlist", "prune", "check", etc. See the documentation
+   for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#archive-naming
+ * #479, #588: The "prefix" options have been deprecated in favor of the new "archive_name_format"
+   auto-matching behavior and the "match_archives" option.
+ * #658: Add "--log-file-format" flag for customizing the log message format. See the documentation
+   for more information:
+   https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#logging-to-file
+ * #662: Fix regression in which the "check_repositories" option failed to match repositories.
+ * #663: Fix regression in which the "transfer" action produced a traceback.
+ * Add spellchecking of source code during test runs.
+
+1.7.10
+ * #396: When a database command errors, display and log the error message instead of swallowing it.
  * #501: Optionally error if a source directory does not exist via "source_directories_must_exist"
    option in borgmatic's location configuration.
  * #576: Add support for "file://" paths within "repositories" option.
+ * #612: Define and use custom constants in borgmatic configuration files. See the documentation for
+   more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#constant-interpolation
  * #618: Add support for BORG_FILES_CACHE_TTL environment variable via "borg_files_cache_ttl" option
    in borgmatic's storage configuration.
  * #623: Fix confusing message when an error occurs running actions for a configuration file.
+ * #635: Add optional repository labels so you can select a repository via "--repository yourlabel"
+   at the command-line. See the configuration reference for more information:
+   https://torsion.org/borgmatic/docs/reference/configuration/
+ * #649: Add documentation on backing up a database running in a container:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+ * #655: Fix error when databases are configured and a source directory doesn't exist.
+ * Add code style plugins to enforce use of Python f-strings and prevent single-letter variables.
+   To join in the pedantry, refresh your test environment with "tox --recreate".
+ * Rename scripts/run-full-dev-tests to scripts/run-end-to-end-dev-tests and make it run end-to-end
+   tests only. Continue using tox to run unit and integration tests.
 
 1.7.9
  * #295: Add a SQLite database dump/restore hook.
@@ -374,7 +430,7 @@
    configuration schema descriptions.
 
 1.5.6
- * #292: Allow before_backup and similiar hooks to exit with a soft failure without altering the
+ * #292: Allow before_backup and similar hooks to exit with a soft failure without altering the
    monitoring status on Healthchecks or other providers. Support this by waiting to ping monitoring
    services with a "start" status until after before_* hooks finish. Failures in before_* hooks
    still trigger a monitoring "fail" status.
@@ -443,7 +499,7 @@
  * For "list" and "info" actions, show repository names even at verbosity 0.
 
 1.4.22
- * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON ouput.
+ * #276, #285: Disable colored output when "--json" flag is used, so as to produce valid JSON output.
  * After a backup of a database dump in directory format, properly remove the dump directory.
  * In "borgmatic --help", don't expand $HOME in listing of default "--config" paths.
 
@@ -815,7 +871,7 @@
  * #77: Skip non-"*.yaml" config filenames in /etc/borgmatic.d/ so as not to parse backup files,
    editor swap files, etc.
  * #81: Document user-defined hooks run before/after backup, or on error.
- * Add code style guidelines to the documention.
+ * Add code style guidelines to the documentation.
 
 1.2.0
  * #61: Support for Borg --list option via borgmatic command-line to list all archives.

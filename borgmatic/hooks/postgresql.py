@@ -1,4 +1,5 @@
 import csv
+import itertools
 import logging
 import os
 
@@ -93,7 +94,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
 
-    logger.info('{}: Dumping PostgreSQL databases{}'.format(log_prefix, dry_run_label))
+    logger.info(f'{log_prefix}: Dumping PostgreSQL databases{dry_run_label}')
 
     for database in databases:
         extra_environment = make_extra_environment(database)
@@ -122,7 +123,12 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 continue
 
             command = (
-                (dump_command, '--no-password', '--clean', '--if-exists',)
+                (
+                    dump_command,
+                    '--no-password',
+                    '--clean',
+                    '--if-exists',
+                )
                 + (('--host', database['hostname']) if 'hostname' in database else ())
                 + (('--port', str(database['port'])) if 'port' in database else ())
                 + (('--username', database['username']) if 'username' in database else ())
@@ -145,7 +151,9 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             if dump_format == 'directory':
                 dump.create_parent_directory_for_dump(dump_filename)
                 execute_command(
-                    command, shell=True, extra_environment=extra_environment,
+                    command,
+                    shell=True,
+                    extra_environment=extra_environment,
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)
@@ -225,12 +233,16 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (('--username', database['username']) if 'username' in database else ())
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
+        + tuple(
+            itertools.chain.from_iterable(('--schema', schema) for schema in database['schemas'])
+            if database['schemas']
+            else ()
+        )
     )
+
     extra_environment = make_extra_environment(database)
 
-    logger.debug(
-        '{}: Restoring PostgreSQL database {}{}'.format(log_prefix, database['name'], dry_run_label)
-    )
+    logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
     if dry_run:
         return
 

@@ -29,7 +29,8 @@ def test_resolve_archive_name_calls_borg_with_parameters():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -42,7 +43,8 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_parameter():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.INFO)
 
@@ -56,7 +58,8 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_parameter(
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.DEBUG)
 
@@ -70,7 +73,8 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -100,7 +104,8 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_param
 def test_resolve_archive_name_without_archives_raises():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return('')
 
     with pytest.raises(ValueError):
@@ -127,14 +132,19 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_parameter
 def test_make_rlist_command_includes_log_info():
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--info', 'repo')
@@ -143,14 +153,19 @@ def test_make_rlist_command_includes_log_info():
 def test_make_rlist_command_includes_json_but_not_info():
     insert_logging_mock(logging.INFO)
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=True, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=True, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -159,14 +174,19 @@ def test_make_rlist_command_includes_json_but_not_info():
 def test_make_rlist_command_includes_log_debug():
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--debug', '--show-rc', 'repo')
@@ -175,14 +195,19 @@ def test_make_rlist_command_includes_log_debug():
 def test_make_rlist_command_includes_json_but_not_debug():
     insert_logging_mock(logging.DEBUG)
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=True, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=True, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -190,14 +215,19 @@ def test_make_rlist_command_includes_json_but_not_debug():
 
 def test_make_rlist_command_includes_json():
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--json',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=True, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=True, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -207,14 +237,19 @@ def test_make_rlist_command_includes_lock_wait():
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(
         ('--lock-wait', '5')
     ).and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={'lock_wait': 5},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
     )
 
     assert command == ('borg', 'list', '--lock-wait', '5', 'repo')
@@ -222,14 +257,19 @@ def test_make_rlist_command_includes_lock_wait():
 
 def test_make_rlist_command_includes_local_path():
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
         local_path='borg2',
     )
 
@@ -240,14 +280,19 @@ def test_make_rlist_command_includes_remote_path():
     flexmock(module.flags).should_receive('make_flags').and_return(
         ('--remote-path', 'borg2')
     ).and_return(()).and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
         remote_path='borg2',
     )
 
@@ -258,11 +303,14 @@ def test_make_rlist_command_transforms_prefix_into_match_archives():
     flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
         ('--match-archives', 'sh:foo*')
     )
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix='foo'),
@@ -271,16 +319,59 @@ def test_make_rlist_command_transforms_prefix_into_match_archives():
     assert command == ('borg', 'list', '--match-archives', 'sh:foo*', 'repo')
 
 
+def test_make_rlist_command_prefers_prefix_over_archive_name_format():
+    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+        ('--match-archives', 'sh:foo*')
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').never()
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_rlist_command(
+        repository_path='repo',
+        storage_config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        local_borg_version='1.2.3',
+        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix='foo'),
+    )
+
+    assert command == ('borg', 'list', '--match-archives', 'sh:foo*', 'repo')
+
+
+def test_make_rlist_command_transforms_archive_name_format_into_match_archives():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, 'bar-{now}', '1.2.3'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:bar-*'))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_rlist_command(
+        repository_path='repo',
+        storage_config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        local_borg_version='1.2.3',
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
+    )
+
+    assert command == ('borg', 'list', '--match-archives', 'sh:bar-*', 'repo')
+
+
 def test_make_rlist_command_includes_short():
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--short',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
-        rlist_arguments=flexmock(archive=None, paths=None, json=False, prefix=None, short=True),
+        rlist_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None, short=True
+        ),
     )
 
     assert command == ('borg', 'list', '--short', 'repo')
@@ -289,7 +380,6 @@ def test_make_rlist_command_includes_short():
 @pytest.mark.parametrize(
     'argument_name',
     (
-        'match_archives',
         'sort_by',
         'first',
         'last',
@@ -301,13 +391,16 @@ def test_make_rlist_command_includes_short():
 )
 def test_make_rlist_command_includes_additional_flags(argument_name):
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
         (f"--{argument_name.replace('_', '-')}", 'value')
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
     command = module.make_rlist_command(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         rlist_arguments=flexmock(
@@ -315,6 +408,7 @@ def test_make_rlist_command_includes_additional_flags(argument_name):
             paths=None,
             json=False,
             prefix=None,
+            match_archives=None,
             find_paths=None,
             format=None,
             **{argument_name: 'value'},
@@ -324,6 +418,37 @@ def test_make_rlist_command_includes_additional_flags(argument_name):
     assert command == ('borg', 'list', '--' + argument_name.replace('_', '-'), 'value', 'repo')
 
 
+def test_make_rlist_command_with_match_archives_calls_borg_with_match_archives_parameters():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'foo-*',
+        None,
+        '1.2.3',
+    ).and_return(('--match-archives', 'foo-*'))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_rlist_command(
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        rlist_arguments=flexmock(
+            archive=None,
+            paths=None,
+            json=False,
+            prefix=None,
+            match_archives='foo-*',
+            find_paths=None,
+            format=None,
+        ),
+    )
+
+    assert command == ('borg', 'list', '--match-archives', 'foo-*', 'repo')
+
+
 def test_list_repository_calls_borg_with_parameters():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
@@ -331,7 +456,7 @@ def test_list_repository_calls_borg_with_parameters():
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_rlist_command').with_args(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         rlist_arguments=rlist_arguments,
@@ -347,7 +472,7 @@ def test_list_repository_calls_borg_with_parameters():
     ).once()
 
     module.list_repository(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         rlist_arguments=rlist_arguments,
@@ -362,7 +487,7 @@ def test_list_repository_with_json_returns_borg_output():
 
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_rlist_command').with_args(
-        repository='repo',
+        repository_path='repo',
         storage_config={},
         local_borg_version='1.2.3',
         rlist_arguments=rlist_arguments,
@@ -374,7 +499,7 @@ def test_list_repository_with_json_returns_borg_output():
 
     assert (
         module.list_repository(
-            repository='repo',
+            repository_path='repo',
             storage_config={},
             local_borg_version='1.2.3',
             rlist_arguments=rlist_arguments,

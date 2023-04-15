@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def display_repository_info(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     rinfo_arguments,
@@ -43,14 +43,15 @@ def display_repository_info(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
         + (('--json',) if rinfo_arguments.json else ())
-        + flags.make_repository_flags(repository, local_borg_version)
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     extra_environment = environment.make_environment(storage_config)
 
     if rinfo_arguments.json:
         return execute_command_and_capture_output(
-            full_command, extra_environment=extra_environment,
+            full_command,
+            extra_environment=extra_environment,
         )
     else:
         execute_command(

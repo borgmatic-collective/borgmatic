@@ -131,9 +131,7 @@ def make_parsers():
         nargs='*',
         dest='config_paths',
         default=config_paths,
-        help='Configuration filenames or directories, defaults to: {}'.format(
-            ' '.join(unexpanded_config_paths)
-        ),
+        help=f"Configuration filenames or directories, defaults to: {' '.join(unexpanded_config_paths)}",
     )
     global_group.add_argument(
         '--excludes',
@@ -182,8 +180,12 @@ def make_parsers():
     global_group.add_argument(
         '--log-file',
         type=str,
-        default=None,
         help='Write log messages to this file instead of syslog',
+    )
+    global_group.add_argument(
+        '--log-file-format',
+        type=str,
+        help='Log format string used for log messages written to the log file',
     )
     global_group.add_argument(
         '--override',
@@ -225,7 +227,7 @@ def make_parsers():
     subparsers = top_level_parser.add_subparsers(
         title='actions',
         metavar='',
-        help='Specify zero or more actions. Defaults to creat, prune, compact, and check. Use --help with action for details:',
+        help='Specify zero or more actions. Defaults to create, prune, compact, and check. Use --help with action for details:',
     )
     rcreate_parser = subparsers.add_parser(
         'rcreate',
@@ -258,10 +260,13 @@ def make_parsers():
         help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key [Borg 2.x+ only]',
     )
     rcreate_group.add_argument(
-        '--append-only', action='store_true', help='Create an append-only repository',
+        '--append-only',
+        action='store_true',
+        help='Create an append-only repository',
     )
     rcreate_group.add_argument(
-        '--storage-quota', help='Create a repository with a fixed storage quota',
+        '--storage-quota',
+        help='Create a repository with a fixed storage quota',
     )
     rcreate_group.add_argument(
         '--make-parent-dirs',
@@ -295,7 +300,7 @@ def make_parsers():
     )
     transfer_group.add_argument(
         '--upgrader',
-        help='Upgrader type used to convert the transfered data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
+        help='Upgrader type used to convert the transferred data, e.g. "From12To20" to upgrade data from Borg 1.2 to 2.0 format, defaults to no conversion',
     )
     transfer_group.add_argument(
         '--progress',
@@ -674,6 +679,13 @@ def make_parsers():
         help="Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic's configuration",
     )
     restore_group.add_argument(
+        '--schema',
+        metavar='NAME',
+        nargs='+',
+        dest='schemas',
+        help='Names of schemas to restore from the database, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
+    )
+    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -686,7 +698,8 @@ def make_parsers():
     )
     rlist_group = rlist_parser.add_argument_group('rlist arguments')
     rlist_group.add_argument(
-        '--repository', help='Path of repository to list, defaults to the configured repositories',
+        '--repository',
+        help='Path of repository to list, defaults to the configured repositories',
     )
     rlist_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive names'
@@ -696,7 +709,7 @@ def make_parsers():
         '--json', default=False, action='store_true', help='Output results as JSON'
     )
     rlist_group.add_argument(
-        '-P', '--prefix', help='Only list archive names starting with this prefix'
+        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
     )
     rlist_group.add_argument(
         '-a',
@@ -763,7 +776,7 @@ def make_parsers():
         '--json', default=False, action='store_true', help='Output results as JSON'
     )
     list_group.add_argument(
-        '-P', '--prefix', help='Only list archive names starting with this prefix'
+        '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
     )
     list_group.add_argument(
         '-a',
@@ -835,7 +848,9 @@ def make_parsers():
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
     info_group.add_argument(
-        '-P', '--prefix', help='Only show info for archive names starting with this prefix'
+        '-P',
+        '--prefix',
+        help='Deprecated. Only show info for archive names starting with this prefix',
     )
     info_group.add_argument(
         '-a',
@@ -945,7 +960,17 @@ def parse_arguments(*unparsed_arguments):
         and arguments['transfer'].match_archives
     ):
         raise ValueError(
-            'With the transfer action, only one of --archive and --glob-archives flags can be used.'
+            'With the transfer action, only one of --archive and --match-archives flags can be used.'
+        )
+
+    if 'list' in arguments and (arguments['list'].prefix and arguments['list'].match_archives):
+        raise ValueError(
+            'With the list action, only one of --prefix or --match-archives flags can be used.'
+        )
+
+    if 'rlist' in arguments and (arguments['rlist'].prefix and arguments['rlist'].match_archives):
+        raise ValueError(
+            'With the rlist action, only one of --prefix or --match-archives flags can be used.'
         )
 
     if 'info' in arguments and (

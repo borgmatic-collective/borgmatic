@@ -23,9 +23,7 @@ def parse_arguments(*arguments):
         '--destination',
         dest='destination_filename',
         default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help='Destination YAML configuration file, default: {}'.format(
-            DEFAULT_DESTINATION_CONFIG_FILENAME
-        ),
+        help=f'Destination YAML configuration file, default: {DEFAULT_DESTINATION_CONFIG_FILENAME}',
     )
     parser.add_argument(
         '--overwrite',
@@ -48,17 +46,13 @@ def main():  # pragma: no cover
             overwrite=args.overwrite,
         )
 
-        print('Generated a sample configuration file at {}.'.format(args.destination_filename))
+        print(f'Generated a sample configuration file at {args.destination_filename}.')
         print()
         if args.source_filename:
-            print(
-                'Merged in the contents of configuration file at {}.'.format(args.source_filename)
-            )
+            print(f'Merged in the contents of configuration file at {args.source_filename}.')
             print('To review the changes made, run:')
             print()
-            print(
-                '    diff --unified {} {}'.format(args.source_filename, args.destination_filename)
-            )
+            print(f'    diff --unified {args.source_filename} {args.destination_filename}')
             print()
         print('This includes all available configuration options with example values. The few')
         print('required options are indicated. Please edit the file to suit your needs.')

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = '1.7.10.dev0'
+VERSION = '1.7.13.dev0'
 
 
 setup(
@@ -32,6 +32,7 @@ setup(
     install_requires=(
         'colorama>=0.4.1,<0.5',
         'jsonschema',
+        'packaging',
         'requests',
         'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools',

@@ -12,7 +12,6 @@ DEFAULT_CHECKS = (
     {'name': 'repository', 'frequency': '1 month'},
     {'name': 'archives', 'frequency': '1 month'},
 )
-DEFAULT_PREFIX = '{hostname}-'
 
 
 logger = logging.getLogger(__name__)
@@ -146,9 +145,10 @@ def filter_checks_on_frequency(
     return tuple(filtered_checks)
 
 
-def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
+def make_check_flags(local_borg_version, storage_config, checks, check_last=None, prefix=None):
     '''
-    Given the local Borg version and a parsed sequence of checks, transform the checks into tuple of
+    Given the local Borg version, a storage configuration dict, a parsed sequence of checks, the
+    check last value, and a consistency check prefix, transform the checks into tuple of
     command-line flags.
 
     For example, given parsed checks of:
@@ -174,10 +174,21 @@ def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
 
     if 'archives' in checks:
         last_flags = ('--last', str(check_last)) if check_last else ()
-        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
-            match_archives_flags = ('--match-archives', f'sh:{prefix}*') if prefix else ()
-        else:
-            match_archives_flags = ('--glob-archives', f'{prefix}*') if prefix else ()
+        match_archives_flags = (
+            (
+                ('--match-archives', f'sh:{prefix}*')
+                if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
+                else ('--glob-archives', f'{prefix}*')
+            )
+            if prefix
+            else (
+                flags.make_match_archives_flags(
+                    storage_config.get('match_archives'),
+                    storage_config.get('archive_name_format'),
+                    local_borg_version,
+                )
+            )
+        )
     else:
         last_flags = ()
         match_archives_flags = ()
@@ -196,7 +207,7 @@ def make_check_flags(local_borg_version, checks, check_last=None, prefix=None):
         return common_flags
 
     return (
-        tuple('--{}-only'.format(check) for check in checks if check in ('repository', 'archives'))
+        tuple(f'--{check}-only' for check in checks if check in ('repository', 'archives'))
         + common_flags
     )
 
@@ -243,7 +254,7 @@ def read_check_time(path):
 
 
 def check_archives(
-    repository,
+    repository_path,
     location_config,
     storage_config,
     consistency_config,
@@ -268,7 +279,7 @@ def check_archives(
     try:
         borg_repository_id = json.loads(
             rinfo.display_repository_info(
-                repository,
+                repository_path,
                 storage_config,
                 local_borg_version,
                 argparse.Namespace(json=True),
@@ -277,7 +288,7 @@ def check_archives(
             )
         )['repository']['id']
     except (json.JSONDecodeError, KeyError):
-        raise ValueError(f'Cannot determine Borg repository ID for {repository}')
+        raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')
 
     checks = filter_checks_on_frequency(
         location_config,
@@ -291,7 +302,7 @@ def check_archives(
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('check', '')
 
     if set(checks).intersection({'repository', 'archives', 'data'}):
-        lock_wait = storage_config.get('lock_wait', None)
+        lock_wait = storage_config.get('lock_wait')
 
         verbosity_flags = ()
         if logger.isEnabledFor(logging.INFO):
@@ -299,18 +310,18 @@ def check_archives(
         if logger.isEnabledFor(logging.DEBUG):
             verbosity_flags = ('--debug', '--show-rc')
 
-        prefix = consistency_config.get('prefix', DEFAULT_PREFIX)
+        prefix = consistency_config.get('prefix')
 
         full_command = (
             (local_path, 'check')
             + (('--repair',) if repair else ())
-            + make_check_flags(local_borg_version, checks, check_last, prefix)
+            + make_check_flags(local_borg_version, storage_config, checks, check_last, prefix)
             + (('--remote-path', remote_path) if remote_path else ())
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (('--progress',) if progress else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-            + flags.make_repository_flags(repository, local_borg_version)
+            + flags.make_repository_flags(repository_path, local_borg_version)
         )
 
         borg_environment = environment.make_environment(storage_config)
@@ -329,6 +340,6 @@ def check_archives(
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(
-            storage_config, local_borg_version, repository, lock_wait, local_path, remote_path
+            storage_config, local_borg_version, repository_path, lock_wait, local_path, remote_path
         )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))

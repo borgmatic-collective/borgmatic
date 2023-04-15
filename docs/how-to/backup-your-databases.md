@@ -136,6 +136,53 @@ hooks:
           format: sql
 ```
 
+### Containers
+
+If your database is running within a Docker container and borgmatic is too, no
+problem—simply configure borgmatic to connect to the container's name on its
+exposed port. For instance:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: your-database-container-name
+          port: 5433
+          username: postgres
+          password: trustsome1
+```
+
+But what if borgmatic is running on the host? You can still connect to a
+database container if its ports are properly exposed to the host. For
+instance, when running the database container with Docker, you can specify
+`--publish 127.0.0.1:5433:5432` so that it exposes the container's port 5432
+to port 5433 on the host (only reachable on localhost, in this case). Or the
+same thing with Docker Compose:
+
+```yaml
+services:
+   your-database-container-name:
+       image: postgres
+       ports:
+           - 127.0.0.1:5433:5432
+```
+
+And then you can connect to the database from borgmatic running on the host:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: 127.0.0.1
+          port: 5433
+          username: postgres
+          password: trustsome1
+```
+
+Of course, alter the ports in these examples to suit your particular database
+system.
+
+
 ### No source directories
 
 <span class="minilink minilink-addedin">New in version 1.7.1</span> If you
@@ -152,7 +199,6 @@ hooks:
     mysql_databases:
         - name: all
 ```
-
 
 
 ### External passwords
@@ -231,7 +277,8 @@ If you have a single repository in your borgmatic configuration file(s), no
 problem: the `restore` action figures out which repository to use.
 
 But if you have multiple repositories configured, then you'll need to specify
-the repository path containing the archive to restore. Here's an example:
+the repository to use via the `--repository` flag. This can be done either
+with the repository's path or its label as configured in your borgmatic configuration file.
 
 ```bash
 borgmatic restore --repository repo.borg --archive host-2023-...
@@ -275,6 +322,17 @@ dump from the archive.
 "all" databases restores each database found in the selected archive. That
 includes any combined dump file named "all" and any other individual database
 dumps found in the archive.
+
+
+### Restore particular schemas
+
+<span class="minilink minilink-addedin">New in version 1.7.13</span> With
+PostgreSQL and MongoDB, you can limit the restore to a single schema found
+within the database dump:
+
+```bash
+borgmatic restore --archive latest --database users --schema tentant1
+```
 
 
 ### Limitations
@@ -333,6 +391,23 @@ dumps with any database system.
 
 
 ## Troubleshooting
+
+### PostgreSQL/MySQL authentication errors
+
+With PostgreSQL and MySQL/MariaDB, if you're getting authentication errors
+when borgmatic tries to connect to your database, a natural reaction is to
+increase your borgmatic verbosity with `--verbosity 2` and go looking in the
+logs. You'll notice however that your database password does not show up in
+the logs. This is likely not the cause of the authentication problem unless
+you mistyped your password, however; borgmatic passes your password to the
+database via an environment variable that does not appear in the logs.
+
+The cause of an authentication error is often on the database side—in the
+configuration of which users are allowed to connect and how they are
+authenticated. For instance, with PostgreSQL, check your
+[pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
+file for that configuration.
+
 
 ### MySQL table lock errors
 

@@ -1,8 +1,12 @@
 import os
 
 import jsonschema
-import pkg_resources
 import ruamel.yaml
+
+try:
+    import importlib_metadata
+except ModuleNotFoundError:  # pragma: nocover
+    import importlib.metadata as importlib_metadata
 
 from borgmatic.config import environment, load, normalize, override
 
@@ -11,8 +15,17 @@ def schema_filename():
     '''
     Path to the installed YAML configuration schema file, used to validate and parse the
     configuration.
+
+    Raise FileNotFoundError when the schema path does not exist.
     '''
-    return pkg_resources.resource_filename('borgmatic', 'config/schema.yaml')
+    try:
+        return next(
+            str(path.locate())
+            for path in importlib_metadata.files('borgmatic')
+            if path.match('config/schema.yaml')
+        )
+    except StopIteration:
+        raise FileNotFoundError('Configuration file schema could not be found')
 
 
 def format_json_error_path_element(path_element):
@@ -20,9 +33,9 @@ def format_json_error_path_element(path_element):
     Given a path element into a JSON data structure, format it for display as a string.
     '''
     if isinstance(path_element, int):
-        return str('[{}]'.format(path_element))
+        return str(f'[{path_element}]')
 
-    return str('.{}'.format(path_element))
+    return str(f'.{path_element}')
 
 
 def format_json_error(error):
@@ -30,10 +43,10 @@ def format_json_error(error):
     Given an instance of jsonschema.exceptions.ValidationError, format it for display as a string.
     '''
     if not error.path:
-        return 'At the top level: {}'.format(error.message)
+        return f'At the top level: {error.message}'
 
     formatted_path = ''.join(format_json_error_path_element(element) for element in error.path)
-    return "At '{}': {}".format(formatted_path.lstrip('.'), error.message)
+    return f"At '{formatted_path.lstrip('.')}': {error.message}"
 
 
 class Validation_error(ValueError):
@@ -54,9 +67,10 @@ class Validation_error(ValueError):
         '''
         Render a validation error as a user-facing string.
         '''
-        return 'An error occurred while parsing a configuration file at {}:\n'.format(
-            self.config_filename
-        ) + '\n'.join(error for error in self.errors)
+        return (
+            f'An error occurred while parsing a configuration file at {self.config_filename}:\n'
+            + '\n'.join(error for error in self.errors)
+        )
 
 
 def apply_logical_validation(config_filename, parsed_configuration):
@@ -68,13 +82,14 @@ def apply_logical_validation(config_filename, parsed_configuration):
     location_repositories = parsed_configuration.get('location', {}).get('repositories')
     check_repositories = parsed_configuration.get('consistency', {}).get('check_repositories', [])
     for repository in check_repositories:
-        if repository not in location_repositories:
+        if not any(
+            repositories_match(repository, config_repository)
+            for config_repository in location_repositories
+        ):
             raise Validation_error(
                 config_filename,
                 (
-                    'Unknown repository in the "consistency" section\'s "check_repositories": {}'.format(
-                        repository
-                    ),
+                    f'Unknown repository in the "consistency" section\'s "check_repositories": {repository}',
                 ),
             )
 
@@ -138,9 +153,17 @@ def normalize_repository_path(repository):
 
 def repositories_match(first, second):
     '''
-    Given two repository paths (relative and/or absolute), return whether they match.
+    Given two repository dicts with keys 'path' (relative and/or absolute),
+    and 'label', or two repository paths, return whether they match.
     '''
-    return normalize_repository_path(first) == normalize_repository_path(second)
+    if isinstance(first, str):
+        first = {'path': first, 'label': first}
+    if isinstance(second, str):
+        second = {'path': second, 'label': second}
+    return (first.get('label') == second.get('label')) or (
+        normalize_repository_path(first.get('path'))
+        == normalize_repository_path(second.get('path'))
+    )
 
 
 def guard_configuration_contains_repository(repository, configurations):
@@ -160,14 +183,14 @@ def guard_configuration_contains_repository(repository, configurations):
             config_repository
             for config in configurations.values()
             for config_repository in config['location']['repositories']
-            if repositories_match(repository, config_repository)
+            if repositories_match(config_repository, repository)
         )
     )
 
     if count == 0:
-        raise ValueError('Repository {} not found in configuration files'.format(repository))
+        raise ValueError(f'Repository {repository} not found in configuration files')
     if count > 1:
-        raise ValueError('Repository {} found in multiple configuration files'.format(repository))
+        raise ValueError(f'Repository {repository} found in multiple configuration files')
 
 
 def guard_single_repository_selected(repository, configurations):

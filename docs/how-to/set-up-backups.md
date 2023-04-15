@@ -90,7 +90,7 @@ installing borgmatic:
  * [Fedora unofficial](https://copr.fedorainfracloud.org/coprs/heffer/borgmatic/)
  * [Arch Linux](https://www.archlinux.org/packages/community/any/borgmatic/)
  * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
- * [OpenBSD](http://ports.su/sysutils/borgmatic)
+ * [OpenBSD](https://openports.pl/path/sysutils/borgmatic)
  * [openSUSE](https://software.opensuse.org/package/borgmatic)
  * [macOS (via Homebrew)](https://formulae.brew.sh/formula/borgmatic)
  * [macOS (via MacPorts)](https://ports.macports.org/port/borgmatic/)
@@ -157,7 +157,7 @@ variable or set the `BORG_PASSPHRASE` environment variable. See the
 section](https://borgbackup.readthedocs.io/en/stable/quickstart.html#repository-encryption)
 of the Borg Quick Start for more info.
 
-Alternatively, you can specify the passphrase programatically by setting
+Alternatively, you can specify the passphrase programmatically by setting
 either the borgmatic `encryption_passcommand` configuration variable or the
 `BORG_PASSCOMMAND` environment variable. See the [Borg Security
 FAQ](http://borgbackup.readthedocs.io/en/stable/faq.html#how-can-i-specify-the-encryption-passphrase-programmatically)
@@ -179,6 +179,9 @@ following command is available for that:
 ```bash
 sudo validate-borgmatic-config
 ```
+
+You'll need to specify your configuration file with `--config` if it's not in
+a default location.
 
 This command's exit status (`$?` in Bash) is zero when configuration is valid
 and non-zero otherwise.

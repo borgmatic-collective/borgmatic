@@ -43,7 +43,7 @@ def convert_legacy_parsed_config(source_config, source_excludes, schema):
         ]
     )
 
-    # Split space-seperated values into actual lists, make "repository" into a list, and merge in
+    # Split space-separated values into actual lists, make "repository" into a list, and merge in
     # excludes.
     location = destination_config['location']
     location['source_directories'] = source_config.location['source_directories'].split(' ')

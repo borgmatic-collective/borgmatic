@@ -1,4 +1,5 @@
 import itertools
+import re
 
 from borgmatic.borg import feature
 
@@ -10,7 +11,7 @@ def make_flags(name, value):
     if not value:
         return ()
 
-    flag = '--{}'.format(name.replace('_', '-'))
+    flag = f"--{name.replace('_', '-')}"
 
     if value is True:
         return (flag,)
@@ -33,7 +34,7 @@ def make_flags_from_arguments(arguments, excludes=()):
     )
 
 
-def make_repository_flags(repository, local_borg_version):
+def make_repository_flags(repository_path, local_borg_version):
     '''
     Given the path of a Borg repository and the local Borg version, return Borg-version-appropriate
     command-line flags (as a tuple) for selecting that repository.
@@ -42,17 +43,41 @@ def make_repository_flags(repository, local_borg_version):
         ('--repo',)
         if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
         else ()
-    ) + (repository,)
+    ) + (repository_path,)
 
 
-def make_repository_archive_flags(repository, archive, local_borg_version):
+def make_repository_archive_flags(repository_path, archive, local_borg_version):
     '''
     Given the path of a Borg repository, an archive name or pattern, and the local Borg version,
     return Borg-version-appropriate command-line flags (as a tuple) for selecting that repository
     and archive.
     '''
     return (
-        ('--repo', repository, archive)
+        ('--repo', repository_path, archive)
         if feature.available(feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version)
-        else (f'{repository}::{archive}',)
+        else (f'{repository_path}::{archive}',)
     )
+
+
+def make_match_archives_flags(match_archives, archive_name_format, local_borg_version):
+    '''
+    Return match archives flags based on the given match archives value, if any. If it isn't set,
+    return match archives flags to match archives created with the given archive name format, if
+    any. This is done by replacing certain archive name format placeholders for ephemeral data (like
+    "{now}") with globs.
+    '''
+    if match_archives:
+        if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+            return ('--match-archives', match_archives)
+        else:
+            return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
+
+    if not archive_name_format:
+        return ()
+
+    derived_match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
+
+    if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
+        return ('--match-archives', f'sh:{derived_match_archives}')
+    else:
+        return ('--glob-archives', f'{derived_match_archives}')

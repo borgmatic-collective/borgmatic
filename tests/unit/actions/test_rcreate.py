@@ -18,7 +18,7 @@ def test_run_rcreate_does_not_raise():
     )
 
     module.run_rcreate(
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         local_borg_version=None,
         rcreate_arguments=arguments,
@@ -45,7 +45,7 @@ def test_run_rcreate_bails_if_repository_does_not_match():
     )
 
     module.run_rcreate(
-        repository='repo',
+        repository={'path': 'repo'},
         storage={},
         local_borg_version=None,
         rcreate_arguments=arguments,

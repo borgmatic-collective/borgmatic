@@ -206,7 +206,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
     payload = 'data'
     flexmock(module).should_receive('format_buffered_logs_for_payload').and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://hc-ping.com/{}'.format(hook_config['ping_url']),
+        f"https://hc-ping.com/{hook_config['ping_url']}",
         data=payload.encode('utf-8'),
         verify=True,
     ).and_return(flexmock(ok=True))

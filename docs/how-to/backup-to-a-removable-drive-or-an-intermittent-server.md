@@ -49,8 +49,11 @@ location:
         - /home
 
     repositories:
-        - /mnt/removable/backup.borg
+        - path: /mnt/removable/backup.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Then, write a `before_backup` hook in that same configuration file that uses
 the external `findmnt` utility to see whether the drive is mounted before
@@ -79,12 +82,15 @@ location:
         - /home
 
     repositories:
-        - ssh://me@buddys-server.org/./backup.borg
+        - path: ssh://me@buddys-server.org/./backup.borg
 
 hooks:
     before_backup:
       - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Or to only run backups if the battery level is high enough:
 
@@ -110,8 +116,8 @@ There are some caveats you should be aware of with this feature.
  * You'll generally want to put a soft failure command in the `before_backup`
    hook, so as to gate whether the backup action occurs. While a soft failure is
    also supported in the `after_backup` hook, returning a soft failure there
-   won't prevent any actions from occuring, because they've already occurred!
-   Similiarly, you can return a soft failure from an `on_error` hook, but at
+   won't prevent any actions from occurring, because they've already occurred!
+   Similarly, you can return a soft failure from an `on_error` hook, but at
    that point it's too late to prevent the error.
  * Returning a soft failure does prevent further commands in the same hook from
    executing. So, like a standard error, it is an "early out". Unlike a standard

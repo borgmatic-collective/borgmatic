@@ -12,17 +12,14 @@ def generate_configuration(config_path, repository_path):
     to work for testing (including injecting the given repository path and tacking on an encryption
     passphrase).
     '''
-    subprocess.check_call(
-        'generate-borgmatic-config --destination {}'.format(config_path).split(' ')
-    )
+    subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
     config = (
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- ssh://user@backupserver/./{fqdn}', '')
-        .replace('- /var/local/backups/local.borg', '')
-        .replace('- /home/user/path with spaces', '')
-        .replace('- /home', '- {}'.format(config_path))
+        .replace('- path: /mnt/backup', '')
+        .replace('label: local', '')
+        .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
         + 'storage:\n    encryption_passphrase: "test"'
@@ -47,13 +44,13 @@ def test_borgmatic_command():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            'borgmatic -v 2 --config {} init --encryption repokey'.format(config_path).split(' ')
+            f'borgmatic -v 2 --config {config_path} init --encryption repokey'.split(' ')
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
-        subprocess.check_call('borgmatic --config {}'.format(config_path).split(' '))
+        subprocess.check_call(f'borgmatic --config {config_path}'.split(' '))
         output = subprocess.check_output(
-            'borgmatic --config {} list --json'.format(config_path).split(' ')
+            f'borgmatic --config {config_path} list --json'.split(' ')
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 
@@ -64,16 +61,14 @@ def test_borgmatic_command():
         # Extract the created archive into the current (temporary) directory, and confirm that the
         # extracted file looks right.
         output = subprocess.check_output(
-            'borgmatic --config {} extract --archive {}'.format(config_path, archive_name).split(
-                ' '
-            )
+            f'borgmatic --config {config_path} extract --archive {archive_name}'.split(' '),
         ).decode(sys.stdout.encoding)
         extracted_config_path = os.path.join(extract_path, config_path)
         assert open(extracted_config_path).read() == open(config_path).read()
 
         # Exercise the info action.
         output = subprocess.check_output(
-            'borgmatic --config {} info --json'.format(config_path).split(' ')
+            f'borgmatic --config {config_path} info --json'.split(' '),
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 

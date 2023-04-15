@@ -3,6 +3,17 @@ required:
     - location
 additionalProperties: false
 properties:
+    constants:
+        type: object
+        description: |
+            Constants to use in the configuration file. All occurrences of the
+            constant name within culy braces will be replaced with the value.
+            For example, if you have a constant named "hostname" with the value
+            "myhostname", then the string "{hostname}" will be replaced with
+            "myhostname" in the configuration file.
+        example:
+            hostname: myhostname
+            prefix: myprefix
     location:
         type: object
         description: |
@@ -29,19 +40,32 @@ properties:
             repositories:
                 type: array
                 items:
-                    type: string
+                    type: object 
+                    required:
+                        - path
+                    properties:
+                        path:
+                            type: string
+                            example: ssh://user@backupserver/./{fqdn}
+                        label:
+                            type: string
+                            example: backupserver
                 description: |
-                    Paths to local or remote repositories (required). Tildes are
-                    expanded. Multiple repositories are backed up to in
-                    sequence. Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. See ssh_command for
-                    SSH options like identity file or port. If systemd service
-                    is used, then add local repository paths in the systemd
-                    service file to the ReadWritePaths list.
+                    A required list of local or remote repositories with paths
+                    and optional labels (which can be used with the --repository
+                    flag to select a repository). Tildes are expanded. Multiple
+                    repositories are backed up to in sequence. Borg placeholders
+                    can be used. See the output of "borg help placeholders" for
+                    details. See ssh_command for SSH options like identity file
+                    or port. If systemd service is used, then add local
+                    repository paths in the systemd service file to the
+                    ReadWritePaths list. Prior to borgmatic 1.7.10, repositories
+                    was just a list of plain path strings.
                 example:
-                    - ssh://user@backupserver/./sourcehostname.borg
-                    - ssh://user@backupserver/./{fqdn}
-                    - /var/local/backups/local.borg
+                    - path: ssh://user@backupserver/./sourcehostname.borg
+                      label: backupserver
+                    - path: /mnt/backup
+                      label: local
             working_directory:
                 type: string
                 description: |
@@ -354,12 +378,21 @@ properties:
                 description: |
                     Name of the archive. Borg placeholders can be used. See the
                     output of "borg help placeholders" for details. Defaults to
-                    "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this
-                    option, consider also specifying a prefix in the retention
-                    and consistency sections to avoid accidental
-                    pruning/checking of archives with different archive name
-                    formats.
+                    "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". When running
+                    actions like rlist, info, or check, borgmatic automatically
+                    tries to match only archives created with this name format.
                 example: "{hostname}-documents-{now}"
+            match_archives:
+                type: string
+                description: |
+                    A Borg pattern for filtering down the archives used by
+                    borgmatic actions that operate on multiple archives. For
+                    Borg 1.x, use a shell pattern here and see the output of
+                    "borg help placeholders" for details. For Borg 2.x, see the
+                    output of "borg help match-archives". If match_archives is
+                    not specified, borgmatic defaults to deriving the
+                    match_archives value from archive_name_format.
+                example: "sh:{hostname}-*"
             relocated_repo_access_is_ok:
                 type: boolean
                 description: |
@@ -453,10 +486,12 @@ properties:
             prefix:
                 type: string
                 description: |
-                    When pruning, only consider archive names starting with this
-                    prefix.  Borg placeholders can be used. See the output of
-                    "borg help placeholders" for details. Defaults to
-                    "{hostname}-". Use an empty value to disable the default.
+                    Deprecated. When pruning, only consider archive names
+                    starting with this prefix. Borg placeholders can be used.
+                    See the output of "borg help placeholders" for details.
+                    If a prefix is not specified, borgmatic defaults to
+                    matching archives based on the archive_name_format (see
+                    above).
                 example: sourcehostname
     consistency:
         type: object
@@ -514,12 +549,12 @@ properties:
                 items:
                     type: string
                 description: |
-                    Paths to a subset of the repositories in the location
-                    section on which to run consistency checks. Handy in case
-                    some of your repositories are very large, and so running
-                    consistency checks on them would take too long. Defaults to
-                    running consistency checks on all repositories configured in
-                    the location section.
+                    Paths or labels for a subset of the repositories in the
+                    location section on which to run consistency checks. Handy
+                    in case some of your repositories are very large, and so
+                    running consistency checks on them would take too long.
+                    Defaults to running consistency checks on all repositories
+                    configured in the location section.
                 example:
                     - user@backupserver:sourcehostname.borg
             check_last:
@@ -532,11 +567,12 @@ properties:
             prefix:
                 type: string
                 description: |
-                    When performing the "archives" check, only consider archive
-                    names starting with this prefix. Borg placeholders can be
-                    used. See the output of "borg help placeholders" for
-                    details. Defaults to "{hostname}-". Use an empty value to
-                    disable the default.
+                    Deprecated. When performing the "archives" check, only
+                    consider archive names starting with this prefix. Borg
+                    placeholders can be used. See the output of "borg help
+                    placeholders" for details. If a prefix is not specified,
+                    borgmatic defaults to matching archives based on the
+                    archive_name_format (see above).
                 example: sourcehostname
     output:
         type: object
@@ -905,14 +941,14 @@ properties:
                             type: string
                             enum: ['sql']
                             description: |
-                                Database dump output format. Currenly only "sql"
-                                is supported. Defaults to "sql" for a single
-                                database. Or, when database name is "all" and
-                                format is blank, dumps all databases to a single
-                                file. But if a format is specified with an "all"
-                                database name, dumps each database to a separate
-                                file of that format, allowing more convenient
-                                restores of individual databases.
+                                Database dump output format. Currently only
+                                "sql" is supported. Defaults to "sql" for a
+                                single database. Or, when database name is "all"
+                                and format is blank, dumps all databases to a
+                                single file. But if a format is specified with
+                                an "all" database name, dumps each database to a
+                                separate file of that format, allowing more
+                                convenient restores of individual databases.
                             example: directory
                         add_drop_database:
                             type: boolean

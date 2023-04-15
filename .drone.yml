@@ -24,6 +24,8 @@ clone:
 steps:
 - name: build
   image: alpine:3.13
+  environment:
+    TEST_CONTAINER: true
   pull: always
   commands:
     - scripts/run-full-tests

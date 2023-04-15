@@ -14,7 +14,7 @@ def test_run_list_does_not_raise():
 
     list(
         module.run_list(
-            repository='repo',
+            repository={'path': 'repo'},
             storage={},
             local_borg_version=None,
             list_arguments=list_arguments,

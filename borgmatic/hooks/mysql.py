@@ -88,9 +88,7 @@ def execute_dump_command(
         + (('--user', database['username']) if 'username' in database else ())
         + ('--databases',)
         + database_names
-        # Use shell redirection rather than execute_command(output_file=open(...)) to prevent
-        # the open() call on a named pipe from hanging the main borgmatic process.
-        + ('>', dump_filename)
+        + ('--result-file', dump_filename)
     )
 
     logger.debug(
@@ -102,7 +100,9 @@ def execute_dump_command(
     dump.create_named_pipe_for_dump(dump_filename)
 
     return execute_command(
-        dump_command, shell=True, extra_environment=extra_environment, run_to_completion=False,
+        dump_command,
+        extra_environment=extra_environment,
+        run_to_completion=False,
     )
 
 
@@ -119,7 +119,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
 
-    logger.info('{}: Dumping MySQL databases{}'.format(log_prefix, dry_run_label))
+    logger.info(f'{log_prefix}: Dumping MySQL databases{dry_run_label}')
 
     for database in databases:
         dump_path = make_dump_path(location_config)
@@ -209,9 +209,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     )
     extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
 
-    logger.debug(
-        '{}: Restoring MySQL database {}{}'.format(log_prefix, database['name'], dry_run_label)
-    )
+    logger.debug(f"{log_prefix}: Restoring MySQL database {database['name']}{dry_run_label}")
     if dry_run:
         return
 

@@ -25,7 +25,7 @@ so that you can run borgmatic commands while you're hacking on them to
 make sure your changes work.
 
 ```bash
-cd borgmatic/
+cd borgmatic
 pip3 install --user --editable .
 ```
 
@@ -51,7 +51,6 @@ pip3 install --user tox
 Finally, to actually run tests, run:
 
 ```bash
-cd borgmatic
 tox
 ```
 
@@ -74,6 +73,15 @@ can ask isort to order your imports for you:
 tox -e isort
 ```
 
+Similarly, if you get errors about spelling mistakes in source code, you can
+ask [codespell](https://github.com/codespell-project/codespell) to correct
+them:
+
+```bash
+tox -e codespell
+```
+
+
 ### End-to-end tests
 
 borgmatic additionally includes some end-to-end tests that integration test
@@ -87,11 +95,35 @@ If you would like to run the full test suite, first install Docker and [Docker
 Compose](https://docs.docker.com/compose/install/). Then run:
 
 ```bash
-scripts/run-full-dev-tests
+scripts/run-end-to-end-dev-tests
 ```
 
 Note that this scripts assumes you have permission to run Docker. If you
 don't, then you may need to run with `sudo`.
+
+
+#### Podman
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span>
+borgmatic's end-to-end tests optionally support using
+[rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+[Podman](https://podman.io/) instead of Docker.
+
+Setting up Podman is outside the scope of this documentation, but here are
+some key points to double-check:
+
+ * Install Podman along with `podman-docker` and your desired networking
+   support.
+ * Configure `/etc/subuid` and `/etc/subgid` to map users/groups for the
+   non-root user who will run tests.
+ * Create a non-root Podman socket for that user:
+   ```bash
+   systemctl --user enable --now podman.socket
+   ```
+
+Then you'll be able to run end-to-end tests as per normal, and the test script
+will automatically use your non-root Podman socket instead of a Docker socket.
+
 
 ## Code style
 
@@ -101,10 +133,10 @@ the following deviations from it:
  * For strings, prefer single quotes over double quotes.
  * Limit all lines to a maximum of 100 characters.
  * Use trailing commas within multiline values or argument lists.
- * For multiline constructs, put opening and closing delimeters on lines
+ * For multiline constructs, put opening and closing delimiters on lines
    separate from their contents.
  * Within multiline constructs, use standard four-space indentation. Don't align
-   indentation with an opening delimeter.
+   indentation with an opening delimiter.
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
@@ -141,3 +173,15 @@ http://localhost:8080 to view the documentation with your changes.
 To close the documentation server, ctrl-C the script. Note that it does not
 currently auto-reload, so you'll need to stop it and re-run it for any
 additional documentation changes to take effect.
+
+
+#### Podman
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span>
+borgmatic's developer build for documentation optionally supports using
+[rootless](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
+[Podman](https://podman.io/) instead of Docker.
+
+Setting up Podman is outside the scope of this documentation. But once you
+install `podman-docker`, then `scripts/dev-docs` should automatically use
+Podman instead of Docker.

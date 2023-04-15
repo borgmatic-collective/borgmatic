@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_rinfo(
-    repository, storage, local_borg_version, rinfo_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    rinfo_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "rinfo" action for the given repository.
@@ -19,9 +24,10 @@ def run_rinfo(
         repository, rinfo_arguments.repository
     ):
         if not rinfo_arguments.json:  # pragma: nocover
-            logger.answer('{}: Displaying repository summary information'.format(repository))
+            logger.answer(f'{repository["path"]}: Displaying repository summary information')
+
         json_output = borgmatic.borg.rinfo.display_repository_info(
-            repository,
+            repository['path'],
             storage,
             local_borg_version,
             rinfo_arguments=rinfo_arguments,

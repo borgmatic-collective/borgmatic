@@ -24,7 +24,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository='repo',
+            repository={'path': 'repo'},
             location={},
             storage={},
             hooks={},
@@ -57,7 +57,7 @@ def test_run_create_runs_with_selected_repository():
     list(
         module.run_create(
             config_filename='test.yaml',
-            repository='repo',
+            repository={'path': 'repo'},
             location={},
             storage={},
             hooks={},

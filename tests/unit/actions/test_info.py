@@ -14,7 +14,7 @@ def test_run_info_does_not_raise():
 
     list(
         module.run_info(
-            repository='repo',
+            repository={'path': 'repo'},
             storage={},
             local_borg_version=None,
             info_arguments=info_arguments,

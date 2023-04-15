@@ -11,7 +11,7 @@ def test_run_rinfo_does_not_raise():
 
     list(
         module.run_rinfo(
-            repository='repo',
+            repository={'path': 'repo'},
             storage={},
             local_borg_version=None,
             rinfo_arguments=rinfo_arguments,

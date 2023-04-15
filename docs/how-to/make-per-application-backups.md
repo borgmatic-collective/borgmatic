@@ -54,6 +54,93 @@ choice](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot),
 each entry using borgmatic's `--config` flag instead of relying on
 `/etc/borgmatic.d`.
 
+
+## Archive naming
+
+If you've got multiple borgmatic configuration files, you might want to create
+archives with different naming schemes for each one. This is especially handy
+if each configuration file is backing up to the same Borg repository but you
+still want to be able to distinguish backup archives for one application from
+another.
+
+borgmatic supports this use case with an `archive_name_format` option. The
+idea is that you define a string format containing a number of [Borg
+placeholders](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-placeholders),
+and borgmatic uses that format to name any new archive it creates. For
+instance:
+
+```yaml
+storage:
+    ...
+    archive_name_format: home-directories-{now}
+```
+
+This means that when borgmatic creates an archive, its name will start with
+the string `home-directories-` and end with a timestamp for its creation time.
+If `archive_name_format` is unspecified, the default is
+`{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
+timestamp in a particular format.
+
+<span class="minilink minilink-addedin">New in version 1.7.11</span> borgmatic
+uses the `archive_name_format` option to automatically limit which archives
+get used for actions operating on multiple archives. This prevents, for
+instance, duplicate archives from showing up in `rlist` or `info` results—even
+if the same repository appears in multiple borgmatic configuration files. To
+take advantage of this feature, simply use a different `archive_name_format`
+in each configuration file.
+
+Under the hood, borgmatic accomplishes this by substituting globs for certain
+ephemeral data placeholders in your `archive_name_format`—and using the result
+to filter archives when running supported actions.
+
+For instance, let's say that you have this in your configuration:
+
+```yaml
+storage:
+    ...
+    archive_name_format: {hostname}-user-data-{now}
+```
+
+borgmatic considers `{now}` an emphemeral data placeholder that will probably
+change per archive, while `{hostname}` won't. So it turns the example value
+into `{hostname}-user-data-*` and applies it to filter down the set of
+archives used for actions like `rlist`, `info`, `prune`, `check`, etc.
+
+The end result is that when borgmatic runs the actions for a particular
+application-specific configuration file, it only operates on the archives
+created for that application. Of course, this doesn't apply to actions like
+`compact` that operate on an entire repository.
+
+If this behavior isn't quite smart enough for your needs, you can use the
+`match_archives` option to override the pattern that borgmatic uses for
+filtering archives. For example:
+
+```yaml
+storage:
+    ...
+    archive_name_format: {hostname}-user-data-{now}
+    match_archives: sh:myhost-user-data-*        
+```
+
+For Borg 1.x, use a shell pattern for the `match_archives` value and see the
+[Borg patterns
+documentation](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns)
+for more information. For Borg 2.x, see the [match archives
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/help.html#borg-help-match-archives).
+
+Some borgmatic command-line actions also have a `--match-archives` flag that
+overrides both the auto-matching behavior and the `match_archives`
+configuration option.
+
+<span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
+limit the archives used for the `prune` action was a `prefix` option in the
+`retention` section for matching against the start of archive names. And the
+option for limiting the archives used for the `check` action was a separate
+`prefix` in the `consistency` section. Both of these options are deprecated in
+favor of the auto-matching behavior (or `match_archives`/`--match-archives`)
+in newer versions of borgmatic.
+
+
 ## Configuration includes
 
 Once you have multiple different configuration files, you might want to share
@@ -185,8 +272,139 @@ Once this include gets merged in, the resulting configuration would have a
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence.
 
+
+#### List merge
+
 <span class="minilink minilink-addedin">New in version 1.6.1</span> Colliding
 list values are appended together.
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span> If there
+is a list value from an include that you *don't* want in your local
+configuration file, you can omit it with an `!omit` tag. For instance:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   source_directories:
+     - !omit /home
+     - /var
+```
+
+And `common.yaml` like this:
+
+```yaml
+location:
+   source_directories:
+     - /home
+     - /etc
+```
+
+Once this include gets merged in, the resulting configuration will have a
+`source_directories` value of `/etc` and `/var`—with `/home` omitted.
+
+This feature currently only works on scalar (e.g. string or number) list items
+and will not work elsewhere in a configuration file. Be sure to put the
+`!omit` tag *before* the list item (after the dash). Putting `!omit` after the
+list item will not work, as it gets interpreted as part of the string. Here's
+an example of some things not to do:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   source_directories:
+     # Do not do this! It will not work. "!omit" belongs before "/home".
+     - /home !omit
+
+   # Do not do this either! "!omit" only works on scalar list items.
+   repositories: !omit
+     # Also do not do this for the same reason! This is a list item, but it's
+     # not a scalar.
+     - !omit path: repo.borg
+```
+
+Additionally, the `!omit` tag only works in a configuration file that also
+performs a merge include with `<<: !include`. It doesn't make sense within,
+for instance, an included configuration file itself (unless it in turn
+performs its own merge include). That's because `!omit` only applies to the
+file doing the include; it doesn't work in reverse or propagate through
+includes.
+
+
+### Shallow merge
+
+Even though deep merging is generally pretty handy for included files,
+sometimes you want specific sections in the local file to take precedence over
+included sections—without any merging occurring for them.
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span> That's
+where the `!retain` tag comes in. Whenever you're merging an included file
+into your configuration file, you can optionally add the `!retain` tag to
+particular local mappings or lists to retain the local values and ignore
+included values.
+
+For instance, start with this configuration file containing the `!retain` tag
+on the `retention` mapping:
+
+```yaml
+<<: !include /etc/borgmatic/common.yaml
+
+location:
+   repositories:
+     - path: repo.borg
+
+retention: !retain
+    keep_daily: 5
+```
+
+And `common.yaml` like this:
+
+```yaml
+location:
+   repositories:
+     - path: common.borg
+
+retention:
+    keep_hourly: 24
+    keep_daily: 7
+```
+
+Once this include gets merged in, the resulting configuration will have a
+`keep_daily` value of `5` and nothing else in the `retention` section. That's
+because the `!retain` tag says to retain the local version of `retention` and
+ignore any values coming in from the include. But because the `repositories`
+list doesn't have a `!retain` tag, it still gets merged together to contain
+both `common.borg` and `repo.borg`.
+
+The `!retain` tag can only be placed on mappings and lists, and it goes right
+after the name of the option (and its colon) on the same line. The effects of
+`!retain` are recursive, meaning that if you place a `!retain` tag on a
+top-level mapping, even deeply nested values within it will not be merged.
+
+Additionally, the `!retain` tag only works in a configuration file that also
+performs a merge include with `<<: !include`. It doesn't make sense within,
+for instance, an included configuration file itself (unless it in turn
+performs its own merge include). That's because `!retain` only applies to the
+file doing the include; it doesn't work in reverse or propagate through
+includes.
+
+
+## Debugging includes
+
+<span class="minilink minilink-addedin">New in version 1.7.12</span> If you'd
+like to see what the loaded configuration looks like after includes get merged
+in, run `validate-borgmatic-config` on your configuration file:
+
+```bash
+sudo validate-borgmatic-config --show
+```
+
+You'll need to specify your configuration file with `--config` if it's not in
+a default location.
+
+This will output the merged configuration as borgmatic sees it, which can be
+helpful for understanding how your includes work in practice.
 
 
 ## Configuration overrides
@@ -255,3 +473,51 @@ Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
 
 An alternate to command-line overrides is passing in your values via [environment variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+
+
+## Constant interpolation
+
+<span class="minilink minilink-addedin">New in version 1.7.10</span> Another
+tool is borgmatic's support for defining custom constants. This is similar to
+the [variable interpolation
+feature](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)
+for command hooks, but the constants feature lets you substitute your own
+custom values into anywhere in the entire configuration file. (Constants don't
+work across includes or separate configuration files though.)
+
+Here's an example usage:
+
+```yaml
+constants:
+    user: foo
+    archive_prefix: bar
+
+location:
+    source_directories:
+        - /home/{user}/.config
+        - /home/{user}/.ssh
+    ...
+
+storage:
+    archive_name_format: '{archive_prefix}-{now}'
+```
+
+In this example, when borgmatic runs, all instances of `{user}` get replaced
+with `foo` and all instances of `{archive-prefix}` get replaced with `bar-`.
+(And in this particular example, `{now}` doesn't get replaced with anything,
+but gets passed directly to Borg.) After substitution, the logical result
+looks something like this:
+
+```yaml
+location:
+    source_directories:
+        - /home/foo/.config
+        - /home/foo/.ssh
+    ...
+
+storage:
+    archive_name_format: 'bar-{now}'
+```
+
+An alternate to constants is passing in your values via [environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).

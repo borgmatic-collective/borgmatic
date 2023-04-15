@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_list(
-    repository, storage, local_borg_version, list_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    list_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "list" action for the given repository and archive.
@@ -20,11 +25,11 @@ def run_list(
     ):
         if not list_arguments.json:  # pragma: nocover
             if list_arguments.find_paths:
-                logger.answer(f'{repository}: Searching archives')
+                logger.answer(f'{repository["path"]}: Searching archives')
             elif not list_arguments.archive:
-                logger.answer(f'{repository}: Listing archives')
+                logger.answer(f'{repository["path"]}: Listing archives')
         list_arguments.archive = borgmatic.borg.rlist.resolve_archive_name(
-            repository,
+            repository['path'],
             list_arguments.archive,
             storage,
             local_borg_version,
@@ -32,7 +37,7 @@ def run_list(
             remote_path,
         )
         json_output = borgmatic.borg.list.list_archive(
-            repository,
+            repository['path'],
             storage,
             local_borg_version,
             list_arguments=list_arguments,

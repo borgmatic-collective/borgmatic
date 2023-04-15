@@ -4,6 +4,28 @@ from flexmock import flexmock
 from borgmatic.config import validate as module
 
 
+def test_schema_filename_finds_schema_path():
+    schema_path = '/var/borgmatic/config/schema.yaml'
+
+    flexmock(module.importlib_metadata).should_receive('files').and_return(
+        flexmock(match=lambda path: False, locate=lambda: None),
+        flexmock(match=lambda path: True, locate=lambda: schema_path),
+        flexmock(match=lambda path: False, locate=lambda: None),
+    )
+
+    assert module.schema_filename() == schema_path
+
+
+def test_schema_filename_with_missing_schema_path_raises():
+    flexmock(module.importlib_metadata).should_receive('files').and_return(
+        flexmock(match=lambda path: False, locate=lambda: None),
+        flexmock(match=lambda path: False, locate=lambda: None),
+    )
+
+    with pytest.raises(FileNotFoundError):
+        assert module.schema_filename()
+
+
 def test_format_json_error_path_element_formats_array_index():
     module.format_json_error_path_element(3) == '[3]'
 
@@ -13,7 +35,7 @@ def test_format_json_error_path_element_formats_property():
 
 
 def test_format_json_error_formats_error_including_path():
-    flexmock(module).format_json_error_path_element = lambda element: '.{}'.format(element)
+    flexmock(module).format_json_error_path_element = lambda element: f'.{element}'
     error = flexmock(message='oops', path=['foo', 'bar'])
 
     assert module.format_json_error(error) == "At 'foo.bar': oops"
@@ -37,7 +59,7 @@ def test_validation_error_string_contains_errors():
     assert 'uh oh' in result
 
 
-def test_apply_locical_validation_raises_if_unknown_repository_in_check_repositories():
+def test_apply_logical_validation_raises_if_unknown_repository_in_check_repositories():
     flexmock(module).format_json_error = lambda error: error.message
 
     with pytest.raises(module.Validation_error):
@@ -51,13 +73,29 @@ def test_apply_locical_validation_raises_if_unknown_repository_in_check_reposito
         )
 
 
-def test_apply_locical_validation_does_not_raise_if_known_repository_in_check_repositories():
+def test_apply_logical_validation_does_not_raise_if_known_repository_path_in_check_repositories():
     module.apply_logical_validation(
         'config.yaml',
         {
-            'location': {'repositories': ['repo.borg', 'other.borg']},
+            'location': {'repositories': [{'path': 'repo.borg'}, {'path': 'other.borg'}]},
             'retention': {'keep_secondly': 1000},
             'consistency': {'check_repositories': ['repo.borg']},
+        },
+    )
+
+
+def test_apply_logical_validation_does_not_raise_if_known_repository_label_in_check_repositories():
+    module.apply_logical_validation(
+        'config.yaml',
+        {
+            'location': {
+                'repositories': [
+                    {'path': 'repo.borg', 'label': 'my_repo'},
+                    {'path': 'other.borg', 'label': 'other_repo'},
+                ]
+            },
+            'retention': {'keep_secondly': 1000},
+            'consistency': {'check_repositories': ['my_repo']},
         },
     )
 
@@ -66,9 +104,9 @@ def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_pref
     module.apply_logical_validation(
         'config.yaml',
         {
-            'storage': {'archive_name_format': '{hostname}-{now}'},
-            'retention': {'prefix': '{hostname}-'},
-            'consistency': {'prefix': '{hostname}-'},
+            'storage': {'archive_name_format': '{hostname}-{now}'},  # noqa: FS003
+            'retention': {'prefix': '{hostname}-'},  # noqa: FS003
+            'consistency': {'prefix': '{hostname}-'},  # noqa: FS003
         },
     )
 
@@ -121,6 +159,15 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
 
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_label_in_config():
+    module.guard_configuration_contains_repository(
+        repository='repo',
+        configurations={
+            'config.yaml': {'location': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}}
+        },
+    )
+
+
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
     module.guard_configuration_contains_repository(
         repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
@@ -164,13 +211,15 @@ def test_guard_single_repository_selected_raises_when_multiple_repositories_conf
 
 def test_guard_single_repository_selected_does_not_raise_when_single_repository_configured_and_none_selected():
     module.guard_single_repository_selected(
-        repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
+        repository=None,
+        configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
     )
 
 
 def test_guard_single_repository_selected_does_not_raise_when_no_repositories_configured_and_one_selected():
     module.guard_single_repository_selected(
-        repository='repo', configurations={'config.yaml': {'location': {'repositories': []}}},
+        repository='repo',
+        configurations={'config.yaml': {'location': {'repositories': []}}},
     )
 
 

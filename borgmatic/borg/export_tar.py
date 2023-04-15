@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def export_tar_archive(
     dry_run,
-    repository,
+    repository_path,
     archive,
     paths,
     destination_path,
@@ -45,7 +45,11 @@ def export_tar_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + flags.make_repository_archive_flags(repository, archive, local_borg_version,)
+        + flags.make_repository_archive_flags(
+            repository_path,
+            archive,
+            local_borg_version,
+        )
         + (destination_path,)
         + (tuple(paths) if paths else ())
     )
@@ -56,7 +60,7 @@ def export_tar_archive(
         output_log_level = logging.INFO
 
     if dry_run:
-        logging.info('{}: Skipping export to tar file (dry run)'.format(repository))
+        logging.info(f'{repository_path}: Skipping export to tar file (dry run)')
         return
 
     execute_command(

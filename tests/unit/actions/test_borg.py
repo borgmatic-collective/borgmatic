@@ -13,7 +13,7 @@ def test_run_borg_does_not_raise():
     borg_arguments = flexmock(repository=flexmock(), archive=flexmock(), options=flexmock())
 
     module.run_borg(
-        repository='repo',
+        repository={'path': 'repos'},
         storage={},
         local_borg_version=None,
         borg_arguments=borg_arguments,

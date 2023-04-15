@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_rlist(
-    repository, storage, local_borg_version, rlist_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    rlist_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "rlist" action for the given repository.
@@ -19,9 +24,10 @@ def run_rlist(
         repository, rlist_arguments.repository
     ):
         if not rlist_arguments.json:  # pragma: nocover
-            logger.answer('{}: Listing repository'.format(repository))
+            logger.answer(f'{repository["path"]}: Listing repository')
+
         json_output = borgmatic.borg.rlist.list_repository(
-            repository,
+            repository['path'],
             storage,
             local_borg_version,
             rlist_arguments=rlist_arguments,

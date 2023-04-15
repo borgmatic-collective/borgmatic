@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def display_archives_info(
-    repository,
+    repository_path,
     storage_config,
     local_borg_version,
     info_arguments,
@@ -44,22 +44,26 @@ def display_archives_info(
                 else flags.make_flags('glob-archives', f'{info_arguments.prefix}*')
             )
             if info_arguments.prefix
-            else ()
+            else (
+                flags.make_match_archives_flags(
+                    info_arguments.match_archives
+                    or info_arguments.archive
+                    or storage_config.get('match_archives'),
+                    storage_config.get('archive_name_format'),
+                    local_borg_version,
+                )
+            )
         )
         + flags.make_flags_from_arguments(
-            info_arguments, excludes=('repository', 'archive', 'prefix')
+            info_arguments, excludes=('repository', 'archive', 'prefix', 'match_archives')
         )
-        + flags.make_repository_flags(repository, local_borg_version)
-        + (
-            flags.make_flags('match-archives', info_arguments.archive)
-            if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
-            else flags.make_flags('glob-archives', info_arguments.archive)
-        )
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     if info_arguments.json:
         return execute_command_and_capture_output(
-            full_command, extra_environment=environment.make_environment(storage_config),
+            full_command,
+            extra_environment=environment.make_environment(storage_config),
         )
     else:
         execute_command(

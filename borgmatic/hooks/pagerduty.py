@@ -29,14 +29,12 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
     '''
     if state != monitor.State.FAIL:
         logger.debug(
-            '{}: Ignoring unsupported monitoring {} in PagerDuty hook'.format(
-                config_filename, state.name.lower()
-            )
+            f'{config_filename}: Ignoring unsupported monitoring {state.name.lower()} in PagerDuty hook',
         )
         return
 
     dry_run_label = ' (dry run; not actually sending)' if dry_run else ''
-    logger.info('{}: Sending failure event to PagerDuty {}'.format(config_filename, dry_run_label))
+    logger.info(f'{config_filename}: Sending failure event to PagerDuty {dry_run_label}')
 
     if dry_run:
         return
@@ -50,7 +48,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
             'routing_key': hook_config['integration_key'],
             'event_action': 'trigger',
             'payload': {
-                'summary': 'backup failed on {}'.format(hostname),
+                'summary': f'backup failed on {hostname}',
                 'severity': 'error',
                 'source': hostname,
                 'timestamp': local_timestamp,
@@ -65,7 +63,7 @@ def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_
             },
         }
     )
-    logger.debug('{}: Using PagerDuty payload: {}'.format(config_filename, payload))
+    logger.debug(f'{config_filename}: Using PagerDuty payload: {payload}')
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:

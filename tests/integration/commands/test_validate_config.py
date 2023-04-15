@@ -18,3 +18,12 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     parser = module.parse_arguments('--config', 'myconfig', 'otherconfig')
 
     assert parser.config_paths == ['myconfig', 'otherconfig']
+
+
+def test_parse_arguments_supports_show_flag():
+    config_paths = ['default']
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
+
+    parser = module.parse_arguments('--config', 'myconfig', '--show')
+
+    assert parser.show
