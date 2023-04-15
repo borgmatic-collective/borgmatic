@@ -7,7 +7,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_break_lock(
-    repository, storage, local_borg_version, break_lock_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    break_lock_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "break-lock" action for the given repository.

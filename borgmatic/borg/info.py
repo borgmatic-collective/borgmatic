@@ -62,7 +62,8 @@ def display_archives_info(
 
     if info_arguments.json:
         return execute_command_and_capture_output(
-            full_command, extra_environment=environment.make_environment(storage_config),
+            full_command,
+            extra_environment=environment.make_environment(storage_config),
         )
     else:
         execute_command(

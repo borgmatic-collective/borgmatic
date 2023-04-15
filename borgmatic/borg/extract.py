@@ -108,7 +108,11 @@ def extract_archive(
         + (('--strip-components', str(strip_components)) if strip_components else ())
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
-        + flags.make_repository_archive_flags(repository, archive, local_borg_version,)
+        + flags.make_repository_archive_flags(
+            repository,
+            archive,
+            local_borg_version,
+        )
         + (tuple(paths) if paths else ())
     )
 

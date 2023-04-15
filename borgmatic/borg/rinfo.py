@@ -50,7 +50,8 @@ def display_repository_info(
 
     if rinfo_arguments.json:
         return execute_command_and_capture_output(
-            full_command, extra_environment=extra_environment,
+            full_command,
+            extra_environment=extra_environment,
         )
     else:
         execute_command(

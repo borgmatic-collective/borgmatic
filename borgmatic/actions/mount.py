@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_mount(
-    repository, storage, local_borg_version, mount_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    mount_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "mount" action for the given repository.

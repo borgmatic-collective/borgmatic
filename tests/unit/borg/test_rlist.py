@@ -29,7 +29,8 @@ def test_resolve_archive_name_calls_borg_with_parameters():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -42,7 +43,8 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_parameter():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.INFO)
 
@@ -56,7 +58,8 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_parameter(
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.DEBUG)
 
@@ -70,7 +73,8 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -100,7 +104,8 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_param
 def test_resolve_archive_name_without_archives_raises():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS, extra_environment=None,
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
     ).and_return('')
 
     with pytest.raises(ValueError):
@@ -374,7 +379,15 @@ def test_make_rlist_command_includes_short():
 
 @pytest.mark.parametrize(
     'argument_name',
-    ('sort_by', 'first', 'last', 'exclude', 'exclude_from', 'pattern', 'patterns_from',),
+    (
+        'sort_by',
+        'first',
+        'last',
+        'exclude',
+        'exclude_from',
+        'pattern',
+        'patterns_from',
+    ),
 )
 def test_make_rlist_command_includes_additional_flags(argument_name):
     flexmock(module.flags).should_receive('make_flags').and_return(())
@@ -411,7 +424,9 @@ def test_make_rlist_command_with_match_archives_calls_borg_with_match_archives_p
         None, None, '1.2.3'
     ).and_return(())
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'foo-*', None, '1.2.3',
+        'foo-*',
+        None,
+        '1.2.3',
     ).and_return(('--match-archives', 'foo-*'))
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))

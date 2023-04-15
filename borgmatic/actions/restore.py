@@ -114,7 +114,13 @@ def restore_single_database(
 
 
 def collect_archive_database_names(
-    repository, archive, location, storage, local_borg_version, local_path, remote_path,
+    repository,
+    archive,
+    location,
+    storage,
+    local_borg_version,
+    local_path,
+    remote_path,
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a location configuration dict,
@@ -180,7 +186,7 @@ def find_databases_to_restore(requested_database_names, archive_database_names):
     if 'all' in restore_names[UNSPECIFIED_HOOK]:
         restore_names[UNSPECIFIED_HOOK].remove('all')
 
-        for (hook_name, database_names) in archive_database_names.items():
+        for hook_name, database_names in archive_database_names.items():
             restore_names.setdefault(hook_name, []).extend(database_names)
 
             # If a database is to be restored as part of "all", then remove it from restore names so

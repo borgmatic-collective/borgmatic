@@ -100,7 +100,9 @@ def execute_dump_command(
     dump.create_named_pipe_for_dump(dump_filename)
 
     return execute_command(
-        dump_command, extra_environment=extra_environment, run_to_completion=False,
+        dump_command,
+        extra_environment=extra_environment,
+        run_to_completion=False,
     )
 
 

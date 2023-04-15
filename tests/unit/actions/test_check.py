@@ -12,7 +12,11 @@ def test_run_check_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
-        repository=None, progress=flexmock(), repair=flexmock(), only=flexmock(), force=flexmock(),
+        repository=None,
+        progress=flexmock(),
+        repair=flexmock(),
+        only=flexmock(),
+        force=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 

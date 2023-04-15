@@ -7,7 +7,11 @@ logger = logging.getLogger(__name__)
 
 
 def break_lock(
-    repository_path, storage_config, local_borg_version, local_path='borg', remote_path=None,
+    repository_path,
+    storage_config,
+    local_borg_version,
+    local_path='borg',
+    remote_path=None,
 ):
     '''
     Given a local or remote repository path, a storage configuration dict, the local Borg version,

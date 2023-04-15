@@ -8,7 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_rinfo(
-    repository, storage, local_borg_version, rinfo_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    rinfo_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "rinfo" action for the given repository.

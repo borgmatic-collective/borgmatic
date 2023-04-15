@@ -148,7 +148,8 @@ def test_find_databases_to_restore_without_requested_names_finds_all_archive_dat
     archive_database_names = {'postresql_databases': ['foo', 'bar']}
 
     restore_names = module.find_databases_to_restore(
-        requested_database_names=[], archive_database_names=archive_database_names,
+        requested_database_names=[],
+        archive_database_names=archive_database_names,
     )
 
     assert restore_names == archive_database_names
@@ -158,7 +159,8 @@ def test_find_databases_to_restore_with_all_in_requested_names_finds_all_archive
     archive_database_names = {'postresql_databases': ['foo', 'bar']}
 
     restore_names = module.find_databases_to_restore(
-        requested_database_names=['all'], archive_database_names=archive_database_names,
+        requested_database_names=['all'],
+        archive_database_names=archive_database_names,
     )
 
     assert restore_names == archive_database_names
@@ -194,7 +196,9 @@ def test_ensure_databases_found_with_all_databases_found_does_not_raise():
 def test_ensure_databases_found_with_no_databases_raises():
     with pytest.raises(ValueError):
         module.ensure_databases_found(
-            restore_names={'postgresql_databases': []}, remaining_restore_names={}, found_names=[],
+            restore_names={'postgresql_databases': []},
+            remaining_restore_names={},
+            found_names=[],
         )
 
 

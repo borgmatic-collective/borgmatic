@@ -45,7 +45,11 @@ def export_tar_archive(
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + flags.make_repository_archive_flags(repository_path, archive, local_borg_version,)
+        + flags.make_repository_archive_flags(
+            repository_path,
+            archive,
+            local_borg_version,
+        )
         + (destination_path,)
         + (tuple(paths) if paths else ())
     )

@@ -114,7 +114,8 @@ def test_dump_databases_runs_mongodump_with_directory_format():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
 
     flexmock(module).should_receive('execute_command').with_args(
-        ['mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'], shell=True,
+        ['mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'],
+        shell=True,
     ).and_return(flexmock()).once()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == []

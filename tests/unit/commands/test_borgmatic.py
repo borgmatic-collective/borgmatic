@@ -229,7 +229,8 @@ def test_run_configuration_retries_hard_error():
     ).and_return([flexmock()])
     error_logs = [flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
-        'foo: Error running actions for repository', OSError,
+        'foo: Error running actions for repository',
+        OSError,
     ).and_return(error_logs)
     config = {'location': {'repositories': [{'path': 'foo'}]}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}

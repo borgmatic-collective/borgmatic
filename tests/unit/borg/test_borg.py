@@ -222,7 +222,10 @@ def test_run_arbitrary_borg_without_borg_specific_parameters_does_not_raise():
     )
 
     module.run_arbitrary_borg(
-        repository_path='repo', storage_config={}, local_borg_version='1.2.3', options=[],
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        options=[],
     )
 
 

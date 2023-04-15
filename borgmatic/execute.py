@@ -236,7 +236,11 @@ def execute_command(
 
 
 def execute_command_and_capture_output(
-    full_command, capture_stderr=False, shell=False, extra_environment=None, working_directory=None,
+    full_command,
+    capture_stderr=False,
+    shell=False,
+    extra_environment=None,
+    working_directory=None,
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its

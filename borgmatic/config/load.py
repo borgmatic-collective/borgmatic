@@ -121,6 +121,7 @@ def load_configuration(filename):
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
     '''
+
     # Use an embedded derived class for the include constructor so as to capture the filename
     # value. (functools.partial doesn't work for this use case because yaml.Constructor has to be
     # an actual class.)

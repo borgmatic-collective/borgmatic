@@ -11,7 +11,9 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(command, working_directory=None):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        command, working_directory=working_directory, extra_environment=None,
+        command,
+        working_directory=working_directory,
+        extra_environment=None,
     ).once()
 
 
@@ -152,7 +154,11 @@ def test_extract_archive_calls_borg_with_remote_path_parameters():
 
 
 @pytest.mark.parametrize(
-    'feature_available,option_flag', ((True, '--numeric-ids'), (False, '--numeric-owner'),),
+    'feature_available,option_flag',
+    (
+        (True, '--numeric-ids'),
+        (False, '--numeric-owner'),
+    ),
 )
 def test_extract_archive_calls_borg_with_numeric_ids_parameter(feature_available, option_flag):
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
@@ -441,7 +447,9 @@ def test_extract_archive_skips_abspath_for_remote_repository():
     flexmock(module.os.path).should_receive('abspath').never()
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'extract', 'server:repo::archive'), working_directory=None, extra_environment=None,
+        ('borg', 'extract', 'server:repo::archive'),
+        working_directory=None,
+        extra_environment=None,
     ).once()
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(

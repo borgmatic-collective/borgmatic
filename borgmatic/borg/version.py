@@ -19,7 +19,8 @@ def local_borg_version(storage_config, local_path='borg'):
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
     )
     output = execute_command_and_capture_output(
-        full_command, extra_environment=environment.make_environment(storage_config),
+        full_command,
+        extra_environment=environment.make_environment(storage_config),
     )
 
     try:

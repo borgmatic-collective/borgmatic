@@ -123,7 +123,12 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 continue
 
             command = (
-                (dump_command, '--no-password', '--clean', '--if-exists',)
+                (
+                    dump_command,
+                    '--no-password',
+                    '--clean',
+                    '--if-exists',
+                )
                 + (('--host', database['hostname']) if 'hostname' in database else ())
                 + (('--port', str(database['port'])) if 'port' in database else ())
                 + (('--username', database['username']) if 'username' in database else ())
@@ -146,7 +151,9 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
             if dump_format == 'directory':
                 dump.create_parent_directory_for_dump(dump_filename)
                 execute_command(
-                    command, shell=True, extra_environment=extra_environment,
+                    command,
+                    shell=True,
+                    extra_environment=extra_environment,
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)

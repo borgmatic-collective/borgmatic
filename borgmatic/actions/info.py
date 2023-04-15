@@ -9,7 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 def run_info(
-    repository, storage, local_borg_version, info_arguments, local_path, remote_path,
+    repository,
+    storage,
+    local_borg_version,
+    info_arguments,
+    local_path,
+    remote_path,
 ):
     '''
     Run the "info" action for the given repository and archive.

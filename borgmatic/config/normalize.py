@@ -81,7 +81,10 @@ def normalize(config_filename, config):
                         repository_path.partition('file://')[-1]
                     )
                     config['location']['repositories'].append(
-                        dict(repository_dict, path=updated_repository_path,)
+                        dict(
+                            repository_dict,
+                            path=updated_repository_path,
+                        )
                     )
                 elif repository_path.startswith('ssh://'):
                     config['location']['repositories'].append(repository_dict)
@@ -97,7 +100,10 @@ def normalize(config_filename, config):
                         )
                     )
                     config['location']['repositories'].append(
-                        dict(repository_dict, path=rewritten_repository_path,)
+                        dict(
+                            repository_dict,
+                            path=rewritten_repository_path,
+                        )
                     )
             else:
                 config['location']['repositories'].append(repository_dict)

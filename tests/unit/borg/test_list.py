@@ -387,7 +387,8 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.rlist).should_receive('make_rlist_command').and_return(('borg', 'list', 'repo'))
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'list', 'repo'), extra_environment=None,
+        ('borg', 'list', 'repo'),
+        extra_environment=None,
     ).and_return('archive1\narchive2').once()
     flexmock(module).should_receive('make_list_command').and_return(
         ('borg', 'list', 'repo::archive1')
@@ -518,9 +519,18 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
 
 
 @pytest.mark.parametrize(
-    'archive_filter_flag', ('prefix', 'match_archives', 'sort_by', 'first', 'last',),
+    'archive_filter_flag',
+    (
+        'prefix',
+        'match_archives',
+        'sort_by',
+        'first',
+        'last',
+    ),
 )
-def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_flag,):
+def test_list_archive_with_archive_ignores_archive_filter_flag(
+    archive_filter_flag,
+):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.logger).answer = lambda message: None
@@ -566,7 +576,14 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(archive_filter_fl
 
 
 @pytest.mark.parametrize(
-    'archive_filter_flag', ('prefix', 'match_archives', 'sort_by', 'first', 'last',),
+    'archive_filter_flag',
+    (
+        'prefix',
+        'match_archives',
+        'sort_by',
+        'first',
+        'last',
+    ),
 )
 def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_rlist(
     archive_filter_flag,
@@ -597,7 +614,8 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     ).and_return(('borg', 'rlist', '--repo', 'repo'))
 
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'rlist', '--repo', 'repo'), extra_environment=None,
+        ('borg', 'rlist', '--repo', 'repo'),
+        extra_environment=None,
     ).and_return('archive1\narchive2').once()
 
     flexmock(module).should_receive('make_list_command').with_args(

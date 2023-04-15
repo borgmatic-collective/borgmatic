@@ -138,7 +138,6 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
 
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_label_in_config():
-
     module.guard_configuration_contains_repository(
         repository='repo',
         configurations={
@@ -190,13 +189,15 @@ def test_guard_single_repository_selected_raises_when_multiple_repositories_conf
 
 def test_guard_single_repository_selected_does_not_raise_when_single_repository_configured_and_none_selected():
     module.guard_single_repository_selected(
-        repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
+        repository=None,
+        configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
     )
 
 
 def test_guard_single_repository_selected_does_not_raise_when_no_repositories_configured_and_one_selected():
     module.guard_single_repository_selected(
-        repository='repo', configurations={'config.yaml': {'location': {'repositories': []}}},
+        repository='repo',
+        configurations={'config.yaml': {'location': {'repositories': []}}},
     )
 
 

@@ -79,7 +79,12 @@ def test_parse_frequency_parses_into_timedeltas(frequency, expected_result):
 
 
 @pytest.mark.parametrize(
-    'frequency', ('sometime', 'x days', '3 decades',),
+    'frequency',
+    (
+        'sometime',
+        'x days',
+        '3 decades',
+    ),
 )
 def test_parse_frequency_raises_on_parse_error(frequency):
     with pytest.raises(ValueError):
@@ -211,7 +216,10 @@ def test_make_check_flags_with_data_check_returns_flag_and_implies_archives():
 
     flags = module.make_check_flags('1.2.3', {}, ('data',))
 
-    assert flags == ('--archives-only', '--verify-data',)
+    assert flags == (
+        '--archives-only',
+        '--verify-data',
+    )
 
 
 def test_make_check_flags_with_extract_omits_extract_flag():
@@ -227,7 +235,14 @@ def test_make_check_flags_with_repository_and_data_checks_does_not_return_reposi
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    flags = module.make_check_flags('1.2.3', {}, ('repository', 'data',))
+    flags = module.make_check_flags(
+        '1.2.3',
+        {},
+        (
+            'repository',
+            'data',
+        ),
+    )
 
     assert flags == ('--verify-data',)
 
@@ -236,7 +251,12 @@ def test_make_check_flags_with_default_checks_and_prefix_returns_default_flags()
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    flags = module.make_check_flags('1.2.3', {}, ('repository', 'archives'), prefix='foo',)
+    flags = module.make_check_flags(
+        '1.2.3',
+        {},
+        ('repository', 'archives'),
+        prefix='foo',
+    )
 
     assert flags == ('--match-archives', 'sh:foo*')
 
@@ -246,7 +266,10 @@ def test_make_check_flags_with_all_checks_and_prefix_returns_default_flags():
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_check_flags(
-        '1.2.3', {}, ('repository', 'archives', 'extract'), prefix='foo',
+        '1.2.3',
+        {},
+        ('repository', 'archives', 'extract'),
+        prefix='foo',
     )
 
     assert flags == ('--match-archives', 'sh:foo*')
@@ -257,7 +280,10 @@ def test_make_check_flags_with_all_checks_and_prefix_without_borg_features_retur
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_check_flags(
-        '1.2.3', {}, ('repository', 'archives', 'extract'), prefix='foo',
+        '1.2.3',
+        {},
+        ('repository', 'archives', 'extract'),
+        prefix='foo',
     )
 
     assert flags == ('--glob-archives', 'foo*')
@@ -447,7 +473,11 @@ def test_check_archives_calls_borg_with_parameters(checks):
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        '1.2.3', {}, checks, check_last, prefix=None,
+        '1.2.3',
+        {},
+        checks,
+        check_last,
+        prefix=None,
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', 'repo'))
@@ -601,7 +631,11 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        '1.2.3', {}, checks, check_last, prefix=None,
+        '1.2.3',
+        {},
+        checks,
+        check_last,
+        prefix=None,
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg1', 'check', 'repo'))
@@ -628,7 +662,11 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        '1.2.3', {}, checks, check_last, prefix=None,
+        '1.2.3',
+        {},
+        checks,
+        check_last,
+        prefix=None,
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--remote-path', 'borg1', 'repo'))
@@ -656,7 +694,11 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
         '{"repository": {"id": "repo"}}'
     )
     flexmock(module).should_receive('make_check_flags').with_args(
-        '1.2.3', storage_config, checks, check_last, None,
+        '1.2.3',
+        storage_config,
+        checks,
+        check_last,
+        None,
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     insert_execute_command_mock(('borg', 'check', '--lock-wait', '5', 'repo'))

@@ -103,7 +103,9 @@ def run_configuration(config_filename, config, arguments):
     if not encountered_error:
         repo_queue = Queue()
         for repo in location['repositories']:
-            repo_queue.put((repo, 0),)
+            repo_queue.put(
+                (repo, 0),
+            )
 
         while not repo_queue.empty():
             repository, retry_num = repo_queue.get()
@@ -128,7 +130,9 @@ def run_configuration(config_filename, config, arguments):
                 )
             except (OSError, CalledProcessError, ValueError) as error:
                 if retry_num < retries:
-                    repo_queue.put((repository, retry_num + 1),)
+                    repo_queue.put(
+                        (repository, retry_num + 1),
+                    )
                     tuple(  # Consume the generator so as to trigger logging.
                         log_error_records(
                             f'{repository["path"]}: Error running actions for repository',
@@ -279,7 +283,7 @@ def run_actions(
         **hook_context,
     )
 
-    for (action_name, action_arguments) in arguments.items():
+    for action_name, action_arguments in arguments.items():
         if action_name == 'rcreate':
             borgmatic.actions.rcreate.run_rcreate(
                 repository,
@@ -408,19 +412,39 @@ def run_actions(
             )
         elif action_name == 'rlist':
             yield from borgmatic.actions.rlist.run_rlist(
-                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                local_path,
+                remote_path,
             )
         elif action_name == 'list':
             yield from borgmatic.actions.list.run_list(
-                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                local_path,
+                remote_path,
             )
         elif action_name == 'rinfo':
             yield from borgmatic.actions.rinfo.run_rinfo(
-                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                local_path,
+                remote_path,
             )
         elif action_name == 'info':
             yield from borgmatic.actions.info.run_info(
-                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                local_path,
+                remote_path,
             )
         elif action_name == 'break-lock':
             borgmatic.actions.break_lock.run_break_lock(
@@ -433,7 +457,12 @@ def run_actions(
             )
         elif action_name == 'borg':
             borgmatic.actions.borg.run_borg(
-                repository, storage, local_borg_version, action_arguments, local_path, remote_path,
+                repository,
+                storage,
+                local_borg_version,
+                action_arguments,
+                local_path,
+                remote_path,
             )
 
     command.execute_hook(
@@ -626,7 +655,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
         try:
             borg_umount.unmount_archive(
-                mount_point=arguments['umount'].mount_point, local_path=get_local_path(configs),
+                mount_point=arguments['umount'].mount_point,
+                local_path=get_local_path(configs),
             )
         except (CalledProcessError, OSError) as error:
             yield from log_error_records('Error unmounting mount point', error)

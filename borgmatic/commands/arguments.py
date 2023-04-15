@@ -178,7 +178,9 @@ def make_parsers():
         help='Log verbose progress to monitoring integrations that support logging (from only errors to very verbose: -1, 0, 1, or 2)',
     )
     global_group.add_argument(
-        '--log-file', type=str, help='Write log messages to this file instead of syslog',
+        '--log-file',
+        type=str,
+        help='Write log messages to this file instead of syslog',
     )
     global_group.add_argument(
         '--log-file-format',
@@ -258,10 +260,13 @@ def make_parsers():
         help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key (Borg 2.x+ only)',
     )
     rcreate_group.add_argument(
-        '--append-only', action='store_true', help='Create an append-only repository',
+        '--append-only',
+        action='store_true',
+        help='Create an append-only repository',
     )
     rcreate_group.add_argument(
-        '--storage-quota', help='Create a repository with a fixed storage quota',
+        '--storage-quota',
+        help='Create a repository with a fixed storage quota',
     )
     rcreate_group.add_argument(
         '--make-parent-dirs',
@@ -649,7 +654,8 @@ def make_parsers():
     )
     rlist_group = rlist_parser.add_argument_group('rlist arguments')
     rlist_group.add_argument(
-        '--repository', help='Path of repository to list, defaults to the configured repositories',
+        '--repository',
+        help='Path of repository to list, defaults to the configured repositories',
     )
     rlist_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive names'

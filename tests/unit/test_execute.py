@@ -320,7 +320,11 @@ def test_execute_command_and_capture_output_returns_output_with_extra_environmen
     expected_output = '[]'
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
-        full_command, stderr=None, shell=False, env={'a': 'b', 'c': 'd'}, cwd=None,
+        full_command,
+        stderr=None,
+        shell=False,
+        env={'a': 'b', 'c': 'd'},
+        cwd=None,
     ).and_return(flexmock(decode=lambda: expected_output)).once()
 
     output = module.execute_command_and_capture_output(

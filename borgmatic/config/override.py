@@ -57,7 +57,12 @@ def parse_overrides(raw_overrides):
     for raw_override in raw_overrides:
         try:
             raw_keys, value = raw_override.split('=', 1)
-            parsed_overrides.append((tuple(raw_keys.split('.')), convert_value_type(value),))
+            parsed_overrides.append(
+                (
+                    tuple(raw_keys.split('.')),
+                    convert_value_type(value),
+                )
+            )
         except ValueError:
             raise ValueError(
                 f"Invalid override '{raw_override}'. Make sure you use the form: SECTION.OPTION=VALUE"
@@ -75,5 +80,5 @@ def apply_overrides(config, raw_overrides):
     '''
     overrides = parse_overrides(raw_overrides)
 
-    for (keys, value) in overrides:
+    for keys, value in overrides:
         set_values(config, keys, value)

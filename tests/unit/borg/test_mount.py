@@ -10,7 +10,9 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(command):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        command, borg_local_path='borg', extra_environment=None,
+        command,
+        borg_local_path='borg',
+        extra_environment=None,
     ).once()
 
 
@@ -33,7 +35,12 @@ def test_mount_archive_calls_borg_with_required_flags():
 
 def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_archives_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo',))
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
     insert_execute_command_mock(
         ('borg', 'mount', '--repo', 'repo', '--match-archives', 'archive', '/mnt')
     )

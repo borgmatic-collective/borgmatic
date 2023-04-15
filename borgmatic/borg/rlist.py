@@ -40,7 +40,8 @@ def resolve_archive_name(
     )
 
     output = execute_command_and_capture_output(
-        full_command, extra_environment=environment.make_environment(storage_config),
+        full_command,
+        extra_environment=environment.make_environment(storage_config),
     )
     try:
         latest_archive = output.strip().splitlines()[-1]

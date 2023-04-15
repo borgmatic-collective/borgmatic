@@ -70,7 +70,11 @@ def test_make_repository_archive_flags_with_borg_features_separates_repository_a
 
     assert module.make_repository_archive_flags(
         repository_path='repo', archive='archive', local_borg_version='1.2.3'
-    ) == ('--repo', 'repo', 'archive',)
+    ) == (
+        '--repo',
+        'repo',
+        'archive',
+    )
 
 
 def test_make_repository_archive_flags_with_borg_features_joins_repository_and_archive():
@@ -86,9 +90,24 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
     (
         (None, None, True, ()),
         (None, '', True, ()),
-        ('re:foo-.*', '{hostname}-{now}', True, ('--match-archives', 're:foo-.*'),),  # noqa: FS003
-        ('sh:foo-*', '{hostname}-{now}', False, ('--glob-archives', 'foo-*'),),  # noqa: FS003
-        ('foo-*', '{hostname}-{now}', False, ('--glob-archives', 'foo-*'),),  # noqa: FS003
+        (
+            're:foo-.*',
+            '{hostname}-{now}',
+            True,
+            ('--match-archives', 're:foo-.*'),
+        ),  # noqa: FS003
+        (
+            'sh:foo-*',
+            '{hostname}-{now}',
+            False,
+            ('--glob-archives', 'foo-*'),
+        ),  # noqa: FS003
+        (
+            'foo-*',
+            '{hostname}-{now}',
+            False,
+            ('--glob-archives', 'foo-*'),
+        ),  # noqa: FS003
         (
             None,
             '{hostname}-docs-{now}',  # noqa: FS003
