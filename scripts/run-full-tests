@@ -21,8 +21,8 @@ apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client m
     py3-ruamel.yaml py3-ruamel.yaml.clib bash sqlite
 # If certain dependencies of black are available in this version of Alpine, install them.
 apk add --no-cache py3-typed-ast py3-regex || true
-python3 -m pip install --no-cache --upgrade pip==22.2.2 setuptools==64.0.1
-pip3 install --ignore-installed tox==3.25.1
+python3 -m pip install --no-cache --upgrade pip==23.0.1 setuptools==67.6.1
+pip3 install --ignore-installed tox==4.4.12
 export COVERAGE_FILE=/tmp/.coverage
 
 if [ "$1" != "--end-to-end-only" ] ; then
