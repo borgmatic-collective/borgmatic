@@ -8,7 +8,11 @@ from queue import Queue
 from subprocess import CalledProcessError
 
 import colorama
-import pkg_resources
+
+try:
+    import importlib_metadata
+except ModuleNotFoundError:  # pragma: nocover
+    import importlib.metadata as importlib_metadata
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
@@ -706,7 +710,7 @@ def main():  # pragma: no cover
 
     global_arguments = arguments['global']
     if global_arguments.version:
-        print(pkg_resources.require('borgmatic')[0].version)
+        print(importlib_metadata.version('borgmatic'))
         sys.exit(0)
     if global_arguments.bash_completion:
         print(borgmatic.commands.completion.bash_completion())

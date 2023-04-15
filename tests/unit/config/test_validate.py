@@ -4,6 +4,28 @@ from flexmock import flexmock
 from borgmatic.config import validate as module
 
 
+def test_schema_filename_finds_schema_path():
+    schema_path = '/var/borgmatic/config/schema.yaml'
+
+    flexmock(module.importlib_metadata).should_receive('files').and_return(
+        flexmock(match=lambda path: False, locate=lambda: None),
+        flexmock(match=lambda path: True, locate=lambda: schema_path),
+        flexmock(match=lambda path: False, locate=lambda: None),
+    )
+
+    assert module.schema_filename() == schema_path
+
+
+def test_schema_filename_with_missing_schema_path_raises():
+    flexmock(module.importlib_metadata).should_receive('files').and_return(
+        flexmock(match=lambda path: False, locate=lambda: None),
+        flexmock(match=lambda path: False, locate=lambda: None),
+    )
+
+    with pytest.raises(FileNotFoundError):
+        assert module.schema_filename()
+
+
 def test_format_json_error_path_element_formats_array_index():
     module.format_json_error_path_element(3) == '[3]'
 
