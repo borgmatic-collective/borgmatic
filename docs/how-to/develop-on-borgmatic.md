@@ -87,19 +87,20 @@ tox -e codespell
 borgmatic additionally includes some end-to-end tests that integration test
 with Borg and supported databases for a few representative scenarios. These
 tests don't run by default when running `tox`, because they're relatively slow
-and depend on Docker containers for runtime dependencies. These tests tests do
-run on the continuous integration (CI) server, and running them on your
-developer machine is the closest thing to CI test parity.
+and depend on containers for runtime dependencies. These tests do run on the
+continuous integration (CI) server, and running them on your developer machine
+is the closest thing to CI-test parity.
 
-If you would like to run the full test suite, first install Docker and [Docker
-Compose](https://docs.docker.com/compose/install/). Then run:
+If you would like to run the full test suite, first install Docker (or Podman;
+see below) and [Docker Compose](https://docs.docker.com/compose/install/).
+Then run:
 
 ```bash
 scripts/run-end-to-end-dev-tests
 ```
 
-Note that this scripts assumes you have permission to run Docker. If you
-don't, then you may need to run with `sudo`.
+This script assumes you have permission to run `docker`. If you don't, then
+you may need to run with `sudo`.
 
 
 #### Podman
@@ -119,6 +120,7 @@ some key points to double-check:
  * Create a non-root Podman socket for that user:
    ```bash
    systemctl --user enable --now podman.socket
+   systemctl --user start --now podman.socket
    ```
 
 Then you'll be able to run end-to-end tests as per normal, and the test script
@@ -161,11 +163,12 @@ To build and view a copy of the documentation with your local changes, run the
 following from the root of borgmatic's source code:
 
 ```bash
-sudo scripts/dev-docs
+scripts/dev-docs
 ```
 
-This requires Docker to be installed on your system. You may not need to use
-sudo if your non-root user has permissions to run Docker.
+This requires Docker (or Podman; see below) to be installed on your system.
+This script assumes you have permission to run `docker`. If you don't, then
+you may need to run with `sudo`.
 
 After you run the script, you can point your web browser at
 http://localhost:8080 to view the documentation with your changes.

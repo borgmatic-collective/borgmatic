@@ -138,7 +138,7 @@ hooks:
 
 ### Containers
 
-If your database is running within a Docker container and borgmatic is too, no
+If your database is running within a container and borgmatic is too, no
 problem—simply configure borgmatic to connect to the container's name on its
 exposed port. For instance:
 
@@ -154,10 +154,10 @@ hooks:
 
 But what if borgmatic is running on the host? You can still connect to a
 database container if its ports are properly exposed to the host. For
-instance, when running the database container with Docker, you can specify
-`--publish 127.0.0.1:5433:5432` so that it exposes the container's port 5432
-to port 5433 on the host (only reachable on localhost, in this case). Or the
-same thing with Docker Compose:
+instance, when running the database container, you can specify `--publish
+127.0.0.1:5433:5432` so that it exposes the container's port 5432 to port 5433
+on the host (only reachable on localhost, in this case). Or the same thing
+with Docker Compose:
 
 ```yaml
 services:
