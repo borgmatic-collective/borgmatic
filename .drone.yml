@@ -32,13 +32,17 @@ steps:
 ---
 kind: pipeline
 name: documentation
+type: exec
+
+platform:
+  os: linux
+  arch: amd64
 
 clone:
   skip_verify: true
 
 steps:
 - name: build
-  image: quay.io/podman/stable
   environment:
     USERNAME:
       from_secret: docker_username
@@ -46,10 +50,8 @@ steps:
       from_secret: docker_password
     IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
   commands:
-    - echo "podman:100000:100000" > /etc/subuid
-    - echo "podman:100000:100000" > /etc/subgid
     - podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
-    - podman build --security-opt label=disable --isolation chroot --userns-uid-map-user podman --userns-gid-map-group podman --tag "$IMAGE_NAME" --file docs/Dockerfile
+    - podman build --tag "$IMAGE_NAME" --file docs/Dockerfile
     - podman push "$IMAGE_NAME"
 
 trigger:
