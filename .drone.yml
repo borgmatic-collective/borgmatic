@@ -46,10 +46,10 @@ steps:
       from_secret: docker_password
     IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
   commands:
-    - cat /etc/subuid
-    - cat /etc/subgid
+    - echo "podman:100000:65536" > /etc/subuid
+    - echo "podman:100000:65536" > /etc/subgid
     - podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
-    - podman build --isolation chroot --userns host --volume /etc/subuid:/etc/subuid --volume /etc/subgid:/etc/subgid --tag "$IMAGE_NAME" --file docs/Dockerfile
+    - podman build --isolation chroot --userns-uid-map-user podman --userns-gid-map-group podman --tag "$IMAGE_NAME" --file docs/Dockerfile
     - podman push "$IMAGE_NAME"
 
 trigger:
