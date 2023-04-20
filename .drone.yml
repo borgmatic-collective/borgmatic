@@ -47,7 +47,7 @@ steps:
     IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
   commands:
     - podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
-    - podman build --security-opt "unmask=/proc/*" --tag "$IMAGE_NAME" --file docs/Dockerfile
+    - podman build --security-opt label=disable --security-opt unmask=ALL --device /dev/fuse --tag "$IMAGE_NAME" --file docs/Dockerfile
     - podman push "$IMAGE_NAME"
 
 trigger:
