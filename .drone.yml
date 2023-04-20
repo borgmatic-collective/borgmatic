@@ -38,7 +38,7 @@ clone:
 
 steps:
 - name: build
-  image: quay.io/stable/podman
+  image: quay.io/podman/stable
   environment:
     USERNAME:
       from_secret: docker_username
