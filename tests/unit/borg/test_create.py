@@ -2565,3 +2565,18 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
             storage_config={},
             local_borg_version='1.2.3',
         )
+
+
+def test_check_all_source_directories_exist_with_glob_and_tilde_directories():
+    flexmock(module).should_receive('expand_directory').with_args('foo*').and_return(
+        ('foo', 'food')
+    )
+    flexmock(module).should_receive('expand_directory').with_args('~/bar').and_return(
+        ('/root/bar',)
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('foo').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('food').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/root/bar').and_return(True)
+
+    module.check_all_source_directories_exist(['foo*', '~/bar'])
