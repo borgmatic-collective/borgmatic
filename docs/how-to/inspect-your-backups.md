@@ -169,7 +169,7 @@ brackets. For instance, the default log format is: `[{asctime}] {levelname}:
 {message}`. This means each log message is recorded as the log time (in square
 brackets), a logging level name, a colon, and the actual log message.
 
-So if you just want each log message to get logged *without* a timestamp or a
+So if you only want each log message to get logged *without* a timestamp or a
 logging level name:
 
 ```bash

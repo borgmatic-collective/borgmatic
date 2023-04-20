@@ -60,7 +60,7 @@ properties:
                     or port. If systemd service is used, then add local
                     repository paths in the systemd service file to the
                     ReadWritePaths list. Prior to borgmatic 1.7.10, repositories
-                    was just a list of plain path strings.
+                    was a list of plain path strings.
                 example:
                     - path: ssh://user@backupserver/./sourcehostname.borg
                       label: backupserver
@@ -1216,7 +1216,7 @@ properties:
                         type: string
                         description: |
                             Healthchecks ping URL or UUID to notify when a
-                            backup begins, ends, errors or just to send logs.
+                            backup begins, ends, errors, or to send only logs.
                         example: https://hc-ping.com/your-uuid-here
                     verify_tls:
                         type: boolean

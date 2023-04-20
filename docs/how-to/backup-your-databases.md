@@ -139,8 +139,8 @@ hooks:
 ### Containers
 
 If your database is running within a container and borgmatic is too, no
-problem—simply configure borgmatic to connect to the container's name on its
-exposed port. For instance:
+problem—configure borgmatic to connect to the container's name on its exposed
+port. For instance:
 
 ```yaml
 hooks:
@@ -179,7 +179,7 @@ hooks:
           password: trustsome1
 ```
 
-Of course, alter the ports in these examples to suit your particular database
+You can alter the ports in these examples to suit your particular database
 system.
 
 
@@ -397,9 +397,9 @@ dumps with any database system.
 With PostgreSQL and MySQL/MariaDB, if you're getting authentication errors
 when borgmatic tries to connect to your database, a natural reaction is to
 increase your borgmatic verbosity with `--verbosity 2` and go looking in the
-logs. You'll notice however that your database password does not show up in
-the logs. This is likely not the cause of the authentication problem unless
-you mistyped your password, however; borgmatic passes your password to the
+logs. You'll notice though that your database password does not show up in the
+logs. This is likely not the cause of the authentication problem unless you
+mistyped your password, however; borgmatic passes your password to the
 database via an environment variable that does not appear in the logs.
 
 The cause of an authentication error is often on the database side—in the

@@ -260,7 +260,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
             )
             continue
 
-        # This is some sort of scalar. Simply set it into the destination.
+        # This is some sort of scalar. Set it into the destination.
         destination_config[field_name] = source_config[field_name]
 
     return destination_config

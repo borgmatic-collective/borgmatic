@@ -17,8 +17,8 @@ def resolve_archive_name(
 ):
     '''
     Given a local or remote repository path, an archive name, a storage config dict, a local Borg
-    path, and a remote Borg path, simply return the archive name. But if the archive name is
-    "latest", then instead introspect the repository for the latest archive and return its name.
+    path, and a remote Borg path, return the archive name. But if the archive name is "latest",
+    then instead introspect the repository for the latest archive and return its name.
 
     Raise ValueError if "latest" is given but there are no archives in the repository.
     '''
