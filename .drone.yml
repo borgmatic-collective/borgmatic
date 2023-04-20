@@ -51,7 +51,7 @@ steps:
     IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
   commands:
     - podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
-    - podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --volume $(pwd):/app
+    - podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --volume $(pwd):/app --storage-opt "overlay.mount_program=/usr/bin/fuse-overlayfs"
     - podman push "$IMAGE_NAME"
 
 trigger:
