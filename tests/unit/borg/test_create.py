@@ -2550,7 +2550,7 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module).should_receive('check_all_source_directories_exist').and_raise(ValueError)
 
     with pytest.raises(ValueError):
         module.create_archive(
