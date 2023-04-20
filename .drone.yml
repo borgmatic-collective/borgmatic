@@ -53,6 +53,6 @@ trigger:
   repo:
     - borgmatic-collective/borgmatic
   branch:
-    - master
+    - main
   event:
     - push

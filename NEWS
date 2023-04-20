@@ -2,6 +2,8 @@
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
    flag. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
+ * #684: Rename "master" development branch to "main" to use more inclusive language. You'll need to
+   update your development checkouts accordingly.
 
 1.7.12
  * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.
@@ -367,7 +369,7 @@
  * #398: Clarify canonical home of borgmatic in documentation.
  * #406: Clarify that spaces in path names should not be backslashed in path names.
  * #423: Fix error handling to error loudly when Borg gets killed due to running out of memory!
- * Fix build so as not to attempt to build and push documentation for a non-master branch.
+ * Fix build so as not to attempt to build and push documentation for a non-main branch.
  * "Fix" build failure with Alpine Edge by switching from Edge to Alpine 3.13.
  * Move #borgmatic IRC channel from Freenode to Libera Chat due to Freenode takeover drama.
    IRC connection info: https://torsion.org/borgmatic/#issues

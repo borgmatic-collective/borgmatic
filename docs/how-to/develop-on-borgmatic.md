@@ -7,7 +7,7 @@ eleventyNavigation:
 ---
 ## Source code
 
-To get set up to hack on borgmatic, first clone master via HTTPS or SSH:
+To get set up to hack on borgmatic, first clone it via HTTPS or SSH:
 
 ```bash
 git clone https://projects.torsion.org/borgmatic-collective/borgmatic.git
