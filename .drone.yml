@@ -49,7 +49,7 @@ steps:
     - echo "podman:100000:100000" > /etc/subuid
     - echo "podman:100000:100000" > /etc/subgid
     - podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
-    - podman build --isolation chroot --userns-uid-map-user podman --userns-gid-map-group podman --tag "$IMAGE_NAME" --file docs/Dockerfile
+    - podman build --security-opt label=disable --isolation chroot --userns-uid-map-user podman --userns-gid-map-group podman --tag "$IMAGE_NAME" --file docs/Dockerfile
     - podman push "$IMAGE_NAME"
 
 trigger:
