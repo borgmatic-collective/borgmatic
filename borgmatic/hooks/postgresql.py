@@ -2,6 +2,7 @@ import csv
 import itertools
 import logging
 import os
+import shlex
 
 from borgmatic.execute import (
     execute_command,
@@ -60,8 +61,10 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
+    psql_command = shlex.split(database.get('psql_command') or 'psql')
     list_command = (
-        ('psql', '--list', '--no-password', '--csv', '--tuples-only')
+        tuple(psql_command)
+        + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
@@ -210,9 +213,10 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     dump_filename = dump.make_database_dump_filename(
         make_dump_path(location_config), database['name'], database.get('hostname')
     )
-    psql_command = database.get('psql_command') or 'psql'
+    psql_command = shlex.split(database.get('psql_command') or 'psql')
     analyze_command = (
-        (psql_command, '--no-password', '--quiet')
+        tuple(psql_command)
+        + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
@@ -220,14 +224,17 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
     )
-    pg_restore_command = database.get('pg_restore_command') or 'pg_restore'
+    use_psql_command = all_databases or database.get('format') == 'plain'
+    pg_restore_command = shlex.split(database.get('pg_restore_command') or 'pg_restore')
     restore_command = (
-        (psql_command if all_databases else pg_restore_command, '--no-password')
+        tuple(psql_command if use_psql_command else pg_restore_command)
+        + ('--no-password',)
         + (
-            ('--if-exists', '--exit-on-error', '--clean', '--dbname', database['name'])
-            if not all_databases
-            else ()
+            ('--no-psqlrc', '--set', 'ON_ERROR_STOP=on')
+            if use_psql_command
+            else ('--if-exists', '--exit-on-error', '--clean')
         )
+        + (('--dbname', database['name']) if not all_databases else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--username', database['username']) if 'username' in database else ())
