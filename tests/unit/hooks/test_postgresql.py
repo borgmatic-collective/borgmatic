@@ -76,7 +76,16 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
 def test_database_names_to_dump_with_all_and_format_lists_databases_with_username():
     database = {'name': 'all', 'format': 'custom', 'username': 'postgres'}
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--username', 'postgres'),
+        (
+            'psql',
+            '--list',
+            '--no-password',
+            '--no-psqlrc',
+            '--csv',
+            '--tuples-only',
+            '--username',
+            'postgres',
+        ),
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
@@ -104,6 +113,28 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         'foo,test,\ntemplate0,test,blah'
     )
+
+    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+        'foo',
+    )
+
+
+def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
+    database = {'name': 'all', 'format': 'custom', 'psql_command': 'docker exec mycontainer psql'}
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'docker',
+            'exec',
+            'mycontainer',
+            'psql',
+            '--list',
+            '--no-password',
+            '--no-psqlrc',
+            '--csv',
+            '--tuples-only',
+        ),
+        extra_environment=object,
+    ).and_return('foo,text').once()
 
     assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
         'foo',
@@ -434,7 +465,16 @@ def test_restore_database_dump_runs_pg_restore():
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('psql', '--no-password', '--no-psqlrc', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
@@ -632,12 +672,45 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     )
 
 
+def test_restore_database_dump_runs_psql_for_plain_database_dump():
+    database_config = [{'name': 'foo', 'format': 'plain', 'schemas': None}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('psql', '--no-password', '--no-psqlrc', '--set', 'ON_ERROR_STOP=on', '--dbname', 'foo'),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment={'PGSSLMODE': 'disable'},
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
+        extra_environment={'PGSSLMODE': 'disable'},
+    ).once()
+
+    module.restore_database_dump(
+        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+    )
+
+
 def test_restore_database_dump_runs_non_default_pg_restore_and_psql():
     database_config = [
         {
             'name': 'foo',
-            'pg_restore_command': 'special_pg_restore',
-            'psql_command': 'special_psql',
+            'pg_restore_command': 'docker exec mycontainer pg_restore',
+            'psql_command': 'docker exec mycontainer psql',
             'schemas': None,
         }
     ]
@@ -648,7 +721,10 @@ def test_restore_database_dump_runs_non_default_pg_restore_and_psql():
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
-            'special_pg_restore',
+            'docker',
+            'exec',
+            'mycontainer',
+            'pg_restore',
             '--no-password',
             '--if-exists',
             '--exit-on-error',
@@ -662,7 +738,19 @@ def test_restore_database_dump_runs_non_default_pg_restore_and_psql():
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('special_psql', '--no-password', '--no-psqlrc', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
+        (
+            'docker',
+            'exec',
+            'mycontainer',
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
@@ -707,7 +795,16 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('psql', '--no-password', '--no-psqlrc', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 
@@ -743,7 +840,16 @@ def test_restore_database_dump_with_schemas_restores_schemas():
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
-        ('psql', '--no-password', '--quiet', '--dbname', 'foo', '--command', 'ANALYZE'),
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
         extra_environment={'PGSSLMODE': 'disable'},
     ).once()
 

@@ -2,6 +2,11 @@
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
    flag. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
+ * #678: Fix error from PostgreSQL when dumping a database with a "format" of "plain".
+ * #678: Fix PostgreSQL hook to support "psql_command" and "pg_restore_command" options containing
+   commands with arguments.
+ * #678: Fix calls to psql in PostgreSQL hook to ignore "~/.psqlrc", whose settings can break
+   database dumping.
  * #684: Rename "master" development branch to "main" to use more inclusive language. You'll need to
    update your development checkouts accordingly.
 
