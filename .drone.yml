@@ -1,3 +1,4 @@
+---
 kind: pipeline
 name: python-3-8-alpine-3-13
 
@@ -5,7 +6,6 @@ services:
   - name: postgresql
     image: docker.io/postgres:13.1-alpine
     environment:
-      POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
   - name: mysql
