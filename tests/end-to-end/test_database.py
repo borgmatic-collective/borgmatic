@@ -36,17 +36,17 @@ hooks:
     postgresql_databases:
         - name: test
           hostname: postgresql
-          username: postgres
+          username: test
           password: test
           format: {postgresql_dump_format}
         - name: all
           hostname: postgresql
-          username: postgres
+          username: test
           password: test
         - name: all
           format: custom
           hostname: postgresql
-          username: postgres
+          username: test
           password: test
     mysql_databases:
         - name: test

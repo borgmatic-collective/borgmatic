@@ -3,6 +3,7 @@ services:
   postgresql:
     image: docker.io/postgres:13.1-alpine
     environment:
+      POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
   mysql:

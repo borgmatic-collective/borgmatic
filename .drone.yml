@@ -3,17 +3,18 @@ name: python-3-8-alpine-3-13
 
 services:
   - name: postgresql
-    image: postgres:13.1-alpine
+    image: docker.io/postgres:13.1-alpine
     environment:
+      POSTGRES_USER: test
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
   - name: mysql
-    image: mariadb:10.5
+    image: docker.io/mariadb:10.5
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
   - name: mongodb
-    image: mongo:5.0.5
+    image: docker.io/mongo:5.0.5
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: test
@@ -23,7 +24,7 @@ clone:
 
 steps:
 - name: build
-  image: alpine:3.13
+  image: docker.io/alpine:3.13
   environment:
     TEST_CONTAINER: true
   pull: always
