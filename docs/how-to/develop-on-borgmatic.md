@@ -113,8 +113,7 @@ borgmatic's end-to-end tests optionally support using
 Setting up Podman is outside the scope of this documentation, but here are
 some key points to double-check:
 
- * Install Podman along with `podman-docker` and your desired networking
-   support.
+ * Install Podman and your desired networking support.
  * Configure `/etc/subuid` and `/etc/subgid` to map users/groups for the
    non-root user who will run tests.
  * Create a non-root Podman socket for that user:
@@ -186,5 +185,5 @@ borgmatic's developer build for documentation optionally supports using
 [Podman](https://podman.io/) instead of Docker.
 
 Setting up Podman is outside the scope of this documentation. But once you
-install `podman-docker`, then `scripts/dev-docs` should automatically use
+install and configure Podman, then `scripts/dev-docs` should automatically use
 Podman instead of Docker.

@@ -1,0 +1,22 @@
+version: '3'
+services:
+  docs:
+    image: borgmatic-docs
+    container_name: docs
+    ports:
+      - 8080:80
+    build:
+      dockerfile: docs/Dockerfile
+      context: ..
+      args:
+        ENVIRONMENT: dev
+  message:
+    image: alpine
+    container_name: message
+    command:
+      - sh
+      - -c
+      - |
+        echo "You can view dev docs at http://localhost:8080"
+    depends_on:
+      - docs
