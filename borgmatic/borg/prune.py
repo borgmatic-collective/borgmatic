@@ -78,10 +78,12 @@ def prune_archives(
         
         + flags.make_flags_from_arguments(
             prune_arguments,
-            excludes=('repository', 'stats'),
+            excludes=('repository', 'stats', 'list_archives'),
         )
+        + (('--list',) if prune_arguments.list_archives else ())
 
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--dry-run',) if dry_run else ())
 
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)

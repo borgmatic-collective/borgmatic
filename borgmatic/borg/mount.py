@@ -34,7 +34,7 @@ def mount_archive(
         
         + flags.make_flags_from_arguments(
             mount_arguments,
-            excludes=('repository', 'archive', 'mount_point', 'path', 'options'),
+            excludes=('repository', 'archive', 'mount_point', 'paths', 'options'),
         )
 
         + (('-o', mount_arguments.options) if mount_arguments.options else ())
