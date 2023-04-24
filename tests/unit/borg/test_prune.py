@@ -166,23 +166,6 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
     )
 
 
-# def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
-#     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-#     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-#     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
-#     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-#     insert_execute_command_mock(PRUNE_COMMAND + ('--dry-run', 'repo'), logging.INFO)
-
-#     prune_arguments = flexmock(stats=False, list_archives=False)
-#     module.prune_archives(
-#         repository_path='repo',
-#         storage_config={},
-#         dry_run=True,
-#         retention_config=flexmock(),
-#         local_borg_version='1.2.3',
-#         prune_arguments=prune_arguments,
-#     )
-
 def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
@@ -325,6 +308,30 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
         dry_run=False,
         repository_path='repo',
         storage_config={'extra_borg_options': {'prune': '--extra --options'}},
+        retention_config=flexmock(),
+        local_borg_version='1.2.3',
+        prune_arguments=prune_arguments,
+    )
+
+
+def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(
+        PRUNE_COMMAND
+        + ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w', 'repo'),
+        logging.INFO,
+    )
+
+    prune_arguments = flexmock(
+        stats=False, list_archives=False, newer='1d', newest='1y', older='1m', oldest='1w'
+    )
+    module.prune_archives(
+        dry_run=False,
+        repository_path='repo',
+        storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
         prune_arguments=prune_arguments,
