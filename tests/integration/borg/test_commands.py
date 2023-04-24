@@ -106,3 +106,17 @@ def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
         borgmatic.borg.info.display_archives_info(
             'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
         )
+
+def test_prune_archives_command_does_not_duplicate_flags_or_raise():
+    arguments = borgmatic.commands.arguments.parse_arguments('prune')['prune']
+    flexmock(borgmatic.borg.prune).should_receive('execute_command').replace_with(
+        assert_command_does_not_duplicate_flags
+    )
+
+    for argument_name in dir(arguments):
+        if argument_name.startswith('_'):
+            continue
+
+        borgmatic.borg.prune.prune_archives(
+            False, 'repo', {}, {}, '2.3.4', fuzz_argument(arguments, argument_name)
+        )
