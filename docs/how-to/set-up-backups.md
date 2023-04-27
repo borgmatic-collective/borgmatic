@@ -82,8 +82,8 @@ on a relatively dedicated system, then a global install can work out fine.
 Besides the approaches described above, there are several other options for
 installing borgmatic:
 
- * [Docker image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
- * [Docker image with multi-arch and Docker CLI support](https://hub.docker.com/r/modem7/borgmatic-docker/)
+ * [container image with scheduled backups](https://hub.docker.com/r/b3vis/borgmatic/) (+ Docker Compose files)
+ * [container image with multi-arch and Docker CLI support](https://hub.docker.com/r/modem7/borgmatic-docker/)
  * [Debian](https://tracker.debian.org/pkg/borgmatic)
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
@@ -96,7 +96,7 @@ installing borgmatic:
  * [macOS (via MacPorts)](https://ports.macports.org/port/borgmatic/)
  * [NixOS](https://search.nixos.org/packages?show=borgmatic&sort=relevance&type=packages&query=borgmatic)
  * [Ansible role](https://github.com/borgbase/ansible-role-borgbackup)
- * [virtualenv](https://virtualenv.pypa.io/en/stable/)
+ * [Unraid](https://unraid.net/community/apps?q=borgmatic#r)
 
 
 ## Hosting providers
@@ -279,7 +279,7 @@ that, you can configure a separate job runner to invoke it periodically.
 ### cron
 
 If you're using cron, download the [sample cron
-file](https://projects.torsion.org/borgmatic-collective/borgmatic/src/master/sample/cron/borgmatic).
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/src/main/sample/cron/borgmatic).
 Then, from the directory where you downloaded it:
 
 ```bash
@@ -303,9 +303,9 @@ you may already have borgmatic systemd service and timer files. If so, you may
 be able to skip some of the steps below.)
 
 First, download the [sample systemd service
-file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/master/sample/systemd/borgmatic.service)
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/main/sample/systemd/borgmatic.service)
 and the [sample systemd timer
-file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/master/sample/systemd/borgmatic.timer).
+file](https://projects.torsion.org/borgmatic-collective/borgmatic/raw/branch/main/sample/systemd/borgmatic.timer).
 
 Then, from the directory where you downloaded them:
 

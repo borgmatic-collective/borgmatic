@@ -314,7 +314,7 @@ def check_all_source_directories_exist(source_directories):
     missing_directories = [
         source_directory
         for source_directory in source_directories
-        if not os.path.exists(source_directory)
+        if not all([os.path.exists(directory) for directory in expand_directory(source_directory)])
     ]
     if missing_directories:
         raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")

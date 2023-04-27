@@ -118,7 +118,7 @@ def test_database_dump_and_restore():
 
         # Restore the database from the archive.
         subprocess.check_call(
-            ['borgmatic', '--config', config_path, 'restore', '--archive', archive_name]
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name]
         )
     finally:
         os.chdir(original_working_directory)

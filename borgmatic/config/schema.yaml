@@ -60,7 +60,7 @@ properties:
                     or port. If systemd service is used, then add local
                     repository paths in the systemd service file to the
                     ReadWritePaths list. Prior to borgmatic 1.7.10, repositories
-                    was just a list of plain path strings.
+                    was a list of plain path strings.
                 example:
                     - path: ssh://user@backupserver/./sourcehostname.borg
                       label: backupserver
@@ -836,25 +836,25 @@ properties:
                                 Command to use instead of "pg_dump" or
                                 "pg_dumpall". This can be used to run a specific
                                 pg_dump version (e.g., one inside a running
-                                docker container). Defaults to "pg_dump" for
-                                single database dump or "pg_dumpall" to dump
-                                all databases.
+                                container). Defaults to "pg_dump" for single
+                                database dump or "pg_dumpall" to dump all
+                                databases.
                             example: docker exec my_pg_container pg_dump
                         pg_restore_command:
                             type: string
                             description: |
                                 Command to use instead of "pg_restore". This
                                 can be used to run a specific pg_restore
-                                version (e.g., one inside a running docker
-                                container). Defaults to "pg_restore".
+                                version (e.g., one inside a running container).
+                                Defaults to "pg_restore".
                             example: docker exec my_pg_container pg_restore
                         psql_command:
                             type: string
                             description: |
                                 Command to use instead of "psql". This can be
                                 used to run a specific psql version (e.g.,
-                                one inside a running docker container).
-                                Defaults to "psql".
+                                one inside a running container). Defaults to
+                                "psql".
                             example: docker exec my_pg_container psql
                         options:
                             type: string
@@ -1216,7 +1216,7 @@ properties:
                         type: string
                         description: |
                             Healthchecks ping URL or UUID to notify when a
-                            backup begins, ends, errors or just to send logs.
+                            backup begins, ends, errors, or to send only logs.
                         example: https://hc-ping.com/your-uuid-here
                     verify_tls:
                         type: boolean

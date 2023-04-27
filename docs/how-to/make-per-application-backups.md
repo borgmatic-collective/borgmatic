@@ -86,8 +86,8 @@ uses the `archive_name_format` option to automatically limit which archives
 get used for actions operating on multiple archives. This prevents, for
 instance, duplicate archives from showing up in `rlist` or `info` results—even
 if the same repository appears in multiple borgmatic configuration files. To
-take advantage of this feature, simply use a different `archive_name_format`
-in each configuration file.
+take advantage of this feature, use a different `archive_name_format` in each
+configuration file.
 
 Under the hood, borgmatic accomplishes this by substituting globs for certain
 ephemeral data placeholders in your `archive_name_format`—and using the result
@@ -108,8 +108,8 @@ archives used for actions like `rlist`, `info`, `prune`, `check`, etc.
 
 The end result is that when borgmatic runs the actions for a particular
 application-specific configuration file, it only operates on the archives
-created for that application. Of course, this doesn't apply to actions like
-`compact` that operate on an entire repository.
+created for that application. But this doesn't apply to actions like `compact`
+that operate on an entire repository.
 
 If this behavior isn't quite smart enough for your needs, you can use the
 `match_archives` option to override the pattern that borgmatic uses for

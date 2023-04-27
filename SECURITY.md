@@ -7,8 +7,8 @@ permalink: security-policy/index.html
 
 While we want to hear about security vulnerabilities in all versions of
 borgmatic, security fixes are only made to the most recently released version.
-It's simply not practical for our small volunteer effort to maintain multiple
-release branches and put out separate security patches for each.
+It's not practical for our small volunteer effort to maintain multiple release
+branches and put out separate security patches for each.
 
 ## Reporting a vulnerability
 

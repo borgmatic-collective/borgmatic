@@ -2,8 +2,10 @@
 
 set -e
 
-docker build --tag borgmatic-docs --build-arg ENVIRONMENT=dev --file docs/Dockerfile .
-echo
-echo "You can view dev docs at http://localhost:8080"
-echo
-docker run --interactive --tty --publish 8080:80 --rm borgmatic-docs
+USER_PODMAN_SOCKET_PATH=/run/user/$UID/podman/podman.sock
+
+if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
+    export DOCKER_HOST="unix://$USER_PODMAN_SOCKET_PATH"
+fi
+
+docker-compose --file docs/docker-compose.yaml up --build --force-recreate

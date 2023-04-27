@@ -2550,7 +2550,7 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module).should_receive('check_all_source_directories_exist').and_raise(ValueError)
 
     with pytest.raises(ValueError):
         module.create_archive(
@@ -2565,3 +2565,26 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
             storage_config={},
             local_borg_version='1.2.3',
         )
+
+
+def test_check_all_source_directories_exist_with_glob_and_tilde_directories():
+    flexmock(module).should_receive('expand_directory').with_args('foo*').and_return(
+        ('foo', 'food')
+    )
+    flexmock(module).should_receive('expand_directory').with_args('~/bar').and_return(
+        ('/root/bar',)
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('foo').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('food').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/root/bar').and_return(True)
+
+    module.check_all_source_directories_exist(['foo*', '~/bar'])
+
+
+def test_check_all_source_directories_exist_with_non_existent_directory_raises():
+    flexmock(module).should_receive('expand_directory').with_args('foo').and_return(('foo',))
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    with pytest.raises(ValueError):
+        module.check_all_source_directories_exist(['foo'])
