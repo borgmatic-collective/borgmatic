@@ -77,7 +77,9 @@ def test_mount_archive_calls_borg_with_path_flags():
     )
     insert_execute_command_mock(('borg', 'mount', 'repo::archive', '/mnt', 'path1', 'path2'))
 
-    mount_arguments = flexmock(mount_point='/mnt', options=None, paths=['path1', 'path2'], foreground=False)
+    mount_arguments = flexmock(
+        mount_point='/mnt', options=None, paths=['path1', 'path2'], foreground=False
+    )
     module.mount_archive(
         repository_path='repo',
         archive='archive',
@@ -207,10 +209,59 @@ def test_mount_archive_calls_borg_with_options_flags():
     )
     insert_execute_command_mock(('borg', 'mount', '-o', 'super_mount', 'repo::archive', '/mnt'))
 
-    mount_arguments = flexmock(mount_point='/mnt', options='super_mount', paths=None, foreground=False)
+    mount_arguments = flexmock(
+        mount_point='/mnt', options='super_mount', paths=None, foreground=False
+    )
     module.mount_archive(
         repository_path='repo',
         archive='archive',
+        mount_arguments=mount_arguments,
+        storage_config={},
+        local_borg_version='1.2.3',
+    )
+
+
+def test_mount_archive_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+    insert_execute_command_mock(
+        (
+            'borg',
+            'mount',
+            '--newer',
+            '1d',
+            '--newest',
+            '1y',
+            '--older',
+            '1m',
+            '--oldest',
+            '1w',
+            '--repo',
+            'repo',
+            '--match-archives',
+            None,
+            '/mnt',
+        )
+    )
+
+    mount_arguments = flexmock(
+        mount_point='/mnt',
+        options=None,
+        paths=None,
+        foreground=False,
+        newer='1d',
+        newest='1y',
+        older='1m',
+        oldest='1w',
+    )
+    module.mount_archive(
+        repository_path='repo',
+        archive=None,
         mount_arguments=mount_arguments,
         storage_config={},
         local_borg_version='1.2.3',

@@ -433,3 +433,52 @@ def test_display_archives_info_passes_through_arguments_to_borg(argument_name):
             archive=None, json=False, prefix=None, match_archives=None, **{argument_name: 'value'}
         ),
     )
+
+
+def test_display_archives_info_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '2.3.4'
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
+        ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'borg',
+            'info',
+            '--newer',
+            '1d',
+            '--newest',
+            '1y',
+            '--older',
+            '1m',
+            '--oldest',
+            '1w',
+            '--repo',
+            'repo',
+        ),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        borg_local_path='borg',
+        extra_environment=None,
+    )
+    info_arguments = flexmock(
+        archive=None,
+        json=False,
+        prefix=None,
+        match_archives=None,
+        newer='1d',
+        newest='1y',
+        older='1m',
+        oldest='1w',
+    )
+    module.display_archives_info(
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        info_arguments=info_arguments,
+    )

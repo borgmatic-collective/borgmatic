@@ -31,12 +31,10 @@ def mount_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        
         + flags.make_flags_from_arguments(
             mount_arguments,
             excludes=('repository', 'archive', 'mount_point', 'paths', 'options'),
         )
-
         + (('-o', mount_arguments.options) if mount_arguments.options else ())
         + (
             (
