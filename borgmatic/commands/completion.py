@@ -64,16 +64,16 @@ def fish_completion():
     borgmatic's command-line argument parsers.
     '''
     top_level_parser, subparsers = arguments.make_parsers()
-    actions = ' '.join(subparsers.choices.keys())
 
     # Avert your eyes.
     return '\n'.join(
         (
             'function __borgmatic_check_version',
-            '    set this_script (cat (status current-filename) 2> /dev/null)',
+            '    set this_filename (status current-filename)',
+            '    set this_script (cat $this_filename 2> /dev/null)',
             '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
-            '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee (status current-filename)', '(status current-filename)')),
+            '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee $this_filename', '$this_filename')),
             '    end',
             'end',
             '__borgmatic_check_version &',
@@ -81,8 +81,6 @@ def fish_completion():
             '''complete -c borgmatic -a '%s' -d %s -f'''
             % (action, shlex.quote(subparser.description))
             for action, subparser in subparsers.choices.items()
-        ) + (
-            'complete -c borgmatic -a "%s" -d "borgmatic actions" -f' % actions,
         ) + tuple(
             '''complete -c borgmatic -a '%s' -d %s -f'''
             % (option, shlex.quote(action.help))
