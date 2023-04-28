@@ -1,4 +1,5 @@
 from borgmatic.commands import arguments
+import shlex
 
 def upgrade_message(language: str, upgrade_command: str, completion_file: str):
     return f'''
@@ -76,5 +77,12 @@ def fish_completion():
             '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee (status current-filename)', '(status current-filename)')),
             '    end',
             'end',
-            # 'function __borgmatic_complete',
-        ))
+        ) + tuple(
+            '''complete -c borgmatic -n '__borgmatic_check_version' -a '%s' -d %s -f'''
+            % (action, shlex.quote(subparser.description))
+            for action, subparser in subparsers.choices.items()
+        ) + (
+            'complete -c borgmatic -a "%s" -d "borgmatic actions" -f' % actions,
+            'complete -c borgmatic -a "%s" -d "borgmatic global flags" -f' % global_flags,
+        )
+    )
