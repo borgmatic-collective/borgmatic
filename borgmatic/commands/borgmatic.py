@@ -715,6 +715,9 @@ def main():  # pragma: no cover
     if global_arguments.bash_completion:
         print(borgmatic.commands.completion.bash_completion())
         sys.exit(0)
+    if global_arguments.fish_completion:
+        print(borgmatic.commands.completion.fish_completion())
+        sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, parse_logs = load_configurations(

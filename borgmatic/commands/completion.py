@@ -55,3 +55,25 @@ def bash_completion():
             '\ncomplete -o bashdefault -o default -F complete_borgmatic borgmatic',
         )
     )
+
+def fish_completion():
+    '''
+    Return a fish completion script for the borgmatic command. Produce this by introspecting
+    borgmatic's command-line argument parsers.
+    '''
+    top_level_parser, subparsers = arguments.make_parsers()
+    global_flags = parser_flags(top_level_parser)
+    actions = ' '.join(subparsers.choices.keys())
+
+    # Avert your eyes.
+    return '\n'.join(
+        (
+            'function __borgmatic_check_version',
+            '    set this_script (cat "$BASH_SOURCE" 2> /dev/null)',
+            '    set installed_script (borgmatic --bash-completion 2> /dev/null)',
+            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
+            f'        echo "{UPGRADE_MESSAGE}"',
+            '    end',
+            'end',
+            'function __borgmatic_complete',
+        ))
