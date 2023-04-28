@@ -11,7 +11,7 @@ borgmatic is simple, configuration-driven backup software for servers and
 workstations. Protect your files with client-side encryption. Backup your
 databases too. Monitor it all with integrated third-party services.
 
-The canonical home of borgmatic is at <a href="https://torsion.org/borgmatic">https://torsion.org/borgmatic</a>.
+The canonical home of borgmatic is at <a href="https://torsion.org/borgmatic">https://torsion.org/borgmatic/</a>
 
 Here's an example configuration file:
 
