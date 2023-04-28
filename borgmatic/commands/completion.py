@@ -1,3 +1,4 @@
+from argparse import Action
 from borgmatic.commands import arguments
 import shlex
 
@@ -58,6 +59,15 @@ def bash_completion():
         )
     )
 
+def build_fish_flags(action: Action):
+    '''
+    Given an argparse.Action instance, return a string containing the fish flags for that action.
+    '''
+    if action.metavar and action.metavar == 'PATH' or action.metavar == 'FILENAME':
+        return '-r -F'
+    else:
+        return '-f'
+
 def fish_completion():
     '''
     Return a fish completion script for the borgmatic command. Produce this by introspecting
@@ -88,14 +98,14 @@ def fish_completion():
         ) + (
             '\n# global flags',
         ) + tuple(
-            '''complete -c borgmatic -a '%s' -d %s -f'''
-            % (' '.join(action.option_strings), shlex.quote(action.help))
+            '''complete -c borgmatic -a '%s' -d %s %s'''
+            % (' '.join(action.option_strings), shlex.quote(action.help), build_fish_flags(action))
             for action in top_level_parser._actions
         ) + (
             '\n# subparser flags',
         ) + tuple(
-            '''complete -c borgmatic -a '%s' -d %s -n "__fish_seen_subcommand_from %s" -f'''
-            % (' '.join(action.option_strings), shlex.quote(action.help), actionStr)
+            '''complete -c borgmatic -a '%s' -d %s -n "__fish_seen_subcommand_from %s" %s'''
+            % (' '.join(action.option_strings), shlex.quote(action.help), actionStr, build_fish_flags(action))
             for actionStr, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
