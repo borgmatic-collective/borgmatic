@@ -64,25 +64,29 @@ def fish_completion():
     borgmatic's command-line argument parsers.
     '''
     top_level_parser, subparsers = arguments.make_parsers()
-    global_flags = parser_flags(top_level_parser)
     actions = ' '.join(subparsers.choices.keys())
 
     # Avert your eyes.
     return '\n'.join(
         (
             'function __borgmatic_check_version',
-            '    set this_script (status current-filename)',
+            '    set this_script (cat (status current-filename) 2> /dev/null)',
             '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
             '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee (status current-filename)', '(status current-filename)')),
             '    end',
             'end',
+            '__borgmatic_check_version &',
         ) + tuple(
-            '''complete -c borgmatic -n '__borgmatic_check_version' -a '%s' -d %s -f'''
+            '''complete -c borgmatic -a '%s' -d %s -f'''
             % (action, shlex.quote(subparser.description))
             for action, subparser in subparsers.choices.items()
         ) + (
             'complete -c borgmatic -a "%s" -d "borgmatic actions" -f' % actions,
-            'complete -c borgmatic -a "%s" -d "borgmatic global flags" -f' % global_flags,
+        ) + tuple(
+            '''complete -c borgmatic -a '%s' -d %s -f'''
+            % (option, shlex.quote(action.help))
+            for action in top_level_parser._actions
+            for option in action.option_strings
         )
     )
