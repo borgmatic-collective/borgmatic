@@ -89,9 +89,8 @@ def fish_completion():
             '\n# global flags',
         ) + tuple(
             '''complete -c borgmatic -a '%s' -d %s -f'''
-            % (option, shlex.quote(action.help))
+            % (' '.join(action.option_strings), shlex.quote(action.help))
             for action in top_level_parser._actions
-            for option in action.option_strings
         ) + (
             '\n# subparser flags',
         ) + tuple(
