@@ -1,12 +1,13 @@
 from borgmatic.commands import arguments
 
-UPGRADE_MESSAGE = '''
-Your bash completions script is from a different version of borgmatic than is
+def upgrade_message(language: str, upgrade_command: str, completion_file: str):
+    return f'''
+Your {language} completions script is from a different version of borgmatic than is
 currently installed. Please upgrade your script so your completions match the
 command-line flags in your installed borgmatic! Try this to upgrade:
 
-    sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"
-    source $BASH_SOURCE
+    {upgrade_command}
+    source {completion_file}
 '''
 
 
@@ -34,7 +35,7 @@ def bash_completion():
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
-            f'        then cat << EOF\n{UPGRADE_MESSAGE}\nEOF',
+            '        then cat << EOF\n{}\nEOF'.format(upgrade_message('bash', 'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"', '$BASH_SOURCE')),
             '    fi',
             '}',
             'complete_borgmatic() {',
@@ -69,11 +70,11 @@ def fish_completion():
     return '\n'.join(
         (
             'function __borgmatic_check_version',
-            '    set this_script (cat "$BASH_SOURCE" 2> /dev/null)',
-            '    set installed_script (borgmatic --bash-completion 2> /dev/null)',
+            '    set this_script (status current-filename)',
+            '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
-            f'        echo "{UPGRADE_MESSAGE}"',
+            '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee (status current-filename)', '(status current-filename)')),
             '    end',
             'end',
-            'function __borgmatic_complete',
+            # 'function __borgmatic_complete',
         ))
