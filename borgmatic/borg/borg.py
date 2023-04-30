@@ -2,7 +2,7 @@ import logging
 
 import borgmatic.logger
 from borgmatic.borg import environment, flags
-from borgmatic.execute import execute_command
+from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def run_arbitrary_borg(
 
     return execute_command(
         full_command,
-        output_log_level=logging.ANSWER,
+        output_file=DO_NOT_CAPTURE,
         borg_local_path=local_path,
         extra_environment=environment.make_environment(storage_config),
     )
