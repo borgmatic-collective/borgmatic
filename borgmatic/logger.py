@@ -141,6 +141,7 @@ def add_logging_level(level_name, level_number):
 
 
 ANSWER = logging.WARN - 5
+DISABLED = logging.DEBUG - 5
 
 
 def add_custom_log_levels():  # pragma: no cover
@@ -148,6 +149,7 @@ def add_custom_log_levels():  # pragma: no cover
     Add a custom log level between WARN and INFO for user-requested answers.
     '''
     add_logging_level('ANSWER', ANSWER)
+    add_logging_level('DISABLED', DISABLED)
 
 
 def configure_logging(
@@ -175,10 +177,12 @@ def configure_logging(
 
     # Log certain log levels to console stderr and others to stdout. This supports use cases like
     # grepping (non-error) output.
+    console_disabled = logging.NullHandler()
     console_error_handler = logging.StreamHandler(sys.stderr)
     console_standard_handler = logging.StreamHandler(sys.stdout)
     console_handler = Multi_stream_handler(
         {
+            logging.DISABLED: console_disabled,
             logging.CRITICAL: console_error_handler,
             logging.ERROR: console_error_handler,
             logging.WARN: console_error_handler,
@@ -191,7 +195,7 @@ def configure_logging(
     console_handler.setLevel(console_log_level)
 
     syslog_path = None
-    if log_file is None:
+    if log_file is None and syslog_log_level != logging.DISABLED:
         if os.path.exists('/dev/log'):
             syslog_path = '/dev/log'
         elif os.path.exists('/var/run/syslog'):
@@ -206,7 +210,7 @@ def configure_logging(
         )
         syslog_handler.setLevel(syslog_log_level)
         handlers = (console_handler, syslog_handler)
-    elif log_file:
+    elif log_file and log_file_log_level != logging.DISABLED:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
             logging.Formatter(
