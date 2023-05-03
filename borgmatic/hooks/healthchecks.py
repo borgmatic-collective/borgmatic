@@ -76,7 +76,7 @@ def initialize_monitor(hook_config, config_filename, monitoring_log_level, dry_r
     we can send them all to Healthchecks upon a finish or failure state. But skip this if the
     "send_logs" option is false.
     '''
-    if hook_config.get('send_logs') is False:
+    if hook_config.get('send_logs') is False or monitoring_log_level == logging.DISABLED:
         return
 
     ping_body_limit = max(
