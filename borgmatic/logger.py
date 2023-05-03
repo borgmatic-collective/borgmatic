@@ -141,7 +141,7 @@ def add_logging_level(level_name, level_number):
 
 
 ANSWER = logging.WARN - 5
-DISABLED = logging.DEBUG - 5
+DISABLED = logging.CRITICAL + 10
 
 
 def add_custom_log_levels():  # pragma: no cover
