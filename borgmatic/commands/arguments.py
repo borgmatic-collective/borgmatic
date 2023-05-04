@@ -878,6 +878,10 @@ def parse_arguments(*unparsed_arguments):
         raise ValueError(
             'With the create action, only one of --list (--files) and --progress flags can be used.'
         )
+    if 'create' in arguments and arguments['create'].list_files and arguments['create'].json:
+        raise ValueError(
+            'With the create action, only one of --list (--files) and --json flags can be used.'
+        )
 
     if (
         ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
