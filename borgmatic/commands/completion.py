@@ -1,6 +1,8 @@
-from argparse import Action
-from borgmatic.commands import arguments
 import shlex
+from argparse import Action
+
+from borgmatic.commands import arguments
+
 
 def upgrade_message(language: str, upgrade_command: str, completion_file: str):
     return f'''
@@ -37,7 +39,13 @@ def bash_completion():
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
-            '        then cat << EOF\n{}\nEOF'.format(upgrade_message('bash', 'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"', '$BASH_SOURCE')),
+            '        then cat << EOF\n{}\nEOF'.format(
+                upgrade_message(
+                    'bash',
+                    'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"',
+                    '$BASH_SOURCE',
+                )
+            ),
             '    fi',
             '}',
             'complete_borgmatic() {',
@@ -59,6 +67,7 @@ def bash_completion():
         )
     )
 
+
 def build_fish_flags(action: Action):
     '''
     Given an argparse.Action instance, return a string containing the fish flags for that action.
@@ -67,6 +76,7 @@ def build_fish_flags(action: Action):
         return '-r -F'
     else:
         return '-f'
+
 
 def fish_completion():
     '''
@@ -85,27 +95,38 @@ def fish_completion():
             '    set this_script (cat $this_filename 2> /dev/null)',
             '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
-            '        echo "{}"'.format(upgrade_message('fish', 'borgmatic --fish-completion | sudo tee $this_filename', '$this_filename')),
+            '        echo "{}"'.format(
+                upgrade_message(
+                    'fish',
+                    'borgmatic --fish-completion | sudo tee $this_filename',
+                    '$this_filename',
+                )
+            ),
             '    end',
             'end',
             '__borgmatic_check_version &',
-        ) + (
-            '\n# subparser completions',
-        ) + tuple(
+        )
+        + ('\n# subparser completions',)
+        + tuple(
             '''complete -c borgmatic -a '%s' -d %s -f -n "not __fish_seen_subcommand_from %s"'''
             % (actionStr, shlex.quote(subparser.description), all_subparsers)
             for actionStr, subparser in subparsers.choices.items()
-        ) + (
-            '\n# global flags',
-        ) + tuple(
+        )
+        + ('\n# global flags',)
+        + tuple(
             '''complete -c borgmatic -a '%s' -d %s %s'''
             % (' '.join(action.option_strings), shlex.quote(action.help), build_fish_flags(action))
             for action in top_level_parser._actions
-        ) + (
-            '\n# subparser flags',
-        ) + tuple(
+        )
+        + ('\n# subparser flags',)
+        + tuple(
             '''complete -c borgmatic -a '%s' -d %s -n "__fish_seen_subcommand_from %s" %s'''
-            % (' '.join(action.option_strings), shlex.quote(action.help), actionStr, build_fish_flags(action))
+            % (
+                ' '.join(action.option_strings),
+                shlex.quote(action.help),
+                actionStr,
+                build_fish_flags(action),
+            )
             for actionStr, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
