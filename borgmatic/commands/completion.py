@@ -111,6 +111,7 @@ def fish_completion():
         + tuple(
             f'''complete -c borgmatic -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} {build_fish_flags(action)}'''
             for action in top_level_parser._actions
+            if len(action.option_strings) > 0
         )
         + ('\n# subparser flags',)
         + tuple(
