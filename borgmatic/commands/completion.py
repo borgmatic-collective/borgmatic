@@ -39,13 +39,11 @@ def bash_completion():
             '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
             '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
-            '        then cat << EOF\n{}\nEOF'.format(
-                upgrade_message(
+            f'''        then cat << EOF\n{upgrade_message(
                     'bash',
                     'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"',
                     '$BASH_SOURCE',
-                )
-            ),
+                )}\nEOF''',
             '    fi',
             '}',
             'complete_borgmatic() {',
@@ -95,13 +93,11 @@ def fish_completion():
             '    set this_script (cat $this_filename 2> /dev/null)',
             '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
             '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
-            '        echo "{}"'.format(
-                upgrade_message(
+            f'''        echo "{upgrade_message(
                     'fish',
                     'borgmatic --fish-completion | sudo tee $this_filename',
                     '$this_filename',
-                )
-            ),
+                )}"''',
             '    end',
             'end',
             '__borgmatic_check_version &',
