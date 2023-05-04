@@ -108,25 +108,17 @@ def fish_completion():
         )
         + ('\n# subparser completions',)
         + tuple(
-            '''complete -c borgmatic -a '%s' -d %s -f -n "not __fish_seen_subcommand_from %s"'''
-            % (action_name, shlex.quote(subparser.description), all_subparsers)
+            f'''complete -c borgmatic -a '{action_name}' -d {shlex.quote(subparser.description)} -f -n "not __fish_seen_subcommand_from {all_subparsers}"'''
             for action_name, subparser in subparsers.choices.items()
         )
         + ('\n# global flags',)
         + tuple(
-            '''complete -c borgmatic -a '%s' -d %s %s'''
-            % (' '.join(action.option_strings), shlex.quote(action.help), build_fish_flags(action))
+            f'''complete -c borgmatic -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} {build_fish_flags(action)}'''
             for action in top_level_parser._actions
         )
         + ('\n# subparser flags',)
         + tuple(
-            '''complete -c borgmatic -a '%s' -d %s -n "__fish_seen_subcommand_from %s" %s'''
-            % (
-                ' '.join(action.option_strings),
-                shlex.quote(action.help),
-                action_name,
-                build_fish_flags(action),
-            )
+            f'''complete -c borgmatic -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}" {build_fish_flags(action)}'''
             for action_name, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
