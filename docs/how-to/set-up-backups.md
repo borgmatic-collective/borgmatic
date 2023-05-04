@@ -365,7 +365,7 @@ borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmat
 Finally, restart your shell (`exit` and open a new shell) so the completions
 take effect.
 
-#### Fish
+#### fish
 
 To add completions for fish, install the completions file globally:
 
