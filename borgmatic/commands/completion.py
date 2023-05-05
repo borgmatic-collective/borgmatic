@@ -76,11 +76,17 @@ def conditionally_emit_file_completion(action: Action):
     '''
     if not action.metavar:
         return ''
-    
+
     args = ' '.join(action.option_strings)
-    
-    return dedent(f'''
-    complete -c borgmatic -a {args} -Fr -n "__borgmatic_last_arg {args}"''')
+
+    return dedent(
+        f'''
+    complete -c borgmatic -a '{args}' -Fr -n "__borgmatic_last_arg {args}"'''
+    )
+
+
+def dedent_strip_as_tuple(string: str):
+    return (dedent(string).strip("\n"),)
 
 
 def fish_completion():
@@ -94,22 +100,40 @@ def fish_completion():
 
     # Avert your eyes.
     return '\n'.join(
-        (
-            'function __borgmatic_check_version',
-            '    set this_filename (status current-filename)',
-            '    set this_script (cat $this_filename 2> /dev/null)',
-            '    set installed_script (borgmatic --fish-completion 2> /dev/null)',
-            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]',
-            f'''        echo "{upgrade_message(
+        dedent_strip_as_tuple(
+            f'''
+            function __borgmatic_check_version
+                set this_filename (status current-filename)
+                set this_script (cat $this_filename 2> /dev/null)
+                set installed_script (borgmatic --fish-completion 2> /dev/null)
+                if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
+                    echo "{upgrade_message(
                     'fish',
                     'borgmatic --fish-completion | sudo tee $this_filename',
                     '$this_filename',
-                )}"''',
-            '    end',
-            'end',
-            '__borgmatic_check_version &',
+                )}"
+                end
+            end
+            __borgmatic_check_version &
+
+            function __borgmatic_last_arg --description 'Check if any of the given arguments are the last on the command line'
+                set -l all_args (commandline -poc)
+                # premature optimization to avoid iterating all args if there aren't enough
+                # to have a last arg beyond borgmatic
+                if [ (count $all_args) -lt 2 ]
+                    return 1
+                end
+                for arg in $argv
+                    if [ "$arg" = "$all_args[-1]" ]
+                        return 0
+                    end
+                end
+                return 1
+            end
+
+            set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"
+            '''
         )
-        + (f'''set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"''',)
         + ('\n# subparser completions',)
         + tuple(
             f'''complete -c borgmatic -f -n "$subparser_condition" -a '{action_name}' -d {shlex.quote(subparser.description)}'''
