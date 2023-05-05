@@ -1,5 +1,6 @@
 import shlex
 from argparse import Action
+from textwrap import dedent
 
 from borgmatic.commands import arguments
 
@@ -66,14 +67,20 @@ def bash_completion():
     )
 
 
-def build_fish_flags(action: Action):
+def conditionally_emit_file_completion(action: Action):
     '''
-    Given an argparse.Action instance, return a string containing the fish flags for that action.
+    Given an argparse.Action instance, return a completion invocation that forces file completion
+    if the action takes a file argument and was the last action on the command line.
+
+    Otherwise, return an empty string.
     '''
-    if action.metavar and action.metavar == 'PATH' or action.metavar == 'FILENAME':
-        return '-r -F'
-    else:
-        return '-f'
+    if not action.metavar:
+        return ''
+    
+    args = ' '.join(action.option_strings)
+    
+    return dedent(f'''
+    complete -c borgmatic -a {args} -Fr -n "__borgmatic_last_arg {args}"''')
 
 
 def fish_completion():
@@ -105,18 +112,18 @@ def fish_completion():
         + (f'''set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"''',)
         + ('\n# subparser completions',)
         + tuple(
-            f'''complete -c borgmatic -n "$subparser_condition" -a '{action_name}' -d {shlex.quote(subparser.description)} -f'''
+            f'''complete -c borgmatic -f -n "$subparser_condition" -a '{action_name}' -d {shlex.quote(subparser.description)}'''
             for action_name, subparser in subparsers.choices.items()
         )
         + ('\n# global flags',)
         + tuple(
-            f'''complete -c borgmatic -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} {build_fish_flags(action)}'''
+            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{conditionally_emit_file_completion(action)}'''
             for action in top_level_parser._actions
             if len(action.option_strings) > 0
         )
         + ('\n# subparser flags',)
         + tuple(
-            f'''complete -c borgmatic -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}" {build_fish_flags(action)}'''
+            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{conditionally_emit_file_completion(action)}'''
             for action_name, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
