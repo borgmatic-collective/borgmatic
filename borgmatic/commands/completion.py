@@ -159,18 +159,20 @@ def fish_completion():
         dedent_strip_as_tuple(
             f'''
             function __borgmatic_check_version
-                set this_filename (status current-filename)
-                set this_script (cat $this_filename 2> /dev/null)
-                set installed_script (borgmatic --fish-completion 2> /dev/null)
-                if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
-                    echo "{upgrade_message(
-                    'fish',
-                    'borgmatic --fish-completion | sudo tee $this_filename',
-                    '$this_filename',
-                )}"
-                end
+                set -fx this_filename (status current-filename)
+                fish -c '
+                    set this_script (cat $this_filename 2> /dev/null)
+                    set installed_script (borgmatic --fish-completion 2> /dev/null)
+                    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
+                        echo "{upgrade_message(
+                        'fish',
+                        'borgmatic --fish-completion | sudo tee $this_filename',
+                        '$this_filename',
+                    )}"
+                    end
+                ' &
             end
-            __borgmatic_check_version &
+            __borgmatic_check_version
 
             function __borgmatic_last_arg --description 'Check if any of the given arguments are the last on the command line'
                 set -l all_args (commandline -poc)
