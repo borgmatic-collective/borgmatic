@@ -86,8 +86,8 @@ def has_required_param_options(action: Action):
         action.required is True
         or action.nargs
         in (
-            "+",
-            "*",
+            '+',
+            '*',
         )
         or '--archive' in action.option_strings
         or action.metavar in ('PATTERN', 'KEYS', 'N')
@@ -130,7 +130,7 @@ def exact_options_completion(action: Action):
 
 
 def dedent_strip_as_tuple(string: str):
-    return (dedent(string).strip("\n"),)
+    return (dedent(string).strip('\n'),)
 
 
 def fish_completion():
