@@ -89,6 +89,7 @@ def has_required_param_options(action: Action):
         )
         or '--archive' in action.option_strings
         or action.metavar in ('PATTERN', 'KEYS', 'N')
+        or (action.type is not None and action.default is None)
     )
 
 
