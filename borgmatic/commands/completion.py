@@ -94,7 +94,7 @@ def exact_options_completion(action: Action):
     args = ' '.join(action.option_strings)
 
     if action.metavar in file_metavars or action.dest in file_destinations:
-        return f'''\ncomplete -c borgmatic -Fr -a '{args}' -n "__borgmatic_last_arg {args}"'''
+        return f'''\ncomplete -c borgmatic -Fr -n "__borgmatic_last_arg {args}"'''
 
     if action.choices:
         return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
