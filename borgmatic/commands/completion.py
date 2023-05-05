@@ -161,14 +161,16 @@ def fish_completion():
             function __borgmatic_check_version
                 set -fx this_filename (status current-filename)
                 fish -c '
-                    set this_script (cat $this_filename 2> /dev/null)
-                    set installed_script (borgmatic --fish-completion 2> /dev/null)
-                    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
-                        echo "{upgrade_message(
-                        'fish',
-                        'borgmatic --fish-completion | sudo tee $this_filename',
-                        '$this_filename',
-                    )}"
+                    if test -f "$this_filename"
+                        set this_script (cat $this_filename 2> /dev/null)
+                        set installed_script (borgmatic --fish-completion 2> /dev/null)
+                        if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
+                            echo "{upgrade_message(
+                            'fish',
+                            'borgmatic --fish-completion | sudo tee $this_filename',
+                            '$this_filename',
+                        )}"
+                        end
                     end
                 ' &
             end
