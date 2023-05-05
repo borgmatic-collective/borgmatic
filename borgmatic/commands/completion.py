@@ -66,6 +66,15 @@ def bash_completion():
         )
     )
 
+file_metavars = (
+    'FILENAME',
+    'PATH',
+)
+
+file_destinations = (
+    'config_paths'
+)
+
 
 def conditionally_emit_file_completion(action: Action):
     '''
@@ -74,15 +83,22 @@ def conditionally_emit_file_completion(action: Action):
 
     Otherwise, return an empty string.
     '''
-    if not action.metavar:
-        return ''
 
     args = ' '.join(action.option_strings)
 
-    return dedent(
-        f'''
-    complete -c borgmatic -a '{args}' -Fr -n "__borgmatic_last_arg {args}"'''
-    )
+    if action.metavar in file_metavars or action.dest in file_destinations:
+        return dedent(
+            f'''
+        complete -c borgmatic -a '{args}' -Fr -n "__borgmatic_last_arg {args}"'''
+        )
+    
+    if action.choices:
+        return dedent(
+            f'''
+        complete -c borgmatic -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
+        )
+
+    return ''
 
 
 def dedent_strip_as_tuple(string: str):
