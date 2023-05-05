@@ -69,6 +69,7 @@ def bash_completion():
 
 # fish section
 
+
 def has_file_options(action: Action):
     return action.metavar in (
         'FILENAME',
@@ -82,7 +83,8 @@ def has_choice_options(action: Action):
 
 def has_required_param_options(action: Action):
     return (
-        action.nargs
+        action.required is True
+        or action.nargs
         in (
             "+",
             "*",
