@@ -67,16 +67,35 @@ def bash_completion():
     )
 
 
-file_metavars = (
-    'FILENAME',
-    'PATH',
-)
+# fish section
 
-file_destinations = 'config_paths'
+def has_file_options(action: Action):
+    return action.metavar in (
+        'FILENAME',
+        'PATH',
+    ) or action.dest in ('config_paths',)
+
+
+def has_choice_options(action: Action):
+    return action.choices is not None
+
+
+def has_required_param_options(action: Action):
+    return (
+        action.nargs
+        in (
+            "+",
+            "*",
+        )
+        or '--archive' in action.option_strings
+        or action.metavar in ('PATTERN', 'KEYS', 'N')
+    )
 
 
 def has_exact_options(action: Action):
-    return action.metavar in file_metavars or action.dest in file_destinations or action.choices
+    return (
+        has_file_options(action) or has_choice_options(action) or has_required_param_options(action)
+    )
 
 
 def exact_options_completion(action: Action):
@@ -93,11 +112,14 @@ def exact_options_completion(action: Action):
 
     args = ' '.join(action.option_strings)
 
-    if action.metavar in file_metavars or action.dest in file_destinations:
+    if has_file_options(action):
         return f'''\ncomplete -c borgmatic -Fr -n "__borgmatic_last_arg {args}"'''
 
-    if action.choices:
+    if has_choice_options(action):
         return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
+
+    if has_required_param_options(action):
+        return f'''\ncomplete -c borgmatic -x -n "__borgmatic_last_arg {args}"'''
 
     raise RuntimeError(
         f'Unexpected action: {action} passes has_exact_options but has no choices produced'
