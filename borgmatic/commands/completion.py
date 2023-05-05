@@ -75,7 +75,11 @@ file_metavars = (
 file_destinations = 'config_paths'
 
 
-def conditionally_emit_arg_completion(action: Action):
+def has_exact_options(action: Action):
+    return action.metavar in file_metavars or action.dest in file_destinations or action.choices
+
+
+def exact_options_completion(action: Action):
     '''
     Given an argparse.Action instance, return a completion invocation
     that forces file completion or options completion, if the action
@@ -84,21 +88,20 @@ def conditionally_emit_arg_completion(action: Action):
     Otherwise, return an empty string.
     '''
 
+    if not has_exact_options(action):
+        return ''
+
     args = ' '.join(action.option_strings)
 
     if action.metavar in file_metavars or action.dest in file_destinations:
-        return dedent(
-            f'''
-        complete -c borgmatic -a '{args}' -Fr -n "__borgmatic_last_arg {args}"'''
-        )
+        return f'''\ncomplete -c borgmatic -Fr -a '{args}' -n "__borgmatic_last_arg {args}"'''
 
     if action.choices:
-        return dedent(
-            f'''
-        complete -c borgmatic -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
-        )
+        return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
 
-    return ''
+    raise RuntimeError(
+        f'Unexpected action: {action} passes has_exact_options but has no choices produced'
+    )
 
 
 def dedent_strip_as_tuple(string: str):
@@ -113,6 +116,18 @@ def fish_completion():
     top_level_parser, subparsers = arguments.make_parsers()
 
     all_subparsers = ' '.join(action for action in subparsers.choices.keys())
+
+    exact_option_args = tuple(
+        ' '.join(action.option_strings)
+        for subparser in subparsers.choices.values()
+        for action in subparser._actions
+        if has_exact_options(action)
+    ) + tuple(
+        ' '.join(action.option_strings)
+        for action in top_level_parser._actions
+        if len(action.option_strings) > 0
+        if has_exact_options(action)
+    )
 
     # Avert your eyes.
     return '\n'.join(
@@ -148,22 +163,23 @@ def fish_completion():
             end
 
             set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"
+            set --local exact_option_condition "not __borgmatic_last_arg {' '.join(exact_option_args)}"
             '''
         )
         + ('\n# subparser completions',)
         + tuple(
-            f'''complete -c borgmatic -f -n "$subparser_condition" -a '{action_name}' -d {shlex.quote(subparser.description)}'''
+            f'''complete -c borgmatic -f -n "$subparser_condition" -n "$exact_option_condition" -a '{action_name}' -d {shlex.quote(subparser.description)}'''
             for action_name, subparser in subparsers.choices.items()
         )
         + ('\n# global flags',)
         + tuple(
-            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{conditionally_emit_arg_completion(action)}'''
+            f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{exact_options_completion(action)}'''
             for action in top_level_parser._actions
             if len(action.option_strings) > 0
         )
         + ('\n# subparser flags',)
         + tuple(
-            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{conditionally_emit_arg_completion(action)}'''
+            f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{exact_options_completion(action)}'''
             for action_name, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
