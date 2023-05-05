@@ -66,20 +66,20 @@ def bash_completion():
         )
     )
 
+
 file_metavars = (
     'FILENAME',
     'PATH',
 )
 
-file_destinations = (
-    'config_paths'
-)
+file_destinations = 'config_paths'
 
 
-def conditionally_emit_file_completion(action: Action):
+def conditionally_emit_arg_completion(action: Action):
     '''
-    Given an argparse.Action instance, return a completion invocation that forces file completion
-    if the action takes a file argument and was the last action on the command line.
+    Given an argparse.Action instance, return a completion invocation
+    that forces file completion or options completion, if the action
+    takes such an argument and was the last action on the command line.
 
     Otherwise, return an empty string.
     '''
@@ -91,7 +91,7 @@ def conditionally_emit_file_completion(action: Action):
             f'''
         complete -c borgmatic -a '{args}' -Fr -n "__borgmatic_last_arg {args}"'''
         )
-    
+
     if action.choices:
         return dedent(
             f'''
@@ -157,13 +157,13 @@ def fish_completion():
         )
         + ('\n# global flags',)
         + tuple(
-            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{conditionally_emit_file_completion(action)}'''
+            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{conditionally_emit_arg_completion(action)}'''
             for action in top_level_parser._actions
             if len(action.option_strings) > 0
         )
         + ('\n# subparser flags',)
         + tuple(
-            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{conditionally_emit_file_completion(action)}'''
+            f'''complete -c borgmatic -f -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{conditionally_emit_arg_completion(action)}'''
             for action_name, subparser in subparsers.choices.items()
             for action in subparser._actions
         )
