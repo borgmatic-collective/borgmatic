@@ -114,7 +114,7 @@ def test_has_unknown_required_param_options_detects_unknown_required_param_optio
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_exact_options_detects_exact_options(action: Action, option_type: OptionType):
     assert has_exact_options(action) == (
-        option_type.file or option_type.choice or option_type.unknown_required
+        True in option_type
     ), f'Action: {action} should have exact options given {option_type}'
 
 
@@ -122,8 +122,12 @@ def test_has_exact_options_detects_exact_options(action: Action, option_type: Op
 def test_produce_exact_options_completion(action: Action, option_type: OptionType):
     try:
         completion = exact_options_completion(action)
-        assert (
-            type(completion) == str
-        ), f'Completion should be a string, got {completion} of type {type(completion)}'
+        if True in option_type:
+            assert completion.startswith(
+                '\ncomplete -c borgmatic'
+            ), f'Completion should start with "complete -c borgmatic", got {completion}'
+        else:
+            assert completion == '', f'Completion should be empty, got {completion}'
+
     except ValueError as value_error:
         assert False, f'exact_options_completion raised ValueError: {value_error}'
