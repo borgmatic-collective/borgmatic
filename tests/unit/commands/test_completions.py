@@ -134,7 +134,7 @@ def test_produce_exact_options_completion(action: Action, option_type: OptionTyp
         assert False, f'exact_options_completion raised ValueError: {value_error}'
 
 
-def test_dedent_strip_as_tuple():
+def test_dedent_strip_as_tuple_does_not_raise():
     dedent_strip_as_tuple(
         '''
         a
