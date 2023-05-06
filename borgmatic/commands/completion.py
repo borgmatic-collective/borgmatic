@@ -87,7 +87,13 @@ def has_choice_options(action: Action):
     return action.choices is not None
 
 
-def has_required_param_options(action: Action):
+def has_unknown_required_param_options(action: Action):
+    '''
+    A catch-all for options that take a required parameter, but we don't know what the parameter is.
+    This should be used last. These are actions that take something like a glob, a list of numbers, or a string.
+    There is no way to know what the valid options are, but we need to prevent another argument from being shown,
+    and let the user know that they need to provide a parameter.
+    '''
     return (
         action.required is True
         or action.nargs
@@ -95,7 +101,6 @@ def has_required_param_options(action: Action):
             '+',
             '*',
         )
-        or '--archive' in action.option_strings
         or action.metavar in ('PATTERN', 'KEYS', 'N')
         or (action.type is not None and action.default is None)
     )
@@ -103,7 +108,9 @@ def has_required_param_options(action: Action):
 
 def has_exact_options(action: Action):
     return (
-        has_file_options(action) or has_choice_options(action) or has_required_param_options(action)
+        has_file_options(action)
+        or has_choice_options(action)
+        or has_unknown_required_param_options(action)
     )
 
 
@@ -126,7 +133,7 @@ def exact_options_completion(action: Action):
     if has_choice_options(action):
         return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
 
-    if has_required_param_options(action):
+    if has_unknown_required_param_options(action):
         return f'''\ncomplete -c borgmatic -x -n "__borgmatic_last_arg {args}"'''
 
     raise RuntimeError(
