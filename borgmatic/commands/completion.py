@@ -136,7 +136,7 @@ def exact_options_completion(action: Action):
     if has_unknown_required_param_options(action):
         return f'''\ncomplete -c borgmatic -x -n "__borgmatic_last_arg {args}"'''
 
-    raise RuntimeError(
+    raise ValueError(
         f'Unexpected action: {action} passes has_exact_options but has no choices produced'
     )
 

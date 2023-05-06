@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 
 from borgmatic.commands.completion import (
+    exact_options_completion,
     has_choice_options,
     has_exact_options,
     has_file_options,
@@ -89,32 +90,40 @@ test_data: list[TestCase] = [
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_file_options_detects_file_options(action: Action, option_type: OptionType):
-    assert has_file_options(action) == option_type.file
-    # if has_file_options(action) was true, has_exact_options(action) should also be true
-    if option_type.file:
-        assert has_exact_options(action)
+    assert (
+        has_file_options(action) == option_type.file
+    ), f'Action: {action} should be file={option_type.file}'
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_choice_options_detects_choice_options(action: Action, option_type: OptionType):
-    assert has_choice_options(action) == option_type.choice
-    # if has_choice_options(action) was true, has_exact_options(action) should also be true
-    if option_type.choice:
-        assert has_exact_options(action)
+    assert (
+        has_choice_options(action) == option_type.choice
+    ), f'Action: {action} should be choice={option_type.choice}'
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_unknown_required_param_options_detects_unknown_required_param_options(
     action: Action, option_type: OptionType
 ):
-    assert has_unknown_required_param_options(action) == option_type.unknown_required
-    # if has_unknown_required_param_options(action) was true, has_exact_options(action) should also be true
-    if option_type.unknown_required:
-        assert has_exact_options(action)
+    assert (
+        has_unknown_required_param_options(action) == option_type.unknown_required
+    ), f'Action: {action} should be unknown_required={option_type.unknown_required}'
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_exact_options_detects_exact_options(action: Action, option_type: OptionType):
     assert has_exact_options(action) == (
         option_type.file or option_type.choice or option_type.unknown_required
-    )
+    ), f'Action: {action} should have exact options given {option_type}'
+
+
+@pytest.mark.parametrize('action, option_type', test_data)
+def test_produce_exact_options_completion(action: Action, option_type: OptionType):
+    try:
+        completion = exact_options_completion(action)
+        assert (
+            type(completion) == str
+        ), f'Completion should be a string, got {completion} of type {type(completion)}'
+    except ValueError as value_error:
+        assert False, f'exact_options_completion raised ValueError: {value_error}'
