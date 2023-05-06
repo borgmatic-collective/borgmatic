@@ -9,7 +9,7 @@ from borgmatic.commands import completion as module
 OptionType = namedtuple('OptionType', ['file', 'choice', 'unknown_required'])
 TestCase = Tuple[Action, OptionType]
 
-test_data: list[TestCase] = [
+test_data = [
     (Action('--flag', 'flag'), OptionType(file=False, choice=False, unknown_required=False)),
     *(
         (
