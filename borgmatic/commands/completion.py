@@ -116,8 +116,9 @@ def has_exact_options(action: Action):
 
 def exact_options_completion(action: Action):
     '''
-    Given an argparse.Action instance, return a completion invocation that forces file completion or options
-    completion, if the action takes such an argument and was the last action on the command line.
+    Given an argparse.Action instance, return a completion invocation that forces file completions, options completion,
+    or just that some value follow the action, if the action takes such an argument and was the last action on the
+    command line prior to the cursor.
 
     Otherwise, return an empty string.
     '''
@@ -188,7 +189,7 @@ def fish_completion():
             end
             __borgmatic_check_version
 
-            function __borgmatic_last_arg --description 'Check if any of the given arguments are the last on the command line'
+            function __borgmatic_last_arg --description 'Check if any of the given arguments are the last on the command line before the cursor'
                 set -l all_args (commandline -poc)
                 # premature optimization to avoid iterating all args if there aren't enough
                 # to have a last arg beyond borgmatic
