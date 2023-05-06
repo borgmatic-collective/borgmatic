@@ -10,6 +10,9 @@
  * #682: Fix "source_directories_must_exist" option to expand globs and tildes in source directories.
  * #684: Rename "master" development branch to "main" to use more inclusive language. You'll need to
    update your development checkouts accordingly.
+ * #686: Add fish shell completion script so you can tab-complete on the borgmatic command-line. See
+   the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
  * #687: Fix borgmatic error when not finding the configuration schema for certain "pip install
    --editable" development installs.
  * Run "borgmatic borg" action without capturing output so interactive prompts and flags like
