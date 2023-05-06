@@ -208,6 +208,12 @@ def make_parsers():
         help='Show bash completion script and exit',
     )
     global_group.add_argument(
+        '--fish-completion',
+        default=False,
+        action='store_true',
+        help='Show fish completion script and exit',
+    )
+    global_group.add_argument(
         '--version',
         dest='version',
         default=False,
