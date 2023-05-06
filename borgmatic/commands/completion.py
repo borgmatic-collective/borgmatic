@@ -91,8 +91,8 @@ def has_unknown_required_param_options(action: Action):
     '''
     A catch-all for options that take a required parameter, but we don't know what the parameter is.
     This should be used last. These are actions that take something like a glob, a list of numbers, or a string.
-    There is no way to know what the valid options are, but we need to prevent another argument from being shown,
-    and let the user know that they need to provide a parameter.
+
+    Actions that match this pattern should not show the normal arguments, because those are unlikely to be valid.
     '''
     return (
         action.required is True
@@ -215,6 +215,7 @@ def fish_completion():
         )
         + ('\n# global flags',)
         + tuple(
+            # -n is checked in order, so put faster / more likely to be true checks first
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{exact_options_completion(action)}'''
             for action in top_level_parser._actions
             if len(action.option_strings) > 0
