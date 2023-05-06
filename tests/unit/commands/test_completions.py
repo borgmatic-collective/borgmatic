@@ -105,7 +105,9 @@ def test_has_exact_options_detects_exact_options(action: Action, option_type: Op
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
-def test_exact_options_completion_produces_reasonable_completions(action: Action, option_type: OptionType):
+def test_exact_options_completion_produces_reasonable_completions(
+    action: Action, option_type: OptionType
+):
     completion = module.exact_options_completion(action)
     if True in option_type:
         assert completion.startswith('\ncomplete -c borgmatic')
