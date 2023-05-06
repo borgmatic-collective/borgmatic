@@ -218,6 +218,7 @@ def fish_completion():
             # -n is checked in order, so put faster / more likely to be true checks first
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{exact_options_completion(action)}'''
             for action in top_level_parser._actions
+            # ignore the noargs action, as this is an impossible completion for fish
             if len(action.option_strings) > 0
             if 'Deprecated' not in action.help
         )
