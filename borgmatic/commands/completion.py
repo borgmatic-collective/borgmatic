@@ -129,13 +129,13 @@ def exact_options_completion(action: Action):
     args = ' '.join(action.option_strings)
 
     if has_file_options(action):
-        return f'''\ncomplete -c borgmatic -Fr -n "__borgmatic_last_arg {args}"'''
+        return f'''\ncomplete -c borgmatic -Fr -n "__borgmatic_current_arg {args}"'''
 
     if has_choice_options(action):
-        return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_last_arg {args}"'''
+        return f'''\ncomplete -c borgmatic -f -a '{' '.join(map(str, action.choices))}' -n "__borgmatic_current_arg {args}"'''
 
     if has_unknown_required_param_options(action):
-        return f'''\ncomplete -c borgmatic -x -n "__borgmatic_last_arg {args}"'''
+        return f'''\ncomplete -c borgmatic -x -n "__borgmatic_current_arg {args}"'''
 
     raise ValueError(
         f'Unexpected action: {action} passes has_exact_options but has no choices produced'
@@ -189,7 +189,7 @@ def fish_completion():
             end
             __borgmatic_check_version
 
-            function __borgmatic_last_arg --description 'Check if any of the given arguments are the last on the command line before the cursor'
+            function __borgmatic_current_arg --description 'Check if any of the given arguments are the last on the command line before the cursor'
                 set -l all_args (commandline -poc)
                 # premature optimization to avoid iterating all args if there aren't enough
                 # to have a last arg beyond borgmatic
@@ -205,7 +205,7 @@ def fish_completion():
             end
 
             set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"
-            set --local exact_option_condition "not __borgmatic_last_arg {' '.join(exact_option_args)}"
+            set --local exact_option_condition "not __borgmatic_current_arg {' '.join(exact_option_args)}"
             '''
         )
         + ('\n# subparser completions',)
