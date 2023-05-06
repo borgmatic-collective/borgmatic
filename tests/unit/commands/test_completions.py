@@ -4,14 +4,7 @@ from typing import Tuple
 
 import pytest
 
-from borgmatic.commands.completion import (
-    dedent_strip_as_tuple,
-    exact_options_completion,
-    has_choice_options,
-    has_exact_options,
-    has_file_options,
-    has_unknown_required_param_options,
-)
+from borgmatic.commands import completion as module
 
 OptionType = namedtuple('OptionType', ['file', 'choice', 'unknown_required'])
 TestCase = Tuple[Action, OptionType]
@@ -91,29 +84,29 @@ test_data: list[TestCase] = [
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_file_options_detects_file_options(action: Action, option_type: OptionType):
-    assert has_file_options(action) == option_type.file
+    assert module.has_file_options(action) == option_type.file
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_choice_options_detects_choice_options(action: Action, option_type: OptionType):
-    assert has_choice_options(action) == option_type.choice
+    assert module.has_choice_options(action) == option_type.choice
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_unknown_required_param_options_detects_unknown_required_param_options(
     action: Action, option_type: OptionType
 ):
-    assert has_unknown_required_param_options(action) == option_type.unknown_required
+    assert module.has_unknown_required_param_options(action) == option_type.unknown_required
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_has_exact_options_detects_exact_options(action: Action, option_type: OptionType):
-    assert has_exact_options(action) == (True in option_type)
+    assert module.has_exact_options(action) == (True in option_type)
 
 
 @pytest.mark.parametrize('action, option_type', test_data)
 def test_produce_exact_options_completion(action: Action, option_type: OptionType):
-    completion = exact_options_completion(action)
+    completion = module.exact_options_completion(action)
     if True in option_type:
         assert completion.startswith('\ncomplete -c borgmatic')
     else:
@@ -121,7 +114,7 @@ def test_produce_exact_options_completion(action: Action, option_type: OptionTyp
 
 
 def test_dedent_strip_as_tuple_does_not_raise():
-    dedent_strip_as_tuple(
+    module.dedent_strip_as_tuple(
         '''
         a
         b
