@@ -3,6 +3,7 @@ from collections import namedtuple
 from typing import Tuple
 
 import pytest
+from flexmock import flexmock
 
 from borgmatic.commands import completion as module
 
@@ -113,6 +114,16 @@ def test_exact_options_completion_produces_reasonable_completions(
         assert completion.startswith('\ncomplete -c borgmatic')
     else:
         assert completion == ''
+
+
+def test_exact_options_completion_raises_for_unexpected_action():
+    flexmock(module).should_receive('has_exact_options').and_return(True)
+    flexmock(module).should_receive('has_file_options').and_return(False)
+    flexmock(module).should_receive('has_choice_options').and_return(False)
+    flexmock(module).should_receive('has_unknown_required_param_options').and_return(False)
+
+    with pytest.raises(ValueError):
+        module.exact_options_completion(Action('--unknown', dest='unknown'))
 
 
 def test_dedent_strip_as_tuple_does_not_raise():
