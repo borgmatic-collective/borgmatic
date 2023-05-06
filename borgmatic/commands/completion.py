@@ -143,6 +143,10 @@ def exact_options_completion(action: Action):
 
 
 def dedent_strip_as_tuple(string: str):
+    '''
+    Dedent a string, then strip it to avoid requiring your first line to have content, then return a tuple of the string.
+    Makes it easier to write multiline strings for completions when you join them with a tuple.
+    '''
     return (dedent(string).strip('\n'),)
 
 

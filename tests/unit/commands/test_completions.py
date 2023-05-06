@@ -5,6 +5,7 @@ from typing import Tuple
 import pytest
 
 from borgmatic.commands.completion import (
+    dedent_strip_as_tuple,
     exact_options_completion,
     has_choice_options,
     has_exact_options,
@@ -131,3 +132,12 @@ def test_produce_exact_options_completion(action: Action, option_type: OptionTyp
 
     except ValueError as value_error:
         assert False, f'exact_options_completion raised ValueError: {value_error}'
+
+
+def test_dedent_strip_as_tuple():
+    dedent_strip_as_tuple(
+        '''
+        a
+        b
+    '''
+    )
