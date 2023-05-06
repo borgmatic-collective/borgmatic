@@ -71,6 +71,9 @@ def bash_completion():
 
 
 def has_file_options(action: Action):
+    '''
+    Given an argparse.Action instance, return True if it takes a file argument.
+    '''
     return action.metavar in (
         'FILENAME',
         'PATH',
@@ -78,6 +81,9 @@ def has_file_options(action: Action):
 
 
 def has_choice_options(action: Action):
+    '''
+    Given an argparse.Action instance, return True if it takes one of a predefined set of arguments.
+    '''
     return action.choices is not None
 
 
@@ -103,9 +109,8 @@ def has_exact_options(action: Action):
 
 def exact_options_completion(action: Action):
     '''
-    Given an argparse.Action instance, return a completion invocation
-    that forces file completion or options completion, if the action
-    takes such an argument and was the last action on the command line.
+    Given an argparse.Action instance, return a completion invocation that forces file completion or options
+    completion, if the action takes such an argument and was the last action on the command line.
 
     Otherwise, return an empty string.
     '''
