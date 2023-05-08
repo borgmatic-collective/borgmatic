@@ -15,6 +15,8 @@
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
  * #687: Fix borgmatic error when not finding the configuration schema for certain "pip install
    --editable" development installs.
+ * #691: Fix error in "borgmatic restore" action when the configured repository path is relative
+   instead of absolute.
  * Run "borgmatic borg" action without capturing output so interactive prompts and flags like
    "--progress" still work.
 

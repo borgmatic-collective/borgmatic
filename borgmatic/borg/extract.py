@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+import borgmatic.config.validate
 from borgmatic.borg import environment, feature, flags, rlist
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -109,7 +110,9 @@ def extract_archive(
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
-            repository,
+            # Make the repository path absolute so the working directory changes below don't
+            # prevent Borg from finding the repo.
+            borgmatic.config.validate.normalize_repository_path(repository),
             archive,
             local_borg_version,
         )
