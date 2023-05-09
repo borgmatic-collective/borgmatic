@@ -30,8 +30,8 @@ properties:
                 items:
                     type: string
                 description: |
-                    List of source directories to backup. Globs and tildes are
-                    expanded. Do not backslash spaces in path names.
+                    List of source directories and files to backup. Globs and
+                    tildes are expanded. Do not backslash spaces in path names.
                 example:
                     - /home
                     - /etc
