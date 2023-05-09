@@ -12,6 +12,7 @@ def run_mount(
     storage,
     local_borg_version,
     mount_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -33,6 +34,7 @@ def run_mount(
                 mount_arguments.archive,
                 storage,
                 local_borg_version,
+                global_arguments,
                 local_path,
                 remote_path,
             ),
@@ -42,6 +44,7 @@ def run_mount(
             mount_arguments.options,
             storage,
             local_borg_version,
+            global_arguments,
             local_path=local_path,
             remote_path=remote_path,
         )

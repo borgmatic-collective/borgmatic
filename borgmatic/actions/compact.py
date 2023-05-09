@@ -45,6 +45,7 @@ def run_compact(
             repository['path'],
             storage,
             local_borg_version,
+            global_arguments,
             local_path=local_path,
             remote_path=remote_path,
             progress=compact_arguments.progress,

@@ -12,6 +12,7 @@ def run_rlist(
     storage,
     local_borg_version,
     rlist_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -31,6 +32,7 @@ def run_rlist(
             storage,
             local_borg_version,
             rlist_arguments=rlist_arguments,
+            global_arguments=global_arguments,
             local_path=local_path,
             remote_path=remote_path,
         )

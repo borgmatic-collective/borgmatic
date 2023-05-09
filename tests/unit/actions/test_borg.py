@@ -16,6 +16,7 @@ def test_run_borg_does_not_raise():
         repository={'path': 'repos'},
         storage={},
         local_borg_version=None,
+        global_arguments=flexmock(log_json=False),
         borg_arguments=borg_arguments,
         local_path=None,
         remote_path=None,

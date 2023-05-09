@@ -67,6 +67,7 @@ def run_create(
         location,
         storage,
         local_borg_version,
+        global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         progress=create_arguments.progress,

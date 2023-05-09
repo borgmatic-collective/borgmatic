@@ -15,14 +15,15 @@ def mount_archive(
     options,
     storage_config,
     local_borg_version,
+    global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a local or remote repository path, an optional archive name, a filesystem mount point,
     zero or more paths to mount from the archive, extra Borg mount options, a storage configuration
-    dict, the local Borg version, and optional local and remote Borg paths, mount the archive onto
-    the mount point.
+    dict, the local Borg version, global arguments as an argparse.Namespace instance, and optional
+    local and remote Borg paths, mount the archive onto the mount point.
     '''
     umask = storage_config.get('umask', None)
     lock_wait = storage_config.get('lock_wait', None)
@@ -31,6 +32,7 @@ def mount_archive(
         (local_path, 'mount')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
+        + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())

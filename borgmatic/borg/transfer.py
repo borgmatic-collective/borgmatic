@@ -13,12 +13,14 @@ def transfer_archives(
     storage_config,
     local_borg_version,
     transfer_arguments,
+    global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a dry-run flag, a local or remote repository path, a storage config dict, the local Borg
-    version, and the arguments to the transfer action, transfer archives to the given repository.
+    version, the arguments to the transfer action, and global arguments as an argparse.Namespace
+    instance, transfer archives to the given repository.
     '''
     borgmatic.logger.add_custom_log_levels()
 
@@ -27,6 +29,7 @@ def transfer_archives(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('log-json', global_arguments.log_json)
         + flags.make_flags('lock-wait', storage_config.get('lock_wait', None))
         + (
             flags.make_flags_from_arguments(

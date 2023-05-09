@@ -12,6 +12,7 @@ def run_list(
     storage,
     local_borg_version,
     list_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -33,6 +34,7 @@ def run_list(
             list_arguments.archive,
             storage,
             local_borg_version,
+            global_arguments,
             local_path,
             remote_path,
         )
@@ -40,9 +42,10 @@ def run_list(
             repository['path'],
             storage,
             local_borg_version,
-            list_arguments=list_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
+            list_arguments,
+            global_arguments,
+            local_path,
+            remote_path,
         )
         if json_output:  # pragma: nocover
             yield json.loads(json_output)

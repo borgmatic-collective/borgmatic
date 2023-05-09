@@ -21,6 +21,7 @@ def test_run_mount_does_not_raise():
         storage={},
         local_borg_version=None,
         mount_arguments=mount_arguments,
+        global_arguments=flexmock(log_json=False),
         local_path=None,
         remote_path=None,
     )

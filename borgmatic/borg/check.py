@@ -259,6 +259,7 @@ def check_archives(
     storage_config,
     consistency_config,
     local_borg_version,
+    global_arguments,
     local_path='borg',
     remote_path=None,
     progress=None,
@@ -283,6 +284,7 @@ def check_archives(
                 storage_config,
                 local_borg_version,
                 argparse.Namespace(json=True),
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -317,6 +319,7 @@ def check_archives(
             + (('--repair',) if repair else ())
             + make_check_flags(local_borg_version, storage_config, checks, check_last, prefix)
             + (('--remote-path', remote_path) if remote_path else ())
+            + (('--log-json',) if global_arguments.log_json else ())
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (('--progress',) if progress else ())
@@ -340,6 +343,12 @@ def check_archives(
 
     if 'extract' in checks:
         extract.extract_last_archive_dry_run(
-            storage_config, local_borg_version, repository_path, lock_wait, local_path, remote_path
+            storage_config,
+            local_borg_version,
+            global_arguments,
+            repository_path,
+            lock_wait,
+            local_path,
+            remote_path,
         )
         write_check_time(make_check_time_path(location_config, borg_repository_id, 'extract'))

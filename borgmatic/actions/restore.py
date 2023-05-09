@@ -93,6 +93,7 @@ def restore_single_database(
         location_config=location,
         storage_config=storage,
         local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         destination_path='/',
@@ -119,14 +120,15 @@ def collect_archive_database_names(
     location,
     storage,
     local_borg_version,
+    global_arguments,
     local_path,
     remote_path,
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a location configuration dict,
-    a storage configuration dict, the local Borg version, and local and remote Borg paths, query the
-    archive for the names of databases it contains and return them as a dict from hook name to a
-    sequence of database names.
+    a storage configuration dict, the local Borg version, global_arguments an argparse.Namespace,
+    and local and remote Borg paths, query the archive for the names of databases it contains and
+    return them as a dict from hook name to a sequence of database names.
     '''
     borgmatic_source_directory = os.path.expanduser(
         location.get(
@@ -141,6 +143,7 @@ def collect_archive_database_names(
         archive,
         storage,
         local_borg_version,
+        global_arguments,
         list_path=parent_dump_path,
         local_path=local_path,
         remote_path=remote_path,
@@ -279,6 +282,7 @@ def run_restore(
         restore_arguments.archive,
         storage,
         local_borg_version,
+        global_arguments,
         local_path,
         remote_path,
     )
@@ -288,6 +292,7 @@ def run_restore(
         location,
         storage,
         local_borg_version,
+        global_arguments,
         local_path,
         remote_path,
     )

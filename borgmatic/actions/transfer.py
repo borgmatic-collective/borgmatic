@@ -24,6 +24,7 @@ def run_transfer(
         storage,
         local_borg_version,
         transfer_arguments,
+        global_arguments,
         local_path=local_path,
         remote_path=remote_path,
     )

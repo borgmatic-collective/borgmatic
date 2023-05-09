@@ -13,6 +13,7 @@ def run_info(
     storage,
     local_borg_version,
     info_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -31,6 +32,7 @@ def run_info(
             info_arguments.archive,
             storage,
             local_borg_version,
+            global_arguments,
             local_path,
             remote_path,
         )
@@ -38,9 +40,10 @@ def run_info(
             repository['path'],
             storage,
             local_borg_version,
-            info_arguments=info_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
+            info_arguments,
+            global_arguments,
+            local_path,
+            remote_path,
         )
         if json_output:  # pragma: nocover
             yield json.loads(json_output)

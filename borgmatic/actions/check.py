@@ -44,6 +44,7 @@ def run_check(
         storage,
         consistency,
         local_borg_version,
+        global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         progress=check_arguments.progress,

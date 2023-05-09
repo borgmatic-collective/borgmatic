@@ -492,6 +492,7 @@ def test_create_archive_calls_borg_with_parameters():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -535,6 +536,7 @@ def test_create_archive_calls_borg_with_environment():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -580,6 +582,7 @@ def test_create_archive_with_patterns_calls_borg_with_patterns_including_convert
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -625,6 +628,7 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -668,6 +672,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -708,6 +713,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -752,6 +758,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -792,6 +799,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -835,6 +843,7 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -880,6 +889,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stats=True,
     )
 
@@ -923,6 +933,7 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
         },
         storage_config={'checkpoint_interval': 600},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -965,6 +976,7 @@ def test_create_archive_with_checkpoint_volume_calls_borg_with_checkpoint_volume
         },
         storage_config={'checkpoint_volume': 1024},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1007,6 +1019,7 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
         },
         storage_config={'chunker_params': '1,2,3,4'},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1049,6 +1062,7 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
         },
         storage_config={'compression': 'rle'},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1097,6 +1111,7 @@ def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_
         },
         storage_config={'upload_rate_limit': 100},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1142,6 +1157,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1185,6 +1201,7 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1234,6 +1251,7 @@ def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1287,6 +1305,7 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1342,6 +1361,7 @@ def test_create_archive_with_basic_option_calls_borg_with_corresponding_paramete
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1396,6 +1416,7 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1450,6 +1471,7 @@ def test_create_archive_with_flags_option_calls_borg_with_corresponding_paramete
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1493,6 +1515,7 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1535,6 +1558,7 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         local_path='borg1',
     )
 
@@ -1578,6 +1602,7 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         remote_path='borg1',
     )
 
@@ -1621,6 +1646,50 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
         },
         storage_config={'umask': 740},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+    )
+
+
+def test_create_archive_with_log_json_calls_borg_with_log_json_parameters():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').and_return(())
+    flexmock(module).should_receive('pattern_root_directories').and_return([])
+    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module).should_receive('ensure_files_readable')
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--log-json') + REPO_ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+        working_directory=None,
+        extra_environment=None,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository_path='repo',
+        location_config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        storage_config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=True),
     )
 
 
@@ -1663,6 +1732,7 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
         },
         storage_config={'lock_wait': 5},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1705,6 +1775,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stats=True,
     )
 
@@ -1748,6 +1819,7 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_answer_out
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         list_files=True,
     )
 
@@ -1797,6 +1869,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         progress=True,
     )
 
@@ -1840,6 +1913,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         progress=True,
     )
 
@@ -1900,6 +1974,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         progress=True,
         stream_processes=processes,
     )
@@ -1964,6 +2039,7 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2031,6 +2107,7 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2095,6 +2172,7 @@ def test_create_archive_with_stream_processes_and_read_special_does_not_add_spec
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2135,6 +2213,7 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -2177,6 +2256,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         json=True,
         stats=True,
     )
@@ -2224,6 +2304,7 @@ def test_create_archive_with_source_directories_glob_expands():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2267,6 +2348,7 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2309,6 +2391,7 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2351,6 +2434,7 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
         },
         storage_config={'archive_name_format': 'ARCHIVE_NAME'},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2394,6 +2478,7 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
         },
         storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2437,6 +2522,7 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
         },
         storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2479,6 +2565,7 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
         },
         storage_config={'extra_borg_options': {'create': '--extra --options'}},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2539,6 +2626,7 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read
         },
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2564,6 +2652,7 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
             },
             storage_config={},
             local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
         )
 
 

@@ -25,6 +25,7 @@ def make_list_command(
     storage_config,
     local_borg_version,
     list_arguments,
+    global_arguments,
     local_path='borg',
     remote_path=None,
 ):
@@ -48,6 +49,7 @@ def make_list_command(
             else ()
         )
         + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('log-json', global_arguments.log_json)
         + flags.make_flags('lock-wait', lock_wait)
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (
@@ -90,14 +92,16 @@ def capture_archive_listing(
     archive,
     storage_config,
     local_borg_version,
+    global_arguments,
     list_path=None,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a local or remote repository path, an archive name, a storage config dict, the local Borg
-    version, the archive path in which to list files, and local and remote Borg paths, capture the
-    output of listing that archive and return it as a list of file paths.
+    version, global arguments as an argparse.Namespace, the archive path in which to list files, and
+    local and remote Borg paths, capture the output of listing that archive and return it as a list
+    of file paths.
     '''
     borg_environment = environment.make_environment(storage_config)
 
@@ -115,6 +119,7 @@ def capture_archive_listing(
                     json=None,
                     format='{path}{NL}',  # noqa: FS003
                 ),
+                global_arguments,
                 local_path,
                 remote_path,
             ),
@@ -130,15 +135,17 @@ def list_archive(
     storage_config,
     local_borg_version,
     list_arguments,
+    global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, the
-    arguments to the list action, and local and remote Borg paths, display the output of listing
-    the files of a Borg archive (or return JSON output). If list_arguments.find_paths are given,
-    list the files by searching across multiple archives. If neither find_paths nor archive name
-    are given, instead list the archives in the given repository.
+    Given a local or remote repository path, a storage config dict, the local Borg version, global
+    arguments as an argparse.Namespace, the arguments to the list action as an argparse.Namespace,
+    and local and remote Borg paths, display the output of listing the files of a Borg archive (or
+    return JSON output). If list_arguments.find_paths are given, list the files by searching across
+    multiple archives. If neither find_paths nor archive name are given, instead list the archives
+    in the given repository.
     '''
     borgmatic.logger.add_custom_log_levels()
 
@@ -164,6 +171,7 @@ def list_archive(
             storage_config,
             local_borg_version,
             rlist_arguments,
+            global_arguments,
             local_path,
             remote_path,
         )
@@ -205,6 +213,7 @@ def list_archive(
                     storage_config,
                     local_borg_version,
                     rlist_arguments,
+                    global_arguments,
                     local_path,
                     remote_path,
                 ),
@@ -233,6 +242,7 @@ def list_archive(
             storage_config,
             local_borg_version,
             archive_arguments,
+            global_arguments,
             local_path,
             remote_path,
         ) + make_find_paths(list_arguments.find_paths)

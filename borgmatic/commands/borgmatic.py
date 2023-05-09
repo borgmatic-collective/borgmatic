@@ -398,7 +398,8 @@ def run_actions(
                 repository,
                 storage,
                 local_borg_version,
-                arguments['mount'],
+                action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -420,6 +421,7 @@ def run_actions(
                 storage,
                 local_borg_version,
                 action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -429,6 +431,7 @@ def run_actions(
                 storage,
                 local_borg_version,
                 action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -438,6 +441,7 @@ def run_actions(
                 storage,
                 local_borg_version,
                 action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -447,6 +451,7 @@ def run_actions(
                 storage,
                 local_borg_version,
                 action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -455,7 +460,8 @@ def run_actions(
                 repository,
                 storage,
                 local_borg_version,
-                arguments['break-lock'],
+                action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )
@@ -465,6 +471,7 @@ def run_actions(
                 storage,
                 local_borg_version,
                 action_arguments,
+                global_arguments,
                 local_path,
                 remote_path,
             )

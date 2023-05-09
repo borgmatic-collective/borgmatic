@@ -12,6 +12,7 @@ def run_borg(
     storage,
     local_borg_version,
     borg_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -27,6 +28,7 @@ def run_borg(
             borg_arguments.archive,
             storage,
             local_borg_version,
+            global_arguments,
             local_path,
             remote_path,
         )

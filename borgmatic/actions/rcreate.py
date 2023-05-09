@@ -29,6 +29,7 @@ def run_rcreate(
         repository['path'],
         storage,
         local_borg_version,
+        global_arguments,
         rcreate_arguments.encryption_mode,
         rcreate_arguments.source_repository,
         rcreate_arguments.copy_crypt_key,

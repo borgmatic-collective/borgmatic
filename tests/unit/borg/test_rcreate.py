@@ -48,6 +48,7 @@ def test_create_repository_calls_borg_with_flags():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
 
@@ -68,6 +69,7 @@ def test_create_repository_with_dry_run_skips_borg_call():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
 
@@ -92,6 +94,7 @@ def test_create_repository_raises_for_borg_rcreate_error():
             repository_path='repo',
             storage_config={},
             local_borg_version='2.3.4',
+            global_arguments=flexmock(log_json=False),
             encryption_mode='repokey',
         )
 
@@ -111,6 +114,7 @@ def test_create_repository_skips_creation_when_repository_already_exists():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
 
@@ -126,6 +130,7 @@ def test_create_repository_raises_for_unknown_rinfo_command_error():
             repository_path='repo',
             storage_config={},
             local_borg_version='2.3.4',
+            global_arguments=flexmock(log_json=False),
             encryption_mode='repokey',
         )
 
@@ -146,6 +151,7 @@ def test_create_repository_with_source_repository_calls_borg_with_other_repo_fla
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         source_repository='other.borg',
     )
@@ -167,6 +173,7 @@ def test_create_repository_with_copy_crypt_key_calls_borg_with_copy_crypt_key_fl
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         copy_crypt_key=True,
     )
@@ -188,6 +195,7 @@ def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         append_only=True,
     )
@@ -209,6 +217,7 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         storage_quota='5G',
     )
@@ -230,6 +239,7 @@ def test_create_repository_with_make_parent_dirs_calls_borg_with_make_parent_dir
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         make_parent_dirs=True,
     )
@@ -252,6 +262,7 @@ def test_create_repository_with_log_info_calls_borg_with_info_flag():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
 
@@ -273,6 +284,49 @@ def test_create_repository_with_log_debug_calls_borg_with_debug_flag():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
+        encryption_mode='repokey',
+    )
+
+
+def test_create_repository_with_log_json_calls_borg_with_log_json_flag():
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(RCREATE_COMMAND + ('--log-json', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=True),
+        encryption_mode='repokey',
+    )
+
+
+def test_create_repository_with_lock_wait_calls_borg_with_lock_wait_flag():
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(RCREATE_COMMAND + ('--lock-wait', '5', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        storage_config={'lock_wait': 5},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
 
@@ -293,6 +347,7 @@ def test_create_repository_with_local_path_calls_borg_via_local_path():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         local_path='borg1',
     )
@@ -314,6 +369,7 @@ def test_create_repository_with_remote_path_calls_borg_with_remote_path_flag():
         repository_path='repo',
         storage_config={},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         remote_path='borg1',
     )
@@ -335,5 +391,6 @@ def test_create_repository_with_extra_borg_options_calls_borg_with_extra_options
         repository_path='repo',
         storage_config={'extra_borg_options': {'rcreate': '--extra --options'}},
         local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )

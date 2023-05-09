@@ -188,6 +188,11 @@ def make_parsers():
         help='Log format string used for log messages written to the log file',
     )
     global_group.add_argument(
+        '--log-json',
+        action='store_true',
+        help='Write log messages and console output as one JSON object per log line instead of formatted text',
+    )
+    global_group.add_argument(
         '--override',
         metavar='SECTION.OPTION=VALUE',
         nargs='+',

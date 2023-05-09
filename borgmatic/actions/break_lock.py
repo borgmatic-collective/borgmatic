@@ -11,6 +11,7 @@ def run_break_lock(
     storage,
     local_borg_version,
     break_lock_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -25,6 +26,7 @@ def run_break_lock(
             repository['path'],
             storage,
             local_borg_version,
+            global_arguments,
             local_path=local_path,
             remote_path=remote_path,
         )

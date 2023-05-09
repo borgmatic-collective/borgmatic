@@ -7,6 +7,7 @@
    commands with arguments.
  * #678: Fix calls to psql in PostgreSQL hook to ignore "~/.psqlrc", whose settings can break
    database dumping.
+ * #680: Add support for logging each log line as a JSON object via global "--log-json" flag.
  * #682: Fix "source_directories_must_exist" option to expand globs and tildes in source directories.
  * #684: Rename "master" development branch to "main" to use more inclusive language. You'll need to
    update your development checkouts accordingly.

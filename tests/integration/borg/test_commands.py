@@ -1,3 +1,4 @@
+import argparse
 import copy
 
 from flexmock import flexmock
@@ -58,7 +59,12 @@ def test_transfer_archives_command_does_not_duplicate_flags_or_raise():
             continue
 
         borgmatic.borg.transfer.transfer_archives(
-            False, 'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
+            False,
+            'repo',
+            {},
+            '2.3.4',
+            fuzz_argument(arguments, argument_name),
+            global_arguments=flexmock(log_json=False),
         )
 
 
@@ -70,7 +76,11 @@ def test_make_list_command_does_not_duplicate_flags_or_raise():
             continue
 
         command = borgmatic.borg.list.make_list_command(
-            'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
+            'repo',
+            {},
+            '2.3.4',
+            fuzz_argument(arguments, argument_name),
+            argparse.Namespace(log_json=False),
         )
 
         assert_command_does_not_duplicate_flags(command)
@@ -84,7 +94,11 @@ def test_make_rlist_command_does_not_duplicate_flags_or_raise():
             continue
 
         command = borgmatic.borg.rlist.make_rlist_command(
-            'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
+            'repo',
+            {},
+            '2.3.4',
+            fuzz_argument(arguments, argument_name),
+            global_arguments=flexmock(log_json=True),
         )
 
         assert_command_does_not_duplicate_flags(command)
@@ -104,5 +118,9 @@ def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
             continue
 
         borgmatic.borg.info.display_archives_info(
-            'repo', {}, '2.3.4', fuzz_argument(arguments, argument_name)
+            'repo',
+            {},
+            '2.3.4',
+            fuzz_argument(arguments, argument_name),
+            argparse.Namespace(log_json=False),
         )
