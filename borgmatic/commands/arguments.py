@@ -168,7 +168,7 @@ def make_parsers():
         type=int,
         choices=range(-2, 3),
         default=0,
-        help='Log verbose progress to log file (from disabled, errors to very verbose: -2, -1, 0, 1, or 2). Only used when --log-file is given',
+        help='Log verbose progress to log file (from disabled, errors only, default, some, or lots: -2, -1, 0, 1, or 2). Only used when --log-file is given',
     )
     global_group.add_argument(
         '--monitoring-verbosity',
