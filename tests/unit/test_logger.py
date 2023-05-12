@@ -291,10 +291,9 @@ def test_configure_logging_skips_syslog_if_syslog_logging_is_disabled():
         flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
     )
     flexmock(module).should_receive('Console_color_formatter')
-    flexmock(module).should_receive('syslog_path').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
     flexmock(module.logging).should_receive('basicConfig').with_args(
-        level=logging.DISABLED, handlers=tuple
+        level=logging.INFO, handlers=tuple
     )
     flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
