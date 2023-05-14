@@ -88,6 +88,7 @@ installing borgmatic:
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
  * [Fedora unofficial](https://copr.fedorainfracloud.org/coprs/heffer/borgmatic/)
+ * [Gentoo](https://packages.gentoo.org/packages/app-backup/borgmatic)
  * [Arch Linux](https://www.archlinux.org/packages/community/any/borgmatic/)
  * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
  * [OpenBSD](https://openports.pl/path/sysutils/borgmatic)
