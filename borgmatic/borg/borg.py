@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.commands.arguments
 import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -36,6 +37,14 @@ def run_arbitrary_borg(
         command_options_start_index = 2 if options[0] in BORG_SUBCOMMANDS_WITH_SUBCOMMANDS else 1
         borg_command = tuple(options[:command_options_start_index])
         command_options = tuple(options[command_options_start_index:])
+
+        if (
+            borg_command
+            and borg_command[0] in borgmatic.commands.arguments.SUBPARSER_ALIASES.keys()
+        ):
+            logger.warning(
+                f"Borg's {borg_command[0]} subcommand is supported natively by borgmatic. Try this instead: borgmatic {borg_command[0]}"
+            )
     except IndexError:
         borg_command = ()
         command_options = ()

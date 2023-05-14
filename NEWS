@@ -18,7 +18,7 @@
    --editable" development installs.
  * #691: Fix error in "borgmatic restore" action when the configured repository path is relative
    instead of absolute.
- * Run "borgmatic borg" action without capturing output so interactive prompts and flags like
+ * #694: Run "borgmatic borg" action without capturing output so interactive prompts and flags like
    "--progress" still work.
 
 1.7.12
