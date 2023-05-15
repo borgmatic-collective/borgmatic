@@ -1,4 +1,5 @@
 import json
+import os
 import logging
 
 import borgmatic.borg.create
@@ -7,7 +8,28 @@ import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
 
+from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+
 logger = logging.getLogger(__name__)
+
+
+def create_borgmatic_manifest(location, config_paths, dry_run):
+    '''
+    Create a borgmatic manifest file to store the paths to the configuration files used to create
+    the archive.
+    '''    
+    if dry_run:
+        return
+    
+    borgmatic_source_directory = location.get('borgmatic_source_directory') if location.get('borgmatic_source_directory') else DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+
+    borgmatic_manifest_path = os.path.expanduser(os.path.join(borgmatic_source_directory, 'bootstrap', 'configs-list.json'))
+
+    if not os.path.exists(borgmatic_manifest_path):
+        os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
+
+    with open(borgmatic_manifest_path, 'w') as f:
+        json.dump(config_paths, f)
 
 
 def run_create(
@@ -59,6 +81,7 @@ def run_create(
         location,
         global_arguments.dry_run,
     )
+    create_borgmatic_manifest(location, global_arguments.config_paths, global_arguments.dry_run)
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
     json_output = borgmatic.borg.create.create_archive(
