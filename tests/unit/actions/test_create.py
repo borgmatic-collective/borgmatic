@@ -19,7 +19,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
         json=flexmock(),
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
 
     list(
         module.run_create(
@@ -52,7 +52,7 @@ def test_run_create_runs_with_selected_repository():
         json=flexmock(),
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
 
     list(
         module.run_create(
@@ -85,7 +85,7 @@ def test_run_create_bails_if_repository_does_not_match():
         json=flexmock(),
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
 
     list(
         module.run_create(
