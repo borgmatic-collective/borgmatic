@@ -82,7 +82,7 @@ If `archive_name_format` is unspecified, the default is
 timestamp in a particular format.
 
 
-### Achive filtering
+### Archive filtering
 
 <span class="minilink minilink-addedin">New in version 1.7.11</span> borgmatic
 uses the `archive_name_format` option to automatically limit which archives
