@@ -1,4 +1,4 @@
-1.7.13.dev0
+1.7.13
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
    flag. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
