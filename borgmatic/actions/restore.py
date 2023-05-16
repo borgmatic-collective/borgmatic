@@ -73,12 +73,14 @@ def restore_single_database(
     Given (among other things) an archive name, a database hook name, and a configured database
     configuration dict, restore that database from the archive.
     '''
-    logger.info(f'{repository}: Restoring database {database["name"]}')
+    logger.info(
+        f'{repository.get("label", repository["path"])}: Restoring database {database["name"]}'
+    )
 
     dump_pattern = borgmatic.hooks.dispatch.call_hooks(
         'make_database_dump_pattern',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         database['name'],
@@ -87,7 +89,7 @@ def restore_single_database(
     # Kick off a single database extract to stdout.
     extract_process = borgmatic.borg.extract.extract_archive(
         dry_run=global_arguments.dry_run,
-        repository=repository,
+        repository=repository['path'],
         archive=archive_name,
         paths=borgmatic.hooks.dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
         location_config=location,
@@ -106,7 +108,7 @@ def restore_single_database(
     borgmatic.hooks.dispatch.call_hooks(
         'restore_database_dump',
         {hook_name: [database]},
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,
@@ -265,7 +267,7 @@ def run_restore(
         return
 
     logger.info(
-        f'{repository["path"]}: Restoring databases from archive {restore_arguments.archive}'
+        f'{repository.get("label", repository["path"])}: Restoring databases from archive {restore_arguments.archive}'
     )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
@@ -314,7 +316,7 @@ def run_restore(
 
             found_names.add(database_name)
             restore_single_database(
-                repository['path'],
+                repository,
                 location,
                 storage,
                 hooks,
@@ -343,7 +345,7 @@ def run_restore(
             database['name'] = database_name
 
             restore_single_database(
-                repository['path'],
+                repository,
                 location,
                 storage,
                 hooks,

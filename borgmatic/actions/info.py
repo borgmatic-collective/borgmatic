@@ -26,7 +26,9 @@ def run_info(
         repository, info_arguments.repository
     ):
         if not info_arguments.json:  # pragma: nocover
-            logger.answer(f'{repository["path"]}: Displaying archive summary information')
+            logger.answer(
+                f'{repository.get("label", repository["path"])}: Displaying archive summary information'
+            )
         info_arguments.archive = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             info_arguments.archive,

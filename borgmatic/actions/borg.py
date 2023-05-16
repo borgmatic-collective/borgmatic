@@ -22,7 +22,9 @@ def run_borg(
     if borg_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, borg_arguments.repository
     ):
-        logger.info(f'{repository["path"]}: Running arbitrary Borg command')
+        logger.info(
+            f'{repository.get("label", repository["path"])}: Running arbitrary Borg command'
+        )
         archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             borg_arguments.archive,

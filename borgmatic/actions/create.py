@@ -42,7 +42,7 @@ def run_create(
         global_arguments.dry_run,
         **hook_context,
     )
-    logger.info(f'{repository["path"]}: Creating archive{dry_run_label}')
+    logger.info(f'{repository.get("label", repository["path"])}: Creating archive{dry_run_label}')
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,

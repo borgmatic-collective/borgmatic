@@ -113,10 +113,14 @@ def run_configuration(config_filename, config, arguments):
 
         while not repo_queue.empty():
             repository, retry_num = repo_queue.get()
-            logger.debug(f'{repository["path"]}: Running actions for repository')
+            logger.debug(
+                f'{repository.get("label", repository["path"])}: Running actions for repository'
+            )
             timeout = retry_num * retry_wait
             if timeout:
-                logger.warning(f'{config_filename}: Sleeping {timeout}s before next retry')
+                logger.warning(
+                    f'{repository.get("label", repository["path"])}: Sleeping {timeout}s before next retry'
+                )
                 time.sleep(timeout)
             try:
                 yield from run_actions(
@@ -139,14 +143,14 @@ def run_configuration(config_filename, config, arguments):
                     )
                     tuple(  # Consume the generator so as to trigger logging.
                         log_error_records(
-                            f'{repository["path"]}: Error running actions for repository',
+                            f'{repository.get("label", repository["path"])}: Error running actions for repository',
                             error,
                             levelno=logging.WARNING,
                             log_command_error_output=True,
                         )
                     )
                     logger.warning(
-                        f'{config_filename}: Retrying... attempt {retry_num + 1}/{retries}'
+                        f'{repository.get("label", repository["path"])}: Retrying... attempt {retry_num + 1}/{retries}'
                     )
                     continue
 
@@ -154,7 +158,8 @@ def run_configuration(config_filename, config, arguments):
                     return
 
                 yield from log_error_records(
-                    f'{repository["path"]}: Error running actions for repository', error
+                    f'{repository.get("label", repository["path"])}: Error running actions for repository',
+                    error,
                 )
                 encountered_error = error
                 error_repository = repository['path']
