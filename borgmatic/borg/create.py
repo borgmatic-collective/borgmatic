@@ -351,7 +351,9 @@ def create_archive(
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                tuple(location_config.get('source_directories', ())) + borgmatic_source_directories + tuple(global_arguments.config_paths)
+                tuple(location_config.get('source_directories', ()))
+                + borgmatic_source_directories
+                + tuple(global_arguments.used_config_paths)
             )
         ),
         additional_directory_devices=map_directories_to_devices(

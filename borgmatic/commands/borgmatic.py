@@ -45,10 +45,10 @@ logger = logging.getLogger(__name__)
 LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
 
 
-def run_configuration(config_filename, config, arguments, used_config_paths):
+def run_configuration(config_filename, config, arguments):
     '''
-    Given a config filename, the corresponding parsed config dict, command-line arguments as a
-    dict from subparser name to a namespace of parsed arguments, and a list of paths of all configs used, execute the defined create, prune,
+    Given a config filename, the corresponding parsed config dict, and command-line arguments as a
+    dict from subparser name to a namespace of parsed arguments, execute the defined create, prune,
     compact, check, and/or other actions.
 
     Yield a combination of:
@@ -61,7 +61,6 @@ def run_configuration(config_filename, config, arguments, used_config_paths):
         for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
     )
     global_arguments = arguments['global']
-    global_arguments.config_paths = used_config_paths
 
     local_path = location.get('local_path', 'borg')
     remote_path = location.get('remote_path')
@@ -645,9 +644,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
 
     # Execute the actions corresponding to each configuration file.
     json_results = []
-    used_config_paths = list(configs.keys())
     for config_filename, config in configs.items():
-        results = list(run_configuration(config_filename, config, arguments, used_config_paths))
+        results = list(run_configuration(config_filename, config, arguments))
         error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
         if error_logs:
@@ -729,6 +727,7 @@ def main():  # pragma: no cover
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
+    global_arguments.used_config_paths = list(config_filenames)
     configs, parse_logs = load_configurations(
         config_filenames, global_arguments.overrides, global_arguments.resolve_env
     )
