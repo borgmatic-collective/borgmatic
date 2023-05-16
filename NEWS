@@ -16,6 +16,9 @@
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
  * #687: Fix borgmatic error when not finding the configuration schema for certain "pip install
    --editable" development installs.
+ * #688: Fix archive checks being skipped even when particular archives haven't been checked
+   recently. This occurred when using multiple borgmatic configuration files with different
+   "archive_name_format"s, for instance.
  * #691: Fix error in "borgmatic restore" action when the configured repository path is relative
    instead of absolute.
  * #694: Run "borgmatic borg" action without capturing output so interactive prompts and flags like

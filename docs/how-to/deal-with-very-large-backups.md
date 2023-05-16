@@ -95,6 +95,7 @@ See [Borg's check
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html)
 for more information.
 
+
 ### Check frequency
 
 <span class="minilink minilink-addedin">New in version 1.6.2</span> You can
