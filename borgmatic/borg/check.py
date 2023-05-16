@@ -299,7 +299,7 @@ def probe_for_check_time(location_config, borg_repository_id, check, archives_ch
       ~/.borgmatic/checks/1234567890/archives/9876543210
       ~/.borgmatic/checks/1234567890/archives/all
 
-    ... and returns the modification time of the first file found (if any). The first path
+    ... and returns the maximum modification time of the files found (if any). The first path
     represents a more specific archives check time (a check on a subset of archives), and the second
     is a fallback to the last "all" archives check.
 
@@ -318,8 +318,8 @@ def probe_for_check_time(location_config, borg_repository_id, check, archives_ch
     )
 
     try:
-        return next(check_time for check_time in check_times if check_time)
-    except StopIteration:
+        return max(check_time for check_time in check_times if check_time)
+    except ValueError:
         return None
 
 

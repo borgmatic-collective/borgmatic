@@ -462,13 +462,13 @@ def test_read_check_time_on_missing_file_does_not_raise():
     assert module.read_check_time('/path') is None
 
 
-def test_probe_for_check_time_uses_first_of_multiple_check_times():
+def test_probe_for_check_time_uses_maximum_of_multiple_check_times():
     flexmock(module).should_receive('make_check_time_path').and_return(
         '~/.borgmatic/checks/1234/archives/5678'
     ).and_return('~/.borgmatic/checks/1234/archives/all')
     flexmock(module).should_receive('read_check_time').and_return(1).and_return(2)
 
-    assert module.probe_for_check_time(flexmock(), flexmock(), flexmock(), flexmock()) == 1
+    assert module.probe_for_check_time(flexmock(), flexmock(), flexmock(), flexmock()) == 2
 
 
 def test_probe_for_check_time_deduplicates_identical_check_time_paths():
