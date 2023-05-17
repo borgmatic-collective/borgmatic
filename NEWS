@@ -1,3 +1,6 @@
+1.7.14.dev0
+ * #688: Tweak archive check probing logic to use the newest timestamp found when multiple exist.
+
 1.7.13
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
    flag. See the documentation for more information:
