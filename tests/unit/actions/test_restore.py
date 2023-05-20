@@ -72,6 +72,7 @@ def test_collect_archive_database_names_parses_archive_paths():
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
         local_borg_version=flexmock(),
+        global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
         remote_path=flexmock(),
     )
@@ -97,6 +98,7 @@ def test_collect_archive_database_names_parses_directory_format_archive_paths():
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
         local_borg_version=flexmock(),
+        global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
         remote_path=flexmock(),
     )
@@ -118,6 +120,7 @@ def test_collect_archive_database_names_skips_bad_archive_paths():
         location={'borgmatic_source_directory': '.borgmatic'},
         storage=flexmock(),
         local_borg_version=flexmock(),
+        global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
         remote_path=flexmock(),
     )

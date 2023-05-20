@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+import borgmatic.config.validate
 from borgmatic.borg import environment, feature, flags, rlist
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 def extract_last_archive_dry_run(
     storage_config,
     local_borg_version,
+    global_arguments,
     repository_path,
     lock_wait=None,
     local_path='borg',
@@ -20,8 +22,6 @@ def extract_last_archive_dry_run(
     Perform an extraction dry-run of the most recent archive. If there are no archives, skip the
     dry-run.
     '''
-    remote_path_flags = ('--remote-path', remote_path) if remote_path else ()
-    lock_wait_flags = ('--lock-wait', str(lock_wait)) if lock_wait else ()
     verbosity_flags = ()
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
@@ -30,7 +30,13 @@ def extract_last_archive_dry_run(
 
     try:
         last_archive_name = rlist.resolve_archive_name(
-            repository_path, 'latest', storage_config, local_borg_version, local_path, remote_path
+            repository_path,
+            'latest',
+            storage_config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
         )
     except ValueError:
         logger.warning('No archives found. Skipping extract consistency check.')
@@ -40,8 +46,9 @@ def extract_last_archive_dry_run(
     borg_environment = environment.make_environment(storage_config)
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
-        + remote_path_flags
-        + lock_wait_flags
+        + (('--remote-path', remote_path) if remote_path else ())
+        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags
         + list_flag
         + flags.make_repository_archive_flags(
@@ -62,6 +69,7 @@ def extract_archive(
     location_config,
     storage_config,
     local_borg_version,
+    global_arguments,
     local_path='borg',
     remote_path=None,
     destination_path=None,
@@ -71,9 +79,9 @@ def extract_archive(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    restore from the archive, the local Borg version string, location/storage configuration dicts,
-    optional local and remote Borg paths, and an optional destination path to extract to, extract
-    the archive into the current directory.
+    restore from the archive, the local Borg version string, an argparse.Namespace of global
+    arguments, location/storage configuration dicts, optional local and remote Borg paths, and an
+    optional destination path to extract to, extract the archive into the current directory.
 
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
@@ -101,6 +109,7 @@ def extract_archive(
         + (('--remote-path', remote_path) if remote_path else ())
         + numeric_ids_flags
         + (('--umask', str(umask)) if umask else ())
+        + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
@@ -109,7 +118,9 @@ def extract_archive(
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
-            repository,
+            # Make the repository path absolute so the working directory changes below don't
+            # prevent Borg from finding the repo.
+            borgmatic.config.validate.normalize_repository_path(repository),
             archive,
             local_borg_version,
         )

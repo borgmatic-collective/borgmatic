@@ -37,13 +37,14 @@ def run_prune(
         global_arguments.dry_run,
         **hook_context,
     )
-    logger.info(f'{repository["path"]}: Pruning archives{dry_run_label}')
+    logger.info(f'{repository.get("label", repository["path"])}: Pruning archives{dry_run_label}')
     borgmatic.borg.prune.prune_archives(
         global_arguments.dry_run,
         repository['path'],
         storage,
         retention,
         local_borg_version,
+        global_arguments,
         prune_arguments,
         local_path=local_path,
         remote_path=remote_path,

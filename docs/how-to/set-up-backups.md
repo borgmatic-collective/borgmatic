@@ -88,6 +88,7 @@ installing borgmatic:
  * [Ubuntu](https://launchpad.net/ubuntu/+source/borgmatic)
  * [Fedora official](https://bodhi.fedoraproject.org/updates/?search=borgmatic)
  * [Fedora unofficial](https://copr.fedorainfracloud.org/coprs/heffer/borgmatic/)
+ * [Gentoo](https://packages.gentoo.org/packages/app-backup/borgmatic)
  * [Arch Linux](https://www.archlinux.org/packages/community/any/borgmatic/)
  * [Alpine Linux](https://pkgs.alpinelinux.org/packages?name=borgmatic)
  * [OpenBSD](https://openports.pl/path/sysutils/borgmatic)
@@ -334,10 +335,13 @@ Access](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/293).
 
 ### Shell completion
 
-borgmatic includes a shell completion script (currently only for Bash) to
+borgmatic includes a shell completion script (currently only for Bash and Fish) to
 support tab-completing borgmatic command-line actions and flags. Depending on
-how you installed borgmatic, this may be enabled by default. But if it's not,
-start by installing the `bash-completion` Linux package or the
+how you installed borgmatic, this may be enabled by default.
+
+#### Bash
+
+If completions aren't enabled, start by installing the `bash-completion` Linux package or the
 [`bash-completion@2`](https://formulae.brew.sh/formula/bash-completion@2)
 macOS Homebrew formula. Then, install the shell completion script globally:
 
@@ -362,6 +366,14 @@ borgmatic --bash-completion > ~/.local/share/bash-completion/completions/borgmat
 Finally, restart your shell (`exit` and open a new shell) so the completions
 take effect.
 
+#### fish
+
+To add completions for fish, install the completions file globally:
+
+```fish
+borgmatic --fish-completion | sudo tee /usr/share/fish/vendor_completions.d/borgmatic.fish
+source /usr/share/fish/vendor_completions.d/borgmatic.fish
+```
 
 ### Colored output
 

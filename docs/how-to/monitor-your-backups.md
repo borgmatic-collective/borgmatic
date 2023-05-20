@@ -73,7 +73,7 @@ from borgmatic for a configured interval.
 
 ### Consistency checks
 
-While not strictly part of monitoring, if you really want confidence that your
+While not strictly part of monitoring, if you want confidence that your
 backups are not only running but are restorable as well, you can configure
 particular [consistency
 checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)

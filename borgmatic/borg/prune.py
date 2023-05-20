@@ -54,6 +54,7 @@ def prune_archives(
     retention_config,
     local_borg_version,
     prune_arguments,
+    global_arguments,
     local_path='borg',
     remote_path=None,
 ):
@@ -72,6 +73,7 @@ def prune_archives(
         + make_prune_flags(storage_config, retention_config, local_borg_version)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
+        + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--stats',) if prune_arguments.stats and not dry_run else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())

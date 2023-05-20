@@ -110,7 +110,7 @@ def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
 PRUNE_COMMAND = ('borg', 'prune', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3')
 
 
-def test_prune_archives_calls_borg_with_parameters():
+def test_prune_archives_calls_borg_with_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -124,11 +124,12 @@ def test_prune_archives_calls_borg_with_parameters():
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
+def test_prune_archives_with_log_info_calls_borg_with_info_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -143,11 +144,12 @@ def test_prune_archives_with_log_info_calls_borg_with_info_parameter():
         dry_run=False,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
+def test_prune_archives_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -162,11 +164,12 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_parameter():
         dry_run=False,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
+def test_prune_archives_with_dry_run_calls_borg_with_dry_run_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -180,6 +183,7 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_parameter():
         dry_run=True,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
@@ -198,12 +202,13 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         local_path='borg1',
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters():
+def test_prune_archives_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -217,12 +222,13 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_parameters(
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         remote_path='borg1',
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_answer_output_log_level():
+def test_prune_archives_with_stats_calls_borg_with_stats_flag_and_answer_output_log_level():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -236,11 +242,12 @@ def test_prune_archives_with_stats_calls_borg_with_stats_parameter_and_answer_ou
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_files_calls_borg_with_list_parameter_and_answer_output_log_level():
+def test_prune_archives_with_files_calls_borg_with_list_flag_and_answer_output_log_level():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
@@ -254,11 +261,12 @@ def test_prune_archives_with_files_calls_borg_with_list_parameter_and_answer_out
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
+def test_prune_archives_with_umask_calls_borg_with_umask_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     storage_config = {'umask': '077'}
@@ -273,11 +281,31 @@ def test_prune_archives_with_umask_calls_borg_with_umask_parameters():
         storage_config=storage_config,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
 
-def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
+def test_prune_archives_with_log_json_calls_borg_with_log_json_flag():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(PRUNE_COMMAND + ('--log-json', 'repo'), logging.INFO)
+
+    prune_arguments = flexmock(stats=False, list_archives=False)
+    module.prune_archives(
+        dry_run=False,
+        repository_path='repo',
+        storage_config={},
+        retention_config=flexmock(),
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=True),
+        prune_arguments=prune_arguments,
+    )
+
+
+def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     storage_config = {'lock_wait': 5}
@@ -292,6 +320,7 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
         storage_config=storage_config,
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
@@ -310,6 +339,7 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
         storage_config={'extra_borg_options': {'prune': '--extra --options'}},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )
 
@@ -317,12 +347,51 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
 def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(
-        PRUNE_COMMAND
-        + ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w', 'repo'),
-        logging.INFO,
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
+        (
+            '--newer',
+            '1d',
+            '--newest',
+            '1y',
+            '--older',
+            '1m',
+            '--oldest',
+            '1w',
+            '--match-archives',
+            None,
+        )
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'borg',
+            'prune',
+            '--keep-daily',
+            '1',
+            '--keep-weekly',
+            '2',
+            '--keep-monthly',
+            '3',
+            '--newer',
+            '1d',
+            '--newest',
+            '1y',
+            '--older',
+            '1m',
+            '--oldest',
+            '1w',
+            '--match-archives',
+            None,
+            '--repo',
+            'repo',
+        ),
+        output_log_level=logging.INFO,
+        borg_local_path='borg',
+        extra_environment=None,
     )
 
     prune_arguments = flexmock(
@@ -334,5 +403,6 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
         storage_config={},
         retention_config=flexmock(),
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         prune_arguments=prune_arguments,
     )

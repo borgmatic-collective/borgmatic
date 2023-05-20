@@ -8,6 +8,7 @@ try:
 except ModuleNotFoundError:  # pragma: nocover
     import importlib.metadata as importlib_metadata
 
+import borgmatic.config
 from borgmatic.config import environment, load, normalize, override
 
 
@@ -25,7 +26,9 @@ def schema_filename():
             if path.match('config/schema.yaml')
         )
     except StopIteration:
-        raise FileNotFoundError('Configuration file schema could not be found')
+        # If the schema wasn't found in the package's files, this is probably a pip editable
+        # install, so try a different approach to get the schema.
+        return os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
 
 
 def format_json_error_path_element(path_element):

@@ -42,7 +42,7 @@ def run_create(
         global_arguments.dry_run,
         **hook_context,
     )
-    logger.info(f'{repository["path"]}: Creating archive{dry_run_label}')
+    logger.info(f'{repository.get("label", repository["path"])}: Creating archive{dry_run_label}')
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
         hooks,
@@ -67,6 +67,7 @@ def run_create(
         location,
         storage,
         local_borg_version,
+        global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         progress=create_arguments.progress,

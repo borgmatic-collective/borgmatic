@@ -38,6 +38,7 @@ def test_export_tar_archive_calls_borg_with_path_parameters():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -59,6 +60,7 @@ def test_export_tar_archive_calls_borg_with_local_path_parameters():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         local_path='borg1',
     )
 
@@ -81,6 +83,7 @@ def test_export_tar_archive_calls_borg_with_remote_path_parameters():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         remote_path='borg1',
     )
 
@@ -103,6 +106,27 @@ def test_export_tar_archive_calls_borg_with_umask_parameters():
         destination_path='test.tar',
         storage_config={'umask': '0770'},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+    )
+
+
+def test_export_tar_archive_calls_borg_with_log_json_parameter():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+    insert_execute_command_mock(('borg', 'export-tar', '--log-json', 'repo::archive', 'test.tar'))
+
+    module.export_tar_archive(
+        dry_run=False,
+        repository_path='repo',
+        archive='archive',
+        paths=None,
+        destination_path='test.tar',
+        storage_config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=True),
     )
 
 
@@ -124,6 +148,7 @@ def test_export_tar_archive_calls_borg_with_lock_wait_parameters():
         destination_path='test.tar',
         storage_config={'lock_wait': '5'},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -144,6 +169,7 @@ def test_export_tar_archive_with_log_info_calls_borg_with_info_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -166,6 +192,7 @@ def test_export_tar_archive_with_log_debug_calls_borg_with_debug_parameters():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -185,6 +212,7 @@ def test_export_tar_archive_calls_borg_with_dry_run_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -206,6 +234,7 @@ def test_export_tar_archive_calls_borg_with_tar_filter_parameters():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         tar_filter='bzip2',
     )
 
@@ -229,6 +258,7 @@ def test_export_tar_archive_calls_borg_with_list_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         list_files=True,
     )
 
@@ -251,6 +281,7 @@ def test_export_tar_archive_calls_borg_with_strip_components_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
         strip_components=5,
     )
 
@@ -271,6 +302,7 @@ def test_export_tar_archive_skips_abspath_for_remote_repository_parameter():
         destination_path='test.tar',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -290,4 +322,5 @@ def test_export_tar_archive_calls_borg_with_stdout_destination_path():
         destination_path='-',
         storage_config={},
         local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )

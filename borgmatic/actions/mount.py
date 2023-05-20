@@ -12,6 +12,7 @@ def run_mount(
     storage,
     local_borg_version,
     mount_arguments,
+    global_arguments,
     local_path,
     remote_path,
 ):
@@ -22,9 +23,11 @@ def run_mount(
         repository, mount_arguments.repository
     ):
         if mount_arguments.archive:
-            logger.info(f'{repository["path"]}: Mounting archive {mount_arguments.archive}')
+            logger.info(
+                f'{repository.get("label", repository["path"])}: Mounting archive {mount_arguments.archive}'
+            )
         else:  # pragma: nocover
-            logger.info(f'{repository["path"]}: Mounting repository')
+            logger.info(f'{repository.get("label", repository["path"])}: Mounting repository')
 
         borgmatic.borg.mount.mount_archive(
             repository['path'],
@@ -33,12 +36,14 @@ def run_mount(
                 mount_arguments.archive,
                 storage,
                 local_borg_version,
+                global_arguments,
                 local_path,
                 remote_path,
             ),
             mount_arguments,
             storage,
             local_borg_version,
+            global_arguments,
             local_path=local_path,
             remote_path=remote_path,
         )

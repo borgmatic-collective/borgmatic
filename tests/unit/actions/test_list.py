@@ -18,6 +18,7 @@ def test_run_list_does_not_raise():
             storage={},
             local_borg_version=None,
             list_arguments=list_arguments,
+            global_arguments=flexmock(log_json=False),
             local_path=None,
             remote_path=None,
         )

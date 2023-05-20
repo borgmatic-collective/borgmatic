@@ -188,6 +188,11 @@ def make_parsers():
         help='Log format string used for log messages written to the log file',
     )
     global_group.add_argument(
+        '--log-json',
+        action='store_true',
+        help='Write log messages and console output as one JSON object per log line instead of formatted text',
+    )
+    global_group.add_argument(
         '--override',
         metavar='SECTION.OPTION=VALUE',
         nargs='+',
@@ -206,6 +211,12 @@ def make_parsers():
         default=False,
         action='store_true',
         help='Show bash completion script and exit',
+    )
+    global_group.add_argument(
+        '--fish-completion',
+        default=False,
+        action='store_true',
+        help='Show fish completion script and exit',
     )
     global_group.add_argument(
         '--version',
@@ -985,6 +996,10 @@ def parse_arguments(*unparsed_arguments):
     if 'create' in arguments and arguments['create'].list_files and arguments['create'].progress:
         raise ValueError(
             'With the create action, only one of --list (--files) and --progress flags can be used.'
+        )
+    if 'create' in arguments and arguments['create'].list_files and arguments['create'].json:
+        raise ValueError(
+            'With the create action, only one of --list (--files) and --json flags can be used.'
         )
 
     if (

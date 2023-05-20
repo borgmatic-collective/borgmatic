@@ -89,8 +89,10 @@ borgmatic's `borg` action is not without limitations:
  * Unlike normal borgmatic actions that support JSON, the `borg` action will
    not disable certain borgmatic logs to avoid interfering with JSON output.
  * Unlike other borgmatic actions, the `borg` action captures (and logs) all
-   output, so interactive prompts or flags like `--progress` will not work as
-   expected.
+   output, so interactive prompts and flags like `--progress` will not work as
+   expected. <span class="minilink minilink-addedin">New in version
+   1.7.13</span> borgmatic now runs the `borg` action without capturing output,
+   so interactive prompts work.
 
 In general, this `borgmatic borg` feature should be considered an escape
 valve—a feature of second resort. In the long run, it's preferable to wrap

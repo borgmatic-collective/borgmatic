@@ -14,6 +14,7 @@ def test_run_break_lock_does_not_raise():
         storage={},
         local_borg_version=None,
         break_lock_arguments=break_lock_arguments,
+        global_arguments=flexmock(),
         local_path=None,
         remote_path=None,
     )

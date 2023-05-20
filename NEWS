@@ -1,4 +1,7 @@
-1.7.13.dev0
+1.7.14.dev0
+ * #688: Tweak archive check probing logic to use the newest timestamp found when multiple exist.
+
+1.7.13
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
    flag. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-particular-schemas
@@ -7,9 +10,22 @@
    commands with arguments.
  * #678: Fix calls to psql in PostgreSQL hook to ignore "~/.psqlrc", whose settings can break
    database dumping.
+ * #680: Add support for logging each log line as a JSON object via global "--log-json" flag.
  * #682: Fix "source_directories_must_exist" option to expand globs and tildes in source directories.
  * #684: Rename "master" development branch to "main" to use more inclusive language. You'll need to
    update your development checkouts accordingly.
+ * #686: Add fish shell completion script so you can tab-complete on the borgmatic command-line. See
+   the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/set-up-backups/#shell-completion
+ * #687: Fix borgmatic error when not finding the configuration schema for certain "pip install
+   --editable" development installs.
+ * #688: Fix archive checks being skipped even when particular archives haven't been checked
+   recently. This occurred when using multiple borgmatic configuration files with different
+   "archive_name_format"s, for instance.
+ * #691: Fix error in "borgmatic restore" action when the configured repository path is relative
+   instead of absolute.
+ * #694: Run "borgmatic borg" action without capturing output so interactive prompts and flags like
+   "--progress" still work.
 
 1.7.12
  * #413: Add "log_file" context to command hooks so your scripts can consume the borgmatic log file.

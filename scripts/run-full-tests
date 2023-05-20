@@ -10,7 +10,7 @@
 
 set -e
 
-if [ -z "$TEST_CONTAINER" ] ; then
+if [ -z "$TEST_CONTAINER" ]; then
     echo "This script is designed to work inside a test container and is not intended to"
     echo "be run manually. If you're trying to run borgmatic's end-to-end tests, execute"
     echo "scripts/run-end-to-end-dev-tests instead."
@@ -18,14 +18,14 @@ if [ -z "$TEST_CONTAINER" ] ; then
 fi
 
 apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client mongodb-tools \
-    py3-ruamel.yaml py3-ruamel.yaml.clib bash sqlite
+    py3-ruamel.yaml py3-ruamel.yaml.clib bash sqlite fish
 # If certain dependencies of black are available in this version of Alpine, install them.
 apk add --no-cache py3-typed-ast py3-regex || true
 python3 -m pip install --no-cache --upgrade pip==22.2.2 setuptools==64.0.1
 pip3 install --ignore-installed tox==3.25.1
 export COVERAGE_FILE=/tmp/.coverage
 
-if [ "$1" != "--end-to-end-only" ] ; then
+if [ "$1" != "--end-to-end-only" ]; then
     tox --workdir /tmp/.tox --sitepackages
 fi
 

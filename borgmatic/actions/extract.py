@@ -35,7 +35,9 @@ def run_extract(
     if extract_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, extract_arguments.repository
     ):
-        logger.info(f'{repository["path"]}: Extracting archive {extract_arguments.archive}')
+        logger.info(
+            f'{repository.get("label", repository["path"])}: Extracting archive {extract_arguments.archive}'
+        )
         borgmatic.borg.extract.extract_archive(
             global_arguments.dry_run,
             repository['path'],
@@ -44,6 +46,7 @@ def run_extract(
                 extract_arguments.archive,
                 storage,
                 local_borg_version,
+                global_arguments,
                 local_path,
                 remote_path,
             ),
@@ -51,6 +54,7 @@ def run_extract(
             location,
             storage,
             local_borg_version,
+            global_arguments,
             local_path=local_path,
             remote_path=remote_path,
             destination_path=extract_arguments.destination,

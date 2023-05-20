@@ -16,6 +16,7 @@ def create_repository(
     repository_path,
     storage_config,
     local_borg_version,
+    global_arguments,
     encryption_mode,
     source_repository=None,
     copy_crypt_key=False,
@@ -37,6 +38,7 @@ def create_repository(
             storage_config,
             local_borg_version,
             argparse.Namespace(json=True),
+            global_arguments,
             local_path,
             remote_path,
         )
@@ -46,6 +48,7 @@ def create_repository(
         if error.returncode != RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
             raise
 
+    lock_wait = storage_config.get('lock_wait')
     extra_borg_options = storage_config.get('extra_borg_options', {}).get('rcreate', '')
 
     rcreate_command = (
@@ -63,6 +66,8 @@ def create_repository(
         + (('--make-parent-dirs',) if make_parent_dirs else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)

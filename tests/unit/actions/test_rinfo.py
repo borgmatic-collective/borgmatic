@@ -15,6 +15,7 @@ def test_run_rinfo_does_not_raise():
             storage={},
             local_borg_version=None,
             rinfo_arguments=rinfo_arguments,
+            global_arguments=flexmock(log_json=False),
             local_path=None,
             remote_path=None,
         )

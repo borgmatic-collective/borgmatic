@@ -81,6 +81,9 @@ If `archive_name_format` is unspecified, the default is
 `{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
 timestamp in a particular format.
 
+
+### Archive filtering
+
 <span class="minilink minilink-addedin">New in version 1.7.11</span> borgmatic
 uses the `archive_name_format` option to automatically limit which archives
 get used for actions operating on multiple archives. This prevents, for

@@ -73,12 +73,14 @@ def restore_single_database(
     Given (among other things) an archive name, a database hook name, and a configured database
     configuration dict, restore that database from the archive.
     '''
-    logger.info(f'{repository}: Restoring database {database["name"]}')
+    logger.info(
+        f'{repository.get("label", repository["path"])}: Restoring database {database["name"]}'
+    )
 
     dump_pattern = borgmatic.hooks.dispatch.call_hooks(
         'make_database_dump_pattern',
         hooks,
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         database['name'],
@@ -87,12 +89,13 @@ def restore_single_database(
     # Kick off a single database extract to stdout.
     extract_process = borgmatic.borg.extract.extract_archive(
         dry_run=global_arguments.dry_run,
-        repository=repository,
+        repository=repository['path'],
         archive=archive_name,
         paths=borgmatic.hooks.dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
         location_config=location,
         storage_config=storage,
         local_borg_version=local_borg_version,
+        global_arguments=global_arguments,
         local_path=local_path,
         remote_path=remote_path,
         destination_path='/',
@@ -105,7 +108,7 @@ def restore_single_database(
     borgmatic.hooks.dispatch.call_hooks(
         'restore_database_dump',
         {hook_name: [database]},
-        repository,
+        repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,
@@ -119,14 +122,15 @@ def collect_archive_database_names(
     location,
     storage,
     local_borg_version,
+    global_arguments,
     local_path,
     remote_path,
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a location configuration dict,
-    a storage configuration dict, the local Borg version, and local and remote Borg paths, query the
-    archive for the names of databases it contains and return them as a dict from hook name to a
-    sequence of database names.
+    a storage configuration dict, the local Borg version, global_arguments an argparse.Namespace,
+    and local and remote Borg paths, query the archive for the names of databases it contains and
+    return them as a dict from hook name to a sequence of database names.
     '''
     borgmatic_source_directory = os.path.expanduser(
         location.get(
@@ -141,6 +145,7 @@ def collect_archive_database_names(
         archive,
         storage,
         local_borg_version,
+        global_arguments,
         list_path=parent_dump_path,
         local_path=local_path,
         remote_path=remote_path,
@@ -262,7 +267,7 @@ def run_restore(
         return
 
     logger.info(
-        f'{repository["path"]}: Restoring databases from archive {restore_arguments.archive}'
+        f'{repository.get("label", repository["path"])}: Restoring databases from archive {restore_arguments.archive}'
     )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
@@ -279,6 +284,7 @@ def run_restore(
         restore_arguments.archive,
         storage,
         local_borg_version,
+        global_arguments,
         local_path,
         remote_path,
     )
@@ -288,6 +294,7 @@ def run_restore(
         location,
         storage,
         local_borg_version,
+        global_arguments,
         local_path,
         remote_path,
     )
@@ -309,7 +316,7 @@ def run_restore(
 
             found_names.add(database_name)
             restore_single_database(
-                repository['path'],
+                repository,
                 location,
                 storage,
                 hooks,
@@ -338,7 +345,7 @@ def run_restore(
             database['name'] = database_name
 
             restore_single_database(
-                repository['path'],
+                repository,
                 location,
                 storage,
                 hooks,
