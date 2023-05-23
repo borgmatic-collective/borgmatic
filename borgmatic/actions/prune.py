@@ -44,8 +44,8 @@ def run_prune(
         storage,
         retention,
         local_borg_version,
-        global_arguments,
         prune_arguments,
+        global_arguments,
         local_path=local_path,
         remote_path=remote_path,
     )
