@@ -1,5 +1,6 @@
 1.7.14.dev0
  * #688: Tweak archive check probing logic to use the newest timestamp found when multiple exist.
+ * #659: Add Borg 2 date-based matching flags to various actions for archive selection.
 
 1.7.13
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
