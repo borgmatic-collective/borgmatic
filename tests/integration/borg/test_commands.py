@@ -5,6 +5,8 @@ from flexmock import flexmock
 
 import borgmatic.borg.info
 import borgmatic.borg.list
+import borgmatic.borg.mount
+import borgmatic.borg.prune
 import borgmatic.borg.rlist
 import borgmatic.borg.transfer
 import borgmatic.commands.arguments
@@ -85,6 +87,28 @@ def test_prune_archives_command_does_not_duplicate_flags_or_raise():
             {},
             '2.3.4',
             fuzz_argument(arguments, argument_name),
+            argparse.Namespace(log_json=False),
+        )
+
+
+def test_mount_archive_command_does_not_duplicate_flags_or_raise():
+    arguments = borgmatic.commands.arguments.parse_arguments('mount', '--mount-point', 'tmp')[
+        'mount'
+    ]
+    flexmock(borgmatic.borg.mount).should_receive('execute_command').replace_with(
+        assert_command_does_not_duplicate_flags
+    )
+
+    for argument_name in dir(arguments):
+        if argument_name.startswith('_'):
+            continue
+
+        borgmatic.borg.mount.mount_archive(
+            'repo',
+            'archive',
+            fuzz_argument(arguments, argument_name),
+            {},
+            '2.3.4',
             argparse.Namespace(log_json=False),
         )
 
