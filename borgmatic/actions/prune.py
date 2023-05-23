@@ -45,10 +45,9 @@ def run_prune(
         retention,
         local_borg_version,
         global_arguments,
+        prune_arguments,
         local_path=local_path,
         remote_path=remote_path,
-        stats=prune_arguments.stats,
-        list_archives=prune_arguments.list_archives,
     )
     borgmatic.hooks.command.execute_hook(
         hooks.get('after_prune'),

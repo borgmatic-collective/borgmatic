@@ -430,3 +430,51 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
         ),
         global_arguments=flexmock(log_json=False),
     )
+
+
+def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
+        ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'borg',
+            'transfer',
+            '--newer',
+            '1d',
+            '--newest',
+            '1y',
+            '--older',
+            '1m',
+            '--oldest',
+            '1w',
+            '--repo',
+            'repo',
+        ),
+        output_log_level=module.borgmatic.logger.ANSWER,
+        output_file=None,
+        borg_local_path='borg',
+        extra_environment=None,
+    )
+
+    module.transfer_archives(
+        dry_run=False,
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
+        transfer_arguments=flexmock(
+            archive=None,
+            progress=None,
+            source_repository='other',
+            newer='1d',
+            newest='1y',
+            older='1m',
+            oldest='1w',
+        ),
+    )

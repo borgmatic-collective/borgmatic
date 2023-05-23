@@ -614,3 +614,46 @@ def test_list_repository_with_json_returns_borg_output():
         )
         == json_output
     )
+
+
+def test_make_rlist_command_with_date_based_matching_calls_borg_with_date_based_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(
+        ('--newer', '1d', '--newest', '1y', '--older', '1m', '--oldest', '1w')
+    )
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_rlist_command(
+        repository_path='repo',
+        storage_config={},
+        local_borg_version='1.2.3',
+        rlist_arguments=flexmock(
+            archive=None,
+            paths=None,
+            json=False,
+            prefix=None,
+            match_archives=None,
+            newer='1d',
+            newest='1y',
+            older='1m',
+            oldest='1w',
+        ),
+        global_arguments=flexmock(log_json=False),
+    )
+
+    assert command == (
+        'borg',
+        'list',
+        '--newer',
+        '1d',
+        '--newest',
+        '1y',
+        '--older',
+        '1m',
+        '--oldest',
+        '1w',
+        'repo',
+    )

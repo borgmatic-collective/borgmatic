@@ -9,10 +9,7 @@ logger = logging.getLogger(__name__)
 def mount_archive(
     repository_path,
     archive,
-    mount_point,
-    paths,
-    foreground,
-    options,
+    mount_arguments,
     storage_config,
     local_borg_version,
     global_arguments,
@@ -36,8 +33,11 @@ def mount_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--foreground',) if foreground else ())
-        + (('-o', options) if options else ())
+        + flags.make_flags_from_arguments(
+            mount_arguments,
+            excludes=('repository', 'archive', 'mount_point', 'paths', 'options'),
+        )
+        + (('-o', mount_arguments.options) if mount_arguments.options else ())
         + (
             (
                 flags.make_repository_flags(repository_path, local_borg_version)
@@ -54,14 +54,14 @@ def mount_archive(
                 else flags.make_repository_flags(repository_path, local_borg_version)
             )
         )
-        + (mount_point,)
-        + (tuple(paths) if paths else ())
+        + (mount_arguments.mount_point,)
+        + (tuple(mount_arguments.paths) if mount_arguments.paths else ())
     )
 
     borg_environment = environment.make_environment(storage_config)
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
-    if foreground:
+    if mount_arguments.foreground:
         execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,

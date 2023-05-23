@@ -53,11 +53,10 @@ def prune_archives(
     storage_config,
     retention_config,
     local_borg_version,
+    prune_arguments,
     global_arguments,
     local_path='borg',
     remote_path=None,
-    stats=False,
-    list_archives=False,
 ):
     '''
     Given dry-run flag, a local or remote repository path, a storage config dict, and a
@@ -76,16 +75,20 @@ def prune_archives(
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--stats',) if stats and not dry_run else ())
+        + (('--stats',) if prune_arguments.stats and not dry_run else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--list',) if list_archives else ())
+        + flags.make_flags_from_arguments(
+            prune_arguments,
+            excludes=('repository', 'stats', 'list_archives'),
+        )
+        + (('--list',) if prune_arguments.list_archives else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if stats or list_archives:
+    if prune_arguments.stats or prune_arguments.list_archives:
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
