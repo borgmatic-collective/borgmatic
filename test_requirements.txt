@@ -25,7 +25,7 @@ jsonschema==4.17.3
 pytest==7.3.0
 pytest-cov==4.0.0
 regex; python_version >= '3.8'
-requests==2.28.2
+requests==2.31.0
 ruamel.yaml>0.15.0,<0.18.0
 toml==0.10.2; python_version >= '3.8'
 typed-ast; python_version >= '3.8'
