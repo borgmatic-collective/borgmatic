@@ -16,19 +16,19 @@ def schema_filename():
     '''
     Path to the installed YAML configuration schema file, used to validate and parse the
     configuration.
-
-    Raise FileNotFoundError when the schema path does not exist.
     '''
-    try:
-        return next(
-            str(path.locate())
-            for path in importlib_metadata.files('borgmatic')
-            if path.match('config/schema.yaml')
-        )
-    except StopIteration:
-        # If the schema wasn't found in the package's files, this is probably a pip editable
-        # install, so try a different approach to get the schema.
-        return os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
+
+    files = importlib_metadata.files('borgmatic')
+    if files is not None:
+        try:
+            return next(str(path.locate()) for path in files if path.match('config/schema.yaml'))
+        except StopIteration:
+            # schema not found in package, fall through to the approach below
+            pass
+
+    # If the schema wasn't found in the package's files, this is probably a pip editable
+    # install, so try a different approach to get the schema.
+    return os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
 
 
 def format_json_error_path_element(path_element):
