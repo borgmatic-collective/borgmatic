@@ -9,6 +9,8 @@ SUBPARSER_ALIASES = {
     'compact': [],
     'create': ['-C'],
     'check': ['-k'],
+    'config': [],
+    'config_bootstrap': [],
     'extract': ['-x'],
     'export-tar': [],
     'mount': ['-m'],
@@ -521,6 +523,66 @@ def make_parsers():
     )
     extract_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    config_parser = subparsers.add_parser(
+        'config',
+        aliases=SUBPARSER_ALIASES['config'],
+        help='Perform configuration file related operations',
+        description='Perform configuration file related operations',
+        add_help=False,
+        parents=[top_level_parser],
+    )
+
+    config_subparsers = config_parser.add_subparsers(
+        title='config subcommands',
+        description='Valid subcommands for config',
+        help='Additional help',
+    )
+
+    config_bootstrap_parser = config_subparsers.add_parser(
+        'bootstrap',
+        aliases=SUBPARSER_ALIASES['config_bootstrap'],
+        help='Extract files from a borgmatic created repository to the current directory',
+        description='Extract a named archive from a borgmatic created repository to the current directory without a configuration file',
+        add_help=False,
+        parents=[config_parser],
+    )
+    config_bootstrap_group = config_bootstrap_parser.add_argument_group('config bootstrap arguments')
+    config_bootstrap_group.add_argument(
+        '--repository',
+        help='Path of repository to extract',
+        required=True,
+    )
+    config_bootstrap_group.add_argument(
+        '--archive', help='Name of archive to extract, defaults to "latest"'
+    )
+    config_bootstrap_group.add_argument(
+        '--path',
+        '--restore-path',
+        metavar='PATH',
+        nargs='+',
+        dest='paths',
+        help='Paths to extract from archive, defaults to the entire archive',
+    )
+    config_bootstrap_group.add_argument(
+        '--destination',
+        metavar='PATH',
+        dest='destination',
+        help='Directory to extract files into, defaults to the current directory',
+    )
+    config_bootstrap_group.add_argument(
+        '--strip-components',
+        type=lambda number: number if number == 'all' else int(number),
+        metavar='NUMBER',
+        help='Number of leading path components to remove from each extracted path or "all" to strip all leading path components. Skip paths with fewer elements',
+    )
+    config_bootstrap_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress for each file as it is extracted',
     )
 
     export_tar_parser = subparsers.add_parser(
