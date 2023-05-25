@@ -48,7 +48,7 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
     if 'borg' in unparsed_arguments:
         subparsers = {'borg': subparsers['borg']}
 
-    for argument in remaining_arguments:
+    for argument in reversed(remaining_arguments):
         canonical_name = alias_to_subparser_name.get(argument, argument)
         subparser = subparsers.get(canonical_name)
 
@@ -531,7 +531,11 @@ def make_parsers():
         help='Perform configuration file related operations',
         description='Perform configuration file related operations',
         add_help=False,
-        parents=[top_level_parser],
+    )
+
+    config_group = config_parser.add_argument_group('config arguments')
+    config_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
     )
 
     config_subparsers = config_parser.add_subparsers(
@@ -546,7 +550,6 @@ def make_parsers():
         help='Extract files from a borgmatic created repository to the current directory',
         description='Extract a named archive from a borgmatic created repository to the current directory without a configuration file',
         add_help=False,
-        parents=[config_parser],
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group('config bootstrap arguments')
     config_bootstrap_group.add_argument(
@@ -583,6 +586,9 @@ def make_parsers():
         default=False,
         action='store_true',
         help='Display progress for each file as it is extracted',
+    )
+    config_bootstrap_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
     )
 
     export_tar_parser = subparsers.add_parser(
