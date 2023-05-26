@@ -42,6 +42,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
         for subparser_name, aliases in SUBPARSER_ALIASES.items()
         for alias in aliases
     }
+    subcommand_parsers_mapping = {
+        'config': ['bootstrap'],
+    }
 
     # If the "borg" action is used, skip all other subparsers. This avoids confusion like
     # "borg list" triggering borgmatic's own list action.
@@ -70,7 +73,18 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-        arguments[canonical_name] = parsed
+        if canonical_name not in subcommand_parsers_mapping:
+            arguments[canonical_name] = parsed
+        else:
+            arguments[canonical_name] = None
+
+    for argument in arguments:
+        if arguments[argument] == None:
+            for subcommand in subcommand_parsers_mapping[argument]:
+                if subcommand not in arguments:
+                    raise ValueError("Missing subcommand for {}. Expected one of {}".format(
+                        argument, subcommand_parsers_mapping[argument]
+                    ))
 
     # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
@@ -81,8 +95,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
     remaining_arguments = list(unparsed_arguments)
 
-    # Now ask each subparser, one by one, to greedily consume arguments.
-    for subparser_name, subparser in subparsers.items():
+    # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
+    # allows subparsers to consume arguments before their parent subparsers do.
+    for subparser_name, subparser in reversed(subparsers.items()):
         if subparser_name not in arguments.keys():
             continue
 
@@ -937,7 +952,7 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    return top_level_parser, subparsers
+    return top_level_parser, subparsers, config_subparsers
 
 
 def parse_arguments(*unparsed_arguments):
@@ -945,10 +960,13 @@ def parse_arguments(*unparsed_arguments):
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
     '''
-    top_level_parser, subparsers = make_parsers()
+    top_level_parser, subparsers, config_subparsers = make_parsers()
+
+    subparser_choices = subparsers.choices.copy()
+    subparser_choices.update(config_subparsers.choices)
 
     arguments, remaining_arguments = parse_subparser_arguments(
-        unparsed_arguments, subparsers.choices
+        unparsed_arguments, subparser_choices
     )
     arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
