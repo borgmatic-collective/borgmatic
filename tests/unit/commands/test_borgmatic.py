@@ -175,7 +175,6 @@ def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_ar
 
     flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('run_actions').and_return([])
-    flexmock(module.dispatch).should_receive('call_hooks').never()
 
     config = {'location': {'repositories': [{'path': 'foo'}]}}
     arguments = {'global': flexmock(monitoring_verbosity=-2, dry_run=False), 'create': flexmock()}

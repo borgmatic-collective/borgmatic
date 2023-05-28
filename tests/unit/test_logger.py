@@ -314,7 +314,7 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=tuple
     )
-    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').never()
+    flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
 
@@ -335,7 +335,7 @@ def test_configure_logging_to_log_file_instead_of_syslog():
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=tuple
     )
-    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(
