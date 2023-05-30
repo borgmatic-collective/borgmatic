@@ -36,7 +36,7 @@ from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.hooks import command, dispatch, monitor
-from borgmatic.logger import add_custom_log_levels, configure_logging, should_do_markup
+from borgmatic.logger import add_custom_log_levels, configure_logging, should_do_markup, DISABLED
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -70,6 +70,7 @@ def run_configuration(config_filename, config, arguments):
     error_repository = ''
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
+    monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
 
     try:
         local_borg_version = borg_version.local_borg_version(storage, local_path)
@@ -78,7 +79,7 @@ def run_configuration(config_filename, config, arguments):
         return
 
     try:
-        if using_primary_action:
+        if monitoring_hooks_are_activated:
             dispatch.call_hooks(
                 'initialize_monitor',
                 hooks,
@@ -87,7 +88,7 @@ def run_configuration(config_filename, config, arguments):
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
-        if using_primary_action:
+
             dispatch.call_hooks(
                 'ping_monitor',
                 hooks,
@@ -165,7 +166,7 @@ def run_configuration(config_filename, config, arguments):
                 error_repository = repository['path']
 
     try:
-        if using_primary_action:
+        if monitoring_hooks_are_activated:
             # send logs irrespective of error
             dispatch.call_hooks(
                 'ping_monitor',
@@ -185,7 +186,7 @@ def run_configuration(config_filename, config, arguments):
 
     if not encountered_error:
         try:
-            if using_primary_action:
+            if monitoring_hooks_are_activated:
                 dispatch.call_hooks(
                     'ping_monitor',
                     hooks,

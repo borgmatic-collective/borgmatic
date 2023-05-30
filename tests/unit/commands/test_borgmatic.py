@@ -169,6 +169,19 @@ def test_run_configuration_bails_for_monitor_finish_soft_failure():
     assert results == []
 
 
+def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_are_disabled():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(module.DISABLED)
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+    flexmock(module).should_receive('run_actions').and_return([])
+
+    config = {'location': {'repositories': [{'path': 'foo'}]}}
+    arguments = {'global': flexmock(monitoring_verbosity=-2, dry_run=False), 'create': flexmock()}
+    results = list(module.run_configuration('test.yaml', config, arguments))
+    assert results == []
+
+
 def test_run_configuration_logs_on_error_hook_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
@@ -229,8 +242,7 @@ def test_run_configuration_retries_hard_error():
     ).and_return([flexmock()])
     error_logs = [flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
-        'foo: Error running actions for repository',
-        OSError,
+        'foo: Error running actions for repository', OSError,
     ).and_return(error_logs)
     config = {'location': {'repositories': [{'path': 'foo'}]}, 'storage': {'retries': 1}}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}

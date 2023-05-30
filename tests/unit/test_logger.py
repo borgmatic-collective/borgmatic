@@ -285,6 +285,44 @@ def test_configure_logging_skips_syslog_if_interactive_console():
     module.configure_logging(console_log_level=logging.INFO)
 
 
+def test_configure_logging_skips_syslog_if_syslog_logging_is_disabled():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).DISABLED = module.DISABLED
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+    flexmock(module).should_receive('Console_color_formatter')
+    flexmock(module).should_receive('interactive_console').never()
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+
+    module.configure_logging(console_log_level=logging.INFO, syslog_log_level=logging.DISABLED)
+
+
+def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.logging).DISABLED = module.DISABLED
+    flexmock(module).should_receive('Multi_stream_handler').and_return(
+        flexmock(setFormatter=lambda formatter: None, setLevel=lambda level: None)
+    )
+
+    # syslog skipped in non-interactive console if --log-file argument provided
+    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module.logging).should_receive('basicConfig').with_args(
+        level=logging.INFO, handlers=tuple
+    )
+    flexmock(module.os.path).should_receive('exists').never()
+    flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
+    flexmock(module.logging.handlers).should_receive('WatchedFileHandler').never()
+
+    module.configure_logging(
+        console_log_level=logging.INFO, log_file_log_level=logging.DISABLED, log_file='/tmp/logfile'
+    )
+
+
 def test_configure_logging_to_log_file_instead_of_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
@@ -297,7 +335,7 @@ def test_configure_logging_to_log_file_instead_of_syslog():
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=tuple
     )
-    flexmock(module.os.path).should_receive('exists').with_args('/dev/log').and_return(True)
+    flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.logging.handlers).should_receive('SysLogHandler').never()
     file_handler = logging.handlers.WatchedFileHandler('/tmp/logfile')
     flexmock(module.logging.handlers).should_receive('WatchedFileHandler').with_args(

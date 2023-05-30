@@ -2,6 +2,7 @@ import logging
 
 import borgmatic.logger
 
+VERBOSITY_DISABLED = -2
 VERBOSITY_ERROR = -1
 VERBOSITY_ANSWER = 0
 VERBOSITY_SOME = 1
@@ -15,6 +16,7 @@ def verbosity_to_log_level(verbosity):
     borgmatic.logger.add_custom_log_levels()
 
     return {
+        VERBOSITY_DISABLED: logging.DISABLED,
         VERBOSITY_ERROR: logging.ERROR,
         VERBOSITY_ANSWER: logging.ANSWER,
         VERBOSITY_SOME: logging.INFO,
