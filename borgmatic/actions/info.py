@@ -1,6 +1,7 @@
 import json
 import logging
 
+import borgmatic.actions.arguments
 import borgmatic.borg.info
 import borgmatic.borg.rlist
 import borgmatic.config.validate
@@ -29,7 +30,7 @@ def run_info(
             logger.answer(
                 f'{repository.get("label", repository["path"])}: Displaying archive summary information'
             )
-        info_arguments.archive = borgmatic.borg.rlist.resolve_archive_name(
+        archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             info_arguments.archive,
             storage,
@@ -42,7 +43,7 @@ def run_info(
             repository['path'],
             storage,
             local_borg_version,
-            info_arguments,
+            borgmatic.actions.arguments.update_arguments(info_arguments, archive=archive_name),
             global_arguments,
             local_path,
             remote_path,

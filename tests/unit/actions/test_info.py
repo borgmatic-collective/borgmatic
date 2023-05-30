@@ -9,6 +9,9 @@ def test_run_info_does_not_raise():
     flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.actions.arguments).should_receive('update_arguments').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.info).should_receive('display_archives_info')
     info_arguments = flexmock(repository=flexmock(), archive=flexmock(), json=flexmock())
 

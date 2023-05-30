@@ -1,6 +1,7 @@
 import json
 import logging
 
+import borgmatic.actions.arguments
 import borgmatic.borg.list
 import borgmatic.config.validate
 
@@ -29,7 +30,8 @@ def run_list(
                 logger.answer(f'{repository.get("label", repository["path"])}: Searching archives')
             elif not list_arguments.archive:
                 logger.answer(f'{repository.get("label", repository["path"])}: Listing archives')
-        list_arguments.archive = borgmatic.borg.rlist.resolve_archive_name(
+
+        archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             list_arguments.archive,
             storage,
@@ -42,7 +44,7 @@ def run_list(
             repository['path'],
             storage,
             local_borg_version,
-            list_arguments,
+            borgmatic.actions.arguments.update_arguments(list_arguments, archive=archive_name),
             global_arguments,
             local_path,
             remote_path,

@@ -9,6 +9,9 @@ def test_run_list_does_not_raise():
     flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.actions.arguments).should_receive('update_arguments').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.list).should_receive('list_archive')
     list_arguments = flexmock(repository=flexmock(), archive=flexmock(), json=flexmock())
 
