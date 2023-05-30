@@ -1,4 +1,6 @@
 1.7.14.dev0
+ * #484: Add a new verbosity level (-2) to disable output entirely (for console, syslog, log file,
+   or monitoring), so not even errors are shown.
  * #688: Tweak archive check probing logic to use the newest timestamp found when multiple exist.
  * #659: Add Borg 2 date-based matching flags to various actions for archive selection.
 
