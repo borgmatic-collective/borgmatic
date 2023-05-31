@@ -24,6 +24,15 @@ Or, for even more progress and debug spew:
 borgmatic --verbosity 2
 ```
 
+The full set of verbosity levels are:
+
+ * `-2`: disable output entirely <span class="minilink minilink-addedin">New in borgmatic 1.7.14</span>
+ * `-1`: only show errors
+ * `0`: default output
+ * `1`: some additional output (informational level)
+ * `2`: lots of additional output (debug level)
+
+
 ## Backup summary
 
 If you're less concerned with progress during a backup, and you only want to
