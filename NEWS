@@ -5,8 +5,8 @@
  * #659: Add Borg 2 date-based matching flags to various actions for archive selection.
  * #704: Fix "check" action error when repository and archive checks are configured but the archive
    check gets skipped due to the configured frequency.
- * #706: Fix "--archive latest" on "list" and "info" actions only working on the first of multiple
-   configured repositories.
+ * #706: Fix "--archive latest" on "list" and "info" actions that only worked on the first of
+   multiple configured repositories.
 
 1.7.13
  * #375: Restore particular PostgreSQL schemas from a database dump via "borgmatic restore --schema"
