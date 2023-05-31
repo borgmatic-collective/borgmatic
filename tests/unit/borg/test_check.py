@@ -356,10 +356,16 @@ def test_make_check_flags_with_archives_check_returns_flag():
     assert flags == ('--archives-only',)
 
 
-def test_make_check_flags_with_archive_filtler_flags_includes_those_flags():
+def test_make_check_flags_with_archives_check_and_archive_filter_flags_includes_those_flags():
     flags = module.make_check_flags(('archives',), ('--match-archives', 'sh:foo-*'))
 
     assert flags == ('--archives-only', '--match-archives', 'sh:foo-*')
+
+
+def test_make_check_flags_without_archives_check_and_with_archive_filter_flags_includes_those_flags():
+    flags = module.make_check_flags(('repository',), ('--match-archives', 'sh:foo-*'))
+
+    assert flags == ('--repository-only',)
 
 
 def test_make_check_flags_with_data_check_returns_flag_and_implies_archives():

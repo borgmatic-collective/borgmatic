@@ -226,7 +226,7 @@ def make_check_flags(checks, archive_filter_flags):
     else:
         data_flags = ()
 
-    common_flags = archive_filter_flags + data_flags
+    common_flags = (archive_filter_flags if 'archives' in checks else ()) + data_flags
 
     if {'repository', 'archives'}.issubset(set(checks)):
         return common_flags

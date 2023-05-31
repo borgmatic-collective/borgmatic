@@ -36,7 +36,7 @@ from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, convert, validate
 from borgmatic.hooks import command, dispatch, monitor
-from borgmatic.logger import add_custom_log_levels, configure_logging, should_do_markup, DISABLED
+from borgmatic.logger import DISABLED, add_custom_log_levels, configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
