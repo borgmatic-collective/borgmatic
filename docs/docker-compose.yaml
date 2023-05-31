@@ -17,6 +17,6 @@ services:
       - sh
       - -c
       - |
-        echo "You can view dev docs at http://localhost:8080"
+        echo; echo "You can view dev docs at http://localhost:8080"; echo
     depends_on:
       - docs
