@@ -577,21 +577,17 @@ def make_parsers():
         required=True,
     )
     config_bootstrap_group.add_argument(
-        '--archive', help='Name of archive to extract, defaults to "latest"'
+        '--borgmatic-source-directory',
+        help='Path of the borgmatic source directory if other than the default',
     )
     config_bootstrap_group.add_argument(
-        '--path',
-        '--restore-path',
-        metavar='PATH',
-        nargs='+',
-        dest='paths',
-        help='Paths to extract from archive, defaults to the entire archive',
+        '--archive', help='Name of archive to extract, defaults to "latest"'
     )
     config_bootstrap_group.add_argument(
         '--destination',
         metavar='PATH',
         dest='destination',
-        help='Directory to extract files into, defaults to the current directory',
+        help='Directory to extract files into, defaults to /',
     )
     config_bootstrap_group.add_argument(
         '--strip-components',

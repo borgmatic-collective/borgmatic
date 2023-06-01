@@ -12,7 +12,7 @@ from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 logger = logging.getLogger(__name__)
 
 def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
-    borgmatic_source_directory = DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+    borgmatic_source_directory = bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
     borgmatic_manifest_path = os.path.expanduser(
         os.path.join(borgmatic_source_directory, 'bootstrap', 'configs-list.json')
     )
@@ -34,7 +34,11 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
         extract_to_stdout=True,
     )
 
-    manifest_data = json.loads(extract_process.stdout.read())
+    try:
+        manifest_data = json.loads(extract_process.stdout.read())
+    except json.decoder.JSONDecodeError as error:
+        logger.error('Error parsing manifest data: %s', error)
+        raise
 
     return manifest_data['config_paths']
 
@@ -66,6 +70,9 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
             local_borg_version,
             global_arguments,
             extract_to_stdout=False,
+            destination_path=bootstrap_arguments.destination,
+            strip_components=bootstrap_arguments.strip_components,
+            progress=bootstrap_arguments.progress,
         )
 
         
