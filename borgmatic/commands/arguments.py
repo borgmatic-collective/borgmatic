@@ -1,3 +1,4 @@
+import argparse
 import collections
 from argparse import Action, ArgumentParser
 
@@ -73,18 +74,15 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-        if canonical_name not in subcommand_parsers_mapping:
-            arguments[canonical_name] = parsed
-        else:
-            arguments[canonical_name] = None
+    arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
 
     for argument in arguments:
-        if arguments[argument] == None:
-            for subcommand in subcommand_parsers_mapping[argument]:
-                if subcommand not in arguments:
-                    raise ValueError("Missing subcommand for {}. Expected one of {}".format(
-                        argument, subcommand_parsers_mapping[argument]
-                    ))
+        if not arguments[argument]:
+            if not any(subcommand in arguments for subcommand in subcommand_parsers_mapping[argument]):
+                raise ValueError("Missing subcommand for {}. Expected one of {}".format(
+                    argument, subcommand_parsers_mapping[argument]
+                ))
+            
 
     # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
@@ -948,7 +946,17 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    return top_level_parser, subparsers, config_subparsers
+    merged_subparsers = argparse._SubParsersAction(None, None, metavar=None, dest='merged', parser_class=None)
+
+    for name, subparser in subparsers.choices.items():
+        merged_subparsers._name_parser_map[name] = subparser
+        subparser._name_parser_map = merged_subparsers._name_parser_map
+
+    for name, subparser in config_subparsers.choices.items():
+        merged_subparsers._name_parser_map[name] = subparser
+        subparser._name_parser_map = merged_subparsers._name_parser_map
+
+    return top_level_parser, merged_subparsers        
 
 
 def parse_arguments(*unparsed_arguments):
@@ -956,14 +964,18 @@ def parse_arguments(*unparsed_arguments):
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as a dict mapping from subparser name (or "global") to an argparse.Namespace instance.
     '''
-    top_level_parser, subparsers, config_subparsers = make_parsers()
+    top_level_parser, subparsers = make_parsers()
 
-    subparser_choices = subparsers.choices.copy()
-    subparser_choices.update(config_subparsers.choices)
 
     arguments, remaining_arguments = parse_subparser_arguments(
-        unparsed_arguments, subparser_choices
+        unparsed_arguments, subparsers.choices
     )
+
+    if 'bootstrap' in arguments.keys() and len(arguments.keys()) > 1:
+        raise ValueError(
+            'The bootstrap action cannot be combined with other actions. Please run it separately.'
+        )
+
     arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
     if arguments['global'].excludes_filename:

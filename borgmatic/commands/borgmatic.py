@@ -617,7 +617,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
         if 'extract' in arguments or 'mount' in arguments:
             validate.guard_single_repository_selected(repository, configs)
 
-        if 'config' not in arguments:
+        if 'bootstrap' not in arguments:
             validate.guard_configuration_contains_repository(repository, configs)
     except ValueError as error:
         yield from log_error_records(str(error))
@@ -626,14 +626,17 @@ def collect_configuration_run_summary_logs(configs, arguments):
     if 'bootstrap' in arguments:
         # no configuration file is needed for bootstrap
         local_borg_version = borg_version.local_borg_version({}, 'borg')
-        borgmatic.actions.bootstrap.run_bootstrap(arguments['bootstrap'], arguments['global'], local_borg_version)
-        yield logging.makeLogRecord(
-            dict(
-                levelno=logging.INFO,
-                levelname='INFO',
-                msg='Bootstrap successful',
+        try:
+            borgmatic.actions.bootstrap.run_bootstrap(arguments['bootstrap'], arguments['global'], local_borg_version)
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.INFO,
+                    levelname='INFO',
+                    msg='Bootstrap successful',
+                )
             )
-        )
+        except (CalledProcessError, ValueError, OSError) as error:
+            yield from log_error_records('Error running bootstrap', error)
         return
 
     if not configs:

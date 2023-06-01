@@ -70,7 +70,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
             local_borg_version,
             global_arguments,
             extract_to_stdout=False,
-            destination_path=bootstrap_arguments.destination,
+            destination_path=bootstrap_arguments.destination or '/',
             strip_components=bootstrap_arguments.strip_components,
             progress=bootstrap_arguments.progress,
         )
