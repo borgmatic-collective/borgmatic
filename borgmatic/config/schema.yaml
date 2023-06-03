@@ -605,7 +605,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before all the actions for each repository.
                 example:
-                    - echo "Starting actions."
+                    - "echo Starting actions."
             before_backup:
                 type: array
                 items:
@@ -614,7 +614,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before creating a backup, run once per repository.
                 example:
-                    - echo "Starting a backup."
+                    - "echo Starting a backup."
             before_prune:
                 type: array
                 items:
@@ -623,7 +623,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before pruning, run once per repository.
                 example:
-                    - echo "Starting pruning."
+                    - "echo Starting pruning."
             before_compact:
                 type: array
                 items:
@@ -632,7 +632,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before compaction, run once per repository.
                 example:
-                    - echo "Starting compaction."
+                    - "echo Starting compaction."
             before_check:
                 type: array
                 items:
@@ -641,7 +641,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before consistency checks, run once per repository.
                 example:
-                    - echo "Starting checks."
+                    - "echo Starting checks."
             before_extract:
                 type: array
                 items:
@@ -650,7 +650,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     before extracting a backup, run once per repository.
                 example:
-                    - echo "Starting extracting."
+                    - "echo Starting extracting."
             after_backup:
                 type: array
                 items:
@@ -659,7 +659,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after creating a backup, run once per repository.
                 example:
-                    - echo "Finished a backup."
+                    - "echo Finished a backup."
             after_compact:
                 type: array
                 items:
@@ -668,7 +668,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after compaction, run once per repository.
                 example:
-                    - echo "Finished compaction."
+                    - "echo Finished compaction."
             after_prune:
                 type: array
                 items:
@@ -677,7 +677,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after pruning, run once per repository.
                 example:
-                    - echo "Finished pruning."
+                    - "echo Finished pruning."
             after_check:
                 type: array
                 items:
@@ -686,7 +686,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after consistency checks, run once per repository.
                 example:
-                    - echo "Finished checks."
+                    - "echo Finished checks."
             after_extract:
                 type: array
                 items:
@@ -695,7 +695,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after extracting a backup, run once per repository.
                 example:
-                    - echo "Finished extracting."
+                    - "echo Finished extracting."
             after_actions:
                 type: array
                 items:
@@ -704,7 +704,7 @@ properties:
                     List of one or more shell commands or scripts to execute
                     after all actions for each repository.
                 example:
-                    - echo "Finished actions."
+                    - "echo Finished actions."
             on_error:
                 type: array
                 items:
@@ -715,7 +715,7 @@ properties:
                     "compact", or "check" action or an associated before/after
                     hook.
                 example:
-                    - echo "Error during create/prune/compact/check."
+                    - "echo Error during create/prune/compact/check."
             before_everything:
                 type: array
                 items:
@@ -726,7 +726,7 @@ properties:
                     These are collected from all configuration files and then
                     run once before all of them (prior to all actions).
                 example:
-                    - echo "Starting actions."
+                    - "echo Starting actions."
             after_everything:
                 type: array
                 items:
@@ -737,7 +737,7 @@ properties:
                     These are collected from all configuration files and then
                     run once after all of them (after any action).
                 example:
-                    - echo "Completed actions."
+                    - "echo Completed actions."
             postgresql_databases:
                 type: array
                 items:

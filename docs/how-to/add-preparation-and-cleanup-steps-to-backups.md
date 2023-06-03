@@ -28,6 +28,16 @@ hooks:
         - umount /some/filesystem
 ```
 
+If your command contains a special YAML character such as a colon, you may
+need to quote the entire string (or use a [multiline
+string](https://yaml-multiline.info/)) to avoid an error:
+
+```yaml
+hooks:
+    before_backup:
+        - "echo Backup: start"
+```
+
 <span class="minilink minilink-addedin">New in version 1.6.0</span> The
 `before_backup` and `after_backup` hooks each run once per repository in a
 configuration file. `before_backup` hooks runs right before the `create`
