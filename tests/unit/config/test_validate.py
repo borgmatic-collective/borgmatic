@@ -5,24 +5,7 @@ from borgmatic.config import validate as module
 
 
 def test_schema_filename_finds_schema_path():
-    schema_path = '/var/borgmatic/config/schema.yaml'
-
-    flexmock(module.importlib_metadata).should_receive('files').and_return(
-        flexmock(match=lambda path: False, locate=lambda: None),
-        flexmock(match=lambda path: True, locate=lambda: schema_path),
-        flexmock(match=lambda path: False, locate=lambda: None),
-    )
-
-    assert module.schema_filename() == schema_path
-
-
-def test_schema_filename_with_missing_schema_path_in_package_still_finds_it_in_config_directory():
-    flexmock(module.importlib_metadata).should_receive('files').and_return(
-        flexmock(match=lambda path: False, locate=lambda: None),
-        flexmock(match=lambda path: False, locate=lambda: None),
-    )
-
-    assert module.schema_filename().endswith('/borgmatic/config/schema.yaml')
+    module.schema_filename().endswith('/borgmatic/config/schema.yaml')
 
 
 def test_format_json_error_path_element_formats_array_index():

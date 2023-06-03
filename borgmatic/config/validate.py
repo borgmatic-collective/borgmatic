@@ -3,11 +3,6 @@ import os
 import jsonschema
 import ruamel.yaml
 
-try:
-    import importlib_metadata
-except ModuleNotFoundError:  # pragma: nocover
-    import importlib.metadata as importlib_metadata
-
 import borgmatic.config
 from borgmatic.config import environment, load, normalize, override
 
@@ -17,17 +12,6 @@ def schema_filename():
     Path to the installed YAML configuration schema file, used to validate and parse the
     configuration.
     '''
-
-    files = importlib_metadata.files('borgmatic')
-    if files is not None:
-        try:
-            return next(str(path.locate()) for path in files if path.match('config/schema.yaml'))
-        except StopIteration:
-            # schema not found in package, fall through to the approach below
-            pass
-
-    # If the schema wasn't found in the package's files, this is probably a pip editable
-    # install, so try a different approach to get the schema.
     return os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
 
 
