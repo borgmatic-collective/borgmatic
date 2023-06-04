@@ -1,3 +1,7 @@
+import os
+import sys
+from io import StringIO
+
 import pytest
 from flexmock import flexmock
 
@@ -7,22 +11,21 @@ from borgmatic.config import validate as module
 def test_schema_filename_finds_schema_path():
     schema_path = '/var/borgmatic/config/schema.yaml'
 
-    flexmock(module.importlib_metadata).should_receive('files').and_return(
-        flexmock(match=lambda path: False, locate=lambda: None),
-        flexmock(match=lambda path: True, locate=lambda: schema_path),
-        flexmock(match=lambda path: False, locate=lambda: None),
-    )
-
+    flexmock(os.path).should_receive('dirname').and_return("/var/borgmatic/config")
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args(schema_path).and_return(StringIO())
     assert module.schema_filename() == schema_path
 
 
-def test_schema_filename_with_missing_schema_path_in_package_still_finds_it_in_config_directory():
-    flexmock(module.importlib_metadata).should_receive('files').and_return(
-        flexmock(match=lambda path: False, locate=lambda: None),
-        flexmock(match=lambda path: False, locate=lambda: None),
-    )
+def test_schema_filename_raises_filenotfounderror():
+    schema_path = '/var/borgmatic/config/schema.yaml'
 
-    assert module.schema_filename().endswith('/borgmatic/config/schema.yaml')
+    flexmock(os.path).should_receive('dirname').and_return("/var/borgmatic/config")
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args(schema_path).and_raise(FileNotFoundError)
+
+    with pytest.raises(FileNotFoundError):
+        module.schema_filename()
 
 
 def test_format_json_error_path_element_formats_array_index():
