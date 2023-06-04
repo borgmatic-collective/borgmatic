@@ -50,5 +50,5 @@ curl --silent --request POST \
     --header "Content-Type: application/json" \
     --data "{\"body\": \"$escaped_release_changelog\", \"draft\": false, \"name\": \"borgmatic $version\", \"prerelease\": false, \"tag_name\": \"$version\"}"
 
-github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" \
+github-release create --token="$github_token" --owner=witten --repo=borgmatic --tag="$version" --target_commit="main" \
     --name="borgmatic $version" --body="$release_changelog"
