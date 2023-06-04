@@ -16,10 +16,8 @@ def schema_filename():
     '''
     schema_path = os.path.join(os.path.dirname(borgmatic.config.__file__), 'schema.yaml')
 
-    if os.path.exists(schema_path) and os.path.isfile(schema_path):
+    with open(schema_path):
         return schema_path
-
-    raise FileNotFoundError
 
 
 def format_json_error_path_element(path_element):
