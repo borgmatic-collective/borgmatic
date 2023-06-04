@@ -11,7 +11,7 @@ from borgmatic.config import validate as module
 def test_schema_filename_finds_schema_path():
     schema_path = '/var/borgmatic/config/schema.yaml'
 
-    flexmock(os.path).should_receive('dirname').and_return("/var/borgmatic/config")
+    flexmock(os.path).should_receive('dirname').and_return('/var/borgmatic/config')
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args(schema_path).and_return(StringIO())
     assert module.schema_filename() == schema_path
@@ -20,7 +20,7 @@ def test_schema_filename_finds_schema_path():
 def test_schema_filename_raises_filenotfounderror():
     schema_path = '/var/borgmatic/config/schema.yaml'
 
-    flexmock(os.path).should_receive('dirname').and_return("/var/borgmatic/config")
+    flexmock(os.path).should_receive('dirname').and_return('/var/borgmatic/config')
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args(schema_path).and_raise(FileNotFoundError)
 
