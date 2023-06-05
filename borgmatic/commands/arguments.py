@@ -74,15 +74,15 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-    arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
-
+    try:
+        arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
+    except UnboundLocalError:
+        pass
+    
     for argument in arguments:
         if not arguments[argument]:
             if not any(subcommand in arguments for subcommand in subcommand_parsers_mapping[argument]):
-                raise ValueError("Missing subcommand for {}. Expected one of {}".format(
-                    argument, subcommand_parsers_mapping[argument]
-                ))
-            
+                raise ValueError(f"Missing subcommand for {argument}. Expected one of {subcommand_parsers_mapping[argument]}")
 
     # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
@@ -564,28 +564,29 @@ def make_parsers():
     config_bootstrap_parser = config_subparsers.add_parser(
         'bootstrap',
         aliases=SUBPARSER_ALIASES['config_bootstrap'],
-        help='Extract files from a borgmatic created repository to the current directory',
-        description='Extract a named archive from a borgmatic created repository to the current directory without a configuration file',
+        help='Extract the config files used to create a borgmatic repository',
+        description='Extract just the config files that were used to create a borgmatic repository during the "create" operation',
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group('config bootstrap arguments')
     config_bootstrap_group.add_argument(
         '--repository',
-        help='Path of repository to extract',
+        help='Path of repository to extract config files from',
         required=True,
     )
     config_bootstrap_group.add_argument(
         '--borgmatic-source-directory',
-        help='Path of the borgmatic source directory if other than the default',
+        help='Path that stores the config files used to create an archive, and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
     )
     config_bootstrap_group.add_argument(
-        '--archive', help='Name of archive to extract, defaults to "latest"'
+        '--archive', help='Name of archive to extract config files from, defaults to "latest"', default='latest'
     )
     config_bootstrap_group.add_argument(
         '--destination',
         metavar='PATH',
         dest='destination',
-        help='Directory to extract files into, defaults to /',
+        help='Directory to extract config files into, defaults to /',
+        default='/',
     )
     config_bootstrap_group.add_argument(
         '--strip-components',

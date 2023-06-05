@@ -14,14 +14,14 @@ logger = logging.getLogger(__name__)
 def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     borgmatic_source_directory = bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
     borgmatic_manifest_path = os.path.expanduser(
-        os.path.join(borgmatic_source_directory, 'bootstrap', 'configs-list.json')
+        os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
     )
     extract_process = borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
         borgmatic.borg.rlist.resolve_archive_name(
             bootstrap_arguments.repository,
-            bootstrap_arguments.archive or 'latest',
+            bootstrap_arguments.archive,
             {},
             local_borg_version,
             global_arguments
@@ -34,11 +34,7 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
         extract_to_stdout=True,
     )
 
-    try:
-        manifest_data = json.loads(extract_process.stdout.read())
-    except json.decoder.JSONDecodeError as error:
-        logger.error('Error parsing manifest data: %s', error)
-        raise
+    manifest_data = json.loads(extract_process.stdout.read())
 
     return manifest_data['config_paths']
 
@@ -59,7 +55,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
             bootstrap_arguments.repository,
             borgmatic.borg.rlist.resolve_archive_name(
                 bootstrap_arguments.repository,
-                bootstrap_arguments.archive or 'latest',
+                bootstrap_arguments.archive,
                 {},
                 local_borg_version,
                 global_arguments
@@ -70,7 +66,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
             local_borg_version,
             global_arguments,
             extract_to_stdout=False,
-            destination_path=bootstrap_arguments.destination or '/',
+            destination_path=bootstrap_arguments.destination,
             strip_components=bootstrap_arguments.strip_components,
             progress=bootstrap_arguments.progress,
         )

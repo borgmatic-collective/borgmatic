@@ -30,7 +30,7 @@ def create_borgmatic_manifest(location, config_paths, dry_run):
     )
 
     borgmatic_manifest_path = os.path.expanduser(
-        os.path.join(borgmatic_source_directory, 'bootstrap', 'configs-list.json')
+        os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
     )
 
     if not os.path.exists(borgmatic_manifest_path):
