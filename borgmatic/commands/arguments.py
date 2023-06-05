@@ -74,10 +74,10 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-    try:
-        arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
-    except UnboundLocalError:
-        pass
+        try:
+            arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
+        except UnboundLocalError:
+            pass
     
     for argument in arguments:
         if not arguments[argument]:
@@ -972,7 +972,7 @@ def parse_arguments(*unparsed_arguments):
         unparsed_arguments, subparsers.choices
     )
 
-    if 'bootstrap' in arguments.keys() and len(arguments.keys()) > 1:
+    if 'bootstrap' in arguments.keys() and 'config' in arguments.keys() and len(arguments.keys()) > 2:
         raise ValueError(
             'The bootstrap action cannot be combined with other actions. Please run it separately.'
         )
