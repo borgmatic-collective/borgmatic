@@ -1,5 +1,6 @@
 import collections
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.commands import arguments as module
@@ -164,3 +165,13 @@ def test_parse_subparser_arguments_parses_borg_options_and_skips_other_subparser
     assert arguments == {'borg': action_namespace}
     assert arguments['borg'].options == ['list']
     assert remaining_arguments == []
+
+
+def test_parse_subparser_arguments_raises_error_when_no_subparser_is_specified():
+    action_namespace = flexmock(options=[])
+    subparsers = {
+        'config': flexmock(parse_known_args=lambda arguments: (action_namespace, ['config'])),
+    }
+
+    with pytest.raises(ValueError):
+        module.parse_subparser_arguments(('config',), subparsers)
