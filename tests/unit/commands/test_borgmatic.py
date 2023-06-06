@@ -987,6 +987,22 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     assert {log.levelno for log in logs} == {logging.INFO}
 
 
+def test_collect_configuration_run_summary_logs_info_for_success_with_bootstrap():
+    flexmock(module.validate).should_receive('guard_single_repository_selected').never()
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository').never()
+    flexmock(module).should_receive('run_configuration').never()
+    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap')
+    arguments = {
+        'bootstrap': flexmock(repository='repo'),
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+    assert {log.levelno for log in logs} == {logging.INFO}
+
+
 def test_collect_configuration_run_summary_logs_extract_with_repository_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository').and_raise(
         ValueError

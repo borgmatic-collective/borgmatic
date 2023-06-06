@@ -103,3 +103,20 @@ def test_run_create_bails_if_repository_does_not_match():
             remote_path=None,
         )
     )
+
+
+def test_create_borgmatic_manifest_creates_manifest_file():
+    flexmock(module.os.path).should_receive('expanduser').and_return('/home/user')
+    flexmock(module.os.path).should_receive('join').and_return('/home/user/bootstrap/manifest.json')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os).should_receive('makedirs').and_return(True)
+
+    flexmock(module.json).should_receive('dump').and_return(True)
+
+    module.create_borgmatic_manifest({}, 'test.yaml', False)
+
+
+def test_create_borgmatic_manifest_does_not_create_manifest_file_on_dry_run():
+    flexmock(module.os.path).should_receive('expanduser').never()
+
+    module.create_borgmatic_manifest({}, 'test.yaml', True)

@@ -297,6 +297,7 @@ def test_parse_arguments_disallows_paths_unless_action_consumes_it():
     with pytest.raises(SystemExit):
         module.parse_arguments('--config', 'myconfig', '--path', 'test')
 
+
 def test_parse_arguments_disallows_other_actions_with_config_bootstrap():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
