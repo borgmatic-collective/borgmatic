@@ -18,10 +18,10 @@ import borgmatic.actions.borg
 import borgmatic.actions.break_lock
 import borgmatic.actions.check
 import borgmatic.actions.compact
+import borgmatic.actions.config.bootstrap
 import borgmatic.actions.create
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
-import borgmatic.actions.config.bootstrap
 import borgmatic.actions.info
 import borgmatic.actions.list
 import borgmatic.actions.mount
@@ -622,12 +622,14 @@ def collect_configuration_run_summary_logs(configs, arguments):
     except ValueError as error:
         yield from log_error_records(str(error))
         return
-    
+
     if 'bootstrap' in arguments:
         # no configuration file is needed for bootstrap
         local_borg_version = borg_version.local_borg_version({}, 'borg')
         try:
-            borgmatic.actions.config.bootstrap.run_bootstrap(arguments['bootstrap'], arguments['global'], local_borg_version)
+            borgmatic.actions.config.bootstrap.run_bootstrap(
+                arguments['bootstrap'], arguments['global'], local_borg_version
+            )
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.INFO,

@@ -1,18 +1,20 @@
+import json
 import logging
 import os
-import json
 
 import borgmatic.borg.extract
 import borgmatic.borg.rlist
 import borgmatic.config.validate
 import borgmatic.hooks.command
-
 from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
+
 def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
-    borgmatic_source_directory = bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+    borgmatic_source_directory = (
+        bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+    )
     borgmatic_manifest_path = os.path.expanduser(
         os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
     )
@@ -24,7 +26,7 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
             bootstrap_arguments.archive,
             {},
             local_borg_version,
-            global_arguments
+            global_arguments,
         ),
         [borgmatic_manifest_path],
         {},
@@ -38,14 +40,14 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
 
     return manifest_data['config_paths']
 
-    
-
 
 def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     '''
     Run the "bootstrap" action for the given repository.
     '''
-    manifest_config_paths = get_config_paths(bootstrap_arguments, global_arguments, local_borg_version)
+    manifest_config_paths = get_config_paths(
+        bootstrap_arguments, global_arguments, local_borg_version
+    )
 
     for config_path in manifest_config_paths:
         logger.info('Bootstrapping config path %s', config_path)
@@ -58,7 +60,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
                 bootstrap_arguments.archive,
                 {},
                 local_borg_version,
-                global_arguments
+                global_arguments,
             ),
             [config_path],
             {},
@@ -70,7 +72,3 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
             strip_components=bootstrap_arguments.strip_components,
             progress=bootstrap_arguments.progress,
         )
-
-        
-
-

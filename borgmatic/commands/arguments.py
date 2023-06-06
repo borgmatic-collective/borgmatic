@@ -1,5 +1,6 @@
 import argparse
 import collections
+import itertools
 from argparse import Action, ArgumentParser
 
 from borgmatic.config import collect
@@ -75,14 +76,20 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                         remaining_arguments.remove(item)
 
         try:
-            arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
+            arguments[canonical_name] = (
+                None if canonical_name in subcommand_parsers_mapping else parsed
+            )
         except UnboundLocalError:
             pass
-    
+
     for argument in arguments:
         if not arguments[argument]:
-            if not any(subcommand in arguments for subcommand in subcommand_parsers_mapping[argument]):
-                raise ValueError(f"Missing subcommand for {argument}. Expected one of {subcommand_parsers_mapping[argument]}")
+            if not any(
+                subcommand in arguments for subcommand in subcommand_parsers_mapping[argument]
+            ):
+                raise ValueError(
+                    f'Missing subcommand for {argument}. Expected one of {subcommand_parsers_mapping[argument]}'
+                )
 
     # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
@@ -95,14 +102,32 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
     # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
     # allows subparsers to consume arguments before their parent subparsers do.
+    remaining_subparser_arguments = []
+
+    # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
+    # allows subparsers to consume arguments before their parent subparsers do.
     for subparser_name, subparser in reversed(subparsers.items()):
         if subparser_name not in arguments.keys():
             continue
 
         subparser = subparsers[subparser_name]
-        unused_parsed, remaining_arguments = subparser.parse_known_args(
-            [argument for argument in remaining_arguments if argument != subparser_name]
+        unused_parsed, remaining = subparser.parse_known_args(
+            [argument for argument in unparsed_arguments if argument != subparser_name]
         )
+        remaining_subparser_arguments.append(remaining)
+
+    # Determine the remaining arguments that no subparsers have consumed.
+    if remaining_subparser_arguments:
+        remaining_arguments = [
+            argument
+            for argument in dict.fromkeys(
+                itertools.chain.from_iterable(remaining_subparser_arguments)
+            ).keys()
+            if all(
+                argument in subparser_arguments
+                for subparser_arguments in remaining_subparser_arguments
+            )
+        ]
 
     # Special case: If "borg" is present in the arguments, consume all arguments after (+1) the
     # "borg" action.
@@ -551,9 +576,7 @@ def make_parsers():
     )
 
     config_group = config_parser.add_argument_group('config arguments')
-    config_group.add_argument(
-        '-h', '--help', action='help', help='Show this help message and exit'
-    )
+    config_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     config_subparsers = config_parser.add_subparsers(
         title='config subcommands',
@@ -568,7 +591,9 @@ def make_parsers():
         description='Extract just the config files that were used to create a borgmatic repository during the "create" operation',
         add_help=False,
     )
-    config_bootstrap_group = config_bootstrap_parser.add_argument_group('config bootstrap arguments')
+    config_bootstrap_group = config_bootstrap_parser.add_argument_group(
+        'config bootstrap arguments'
+    )
     config_bootstrap_group.add_argument(
         '--repository',
         help='Path of repository to extract config files from',
@@ -579,7 +604,9 @@ def make_parsers():
         help='Path that stores the config files used to create an archive, and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
     )
     config_bootstrap_group.add_argument(
-        '--archive', help='Name of archive to extract config files from, defaults to "latest"', default='latest'
+        '--archive',
+        help='Name of archive to extract config files from, defaults to "latest"',
+        default='latest',
     )
     config_bootstrap_group.add_argument(
         '--destination',
@@ -947,7 +974,9 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    merged_subparsers = argparse._SubParsersAction(None, None, metavar=None, dest='merged', parser_class=None)
+    merged_subparsers = argparse._SubParsersAction(
+        None, None, metavar=None, dest='merged', parser_class=None
+    )
 
     for name, subparser in subparsers.choices.items():
         merged_subparsers._name_parser_map[name] = subparser
@@ -957,7 +986,7 @@ def make_parsers():
         merged_subparsers._name_parser_map[name] = subparser
         subparser._name_parser_map = merged_subparsers._name_parser_map
 
-    return top_level_parser, merged_subparsers        
+    return top_level_parser, merged_subparsers
 
 
 def parse_arguments(*unparsed_arguments):
@@ -967,12 +996,15 @@ def parse_arguments(*unparsed_arguments):
     '''
     top_level_parser, subparsers = make_parsers()
 
-
     arguments, remaining_arguments = parse_subparser_arguments(
         unparsed_arguments, subparsers.choices
     )
 
-    if 'bootstrap' in arguments.keys() and 'config' in arguments.keys() and len(arguments.keys()) > 2:
+    if (
+        'bootstrap' in arguments.keys()
+        and 'config' in arguments.keys()
+        and len(arguments.keys()) > 2
+    ):
         raise ValueError(
             'The bootstrap action cannot be combined with other actions. Please run it separately.'
         )
