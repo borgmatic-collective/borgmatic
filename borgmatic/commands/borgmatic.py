@@ -637,7 +637,13 @@ def collect_configuration_run_summary_logs(configs, arguments):
                     msg='Bootstrap successful',
                 )
             )
-        except (CalledProcessError, ValueError, OSError, json.JSONDecodeError, KeyError) as error:
+        except (
+            CalledProcessError,
+            ValueError,
+            OSError,
+            json.JSONDecodeError,
+            KeyError,
+        ) as error:  # pragma: no cover
             yield from log_error_records('Error running bootstrap', error)
         return
 

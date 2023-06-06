@@ -75,12 +75,7 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-        try:
-            arguments[canonical_name] = (
-                None if canonical_name in subcommand_parsers_mapping else parsed
-            )
-        except UnboundLocalError:
-            pass
+        arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
 
     for argument in arguments:
         if not arguments[argument]:
@@ -153,7 +148,7 @@ class Extend_action(Action):
         items = getattr(namespace, self.dest, None)
 
         if items:
-            items.extend(values)
+            items.extend(values)  # pragma: no cover
         else:
             setattr(namespace, self.dest, list(values))
 
