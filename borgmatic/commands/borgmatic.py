@@ -643,7 +643,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
             OSError,
             json.JSONDecodeError,
             KeyError,
-        ) as error:  # pragma: no cover
+        ) as error:
             yield from log_error_records('Error running bootstrap', error)
         return
 

@@ -99,8 +99,6 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
     # allows subparsers to consume arguments before their parent subparsers do.
     remaining_subparser_arguments = []
 
-    # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
-    # allows subparsers to consume arguments before their parent subparsers do.
     for subparser_name, subparser in reversed(subparsers.items()):
         if subparser_name not in arguments.keys():
             continue
