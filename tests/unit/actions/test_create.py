@@ -1,4 +1,5 @@
 import sys
+
 from flexmock import flexmock
 
 from borgmatic.actions import create as module
@@ -131,9 +132,7 @@ def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_s
         '/borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(
         flexmock(
-            __enter__=lambda *args: flexmock(
-                write=lambda *args: None, close=lambda *args: None
-            ),
+            __enter__=lambda *args: flexmock(write=lambda *args: None, close=lambda *args: None),
             __exit__=lambda *args: None,
         )
     )

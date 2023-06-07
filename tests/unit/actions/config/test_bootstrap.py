@@ -24,9 +24,9 @@ def test_get_config_paths_returns_list_of_config_paths():
     flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
         'archive'
     )
-    assert module.get_config_paths(
-        bootstrap_arguments, global_arguments, local_borg_version
-    ) == ['/borgmatic/config.yaml']
+    assert module.get_config_paths(bootstrap_arguments, global_arguments, local_borg_version) == [
+        '/borgmatic/config.yaml'
+    ]
 
 
 def test_run_bootstrap_does_not_raise():

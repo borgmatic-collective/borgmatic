@@ -1002,6 +1002,7 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_bootstrap(
     )
     assert {log.levelno for log in logs} == {logging.INFO}
 
+
 def test_collect_configuration_run_summary_logs_error_on_bootstrap_failure():
     flexmock(module.validate).should_receive('guard_single_repository_selected').never()
     flexmock(module.validate).should_receive('guard_configuration_contains_repository').never()
