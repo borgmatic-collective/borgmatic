@@ -28,6 +28,37 @@ SUBPARSER_ALIASES = {
 }
 
 
+def parse_subparser_arguments(arguments, unparsed_arguments, subparsers):
+    remaining_subparser_arguments = []
+
+    for subparser_name, subparser in reversed(subparsers.items()):
+        if subparser_name not in arguments.keys():
+            continue
+
+        subparser = subparsers[subparser_name]
+        unused_parsed, remaining = subparser.parse_known_args(
+            [argument for argument in unparsed_arguments if argument != subparser_name]
+        )
+        remaining_subparser_arguments.append(remaining)
+
+    # Determine the remaining arguments that no subparsers have consumed.
+    if remaining_subparser_arguments:
+        remaining_arguments = [
+            argument
+            for argument in dict.fromkeys(
+                itertools.chain.from_iterable(remaining_subparser_arguments)
+            ).keys()
+            if all(
+                argument in subparser_arguments
+                for subparser_arguments in remaining_subparser_arguments
+            )
+        ]
+    else:
+        remaining_arguments = []
+
+    return remaining_arguments
+
+
 def parse_subparser_arguments(unparsed_arguments, subparsers):
     '''
     Given a sequence of arguments and a dict from subparser name to argparse.ArgumentParser
@@ -97,30 +128,7 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
     # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
     # allows subparsers to consume arguments before their parent subparsers do.
-    remaining_subparser_arguments = []
-
-    for subparser_name, subparser in reversed(subparsers.items()):
-        if subparser_name not in arguments.keys():
-            continue
-
-        subparser = subparsers[subparser_name]
-        unused_parsed, remaining = subparser.parse_known_args(
-            [argument for argument in unparsed_arguments if argument != subparser_name]
-        )
-        remaining_subparser_arguments.append(remaining)
-
-    # Determine the remaining arguments that no subparsers have consumed.
-    if remaining_subparser_arguments:
-        remaining_arguments = [
-            argument
-            for argument in dict.fromkeys(
-                itertools.chain.from_iterable(remaining_subparser_arguments)
-            ).keys()
-            if all(
-                argument in subparser_arguments
-                for subparser_arguments in remaining_subparser_arguments
-            )
-        ]
+    remaining_arguments = parse_subparser_arguments(arguments, unparsed_arguments, subparsers)
 
     # Special case: If "borg" is present in the arguments, consume all arguments after (+1) the
     # "borg" action.
@@ -973,11 +981,9 @@ def make_parsers():
 
     for name, subparser in subparsers.choices.items():
         merged_subparsers._name_parser_map[name] = subparser
-        subparser._name_parser_map = merged_subparsers._name_parser_map
 
     for name, subparser in config_subparsers.choices.items():
         merged_subparsers._name_parser_map[name] = subparser
-        subparser._name_parser_map = merged_subparsers._name_parser_map
 
     return top_level_parser, merged_subparsers
 

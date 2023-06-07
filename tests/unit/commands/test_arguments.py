@@ -175,3 +175,22 @@ def test_parse_subparser_arguments_raises_error_when_no_subparser_is_specified()
 
     with pytest.raises(ValueError):
         module.parse_subparser_arguments(('config',), subparsers)
+
+
+@pytest.mark.parametrize(
+    'arguments, unparsed_arguments, subparsers, expected_remaining_arguments',
+      [
+        (
+            {'action': flexmock()},
+            ['--verbosity', 'lots'],
+            {'action': flexmock(parse_known_args=lambda arguments: (flexmock(), ['--verbosity', 'lots']))},
+            ['--verbosity', 'lots'],
+        ),
+    ],
+)
+def test_get_remaining_arguments_returns_expected_remaining_arguments(
+    arguments, unparsed_arguments, subparsers, expected_remaining_arguments
+):
+    remaining_arguments = module.get_remaining_arguments(arguments, unparsed_arguments, subparsers)
+
+    assert remaining_arguments == expected_remaining_arguments
