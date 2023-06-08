@@ -1,3 +1,5 @@
+import argparse
+
 import pytest
 from flexmock import flexmock
 
@@ -530,3 +532,33 @@ def test_parse_arguments_extract_with_check_only_extract_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('extract', '--archive', 'name', 'check', '--only', 'extract')
+
+
+def test_merging_two_subparser_collections_merges_their_choices():
+    top_level_parser = argparse.ArgumentParser()
+
+    subparsers = top_level_parser.add_subparsers()
+
+    subparser1 = subparsers.add_parser('subparser1')
+
+    subparser2 = subparsers.add_parser('subparser2')
+
+    subsubparsers = subparser2.add_subparsers()
+
+    subsubparser1 = subsubparsers.add_parser('subsubparser1')
+
+    merged_subparsers = argparse._SubParsersAction(
+        None, None, metavar=None, dest='merged', parser_class=None
+    )
+
+    for name, subparser in subparsers.choices.items():
+        merged_subparsers._name_parser_map[name] = subparser
+
+    for name, subparser in subsubparsers.choices.items():
+        merged_subparsers._name_parser_map[name] = subparser
+
+    assert merged_subparsers.choices == {
+        'subparser1': subparser1,
+        'subparser2': subparser2,
+        'subsubparser1': subsubparser1,
+    }
