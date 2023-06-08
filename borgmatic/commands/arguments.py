@@ -28,19 +28,7 @@ SUBPARSER_ALIASES = {
 }
 
 
-def parse_subparser_arguments(arguments, unparsed_arguments, subparsers):
-    remaining_subparser_arguments = []
-
-    for subparser_name, subparser in reversed(subparsers.items()):
-        if subparser_name not in arguments.keys():
-            continue
-
-        subparser = subparsers[subparser_name]
-        unused_parsed, remaining = subparser.parse_known_args(
-            [argument for argument in unparsed_arguments if argument != subparser_name]
-        )
-        remaining_subparser_arguments.append(remaining)
-
+def get_unparsable_arguments(remaining_subparser_arguments):
     # Determine the remaining arguments that no subparsers have consumed.
     if remaining_subparser_arguments:
         remaining_arguments = [
@@ -128,7 +116,20 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
     # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
     # allows subparsers to consume arguments before their parent subparsers do.
-    remaining_arguments = parse_subparser_arguments(arguments, unparsed_arguments, subparsers)
+    remaining_subparser_arguments = []
+
+    for subparser_name, subparser in reversed(subparsers.items()):
+        if subparser_name not in arguments.keys():
+            continue
+
+        subparser = subparsers[subparser_name]
+        unused_parsed, remaining = subparser.parse_known_args(
+            [argument for argument in unparsed_arguments if argument != subparser_name]
+        )
+        remaining_subparser_arguments.append(remaining)
+
+    if remaining_subparser_arguments:
+        remaining_arguments = get_unparsable_arguments(remaining_subparser_arguments)
 
     # Special case: If "borg" is present in the arguments, consume all arguments after (+1) the
     # "borg" action.

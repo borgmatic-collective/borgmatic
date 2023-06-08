@@ -178,19 +178,32 @@ def test_parse_subparser_arguments_raises_error_when_no_subparser_is_specified()
 
 
 @pytest.mark.parametrize(
-    'arguments, unparsed_arguments, subparsers, expected_remaining_arguments',
-      [
+    'arguments, expected',
+    [
         (
-            {'action': flexmock()},
-            ['--verbosity', 'lots'],
-            {'action': flexmock(parse_known_args=lambda arguments: (flexmock(), ['--verbosity', 'lots']))},
-            ['--verbosity', 'lots'],
+            (
+                ('--latest', 'archive', 'prune', 'extract', 'list', '--test-flag'),
+                ('--latest', 'archive', 'check', 'extract', 'list', '--test-flag'),
+                ('prune', 'check', 'list', '--test-flag'),
+                ('prune', 'check', 'extract', '--test-flag'),
+            ),
+            [
+                '--test-flag',
+            ],
         ),
+        (
+            (
+                ('--latest', 'archive', 'prune', 'extract', 'list'),
+                ('--latest', 'archive', 'check', 'extract', 'list'),
+                ('prune', 'check', 'list'),
+                ('prune', 'check', 'extract'),
+            ),
+            [],
+        ),
+        ((), []),
     ],
 )
-def test_get_remaining_arguments_returns_expected_remaining_arguments(
-    arguments, unparsed_arguments, subparsers, expected_remaining_arguments
+def test_get_unparsable_arguments_returns_remaining_arguments_that_no_subparser_can_parse(
+    arguments, expected
 ):
-    remaining_arguments = module.get_remaining_arguments(arguments, unparsed_arguments, subparsers)
-
-    assert remaining_arguments == expected_remaining_arguments
+    assert module.get_unparsable_arguments(arguments) == expected
