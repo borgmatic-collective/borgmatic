@@ -538,24 +538,17 @@ def test_merging_two_subparser_collections_merges_their_choices():
     top_level_parser = argparse.ArgumentParser()
 
     subparsers = top_level_parser.add_subparsers()
-
     subparser1 = subparsers.add_parser('subparser1')
 
     subparser2 = subparsers.add_parser('subparser2')
-
     subsubparsers = subparser2.add_subparsers()
-
     subsubparser1 = subsubparsers.add_parser('subsubparser1')
 
     merged_subparsers = argparse._SubParsersAction(
         None, None, metavar=None, dest='merged', parser_class=None
     )
 
-    for name, subparser in subparsers.choices.items():
-        merged_subparsers._name_parser_map[name] = subparser
-
-    for name, subparser in subsubparsers.choices.items():
-        merged_subparsers._name_parser_map[name] = subparser
+    merged_subparsers = module.merge_subparsers(subparsers, subsubparsers)
 
     assert merged_subparsers.choices == {
         'subparser1': subparser1,

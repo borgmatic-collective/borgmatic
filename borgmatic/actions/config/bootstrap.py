@@ -12,6 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
+    '''
+    Given:
+    The bootstrap arguments, which include the repository and archive name, borgmatic source directory,
+    destination directory, and whether to strip components.
+    The global arguments, which include the dry run flag
+    and the local borg version,
+    Return:
+    The config paths from the manifest.json file in the borgmatic source directory after extracting it from the
+    repository.
+    '''
     borgmatic_source_directory = (
         bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
     )

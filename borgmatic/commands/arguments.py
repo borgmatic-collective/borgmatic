@@ -29,7 +29,9 @@ SUBPARSER_ALIASES = {
 
 
 def get_unparsable_arguments(remaining_subparser_arguments):
-    # Determine the remaining arguments that no subparsers have consumed.
+    '''
+    Determine the remaining arguments that no subparsers have consumed.
+    '''
     if remaining_subparser_arguments:
         remaining_arguments = [
             argument
@@ -590,7 +592,7 @@ def make_parsers():
         'bootstrap',
         aliases=SUBPARSER_ALIASES['config_bootstrap'],
         help='Extract the config files used to create a borgmatic repository',
-        description='Extract just the config files that were used to create a borgmatic repository during the "create" operation',
+        description='Extract config files that were used to create a borgmatic repository during the "create" operation',
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group(
@@ -603,7 +605,7 @@ def make_parsers():
     )
     config_bootstrap_group.add_argument(
         '--borgmatic-source-directory',
-        help='Path that stores the config files used to create an archive, and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
+        help='Path that stores the config files used to create an archive and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
     )
     config_bootstrap_group.add_argument(
         '--archive',
@@ -980,13 +982,24 @@ def make_parsers():
         None, None, metavar=None, dest='merged', parser_class=None
     )
 
-    for name, subparser in subparsers.choices.items():
-        merged_subparsers._name_parser_map[name] = subparser
-
-    for name, subparser in config_subparsers.choices.items():
-        merged_subparsers._name_parser_map[name] = subparser
+    merged_subparsers = merge_subparsers(subparsers, config_subparsers)
 
     return top_level_parser, merged_subparsers
+
+
+def merge_subparsers(*subparsers):
+    '''
+    Merge multiple subparsers into a single subparser.
+    '''
+    merged_subparsers = argparse._SubParsersAction(
+        None, None, metavar=None, dest='merged', parser_class=None
+    )
+
+    for subparser in subparsers:
+        for name, subparser in subparser.choices.items():
+            merged_subparsers._name_parser_map[name] = subparser
+
+    return merged_subparsers
 
 
 def parse_arguments(*unparsed_arguments):
