@@ -594,7 +594,11 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
         ('foo', 'bar', '/etc/borgmatic/config.yaml')
     )
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
-    flexmock(module).should_receive('expand_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
+    flexmock(module).should_receive('expand_directories').with_args(
+        ('foo', 'bar', '/etc/borgmatic/config.yaml')
+    ).and_return(('foo', 'bar', '/etc/borgmatic/config.yaml'))
+    flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
     flexmock(module).should_receive('expand_home_directories').and_return(())
