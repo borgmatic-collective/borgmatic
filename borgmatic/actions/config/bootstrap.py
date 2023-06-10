@@ -80,7 +80,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     )
 
     for config_path in manifest_config_paths:
-        logger.info('Bootstrapping config path %s', config_path)
+        logger.info(f'Bootstrapping config path {config_path}')
 
         borgmatic.borg.extract.extract_archive(
             global_arguments.dry_run,
