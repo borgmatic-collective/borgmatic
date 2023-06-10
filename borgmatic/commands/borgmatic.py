@@ -647,10 +647,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
             CalledProcessError,
             ValueError,
             OSError,
-            json.JSONDecodeError,
-            KeyError,
         ) as error:
-            yield from log_error_records('Error running bootstrap', error)
+            yield from log_error_records(error)
 
         return
 

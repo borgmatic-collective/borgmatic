@@ -21,6 +21,9 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     Return:
     The config paths from the manifest.json file in the borgmatic source directory after extracting it from the
     repository.
+
+    Raise ValueError if the manifest JSON is missing, can't be decoded, or doesn't contain the
+    expected configuration path data.
     '''
     borgmatic_source_directory = (
         bootstrap_arguments.borgmatic_source_directory or DEFAULT_BORGMATIC_SOURCE_DIRECTORY
@@ -46,14 +49,31 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
         extract_to_stdout=True,
     )
 
-    manifest_data = json.loads(extract_process.stdout.read())
+    manifest_json = extract_process.stdout.read()
+    if not manifest_json:
+        raise ValueError(
+            'Cannot read configuration paths from archive due to missing bootstrap manifest'
+        )
 
-    return manifest_data['config_paths']
+    try:
+        manifest_data = json.loads(manifest_json)
+    except json.JSONDecodeError as error:
+        raise ValueError(
+            f'Cannot read configuration paths from archive due to invalid bootstrap manifest JSON: {error}'
+        )
+
+    try:
+        return manifest_data['config_paths']
+    except KeyError:
+        raise ValueError('Cannot read configuration paths from archive due to invalid bootstrap manifest')
 
 
 def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     '''
     Run the "bootstrap" action for the given repository.
+
+    Raise ValueError if the bootstrap configuration could not be loaded.
+    Raise CalledProcessError or OSError if Borg could not be run.
     '''
     manifest_config_paths = get_config_paths(
         bootstrap_arguments, global_arguments, local_borg_version
