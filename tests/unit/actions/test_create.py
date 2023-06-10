@@ -111,10 +111,21 @@ def test_run_create_bails_if_repository_does_not_match():
 
 
 def test_create_borgmatic_manifest_creates_manifest_file():
+    flexmock(module.os.path).should_receive('join').with_args(
+        module.borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY, 'bootstrap', 'manifest.json'
+    ).and_return('/home/user/.borgmatic/bootstrap/manifest.json')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
     flexmock(module.importlib_metadata).should_receive('version').and_return('1.0.0')
+    flexmock(sys.modules['builtins']).should_receive('open').with_args(
+        '/home/user/.borgmatic/bootstrap/manifest.json', 'w'
+    ).and_return(
+        flexmock(
+            __enter__=lambda *args: flexmock(write=lambda *args: None, close=lambda *args: None),
+            __exit__=lambda *args: None,
+        )
+    )
     flexmock(module.json).should_receive('dump').and_return(True).once()
 
     module.create_borgmatic_manifest({}, 'test.yaml', False)

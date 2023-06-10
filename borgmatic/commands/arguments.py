@@ -632,7 +632,7 @@ def make_parsers():
         'bootstrap',
         aliases=SUBPARSER_ALIASES['config_bootstrap'],
         help='Extract the config files used to create a borgmatic repository',
-        description='Extract config files that were used to create a borgmatic repository during the "create" operation',
+        description='Extract config files that were used to create a borgmatic repository during the "create" action',
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group(
