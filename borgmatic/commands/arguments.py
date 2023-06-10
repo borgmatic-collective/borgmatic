@@ -1,4 +1,6 @@
+import argparse
 import collections
+import itertools
 from argparse import Action, ArgumentParser
 
 from borgmatic.config import collect
@@ -9,6 +11,8 @@ SUBPARSER_ALIASES = {
     'compact': [],
     'create': ['-C'],
     'check': ['-k'],
+    'config': [],
+    'config_bootstrap': [],
     'extract': ['-x'],
     'export-tar': [],
     'mount': ['-m'],
@@ -22,6 +26,27 @@ SUBPARSER_ALIASES = {
     'break-lock': [],
     'borg': [],
 }
+
+
+def get_unparsable_arguments(remaining_subparser_arguments):
+    '''
+    Determine the remaining arguments that no subparsers have consumed.
+    '''
+    if remaining_subparser_arguments:
+        remaining_arguments = [
+            argument
+            for argument in dict.fromkeys(
+                itertools.chain.from_iterable(remaining_subparser_arguments)
+            ).keys()
+            if all(
+                argument in subparser_arguments
+                for subparser_arguments in remaining_subparser_arguments
+            )
+        ]
+    else:
+        remaining_arguments = []
+
+    return remaining_arguments
 
 
 def parse_subparser_arguments(unparsed_arguments, subparsers):
@@ -40,6 +65,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
         for subparser_name, aliases in SUBPARSER_ALIASES.items()
         for alias in aliases
     }
+    subcommand_parsers_mapping = {
+        'config': ['bootstrap'],
+    }
 
     # If the "borg" action is used, skip all other subparsers. This avoids confusion like
     # "borg list" triggering borgmatic's own list action.
@@ -56,7 +84,9 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
         # If a parsed value happens to be the same as the name of a subparser, remove it from the
         # remaining arguments. This prevents, for instance, "check --only extract" from triggering
         # the "extract" subparser.
-        parsed, unused_remaining = subparser.parse_known_args(unparsed_arguments)
+        parsed, unused_remaining = subparser.parse_known_args(
+            [argument for argument in unparsed_arguments if argument != canonical_name]
+        )
         for value in vars(parsed).values():
             if isinstance(value, str):
                 if value in subparsers:
@@ -66,7 +96,16 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
                     if item in subparsers:
                         remaining_arguments.remove(item)
 
-        arguments[canonical_name] = parsed
+        arguments[canonical_name] = None if canonical_name in subcommand_parsers_mapping else parsed
+
+    for argument in arguments:
+        if not arguments[argument]:
+            if not any(
+                subcommand in arguments for subcommand in subcommand_parsers_mapping[argument]
+            ):
+                raise ValueError(
+                    f'Missing subcommand for {argument}. Expected one of {subcommand_parsers_mapping[argument]}'
+                )
 
     # If no actions are explicitly requested, assume defaults.
     if not arguments and '--help' not in unparsed_arguments and '-h' not in unparsed_arguments:
@@ -77,13 +116,22 @@ def parse_subparser_arguments(unparsed_arguments, subparsers):
 
     remaining_arguments = list(unparsed_arguments)
 
-    # Now ask each subparser, one by one, to greedily consume arguments.
-    for subparser_name, subparser in subparsers.items():
+    # Now ask each subparser, one by one, to greedily consume arguments, from last to first. This
+    # allows subparsers to consume arguments before their parent subparsers do.
+    remaining_subparser_arguments = []
+
+    for subparser_name, subparser in reversed(subparsers.items()):
         if subparser_name not in arguments.keys():
             continue
 
         subparser = subparsers[subparser_name]
-        unused_parsed, remaining_arguments = subparser.parse_known_args(remaining_arguments)
+        unused_parsed, remaining = subparser.parse_known_args(
+            [argument for argument in unparsed_arguments if argument != subparser_name]
+        )
+        remaining_subparser_arguments.append(remaining)
+
+    if remaining_subparser_arguments:
+        remaining_arguments = get_unparsable_arguments(remaining_subparser_arguments)
 
     # Special case: If "borg" is present in the arguments, consume all arguments after (+1) the
     # "borg" action.
@@ -109,7 +157,7 @@ class Extend_action(Action):
         items = getattr(namespace, self.dest, None)
 
         if items:
-            items.extend(values)
+            items.extend(values)  # pragma: no cover
         else:
             setattr(namespace, self.dest, list(values))
 
@@ -563,6 +611,71 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    config_parser = subparsers.add_parser(
+        'config',
+        aliases=SUBPARSER_ALIASES['config'],
+        help='Perform configuration file related operations',
+        description='Perform configuration file related operations',
+        add_help=False,
+    )
+
+    config_group = config_parser.add_argument_group('config arguments')
+    config_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    config_subparsers = config_parser.add_subparsers(
+        title='config subcommands',
+        description='Valid subcommands for config',
+        help='Additional help',
+    )
+
+    config_bootstrap_parser = config_subparsers.add_parser(
+        'bootstrap',
+        aliases=SUBPARSER_ALIASES['config_bootstrap'],
+        help='Extract the config files used to create a borgmatic repository',
+        description='Extract config files that were used to create a borgmatic repository during the "create" operation',
+        add_help=False,
+    )
+    config_bootstrap_group = config_bootstrap_parser.add_argument_group(
+        'config bootstrap arguments'
+    )
+    config_bootstrap_group.add_argument(
+        '--repository',
+        help='Path of repository to extract config files from',
+        required=True,
+    )
+    config_bootstrap_group.add_argument(
+        '--borgmatic-source-directory',
+        help='Path that stores the config files used to create an archive and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
+    )
+    config_bootstrap_group.add_argument(
+        '--archive',
+        help='Name of archive to extract config files from, defaults to "latest"',
+        default='latest',
+    )
+    config_bootstrap_group.add_argument(
+        '--destination',
+        metavar='PATH',
+        dest='destination',
+        help='Directory to extract config files into, defaults to /',
+        default='/',
+    )
+    config_bootstrap_group.add_argument(
+        '--strip-components',
+        type=lambda number: number if number == 'all' else int(number),
+        metavar='NUMBER',
+        help='Number of leading path components to remove from each extracted path or "all" to strip all leading path components. Skip paths with fewer elements',
+    )
+    config_bootstrap_group.add_argument(
+        '--progress',
+        dest='progress',
+        default=False,
+        action='store_true',
+        help='Display progress for each file as it is extracted',
+    )
+    config_bootstrap_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
     export_tar_parser = subparsers.add_parser(
         'export-tar',
         aliases=SUBPARSER_ALIASES['export-tar'],
@@ -973,7 +1086,28 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    return top_level_parser, subparsers
+    merged_subparsers = argparse._SubParsersAction(
+        None, None, metavar=None, dest='merged', parser_class=None
+    )
+
+    merged_subparsers = merge_subparsers(subparsers, config_subparsers)
+
+    return top_level_parser, merged_subparsers
+
+
+def merge_subparsers(*subparsers):
+    '''
+    Merge multiple subparsers into a single subparser.
+    '''
+    merged_subparsers = argparse._SubParsersAction(
+        None, None, metavar=None, dest='merged', parser_class=None
+    )
+
+    for subparser in subparsers:
+        for name, subparser in subparser.choices.items():
+            merged_subparsers._name_parser_map[name] = subparser
+
+    return merged_subparsers
 
 
 def parse_arguments(*unparsed_arguments):
@@ -986,6 +1120,16 @@ def parse_arguments(*unparsed_arguments):
     arguments, remaining_arguments = parse_subparser_arguments(
         unparsed_arguments, subparsers.choices
     )
+
+    if (
+        'bootstrap' in arguments.keys()
+        and 'config' in arguments.keys()
+        and len(arguments.keys()) > 2
+    ):
+        raise ValueError(
+            'The bootstrap action cannot be combined with other actions. Please run it separately.'
+        )
+
     arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 
     if arguments['global'].excludes_filename:

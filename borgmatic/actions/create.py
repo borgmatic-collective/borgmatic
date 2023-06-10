@@ -1,13 +1,49 @@
 import json
 import logging
+import os
+
+try:
+    import importlib_metadata
+except ModuleNotFoundError:  # pragma: nocover
+    import importlib.metadata as importlib_metadata
 
 import borgmatic.borg.create
 import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
+from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
 logger = logging.getLogger(__name__)
+
+
+def create_borgmatic_manifest(location, config_paths, dry_run):
+    '''
+    Create a borgmatic manifest file to store the paths to the configuration files used to create
+    the archive.
+    '''
+    if dry_run:
+        return
+
+    borgmatic_source_directory = location.get(
+        'borgmatic_source_directory', DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+    )
+
+    borgmatic_manifest_path = os.path.expanduser(
+        os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
+    )
+
+    if not os.path.exists(borgmatic_manifest_path):
+        os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
+
+    with open(borgmatic_manifest_path, 'w') as config_list_file:
+        json.dump(
+            {
+                'borgmatic_version': importlib_metadata.version('borgmatic'),
+                'config_paths': config_paths,
+            },
+            config_list_file,
+        )
 
 
 def run_create(
@@ -58,6 +94,9 @@ def run_create(
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         location,
         global_arguments.dry_run,
+    )
+    create_borgmatic_manifest(
+        location, global_arguments.used_config_paths, global_arguments.dry_run
     )
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
