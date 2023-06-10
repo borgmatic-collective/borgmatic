@@ -1086,10 +1086,6 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    merged_subparsers = argparse._SubParsersAction(
-        None, None, metavar=None, dest='merged', parser_class=None
-    )
-
     merged_subparsers = merge_subparsers(subparsers, config_subparsers)
 
     return top_level_parser, merged_subparsers

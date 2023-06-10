@@ -115,7 +115,7 @@ def test_create_borgmatic_manifest_creates_manifest_file():
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
     flexmock(module.importlib_metadata).should_receive('version').and_return('1.0.0')
-    flexmock(module.json).should_receive('dump').and_return(True)
+    flexmock(module.json).should_receive('dump').and_return(True).once()
 
     module.create_borgmatic_manifest({}, 'test.yaml', False)
 
@@ -136,7 +136,7 @@ def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_s
             __exit__=lambda *args: None,
         )
     )
-    flexmock(module.json).should_receive('dump').and_return(True)
+    flexmock(module.json).should_receive('dump').and_return(True).once()
 
     module.create_borgmatic_manifest(
         {'borgmatic_source_directory': '/borgmatic'}, 'test.yaml', False
