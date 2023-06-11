@@ -121,8 +121,10 @@ issues.
 
 ### Social
 
-Check out the [Borg subreddit](https://www.reddit.com/r/BorgBackup/) for
-general Borg and borgmatic discussion and support.
+~~Check out the [Borg subreddit](https://www.reddit.com/r/BorgBackup/) for
+general Borg and borgmatic discussion and support.~~ borgmatic supports the
+ongoing [Reddit user
+protests](https://www.theverge.com/2023/6/10/23756476/reddit-protest-api-changes-apollo-third-party-apps).
 
 Also follow [borgmatic on Mastodon](https://fosstodon.org/@borgmatic).
 

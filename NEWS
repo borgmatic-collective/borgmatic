@@ -1,6 +1,6 @@
 1.7.15.dev0
- * #697: Extract borgmatic configuration from backup via "borgmatic bootstrap" action—even when
-   borgmatic has no configuration yet!
+ * #697: Extract borgmatic configuration from backup via "bootstrap" action—even when borgmatic
+   has no configuration yet!
 
 1.7.14
  * #484: Add a new verbosity level (-2) to disable output entirely (for console, syslog, log file,
