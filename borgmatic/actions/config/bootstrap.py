@@ -65,7 +65,9 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     try:
         return manifest_data['config_paths']
     except KeyError:
-        raise ValueError('Cannot read configuration paths from archive due to invalid bootstrap manifest')
+        raise ValueError(
+            'Cannot read configuration paths from archive due to invalid bootstrap manifest'
+        )
 
 
 def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
