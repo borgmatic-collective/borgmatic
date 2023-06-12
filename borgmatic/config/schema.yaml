@@ -763,9 +763,20 @@ properties:
                                 Database hostname to connect to. Defaults to
                                 connecting via local Unix socket.
                             example: database.example.org
+                        restore_hostname:
+                            type: string
+                            description: |
+                                Database hostname to restore to. Defaults to
+                                the "hostname" option.
+                            example: database.example.org
                         port:
                             type: integer
                             description: Port to connect to. Defaults to 5432.
+                            example: 5433
+                        restore_port:
+                            type: integer
+                            description: Port to restore to. Defaults to the
+                                "port" option.
                             example: 5433
                         username:
                             type: string
@@ -775,6 +786,12 @@ properties:
                                 You probably want to specify the "postgres"
                                 superuser here when the database name is "all".
                             example: dbuser
+                        restore_username:
+                            type: string
+                            description: |
+                                Username with which to restore to the database.
+                                Defaults to the "username" option.
+                            example: dbuser
                         password:
                             type: string
                             description: |
@@ -783,6 +800,13 @@ properties:
                                 is configured to trust the configured username
                                 without a password or you create a ~/.pgpass
                                 file.
+                            example: trustsome1
+                        restore_password:
+                            type: string
+                            description: |
+                                Password with which to connect to the database that
+                                is being restored to. Defaults to the "password"
+                                option.
                             example: trustsome1
                         format:
                             type: string

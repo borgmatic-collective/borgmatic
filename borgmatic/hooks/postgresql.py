@@ -217,10 +217,10 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     analyze_command = (
         tuple(psql_command)
         + ('--no-password', '--no-psqlrc', '--quiet')
-        + (('--host', database['hostname']) if 'hostname' in database else ())
-        + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--username', database['username']) if 'username' in database else ())
-        + (('--dbname', database['name']) if not all_databases else ())
+        + (('--host', database.get('restore_hostname', database.get('hostname', ()))))
+        + (('--port', str(database.get('restore_port', database.get('port', ()))))
+        + (('--username', database.get('restore_username', database.get('username', ()))))
+        + (('--dbname', database['name']) if not all_databases else ()))
         + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
     )
@@ -244,6 +244,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     )
 
     extra_environment = make_extra_environment(database)
+
+    if 'restore_password' in database:
+        extra_environment['PGPASSWORD'] = database['restore_password']
 
     logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
     if dry_run:
