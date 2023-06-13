@@ -23,13 +23,15 @@ def make_dump_path(location_config):  # pragma: no cover
     )
 
 
-def make_extra_environment(database):
+def make_extra_environment(database, restore=False):
     '''
     Make the extra_environment dict from the given database configuration.
     '''
     extra = dict()
     if 'password' in database:
         extra['PGPASSWORD'] = database['password']
+    if restore and 'restore_password' in database:
+        extra['PGPASSWORD'] = database['restore_password']
     extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
     if 'ssl_cert' in database:
         extra['PGSSLCERT'] = database['ssl_cert']
@@ -135,6 +137,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 + (('--host', database['hostname']) if 'hostname' in database else ())
                 + (('--port', str(database['port'])) if 'port' in database else ())
                 + (('--username', database['username']) if 'username' in database else ())
+                + (('--no-owner',) if database['no_owner'] else ())
                 + (('--format', dump_format) if dump_format else ())
                 + (('--file', dump_filename) if dump_format == 'directory' else ())
                 + (tuple(database['options'].split(' ')) if 'options' in database else ())
@@ -217,10 +220,10 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     analyze_command = (
         tuple(psql_command)
         + ('--no-password', '--no-psqlrc', '--quiet')
-        + (('--host', database.get('restore_hostname', database.get('hostname', ()))))
-        + (('--port', str(database.get('restore_port', database.get('port', ()))))
-        + (('--username', database.get('restore_username', database.get('username', ()))))
-        + (('--dbname', database['name']) if not all_databases else ()))
+        + (('--host', database.get('restore_hostname', database.get('hostname'))) if 'hostname' in database else ())
+        + (('--port', str(database.get('restore_port', database.get('port')))) if 'port' in database else ())
+        + (('--username', database.get('restore_username', database.get('username'))) if 'username' in database else ())
+        + (('--dbname', database['name']) if not all_databases else ())
         + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
     )
@@ -231,9 +234,10 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + ('--no-password',)
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', database['name']) if not all_databases else ())
-        + (('--host', database['hostname']) if 'hostname' in database else ())
-        + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--username', database['username']) if 'username' in database else ())
+        + (('--host', database.get('restore_hostname', database.get('hostname'))) if 'hostname' in database or 'restore_hostname' in database else ())
+        + (('--port', str(database.get('restore_port', database.get('port')))) if 'port' in database or 'restore_port' in database else ())
+        + (('--username', database.get('restore_username', database.get('username'))) if 'username' in database or 'restore_username' in database else ())
+        + (('--no-owner',) if database['no_owner'] else ())
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
         + tuple(
@@ -243,10 +247,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         )
     )
 
-    extra_environment = make_extra_environment(database)
-
-    if 'restore_password' in database:
-        extra_environment['PGPASSWORD'] = database['restore_password']
+    extra_environment = make_extra_environment(database, restore=True)
 
     logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
     if dry_run:
