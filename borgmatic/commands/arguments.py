@@ -721,6 +721,21 @@ def make_parsers():
         help='Names of schemas to restore from the database, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
     )
     restore_group.add_argument(
+        '--hostname',
+        help='Database hostname to restore to. Defaults to the "restore_hostname" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
+        '--port', help='Port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration'
+    )
+    restore_group.add_argument(
+        '--username',
+        help='Username with which to connect to the database. Defaults to the "restore_username" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
+        '--password',
+        help='Password with which to connect to the restore database. Defaults to the "restore_password" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

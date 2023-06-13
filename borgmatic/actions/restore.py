@@ -68,13 +68,19 @@ def restore_single_database(
     archive_name,
     hook_name,
     database,
+    connection_params,
 ):  # pragma: no cover
     '''
-    Given (among other things) an archive name, a database hook name, and a configured database
+    Given (among other things) an archive name, a database hook name, the hostname,
+    port, username and password as connection params,  and a configured database
     configuration dict, restore that database from the archive.
     '''
     logger.info(
         f'{repository.get("label", repository["path"])}: Restoring database {database["name"]}'
+    )
+
+    logger.info(
+        f'hostname port username password for database {database["name"]}'
     )
 
     dump_pattern = borgmatic.hooks.dispatch.call_hooks(
@@ -113,6 +119,7 @@ def restore_single_database(
         location,
         global_arguments.dry_run,
         extract_process,
+        connection_params,
     )
 
 
@@ -308,6 +315,13 @@ def run_restore(
                 hooks, archive_database_names, hook_name, database_name
             )
 
+            connection_params = {
+                'hostname': restore_arguments.hostname,
+                'port': restore_arguments.port,
+                'username': restore_arguments.username,
+                'password': restore_arguments.password,
+            }
+
             if not found_database:
                 remaining_restore_names.setdefault(found_hook_name or hook_name, []).append(
                     database_name
@@ -327,6 +341,7 @@ def run_restore(
                 archive_name,
                 found_hook_name or hook_name,
                 dict(found_database, **{'schemas': restore_arguments.schemas}),
+                connection_params,
             )
 
     # For any database that weren't found via exact matches in the hooks configuration, try to
