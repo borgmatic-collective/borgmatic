@@ -28,11 +28,9 @@ def make_extra_environment(database, restore_connection_params=None):
     If restore connection params are given, this is for a restore operation.
     '''
     extra = dict()
-    if 'password' in database:
-        extra['PGPASSWORD'] = database['password']
 
     try:
-        extra['PGPASSWORD'] = restore_connection_params.get('password') or database['restore_password']
+        extra['PGPASSWORD'] = restore_connection_params.get('password') or database['restore_password'] or database['password']
     except (AttributeError, KeyError):
         pass
     
@@ -223,7 +221,6 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     hostname = connection_params['hostname'] or database.get('restore_hostname', database.get('hostname'))
     port = str(connection_params['port'] or database.get('restore_port', database.get('port')))
     username = connection_params['username'] or database.get('restore_username', database.get('username'))
-    password = connection_params['password'] or database.get('restore_password', database.get('password'))
 
     all_databases = bool(database['name'] == 'all')
     dump_filename = dump.make_database_dump_filename(
