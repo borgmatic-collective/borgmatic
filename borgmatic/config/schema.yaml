@@ -952,16 +952,33 @@ properties:
                                 Database hostname to connect to. Defaults to
                                 connecting via local Unix socket.
                             example: database.example.org
+                        restore_hostname:
+                            type: string
+                            description: |
+                                Database hostname to restore to. Defaults to
+                                the "hostname" option.
+                            example: database.example.org
                         port:
                             type: integer
                             description: Port to connect to. Defaults to 3306.
                             example: 3307
+                        restore_port:
+                            type: integer
+                            description: Port to restore to. Defaults to the
+                                "port" option.
+                            example: 5433
                         username:
                             type: string
                             description: |
                                 Username with which to connect to the database.
                                 Defaults to the username of the current user.
                             example: dbuser
+                        restore_username:
+                            type: string
+                            description: |
+                                Username with which to restore the database.
+                                Defaults to the "username" option.
+                            example: dbuser                        
                         password:
                             type: string
                             description: |
@@ -970,6 +987,12 @@ properties:
                                 configured to trust the configured username
                                 without a password.
                             example: trustsome1
+                        restore_password:
+                            type: string
+                            description: |
+                                Password with which to connect to the restore
+                                database. Defaults to the "password" option.
+                            example: trustsome1                        
                         format:
                             type: string
                             enum: ['sql']
@@ -1047,6 +1070,12 @@ properties:
                                 read_special and one_file_system (see above) to
                                 support dump and restore streaming.
                             example: /var/lib/sqlite/users.db
+                        restore_path:
+                            type: string
+                            description: |
+                                Path to the SQLite database file to restore to.
+                                Defaults to the "path" option.
+                            example: /var/lib/sqlite/users.db
             mongodb_databases:
                 type: array
                 items:
@@ -1069,21 +1098,44 @@ properties:
                                 Database hostname to connect to. Defaults to
                                 connecting to localhost.
                             example: database.example.org
+                        restore_hostname:
+                            type: string
+                            description: |
+                                Database hostname to restore to. Defaults to
+                                the "hostname" option.
+                            example: database.example.org                        
                         port:
                             type: integer
                             description: Port to connect to. Defaults to 27017.
                             example: 27018
+                        restore_port:
+                            type: integer
+                            description: Port to restore to. Defaults to the
+                                "port" option.
+                            example: 5433                        
                         username:
                             type: string
                             description: |
                                 Username with which to connect to the database.
                                 Skip it if no authentication is needed.
                             example: dbuser
+                        restore_username:
+                            type: string
+                            description: |
+                                Username with which to restore the database.
+                                Defaults to the "username" option.
+                            example: dbuser                        
                         password:
                             type: string
                             description: |
                                 Password with which to connect to the database.
                                 Skip it if no authentication is needed.
+                            example: trustsome1
+                        restore_password:
+                            type: string
+                            description: |
+                                Password with which to connect to the restore
+                                database. Defaults to the "password" option.
                             example: trustsome1
                         authentication_database:
                             type: string
