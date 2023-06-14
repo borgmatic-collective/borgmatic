@@ -1,0 +1,15 @@
+[Unit]
+Description=borgmatic backup
+Wants=network-online.target
+After=network-online.target
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+Restart=no
+# Prevent rate limiting of borgmatic log events. If you are using an older version of systemd that
+# doesn't support this (pre-240 or so), you may have to remove this option.
+LogRateLimitIntervalSec=0
+# Delay start to prevent backups running during boot.
+ExecStartPre=sleep 1m
+ExecStart=/root/.local/bin/borgmatic --verbosity -2 --syslog-verbosity 1
