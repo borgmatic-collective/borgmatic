@@ -348,17 +348,19 @@ borgmatic's own configuration file. So include your configuration file in
 backups to avoid getting caught without a way to restore a database.
 3. borgmatic does not currently support backing up or restoring multiple
 databases that share the exact same name on different hosts.
-4. Because database hooks implicitly enable the `read_special` configuration
-setting to support dump and restore streaming, you'll need to ensure that any
-special files are excluded from backups (named pipes, block devices,
-character devices, and sockets) to prevent hanging. Try a command like
-`find /your/source/path -type b -or -type c -or -type p -or -type s` to find
-such files. Common directories to exclude are `/dev` and `/run`, but that may
-not be exhaustive. <span class="minilink minilink-addedin">New in version
+4. Because database hooks implicitly enable the `read_special` configuration,
+any special files are excluded from backups (named pipes, block devices,
+character devices, and sockets) to prevent hanging. Try a command like `find
+/your/source/path -type b -or -type c -or -type p -or -type s` to find such
+files. Common directories to exclude are `/dev` and `/run`, but that may not
+be exhaustive. <span class="minilink minilink-addedin">New in version
 1.7.3</span> When database hooks are enabled, borgmatic automatically excludes
-special files that may cause Borg to hang, so you no longer need to manually
-exclude them. (This includes symlinks with special files as a destination.) You
-can override/prevent this behavior by explicitly setting `read_special` to true.
+special files (and symlinks to special files) that may cause Borg to hang, so
+generally you no longer need to manually exclude them. There are potential
+edge cases though in which applications on your system create new special files
+*after* borgmatic constructs its exclude list, resulting in Borg hangs. If that
+occurs, you can resort to the manual excludes described above. And to opt out
+of the auto-exclude feature entirely, explicitly set `read_special` to true.
 
 
 ### Manual restoration
