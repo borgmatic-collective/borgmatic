@@ -816,11 +816,7 @@ properties:
                                 OWNER or SET SESSION AUTHORIZATION statements 
                                 to set ownership of created schema elements. 
                                 These statements will fail unless the initial
-                                connection to the database is made by a superuser
-                                (in which case they will execute as though wrapped
-                                in SECURITY DEFINER functions). When --no-owner
-                                is used, neither the ALTER OWNER nor SET SESSION
-                                AUTHORIZATION statements will be emitted.
+                                connection to the database is made by a superuser.
                         format:
                             type: string
                             enum: ['plain', 'custom', 'directory', 'tar']

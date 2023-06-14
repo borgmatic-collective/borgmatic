@@ -22,17 +22,20 @@ def make_dump_path(location_config):  # pragma: no cover
         location_config.get('borgmatic_source_directory'), 'postgresql_databases'
     )
 
-def make_extra_environment(database, restore=False, connection_params=None):
+def make_extra_environment(database, restore_connection_params=None):
     '''
     Make the extra_environment dict from the given database configuration.
+    If restore connection params are given, this is for a restore operation.
     '''
     extra = dict()
     if 'password' in database:
         extra['PGPASSWORD'] = database['password']
-    if restore and 'restore_password' in database:
-        extra['PGPASSWORD'] = database['restore_password']
-    if connection_params is not None and connection_params.get('password'):
-        extra['PGPASSWORD'] = connection_params['password']
+
+    try:
+        extra['PGPASSWORD'] = restore_connection_params.get('password') or database['restore_password']
+    except (AttributeError, KeyError):
+        pass
+    
     extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
     if 'ssl_cert' in database:
         extra['PGSSLCERT'] = database['ssl_cert']
@@ -138,7 +141,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 + (('--host', database['hostname']) if 'hostname' in database else ())
                 + (('--port', str(database['port'])) if 'port' in database else ())
                 + (('--username', database['username']) if 'username' in database else ())
-                + (('--no-owner',) if database['no_owner'] else ())
+                + (('--no-owner',) if database.get('no_owner', False) else ())
                 + (('--format', dump_format) if dump_format else ())
                 + (('--file', dump_filename) if dump_format == 'directory' else ())
                 + (tuple(database['options'].split(' ')) if 'options' in database else ())
@@ -230,9 +233,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     analyze_command = (
         tuple(psql_command)
         + ('--no-password', '--no-psqlrc', '--quiet')
-        + (('--host', hostname) if 'hostname' in database or 'restore_hostname' in database or 'hostname' in connection_params else ())
-        + (('--port', port) if 'port' in database or 'restore_port' in database or 'port' in connection_params else ())
-        + (('--username', username) if 'username' in database or 'restore_username' in database or 'username' in connection_params else ())
+        + (('--host', hostname) if hostname else ())
+        + (('--port', port) if port else ())
+        + (('--username', username) if username else ())
         + (('--dbname', database['name']) if not all_databases else ())
         + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
         + ('--command', 'ANALYZE')
@@ -244,10 +247,10 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         + ('--no-password',)
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', database['name']) if not all_databases else ())
-        + (('--host', hostname) if 'hostname' in database or 'restore_hostname' in database or 'hostname' in connection_params else ())
-        + (('--port', port) if 'port' in database or 'restore_port' in database or 'port' in connection_params else ())
-        + (('--username', username) if 'username' in database or 'restore_username' in database or 'username' in connection_params else ())
-        + (('--no-owner',) if database['no_owner'] else ())
+        + (('--host', hostname) if hostname else ())
+        + (('--port', port) if port else ())
+        + (('--username', username) if username else ())
+        + (('--no-owner',) if database.get('no_owner', False) else ())
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
         + (() if extract_process else (dump_filename,))
         + tuple(
@@ -257,7 +260,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         )
     )
 
-    extra_environment = make_extra_environment(database, restore=True, connection_params=connection_params)
+    extra_environment = make_extra_environment(database, restore_connection_params=connection_params)
 
     logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
     if dry_run:

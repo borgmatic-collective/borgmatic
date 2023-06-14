@@ -79,10 +79,6 @@ def restore_single_database(
         f'{repository.get("label", repository["path"])}: Restoring database {database["name"]}'
     )
 
-    logger.info(
-        f'hostname port username password for database {database["name"]}'
-    )
-
     dump_pattern = borgmatic.hooks.dispatch.call_hooks(
         'make_database_dump_pattern',
         hooks,
