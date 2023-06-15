@@ -316,6 +316,7 @@ def run_restore(
                 'port': restore_arguments.port,
                 'username': restore_arguments.username,
                 'password': restore_arguments.password,
+                'restore_path': restore_arguments.restore_path,
             }
 
             if not found_database:
