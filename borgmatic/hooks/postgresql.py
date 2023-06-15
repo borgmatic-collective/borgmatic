@@ -222,7 +222,7 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     database = database_config[0]
 
     hostname = connection_params['hostname'] or database.get('restore_hostname', database.get('hostname'))
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port')))
+    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
     username = connection_params['username'] or database.get('restore_username', database.get('username'))
 
     all_databases = bool(database['name'] == 'all')

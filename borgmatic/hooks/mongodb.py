@@ -143,7 +143,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     Return the mongorestore command from a single database configuration.
     '''
     hostname = connection_params['hostname'] or database.get('restore_hostname', database.get('hostname'))
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port')))
+    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
     username = connection_params['username'] or database.get('restore_username', database.get('username'))
     password = connection_params['password'] or database.get('restore_password', database.get('password'))
 
