@@ -2,72 +2,8 @@ import shlex
 from argparse import Action
 from textwrap import dedent
 
-from borgmatic.commands import arguments
-
-
-def upgrade_message(language: str, upgrade_command: str, completion_file: str):
-    return f'''
-Your {language} completions script is from a different version of borgmatic than is
-currently installed. Please upgrade your script so your completions match the
-command-line flags in your installed borgmatic! Try this to upgrade:
-
-    {upgrade_command}
-    source {completion_file}
-'''
-
-
-def parser_flags(parser):
-    '''
-    Given an argparse.ArgumentParser instance, return its argument flags in a space-separated
-    string.
-    '''
-    return ' '.join(option for action in parser._actions for option in action.option_strings)
-
-
-def bash_completion():
-    '''
-    Return a bash completion script for the borgmatic command. Produce this by introspecting
-    borgmatic's command-line argument parsers.
-    '''
-    top_level_parser, subparsers = arguments.make_parsers()
-    global_flags = parser_flags(top_level_parser)
-    actions = ' '.join(subparsers.choices.keys())
-
-    # Avert your eyes.
-    return '\n'.join(
-        (
-            'check_version() {',
-            '    local this_script="$(cat "$BASH_SOURCE" 2> /dev/null)"',
-            '    local installed_script="$(borgmatic --bash-completion 2> /dev/null)"',
-            '    if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ];'
-            f'''        then cat << EOF\n{upgrade_message(
-                    'bash',
-                    'sudo sh -c "borgmatic --bash-completion > $BASH_SOURCE"',
-                    '$BASH_SOURCE',
-                )}\nEOF''',
-            '    fi',
-            '}',
-            'complete_borgmatic() {',
-        )
-        + tuple(
-            '''    if [[ " ${COMP_WORDS[*]} " =~ " %s " ]]; then
-        COMPREPLY=($(compgen -W "%s %s %s" -- "${COMP_WORDS[COMP_CWORD]}"))
-        return 0
-    fi'''
-            % (action, parser_flags(subparser), actions, global_flags)
-            for action, subparser in subparsers.choices.items()
-        )
-        + (
-            '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'  # noqa: FS003
-            % (actions, global_flags),
-            '    (check_version &)',
-            '}',
-            '\ncomplete -o bashdefault -o default -F complete_borgmatic borgmatic',
-        )
-    )
-
-
-# fish section
+import borgmatic.commands.arguments
+import borgmatic.commands.completion.actions
 
 
 def has_file_options(action: Action):
@@ -155,7 +91,7 @@ def fish_completion():
     Return a fish completion script for the borgmatic command. Produce this by introspecting
     borgmatic's command-line argument parsers.
     '''
-    top_level_parser, subparsers = arguments.make_parsers()
+    top_level_parser, subparsers = borgmatic.commands.arguments.make_parsers()
 
     all_subparsers = ' '.join(action for action in subparsers.choices.keys())
 
@@ -182,7 +118,7 @@ def fish_completion():
                         set this_script (cat $this_filename 2> /dev/null)
                         set installed_script (borgmatic --fish-completion 2> /dev/null)
                         if [ "$this_script" != "$installed_script" ] && [ "$installed_script" != "" ]
-                            echo "{upgrade_message(
+                            echo "{borgmatic.commands.completion.actions.upgrade_message(
                             'fish',
                             'borgmatic --fish-completion | sudo tee $this_filename',
                             '$this_filename',

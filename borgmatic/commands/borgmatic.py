@@ -31,7 +31,8 @@ import borgmatic.actions.restore
 import borgmatic.actions.rinfo
 import borgmatic.actions.rlist
 import borgmatic.actions.transfer
-import borgmatic.commands.completion
+import borgmatic.commands.completion.bash
+import borgmatic.commands.completion.fish
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -751,10 +752,10 @@ def main():  # pragma: no cover
         print(importlib_metadata.version('borgmatic'))
         sys.exit(0)
     if global_arguments.bash_completion:
-        print(borgmatic.commands.completion.bash_completion())
+        print(borgmatic.commands.completion.bash.bash_completion())
         sys.exit(0)
     if global_arguments.fish_completion:
-        print(borgmatic.commands.completion.fish_completion())
+        print(borgmatic.commands.completion.fish.fish_completion())
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))

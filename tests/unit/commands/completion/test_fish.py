@@ -5,7 +5,7 @@ from typing import Tuple
 import pytest
 from flexmock import flexmock
 
-from borgmatic.commands import completion as module
+from borgmatic.commands.completion import fish as module
 
 OptionType = namedtuple('OptionType', ['file', 'choice', 'unknown_required'])
 TestCase = Tuple[Action, OptionType]
