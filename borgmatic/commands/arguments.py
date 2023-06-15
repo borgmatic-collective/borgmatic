@@ -736,6 +736,10 @@ def make_parsers():
         help='Password with which to connect to the restore database. Defaults to the "restore_password" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
+        '--restore-path',
+        help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
