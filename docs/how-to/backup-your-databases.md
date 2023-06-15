@@ -410,6 +410,12 @@ authenticated. For instance, with PostgreSQL, check your
 [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
 file for that configuration.
 
+Additionally, MySQL/MariaDB may be picking up some of your credentials from a
+defaults file like `~/.my.cnf`. If that's the case, then it's possible
+MySQL/MariaDB ends up using, say, a username from borgmatic's configuration
+and a password from `~/.my.cnf`. This may result in authentication errors if
+this combination of credentials is not what you intend.
+
 
 ### MySQL table lock errors
 
