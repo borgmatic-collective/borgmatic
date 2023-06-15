@@ -30,7 +30,10 @@ def make_extra_environment(database, restore_connection_params=None):
     extra = dict()
 
     try:
-        extra['PGPASSWORD'] = restore_connection_params.get('password') or database['restore_password'] or database['password']
+        if restore_connection_params:
+            extra['PGPASSWORD'] = restore_connection_params.get('password') or database.get('restore_password', database['password'])
+        else:
+            extra['PGPASSWORD'] = database['password']
     except (AttributeError, KeyError):
         pass
     

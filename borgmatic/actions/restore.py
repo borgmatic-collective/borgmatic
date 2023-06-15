@@ -72,7 +72,7 @@ def restore_single_database(
 ):  # pragma: no cover
     '''
     Given (among other things) an archive name, a database hook name, the hostname,
-    port, username and password as connection params,  and a configured database
+    port, username and password as connection params, and a configured database
     configuration dict, restore that database from the archive.
     '''
     logger.info(
