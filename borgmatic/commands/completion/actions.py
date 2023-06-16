@@ -1,6 +1,3 @@
-import argparse
-
-
 def upgrade_message(language: str, upgrade_command: str, completion_file: str):
     return f'''
 Your {language} completions script is from a different version of borgmatic than is
@@ -25,11 +22,11 @@ def available_actions(subparsers, current_action=None):
     actions_to_subactions = {
         action: tuple(
             subaction_name
-            for subaction in subparser._actions
-            if isinstance(subaction, argparse._SubParsersAction)
-            for subaction_name in subaction.choices.keys()
+            for group_action in subparser._subparsers._group_actions
+            for subaction_name in group_action.choices.keys()
         )
         for action, subparser in subparsers.choices.items()
+        if subparser._subparsers
     }
 
     current_subactions = actions_to_subactions.get(current_action)
