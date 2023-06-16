@@ -29,15 +29,6 @@ def test_get_default_config_paths_does_not_expand_home_when_false():
     assert '$HOME/.config/borgmatic/config.yaml' in config_paths
 
 
-def test_collect_config_filenames_collects_given_files():
-    config_paths = ('config.yaml', 'other.yaml')
-    flexmock(module.os.path).should_receive('isdir').and_return(False)
-
-    config_filenames = tuple(module.collect_config_filenames(config_paths))
-
-    assert config_filenames == config_paths
-
-
 def test_collect_config_filenames_collects_yml_file_endings():
     config_paths = ('config.yaml', '/etc/borgmatic.d')
     mock_path = flexmock(module.os.path)
@@ -45,13 +36,14 @@ def test_collect_config_filenames_collects_yml_file_endings():
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d').and_return(True)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yml').and_return(False)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
     flexmock(module.os).should_receive('access').and_return(True)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(['foo.yml'])
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == ('config.yaml', '/etc/borgmatic.d/foo.yml')
+    assert config_filenames == ('/config.yaml', '/etc/borgmatic.d/foo.yml')
 
 
 def test_collect_config_filenames_collects_files_from_given_directories_and_ignores_sub_directories():
@@ -63,6 +55,7 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/bar').and_return(True)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/baz.yaml').and_return(False)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
     flexmock(module.os).should_receive('access').and_return(True)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
@@ -72,7 +65,7 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
     assert config_filenames == (
-        'config.yaml',
+        '/config.yaml',
         '/etc/borgmatic.d/foo.yaml',
         '/etc/borgmatic.d/baz.yaml',
     )
@@ -86,6 +79,7 @@ def test_collect_config_filenames_collects_files_from_given_directories_and_igno
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/foo.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/bar.yaml~').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d/baz.txt').and_return(False)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
     flexmock(module.os).should_receive('access').and_return(True)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(
@@ -103,13 +97,14 @@ def test_collect_config_filenames_skips_permission_denied_directories():
     mock_path.should_receive('exists').and_return(True)
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d').and_return(True)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
     flexmock(module.os).should_receive('access').and_return(False)
     flexmock(module.os).should_receive('listdir')
     flexmock(sys.modules['builtins']).should_receive('sorted').and_return(['config.yaml'])
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == ('config.yaml',)
+    assert config_filenames == ('/config.yaml',)
 
 
 def test_collect_config_filenames_skips_etc_borgmatic_config_dot_yaml_if_it_does_not_exist():
@@ -119,10 +114,11 @@ def test_collect_config_filenames_skips_etc_borgmatic_config_dot_yaml_if_it_does
     mock_path.should_receive('exists').with_args('/etc/borgmatic/config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic/config.yaml').and_return(True)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == ('config.yaml',)
+    assert config_filenames == ('/config.yaml',)
 
 
 def test_collect_config_filenames_skips_etc_borgmatic_dot_d_if_it_does_not_exist():
@@ -132,10 +128,11 @@ def test_collect_config_filenames_skips_etc_borgmatic_dot_d_if_it_does_not_exist
     mock_path.should_receive('exists').with_args('/etc/borgmatic.d').and_return(False)
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/borgmatic.d').and_return(True)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == ('config.yaml',)
+    assert config_filenames == ('/config.yaml',)
 
 
 def test_collect_config_filenames_skips_non_canonical_etc_borgmatic_dot_d_if_it_does_not_exist():
@@ -145,10 +142,11 @@ def test_collect_config_filenames_skips_non_canonical_etc_borgmatic_dot_d_if_it_
     mock_path.should_receive('exists').with_args('/etc/../etc/borgmatic.d').and_return(False)
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/etc/../etc/borgmatic.d').and_return(True)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == ('config.yaml',)
+    assert config_filenames == ('/config.yaml',)
 
 
 def test_collect_config_filenames_includes_other_directory_if_it_does_not_exist():
@@ -158,7 +156,8 @@ def test_collect_config_filenames_includes_other_directory_if_it_does_not_exist(
     mock_path.should_receive('exists').with_args('/my/directory').and_return(False)
     mock_path.should_receive('isdir').with_args('config.yaml').and_return(False)
     mock_path.should_receive('isdir').with_args('/my/directory').and_return(True)
+    mock_path.should_receive('abspath').replace_with(lambda path: module.os.path.join('/', path))
 
     config_filenames = tuple(module.collect_config_filenames(config_paths))
 
-    assert config_filenames == config_paths
+    assert config_filenames == ('/config.yaml', '/my/directory')

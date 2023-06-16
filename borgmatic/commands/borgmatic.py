@@ -612,26 +612,8 @@ def collect_configuration_run_summary_logs(configs, arguments):
     As a side effect of running through these configuration files, output their JSON results, if
     any, to stdout.
     '''
-    # Run cross-file validation checks.
-    repository = None
-
-    for action_name, action_arguments in arguments.items():
-        if hasattr(action_arguments, 'repository'):
-            repository = getattr(action_arguments, 'repository')
-            break
-
-    try:
-        if 'extract' in arguments or 'mount' in arguments:
-            validate.guard_single_repository_selected(repository, configs)
-
-        if 'bootstrap' not in arguments:
-            validate.guard_configuration_contains_repository(repository, configs)
-    except ValueError as error:
-        yield from log_error_records(str(error))
-        return
-
     if 'bootstrap' in arguments:
-        # no configuration file is needed for bootstrap
+        # No configuration file is needed for bootstrap.
         local_borg_version = borg_version.local_borg_version({}, 'borg')
         try:
             borgmatic.actions.config.bootstrap.run_bootstrap(
@@ -651,6 +633,23 @@ def collect_configuration_run_summary_logs(configs, arguments):
         ) as error:
             yield from log_error_records(error)
 
+        return
+
+    # Run cross-file validation checks.
+    repository = None
+
+    for action_name, action_arguments in arguments.items():
+        if hasattr(action_arguments, 'repository'):
+            repository = getattr(action_arguments, 'repository')
+            break
+
+    try:
+        if 'extract' in arguments or 'mount' in arguments:
+            validate.guard_single_repository_selected(repository, configs)
+
+        validate.guard_configuration_contains_repository(repository, configs)
+    except ValueError as error:
+        yield from log_error_records(str(error))
         return
 
     if not configs:

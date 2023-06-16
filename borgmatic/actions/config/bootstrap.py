@@ -81,26 +81,25 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         bootstrap_arguments, global_arguments, local_borg_version
     )
 
-    for config_path in manifest_config_paths:
-        logger.info(f'Bootstrapping config path {config_path}')
+    logger.info(f"Bootstrapping config paths: {', '.join(manifest_config_paths)}")
 
-        borgmatic.borg.extract.extract_archive(
-            global_arguments.dry_run,
+    borgmatic.borg.extract.extract_archive(
+        global_arguments.dry_run,
+        bootstrap_arguments.repository,
+        borgmatic.borg.rlist.resolve_archive_name(
             bootstrap_arguments.repository,
-            borgmatic.borg.rlist.resolve_archive_name(
-                bootstrap_arguments.repository,
-                bootstrap_arguments.archive,
-                {},
-                local_borg_version,
-                global_arguments,
-            ),
-            [config_path],
-            {},
+            bootstrap_arguments.archive,
             {},
             local_borg_version,
             global_arguments,
-            extract_to_stdout=False,
-            destination_path=bootstrap_arguments.destination,
-            strip_components=bootstrap_arguments.strip_components,
-            progress=bootstrap_arguments.progress,
-        )
+        ),
+        [config_path.lstrip(os.path.sep) for config_path in manifest_config_paths],
+        {},
+        {},
+        local_borg_version,
+        global_arguments,
+        extract_to_stdout=False,
+        destination_path=bootstrap_arguments.destination,
+        strip_components=bootstrap_arguments.strip_components,
+        progress=bootstrap_arguments.progress,
+    )
