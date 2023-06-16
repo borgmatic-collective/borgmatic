@@ -638,6 +638,114 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
     )
 
 
+def test_restore_database_dump_with_cli_password_runs_pg_restore_with_password():
+    database_config = [{'name': 'foo', 'username': 'postgres', 'schemas': None}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'pg_restore',
+            '--no-password',
+            '--if-exists',
+            '--exit-on-error',
+            '--clean',
+            '--dbname',
+            'foo',
+            '--username',
+            'postgres',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--username',
+            'postgres',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': 'trustsome1',
+        },
+    )
+
+
+def test_restore_database_dump_with_no_passwords_runs_pg_restore_without_password():
+    database_config = [{'name': 'foo', 'username': 'postgres', 'schemas': None}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'pg_restore',
+            '--no-password',
+            '--if-exists',
+            '--exit-on-error',
+            '--clean',
+            '--dbname',
+            'foo',
+            '--username',
+            'postgres',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment={'PGSSLMODE': 'disable'},
+    ).once()
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'psql',
+            '--no-password',
+            '--no-psqlrc',
+            '--quiet',
+            '--username',
+            'postgres',
+            '--dbname',
+            'foo',
+            '--command',
+            'ANALYZE',
+        ),
+        extra_environment={'PGSSLMODE': 'disable'},
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+    )
+
+
 def test_restore_database_dump_runs_pg_restore_with_options():
     database_config = [
         {
