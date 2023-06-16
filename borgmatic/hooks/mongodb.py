@@ -102,7 +102,9 @@ def make_database_dump_pattern(
     return dump.make_database_dump_filename(make_dump_path(location_config), name, hostname='*')
 
 
-def restore_database_dump(database_config, log_prefix, location_config, dry_run, extract_process, connection_params):
+def restore_database_dump(
+    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+):
     '''
     Restore the given MongoDB database from an extract stream. The database is supplied as a
     one-element sequence containing a dict describing the database, as per the configuration schema.
@@ -122,7 +124,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     dump_filename = dump.make_database_dump_filename(
         make_dump_path(location_config), database['name'], database.get('hostname')
     )
-    restore_command = build_restore_command(extract_process, database, dump_filename, connection_params)
+    restore_command = build_restore_command(
+        extract_process, database, dump_filename, connection_params
+    )
 
     logger.debug(f"{log_prefix}: Restoring MongoDB database {database['name']}{dry_run_label}")
     if dry_run:
@@ -142,10 +146,16 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     '''
     Return the mongorestore command from a single database configuration.
     '''
-    hostname = connection_params['hostname'] or database.get('restore_hostname', database.get('hostname'))
+    hostname = connection_params['hostname'] or database.get(
+        'restore_hostname', database.get('hostname')
+    )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get('restore_username', database.get('username'))
-    password = connection_params['password'] or database.get('restore_password', database.get('password'))
+    username = connection_params['username'] or database.get(
+        'restore_username', database.get('username')
+    )
+    password = connection_params['password'] or database.get(
+        'restore_password', database.get('password')
+    )
 
     command = ['mongorestore']
     if extract_process:

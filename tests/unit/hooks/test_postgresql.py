@@ -479,7 +479,17 @@ def test_restore_database_dump_runs_pg_restore():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -494,7 +504,17 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config, 'test.yaml', {}, dry_run=False, extract_process=flexmock()
+            database_config,
+            'test.yaml',
+            {},
+            dry_run=False,
+            extract_process=flexmock(),
+            connection_params={
+                'restore_hostname': None,
+                'restore_port': None,
+                'restore_username': None,
+                'restore_password': None,
+            },
         )
 
 
@@ -545,7 +565,17 @@ def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -594,7 +624,17 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -644,7 +684,17 @@ def test_restore_database_dump_runs_pg_restore_with_options():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -672,7 +722,17 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -705,7 +765,17 @@ def test_restore_database_dump_runs_psql_for_plain_database_dump():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -759,7 +829,17 @@ def test_restore_database_dump_runs_non_default_pg_restore_and_psql():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -772,7 +852,17 @@ def test_restore_database_dump_with_dry_run_skips_restore():
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=True, extract_process=flexmock()
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=True,
+        extract_process=flexmock(),
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -813,7 +903,17 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=None
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=None,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -858,5 +958,15 @@ def test_restore_database_dump_with_schemas_restores_schemas():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=None
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=None,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )

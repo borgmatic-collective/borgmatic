@@ -99,7 +99,12 @@ def test_restore_database_dump_restores_database():
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
     )
 
 
@@ -111,7 +116,12 @@ def test_restore_database_dump_does_not_restore_database_if_dry_run():
     flexmock(module.os).should_receive('remove').never()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=True, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=True,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
     )
 
 
@@ -121,5 +131,10 @@ def test_restore_database_dump_raises_error_if_database_config_is_invalid():
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+            database_config,
+            'test.yaml',
+            {},
+            dry_run=False,
+            extract_process=extract_process,
+            connection_params={'restore_path': None},
         )

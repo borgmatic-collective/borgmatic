@@ -304,20 +304,19 @@ def run_restore(
     restore_names = find_databases_to_restore(restore_arguments.databases, archive_database_names)
     found_names = set()
     remaining_restore_names = {}
+    connection_params = {
+        'hostname': restore_arguments.hostname,
+        'port': restore_arguments.port,
+        'username': restore_arguments.username,
+        'password': restore_arguments.password,
+        'restore_path': restore_arguments.restore_path,
+    }
 
     for hook_name, database_names in restore_names.items():
         for database_name in database_names:
             found_hook_name, found_database = get_configured_database(
                 hooks, archive_database_names, hook_name, database_name
             )
-
-            connection_params = {
-                'hostname': restore_arguments.hostname,
-                'port': restore_arguments.port,
-                'username': restore_arguments.username,
-                'password': restore_arguments.password,
-                'restore_path': restore_arguments.restore_path,
-            }
 
             if not found_database:
                 remaining_restore_names.setdefault(found_hook_name or hook_name, []).append(
@@ -368,6 +367,7 @@ def run_restore(
                 archive_name,
                 found_hook_name or hook_name,
                 dict(database, **{'schemas': restore_arguments.schemas}),
+                connection_params,
             )
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(

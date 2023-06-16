@@ -725,7 +725,8 @@ def make_parsers():
         help='Database hostname to restore to. Defaults to the "restore_hostname" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
-        '--port', help='Port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration'
+        '--port',
+        help='Port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
         '--username',

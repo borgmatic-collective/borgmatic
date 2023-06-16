@@ -22,6 +22,7 @@ def make_dump_path(location_config):  # pragma: no cover
         location_config.get('borgmatic_source_directory'), 'postgresql_databases'
     )
 
+
 def make_extra_environment(database, restore_connection_params=None):
     '''
     Make the extra_environment dict from the given database configuration.
@@ -31,12 +32,14 @@ def make_extra_environment(database, restore_connection_params=None):
 
     try:
         if restore_connection_params:
-            extra['PGPASSWORD'] = restore_connection_params.get('password') or database.get('restore_password', database['password'])
+            extra['PGPASSWORD'] = restore_connection_params.get('password') or database.get(
+                'restore_password', database['password']
+            )
         else:
             extra['PGPASSWORD'] = database['password']
     except (AttributeError, KeyError):
         pass
-    
+
     extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
     if 'ssl_cert' in database:
         extra['PGSSLCERT'] = database['ssl_cert']
@@ -200,7 +203,9 @@ def make_database_dump_pattern(
     return dump.make_database_dump_filename(make_dump_path(location_config), name, hostname='*')
 
 
-def restore_database_dump(database_config, log_prefix, location_config, dry_run, extract_process, connection_params):
+def restore_database_dump(
+    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+):
     '''
     Restore the given PostgreSQL database from an extract stream. The database is supplied as a
     one-element sequence containing a dict describing the database, as per the configuration schema.
@@ -221,9 +226,13 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
 
     database = database_config[0]
 
-    hostname = connection_params['hostname'] or database.get('restore_hostname', database.get('hostname'))
+    hostname = connection_params['hostname'] or database.get(
+        'restore_hostname', database.get('hostname')
+    )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get('restore_username', database.get('username'))
+    username = connection_params['username'] or database.get(
+        'restore_username', database.get('username')
+    )
 
     all_databases = bool(database['name'] == 'all')
     dump_filename = dump.make_database_dump_filename(
@@ -260,7 +269,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         )
     )
 
-    extra_environment = make_extra_environment(database, restore_connection_params=connection_params)
+    extra_environment = make_extra_environment(
+        database, restore_connection_params=connection_params
+    )
 
     logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
     if dry_run:

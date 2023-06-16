@@ -816,7 +816,8 @@ properties:
                                 OWNER or SET SESSION AUTHORIZATION statements 
                                 to set ownership of created schema elements. 
                                 These statements will fail unless the initial
-                                connection to the database is made by a superuser.
+                                connection to the database is made by a 
+                                superuser.
                         format:
                             type: string
                             enum: ['plain', 'custom', 'directory', 'tar']
@@ -1103,7 +1104,7 @@ properties:
                             description: |
                                 Database hostname to restore to. Defaults to
                                 the "hostname" option.
-                            example: database.example.org                        
+                            example: database.example.org
                         port:
                             type: integer
                             description: Port to connect to. Defaults to 27017.
