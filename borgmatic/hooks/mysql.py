@@ -216,10 +216,10 @@ def restore_database_dump(
     restore_command = (
         ('mysql', '--batch')
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
-        + (('--host', database['hostname']) if hostname else ())
-        + (('--port', str(database['port'])) if port else ())
+        + (('--host', hostname) if hostname else ())
+        + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
-        + (('--user', database['username']) if username else ())
+        + (('--user', username) if username else ())
     )
     extra_environment = {'MYSQL_PWD': password} if password else None
 
