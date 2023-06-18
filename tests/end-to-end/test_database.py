@@ -81,6 +81,7 @@ hooks:
     with open(config_path, 'w') as config_file:
         config_file.write(config)
 
+
 def write_custom_restore_configuration(
     source_directory,
     config_path,
@@ -262,7 +263,24 @@ def test_database_dump_and_restore_with_restore_cli_arguments():
 
         # Restore the database from the archive.
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name, '--hostname', 'postgresql2', '--port', '5432', '--username', 'postgres2', '--password', 'test2']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'restore',
+                '--archive',
+                archive_name,
+                '--hostname',
+                'postgresql2',
+                '--port',
+                '5432',
+                '--username',
+                'postgres2',
+                '--password',
+                'test2',
+            ]
         )
     finally:
         os.chdir(original_working_directory)
