@@ -114,7 +114,7 @@ hooks:
           password: test
           format: {postgresql_dump_format}
           restore_hostname: postgresql2
-          restore_port: 5432
+          restore_port: 5433
           restore_username: postgres2
           restore_password: test2
     mysql_databases:
@@ -123,7 +123,7 @@ hooks:
           username: root
           password: test
           restore_hostname: mysql2
-          restore_port: 3306
+          restore_port: 3307
           restore_username: root
           restore_password: test2
     mongodb_databases:
@@ -134,7 +134,7 @@ hooks:
           authentication_database: admin
           format: {mongodb_dump_format}
           restore_hostname: mongodb2
-          restore_port: 27017
+          restore_port: 27018
           restore_username: root2
           restore_password: test2
     sqlite_databases:
@@ -147,7 +147,7 @@ hooks:
         config_file.write(config)
 
 
-def write_custom_restore_configuration_for_cli_arguments(
+def write_simple_custom_restore_configuration(
     source_directory,
     config_path,
     repository_path,
@@ -233,14 +233,11 @@ def test_database_dump_and_restore_with_restore_cli_arguments():
     repository_path = os.path.join(temporary_directory, 'test.borg')
     borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
-    # Write out a special file to ensure that it gets properly excluded and Borg doesn't hang on it.
-    os.mkfifo(os.path.join(temporary_directory, 'special_file'))
-
     original_working_directory = os.getcwd()
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
-        write_custom_restore_configuration_for_cli_arguments(
+        write_simple_custom_restore_configuration(
             temporary_directory, config_path, repository_path, borgmatic_source_directory
         )
 
@@ -275,7 +272,7 @@ def test_database_dump_and_restore_with_restore_cli_arguments():
                 '--hostname',
                 'postgresql2',
                 '--port',
-                '5432',
+                '5433',
                 '--username',
                 'postgres2',
                 '--password',
@@ -287,14 +284,11 @@ def test_database_dump_and_restore_with_restore_cli_arguments():
         shutil.rmtree(temporary_directory)
 
 
-def test_database_dump_and_restore_to_different_hostname_port_username_password():
+def test_database_dump_and_restore_with_restore_configuration_options():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
     borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
-
-    # Write out a special file to ensure that it gets properly excluded and Borg doesn't hang on it.
-    os.mkfifo(os.path.join(temporary_directory, 'special_file'))
 
     original_working_directory = os.getcwd()
 

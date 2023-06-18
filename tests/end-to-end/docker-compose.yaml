@@ -13,6 +13,7 @@ services:
       POSTGRES_USER: postgres2
     ports:
       - "5433:5432"
+    command: -p 5433
   mysql:
     image: docker.io/mariadb:10.5
     environment:
@@ -25,6 +26,7 @@ services:
       MYSQL_DATABASE: test
     ports:
       - "3307:3306"
+    command: --port=3307
   mongodb:
     image: docker.io/mongo:5.0.5
     environment:
@@ -37,6 +39,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: test2
     ports:
       - "27018:27017"
+    command: --port=27018
   tests:
     image: docker.io/alpine:3.13
     environment:
