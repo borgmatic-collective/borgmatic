@@ -5,16 +5,38 @@ services:
     environment:
       POSTGRES_PASSWORD: test
       POSTGRES_DB: test
+  postgresql2:
+    image: docker.io/postgres:13.1-alpine
+    environment:
+      POSTGRES_PASSWORD: test2
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres2
+    ports:
+      - "5433:5432"
   mysql:
     image: docker.io/mariadb:10.5
     environment:
       MYSQL_ROOT_PASSWORD: test
       MYSQL_DATABASE: test
+  mysql2:
+    image: docker.io/mariadb:10.5
+    environment:
+      MYSQL_ROOT_PASSWORD: test2
+      MYSQL_DATABASE: test
+    ports:
+      - "3307:3306"
   mongodb:
     image: docker.io/mongo:5.0.5
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: test
+  mongodb2:
+    image: docker.io/mongo:5.0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root2
+      MONGO_INITDB_ROOT_PASSWORD: test2
+    ports:
+      - "27018:27017"
   tests:
     image: docker.io/alpine:3.13
     environment:
@@ -30,5 +52,8 @@ services:
     command: --end-to-end-only
     depends_on:
       - postgresql
+      - postgresql2
       - mysql
+      - mysql2
       - mongodb
+      - mongodb2

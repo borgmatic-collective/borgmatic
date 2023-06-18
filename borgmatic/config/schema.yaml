@@ -818,6 +818,7 @@ properties:
                                 These statements will fail unless the initial
                                 connection to the database is made by a 
                                 superuser.
+                            example: true
                         format:
                             type: string
                             enum: ['plain', 'custom', 'directory', 'tar']

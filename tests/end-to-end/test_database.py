@@ -81,6 +81,107 @@ hooks:
     with open(config_path, 'w') as config_file:
         config_file.write(config)
 
+def write_custom_restore_configuration(
+    source_directory,
+    config_path,
+    repository_path,
+    borgmatic_source_directory,
+    postgresql_dump_format='custom',
+    mongodb_dump_format='archive',
+):
+    '''
+    Write out borgmatic configuration into a file at the config path. Set the options so as to work
+    for testing with custom restore options. This includes a custom restore_hostname, restore_port,
+    restore_username, restore_password and restore_path.
+    '''
+    config = f'''
+location:
+    source_directories:
+        - {source_directory}
+    repositories:
+        - {repository_path}
+    borgmatic_source_directory: {borgmatic_source_directory}
+
+storage:
+    encryption_passphrase: "test"
+
+hooks:
+    postgresql_databases:
+        - name: test
+          hostname: postgresql
+          username: postgres
+          password: test
+          format: {postgresql_dump_format}
+          restore_hostname: postgresql2
+          restore_port: 5432
+          restore_username: postgres2
+          restore_password: test2
+    mysql_databases:
+        - name: test
+          hostname: mysql
+          username: root
+          password: test
+          restore_hostname: mysql2
+          restore_port: 3306
+          restore_username: root
+          restore_password: test2
+    mongodb_databases:
+        - name: test
+          hostname: mongodb
+          username: root
+          password: test
+          authentication_database: admin
+          format: {mongodb_dump_format}
+          restore_hostname: mongodb2
+          restore_port: 27017
+          restore_username: root2
+          restore_password: test2
+    sqlite_databases:
+        - name: sqlite_test
+          path: /tmp/sqlite_test.db
+          restore_path: /tmp/sqlite_test2.db
+'''
+
+    with open(config_path, 'w') as config_file:
+        config_file.write(config)
+
+
+def write_custom_restore_configuration_for_cli_arguments(
+    source_directory,
+    config_path,
+    repository_path,
+    borgmatic_source_directory,
+    postgresql_dump_format='custom',
+):
+    '''
+    Write out borgmatic configuration into a file at the config path. Set the options so as to work
+    for testing with custom restore options, but this time using CLI arguments. This includes a
+    custom restore_hostname, restore_port, restore_username and restore_password as we only test
+    these options for PostgreSQL.
+    '''
+    config = f'''
+location:
+    source_directories:
+        - {source_directory}
+    repositories:
+        - {repository_path}
+    borgmatic_source_directory: {borgmatic_source_directory}
+
+storage:
+    encryption_passphrase: "test"
+
+hooks:
+    postgresql_databases:
+        - name: test
+          hostname: postgresql
+          username: postgres
+          password: test
+          format: {postgresql_dump_format}
+'''
+
+    with open(config_path, 'w') as config_file:
+        config_file.write(config)
+
 
 def test_database_dump_and_restore():
     # Create a Borg repository.
@@ -96,6 +197,92 @@ def test_database_dump_and_restore():
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         write_configuration(
+            temporary_directory, config_path, repository_path, borgmatic_source_directory
+        )
+
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+        )
+
+        # Run borgmatic to generate a backup archive including a database dump.
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
+
+        # Get the created archive name.
+        output = subprocess.check_output(
+            ['borgmatic', '--config', config_path, 'list', '--json']
+        ).decode(sys.stdout.encoding)
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert len(parsed_output[0]['archives']) == 1
+        archive_name = parsed_output[0]['archives'][0]['archive']
+
+        # Restore the database from the archive.
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name]
+        )
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_and_restore_with_restore_cli_arguments():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
+
+    # Write out a special file to ensure that it gets properly excluded and Borg doesn't hang on it.
+    os.mkfifo(os.path.join(temporary_directory, 'special_file'))
+
+    original_working_directory = os.getcwd()
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        write_custom_restore_configuration_for_cli_arguments(
+            temporary_directory, config_path, repository_path, borgmatic_source_directory
+        )
+
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+        )
+
+        # Run borgmatic to generate a backup archive including a database dump.
+        subprocess.check_call(['borgmatic', 'create', '--config', config_path, '-v', '2'])
+
+        # Get the created archive name.
+        output = subprocess.check_output(
+            ['borgmatic', '--config', config_path, 'list', '--json']
+        ).decode(sys.stdout.encoding)
+        parsed_output = json.loads(output)
+
+        assert len(parsed_output) == 1
+        assert len(parsed_output[0]['archives']) == 1
+        archive_name = parsed_output[0]['archives'][0]['archive']
+
+        # Restore the database from the archive.
+        subprocess.check_call(
+            ['borgmatic', '-v', '2', '--config', config_path, 'restore', '--archive', archive_name, '--hostname', 'postgresql2', '--port', '5432', '--username', 'postgres2', '--password', 'test2']
+        )
+    finally:
+        os.chdir(original_working_directory)
+        shutil.rmtree(temporary_directory)
+
+
+def test_database_dump_and_restore_to_different_hostname_port_username_password():
+    # Create a Borg repository.
+    temporary_directory = tempfile.mkdtemp()
+    repository_path = os.path.join(temporary_directory, 'test.borg')
+    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
+
+    # Write out a special file to ensure that it gets properly excluded and Borg doesn't hang on it.
+    os.mkfifo(os.path.join(temporary_directory, 'special_file'))
+
+    original_working_directory = os.getcwd()
+
+    try:
+        config_path = os.path.join(temporary_directory, 'test.yaml')
+        write_custom_restore_configuration(
             temporary_directory, config_path, repository_path, borgmatic_source_directory
         )
 
