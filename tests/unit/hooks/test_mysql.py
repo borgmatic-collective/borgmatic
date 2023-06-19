@@ -518,6 +518,94 @@ def test_restore_database_dump_runs_mysql_with_username_and_password():
     )
 
 
+def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
+    database_config = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'mysql',
+            '--batch',
+            '--host',
+            'clihost',
+            '--port',
+            'cliport',
+            '--protocol',
+            'tcp',
+            '--user',
+            'cliusername',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment={'MYSQL_PWD': 'clipassword'},
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': 'clihost',
+            'port': 'cliport',
+            'username': 'cliusername',
+            'password': 'clipassword',
+        },
+    )
+
+
+def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
+    database_config = [
+        {
+            'name': 'foo',
+            'username': 'root',
+            'password': 'trustsome1',
+            'hostname': 'dbhost',
+            'port': 'dbport',
+            'restore_username': 'restoreuser',
+            'restore_password': 'restorepass',
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'mysql',
+            '--batch',
+            '--host',
+            'restorehost',
+            '--port',
+            'restoreport',
+            '--protocol',
+            'tcp',
+            '--user',
+            'restoreuser',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment={'MYSQL_PWD': 'restorepass'},
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+    )
+
+
 def test_restore_database_dump_with_dry_run_skips_restore():
     database_config = [{'name': 'foo'}]
 
