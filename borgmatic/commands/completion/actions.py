@@ -1,3 +1,6 @@
+import borgmatic.commands.arguments
+
+
 def upgrade_message(language: str, upgrade_command: str, completion_file: str):
     return f'''
 Your {language} completions script is from a different version of borgmatic than is
@@ -18,24 +21,16 @@ def available_actions(subparsers, current_action=None):
     "bootstrap" is a sub-action for "config", then "bootstrap" should be able to follow a current
     action of "config" but not "list".
     '''
-    # Make a map from action name to the names of contained sub-actions.
-    actions_to_subactions = {
-        action: tuple(
-            subaction_name
-            for group_action in subparser._subparsers._group_actions
-            for subaction_name in group_action.choices.keys()
-        )
-        for action, subparser in subparsers.choices.items()
-        if subparser._subparsers
-    }
-
-    current_subactions = actions_to_subactions.get(current_action)
+    action_to_subactions = borgmatic.commands.arguments.get_subactions_for_actions(
+        subparsers.choices
+    )
+    current_subactions = action_to_subactions.get(current_action)
 
     if current_subactions:
         return current_subactions
 
     all_subactions = set(
-        subaction for subactions in actions_to_subactions.values() for subaction in subactions
+        subaction for subactions in action_to_subactions.values() for subaction in subactions
     )
 
     return tuple(action for action in subparsers.choices.keys() if action not in all_subactions)

@@ -1013,7 +1013,7 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_bootstrap(
     logs = tuple(
         module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
     )
-    assert {log.levelno for log in logs} == {logging.INFO}
+    assert {log.levelno for log in logs} == {logging.ANSWER}
 
 
 def test_collect_configuration_run_summary_logs_error_on_bootstrap_failure():

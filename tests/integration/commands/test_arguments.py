@@ -1,5 +1,3 @@
-import argparse
-
 import pytest
 from flexmock import flexmock
 
@@ -534,24 +532,62 @@ def test_parse_arguments_extract_with_check_only_extract_does_not_raise():
     module.parse_arguments('extract', '--archive', 'name', 'check', '--only', 'extract')
 
 
-def test_merging_two_subparser_collections_merges_their_choices():
-    top_level_parser = argparse.ArgumentParser()
+def test_parse_arguments_bootstrap_without_config_errors():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    subparsers = top_level_parser.add_subparsers()
-    subparser1 = subparsers.add_parser('subparser1')
+    with pytest.raises(SystemExit) as exit:
+        module.parse_arguments('bootstrap')
 
-    subparser2 = subparsers.add_parser('subparser2')
-    subsubparsers = subparser2.add_subparsers()
-    subsubparser1 = subsubparsers.add_parser('subsubparser1')
+    assert exit.value.code == 2
 
-    merged_subparsers = argparse._SubParsersAction(
-        None, None, metavar=None, dest='merged', parser_class=None
-    )
 
-    merged_subparsers = module.merge_subparsers(subparsers, subsubparsers)
+def test_parse_arguments_config_with_no_subaction_errors():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    assert merged_subparsers.choices == {
-        'subparser1': subparser1,
-        'subparser2': subparser2,
-        'subsubparser1': subsubparser1,
-    }
+    with pytest.raises(ValueError):
+        module.parse_arguments('config')
+
+
+def test_parse_arguments_config_with_help_shows_config_help(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit) as exit:
+        module.parse_arguments('config', '--help')
+
+    assert exit.value.code == 0
+    captured = capsys.readouterr()
+    assert 'global arguments:' not in captured.out
+    assert 'config arguments:' in captured.out
+    assert 'config sub-actions:' in captured.out
+
+
+def test_parse_arguments_config_with_subaction_but_missing_flags_errors(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit) as exit:
+        module.parse_arguments('config', 'bootstrap')
+
+    assert exit.value.code == 2
+
+
+def test_parse_arguments_config_with_subaction_and_help_shows_subaction_help(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(SystemExit) as exit:
+        module.parse_arguments('config', 'bootstrap', '--help')
+
+    assert exit.value.code == 0
+    captured = capsys.readouterr()
+    assert 'config bootstrap arguments:' in captured.out
+
+
+def test_parse_arguments_config_with_subaction_and_required_flags_does_not_raise(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('config', 'bootstrap', '--repository', 'repo.borg')
+
+
+def test_parse_arguments_config_with_subaction_and_global_flags_does_not_raise(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('--verbosity', '1', 'config', 'bootstrap', '--repository', 'repo.borg')

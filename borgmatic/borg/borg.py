@@ -38,10 +38,7 @@ def run_arbitrary_borg(
         borg_command = tuple(options[:command_options_start_index])
         command_options = tuple(options[command_options_start_index:])
 
-        if (
-            borg_command
-            and borg_command[0] in borgmatic.commands.arguments.SUBPARSER_ALIASES.keys()
-        ):
+        if borg_command and borg_command[0] in borgmatic.commands.arguments.ACTION_ALIASES.keys():
             logger.warning(
                 f"Borg's {borg_command[0]} subcommand is supported natively by borgmatic. Try this instead: borgmatic {borg_command[0]}"
             )

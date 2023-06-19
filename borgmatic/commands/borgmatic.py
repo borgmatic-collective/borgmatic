@@ -621,7 +621,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
             )
             yield logging.makeLogRecord(
                 dict(
-                    levelno=logging.INFO,
+                    levelno=logging.ANSWER,
                     levelname='INFO',
                     msg='Bootstrap successful',
                 )

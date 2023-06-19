@@ -1,7 +1,7 @@
 1.7.15.dev0
  * #399: Add a documentation troubleshooting note for MySQL/MariaDB authentication errors.
- * #697: Extract borgmatic configuration from backup via "bootstrap" action—even when borgmatic
-   has no configuration yet!
+ * #697, #712: Extract borgmatic configuration from backup via "bootstrap" action—even when
+   borgmatic has no configuration yet!
  * #669: Add sample systemd user service for running borgmatic as a non-root user.
 
 1.7.14
