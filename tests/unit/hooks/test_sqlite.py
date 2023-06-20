@@ -118,7 +118,9 @@ def test_restore_database_dump_restores_database():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    database_config = [{'path': '/path/to/database', 'name': 'database'}]
+    database_config = [
+        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+    ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(

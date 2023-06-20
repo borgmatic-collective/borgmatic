@@ -304,6 +304,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
             'username': 'mongo',
             'password': 'trustsome1',
             'authentication_database': 'admin',
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+            'restore_username': 'restoreusername',
+            'restore_password': 'restorepassword',
             'schemas': None,
         }
     ]

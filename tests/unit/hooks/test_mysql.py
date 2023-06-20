@@ -519,7 +519,17 @@ def test_restore_database_dump_runs_mysql_with_username_and_password():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    database_config = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
+    database_config = [
+        {
+            'name': 'foo',
+            'username': 'root',
+            'password': 'trustsome1',
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+            'restore_username': 'restoreusername',
+            'restore_password': 'restorepassword',
+        }
+    ]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(

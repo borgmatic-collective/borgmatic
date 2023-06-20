@@ -656,6 +656,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
             'port': 5433,
             'username': 'postgres',
             'password': 'trustsome1',
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+            'restore_username': 'restoreusername',
+            'restore_password': 'restorepassword',
             'schemas': None,
         }
     ]
