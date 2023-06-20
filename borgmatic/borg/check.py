@@ -342,7 +342,7 @@ def upgrade_check_times(location_config, borg_repository_id):
         temporary_path = f'{old_path}.temp'
 
         if not os.path.isfile(old_path) and not os.path.isfile(temporary_path):
-            return
+            continue
 
         logger.debug(f'Upgrading archives check time from {old_path} to {new_path}')
 

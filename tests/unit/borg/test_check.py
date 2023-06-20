@@ -544,6 +544,34 @@ def test_upgrade_check_times_renames_old_check_paths_to_all():
     module.upgrade_check_times(flexmock(), flexmock())
 
 
+def test_upgrade_check_times_renames_data_check_paths_when_archives_paths_are_already_upgraded():
+    base_path = '~/.borgmatic/checks/1234'
+    flexmock(module).should_receive('make_check_time_path').with_args(
+        object, object, 'archives', 'all'
+    ).and_return(f'{base_path}/archives/all')
+    flexmock(module).should_receive('make_check_time_path').with_args(
+        object, object, 'data', 'all'
+    ).and_return(f'{base_path}/data/all')
+    flexmock(module.os.path).should_receive('isfile').with_args(f'{base_path}/archives').and_return(
+        False
+    )
+    flexmock(module.os.path).should_receive('isfile').with_args(
+        f'{base_path}/archives.temp'
+    ).and_return(False)
+    flexmock(module.os.path).should_receive('isfile').with_args(f'{base_path}/data').and_return(
+        True
+    )
+    flexmock(module.os).should_receive('rename').with_args(
+        f'{base_path}/data', f'{base_path}/data.temp'
+    ).once()
+    flexmock(module.os).should_receive('mkdir').with_args(f'{base_path}/data').once()
+    flexmock(module.os).should_receive('rename').with_args(
+        f'{base_path}/data.temp', f'{base_path}/data/all'
+    ).once()
+
+    module.upgrade_check_times(flexmock(), flexmock())
+
+
 def test_upgrade_check_times_skips_missing_check_paths():
     flexmock(module).should_receive('make_check_time_path').and_return(
         '~/.borgmatic/checks/1234/archives/all'
