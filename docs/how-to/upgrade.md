@@ -61,21 +61,22 @@ and, if desired, replace your original configuration file with it.
 borgmatic changed its configuration file format in version 1.1.0 from
 INI-style to YAML. This better supports validation, and has a more natural way
 to express lists of values. To upgrade your existing configuration, first
-upgrade to the new version of borgmatic.
+upgrade to the last version of borgmatic to support converting configuration:
+borgmatic 1.7.14.
 
 As of version 1.1.0, borgmatic no longer supports Python 2. If you were
 already running borgmatic with Python 3, then you can upgrade borgmatic
 in-place:
 
 ```bash
-sudo pip3 install --user --upgrade borgmatic
+sudo pip3 install --user --upgrade borgmatic==1.7.14
 ```
 
 But if you were running borgmatic with Python 2, uninstall and reinstall instead:
 
 ```bash
 sudo pip uninstall borgmatic
-sudo pip3 install --user borgmatic
+sudo pip3 install --user borgmatic==1.7.14
 ```
 
 The pip binary names for different versions of Python can differ, so the above
@@ -93,28 +94,11 @@ That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
 excludes files. The new version of borgmatic will consume the YAML
 configuration file instead of the old one.
 
-
-### Upgrading from atticmatic
-
-You can ignore this section if you're not an atticmatic user (the former name
-of borgmatic).
-
-borgmatic only supports Borg now and no longer supports Attic. So if you're
-an Attic user, consider switching to Borg. See the [Borg upgrade
-command](https://borgbackup.readthedocs.io/en/stable/usage.html#borg-upgrade)
-for more information. Then, follow the instructions above about setting up
-your borgmatic configuration files.
-
-If you were already using Borg with atticmatic, then you can upgrade
-from atticmatic to borgmatic by running the following commands:
+Now you can upgrade to a newer version of borgmatic:
 
 ```bash
-sudo pip3 uninstall atticmatic
 sudo pip3 install --user borgmatic
 ```
-
-That's it! borgmatic will continue using your /etc/borgmatic configuration
-files.
 
 
 ## Upgrading Borg
