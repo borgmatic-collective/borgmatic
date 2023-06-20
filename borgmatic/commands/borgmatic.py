@@ -36,7 +36,7 @@ import borgmatic.commands.completion.fish
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
-from borgmatic.config import checks, collect, convert, validate
+from borgmatic.config import checks, collect, validate
 from borgmatic.hooks import command, dispatch, monitor
 from borgmatic.logger import DISABLED, add_custom_log_levels, configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
@@ -785,7 +785,6 @@ def main():  # pragma: no cover
         exit_with_help_link()
 
     logger.debug('Ensuring legacy configuration is upgraded')
-    convert.guard_configuration_upgraded(LEGACY_CONFIG_PATH, config_filenames)
 
     summary_logs = parse_logs + list(collect_configuration_run_summary_logs(configs, arguments))
     summary_logs_max_level = max(log.levelno for log in summary_logs)
