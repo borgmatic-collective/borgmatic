@@ -161,17 +161,21 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers):
 
         subaction_parsers = get_subaction_parsers(action_parser)
 
-        # Parse with subaction parsers, if any.
+        # But first parse with subaction parsers, if any.
         if subaction_parsers:
             subactions_parsed = False
 
             for subaction_name, subaction_parser in subaction_parsers.items():
                 remaining_action_arguments.append(
-                    parse_and_record_action_arguments(
-                        unparsed_arguments,
-                        arguments,
-                        subaction_parser,
-                        subaction_name,
+                    tuple(
+                        argument
+                        for argument in parse_and_record_action_arguments(
+                            unparsed_arguments,
+                            arguments,
+                            subaction_parser,
+                            subaction_name,
+                        )
+                        if argument != action_name
                     )
                 )
 

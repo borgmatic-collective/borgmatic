@@ -587,7 +587,13 @@ def test_parse_arguments_config_with_subaction_and_required_flags_does_not_raise
     module.parse_arguments('config', 'bootstrap', '--repository', 'repo.borg')
 
 
-def test_parse_arguments_config_with_subaction_and_global_flags_does_not_raise(capsys):
+def test_parse_arguments_config_with_subaction_and_global_flags_at_start_does_not_raise(capsys):
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--verbosity', '1', 'config', 'bootstrap', '--repository', 'repo.borg')
+
+
+def test_parse_arguments_config_with_subaction_and_global_flags_at_end_does_not_raise(capsys):
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('config', 'bootstrap', '--repository', 'repo.borg', '--verbosity', '1')
