@@ -41,8 +41,8 @@ borgmatic config generate --source config.yaml --destination config-new.yaml
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.7.15</span> The
-command to generate configuation files was `generate-borgmatic-config` instead
-of `borgmatic config generate`.
+command to generate configuration files was `generate-borgmatic-config`
+instead of `borgmatic config generate`.
 
 New options start as commented out, so you can edit the file and decide
 whether you want to use each one.

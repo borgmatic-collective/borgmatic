@@ -33,8 +33,8 @@ sudo borgmatic config generate --destination /etc/borgmatic.d/repo2.yaml
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.7.15</span> The
-command to generate configuation files was `generate-borgmatic-config` instead
-of `borgmatic config generate`.
+command to generate configuration files was `generate-borgmatic-config`
+instead of `borgmatic config generate`.
 
 When you set up multiple configuration files like this, borgmatic will run
 each one in turn from a single borgmatic invocation. This includes, by

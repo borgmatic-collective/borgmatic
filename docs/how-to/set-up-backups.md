@@ -125,7 +125,7 @@ sudo borgmatic config generate
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.7.15</span>
-Generate a configuation file with this command instead:
+Generate a configuration file with this command instead:
 
 ```bash
 sudo generate-borgmatic-config
