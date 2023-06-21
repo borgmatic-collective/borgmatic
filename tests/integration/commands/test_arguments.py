@@ -561,7 +561,7 @@ def test_parse_arguments_config_with_help_shows_config_help(capsys):
     assert 'config sub-actions:' in captured.out
 
 
-def test_parse_arguments_config_with_subaction_but_missing_flags_errors(capsys):
+def test_parse_arguments_config_with_subaction_but_missing_flags_errors():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit) as exit:
@@ -581,19 +581,27 @@ def test_parse_arguments_config_with_subaction_and_help_shows_subaction_help(cap
     assert 'config bootstrap arguments:' in captured.out
 
 
-def test_parse_arguments_config_with_subaction_and_required_flags_does_not_raise(capsys):
+def test_parse_arguments_config_with_subaction_and_required_flags_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('config', 'bootstrap', '--repository', 'repo.borg')
 
 
-def test_parse_arguments_config_with_subaction_and_global_flags_at_start_does_not_raise(capsys):
+def test_parse_arguments_config_with_subaction_and_global_flags_at_start_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('--verbosity', '1', 'config', 'bootstrap', '--repository', 'repo.borg')
 
 
-def test_parse_arguments_config_with_subaction_and_global_flags_at_end_does_not_raise(capsys):
+def test_parse_arguments_config_with_subaction_and_global_flags_at_end_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments('config', 'bootstrap', '--repository', 'repo.borg', '--verbosity', '1')
+
+
+def test_parse_arguments_config_with_subaction_and_explicit_config_file_does_not_raise():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments(
+        'config', 'bootstrap', '--repository', 'repo.borg', '--config', 'test.yaml'
+    )
