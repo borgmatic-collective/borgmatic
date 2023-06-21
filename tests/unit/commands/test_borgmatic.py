@@ -962,6 +962,81 @@ def test_get_local_path_without_local_path_defaults_to_borg():
     assert module.get_local_path({'test.yaml': {'location': {}}}) == 'borg'
 
 
+def test_collect_highlander_action_summary_logs_info_for_success_with_bootstrap():
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap')
+    arguments = {
+        'bootstrap': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+    assert {log.levelno for log in logs} == {logging.ANSWER}
+
+
+def test_collect_highlander_action_summary_logs_error_on_bootstrap_failure():
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap').and_raise(
+        ValueError
+    )
+    arguments = {
+        'bootstrap': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_error_on_bootstrap_local_borg_version_failure():
+    flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
+    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap').never()
+    arguments = {
+        'bootstrap': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_info_for_success_with_generate():
+    flexmock(module.borgmatic.actions.config.generate).should_receive('run_generate')
+    arguments = {
+        'generate': flexmock(destination='test.yaml'),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+    assert {log.levelno for log in logs} == {logging.ANSWER}
+
+
+def test_collect_highlander_action_summary_logs_error_on_generate_failure():
+    flexmock(module.borgmatic.actions.config.generate).should_receive('run_generate').and_raise(
+        ValueError
+    )
+    arguments = {
+        'generate': flexmock(destination='test.yaml'),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
@@ -998,41 +1073,6 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     )
 
     assert {log.levelno for log in logs} == {logging.INFO}
-
-
-def test_collect_configuration_run_summary_logs_info_for_success_with_bootstrap():
-    flexmock(module.validate).should_receive('guard_single_repository_selected').never()
-    flexmock(module.validate).should_receive('guard_configuration_contains_repository').never()
-    flexmock(module).should_receive('run_configuration').never()
-    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap')
-    arguments = {
-        'bootstrap': flexmock(repository='repo'),
-        'global': flexmock(monitoring_verbosity=1, dry_run=False),
-    }
-
-    logs = tuple(
-        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
-    )
-    assert {log.levelno for log in logs} == {logging.ANSWER}
-
-
-def test_collect_configuration_run_summary_logs_error_on_bootstrap_failure():
-    flexmock(module.validate).should_receive('guard_single_repository_selected').never()
-    flexmock(module.validate).should_receive('guard_configuration_contains_repository').never()
-    flexmock(module).should_receive('run_configuration').never()
-    flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap').and_raise(
-        ValueError
-    )
-    arguments = {
-        'bootstrap': flexmock(repository='repo'),
-        'global': flexmock(monitoring_verbosity=1, dry_run=False),
-    }
-
-    logs = tuple(
-        module.collect_configuration_run_summary_logs({'test.yaml': {}}, arguments=arguments)
-    )
-
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
 
 
 def test_collect_configuration_run_summary_logs_extract_with_repository_error():

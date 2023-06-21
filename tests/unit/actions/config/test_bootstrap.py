@@ -124,4 +124,5 @@ def test_run_bootstrap_does_not_raise():
     flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
         'archive'
     )
+
     module.run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version)

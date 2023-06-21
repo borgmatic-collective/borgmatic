@@ -1,63 +1,17 @@
+import logging
 import sys
-from argparse import ArgumentParser
 
-from borgmatic.config import generate, validate
-
-DEFAULT_DESTINATION_CONFIG_FILENAME = '/etc/borgmatic/config.yaml'
+import borgmatic.commands.borgmatic
 
 
-def parse_arguments(*arguments):
-    '''
-    Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as an ArgumentParser instance.
-    '''
-    parser = ArgumentParser(description='Generate a sample borgmatic YAML configuration file.')
-    parser.add_argument(
-        '-s',
-        '--source',
-        dest='source_filename',
-        help='Optional YAML configuration file to merge into the generated configuration, useful for upgrading your configuration',
-    )
-    parser.add_argument(
-        '-d',
-        '--destination',
-        dest='destination_filename',
-        default=DEFAULT_DESTINATION_CONFIG_FILENAME,
-        help=f'Destination YAML configuration file, default: {DEFAULT_DESTINATION_CONFIG_FILENAME}',
-    )
-    parser.add_argument(
-        '--overwrite',
-        default=False,
-        action='store_true',
-        help='Whether to overwrite any existing destination file, defaults to false',
-    )
-
-    return parser.parse_args(arguments)
-
-
-def main():  # pragma: no cover
-    try:
-        args = parse_arguments(*sys.argv[1:])
-
-        generate.generate_sample_configuration(
-            args.source_filename,
-            args.destination_filename,
-            validate.schema_filename(),
-            overwrite=args.overwrite,
+def main():
+    warning_log = logging.makeLogRecord(
+        dict(
+            levelno=logging.WARNING,
+            levelname='WARNING',
+            msg='generate-borgmatic-config is deprecated and will be removed from a future release. Please use "borgmatic config generate" instead.',
         )
+    )
 
-        print(f'Generated a sample configuration file at {args.destination_filename}.')
-        print()
-        if args.source_filename:
-            print(f'Merged in the contents of configuration file at {args.source_filename}.')
-            print('To review the changes made, run:')
-            print()
-            print(f'    diff --unified {args.source_filename} {args.destination_filename}')
-            print()
-        print('This includes all available configuration options with example values. The few')
-        print('required options are indicated. Please edit the file to suit your needs.')
-        print()
-        print('If you ever need help: https://torsion.org/borgmatic/#issues')
-    except (ValueError, OSError) as error:
-        print(error, file=sys.stderr)
-        sys.exit(1)
+    sys.argv = ['borgmatic', 'config', 'generate'] + sys.argv[1:]
+    borgmatic.commands.borgmatic.main([warning_log])

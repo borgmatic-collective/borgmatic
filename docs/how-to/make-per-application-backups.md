@@ -20,17 +20,21 @@ instance, for applications:
 
 ```bash
 sudo mkdir /etc/borgmatic.d
-sudo generate-borgmatic-config --destination /etc/borgmatic.d/app1.yaml
-sudo generate-borgmatic-config --destination /etc/borgmatic.d/app2.yaml
+sudo borgmatic config generate --destination /etc/borgmatic.d/app1.yaml
+sudo borgmatic config generate --destination /etc/borgmatic.d/app2.yaml
 ```
 
 Or, for repositories:
 
 ```bash
 sudo mkdir /etc/borgmatic.d
-sudo generate-borgmatic-config --destination /etc/borgmatic.d/repo1.yaml
-sudo generate-borgmatic-config --destination /etc/borgmatic.d/repo2.yaml
+sudo borgmatic config generate --destination /etc/borgmatic.d/repo1.yaml
+sudo borgmatic config generate --destination /etc/borgmatic.d/repo2.yaml
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.15</span> The
+command to generate configuation files was `generate-borgmatic-config` instead
+of `borgmatic config generate`.
 
 When you set up multiple configuration files like this, borgmatic will run
 each one in turn from a single borgmatic invocation. This includes, by

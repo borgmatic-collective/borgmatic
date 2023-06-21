@@ -267,7 +267,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
 
 
 def generate_sample_configuration(
-    source_filename, destination_filename, schema_filename, overwrite=False
+    dry_run, source_filename, destination_filename, schema_filename, overwrite=False
 ):
     '''
     Given an optional source configuration filename, and a required destination configuration
@@ -286,6 +286,9 @@ def generate_sample_configuration(
     destination_config = merge_source_configuration_into_destination(
         _schema_to_sample_configuration(schema), source_config
     )
+
+    if dry_run:
+        return
 
     write_configuration(
         destination_filename,

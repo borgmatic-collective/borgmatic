@@ -695,14 +695,12 @@ def make_parsers():
 
     config_parsers = config_parser.add_subparsers(
         title='config sub-actions',
-        description='Valid sub-actions for config',
-        help='Additional help',
     )
 
     config_bootstrap_parser = config_parsers.add_parser(
         'bootstrap',
-        help='Extract the config files used to create a borgmatic repository',
-        description='Extract config files that were used to create a borgmatic repository during the "create" action',
+        help='Extract the borgmatic config files from a named archive',
+        description='Extract the borgmatic config files from a named archive',
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group(
@@ -743,6 +741,36 @@ def make_parsers():
         help='Display progress for each file as it is extracted',
     )
     config_bootstrap_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    config_generate_parser = config_parsers.add_parser(
+        'generate',
+        help='Generate a sample borgmatic configuration file',
+        description='Generate a sample borgmatic configuration file',
+        add_help=False,
+    )
+    config_generate_group = config_generate_parser.add_argument_group('config generate arguments')
+    config_generate_group.add_argument(
+        '-s',
+        '--source',
+        dest='source_filename',
+        help='Optional configuration file to merge into the generated configuration, useful for upgrading your configuration',
+    )
+    config_generate_group.add_argument(
+        '-d',
+        '--destination',
+        dest='destination_filename',
+        default=config_paths[0],
+        help=f'Destination configuration file, default: {unexpanded_config_paths[0]}',
+    )
+    config_generate_group.add_argument(
+        '--overwrite',
+        default=False,
+        action='store_true',
+        help='Whether to overwrite any existing destination file, defaults to false',
+    )
+    config_generate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -1170,10 +1198,11 @@ def parse_arguments(*unparsed_arguments):
         unparsed_arguments, action_parsers.choices
     )
 
-    if 'bootstrap' in arguments.keys() and len(arguments.keys()) > 1:
-        raise ValueError(
-            'The bootstrap action cannot be combined with other actions. Please run it separately.'
-        )
+    for action_name in ('bootstrap', 'generate', 'validate'):
+        if action_name in arguments.keys() and len(arguments.keys()) > 1:
+            raise ValueError(
+                'The {action_name} action cannot be combined with other actions. Please run it separately.'
+            )
 
     arguments['global'] = top_level_parser.parse_args(remaining_arguments)
 

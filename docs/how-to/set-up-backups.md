@@ -121,15 +121,23 @@ offerings, but do not currently fund borgmatic development or hosting.
 After you install borgmatic, generate a sample configuration file:
 
 ```bash
+sudo borgmatic config generate
+```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.15</span>
+Generate a configuation file with this command instead:
+
+```bash
 sudo generate-borgmatic-config
 ```
 
-If that command is not found, then it may be installed in a location that's
-not in your system `PATH` (see above). Try looking in `~/.local/bin/`.
+If neither command is found, then borgmatic may be installed in a location
+that's not in your system `PATH` (see above). Try looking in `~/.local/bin/`.
 
-This generates a sample configuration file at `/etc/borgmatic/config.yaml` by
-default. If you'd like to use another path, use the `--destination` flag, for
-instance: `--destination ~/.config/borgmatic/config.yaml`.
+The command generates a sample configuration file at
+`/etc/borgmatic/config.yaml` by default. If you'd like to use another path,
+use the `--destination` flag, for instance: `--destination
+~/.config/borgmatic/config.yaml`.
 
 You should edit the configuration file to suit your needs, as the generated
 values are only representative. All options are optional except where

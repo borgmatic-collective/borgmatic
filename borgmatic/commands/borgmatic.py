@@ -19,6 +19,7 @@ import borgmatic.actions.break_lock
 import borgmatic.actions.check
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
+import borgmatic.actions.config.generate
 import borgmatic.actions.create
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
@@ -602,19 +603,24 @@ def get_local_path(configs):
     return next(iter(configs.values())).get('location', {}).get('local_path', 'borg')
 
 
-def collect_configuration_run_summary_logs(configs, arguments):
+def collect_highlander_action_summary_logs(configs, arguments):
     '''
-    Given a dict of configuration filename to corresponding parsed configuration, and parsed
+    Given a dict of configuration filename to corresponding parsed configuration and parsed
     command-line arguments as a dict from subparser name to a parsed namespace of arguments, run
-    each configuration file and yield a series of logging.LogRecord instances containing summary
-    information about each run.
+    a highlander action specified in the arguments, if any, and yield a series of logging.LogRecord
+    instances containing summary information.
 
-    As a side effect of running through these configuration files, output their JSON results, if
-    any, to stdout.
+    A highlander action is an action that cannot coexist with other actions on the borgmatic
+    command-line, and borgmatic exits after processing such an action.
     '''
     if 'bootstrap' in arguments:
-        # No configuration file is needed for bootstrap.
-        local_borg_version = borg_version.local_borg_version({}, 'borg')
+        try:
+            # No configuration file is needed for bootstrap.
+            local_borg_version = borg_version.local_borg_version({}, 'borg')
+        except (OSError, CalledProcessError, ValueError) as error:
+            yield from log_error_records('Error getting local Borg version', error)
+            return
+
         try:
             borgmatic.actions.config.bootstrap.run_bootstrap(
                 arguments['bootstrap'], arguments['global'], local_borg_version
@@ -622,7 +628,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
             yield logging.makeLogRecord(
                 dict(
                     levelno=logging.ANSWER,
-                    levelname='INFO',
+                    levelname='ANSWER',
                     msg='Bootstrap successful',
                 )
             )
@@ -635,6 +641,38 @@ def collect_configuration_run_summary_logs(configs, arguments):
 
         return
 
+    if 'generate' in arguments:
+        try:
+            borgmatic.actions.config.generate.run_generate(
+                arguments['generate'], arguments['global']
+            )
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.ANSWER,
+                    levelname='ANSWER',
+                    msg='Generate successful',
+                )
+            )
+        except (
+            CalledProcessError,
+            ValueError,
+            OSError,
+        ) as error:
+            yield from log_error_records(error)
+
+        return
+
+
+def collect_configuration_run_summary_logs(configs, arguments):
+    '''
+    Given a dict of configuration filename to corresponding parsed configuration and parsed
+    command-line arguments as a dict from subparser name to a parsed namespace of arguments, run
+    each configuration file and yield a series of logging.LogRecord instances containing summary
+    information about each run.
+
+    As a side effect of running through these configuration files, output their JSON results, if
+    any, to stdout.
+    '''
     # Run cross-file validation checks.
     repository = None
 
@@ -730,7 +768,7 @@ def exit_with_help_link():  # pragma: no cover
     sys.exit(1)
 
 
-def main():  # pragma: no cover
+def main(extra_summary_logs=[]):  # pragma: no cover
     configure_signals()
 
     try:
@@ -786,7 +824,14 @@ def main():  # pragma: no cover
 
     logger.debug('Ensuring legacy configuration is upgraded')
 
-    summary_logs = parse_logs + list(collect_configuration_run_summary_logs(configs, arguments))
+    summary_logs = (
+        parse_logs
+        + (
+            list(collect_highlander_action_summary_logs(configs, arguments))
+            or list(collect_configuration_run_summary_logs(configs, arguments))
+        )
+        + extra_summary_logs
+    )
     summary_logs_max_level = max(log.levelno for log in summary_logs)
 
     for message in ('', 'summary:'):

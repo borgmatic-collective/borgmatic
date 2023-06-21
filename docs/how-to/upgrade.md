@@ -29,29 +29,33 @@ configuration options. This is completely optional. If you prefer, you can add
 new configuration options manually.
 
 If you do want to upgrade your configuration file to include new options, use
-the `generate-borgmatic-config` script with its optional `--source` flag that
+the `borgmatic config generate` action with its optional `--source` flag that
 takes the path to your original configuration file. If provided with this
-path, `generate-borgmatic-config` merges your original configuration into the
+path, `borgmatic config generate` merges your original configuration into the
 generated configuration file, so you get all the newest options and comments.
 
 Here's an example:
 
 ```bash
-generate-borgmatic-config --source config.yaml --destination config-new.yaml
+borgmatic config generate --source config.yaml --destination config-new.yaml
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.15</span> The
+command to generate configuation files was `generate-borgmatic-config` instead
+of `borgmatic config generate`.
 
 New options start as commented out, so you can edit the file and decide
 whether you want to use each one.
 
 There are a few caveats to this process. First, when generating the new
-configuration file, `generate-borgmatic-config` replaces any comments you've
+configuration file, `borgmatic config generate` replaces any comments you've
 written in your original configuration file with the newest generated
 comments. Second, the script adds back any options you had originally deleted,
 although it does so with the options commented out. And finally, any YAML
 includes you've used in the source configuration get flattened out into a
 single generated file.
 
-As a safety measure, `generate-borgmatic-config` refuses to modify
+As a safety measure, `borgmatic config generate` refuses to modify
 configuration files in-place. So it's up to you to review the generated file
 and, if desired, replace your original configuration file with it.
 

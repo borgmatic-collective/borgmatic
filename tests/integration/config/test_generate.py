@@ -210,7 +210,7 @@ def test_generate_sample_configuration_does_not_raise():
     flexmock(module).should_receive('_comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
-    module.generate_sample_configuration(None, 'dest.yaml', 'schema.yaml')
+    module.generate_sample_configuration(False, None, 'dest.yaml', 'schema.yaml')
 
 
 def test_generate_sample_configuration_with_source_filename_does_not_raise():
@@ -225,4 +225,17 @@ def test_generate_sample_configuration_with_source_filename_does_not_raise():
     flexmock(module).should_receive('_comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
-    module.generate_sample_configuration('source.yaml', 'dest.yaml', 'schema.yaml')
+    module.generate_sample_configuration(False, 'source.yaml', 'dest.yaml', 'schema.yaml')
+
+
+def test_generate_sample_configuration_with_dry_run_does_not_write_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    flexmock(module.yaml).should_receive('round_trip_load')
+    flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module).should_receive('render_configuration')
+    flexmock(module).should_receive('_comment_out_optional_configuration')
+    flexmock(module).should_receive('write_configuration').never()
+
+    module.generate_sample_configuration(True, None, 'dest.yaml', 'schema.yaml')

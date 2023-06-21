@@ -167,6 +167,6 @@ def fish_completion():
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{exact_options_completion(action)}'''
             for action_name, subparser in subparsers.choices.items()
             for action in subparser._actions
-            if 'Deprecated' not in action.help
+            if 'Deprecated' not in (action.help or ())
         )
     )
