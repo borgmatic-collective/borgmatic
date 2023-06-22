@@ -7,11 +7,17 @@ eleventyNavigation:
 ---
 ## Configuration file
 
-Here is a full sample borgmatic configuration file including all available options: 
+Below is a sample borgmatic configuration file including all available options
+for the most recent version of borgmatic. This file is also [available for
+download](https://torsion.org/borgmatic/docs/reference/config.yaml).
+
+If you're an older version of borgmatic, some of these options may not work,
+and you should instead [generate a sample configuration file specific to your
+borgmatic
+version](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#configuration).
 
 ```yaml
 {% include borgmatic/config.yaml %}
 ```
 
 Note that you can also [download this configuration
-file](https://torsion.org/borgmatic/docs/reference/config.yaml) for use locally.
