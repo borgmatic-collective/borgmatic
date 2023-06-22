@@ -5,7 +5,9 @@ def test_dev_docker_compose_has_same_services_as_build_server_configuration():
     yaml = ruamel.yaml.YAML(typ='safe')
     dev_services = {
         name: service
-        for name, service in yaml.load(open('tests/end-to-end/docker-compose.yaml').read())['services'].items()
+        for name, service in yaml.load(open('tests/end-to-end/docker-compose.yaml').read())[
+            'services'
+        ].items()
         if name != 'tests'
     }
     build_server_services = tuple(yaml.load_all(open('.drone.yml').read()))[0]['services']
