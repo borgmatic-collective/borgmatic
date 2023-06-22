@@ -8,7 +8,9 @@ eleventyNavigation:
 ## Configuration file
 
 Below is a sample borgmatic configuration file including all available options
-for the most recent version of borgmatic. This file is also [available for
+for the [most recent version of
+borgmatic](https://projects.torsion.org/borgmatic-collective/borgmatic/releases).
+This file is also [available for
 download](https://torsion.org/borgmatic/docs/reference/config.yaml).
 
 If you're an older version of borgmatic, some of these options may not work,
