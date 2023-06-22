@@ -185,7 +185,9 @@ def make_database_dump_pattern(
     return dump.make_database_dump_filename(make_dump_path(location_config), name, hostname='*')
 
 
-def restore_database_dump(database_config, log_prefix, location_config, dry_run, extract_process):
+def restore_database_dump(
+    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+):
     '''
     Restore the given MySQL/MariaDB database from an extract stream. The database is supplied as a
     one-element sequence containing a dict describing the database, as per the configuration schema.
@@ -199,15 +201,27 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
         raise ValueError('The database configuration value is invalid')
 
     database = database_config[0]
+
+    hostname = connection_params['hostname'] or database.get(
+        'restore_hostname', database.get('hostname')
+    )
+    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
+    username = connection_params['username'] or database.get(
+        'restore_username', database.get('username')
+    )
+    password = connection_params['password'] or database.get(
+        'restore_password', database.get('password')
+    )
+
     restore_command = (
         ('mysql', '--batch')
         + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
-        + (('--host', database['hostname']) if 'hostname' in database else ())
-        + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (('--user', database['username']) if 'username' in database else ())
+        + (('--host', hostname) if hostname else ())
+        + (('--port', str(port)) if port else ())
+        + (('--protocol', 'tcp') if hostname or port else ())
+        + (('--user', username) if username else ())
     )
-    extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
+    extra_environment = {'MYSQL_PWD': password} if password else None
 
     logger.debug(f"{log_prefix}: Restoring MySQL database {database['name']}{dry_run_label}")
     if dry_run:
