@@ -15,7 +15,7 @@ services:
       POSTGRES_DB: test
       POSTGRES_USER: postgres2
     commands:
-      - -p 5433
+      - postgres -p 5433
   - name: mysql
     image: docker.io/mariadb:10.5
     environment:
@@ -27,7 +27,7 @@ services:
       MYSQL_ROOT_PASSWORD: test2
       MYSQL_DATABASE: test
     commands:
-      - --port=3307
+      - mysqld --port=3307
   - name: mongodb
     image: docker.io/mongo:5.0.5
     environment:
@@ -39,7 +39,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root2
       MONGO_INITDB_ROOT_PASSWORD: test2
     commands:
-      - --port=27018
+      - mongod --port=27018
 
 clone:
   skip_verify: true
