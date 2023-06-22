@@ -171,7 +171,17 @@ def test_restore_database_dump_runs_mongorestore():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -185,7 +195,17 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config, 'test.yaml', {}, dry_run=False, extract_process=flexmock()
+            database_config,
+            'test.yaml',
+            {},
+            dry_run=False,
+            extract_process=flexmock(),
+            connection_params={
+                'hostname': None,
+                'port': None,
+                'username': None,
+                'password': None,
+            },
         )
 
 
@@ -215,7 +235,17 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -253,7 +283,129 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+    )
+
+
+def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
+    database_config = [
+        {
+            'name': 'foo',
+            'username': 'mongo',
+            'password': 'trustsome1',
+            'authentication_database': 'admin',
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+            'restore_username': 'restoreusername',
+            'restore_password': 'restorepassword',
+            'schemas': None,
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        [
+            'mongorestore',
+            '--archive',
+            '--drop',
+            '--db',
+            'foo',
+            '--host',
+            'clihost',
+            '--port',
+            'cliport',
+            '--username',
+            'cliusername',
+            '--password',
+            'clipassword',
+            '--authenticationDatabase',
+            'admin',
+        ],
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': 'clihost',
+            'port': 'cliport',
+            'username': 'cliusername',
+            'password': 'clipassword',
+        },
+    )
+
+
+def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
+    database_config = [
+        {
+            'name': 'foo',
+            'username': 'mongo',
+            'password': 'trustsome1',
+            'authentication_database': 'admin',
+            'schemas': None,
+            'restore_hostname': 'restorehost',
+            'restore_port': 'restoreport',
+            'restore_username': 'restoreuser',
+            'restore_password': 'restorepass',
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_database_dump_filename')
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        [
+            'mongorestore',
+            '--archive',
+            '--drop',
+            '--db',
+            'foo',
+            '--host',
+            'restorehost',
+            '--port',
+            'restoreport',
+            '--username',
+            'restoreuser',
+            '--password',
+            'restorepass',
+            '--authenticationDatabase',
+            'admin',
+        ],
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -271,7 +423,17 @@ def test_restore_database_dump_runs_mongorestore_with_options():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -299,7 +461,17 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -317,7 +489,17 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -329,7 +511,17 @@ def test_restore_database_dump_with_dry_run_skips_restore():
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=True, extract_process=flexmock()
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=True,
+        extract_process=flexmock(),
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )
 
 
@@ -346,5 +538,15 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
     ).once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=None
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=None,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
     )

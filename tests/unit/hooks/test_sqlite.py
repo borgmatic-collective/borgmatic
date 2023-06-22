@@ -1,3 +1,4 @@
+import logging
 import pytest
 from flexmock import flexmock
 
@@ -94,12 +95,81 @@ def test_restore_database_dump_restores_database():
     database_config = [{'path': '/path/to/database', 'name': 'database'}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module).should_receive('execute_command_with_processes').once()
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'sqlite3',
+            '/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
 
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
+    )
+
+
+def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
+    database_config = [
+        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'sqlite3',
+            'cli/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    flexmock(module.os).should_receive('remove').once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': 'cli/path/to/database'},
+    )
+
+
+def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
+    database_config = [
+        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'sqlite3',
+            'config/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    flexmock(module.os).should_receive('remove').once()
+
+    module.restore_database_dump(
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
     )
 
 
@@ -111,7 +181,12 @@ def test_restore_database_dump_does_not_restore_database_if_dry_run():
     flexmock(module.os).should_receive('remove').never()
 
     module.restore_database_dump(
-        database_config, 'test.yaml', {}, dry_run=True, extract_process=extract_process
+        database_config,
+        'test.yaml',
+        {},
+        dry_run=True,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
     )
 
 
@@ -121,5 +196,10 @@ def test_restore_database_dump_raises_error_if_database_config_is_invalid():
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config, 'test.yaml', {}, dry_run=False, extract_process=extract_process
+            database_config,
+            'test.yaml',
+            {},
+            dry_run=False,
+            extract_process=extract_process,
+            connection_params={'restore_path': None},
         )

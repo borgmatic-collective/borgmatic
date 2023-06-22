@@ -85,7 +85,9 @@ def make_database_dump_pattern(
     return dump.make_database_dump_filename(make_dump_path(location_config), name)
 
 
-def restore_database_dump(database_config, log_prefix, location_config, dry_run, extract_process):
+def restore_database_dump(
+    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+):
     '''
     Restore the given SQLite3 database from an extract stream. The database is supplied as a
     one-element sequence containing a dict describing the database, as per the configuration schema.
@@ -98,7 +100,9 @@ def restore_database_dump(database_config, log_prefix, location_config, dry_run,
     if len(database_config) != 1:
         raise ValueError('The database configuration value is invalid')
 
-    database_path = database_config[0]['path']
+    database_path = connection_params['restore_path'] or database_config[0].get(
+        'restore_path', database_config[0].get('path')
+    )
 
     logger.debug(f'{log_prefix}: Restoring SQLite database at {database_path}{dry_run_label}')
     if dry_run:
