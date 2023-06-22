@@ -2,6 +2,20 @@ import ruamel.yaml
 
 
 def test_dev_docker_compose_has_same_services_as_build_server_configuration():
+    '''
+    The end-to-end test configuration for local development and the build server's test
+    configuration use two different mechanisms for configuring and spinning up "services"—the
+    database containers upon which the end-to-end tests are reliant. The dev configuration uses
+    Docker Compose, while the Drone build server configuration uses its own similar-but-different
+    configuration file format.
+
+    Therefore, to ensure dev-build parity, these tests assert that the services are the same across
+    the dev and build configurations. This includes service name, container image, environment
+    variables, and commands.
+
+    This test only compares services and does not assert anything else about the respective testing
+    environments.
+    '''
     yaml = ruamel.yaml.YAML(typ='safe')
     dev_services = {
         name: service
