@@ -13,9 +13,9 @@ borgmatic](https://projects.torsion.org/borgmatic-collective/borgmatic/releases)
 This file is also [available for
 download](https://torsion.org/borgmatic/docs/reference/config.yaml).
 
-If you're an older version of borgmatic, some of these options may not work,
-and you should instead [generate a sample configuration file specific to your
-borgmatic
+If you're using an older version of borgmatic, some of these options may not
+work, and you should instead [generate a sample configuration file specific to
+your borgmatic
 version](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#configuration).
 
 ```yaml
