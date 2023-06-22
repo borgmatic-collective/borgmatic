@@ -1,4 +1,6 @@
 1.7.15.dev0
+ * #326: Add configuration options and command-line flags for backing up a database from one
+   location while restoring it somewhere else.
  * #399: Add a documentation troubleshooting note for MySQL/MariaDB authentication errors.
  * #529: Remove upgrade-borgmatic-config command for upgrading borgmatic 1.1.0 INI-style
    configuration.

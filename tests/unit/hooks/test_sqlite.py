@@ -1,4 +1,5 @@
 import logging
+
 import pytest
 from flexmock import flexmock
 

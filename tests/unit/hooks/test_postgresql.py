@@ -6,6 +6,50 @@ from flexmock import flexmock
 from borgmatic.hooks import postgresql as module
 
 
+def test_make_extra_environment_maps_options_to_environment():
+    database = {
+        'name': 'foo',
+        'password': 'pass',
+        'ssl_mode': 'require',
+        'ssl_cert': 'cert.crt',
+        'ssl_key': 'key.key',
+        'ssl_root_cert': 'root.crt',
+        'ssl_crl': 'crl.crl',
+    }
+    expected = {
+        'PGPASSWORD': 'pass',
+        'PGSSLMODE': 'require',
+        'PGSSLCERT': 'cert.crt',
+        'PGSSLKEY': 'key.key',
+        'PGSSLROOTCERT': 'root.crt',
+        'PGSSLCRL': 'crl.crl',
+    }
+
+    extra_env = module.make_extra_environment(database)
+
+    assert extra_env == expected
+
+
+def test_make_extra_environment_with_cli_password_sets_correct_password():
+    database = {'name': 'foo', 'restore_password': 'trustsome1', 'password': 'anotherpassword'}
+
+    extra = module.make_extra_environment(
+        database, restore_connection_params={'password': 'clipassword'}
+    )
+
+    assert extra['PGPASSWORD'] == 'clipassword'
+
+
+def test_make_extra_environment_without_cli_password_or_configured_password_does_not_set_password():
+    database = {'name': 'foo'}
+
+    extra = module.make_extra_environment(
+        database, restore_connection_params={'username': 'someone'}
+    )
+
+    assert 'PGPASSWORD' not in extra
+
+
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 
@@ -299,29 +343,6 @@ def test_dump_databases_runs_pg_dump_with_username_and_password():
     ).and_return(process).once()
 
     assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == [process]
-
-
-def test_make_extra_environment_maps_options_to_environment():
-    database = {
-        'name': 'foo',
-        'password': 'pass',
-        'ssl_mode': 'require',
-        'ssl_cert': 'cert.crt',
-        'ssl_key': 'key.key',
-        'ssl_root_cert': 'root.crt',
-        'ssl_crl': 'crl.crl',
-    }
-    expected = {
-        'PGPASSWORD': 'pass',
-        'PGSSLMODE': 'require',
-        'PGSSLCERT': 'cert.crt',
-        'PGSSLKEY': 'key.key',
-        'PGSSLROOTCERT': 'root.crt',
-        'PGSSLCRL': 'crl.crl',
-    }
-
-    extra_env = module.make_extra_environment(database)
-    assert extra_env == expected
 
 
 def test_dump_databases_runs_pg_dump_with_directory_format():
@@ -636,16 +657,6 @@ def test_restore_database_dump_runs_pg_restore_with_username_and_password():
             'password': None,
         },
     )
-
-
-def test_make_extra_environment_with_cli_password_sets_correct_password():
-    database = {'name': 'foo', 'restore_password': 'trustsome1', 'password': 'anotherpassword'}
-
-    extra = module.make_extra_environment(
-        database, restore_connection_params={'password': 'clipassword'}
-    )
-
-    assert extra['PGPASSWORD'] == 'clipassword'
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
