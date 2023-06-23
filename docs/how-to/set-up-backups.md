@@ -186,6 +186,13 @@ If you'd like to validate that your borgmatic configuration is valid, the
 following command is available for that:
 
 ```bash
+sudo borgmatic config validate
+```
+
+<span class="minilink minilink-addedin">Prior to version 1.7.15</span>
+Validate a configuration file with this command instead:
+
+```bash
 sudo validate-borgmatic-config
 ```
 

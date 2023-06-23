@@ -7,6 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 def run_generate(generate_arguments, global_arguments):
+    '''
+    Given the generate arguments and the global arguments, each as an argparse.Namespace instance,
+    run the "generate" action.
+
+    Raise FileExistsError if a file already exists at the destination path and the generate
+    arguments do not have overwrite set.
+    '''
     dry_run_label = ' (dry run; not actually writing anything)' if global_arguments.dry_run else ''
 
     logger.answer(

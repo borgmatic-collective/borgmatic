@@ -877,7 +877,7 @@ def test_load_configurations_collects_parsed_configurations_and_logs():
     configs, logs = tuple(module.load_configurations(('test.yaml', 'other.yaml')))
 
     assert configs == {'test.yaml': configuration, 'other.yaml': other_configuration}
-    assert logs == test_expected_logs + other_expected_logs
+    assert set(logs) >= set(test_expected_logs + other_expected_logs)
 
 
 def test_load_configurations_logs_warning_for_permission_error():
@@ -886,7 +886,7 @@ def test_load_configurations_logs_warning_for_permission_error():
     configs, logs = tuple(module.load_configurations(('test.yaml',)))
 
     assert configs == {}
-    assert {log.levelno for log in logs} == {logging.WARNING}
+    assert max(log.levelno for log in logs) == logging.WARNING
 
 
 def test_load_configurations_logs_critical_for_parse_error():
@@ -895,7 +895,7 @@ def test_load_configurations_logs_critical_for_parse_error():
     configs, logs = tuple(module.load_configurations(('test.yaml',)))
 
     assert configs == {}
-    assert {log.levelno for log in logs} == {logging.CRITICAL}
+    assert max(log.levelno for log in logs) == logging.CRITICAL
 
 
 def test_log_record_does_not_raise():
@@ -971,7 +971,9 @@ def test_collect_highlander_action_summary_logs_info_for_success_with_bootstrap(
     }
 
     logs = tuple(
-        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
     )
     assert {log.levelno for log in logs} == {logging.ANSWER}
 
@@ -987,7 +989,9 @@ def test_collect_highlander_action_summary_logs_error_on_bootstrap_failure():
     }
 
     logs = tuple(
-        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
     )
 
     assert {log.levelno for log in logs} == {logging.CRITICAL}
@@ -1002,7 +1006,9 @@ def test_collect_highlander_action_summary_logs_error_on_bootstrap_local_borg_ve
     }
 
     logs = tuple(
-        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
     )
 
     assert {log.levelno for log in logs} == {logging.CRITICAL}
@@ -1016,7 +1022,9 @@ def test_collect_highlander_action_summary_logs_info_for_success_with_generate()
     }
 
     logs = tuple(
-        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
     )
     assert {log.levelno for log in logs} == {logging.ANSWER}
 
@@ -1031,7 +1039,58 @@ def test_collect_highlander_action_summary_logs_error_on_generate_failure():
     }
 
     logs = tuple(
-        module.collect_highlander_action_summary_logs({'test.yaml': {}}, arguments=arguments)
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_info_for_success_with_validate():
+    flexmock(module.borgmatic.actions.config.validate).should_receive('run_validate')
+    arguments = {
+        'validate': flexmock(),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
+    )
+    assert {log.levelno for log in logs} == {logging.ANSWER}
+
+
+def test_collect_highlander_action_summary_logs_error_on_validate_parse_failure():
+    flexmock(module.borgmatic.actions.config.validate).should_receive('run_validate')
+    arguments = {
+        'validate': flexmock(),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=True
+        )
+    )
+
+    assert {log.levelno for log in logs} == {logging.CRITICAL}
+
+
+def test_collect_highlander_action_summary_logs_error_on_run_validate_failure():
+    flexmock(module.borgmatic.actions.config.validate).should_receive('run_validate').and_raise(
+        ValueError
+    )
+    arguments = {
+        'validate': flexmock(),
+        'global': flexmock(dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_highlander_action_summary_logs(
+            {'test.yaml': {}}, arguments=arguments, configuration_parse_errors=False
+        )
     )
 
     assert {log.levelno for log in logs} == {logging.CRITICAL}

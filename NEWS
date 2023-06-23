@@ -4,7 +4,8 @@
  * #399: Add a documentation troubleshooting note for MySQL/MariaDB authentication errors.
  * #529: Remove upgrade-borgmatic-config command for upgrading borgmatic 1.1.0 INI-style
    configuration.
- * #529: Deprecate generate-borgmatic-config in favor if new "config generate" action.
+ * #529: Deprecate generate-borgmatic-config in favor of new "config generate" action.
+ * #529: Deprecate validate-borgmatic-config in favor of new "config validate" action.
  * #697, #712: Extract borgmatic configuration from backup via new "config bootstrap" action—even
    when borgmatic has no configuration yet!
  * #669: Add sample systemd user service for running borgmatic as a non-root user.

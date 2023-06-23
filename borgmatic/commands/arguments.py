@@ -699,8 +699,8 @@ def make_parsers():
 
     config_bootstrap_parser = config_parsers.add_parser(
         'bootstrap',
-        help='Extract the borgmatic config files from a named archive',
-        description='Extract the borgmatic config files from a named archive',
+        help='Extract the borgmatic configuration files from a named archive',
+        description='Extract the borgmatic configuration files from a named archive',
         add_help=False,
     )
     config_bootstrap_group = config_bootstrap_parser.add_argument_group(
@@ -771,6 +771,23 @@ def make_parsers():
         help='Whether to overwrite any existing destination file, defaults to false',
     )
     config_generate_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    config_validate_parser = config_parsers.add_parser(
+        'validate',
+        help='Validate that borgmatic configuration files specified with --config (see borgmatic --help)',
+        description='Validate borgmatic configuration files specified with --config (see borgmatic --help)',
+        add_help=False,
+    )
+    config_validate_group = config_validate_parser.add_argument_group('config validate arguments')
+    config_validate_group.add_argument(
+        '-s',
+        '--show',
+        action='store_true',
+        help='Show the validated configuration after all include merging has occurred',
+    )
+    config_validate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

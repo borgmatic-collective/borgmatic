@@ -3,7 +3,7 @@ from flexmock import flexmock
 from borgmatic.actions.config import generate as module
 
 
-def test_run_bootstrap_does_not_raise():
+def test_run_generate_does_not_raise():
     generate_arguments = flexmock(
         source_filename=None,
         destination_filename='destination.yaml',
@@ -15,7 +15,7 @@ def test_run_bootstrap_does_not_raise():
     module.run_generate(generate_arguments, global_arguments)
 
 
-def test_run_bootstrap_with_dry_run_does_not_raise():
+def test_run_generate_with_dry_run_does_not_raise():
     generate_arguments = flexmock(
         source_filename=None,
         destination_filename='destination.yaml',
@@ -27,7 +27,7 @@ def test_run_bootstrap_with_dry_run_does_not_raise():
     module.run_generate(generate_arguments, global_arguments)
 
 
-def test_run_bootstrap_with_source_filename_does_not_raise():
+def test_run_generate_with_source_filename_does_not_raise():
     generate_arguments = flexmock(
         source_filename='source.yaml',
         destination_filename='destination.yaml',

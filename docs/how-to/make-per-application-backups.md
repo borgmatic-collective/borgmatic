@@ -399,9 +399,16 @@ includes.
 
 ## Debugging includes
 
-<span class="minilink minilink-addedin">New in version 1.7.12</span> If you'd
+<span class="minilink minilink-addedin">New in version 1.7.15</span> If you'd
 like to see what the loaded configuration looks like after includes get merged
-in, run `validate-borgmatic-config` on your configuration file:
+in, run the `validate` action on your configuration file:
+
+```bash
+sudo borgmatic config validate --show
+```
+
+<span class="minilink minilink-addedin">In version 1.7.12 through
+1.7.14</span> Use this command instead:
 
 ```bash
 sudo validate-borgmatic-config --show

@@ -20,6 +20,7 @@ import borgmatic.actions.check
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
+import borgmatic.actions.config.validate
 import borgmatic.actions.create
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
@@ -500,6 +501,9 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
     Given a sequence of configuration filenames, load and validate each configuration file. Return
     the results as a tuple of: dict of configuration filename to corresponding parsed configuration,
     and sequence of logging.LogRecord instances containing any parse errors.
+
+    Log records are returned here instead of being logged directly because logging isn't yet
+    initialized at this point!
     '''
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
@@ -507,6 +511,17 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
 
     # Parse and load each configuration file.
     for config_filename in config_filenames:
+        logs.extend(
+            [
+                logging.makeLogRecord(
+                    dict(
+                        levelno=logging.DEBUG,
+                        levelname='DEBUG',
+                        msg=f'{config_filename}: Loading configuration file',
+                    )
+                ),
+            ]
+        )
         try:
             configs[config_filename], parse_logs = validate.parse_configuration(
                 config_filename, validate.schema_filename(), overrides, resolve_env
@@ -603,12 +618,13 @@ def get_local_path(configs):
     return next(iter(configs.values())).get('location', {}).get('local_path', 'borg')
 
 
-def collect_highlander_action_summary_logs(configs, arguments):
+def collect_highlander_action_summary_logs(configs, arguments, configuration_parse_errors):
     '''
-    Given a dict of configuration filename to corresponding parsed configuration and parsed
-    command-line arguments as a dict from subparser name to a parsed namespace of arguments, run
-    a highlander action specified in the arguments, if any, and yield a series of logging.LogRecord
-    instances containing summary information.
+    Given a dict of configuration filename to corresponding parsed configuration, parsed
+    command-line arguments as a dict from subparser name to a parsed namespace of arguments, and
+    whether any configuration files encountered errors during parsing, run a highlander action
+    specified in the arguments, if any, and yield a series of logging.LogRecord instances containing
+    summary information.
 
     A highlander action is an action that cannot coexist with other actions on the borgmatic
     command-line, and borgmatic exits after processing such an action.
@@ -651,6 +667,37 @@ def collect_highlander_action_summary_logs(configs, arguments):
                     levelno=logging.ANSWER,
                     levelname='ANSWER',
                     msg='Generate successful',
+                )
+            )
+        except (
+            CalledProcessError,
+            ValueError,
+            OSError,
+        ) as error:
+            yield from log_error_records(error)
+
+        return
+
+    if 'validate' in arguments:
+        if configuration_parse_errors:
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.CRITICAL,
+                    levelname='CRITICAL',
+                    msg='Configuration validation failed',
+                )
+            )
+
+            return
+
+        try:
+            borgmatic.actions.config.validate.run_validate(arguments['validate'], configs)
+
+            yield logging.makeLogRecord(
+                dict(
+                    levelno=logging.ANSWER,
+                    levelname='ANSWER',
+                    msg='All configuration files are valid',
                 )
             )
         except (
@@ -800,6 +847,9 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     configs, parse_logs = load_configurations(
         config_filenames, global_arguments.overrides, global_arguments.resolve_env
     )
+    configuration_parse_errors = (
+        (max(log.levelno for log in parse_logs) >= logging.CRITICAL) if parse_logs else False
+    )
 
     any_json_flags = any(
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
@@ -822,15 +872,17 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         logger.critical(f'Error configuring logging: {error}')
         exit_with_help_link()
 
-    logger.debug('Ensuring legacy configuration is upgraded')
-
     summary_logs = (
-        parse_logs
+        extra_summary_logs
+        + parse_logs
         + (
-            list(collect_highlander_action_summary_logs(configs, arguments))
+            list(
+                collect_highlander_action_summary_logs(
+                    configs, arguments, configuration_parse_errors
+                )
+            )
             or list(collect_configuration_run_summary_logs(configs, arguments))
         )
-        + extra_summary_logs
     )
     summary_logs_max_level = max(log.levelno for log in summary_logs)
 
