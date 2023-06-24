@@ -91,18 +91,22 @@ def fish_completion():
     Return a fish completion script for the borgmatic command. Produce this by introspecting
     borgmatic's command-line argument parsers.
     '''
-    top_level_parser, subparsers = borgmatic.commands.arguments.make_parsers()
+    (
+        unused_global_parser,
+        action_parsers,
+        global_plus_action_parser,
+    ) = borgmatic.commands.arguments.make_parsers()
 
-    all_subparsers = ' '.join(action for action in subparsers.choices.keys())
+    all_action_parsers = ' '.join(action for action in action_parsers.choices.keys())
 
     exact_option_args = tuple(
         ' '.join(action.option_strings)
-        for subparser in subparsers.choices.values()
-        for action in subparser._actions
+        for action_parser in action_parsers.choices.values()
+        for action in action_parser._actions
         if has_exact_options(action)
     ) + tuple(
         ' '.join(action.option_strings)
-        for action in top_level_parser._actions
+        for action in global_plus_action_parser._actions
         if len(action.option_strings) > 0
         if has_exact_options(action)
     )
@@ -144,29 +148,29 @@ def fish_completion():
                 return 1
             end
 
-            set --local subparser_condition "not __fish_seen_subcommand_from {all_subparsers}"
+            set --local action_parser_condition "not __fish_seen_subcommand_from {all_action_parsers}"
             set --local exact_option_condition "not __borgmatic_current_arg {' '.join(exact_option_args)}"
             '''
         )
-        + ('\n# subparser completions',)
+        + ('\n# action_parser completions',)
         + tuple(
-            f'''complete -c borgmatic -f -n "$subparser_condition" -n "$exact_option_condition" -a '{action_name}' -d {shlex.quote(subparser.description)}'''
-            for action_name, subparser in subparsers.choices.items()
+            f'''complete -c borgmatic -f -n "$action_parser_condition" -n "$exact_option_condition" -a '{action_name}' -d {shlex.quote(action_parser.description)}'''
+            for action_name, action_parser in action_parsers.choices.items()
         )
         + ('\n# global flags',)
         + tuple(
             # -n is checked in order, so put faster / more likely to be true checks first
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)}{exact_options_completion(action)}'''
-            for action in top_level_parser._actions
+            for action in global_plus_action_parser._actions
             # ignore the noargs action, as this is an impossible completion for fish
             if len(action.option_strings) > 0
             if 'Deprecated' not in action.help
         )
-        + ('\n# subparser flags',)
+        + ('\n# action_parser flags',)
         + tuple(
             f'''complete -c borgmatic -f -n "$exact_option_condition" -a '{' '.join(action.option_strings)}' -d {shlex.quote(action.help)} -n "__fish_seen_subcommand_from {action_name}"{exact_options_completion(action)}'''
-            for action_name, subparser in subparsers.choices.items()
-            for action in subparser._actions
+            for action_name, action_parser in action_parsers.choices.items()
+            for action in action_parser._actions
             if 'Deprecated' not in (action.help or ())
         )
     )

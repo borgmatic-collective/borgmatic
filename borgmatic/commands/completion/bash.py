@@ -15,8 +15,12 @@ def bash_completion():
     Return a bash completion script for the borgmatic command. Produce this by introspecting
     borgmatic's command-line argument parsers.
     '''
-    top_level_parser, subparsers = borgmatic.commands.arguments.make_parsers()
-    global_flags = parser_flags(top_level_parser)
+    (
+        unused_global_parser,
+        action_parsers,
+        global_plus_action_parser,
+    ) = borgmatic.commands.arguments.make_parsers()
+    global_flags = parser_flags(global_plus_action_parser)
 
     # Avert your eyes.
     return '\n'.join(
@@ -41,18 +45,18 @@ def bash_completion():
     fi'''
             % (
                 action,
-                parser_flags(subparser),
+                parser_flags(action_parser),
                 ' '.join(
-                    borgmatic.commands.completion.actions.available_actions(subparsers, action)
+                    borgmatic.commands.completion.actions.available_actions(action_parsers, action)
                 ),
                 global_flags,
             )
-            for action, subparser in reversed(subparsers.choices.items())
+            for action, action_parser in reversed(action_parsers.choices.items())
         )
         + (
             '    COMPREPLY=($(compgen -W "%s %s" -- "${COMP_WORDS[COMP_CWORD]}"))'  # noqa: FS003
             % (
-                ' '.join(borgmatic.commands.completion.actions.available_actions(subparsers)),
+                ' '.join(borgmatic.commands.completion.actions.available_actions(action_parsers)),
                 global_flags,
             ),
             '    (check_version &)',

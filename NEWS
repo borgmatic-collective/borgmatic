@@ -6,8 +6,8 @@
    configuration.
  * #529: Deprecate generate-borgmatic-config in favor of new "config generate" action.
  * #529: Deprecate validate-borgmatic-config in favor of new "config validate" action.
- * #697, #712: Extract borgmatic configuration from backup via new "config bootstrap" action—even
-   when borgmatic has no configuration yet!
+ * #697, #712, #716: Extract borgmatic configuration from backup via new "config bootstrap"
+   action—even when borgmatic has no configuration yet!
  * #669: Add sample systemd user service for running borgmatic as a non-root user.
  * #711, #713: Fix an error when "data" check time files are accessed without getting upgraded
    first.

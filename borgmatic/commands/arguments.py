@@ -114,8 +114,8 @@ def parse_and_record_action_arguments(
 
 def get_unparsable_arguments(remaining_action_arguments):
     '''
-    Given a sequence of argument tuples (one tuple per action parser that parsed arguments),
-    determine the remaining arguments that no action parsers have consumed.
+    Given a sequence of argument tuples (one per action parser that parsed arguments), determine the
+    remaining arguments that no action parsers have consumed.
     '''
     if not remaining_action_arguments:
         return ()
@@ -129,14 +129,16 @@ def get_unparsable_arguments(remaining_action_arguments):
     )
 
 
-def parse_arguments_for_actions(unparsed_arguments, action_parsers):
+def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parser):
     '''
-    Given a sequence of arguments and a dict from action name to argparse.ArgumentParser
-    instance, give each requested action's parser a shot at parsing all arguments. This allows
-    common arguments like "--repository" to be shared across multiple action parsers.
+    Given a sequence of arguments, a dict from action name to argparse.ArgumentParser instance,
+    and the global parser as a argparse.ArgumentParser instance, give each requested action's
+    parser a shot at parsing all arguments. This allows common arguments like "--repository" to be
+    shared across multiple action parsers.
 
     Return the result as a tuple of: (a dict mapping from action name to an argparse.Namespace of
-    parsed arguments, a list of strings of remaining arguments not claimed by any action parser).
+    parsed arguments, a tuple of argument tuples where each is the remaining arguments not claimed
+    by any action parser).
     '''
     arguments = collections.OrderedDict()
     help_requested = bool('--help' in unparsed_arguments or '-h' in unparsed_arguments)
@@ -211,11 +213,12 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers):
                 )
             )
 
+    arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
+    remaining_action_arguments.append(remaining)
+
     return (
         arguments,
-        get_unparsable_arguments(tuple(remaining_action_arguments))
-        if arguments
-        else unparsed_arguments,
+        tuple(remaining_action_arguments) if arguments else unparsed_arguments,
     )
 
 
@@ -235,7 +238,10 @@ class Extend_action(Action):
 
 def make_parsers():
     '''
-    Build a top-level parser and its action parsers and return them as a tuple.
+    Build a global arguments parser, individual action parsers, and a combined parser containing
+    both. Return them as a tuple. The global parser is useful for parsing just global arguments
+    while ignoring actions, and the combined parser is handy for displaying help that includes
+    everything: global flags, a list of actions, etc.
     '''
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
@@ -345,7 +351,7 @@ def make_parsers():
         help='Display installed version number of borgmatic and exit',
     )
 
-    top_level_parser = ArgumentParser(
+    global_plus_action_parser = ArgumentParser(
         description='''
             Simple, configuration-driven backup software for servers and workstations. If none of
             the action options are given, then borgmatic defaults to: create, prune, compact, and
@@ -354,7 +360,7 @@ def make_parsers():
         parents=[global_parser],
     )
 
-    action_parsers = top_level_parser.add_subparsers(
+    action_parsers = global_plus_action_parser.add_subparsers(
         title='actions',
         metavar='',
         help='Specify zero or more actions. Defaults to create, prune, compact, and check. Use --help with action for details:',
@@ -776,7 +782,7 @@ def make_parsers():
 
     config_validate_parser = config_parsers.add_parser(
         'validate',
-        help='Validate that borgmatic configuration files specified with --config (see borgmatic --help)',
+        help='Validate borgmatic configuration files specified with --config (see borgmatic --help)',
         description='Validate borgmatic configuration files specified with --config (see borgmatic --help)',
         add_help=False,
     )
@@ -1221,27 +1227,46 @@ def make_parsers():
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    return top_level_parser, action_parsers
+    return global_parser, action_parsers, global_plus_action_parser
 
 
 def parse_arguments(*unparsed_arguments):
     '''
     Given command-line arguments with which this script was invoked, parse the arguments and return
     them as a dict mapping from action name (or "global") to an argparse.Namespace instance.
-    '''
-    top_level_parser, action_parsers = make_parsers()
 
-    arguments, remaining_arguments = parse_arguments_for_actions(
-        unparsed_arguments, action_parsers.choices
+    Raise ValueError if the arguments cannot be parsed.
+    Raise SystemExit with an error code of 0 if "--help" was requested.
+    '''
+    global_parser, action_parsers, global_plus_action_parser = make_parsers()
+    arguments, remaining_action_arguments = parse_arguments_for_actions(
+        unparsed_arguments, action_parsers.choices, global_parser
     )
 
     for action_name in ('bootstrap', 'generate', 'validate'):
-        if action_name in arguments.keys() and len(arguments.keys()) > 1:
+        if (
+            action_name in arguments.keys() and len(arguments.keys()) > 2
+        ):  # 2 = 1 for 'global' + 1 for the action
             raise ValueError(
-                'The {action_name} action cannot be combined with other actions. Please run it separately.'
+                f'The {action_name} action cannot be combined with other actions. Please run it separately.'
             )
 
-    arguments['global'] = top_level_parser.parse_args(remaining_arguments)
+    unknown_arguments = get_unparsable_arguments(remaining_action_arguments)
+
+    if unknown_arguments:
+        if '--help' in unknown_arguments or '-h' in unknown_arguments:
+            global_plus_action_parser.print_help()
+            sys.exit(0)
+
+        global_plus_action_parser.print_usage()
+        raise ValueError(
+            f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
+        )
+
+    # Prevent action names that follow "--config" paths from being considered as additional paths.
+    for argument_name in arguments.keys():
+        if argument_name != 'global' and argument_name in arguments['global'].config_paths:
+            arguments['global'].config_paths.remove(argument_name)
 
     if arguments['global'].excludes_filename:
         raise ValueError(

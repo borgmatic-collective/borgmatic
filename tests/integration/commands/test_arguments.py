@@ -30,6 +30,17 @@ def test_parse_arguments_with_multiple_config_paths_parses_as_list():
     assert global_arguments.log_file_verbosity == 0
 
 
+def test_parse_arguments_with_action_after_config_path_omits_action():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('--config', 'myconfig', 'list', '--json')
+
+    global_arguments = arguments['global']
+    assert global_arguments.config_paths == ['myconfig']
+    assert 'list' in arguments
+    assert arguments['list'].json
+
+
 def test_parse_arguments_with_verbosity_overrides_default():
     config_paths = ['default']
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
@@ -194,10 +205,10 @@ def test_parse_arguments_with_multiple_actions_leaves_other_action_disabled():
     assert 'check' in arguments
 
 
-def test_parse_arguments_with_invalid_arguments_exits():
+def test_parse_arguments_disallows_invalid_argument():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--posix-me-harder')
 
 
@@ -211,7 +222,7 @@ def test_parse_arguments_disallows_deprecated_excludes_option():
 def test_parse_arguments_disallows_encryption_mode_without_init():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--config', 'myconfig', '--encryption', 'repokey')
 
 
@@ -231,14 +242,14 @@ def test_parse_arguments_requires_encryption_mode_with_init():
 def test_parse_arguments_disallows_append_only_without_init():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--config', 'myconfig', '--append-only')
 
 
 def test_parse_arguments_disallows_storage_quota_without_init():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--config', 'myconfig', '--storage-quota', '5G')
 
 
@@ -287,14 +298,14 @@ def test_parse_arguments_allows_repository_with_list():
 def test_parse_arguments_disallows_archive_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--config', 'myconfig', '--archive', 'test')
 
 
 def test_parse_arguments_disallows_paths_unless_action_consumes_it():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--config', 'myconfig', '--path', 'test')
 
 
@@ -380,7 +391,7 @@ def test_parse_arguments_allows_progress_and_extract():
 def test_parse_arguments_disallows_progress_without_create():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--progress', 'list')
 
 
@@ -399,7 +410,7 @@ def test_parse_arguments_with_stats_and_prune_flags_does_not_raise():
 def test_parse_arguments_with_stats_flag_but_no_create_or_prune_flag_raises_value_error():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         module.parse_arguments('--stats', 'list')
 
 
@@ -535,10 +546,8 @@ def test_parse_arguments_extract_with_check_only_extract_does_not_raise():
 def test_parse_arguments_bootstrap_without_config_errors():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    with pytest.raises(SystemExit) as exit:
+    with pytest.raises(ValueError):
         module.parse_arguments('bootstrap')
-
-    assert exit.value.code == 2
 
 
 def test_parse_arguments_config_with_no_subaction_errors():
