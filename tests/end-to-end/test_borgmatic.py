@@ -44,7 +44,7 @@ def test_borgmatic_command():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} init --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} rcreate --encryption repokey'.split(' ')
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.

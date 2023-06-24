@@ -39,7 +39,7 @@ def test_override_get_normalized():
         generate_configuration(config_path, repository_path)
 
         subprocess.check_call(
-            f'borgmatic -v 2 --config {config_path} init --encryption repokey'.split(' ')
+            f'borgmatic -v 2 --config {config_path} rcreate --encryption repokey'.split(' ')
         )
 
         # Run borgmatic with an override structured for an outdated config file format. If

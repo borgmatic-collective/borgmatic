@@ -202,7 +202,7 @@ def test_database_dump_and_restore():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -242,7 +242,7 @@ def test_database_dump_and_restore_with_restore_cli_arguments():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -299,7 +299,7 @@ def test_database_dump_and_restore_with_restore_configuration_options():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -344,7 +344,7 @@ def test_database_dump_and_restore_with_directory_format():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -374,7 +374,7 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'init', '--encryption', 'repokey']
+            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
         )
 
         # Run borgmatic with a config override such that the database dump fails.
