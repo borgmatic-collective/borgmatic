@@ -10,7 +10,7 @@ def generate_configuration(config_path, repository_path):
     to work for testing (including injecting the given repository path and tacking on an encryption
     passphrase).
     '''
-    subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
+    subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
     config = (
         open(config_path)
         .read()

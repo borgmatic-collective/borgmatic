@@ -216,6 +216,16 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
     remaining_action_arguments.append(remaining)
 
+    # Prevent action names that follow "--config" paths from being considered as additional paths.
+    for argument_name in arguments.keys():
+        if argument_name == 'global':
+            continue
+
+        for action_name in [argument_name] + ACTION_ALIASES.get(argument_name, []):
+            if action_name in arguments['global'].config_paths:
+                arguments['global'].config_paths.remove(action_name)
+                break
+
     return (
         arguments,
         tuple(remaining_action_arguments) if arguments else unparsed_arguments,
@@ -1262,11 +1272,6 @@ def parse_arguments(*unparsed_arguments):
         raise ValueError(
             f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
         )
-
-    # Prevent action names that follow "--config" paths from being considered as additional paths.
-    for argument_name in arguments.keys():
-        if argument_name != 'global' and argument_name in arguments['global'].config_paths:
-            arguments['global'].config_paths.remove(argument_name)
 
     if arguments['global'].excludes_filename:
         raise ValueError(

@@ -8,9 +8,9 @@ def test_generate_borgmatic_config_with_merging_succeeds():
         config_path = os.path.join(temporary_directory, 'test.yaml')
         new_config_path = os.path.join(temporary_directory, 'new.yaml')
 
-        subprocess.check_call(f'generate-borgmatic-config --destination {config_path}'.split(' '))
+        subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
         subprocess.check_call(
-            f'generate-borgmatic-config --source {config_path} --destination {new_config_path}'.split(
+            f'borgmatic config generate --source {config_path} --destination {new_config_path}'.split(
                 ' '
             )
         )

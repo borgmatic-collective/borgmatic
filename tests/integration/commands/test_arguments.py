@@ -41,6 +41,17 @@ def test_parse_arguments_with_action_after_config_path_omits_action():
     assert arguments['list'].json
 
 
+def test_parse_arguments_with_action_after_config_path_omits_aliased_action():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('--config', 'myconfig', 'init', '--encryption', 'repokey')
+
+    global_arguments = arguments['global']
+    assert global_arguments.config_paths == ['myconfig']
+    assert 'rcreate' in arguments
+    assert arguments['rcreate'].encryption_mode == 'repokey'
+
+
 def test_parse_arguments_with_verbosity_overrides_default():
     config_paths = ['default']
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)

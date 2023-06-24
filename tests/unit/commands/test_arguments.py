@@ -175,7 +175,7 @@ def test_parse_arguments_for_actions_consumes_action_arguments_after_action_name
     )
     flexmock(module).should_receive('get_subactions_for_actions').and_return({})
     action_parsers = {'action': flexmock(), 'other': flexmock()}
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -204,7 +204,7 @@ def test_parse_arguments_for_actions_consumes_action_arguments_with_alias():
         'other': flexmock(),
         '-o': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
     flexmock(module).ACTION_ALIASES = {'action': ['-a'], 'other': ['-o']}
@@ -232,7 +232,7 @@ def test_parse_arguments_for_actions_consumes_multiple_action_arguments():
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -263,7 +263,7 @@ def test_parse_arguments_for_actions_respects_command_line_action_ordering():
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -278,7 +278,7 @@ def test_parse_arguments_for_actions_respects_command_line_action_ordering():
 
 
 def test_parse_arguments_for_actions_applies_default_action_parsers():
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     namespaces = {
         'global': global_namespace,
         'prune': flexmock(),
@@ -327,7 +327,7 @@ def test_parse_arguments_for_actions_consumes_global_arguments():
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -353,7 +353,7 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_before_act
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -379,7 +379,7 @@ def test_parse_arguments_for_actions_passes_through_unknown_arguments_after_acti
         'action': flexmock(),
         'other': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
@@ -405,7 +405,7 @@ def test_parse_arguments_for_actions_with_borg_action_skips_other_action_parsers
         'borg': flexmock(),
         'list': flexmock(),
     }
-    global_namespace = flexmock()
+    global_namespace = flexmock(config_paths=[])
     global_parser = flexmock()
     global_parser.should_receive('parse_known_args').and_return((global_namespace, ()))
 
