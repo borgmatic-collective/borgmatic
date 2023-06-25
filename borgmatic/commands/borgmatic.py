@@ -46,8 +46,6 @@ from borgmatic.verbosity import verbosity_to_log_level
 
 logger = logging.getLogger(__name__)
 
-LEGACY_CONFIG_PATH = '/etc/borgmatic/config'
-
 
 def run_configuration(config_filename, config, arguments):
     '''
