@@ -1,4 +1,8 @@
-1.7.16.dev0
+1.8.0.dev0
+ * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting
+   repository/archive into the resulting Borg command-line, make repository and archive environment
+   variables available for explicit use in your commands. See the documentation for more
+   information: https://torsion.org/borgmatic/docs/how-to/run-arbitrary-borg-commands/
  * #719: Fix an error when running "borg key export" through borgmatic.
 
 1.7.15

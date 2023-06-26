@@ -7,7 +7,7 @@ eleventyNavigation:
 ---
 ## Running Borg with borgmatic
 
-Borg has several commands (and options) that borgmatic does not currently
+Borg has several commands and options that borgmatic does not currently
 support. Sometimes though, as a borgmatic user, you may find yourself wanting
 to take advantage of these off-the-beaten-path Borg features. You could of
 course drop down to running Borg directly. But then you'd give up all the
@@ -17,11 +17,11 @@ request](https://torsion.org/borgmatic/#contributing) to add the feature. But
 what if you need it *now*?
 
 That's where borgmatic's support for running "arbitrary" Borg commands comes
-in. Running Borg commands with borgmatic takes advantage of the following, all
-based on your borgmatic configuration files or command-line arguments:
+in. Running these Borg commands with borgmatic can take advantage of the
+following, all based on your borgmatic configuration files or command-line
+arguments:
 
- * configured repositories (automatically runs your Borg command once for each
-   one)
+ * configured repositories, running your Borg command once for each one
  * local and remote Borg binary paths
  * SSH settings and Borg environment variables
  * lock wait settings
@@ -34,36 +34,77 @@ based on your borgmatic configuration files or command-line arguments:
 you run Borg with borgmatic is via the `borg` action. Here's a simple example:
 
 ```bash
+borgmatic borg break-lock '$REPOSITORY'
+```
+
+This runs Borg's `break-lock` command once on each configured borgmatic
+repository, passing the repository path in as an environment variable named
+`REPOSITORY`. The single quotes are necessary in order to pass in a literal
+`$REPOSITORY` string instead of trying to resolve it from borgmatic's shell
+where it's not yet set.
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span>borgmatic
+provided the repository name implicitly, attempting to inject it into your
+Borg arguments in the right place (which didn't always work). So your
+command-line in these older versions looked more like:
+
+```bash
 borgmatic borg break-lock
 ```
 
-(No `borg` action in borgmatic? Time to upgrade!)
-
-This runs Borg's `break-lock` command once on each configured borgmatic
-repository. Notice how the repository isn't present in the specified Borg
-options, as that part is provided by borgmatic.
-
-You can also specify Borg options for relevant commands:
+You can also specify Borg options for relevant commands. In borgmatic 1.8.0+,
+that looks like:
 
 ```bash
-borgmatic borg rlist --short
+borgmatic borg rlist --short '$REPOSITORY'
 ```
 
 This runs Borg's `rlist` command once on each configured borgmatic repository.
-(The native `borgmatic rlist` action should be preferred for most use.)
+However, the native `borgmatic rlist` action should be preferred for most uses.
 
 What if you only want to run Borg on a single configured borgmatic repository
 when you've got several configured? Not a problem. The `--repository` argument
 lets you specify the repository to use, either by its path or its label:
 
 ```bash
-borgmatic borg --repository repo.borg break-lock
+borgmatic borg --repository repo.borg break-lock '$REPOSITORY'
 ```
 
-And what about a single archive?
+### Specifying an archive
+
+For borg commands that expect an archive name, you have a few approaches.
+Here's one:
 
 ```bash
-borgmatic borg --archive your-archive-name rlist
+borgmatic borg --archive latest list '$REPOSITORY::$ARCHIVE'
+```
+
+Or if you don't need borgmatic to resolve an archive name like `latest`, you
+can just do:
+
+```bash
+borgmatic borg list '$REPOSITORY::your-actual-archive-name'
+```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span>borgmatic
+provided the archive name implicitly along with the repository, attempting to
+inject it into your Borg arguments in the right place (which didn't always
+work). So your command-line in these older versions of borgmatic looked more
+like:
+
+```bash
+borgmatic borg --archive latest list
+```
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span> Either of
+these will list an archive:
+
+```bash
+borgmatic borg --archive latest list --repo '$REPOSITORY' '$ARCHIVE'
+```
+
+```bash
+borgmatic borg list --repo '$REPOSITORY' your-actual-archive-name
 ```
 
 ### Limitations
@@ -71,14 +112,10 @@ borgmatic borg --archive your-archive-name rlist
 borgmatic's `borg` action is not without limitations:
 
  * The Borg command you want to run (`create`, `list`, etc.) *must* come first
-   after the `borg` action. If you have any other Borg options to specify,
-   provide them after. For instance, `borgmatic borg list --progress` will work,
-   but `borgmatic borg --progress list` will not.
- * borgmatic supplies the repository/archive name to Borg for you (based on
-   your borgmatic configuration or the `borgmatic borg --repository`/`--archive`
-   arguments), so do not specify the repository/archive otherwise.
- * The `borg` action will not currently work for any Borg commands like `borg
-   serve` that do not accept a repository/archive name.
+   after the `borg` action (and any borgmatic-specific arguments). If you have
+   other Borg options to specify, provide them after. For instance,
+   `borgmatic borg list --progress ...` will work, but
+   `borgmatic borg --progress list ...` will not.
  * Do not specify any global borgmatic arguments to the right of the `borg`
    action. (They will be passed to Borg instead of borgmatic.) If you have
    global borgmatic arguments, specify them *before* the `borg` action.
@@ -88,10 +125,17 @@ borgmatic's `borg` action is not without limitations:
    borgmatic action. In this case, only the Borg command is run.
  * Unlike normal borgmatic actions that support JSON, the `borg` action will
    not disable certain borgmatic logs to avoid interfering with JSON output.
- * Unlike other borgmatic actions, the `borg` action captures (and logs) all
-   output, so interactive prompts and flags like `--progress` will not work as
-   expected. <span class="minilink minilink-addedin">New in version
-   1.7.13</span> borgmatic now runs the `borg` action without capturing output,
+ * <span class="minilink minilink-addedin">Prior to version 1.8.0</span>
+   borgmatic implicitly supplied the repository/archive name to Borg for you
+   (based on your borgmatic configuration or the
+   `borgmatic borg --repository`/`--archive` arguments)—which meant you couldn't
+   specify the repository/archive directly in the Borg command. Also, in these
+   older versions of borgmatic, the `borg` action didn't work for any Borg
+   commands like `borg serve` that do not accept a repository/archive name.
+ * <span class="minilink minilink-addedin">Prior to version 1.7.13</span> Unlike
+   other borgmatic actions, the `borg` action captured (and logged) all output,
+   so interactive prompts and flags like `--progress` dit not work as expected.
+   In new versions, borgmatic runs the `borg` action without capturing output,
    so interactive prompts work.
 
 In general, this `borgmatic borg` feature should be considered an escape

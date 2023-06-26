@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 REPOSITORYLESS_BORG_COMMANDS = {'serve', None}
 BORG_SUBCOMMANDS_WITH_SUBCOMMANDS = {'key', 'debug'}
-BORG_SUBCOMMANDS_WITHOUT_REPOSITORY = (('debug', 'info'), ('debug', 'convert-profile'), ())
 
 
 def run_arbitrary_borg(
@@ -25,7 +24,8 @@ def run_arbitrary_borg(
     '''
     Given a local or remote repository path, a storage config dict, the local Borg version, a
     sequence of arbitrary command-line Borg options, and an optional archive name, run an arbitrary
-    Borg command on the given repository/archive.
+    Borg command, passing in $REPOSITORY and $ARCHIVE environment variables for optional use in the
+    commmand.
     '''
     borgmatic.logger.add_custom_log_levels()
     lock_wait = storage_config.get('lock_wait', None)
@@ -46,29 +46,26 @@ def run_arbitrary_borg(
         borg_command = ()
         command_options = ()
 
-    if borg_command in BORG_SUBCOMMANDS_WITHOUT_REPOSITORY:
-        repository_archive_flags = ()
-    elif archive:
-        repository_archive_flags = flags.make_repository_archive_flags(
-            repository_path, archive, local_borg_version
-        )
-    else:
-        repository_archive_flags = flags.make_repository_flags(repository_path, local_borg_version)
-
     full_command = (
         (local_path,)
         + borg_command
-        + repository_archive_flags
-        + command_options
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('lock-wait', lock_wait)
+        + command_options
     )
 
     return execute_command(
         full_command,
         output_file=DO_NOT_CAPTURE,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        shell=True,
+        extra_environment=dict(
+            (environment.make_environment(storage_config) or {}),
+            **{
+                'REPOSITORY': repository_path,
+                'ARCHIVE': archive if archive else '',
+            },
+        ),
     )
