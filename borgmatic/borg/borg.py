@@ -24,8 +24,8 @@ def run_arbitrary_borg(
     '''
     Given a local or remote repository path, a storage config dict, the local Borg version, a
     sequence of arbitrary command-line Borg options, and an optional archive name, run an arbitrary
-    Borg command, passing in $REPOSITORY and $ARCHIVE environment variables for optional use in the
-    commmand.
+    Borg command, passing in REPOSITORY and ARCHIVE environment variables for optional use in the
+    command.
     '''
     borgmatic.logger.add_custom_log_levels()
     lock_wait = storage_config.get('lock_wait', None)
