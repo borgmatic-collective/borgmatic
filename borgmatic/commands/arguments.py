@@ -216,15 +216,21 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
     remaining_action_arguments.append(remaining)
 
-    # Prevent action names that follow "--config" paths from being considered as additional paths.
+    # Prevent action names and arguments that follow "--config" paths from being considered as
+    # additional paths.
     for argument_name in arguments.keys():
         if argument_name == 'global':
             continue
 
         for action_name in [argument_name] + ACTION_ALIASES.get(argument_name, []):
-            if action_name in arguments['global'].config_paths:
-                arguments['global'].config_paths.remove(action_name)
+            try:
+                action_name_index = arguments['global'].config_paths.index(action_name)
+                arguments['global'].config_paths = arguments['global'].config_paths[
+                    :action_name_index
+                ]
                 break
+            except ValueError:
+                pass
 
     return (
         arguments,

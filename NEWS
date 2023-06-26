@@ -1,3 +1,6 @@
+1.7.16.dev0
+ * #719: Fix an error when running "borg key export" through borgmatic.
+
 1.7.15
  * #326: Add configuration options and command-line flags for backing up a database from one
    location while restoring it somewhere else.

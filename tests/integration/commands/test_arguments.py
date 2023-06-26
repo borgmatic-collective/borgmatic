@@ -52,6 +52,17 @@ def test_parse_arguments_with_action_after_config_path_omits_aliased_action():
     assert arguments['rcreate'].encryption_mode == 'repokey'
 
 
+def test_parse_arguments_with_action_and_positional_arguments_after_config_path_omits_action_and_arguments():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    arguments = module.parse_arguments('--config', 'myconfig', 'borg', 'key', 'export')
+
+    global_arguments = arguments['global']
+    assert global_arguments.config_paths == ['myconfig']
+    assert 'borg' in arguments
+    assert arguments['borg'].options == ['key', 'export']
+
+
 def test_parse_arguments_with_verbosity_overrides_default():
     config_paths = ['default']
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
