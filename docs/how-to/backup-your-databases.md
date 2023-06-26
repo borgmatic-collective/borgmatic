@@ -189,8 +189,9 @@ system.
 would like to backup databases only and not source directories, you can omit
 `source_directories` entirely.
 
-In older versions of borgmatic, instead specify an empty `source_directories`
-value, as it is a mandatory option prior to version 1.7.1:
+<span class="minilink minilink-addedin">Prior to version 1.7.1</span> In older
+versions of borgmatic, instead specify an empty `source_directories` value, as
+it is a mandatory option there:
 
 ```yaml
 location:

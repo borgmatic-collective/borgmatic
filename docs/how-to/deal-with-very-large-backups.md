@@ -137,6 +137,23 @@ If you want to temporarily ignore your configured frequencies, you can invoke
 `borgmatic check --force` to run checks unconditionally.
 
 
+### Running only checks
+
+<span class="minilink minilink-addedin">New in version 1.7.1</span> If you
+would like to only run consistency checks without creating backups (for
+instance with the `check` action on the command-line), you can omit
+the `source_directories` option entirely.
+
+<span class="minilink minilink-addedin">Prior to version 1.7.1</span> In older
+versions of borgmatic, instead specify an empty `source_directories` value, as
+it is a mandatory option there:
+
+```yaml
+location:
+    source_directories: []
+```
+
+
 ### Disabling checks
 
 If that's still too slow, you can disable consistency checks entirely,
