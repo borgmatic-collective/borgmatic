@@ -702,6 +702,54 @@ def test_deep_merge_nodes_appends_colliding_sequence_values():
     assert [item.value for item in options[0][1].value] == ['echo 1', 'echo 2', 'echo 3', 'echo 4']
 
 
+def test_deep_merge_nodes_errors_on_colliding_values_of_different_types():
+    node_values = [
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='hooks'),
+            module.ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='before_backup'
+                        ),
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='echo oopsie daisy'
+                        ),
+                    ),
+                ],
+            ),
+        ),
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='hooks'),
+            module.ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='before_backup'
+                        ),
+                        module.ruamel.yaml.nodes.SequenceNode(
+                            tag='tag:yaml.org,2002:seq',
+                            value=[
+                                module.ruamel.yaml.ScalarNode(
+                                    tag='tag:yaml.org,2002:str', value='echo 3'
+                                ),
+                                module.ruamel.yaml.ScalarNode(
+                                    tag='tag:yaml.org,2002:str', value='echo 4'
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ]
+
+    with pytest.raises(ValueError):
+        module.deep_merge_nodes(node_values)
+
+
 def test_deep_merge_nodes_only_keeps_mapping_values_tagged_with_retain():
     node_values = [
         (

@@ -225,6 +225,8 @@ def deep_merge_nodes(nodes):
     The purpose of deep merging like this is to support, for instance, merging one borgmatic
     configuration file into another for reuse, such that a configuration section ("retention",
     etc.) does not completely replace the corresponding section in a merged file.
+
+    Raise ValueError if a merge is implied using two incompatible types.
     '''
     # Map from original node key/value to the replacement merged node. DELETED_NODE as a replacement
     # node indications deletion.
@@ -239,6 +241,11 @@ def deep_merge_nodes(nodes):
 
             # If the keys match and the values are different, we need to merge these two A and B nodes.
             if a_key.tag == b_key.tag and a_key.value == b_key.value and a_value != b_value:
+                if not type(a_value) is type(b_value):
+                    raise ValueError(
+                        f'Incompatible types found when trying to merge "{a_key.value}:" values across configuration files: {type(a_value).id} and {type(b_value).id}'
+                    )
+
                 # Since we're merging into the B node, consider the A node a duplicate and remove it.
                 replaced_nodes[(a_key, a_value)] = DELETED_NODE
 
