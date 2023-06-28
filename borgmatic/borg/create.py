@@ -280,14 +280,17 @@ def collect_special_file_paths(
     create_command, local_path, working_directory, borg_environment, skip_directories
 ):
     '''
-    Given a Borg create command as a tuple, a local Borg path, a working directory, and a dict of
+    Given a Borg create command as a tuple, a local Borg path, a working directory, a dict of
     environment variables to pass to Borg, and a sequence of parent directories to skip, collect the
     paths for any special files (character devices, block devices, and named pipes / FIFOs) that
     Borg would encounter during a create. These are all paths that could cause Borg to hang if its
     --read-special flag is used.
     '''
+    # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
+    # files including any named pipe we've created.
     paths_output = execute_command_and_capture_output(
-        create_command + ('--dry-run', '--list'),
+        tuple(argument for argument in create_command if argument != '--exclude-nodump')
+        + ('--dry-run', '--list'),
         capture_stderr=True,
         working_directory=working_directory,
         extra_environment=borg_environment,

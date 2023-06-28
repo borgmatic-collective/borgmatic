@@ -4,6 +4,7 @@
    variables available for explicit use in your commands. See the documentation for more
    information: https://torsion.org/borgmatic/docs/how-to/run-arbitrary-borg-commands/
  * #719: Fix an error when running "borg key export" through borgmatic.
+ * #720: Fix an error when dumping a MySQL database and the "exclude_nodump" option is set.
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
 

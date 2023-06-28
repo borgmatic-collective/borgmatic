@@ -449,6 +449,25 @@ def test_collect_special_file_paths_excludes_non_special_files():
     ) == ('/foo', '/baz')
 
 
+def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'create', '--dry-run', '--list'),
+        capture_stderr=True,
+        working_directory=None,
+        extra_environment=None,
+    ).and_return('Processing files ...\n- /foo\n+ /bar\n- /baz').once()
+    flexmock(module).should_receive('special_file').and_return(True)
+    flexmock(module).should_receive('any_parent_directories').and_return(False)
+
+    module.collect_special_file_paths(
+        ('borg', 'create', '--exclude-nodump'),
+        local_path=None,
+        working_directory=None,
+        borg_environment=None,
+        skip_directories=flexmock(),
+    )
+
+
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
 REPO_ARCHIVE_WITH_PATHS = (f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'bar')
 
