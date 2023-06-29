@@ -14,7 +14,6 @@ ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST = ('prefix', 'match_archives', 'sort_by', 'f
 MAKE_FLAGS_EXCLUDES = (
     'repository',
     'archive',
-    'successful',
     'paths',
     'find_paths',
 ) + ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST

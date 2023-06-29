@@ -12,7 +12,6 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
-    assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 0
     assert global_arguments.log_file_verbosity == 0
@@ -71,7 +70,6 @@ def test_parse_arguments_with_verbosity_overrides_default():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
-    assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 1
     assert global_arguments.syslog_verbosity == 0
     assert global_arguments.log_file_verbosity == 0
@@ -85,7 +83,6 @@ def test_parse_arguments_with_syslog_verbosity_overrides_default():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
-    assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 2
 
@@ -98,7 +95,6 @@ def test_parse_arguments_with_log_file_verbosity_overrides_default():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
-    assert global_arguments.excludes_filename is None
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 0
     assert global_arguments.log_file_verbosity == -1
@@ -232,13 +228,6 @@ def test_parse_arguments_disallows_invalid_argument():
 
     with pytest.raises(ValueError):
         module.parse_arguments('--posix-me-harder')
-
-
-def test_parse_arguments_disallows_deprecated_excludes_option():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments('--config', 'myconfig', '--excludes', 'myexcludes')
 
 
 def test_parse_arguments_disallows_encryption_mode_without_init():

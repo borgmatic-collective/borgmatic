@@ -7,6 +7,11 @@
  * #720: Fix an error when dumping a MySQL database and the "exclude_nodump" option is set.
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
+ * BREAKING: Remove the deprecated (and silently ignored) "--successful" flag on the "list" action,
+   as newer versions of Borg list successful (non-checkpoint) archives by default.
+ * All deprecated configuration option values now generate warning logs.
+ * Remove the deprecated (and non-functional) "--excludes" flag in favor of excludes within
+   configuration.
 
 1.7.15
  * #326: Add configuration options and command-line flags for backing up a database from one

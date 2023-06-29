@@ -46,7 +46,7 @@ def test_parse_configuration_transforms_file_into_mapping():
                 - /etc
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
 
         retention:
             keep_minutely: 60
@@ -83,7 +83,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
                 - "/home/{escaped_punctuation}"
 
             repositories:
-                - test.borg
+                - path: test.borg
         '''
     )
 
@@ -106,7 +106,7 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
                 - /home
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
         ''',
         '''
         map:
@@ -135,7 +135,7 @@ def test_parse_configuration_inlines_include():
                 - /home
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
 
         retention:
             !include include.yaml
@@ -168,7 +168,7 @@ def test_parse_configuration_merges_include():
                 - /home
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
 
         retention:
             keep_daily: 1
@@ -221,7 +221,7 @@ def test_parse_configuration_raises_for_validation_error():
         location:
             source_directories: yes
             repositories:
-                - hostname.borg
+                - path: hostname.borg
         '''
     )
 
@@ -237,7 +237,7 @@ def test_parse_configuration_applies_overrides():
                 - /home
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
 
             local_path: borg1
         '''
@@ -265,7 +265,7 @@ def test_parse_configuration_applies_normalization():
                 - /home
 
             repositories:
-                - hostname.borg
+                - path: hostname.borg
 
             exclude_if_present: .nobackup
         '''
@@ -280,4 +280,4 @@ def test_parse_configuration_applies_normalization():
             'exclude_if_present': ['.nobackup'],
         }
     }
-    assert logs == []
+    assert logs

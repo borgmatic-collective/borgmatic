@@ -9,7 +9,7 @@ from borgmatic.config import normalize as module
         (
             {'location': {'exclude_if_present': '.nobackup'}},
             {'location': {'exclude_if_present': ['.nobackup']}},
-            False,
+            True,
         ),
         (
             {'location': {'exclude_if_present': ['.nobackup']}},
@@ -39,22 +39,22 @@ from borgmatic.config import normalize as module
         (
             {'hooks': {'healthchecks': 'https://example.com'}},
             {'hooks': {'healthchecks': {'ping_url': 'https://example.com'}}},
-            False,
+            True,
         ),
         (
             {'hooks': {'cronitor': 'https://example.com'}},
             {'hooks': {'cronitor': {'ping_url': 'https://example.com'}}},
-            False,
+            True,
         ),
         (
             {'hooks': {'pagerduty': 'https://example.com'}},
             {'hooks': {'pagerduty': {'integration_key': 'https://example.com'}}},
-            False,
+            True,
         ),
         (
             {'hooks': {'cronhub': 'https://example.com'}},
             {'hooks': {'cronhub': {'ping_url': 'https://example.com'}}},
-            False,
+            True,
         ),
         (
             {'hooks': None},
@@ -64,12 +64,12 @@ from borgmatic.config import normalize as module
         (
             {'consistency': {'checks': ['archives']}},
             {'consistency': {'checks': [{'name': 'archives'}]}},
-            False,
+            True,
         ),
         (
             {'consistency': {'checks': ['archives']}},
             {'consistency': {'checks': [{'name': 'archives'}]}},
-            False,
+            True,
         ),
         (
             {'consistency': None},
@@ -79,17 +79,17 @@ from borgmatic.config import normalize as module
         (
             {'location': {'numeric_owner': False}},
             {'location': {'numeric_ids': False}},
-            False,
+            True,
         ),
         (
             {'location': {'bsd_flags': False}},
             {'location': {'flags': False}},
-            False,
+            True,
         ),
         (
             {'storage': {'remote_rate_limit': False}},
             {'storage': {'upload_rate_limit': False}},
-            False,
+            True,
         ),
         (
             {'location': {'repositories': ['foo@bar:/repo']}},
@@ -109,12 +109,12 @@ from borgmatic.config import normalize as module
         (
             {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
             {'location': {'repositories': [{'path': 'ssh://foo@bar:1234/repo'}]}},
-            False,
+            True,
         ),
         (
             {'location': {'repositories': ['file:///repo']}},
             {'location': {'repositories': [{'path': '/repo'}]}},
-            False,
+            True,
         ),
         (
             {'location': {'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}]}},
@@ -130,6 +130,16 @@ from borgmatic.config import normalize as module
             {'location': {'repositories': [{'path': '/repo', 'label': 'foo'}]}},
             {'location': {'repositories': [{'path': '/repo', 'label': 'foo'}]}},
             False,
+        ),
+        (
+            {'consistency': {'prefix': 'foo'}},
+            {'consistency': {'prefix': 'foo'}},
+            True,
+        ),
+        (
+            {'retention': {'prefix': 'foo'}},
+            {'retention': {'prefix': 'foo'}},
+            True,
         ),
     ),
 )

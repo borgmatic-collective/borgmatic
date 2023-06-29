@@ -275,11 +275,6 @@ def make_parsers():
         help=f"Configuration filenames or directories, defaults to: {' '.join(unexpanded_config_paths)}",
     )
     global_group.add_argument(
-        '--excludes',
-        dest='excludes_filename',
-        help='Deprecated in favor of exclude_patterns within configuration',
-    )
-    global_group.add_argument(
         '-n',
         '--dry-run',
         dest='dry_run',
@@ -1099,12 +1094,6 @@ def make_parsers():
         help='Only list archive names matching this pattern',
     )
     list_group.add_argument(
-        '--successful',
-        default=True,
-        action='store_true',
-        help='Deprecated; no effect. Newer versions of Borg shows successful (non-checkpoint) archives by default.',
-    )
-    list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
     )
     list_group.add_argument(
@@ -1277,11 +1266,6 @@ def parse_arguments(*unparsed_arguments):
         global_plus_action_parser.print_usage()
         raise ValueError(
             f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
-        )
-
-    if arguments['global'].excludes_filename:
-        raise ValueError(
-            'The --excludes flag has been replaced with exclude_patterns in configuration.'
         )
 
     if 'create' in arguments and arguments['create'].list_files and arguments['create'].progress:
