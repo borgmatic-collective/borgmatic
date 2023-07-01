@@ -1416,14 +1416,14 @@ properties:
                         description: | 
                             List of source_directories to include or "all" to
                             include all source_directories a snapper config
-                            exists for
+                            exists for.
                     exclude:
                         type: array
                         description: | 
                             List of source_directories to exclude. If a path is
                             listed in include and exclude, exclude will take
-                            precedence
+                            precedence.
                 description: |
                     Configuration for integration with snapper. All included
                     directories will use their latest snapper snapshot for
-                    backup instead of the configured source directory
+                    backup instead of the configured source directory.

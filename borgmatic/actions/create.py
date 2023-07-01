@@ -109,9 +109,10 @@ def run_create(
         borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
         location.get('source_directories', []),
     )
-    source_directories = reduce(
-        lambda x, y: x + y if y else x, source_directories_dict.values(), []
-    )
+    # flatten dict with lists as values into one big list
+    source_directories = [
+        directory for directories in source_directories_dict.values() for directory in directories
+    ]
     if source_directories:
         location['source_directories'] = source_directories
 

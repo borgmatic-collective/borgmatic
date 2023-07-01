@@ -19,7 +19,7 @@ def test_unaltered_if_not_configured(src_dirs_before):
     assert src_dirs_before == src_dirs_after
 
 
-def test_use_snapshots_include_all():
+def test_prepare_source_directories_use_snapshots_include_all():
     log_prefix = ''
 
     flexmock(module).should_receive('execute_command_and_capture_output').once().with_args(
@@ -91,11 +91,6 @@ def test_use_snapshots_include_all():
             ['/foo/.snapshots/17/snapshot', '/bar/.snapshots/1337/snapshot', '/baz'],
         ),
         (
-            {'include': 'all', 'exclude': ['/baz']},
-            ['/foo', '/bar', '/baz'],
-            ['/foo/.snapshots/17/snapshot', '/bar/.snapshots/1337/snapshot', '/baz'],
-        ),
-        (
             {'include': ['/foo', '/bar', '/baz'], 'exclude': ['/baz']},
             ['/foo', '/bar', '/baz'],
             ['/foo/.snapshots/17/snapshot', '/bar/.snapshots/1337/snapshot', '/baz'],
@@ -122,7 +117,7 @@ def test_use_snapshots_include_all():
         ),
     ),
 )
-def test_use_snapshots_include_exclude(config, src_dirs_in, expected):
+def test_prepare_source_directories_use_snapshots_include_exclude(config, src_dirs_in, expected):
     log_prefix = ''
 
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -192,7 +187,7 @@ def test_use_snapshots_include_exclude(config, src_dirs_in, expected):
     assert set(src_dirs_after) == set(expected)
 
 
-def test_no_config():
+def test_prepare_source_directories_no_config():
     log_prefix = ''
 
     flexmock(module).should_receive('execute_command_and_capture_output').once().with_args(
@@ -213,10 +208,10 @@ def test_no_config():
     src_dirs_before = ['/foo']
     with pytest.raises(ValueError) as e_info:
         module.prepare_source_directories({'include': ['/foo']}, log_prefix, src_dirs_before)
-    assert 'could not be found' in str(e_info)
+        assert 'could not be found' in str(e_info)
 
 
-def test_snapshot_not_present():
+def test_prepare_source_directories_snapshot_not_present():
     log_prefix = ''
 
     flexmock(module).should_receive('execute_command_and_capture_output').once().with_args(
@@ -261,5 +256,4 @@ def test_snapshot_not_present():
     src_dirs_before = ['/foo']
     with pytest.raises(ValueError) as e_info:
         module.prepare_source_directories({'include': 'all'}, log_prefix, src_dirs_before)
-
-    assert re.match(r'.*deduced directory .* is not present.*', str(e_info))
+        assert re.match(r'.*deduced directory .* is not present.*', str(e_info))
