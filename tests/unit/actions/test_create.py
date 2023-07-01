@@ -14,7 +14,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
-    ).and_return({}).and_return({"hook": ["/foo"]})
+    ).and_return({}).and_return({'hook': ['/foo']})
     create_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -96,7 +96,7 @@ def test_run_create_bails_if_repository_does_not_match():
         module.run_create(
             config_filename='test.yaml',
             repository='repo',
-            location={"source_directories": ["/foo"]},
+            location={'source_directories': ['/foo']},
             storage={},
             hooks={},
             hook_context={},

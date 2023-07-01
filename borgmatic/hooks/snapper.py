@@ -12,15 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 def _call_snapper(*args) -> dict:
-    return json.loads(execute_command_and_capture_output(["snapper", "--jsonout", *args]))
+    return json.loads(execute_command_and_capture_output(['snapper', '--jsonout', *args]))
 
 
 @cache
 def _available_configs() -> dict[Path, str]:
-    configs = _call_snapper("list-configs")["configs"]
+    configs = _call_snapper('list-configs')['configs']
     # using Path as a key makes it possible to ignore the trailing slash problem
-    # i.e. Path("/test") == Path("/test/")
-    return {Path(c["subvolume"]): c["config"] for c in configs}
+    # i.e. Path('/test') == Path('/test/')
+    return {Path(c['subvolume']): c['config'] for c in configs}
 
 
 def prepare_source_directories(hook_config, _log_prefix, src_dirs):
@@ -30,15 +30,15 @@ def prepare_source_directories(hook_config, _log_prefix, src_dirs):
     if hook_config == {}:
         return src_dirs
     src_dirs = set(map(Path, src_dirs))
-    if hook_config["include"] == "all":
+    if hook_config['include'] == 'all':
         snapper_dirs = copy(src_dirs)
         fail = False
     else:
-        include_dirs = set(map(Path, hook_config["include"]))
+        include_dirs = set(map(Path, hook_config['include']))
         snapper_dirs = src_dirs & include_dirs
         fail = True
-    if hook_config.get("exclude"):
-        exclude_dirs = set(map(Path, hook_config["exclude"]))
+    if hook_config.get('exclude'):
+        exclude_dirs = set(map(Path, hook_config['exclude']))
         snapper_dirs -= exclude_dirs
 
     processed_dirs = set()
@@ -46,21 +46,21 @@ def prepare_source_directories(hook_config, _log_prefix, src_dirs):
     for snapper_dir in snapper_dirs:
         msg = f'Source directory "{snapper_dir}" was configured to use its latest snapper snapshot for backup, '
         if snapper_dir not in _available_configs():
-            msg += "but a corresponding snapper config could not be found"
+            msg += 'but a corresponding snapper config could not be found'
             if fail:
                 raise ValueError(msg)
             else:
                 logger.warning(msg)
                 continue
         config = _available_configs()[snapper_dir]
-        available_snapshots = _call_snapper("-c", config, "list", "--disable-used-space")
-        latest_snapshot_number = str(available_snapshots[config][-1]["number"])
-        new_src_dir = snapper_dir / ".snapshots" / latest_snapshot_number / "snapshot"
+        available_snapshots = _call_snapper('-c', config, 'list', '--disable-used-space')
+        latest_snapshot_number = str(available_snapshots[config][-1]['number'])
+        new_src_dir = snapper_dir / '.snapshots' / latest_snapshot_number / 'snapshot'
         if not new_src_dir.exists():
             msg = (
-                f"Detected snapshot number {latest_snapshot_number} to be the latest for "
-                f"source directory {snapper_dir}, but the deduced directory ({new_src_dir}) is not present. "
-                f"Likely causes are .snapshots not being mounted properly or no snapshots have been taken yet"
+                f'Detected snapshot number {latest_snapshot_number} to be the latest for '
+                f'source directory {snapper_dir}, but the deduced directory ({new_src_dir}) is not present. '
+                f'Likely causes are .snapshots not being mounted properly or no snapshots have been taken yet'
             )
             raise ValueError(msg)
         processed_dirs.add(snapper_dir)
@@ -82,13 +82,13 @@ def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
         return
     src_dirs = set(map(Path, src_dirs))
     destination_path = Path(destination_path) if destination_path else Path(os.getcwd())
-    if hook_config["include"] == "all":
+    if hook_config['include'] == 'all':
         snapper_dirs = copy(src_dirs)
     else:
-        include_dirs = set(map(Path, hook_config["include"]))
+        include_dirs = set(map(Path, hook_config['include']))
         snapper_dirs = src_dirs & include_dirs
-    if hook_config.get("exclude"):
-        exclude_dirs = set(map(Path, hook_config["exclude"]))
+    if hook_config.get('exclude'):
+        exclude_dirs = set(map(Path, hook_config['exclude']))
         snapper_dirs -= exclude_dirs
 
     for snapper_dir in snapper_dirs:
@@ -96,13 +96,13 @@ def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
         if snapper_dir.is_absolute():
             snapper_dir = Path(str(snapper_dir)[1:])
         dest_snapper_dir = destination_path / snapper_dir
-        snap_dir = dest_snapper_dir / ".snapshots"
+        snap_dir = dest_snapper_dir / '.snapshots'
         if not snap_dir.is_dir():
             continue
         snap_number_dir = next(snap_dir.iterdir())
         if not snap_number_dir.is_dir() or not snap_number_dir.name.isdigit():
             continue
-        final_snap_dir = snap_number_dir / "snapshot"
+        final_snap_dir = snap_number_dir / 'snapshot'
         if not final_snap_dir.is_dir():
             continue
 
@@ -113,8 +113,8 @@ def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
             )
             continue
 
-        logger.info(f"{log_prefix}: renaming {final_snap_dir} -> {dest_snapper_dir}")
-        tmp_snapper_dir = f"{snapper_dir}_"
+        logger.info(f'{log_prefix}: renaming {final_snap_dir} -> {dest_snapper_dir}')
+        tmp_snapper_dir = f'{snapper_dir}_'
         final_snap_dir.rename(destination_path / tmp_snapper_dir)
         shutil.rmtree(destination_path / snapper_dir)
         (destination_path / tmp_snapper_dir).rename(dest_snapper_dir)

@@ -107,13 +107,13 @@ def run_create(
         hooks,
         repository,
         borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
-        location.get("source_directories", []),
+        location.get('source_directories', []),
     )
     source_directories = reduce(
         lambda x, y: x + y if y else x, source_directories_dict.values(), []
     )
     if source_directories:
-        location["source_directories"] = source_directories
+        location['source_directories'] = source_directories
 
     json_output = borgmatic.borg.create.create_archive(
         global_arguments.dry_run,
