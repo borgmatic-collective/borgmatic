@@ -69,6 +69,17 @@ def prepare_source_directories(hook_config, _log_prefix, src_dirs):
 
 
 def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
+    '''
+    Renames extracted configured source_directories from snapper snapshot path back to their original pre-snapshot path
+    Example: /some/path/.snapshots/3/snapshot to /some/path
+    '''
+    if not src_dirs:
+        logger.warning(
+            f'{log_prefix}: No source_directories configured. Unable to rename snapshot directories. '
+            f'Please restore source_directories config to be same, when creating the archive for best '
+            f'results'
+        )
+        return
     src_dirs = set(map(Path, src_dirs))
     destination_path = Path(destination_path) if destination_path else Path(os.getcwd())
     if hook_config["include"] == "all":
@@ -85,22 +96,25 @@ def fix_extracted_dirs(hook_config, log_prefix, src_dirs, destination_path):
         if snapper_dir.is_absolute():
             snapper_dir = Path(str(snapper_dir)[1:])
         dest_snapper_dir = destination_path / snapper_dir
-        if len(os.listdir(dest_snapper_dir)) != 1:
-            continue
         snap_dir = dest_snapper_dir / ".snapshots"
-        if not snap_dir.is_dir() or len(os.listdir(snap_dir)) != 1:
+        if not snap_dir.is_dir():
             continue
         snap_number_dir = next(snap_dir.iterdir())
         if not snap_number_dir.is_dir() or not snap_number_dir.name.isdigit():
             continue
-
         final_snap_dir = snap_number_dir / "snapshot"
         if not final_snap_dir.is_dir():
             continue
 
-        logger.info(f"{log_prefix}: assuming full system restore: renaming "
-                    f"{final_snap_dir} -> {destination_path / snapper_dir}")
+        if len(os.listdir(dest_snapper_dir)) != 1:
+            logger.warning(
+                f'{log_prefix}: Refusing to overwrite non-empty directory "{dest_snapper_dir}". '
+                f'Run "mv {final_snap_dir} {dest_snapper_dir}" if you want to force this'
+            )
+            continue
+
+        logger.info(f"{log_prefix}: renaming {final_snap_dir} -> {dest_snapper_dir}")
         tmp_snapper_dir = f"{snapper_dir}_"
         final_snap_dir.rename(destination_path / tmp_snapper_dir)
         shutil.rmtree(destination_path / snapper_dir)
-        (destination_path / tmp_snapper_dir).rename(destination_path / snapper_dir)
+        (destination_path / tmp_snapper_dir).rename(dest_snapper_dir)

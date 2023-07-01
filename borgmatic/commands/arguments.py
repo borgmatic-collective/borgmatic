@@ -689,6 +689,14 @@ def make_parsers():
         help='Number of leading path components to remove from each extracted path or "all" to strip all leading path components. Skip paths with fewer elements',
     )
     extract_group.add_argument(
+        '--rename-snapshots',
+        dest='rename_snapshots',
+        default=False,
+        action='store_true',
+        help='Rename extracted directories to remove .snapshots/<number> part from path, stemming from snapper '
+        'snapshots',
+    )
+    extract_group.add_argument(
         '--progress',
         dest='progress',
         default=False,

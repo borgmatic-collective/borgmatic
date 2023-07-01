@@ -13,6 +13,7 @@ def test_run_extract_calls_hooks():
         progress=flexmock(),
         destination=flexmock(),
         strip_components=flexmock(),
+        rename_snapshots=flexmock(),
         archive=flexmock(),
         repository='repo',
     )

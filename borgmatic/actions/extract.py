@@ -63,14 +63,15 @@ def run_extract(
             strip_components=extract_arguments.strip_components,
             progress=extract_arguments.progress,
         )
-    borgmatic.hooks.dispatch.call_hooks(
-        'fix_extracted_dirs',
-        hooks,
-        repository,
-        borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
-        location['source_directories'],
-        extract_arguments.destination,
-    )
+    if extract_arguments.rename_snapshots:
+        borgmatic.hooks.dispatch.call_hooks(
+            'fix_extracted_dirs',
+            hooks,
+            repository,
+            borgmatic.hooks.prepare.PREPARE_HOOK_NAMES,
+            location.get('source_directories'),
+            extract_arguments.destination,
+        )
     borgmatic.hooks.command.execute_hook(
         hooks.get('after_extract'),
         hooks.get('umask'),
