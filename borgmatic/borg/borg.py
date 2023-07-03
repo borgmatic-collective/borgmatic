@@ -8,7 +8,6 @@ from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 logger = logging.getLogger(__name__)
 
 
-REPOSITORYLESS_BORG_COMMANDS = {'serve', None}
 BORG_SUBCOMMANDS_WITH_SUBCOMMANDS = {'key', 'debug'}
 
 
@@ -64,7 +63,7 @@ def run_arbitrary_borg(
         extra_environment=dict(
             (environment.make_environment(storage_config) or {}),
             **{
-                'REPOSITORY': repository_path,
+                'BORG_REPO': repository_path,
                 'ARCHIVE': archive if archive else '',
             },
         ),
