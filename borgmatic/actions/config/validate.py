@@ -1,6 +1,7 @@
 import logging
 
 import borgmatic.config.generate
+import borgmatic.logger
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,8 @@ def run_validate(validate_arguments, configs):
     loading machinery prior to here, so this function mainly exists to support additional validate
     flags like "--show".
     '''
+    borgmatic.logger.add_custom_log_levels()
+
     if validate_arguments.show:
         for config_path, config in configs.items():
             if len(configs) > 1:

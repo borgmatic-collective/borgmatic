@@ -11,7 +11,7 @@ def test_run_transfer_does_not_raise():
 
     module.run_transfer(
         repository={'path': 'repo'},
-        storage={},
+        config={},
         local_borg_version=None,
         transfer_arguments=transfer_arguments,
         global_arguments=global_arguments,

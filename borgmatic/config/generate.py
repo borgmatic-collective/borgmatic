@@ -11,7 +11,7 @@ INDENT = 4
 SEQUENCE_INDENT = 2
 
 
-def _insert_newline_before_comment(config, field_name):
+def insert_newline_before_comment(config, field_name):
     '''
     Using some ruamel.yaml black magic, insert a blank line in the config right before the given
     field and its comments.
@@ -21,10 +21,10 @@ def _insert_newline_before_comment(config, field_name):
     )
 
 
-def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
+def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema, generate and return sample config for it. Include comments
-    for each section based on the schema "description".
+    for each option based on the schema "description".
     '''
     schema_type = schema.get('type')
     example = schema.get('example')
@@ -33,13 +33,13 @@ def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
 
     if schema_type == 'array':
         config = yaml.comments.CommentedSeq(
-            [_schema_to_sample_configuration(schema['items'], level, parent_is_sequence=True)]
+            [schema_to_sample_configuration(schema['items'], level, parent_is_sequence=True)]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif schema_type == 'object':
         config = yaml.comments.CommentedMap(
             [
-                (field_name, _schema_to_sample_configuration(sub_schema, level + 1))
+                (field_name, schema_to_sample_configuration(sub_schema, level + 1))
                 for field_name, sub_schema in schema['properties'].items()
             ]
         )
@@ -53,13 +53,13 @@ def _schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     return config
 
 
-def _comment_out_line(line):
+def comment_out_line(line):
     # If it's already is commented out (or empty), there's nothing further to do!
     stripped_line = line.lstrip()
     if not stripped_line or stripped_line.startswith('#'):
         return line
 
-    # Comment out the names of optional sections, inserting the '#' after any indent for aesthetics.
+    # Comment out the names of optional options, inserting the '#' after any indent for aesthetics.
     matches = re.match(r'(\s*)', line)
     indent_spaces = matches.group(0) if matches else ''
     count_indent_spaces = len(indent_spaces)
@@ -67,7 +67,7 @@ def _comment_out_line(line):
     return '# '.join((indent_spaces, line[count_indent_spaces:]))
 
 
-def _comment_out_optional_configuration(rendered_config):
+def comment_out_optional_configuration(rendered_config):
     '''
     Post-process a rendered configuration string to comment out optional key/values, as determined
     by a sentinel in the comment before each key.
@@ -92,7 +92,7 @@ def _comment_out_optional_configuration(rendered_config):
         if not line.strip():
             optional = False
 
-        lines.append(_comment_out_line(line) if optional else line)
+        lines.append(comment_out_line(line) if optional else line)
 
     return '\n'.join(lines)
 
@@ -165,7 +165,6 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         return
 
 
-REQUIRED_SECTION_NAMES = {'location', 'retention'}
 REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
 COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
@@ -185,7 +184,7 @@ def add_comments_to_configuration_object(config, schema, indent=0, skip_first=Fa
         # If this is an optional key, add an indicator to the comment flagging it to be commented
         # out from the sample configuration. This sentinel is consumed by downstream processing that
         # does the actual commenting out.
-        if field_name not in REQUIRED_SECTION_NAMES and field_name not in REQUIRED_KEYS:
+        if field_name not in REQUIRED_KEYS:
             description = (
                 '\n'.join((description, COMMENTED_OUT_SENTINEL))
                 if description
@@ -199,7 +198,7 @@ def add_comments_to_configuration_object(config, schema, indent=0, skip_first=Fa
         config.yaml_set_comment_before_after_key(key=field_name, before=description, indent=indent)
 
         if index > 0:
-            _insert_newline_before_comment(config, field_name)
+            insert_newline_before_comment(config, field_name)
 
 
 RUAMEL_YAML_COMMENTS_INDEX = 1
@@ -284,7 +283,7 @@ def generate_sample_configuration(
         normalize.normalize(source_filename, source_config)
 
     destination_config = merge_source_configuration_into_destination(
-        _schema_to_sample_configuration(schema), source_config
+        schema_to_sample_configuration(schema), source_config
     )
 
     if dry_run:
@@ -292,6 +291,6 @@ def generate_sample_configuration(
 
     write_configuration(
         destination_filename,
-        _comment_out_optional_configuration(render_configuration(destination_config)),
+        comment_out_optional_configuration(render_configuration(destination_config)),
         overwrite=overwrite,
     )

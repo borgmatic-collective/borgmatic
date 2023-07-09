@@ -18,7 +18,7 @@ def test_run_info_does_not_raise():
     list(
         module.run_info(
             repository={'path': 'repo'},
-            storage={},
+            config={},
             local_borg_version=None,
             info_arguments=info_arguments,
             global_arguments=flexmock(log_json=False),

@@ -17,7 +17,7 @@ import borgmatic.hooks.dump
 logger = logging.getLogger(__name__)
 
 
-def create_borgmatic_manifest(location, config_paths, dry_run):
+def create_borgmatic_manifest(config, config_paths, dry_run):
     '''
     Create a borgmatic manifest file to store the paths to the configuration files used to create
     the archive.
@@ -25,7 +25,7 @@ def create_borgmatic_manifest(location, config_paths, dry_run):
     if dry_run:
         return
 
-    borgmatic_source_directory = location.get(
+    borgmatic_source_directory = config.get(
         'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
     )
 
@@ -49,9 +49,7 @@ def create_borgmatic_manifest(location, config_paths, dry_run):
 def run_create(
     config_filename,
     repository,
-    location,
-    storage,
-    hooks,
+    config,
     hook_context,
     local_borg_version,
     create_arguments,
@@ -71,8 +69,8 @@ def run_create(
         return
 
     borgmatic.hooks.command.execute_hook(
-        hooks.get('before_backup'),
-        hooks.get('umask'),
+        config.get('before_backup'),
+        config.get('umask'),
         config_filename,
         'pre-backup',
         global_arguments.dry_run,
@@ -81,30 +79,25 @@ def run_create(
     logger.info(f'{repository.get("label", repository["path"])}: Creating archive{dry_run_label}')
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
-        hooks,
+        config,
         repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
-        location,
         global_arguments.dry_run,
     )
     active_dumps = borgmatic.hooks.dispatch.call_hooks(
         'dump_databases',
-        hooks,
+        config,
         repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
-        location,
         global_arguments.dry_run,
     )
-    create_borgmatic_manifest(
-        location, global_arguments.used_config_paths, global_arguments.dry_run
-    )
+    create_borgmatic_manifest(config, global_arguments.used_config_paths, global_arguments.dry_run)
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
     json_output = borgmatic.borg.create.create_archive(
         global_arguments.dry_run,
         repository['path'],
-        location,
-        storage,
+        config,
         local_borg_version,
         global_arguments,
         local_path=local_path,
@@ -120,15 +113,14 @@ def run_create(
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_database_dumps',
-        hooks,
+        config,
         config_filename,
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
-        location,
         global_arguments.dry_run,
     )
     borgmatic.hooks.command.execute_hook(
-        hooks.get('after_backup'),
-        hooks.get('umask'),
+        config.get('after_backup'),
+        config.get('umask'),
         config_filename,
         'post-backup',
         global_arguments.dry_run,

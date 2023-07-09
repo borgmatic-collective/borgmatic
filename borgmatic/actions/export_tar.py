@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_export_tar(
     repository,
-    storage,
+    config,
     local_borg_version,
     export_tar_arguments,
     global_arguments,
@@ -31,7 +31,7 @@ def run_export_tar(
             borgmatic.borg.rlist.resolve_archive_name(
                 repository['path'],
                 export_tar_arguments.archive,
-                storage,
+                config,
                 local_borg_version,
                 global_arguments,
                 local_path,
@@ -39,7 +39,7 @@ def run_export_tar(
             ),
             export_tar_arguments.paths,
             export_tar_arguments.destination,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path=local_path,

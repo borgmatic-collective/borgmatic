@@ -18,7 +18,7 @@ def test_run_mount_does_not_raise():
 
     module.run_mount(
         repository={'path': 'repo'},
-        storage={},
+        config={},
         local_borg_version=None,
         mount_arguments=mount_arguments,
         global_arguments=flexmock(log_json=False),

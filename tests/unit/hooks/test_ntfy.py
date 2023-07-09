@@ -44,6 +44,7 @@ def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -65,6 +66,7 @@ def test_ping_monitor_with_auth_hits_hosted_ntfy_on_fail():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -83,6 +85,7 @@ def test_ping_monitor_auth_with_no_username_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -101,6 +104,7 @@ def test_ping_monitor_auth_with_no_password_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -114,6 +118,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.START,
         monitoring_log_level=1,
@@ -127,6 +132,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -144,6 +150,7 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -157,6 +164,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -172,6 +180,7 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -189,6 +198,7 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.START,
         monitoring_log_level=1,
@@ -207,6 +217,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -229,6 +240,7 @@ def test_ping_monitor_with_other_error_logs_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         borgmatic.hooks.monitor.State.FAIL,
         monitoring_log_level=1,

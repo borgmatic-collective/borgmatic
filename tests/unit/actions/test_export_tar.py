@@ -20,7 +20,7 @@ def test_run_export_tar_does_not_raise():
 
     module.run_export_tar(
         repository={'path': 'repo'},
-        storage={},
+        config={},
         local_borg_version=None,
         export_tar_arguments=export_tar_arguments,
         global_arguments=global_arguments,

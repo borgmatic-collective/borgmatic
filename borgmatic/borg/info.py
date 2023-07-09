@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def display_archives_info(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     info_arguments,
     global_arguments,
@@ -17,12 +17,12 @@ def display_archives_info(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, global
+    Given a local or remote repository path, a configuration dict, the local Borg version, global
     arguments as an argparse.Namespace, and the arguments to the info action, display summary
     information for Borg archives in the repository or return JSON summary information.
     '''
     borgmatic.logger.add_custom_log_levels()
-    lock_wait = storage_config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait', None)
 
     full_command = (
         (local_path, 'info')
@@ -50,8 +50,8 @@ def display_archives_info(
                 flags.make_match_archives_flags(
                     info_arguments.match_archives
                     or info_arguments.archive
-                    or storage_config.get('match_archives'),
-                    storage_config.get('archive_name_format'),
+                    or config.get('match_archives'),
+                    config.get('archive_name_format'),
                     local_borg_version,
                 )
             )
@@ -65,12 +65,12 @@ def display_archives_info(
     if info_arguments.json:
         return execute_command_and_capture_output(
             full_command,
-            extra_environment=environment.make_environment(storage_config),
+            extra_environment=environment.make_environment(config),
         )
     else:
         execute_command(
             full_command,
             output_log_level=logging.ANSWER,
             borg_local_path=local_path,
-            extra_environment=environment.make_environment(storage_config),
+            extra_environment=environment.make_environment(config),
         )

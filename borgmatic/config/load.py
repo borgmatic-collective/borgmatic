@@ -97,8 +97,8 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
         ```
 
         These includes are deep merged into the current configuration file. For instance, in this
-        example, any "retention" options in common.yaml will get merged into the "retention" section
-        in the example configuration file.
+        example, any "option" with sub-options in common.yaml will get merged into the corresponding
+        "option" with sub-options in the example configuration file.
         '''
         representer = ruamel.yaml.representer.SafeRepresenter()
 
@@ -116,7 +116,7 @@ def load_configuration(filename):
     '''
     Load the given configuration file and return its contents as a data structure of nested dicts
     and lists. Also, replace any "{constant}" strings with the value of the "constant" key in the
-    "constants" section of the configuration file.
+    "constants" option of the configuration file.
 
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
@@ -223,8 +223,8 @@ def deep_merge_nodes(nodes):
     If a mapping or sequence node has a YAML "!retain" tag, then that node is not merged.
 
     The purpose of deep merging like this is to support, for instance, merging one borgmatic
-    configuration file into another for reuse, such that a configuration section ("retention",
-    etc.) does not completely replace the corresponding section in a merged file.
+    configuration file into another for reuse, such that a configuration option with sub-options
+    does not completely replace the corresponding option in a merged file.
 
     Raise ValueError if a merge is implied using two incompatible types.
     '''

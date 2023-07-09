@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 def run_compact(
     config_filename,
     repository,
-    storage,
-    retention,
-    hooks,
+    config,
     hook_context,
     local_borg_version,
     compact_arguments,
@@ -31,8 +29,8 @@ def run_compact(
         return
 
     borgmatic.hooks.command.execute_hook(
-        hooks.get('before_compact'),
-        hooks.get('umask'),
+        config.get('before_compact'),
+        config.get('umask'),
         config_filename,
         'pre-compact',
         global_arguments.dry_run,
@@ -45,7 +43,7 @@ def run_compact(
         borgmatic.borg.compact.compact_segments(
             global_arguments.dry_run,
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path=local_path,
@@ -59,8 +57,8 @@ def run_compact(
             f'{repository.get("label", repository["path"])}: Skipping compact (only available/needed in Borg 1.2+)'
         )
     borgmatic.hooks.command.execute_hook(
-        hooks.get('after_compact'),
-        hooks.get('umask'),
+        config.get('after_compact'),
+        config.get('umask'),
         config_filename,
         'post-compact',
         global_arguments.dry_run,

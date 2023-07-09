@@ -32,19 +32,33 @@ def convert_value_type(value):
     return ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
 
 
+LEGACY_SECTION_NAMES = {'location', 'storage', 'retention', 'consistency', 'output', 'hooks'}
+
+
+def strip_section_names(parsed_override_key):
+    '''
+    Given a parsed override key as a tuple of option and suboption names, strip out any initial
+    legacy section names, since configuration file normalization also strips them out.
+    '''
+    if parsed_override_key[0] in LEGACY_SECTION_NAMES:
+        return parsed_override_key[1:]
+
+    return parsed_override_key
+
+
 def parse_overrides(raw_overrides):
     '''
-    Given a sequence of configuration file override strings in the form of "section.option=value",
+    Given a sequence of configuration file override strings in the form of "option.suboption=value",
     parse and return a sequence of tuples (keys, values), where keys is a sequence of strings. For
     instance, given the following raw overrides:
 
-        ['section.my_option=value1', 'section.other_option=value2']
+        ['my_option.suboption=value1', 'other_option=value2']
 
     ... return this:
 
         (
-            (('section', 'my_option'), 'value1'),
-            (('section', 'other_option'), 'value2'),
+            (('my_option', 'suboption'), 'value1'),
+            (('other_option'), 'value2'),
         )
 
     Raise ValueError if an override can't be parsed.
@@ -59,13 +73,13 @@ def parse_overrides(raw_overrides):
             raw_keys, value = raw_override.split('=', 1)
             parsed_overrides.append(
                 (
-                    tuple(raw_keys.split('.')),
+                    strip_section_names(tuple(raw_keys.split('.'))),
                     convert_value_type(value),
                 )
             )
         except ValueError:
             raise ValueError(
-                f"Invalid override '{raw_override}'. Make sure you use the form: SECTION.OPTION=VALUE"
+                f"Invalid override '{raw_override}'. Make sure you use the form: OPTION=VALUE or OPTION.SUBOPTION=VALUE"
             )
         except ruamel.yaml.error.YAMLError as error:
             raise ValueError(f"Invalid override '{raw_override}': {error.problem}")
@@ -76,7 +90,7 @@ def parse_overrides(raw_overrides):
 def apply_overrides(config, raw_overrides):
     '''
     Given a configuration dict and a sequence of configuration file override strings in the form of
-    "section.option=value", parse each override and set it the configuration dict.
+    "option.suboption=value", parse each override and set it the configuration dict.
     '''
     overrides = parse_overrides(raw_overrides)
 

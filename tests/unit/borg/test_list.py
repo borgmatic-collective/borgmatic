@@ -17,7 +17,7 @@ def test_make_list_command_includes_log_info():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -34,7 +34,7 @@ def test_make_list_command_includes_json_but_not_info():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=True),
         global_arguments=flexmock(log_json=False),
@@ -51,7 +51,7 @@ def test_make_list_command_includes_log_debug():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -68,7 +68,7 @@ def test_make_list_command_includes_json_but_not_debug():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=True),
         global_arguments=flexmock(log_json=False),
@@ -84,7 +84,7 @@ def test_make_list_command_includes_json():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=True),
         global_arguments=flexmock(log_json=False),
@@ -100,7 +100,7 @@ def test_make_list_command_includes_log_json():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=True),
@@ -118,7 +118,7 @@ def test_make_list_command_includes_lock_wait():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={'lock_wait': 5},
+        config={'lock_wait': 5},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -136,7 +136,7 @@ def test_make_list_command_includes_archive():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive='archive', paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -154,7 +154,7 @@ def test_make_list_command_includes_archive_and_path():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive='archive', paths=['var/lib'], json=False),
         global_arguments=flexmock(log_json=False),
@@ -170,7 +170,7 @@ def test_make_list_command_includes_local_path():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -193,7 +193,7 @@ def test_make_list_command_includes_remote_path():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False),
         global_arguments=flexmock(log_json=False),
@@ -210,7 +210,7 @@ def test_make_list_command_includes_short():
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(archive=None, paths=None, json=False, short=True),
         global_arguments=flexmock(log_json=False),
@@ -242,7 +242,7 @@ def test_make_list_command_includes_additional_flags(argument_name):
 
     command = module.make_list_command(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=flexmock(
             archive=None,
@@ -293,7 +293,7 @@ def test_capture_archive_listing_does_not_raise():
     module.capture_archive_listing(
         repository_path='repo',
         archive='archive',
-        storage_config=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         global_arguments=flexmock(log_json=False),
     )
@@ -319,7 +319,7 @@ def test_list_archive_calls_borg_with_flags():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -337,7 +337,7 @@ def test_list_archive_calls_borg_with_flags():
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -355,7 +355,7 @@ def test_list_archive_with_archive_and_json_errors():
     with pytest.raises(ValueError):
         module.list_archive(
             repository_path='repo',
-            storage_config={},
+            config={},
             local_borg_version='1.2.3',
             list_arguments=list_arguments,
             global_arguments=flexmock(log_json=False),
@@ -382,7 +382,7 @@ def test_list_archive_calls_borg_with_local_path():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -400,7 +400,7 @@ def test_list_archive_calls_borg_with_local_path():
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -450,7 +450,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=flexmock(log_json=False),
@@ -477,7 +477,7 @@ def test_list_archive_calls_borg_with_archive():
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -495,7 +495,7 @@ def test_list_archive_calls_borg_with_archive():
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=global_arguments,
@@ -526,7 +526,7 @@ def test_list_archive_without_archive_delegates_to_list_repository():
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=flexmock(log_json=False),
@@ -557,7 +557,7 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=list_arguments,
         global_arguments=flexmock(log_json=False),
@@ -595,7 +595,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
     ).and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=argparse.Namespace(
             archive='archive', paths=None, json=False, find_paths=None, **default_filter_flags
@@ -615,7 +615,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=argparse.Namespace(
             archive='archive', paths=None, json=False, find_paths=None, **altered_filter_flags
@@ -654,7 +654,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
 
     flexmock(module.rlist).should_receive('make_rlist_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         rlist_arguments=argparse.Namespace(
             repository='repo', short=True, format=None, json=None, **altered_filter_flags
@@ -671,7 +671,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
 
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=argparse.Namespace(
             repository='repo',
@@ -690,7 +690,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
 
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=argparse.Namespace(
             repository='repo',
@@ -724,7 +724,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
 
     module.list_archive(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         list_arguments=argparse.Namespace(
             repository='repo',

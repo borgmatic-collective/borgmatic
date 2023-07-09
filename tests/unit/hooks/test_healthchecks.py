@@ -143,6 +143,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,
@@ -160,6 +161,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -177,6 +179,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -194,6 +197,7 @@ def test_ping_monitor_hits_ping_url_for_log_state():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.LOG,
         monitoring_log_level=1,
@@ -213,6 +217,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -230,6 +235,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -247,6 +253,7 @@ def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -261,6 +268,7 @@ def test_ping_monitor_dry_run_does_not_hit_ping_url():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,
@@ -275,6 +283,7 @@ def test_ping_monitor_does_not_hit_ping_url_when_states_not_matching():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,
@@ -291,6 +300,7 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,
@@ -308,6 +318,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,
@@ -329,6 +340,7 @@ def test_ping_monitor_with_other_error_logs_warning():
 
     module.ping_monitor(
         hook_config,
+        {},
         'config.yaml',
         state=module.monitor.State.START,
         monitoring_log_level=1,

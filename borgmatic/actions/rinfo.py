@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_rinfo(
     repository,
-    storage,
+    config,
     local_borg_version,
     rinfo_arguments,
     global_arguments,
@@ -31,7 +31,7 @@ def run_rinfo(
 
         json_output = borgmatic.borg.rinfo.display_repository_info(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             rinfo_arguments=rinfo_arguments,
             global_arguments=global_arguments,

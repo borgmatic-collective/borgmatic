@@ -18,7 +18,7 @@ def test_run_list_does_not_raise():
     list(
         module.run_list(
             repository={'path': 'repo'},
-            storage={},
+            config={},
             local_borg_version=None,
             list_arguments=list_arguments,
             global_arguments=flexmock(log_json=False),

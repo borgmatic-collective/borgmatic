@@ -68,9 +68,9 @@ def test_apply_logical_validation_raises_if_unknown_repository_in_check_reposito
         module.apply_logical_validation(
             'config.yaml',
             {
-                'location': {'repositories': ['repo.borg', 'other.borg']},
-                'retention': {'keep_secondly': 1000},
-                'consistency': {'check_repositories': ['repo.borg', 'unknown.borg']},
+                'repositories': ['repo.borg', 'other.borg'],
+                'keep_secondly': 1000,
+                'check_repositories': ['repo.borg', 'unknown.borg'],
             },
         )
 
@@ -79,9 +79,9 @@ def test_apply_logical_validation_does_not_raise_if_known_repository_path_in_che
     module.apply_logical_validation(
         'config.yaml',
         {
-            'location': {'repositories': [{'path': 'repo.borg'}, {'path': 'other.borg'}]},
-            'retention': {'keep_secondly': 1000},
-            'consistency': {'check_repositories': ['repo.borg']},
+            'repositories': [{'path': 'repo.borg'}, {'path': 'other.borg'}],
+            'keep_secondly': 1000,
+            'check_repositories': ['repo.borg'],
         },
     )
 
@@ -90,14 +90,12 @@ def test_apply_logical_validation_does_not_raise_if_known_repository_label_in_ch
     module.apply_logical_validation(
         'config.yaml',
         {
-            'location': {
-                'repositories': [
-                    {'path': 'repo.borg', 'label': 'my_repo'},
-                    {'path': 'other.borg', 'label': 'other_repo'},
-                ]
-            },
-            'retention': {'keep_secondly': 1000},
-            'consistency': {'check_repositories': ['my_repo']},
+            'repositories': [
+                {'path': 'repo.borg', 'label': 'my_repo'},
+                {'path': 'other.borg', 'label': 'other_repo'},
+            ],
+            'keep_secondly': 1000,
+            'check_repositories': ['my_repo'],
         },
     )
 
@@ -106,15 +104,15 @@ def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_pref
     module.apply_logical_validation(
         'config.yaml',
         {
-            'storage': {'archive_name_format': '{hostname}-{now}'},  # noqa: FS003
-            'retention': {'prefix': '{hostname}-'},  # noqa: FS003
-            'consistency': {'prefix': '{hostname}-'},  # noqa: FS003
+            'archive_name_format': '{hostname}-{now}',  # noqa: FS003
+            'prefix': '{hostname}-',  # noqa: FS003
+            'prefix': '{hostname}-',  # noqa: FS003
         },
     )
 
 
 def test_apply_logical_validation_does_not_raise_otherwise():
-    module.apply_logical_validation('config.yaml', {'retention': {'keep_secondly': 1000}})
+    module.apply_logical_validation('config.yaml', {'keep_secondly': 1000})
 
 
 def test_normalize_repository_path_passes_through_remote_repository():
@@ -157,22 +155,20 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
     module.guard_configuration_contains_repository(
-        repository='repo', configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
+        repository='repo', configurations={'config.yaml': {'repositories': ['repo']}}
     )
 
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_label_in_config():
     module.guard_configuration_contains_repository(
         repository='repo',
-        configurations={
-            'config.yaml': {'location': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}}
-        },
+        configurations={'config.yaml': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}},
     )
 
 
 def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
     module.guard_configuration_contains_repository(
-        repository=None, configurations={'config.yaml': {'location': {'repositories': ['repo']}}}
+        repository=None, configurations={'config.yaml': {'repositories': ['repo']}}
     )
 
 
@@ -184,7 +180,7 @@ def test_guard_configuration_contains_repository_errors_when_repository_missing_
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(
             repository='nope',
-            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
+            configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
         )
 
 
@@ -197,8 +193,8 @@ def test_guard_configuration_contains_repository_errors_when_repository_matches_
         module.guard_configuration_contains_repository(
             repository='repo',
             configurations={
-                'config.yaml': {'location': {'repositories': ['repo', 'repo2']}},
-                'other.yaml': {'location': {'repositories': ['repo']}},
+                'config.yaml': {'repositories': ['repo', 'repo2']},
+                'other.yaml': {'repositories': ['repo']},
             },
         )
 
@@ -207,26 +203,26 @@ def test_guard_single_repository_selected_raises_when_multiple_repositories_conf
     with pytest.raises(ValueError):
         module.guard_single_repository_selected(
             repository=None,
-            configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
+            configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
         )
 
 
 def test_guard_single_repository_selected_does_not_raise_when_single_repository_configured_and_none_selected():
     module.guard_single_repository_selected(
         repository=None,
-        configurations={'config.yaml': {'location': {'repositories': ['repo']}}},
+        configurations={'config.yaml': {'repositories': ['repo']}},
     )
 
 
 def test_guard_single_repository_selected_does_not_raise_when_no_repositories_configured_and_one_selected():
     module.guard_single_repository_selected(
         repository='repo',
-        configurations={'config.yaml': {'location': {'repositories': []}}},
+        configurations={'config.yaml': {'repositories': []}},
     )
 
 
 def test_guard_single_repository_selected_does_not_raise_when_repositories_configured_and_one_selected():
     module.guard_single_repository_selected(
         repository='repo',
-        configurations={'config.yaml': {'location': {'repositories': ['repo', 'repo2']}}},
+        configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
     )

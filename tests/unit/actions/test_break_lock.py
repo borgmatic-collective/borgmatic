@@ -11,7 +11,7 @@ def test_run_break_lock_does_not_raise():
 
     module.run_break_lock(
         repository={'path': 'repo'},
-        storage={},
+        config={},
         local_borg_version=None,
         break_lock_arguments=break_lock_arguments,
         global_arguments=flexmock(),

@@ -84,7 +84,6 @@ def test_prune_archives_command_does_not_duplicate_flags_or_raise():
             False,
             'repo',
             {},
-            {},
             '2.3.4',
             fuzz_argument(arguments, argument_name),
             argparse.Namespace(log_json=False),

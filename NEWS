@@ -8,6 +8,13 @@
  * #720: Fix an error when dumping a MySQL database and the "exclude_nodump" option is set.
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
+ * #721: Remove configuration sections ("location:", "storage:", "hooks:" etc.), while still keeping
+   deprecated support for them. Now, all options are at the same level, and you don't need to worry
+   about commenting/uncommenting section headers when you change an option.
+ * #721: BREAKING: The retention prefix and the consistency prefix can no longer have different
+   values (unless one is not set).
+ * #721: BREAKING: The storage umask and the hooks umask can no longer have different values (unless
+   one is not set).
  * BREAKING: Remove the deprecated (and silently ignored) "--successful" flag on the "list" action,
    as newer versions of Borg list successful (non-checkpoint) archives by default.
  * All deprecated configuration option values now generate warning logs.

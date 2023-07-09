@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def display_repository_info(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     rinfo_arguments,
     global_arguments,
@@ -17,12 +17,12 @@ def display_repository_info(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, the
+    Given a local or remote repository path, a configuration dict, the local Borg version, the
     arguments to the rinfo action, and global arguments as an argparse.Namespace, display summary
     information for the Borg repository or return JSON summary information.
     '''
     borgmatic.logger.add_custom_log_levels()
-    lock_wait = storage_config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait', None)
 
     full_command = (
         (local_path,)
@@ -48,7 +48,7 @@ def display_repository_info(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    extra_environment = environment.make_environment(storage_config)
+    extra_environment = environment.make_environment(config)
 
     if rinfo_arguments.json:
         return execute_command_and_capture_output(

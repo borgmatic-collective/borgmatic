@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 def run_extract(
     config_filename,
     repository,
-    location,
-    storage,
-    hooks,
+    config,
     hook_context,
     local_borg_version,
     extract_arguments,
@@ -25,8 +23,8 @@ def run_extract(
     Run the "extract" action for the given repository.
     '''
     borgmatic.hooks.command.execute_hook(
-        hooks.get('before_extract'),
-        hooks.get('umask'),
+        config.get('before_extract'),
+        config.get('umask'),
         config_filename,
         'pre-extract',
         global_arguments.dry_run,
@@ -44,15 +42,14 @@ def run_extract(
             borgmatic.borg.rlist.resolve_archive_name(
                 repository['path'],
                 extract_arguments.archive,
-                storage,
+                config,
                 local_borg_version,
                 global_arguments,
                 local_path,
                 remote_path,
             ),
             extract_arguments.paths,
-            location,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path=local_path,
@@ -62,8 +59,8 @@ def run_extract(
             progress=extract_arguments.progress,
         )
     borgmatic.hooks.command.execute_hook(
-        hooks.get('after_extract'),
-        hooks.get('umask'),
+        config.get('after_extract'),
+        config.get('umask'),
         config_filename,
         'post-extract',
         global_arguments.dry_run,

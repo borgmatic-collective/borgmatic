@@ -12,7 +12,7 @@ def test_run_rinfo_does_not_raise():
     list(
         module.run_rinfo(
             repository={'path': 'repo'},
-            storage={},
+            config={},
             local_borg_version=None,
             rinfo_arguments=rinfo_arguments,
             global_arguments=flexmock(log_json=False),

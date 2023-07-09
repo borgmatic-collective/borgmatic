@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_rlist(
     repository,
-    storage,
+    config,
     local_borg_version,
     rlist_arguments,
     global_arguments,
@@ -29,7 +29,7 @@ def run_rlist(
 
         json_output = borgmatic.borg.rlist.list_repository(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             rlist_arguments=rlist_arguments,
             global_arguments=global_arguments,

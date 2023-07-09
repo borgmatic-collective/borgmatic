@@ -13,7 +13,7 @@ BORG_SUBCOMMANDS_WITH_SUBCOMMANDS = {'key', 'debug'}
 
 def run_arbitrary_borg(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     options,
     archive=None,
@@ -21,13 +21,13 @@ def run_arbitrary_borg(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, a
+    Given a local or remote repository path, a configuration dict, the local Borg version, a
     sequence of arbitrary command-line Borg options, and an optional archive name, run an arbitrary
     Borg command, passing in REPOSITORY and ARCHIVE environment variables for optional use in the
     command.
     '''
     borgmatic.logger.add_custom_log_levels()
-    lock_wait = storage_config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait', None)
 
     try:
         options = options[1:] if options[0] == '--' else options
@@ -61,7 +61,7 @@ def run_arbitrary_borg(
         borg_local_path=local_path,
         shell=True,
         extra_environment=dict(
-            (environment.make_environment(storage_config) or {}),
+            (environment.make_environment(config) or {}),
             **{
                 'BORG_REPO': repository_path,
                 'ARCHIVE': archive if archive else '',

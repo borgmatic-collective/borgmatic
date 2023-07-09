@@ -330,7 +330,7 @@ def make_parsers():
     )
     global_group.add_argument(
         '--override',
-        metavar='SECTION.OPTION=VALUE',
+        metavar='OPTION.SUBOPTION=VALUE',
         nargs='+',
         dest='overrides',
         action='extend',

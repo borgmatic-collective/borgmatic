@@ -8,19 +8,19 @@ logger = logging.getLogger(__name__)
 
 def break_lock(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage configuration dict, the local Borg version,
-    an argparse.Namespace of global arguments, and optional local and remote Borg paths, break any
+    Given a local or remote repository path, a configuration dict, the local Borg version, an
+    argparse.Namespace of global arguments, and optional local and remote Borg paths, break any
     repository and cache locks leftover from Borg aborting.
     '''
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
 
     full_command = (
         (local_path, 'break-lock')
@@ -33,5 +33,5 @@ def break_lock(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
     execute_command(full_command, borg_local_path=local_path, extra_environment=borg_environment)

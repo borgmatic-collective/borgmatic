@@ -22,7 +22,7 @@ def initialize_monitor(
     pass
 
 
-def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the configured Cronitor URL, modified with the monitor.State. Use the given configuration
     filename in any log entries. If this is a dry run, then don't actually ping anything.

@@ -90,7 +90,7 @@ def initialize_monitor(hook_config, config_filename, monitoring_log_level, dry_r
     )
 
 
-def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     Ping the configured Healthchecks URL or UUID, modified with the monitor.State. Use the given
     configuration filename in any log entries, and log to Healthchecks with the giving log level.

@@ -71,18 +71,15 @@ def apply_logical_validation(config_filename, parsed_configuration):
     below), run through any additional logical validation checks. If there are any such validation
     problems, raise a Validation_error.
     '''
-    location_repositories = parsed_configuration.get('location', {}).get('repositories')
-    check_repositories = parsed_configuration.get('consistency', {}).get('check_repositories', [])
+    repositories = parsed_configuration.get('repositories')
+    check_repositories = parsed_configuration.get('check_repositories', [])
     for repository in check_repositories:
         if not any(
-            repositories_match(repository, config_repository)
-            for config_repository in location_repositories
+            repositories_match(repository, config_repository) for config_repository in repositories
         ):
             raise Validation_error(
                 config_filename,
-                (
-                    f'Unknown repository in the "consistency" section\'s "check_repositories": {repository}',
-                ),
+                (f'Unknown repository in "check_repositories": {repository}',),
             )
 
 
@@ -90,11 +87,15 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
     rendition of JSON Schema format, a sequence of configuration file override strings in the form
-    of "section.option=value", return the parsed configuration as a data structure of nested dicts
+    of "option.suboption=value", return the parsed configuration as a data structure of nested dicts
     and lists corresponding to the schema. Example return value:
 
-       {'location': {'source_directories': ['/home', '/etc'], 'repository': 'hostname.borg'},
-       'retention': {'keep_daily': 7}, 'consistency': {'checks': ['repository', 'archives']}}
+        {
+            'source_directories': ['/home', '/etc'],
+            'repository': 'hostname.borg',
+            'keep_daily': 7,
+            'checks': ['repository', 'archives'],
+        }
 
     Also return a sequence of logging.LogRecord instances containing any warnings about the
     configuration.
@@ -174,7 +175,7 @@ def guard_configuration_contains_repository(repository, configurations):
         tuple(
             config_repository
             for config in configurations.values()
-            for config_repository in config['location']['repositories']
+            for config_repository in config['repositories']
             if repositories_match(config_repository, repository)
         )
     )
@@ -198,7 +199,7 @@ def guard_single_repository_selected(repository, configurations):
         tuple(
             config_repository
             for config in configurations.values()
-            for config_repository in config['location']['repositories']
+            for config_repository in config['repositories']
         )
     )
 

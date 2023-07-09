@@ -2,21 +2,70 @@ import logging
 import os
 
 
+def normalize_sections(config_filename, config):
+    '''
+    Given a configuration filename and a configuration dict of its loaded contents, airlift any
+    options out of sections ("location:", etc.) to the global scope and delete those sections.
+    Return any log message warnings produced based on the normalization performed.
+
+    Raise ValueError if the "prefix" option is set in both "location" and "consistency" sections.
+    '''
+    location = config.get('location') or {}
+    storage = config.get('storage') or {}
+    consistency = config.get('consistency') or {}
+    hooks = config.get('hooks') or {}
+
+    if (
+        location.get('prefix')
+        and consistency.get('prefix')
+        and location.get('prefix') != consistency.get('prefix')
+    ):
+        raise ValueError(
+            'The retention prefix and the consistency prefix cannot have different values (unless one is not set).'
+        )
+
+    if storage.get('umask') and hooks.get('umask') and storage.get('umask') != hooks.get('umask'):
+        raise ValueError(
+            'The storage umask and the hooks umask cannot have different values (unless one is not set).'
+        )
+
+    any_section_upgraded = False
+
+    # Move any options from deprecated sections into the global scope.
+    for section_name in ('location', 'storage', 'retention', 'consistency', 'output', 'hooks'):
+        section_config = config.get(section_name)
+
+        if section_config:
+            any_section_upgraded = True
+            del config[section_name]
+            config.update(section_config)
+
+    if any_section_upgraded:
+        return [
+            logging.makeLogRecord(
+                dict(
+                    levelno=logging.WARNING,
+                    levelname='WARNING',
+                    msg=f'{config_filename}: Configuration sections like location: and storage: are deprecated and support will be removed from a future release. Move all of your options out of sections to the global scope.',
+                )
+            )
+        ]
+
+    return []
+
+
 def normalize(config_filename, config):
     '''
     Given a configuration filename and a configuration dict of its loaded contents, apply particular
     hard-coded rules to normalize the configuration to adhere to the current schema. Return any log
     message warnings produced based on the normalization performed.
+
+    Raise ValueError the configuration cannot be normalized.
     '''
-    logs = []
-    location = config.get('location') or {}
-    storage = config.get('storage') or {}
-    consistency = config.get('consistency') or {}
-    retention = config.get('retention') or {}
-    hooks = config.get('hooks') or {}
+    logs = normalize_sections(config_filename, config)
 
     # Upgrade exclude_if_present from a string to a list.
-    exclude_if_present = location.get('exclude_if_present')
+    exclude_if_present = config.get('exclude_if_present')
     if isinstance(exclude_if_present, str):
         logs.append(
             logging.makeLogRecord(
@@ -27,10 +76,10 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['location']['exclude_if_present'] = [exclude_if_present]
+        config['exclude_if_present'] = [exclude_if_present]
 
     # Upgrade various monitoring hooks from a string to a dict.
-    healthchecks = hooks.get('healthchecks')
+    healthchecks = config.get('healthchecks')
     if isinstance(healthchecks, str):
         logs.append(
             logging.makeLogRecord(
@@ -41,9 +90,9 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['hooks']['healthchecks'] = {'ping_url': healthchecks}
+        config['healthchecks'] = {'ping_url': healthchecks}
 
-    cronitor = hooks.get('cronitor')
+    cronitor = config.get('cronitor')
     if isinstance(cronitor, str):
         logs.append(
             logging.makeLogRecord(
@@ -54,9 +103,9 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['hooks']['cronitor'] = {'ping_url': cronitor}
+        config['cronitor'] = {'ping_url': cronitor}
 
-    pagerduty = hooks.get('pagerduty')
+    pagerduty = config.get('pagerduty')
     if isinstance(pagerduty, str):
         logs.append(
             logging.makeLogRecord(
@@ -67,9 +116,9 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['hooks']['pagerduty'] = {'integration_key': pagerduty}
+        config['pagerduty'] = {'integration_key': pagerduty}
 
-    cronhub = hooks.get('cronhub')
+    cronhub = config.get('cronhub')
     if isinstance(cronhub, str):
         logs.append(
             logging.makeLogRecord(
@@ -80,10 +129,10 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['hooks']['cronhub'] = {'ping_url': cronhub}
+        config['cronhub'] = {'ping_url': cronhub}
 
     # Upgrade consistency checks from a list of strings to a list of dicts.
-    checks = consistency.get('checks')
+    checks = config.get('checks')
     if isinstance(checks, list) and len(checks) and isinstance(checks[0], str):
         logs.append(
             logging.makeLogRecord(
@@ -94,10 +143,10 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['consistency']['checks'] = [{'name': check_type} for check_type in checks]
+        config['checks'] = [{'name': check_type} for check_type in checks]
 
     # Rename various configuration options.
-    numeric_owner = location.pop('numeric_owner', None)
+    numeric_owner = config.pop('numeric_owner', None)
     if numeric_owner is not None:
         logs.append(
             logging.makeLogRecord(
@@ -108,9 +157,9 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['location']['numeric_ids'] = numeric_owner
+        config['numeric_ids'] = numeric_owner
 
-    bsd_flags = location.pop('bsd_flags', None)
+    bsd_flags = config.pop('bsd_flags', None)
     if bsd_flags is not None:
         logs.append(
             logging.makeLogRecord(
@@ -121,9 +170,9 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['location']['flags'] = bsd_flags
+        config['flags'] = bsd_flags
 
-    remote_rate_limit = storage.pop('remote_rate_limit', None)
+    remote_rate_limit = config.pop('remote_rate_limit', None)
     if remote_rate_limit is not None:
         logs.append(
             logging.makeLogRecord(
@@ -134,10 +183,10 @@ def normalize(config_filename, config):
                 )
             )
         )
-        config['storage']['upload_rate_limit'] = remote_rate_limit
+        config['upload_rate_limit'] = remote_rate_limit
 
     # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
-    repositories = location.get('repositories')
+    repositories = config.get('repositories')
     if repositories:
         if isinstance(repositories[0], str):
             logs.append(
@@ -149,11 +198,11 @@ def normalize(config_filename, config):
                     )
                 )
             )
-            config['location']['repositories'] = [
-                {'path': repository} for repository in repositories
-            ]
-            repositories = config['location']['repositories']
-        config['location']['repositories'] = []
+            config['repositories'] = [{'path': repository} for repository in repositories]
+            repositories = config['repositories']
+
+        config['repositories'] = []
+
         for repository_dict in repositories:
             repository_path = repository_dict['path']
             if '~' in repository_path:
@@ -171,14 +220,14 @@ def normalize(config_filename, config):
                     updated_repository_path = os.path.abspath(
                         repository_path.partition('file://')[-1]
                     )
-                    config['location']['repositories'].append(
+                    config['repositories'].append(
                         dict(
                             repository_dict,
                             path=updated_repository_path,
                         )
                     )
                 elif repository_path.startswith('ssh://'):
-                    config['location']['repositories'].append(repository_dict)
+                    config['repositories'].append(repository_dict)
                 else:
                     rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"
                     logs.append(
@@ -190,16 +239,16 @@ def normalize(config_filename, config):
                             )
                         )
                     )
-                    config['location']['repositories'].append(
+                    config['repositories'].append(
                         dict(
                             repository_dict,
                             path=rewritten_repository_path,
                         )
                     )
             else:
-                config['location']['repositories'].append(repository_dict)
+                config['repositories'].append(repository_dict)
 
-    if consistency.get('prefix') or retention.get('prefix'):
+    if config.get('prefix'):
         logs.append(
             logging.makeLogRecord(
                 dict(

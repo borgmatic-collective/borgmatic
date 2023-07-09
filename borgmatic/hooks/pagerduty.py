@@ -21,7 +21,7 @@ def initialize_monitor(
     pass
 
 
-def ping_monitor(hook_config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     If this is an error state, create a PagerDuty event with the configured integration key. Use
     the given configuration filename in any log entries. If this is a dry run, then don't actually

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def run_break_lock(
     repository,
-    storage,
+    config,
     local_borg_version,
     break_lock_arguments,
     global_arguments,
@@ -26,7 +26,7 @@ def run_break_lock(
         )
         borgmatic.borg.break_lock.break_lock(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path=local_path,

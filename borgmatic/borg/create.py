@@ -146,12 +146,12 @@ def ensure_files_readable(*filename_lists):
         open(file_object).close()
 
 
-def make_pattern_flags(location_config, pattern_filename=None):
+def make_pattern_flags(config, pattern_filename=None):
     '''
-    Given a location config dict with a potential patterns_from option, and a filename containing
-    any additional patterns, return the corresponding Borg flags for those files as a tuple.
+    Given a configuration dict with a potential patterns_from option, and a filename containing any
+    additional patterns, return the corresponding Borg flags for those files as a tuple.
     '''
-    pattern_filenames = tuple(location_config.get('patterns_from') or ()) + (
+    pattern_filenames = tuple(config.get('patterns_from') or ()) + (
         (pattern_filename,) if pattern_filename else ()
     )
 
@@ -162,12 +162,12 @@ def make_pattern_flags(location_config, pattern_filename=None):
     )
 
 
-def make_exclude_flags(location_config, exclude_filename=None):
+def make_exclude_flags(config, exclude_filename=None):
     '''
-    Given a location config dict with various exclude options, and a filename containing any exclude
+    Given a configuration dict with various exclude options, and a filename containing any exclude
     patterns, return the corresponding Borg flags as a tuple.
     '''
-    exclude_filenames = tuple(location_config.get('exclude_from') or ()) + (
+    exclude_filenames = tuple(config.get('exclude_from') or ()) + (
         (exclude_filename,) if exclude_filename else ()
     )
     exclude_from_flags = tuple(
@@ -175,17 +175,15 @@ def make_exclude_flags(location_config, exclude_filename=None):
             ('--exclude-from', exclude_filename) for exclude_filename in exclude_filenames
         )
     )
-    caches_flag = ('--exclude-caches',) if location_config.get('exclude_caches') else ()
+    caches_flag = ('--exclude-caches',) if config.get('exclude_caches') else ()
     if_present_flags = tuple(
         itertools.chain.from_iterable(
             ('--exclude-if-present', if_present)
-            for if_present in location_config.get('exclude_if_present', ())
+            for if_present in config.get('exclude_if_present', ())
         )
     )
-    keep_exclude_tags_flags = (
-        ('--keep-exclude-tags',) if location_config.get('keep_exclude_tags') else ()
-    )
-    exclude_nodump_flags = ('--exclude-nodump',) if location_config.get('exclude_nodump') else ()
+    keep_exclude_tags_flags = ('--keep-exclude-tags',) if config.get('keep_exclude_tags') else ()
+    exclude_nodump_flags = ('--exclude-nodump',) if config.get('exclude_nodump') else ()
 
     return (
         exclude_from_flags
@@ -326,8 +324,7 @@ def check_all_source_directories_exist(source_directories):
 def create_archive(
     dry_run,
     repository_path,
-    location_config,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -339,72 +336,70 @@ def create_archive(
     stream_processes=None,
 ):
     '''
-    Given vebosity/dry-run flags, a local or remote repository path, a location config dict, and a
-    storage config dict, create a Borg archive and return Borg's JSON output (if any).
+    Given vebosity/dry-run flags, a local or remote repository path, and a configuration dict,
+    create a Borg archive and return Borg's JSON output (if any).
 
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
     '''
     borgmatic.logger.add_custom_log_levels()
     borgmatic_source_directories = expand_directories(
-        collect_borgmatic_source_directories(location_config.get('borgmatic_source_directory'))
+        collect_borgmatic_source_directories(config.get('borgmatic_source_directory'))
     )
-    if location_config.get('source_directories_must_exist', False):
-        check_all_source_directories_exist(location_config.get('source_directories'))
+    if config.get('source_directories_must_exist', False):
+        check_all_source_directories_exist(config.get('source_directories'))
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                tuple(location_config.get('source_directories', ()))
+                tuple(config.get('source_directories', ()))
                 + borgmatic_source_directories
                 + tuple(global_arguments.used_config_paths)
             )
         ),
         additional_directory_devices=map_directories_to_devices(
-            expand_directories(pattern_root_directories(location_config.get('patterns')))
+            expand_directories(pattern_root_directories(config.get('patterns')))
         ),
     )
 
-    ensure_files_readable(location_config.get('patterns_from'), location_config.get('exclude_from'))
+    ensure_files_readable(config.get('patterns_from'), config.get('exclude_from'))
 
     try:
-        working_directory = os.path.expanduser(location_config.get('working_directory'))
+        working_directory = os.path.expanduser(config.get('working_directory'))
     except TypeError:
         working_directory = None
 
     pattern_file = (
-        write_pattern_file(location_config.get('patterns'), sources)
-        if location_config.get('patterns') or location_config.get('patterns_from')
+        write_pattern_file(config.get('patterns'), sources)
+        if config.get('patterns') or config.get('patterns_from')
         else None
     )
-    exclude_file = write_pattern_file(
-        expand_home_directories(location_config.get('exclude_patterns'))
-    )
-    checkpoint_interval = storage_config.get('checkpoint_interval', None)
-    checkpoint_volume = storage_config.get('checkpoint_volume', None)
-    chunker_params = storage_config.get('chunker_params', None)
-    compression = storage_config.get('compression', None)
-    upload_rate_limit = storage_config.get('upload_rate_limit', None)
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
+    exclude_file = write_pattern_file(expand_home_directories(config.get('exclude_patterns')))
+    checkpoint_interval = config.get('checkpoint_interval', None)
+    checkpoint_volume = config.get('checkpoint_volume', None)
+    chunker_params = config.get('chunker_params', None)
+    compression = config.get('compression', None)
+    upload_rate_limit = config.get('upload_rate_limit', None)
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
     list_filter_flags = make_list_filter_flags(local_borg_version, dry_run)
-    files_cache = location_config.get('files_cache')
-    archive_name_format = storage_config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
-    extra_borg_options = storage_config.get('extra_borg_options', {}).get('create', '')
+    files_cache = config.get('files_cache')
+    archive_name_format = config.get('archive_name_format', DEFAULT_ARCHIVE_NAME_FORMAT)
+    extra_borg_options = config.get('extra_borg_options', {}).get('create', '')
 
     if feature.available(feature.Feature.ATIME, local_borg_version):
-        atime_flags = ('--atime',) if location_config.get('atime') is True else ()
+        atime_flags = ('--atime',) if config.get('atime') is True else ()
     else:
-        atime_flags = ('--noatime',) if location_config.get('atime') is False else ()
+        atime_flags = ('--noatime',) if config.get('atime') is False else ()
 
     if feature.available(feature.Feature.NOFLAGS, local_borg_version):
-        noflags_flags = ('--noflags',) if location_config.get('flags') is False else ()
+        noflags_flags = ('--noflags',) if config.get('flags') is False else ()
     else:
-        noflags_flags = ('--nobsdflags',) if location_config.get('flags') is False else ()
+        noflags_flags = ('--nobsdflags',) if config.get('flags') is False else ()
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
-        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_ids') else ()
+        numeric_ids_flags = ('--numeric-ids',) if config.get('numeric_ids') else ()
     else:
-        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_ids') else ()
+        numeric_ids_flags = ('--numeric-owner',) if config.get('numeric_ids') else ()
 
     if feature.available(feature.Feature.UPLOAD_RATELIMIT, local_borg_version):
         upload_ratelimit_flags = (
@@ -415,7 +410,7 @@ def create_archive(
             ('--remote-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
 
-    if stream_processes and location_config.get('read_special') is False:
+    if stream_processes and config.get('read_special') is False:
         logger.warning(
             f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
@@ -423,23 +418,19 @@ def create_archive(
     create_command = (
         tuple(local_path.split(' '))
         + ('create',)
-        + make_pattern_flags(location_config, pattern_file.name if pattern_file else None)
-        + make_exclude_flags(location_config, exclude_file.name if exclude_file else None)
+        + make_pattern_flags(config, pattern_file.name if pattern_file else None)
+        + make_exclude_flags(config, exclude_file.name if exclude_file else None)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--checkpoint-volume', str(checkpoint_volume)) if checkpoint_volume else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
         + upload_ratelimit_flags
-        + (
-            ('--one-file-system',)
-            if location_config.get('one_file_system') or stream_processes
-            else ()
-        )
+        + (('--one-file-system',) if config.get('one_file_system') or stream_processes else ())
         + numeric_ids_flags
         + atime_flags
-        + (('--noctime',) if location_config.get('ctime') is False else ())
-        + (('--nobirthtime',) if location_config.get('birthtime') is False else ())
-        + (('--read-special',) if location_config.get('read_special') or stream_processes else ())
+        + (('--noctime',) if config.get('ctime') is False else ())
+        + (('--nobirthtime',) if config.get('birthtime') is False else ())
+        + (('--read-special',) if config.get('read_special') or stream_processes else ())
         + noflags_flags
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
@@ -470,11 +461,11 @@ def create_archive(
     # the terminal directly.
     output_file = DO_NOT_CAPTURE if progress else None
 
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
-    if stream_processes and not location_config.get('read_special'):
+    if stream_processes and not config.get('read_special'):
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_command,
@@ -490,11 +481,11 @@ def create_archive(
             )
             exclude_file = write_pattern_file(
                 expand_home_directories(
-                    tuple(location_config.get('exclude_patterns') or ()) + special_file_paths
+                    tuple(config.get('exclude_patterns') or ()) + special_file_paths
                 ),
                 pattern_file=exclude_file,
             )
-            create_command += make_exclude_flags(location_config, exclude_file.name)
+            create_command += make_exclude_flags(config, exclude_file.name)
 
     create_command += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())

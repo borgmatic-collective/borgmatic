@@ -6,7 +6,7 @@ import borgmatic.actions.restore as module
 
 def test_get_configured_database_matches_database_by_name():
     assert module.get_configured_database(
-        hooks={
+        config={
             'other_databases': [{'name': 'other'}],
             'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}],
         },
@@ -18,7 +18,7 @@ def test_get_configured_database_matches_database_by_name():
 
 def test_get_configured_database_matches_nothing_when_database_name_not_configured():
     assert module.get_configured_database(
-        hooks={'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}]},
+        config={'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}]},
         archive_database_names={'postgresql_databases': ['foo']},
         hook_name='postgresql_databases',
         database_name='quux',
@@ -27,7 +27,7 @@ def test_get_configured_database_matches_nothing_when_database_name_not_configur
 
 def test_get_configured_database_matches_nothing_when_database_name_not_in_archive():
     assert module.get_configured_database(
-        hooks={'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}]},
+        config={'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}]},
         archive_database_names={'postgresql_databases': ['bar']},
         hook_name='postgresql_databases',
         database_name='foo',
@@ -36,7 +36,7 @@ def test_get_configured_database_matches_nothing_when_database_name_not_in_archi
 
 def test_get_configured_database_matches_database_by_configuration_database_name():
     assert module.get_configured_database(
-        hooks={'postgresql_databases': [{'name': 'all'}, {'name': 'bar'}]},
+        config={'postgresql_databases': [{'name': 'all'}, {'name': 'bar'}]},
         archive_database_names={'postgresql_databases': ['foo']},
         hook_name='postgresql_databases',
         database_name='foo',
@@ -46,7 +46,7 @@ def test_get_configured_database_matches_database_by_configuration_database_name
 
 def test_get_configured_database_with_unspecified_hook_matches_database_by_name():
     assert module.get_configured_database(
-        hooks={
+        config={
             'other_databases': [{'name': 'other'}],
             'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}],
         },
@@ -69,8 +69,7 @@ def test_collect_archive_database_names_parses_archive_paths():
     archive_database_names = module.collect_archive_database_names(
         repository={'path': 'repo'},
         archive='archive',
-        location={'borgmatic_source_directory': '.borgmatic'},
-        storage=flexmock(),
+        config={'borgmatic_source_directory': '.borgmatic'},
         local_borg_version=flexmock(),
         global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
@@ -95,8 +94,7 @@ def test_collect_archive_database_names_parses_directory_format_archive_paths():
     archive_database_names = module.collect_archive_database_names(
         repository={'path': 'repo'},
         archive='archive',
-        location={'borgmatic_source_directory': '.borgmatic'},
-        storage=flexmock(),
+        config={'borgmatic_source_directory': '.borgmatic'},
         local_borg_version=flexmock(),
         global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
@@ -117,8 +115,7 @@ def test_collect_archive_database_names_skips_bad_archive_paths():
     archive_database_names = module.collect_archive_database_names(
         repository={'path': 'repo'},
         archive='archive',
-        location={'borgmatic_source_directory': '.borgmatic'},
-        storage=flexmock(),
+        config={'borgmatic_source_directory': '.borgmatic'},
         local_borg_version=flexmock(),
         global_arguments=flexmock(log_json=False),
         local_path=flexmock(),
@@ -231,9 +228,7 @@ def test_run_restore_restores_each_database():
     ).and_return(('postgresql_databases', {'name': 'bar'}))
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -245,9 +240,7 @@ def test_run_restore_restores_each_database():
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -261,9 +254,7 @@ def test_run_restore_restores_each_database():
 
     module.run_restore(
         repository={'path': 'repo'},
-        location=flexmock(),
-        storage=flexmock(),
-        hooks=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
             repository='repo',
@@ -293,9 +284,7 @@ def test_run_restore_bails_for_non_matching_repository():
 
     module.run_restore(
         repository={'path': 'repo'},
-        location=flexmock(),
-        storage=flexmock(),
-        hooks=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(repository='repo', archive='archive', databases=flexmock()),
         global_arguments=flexmock(dry_run=False),
@@ -317,19 +306,19 @@ def test_run_restore_restores_database_configured_with_all_name():
     flexmock(module).should_receive('collect_archive_database_names').and_return(flexmock())
     flexmock(module).should_receive('find_databases_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='foo',
     ).and_return(('postgresql_databases', {'name': 'foo'}))
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='bar',
     ).and_return((None, None))
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='bar',
@@ -337,9 +326,7 @@ def test_run_restore_restores_database_configured_with_all_name():
     ).and_return(('postgresql_databases', {'name': 'bar'}))
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -351,9 +338,7 @@ def test_run_restore_restores_database_configured_with_all_name():
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -367,9 +352,7 @@ def test_run_restore_restores_database_configured_with_all_name():
 
     module.run_restore(
         repository={'path': 'repo'},
-        location=flexmock(),
-        storage=flexmock(),
-        hooks=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
             repository='repo',
@@ -401,19 +384,19 @@ def test_run_restore_skips_missing_database():
     flexmock(module).should_receive('collect_archive_database_names').and_return(flexmock())
     flexmock(module).should_receive('find_databases_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='foo',
     ).and_return(('postgresql_databases', {'name': 'foo'}))
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='bar',
     ).and_return((None, None))
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='bar',
@@ -421,9 +404,7 @@ def test_run_restore_skips_missing_database():
     ).and_return((None, None))
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -435,9 +416,7 @@ def test_run_restore_skips_missing_database():
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -451,9 +430,7 @@ def test_run_restore_skips_missing_database():
 
     module.run_restore(
         repository={'path': 'repo'},
-        location=flexmock(),
-        storage=flexmock(),
-        hooks=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
             repository='repo',
@@ -486,22 +463,20 @@ def test_run_restore_restores_databases_from_different_hooks():
     flexmock(module).should_receive('collect_archive_database_names').and_return(flexmock())
     flexmock(module).should_receive('find_databases_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='postgresql_databases',
         database_name='foo',
     ).and_return(('postgresql_databases', {'name': 'foo'}))
     flexmock(module).should_receive('get_configured_database').with_args(
-        hooks=object,
+        config=object,
         archive_database_names=object,
         hook_name='mysql_databases',
         database_name='bar',
     ).and_return(('mysql_databases', {'name': 'bar'}))
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -513,9 +488,7 @@ def test_run_restore_restores_databases_from_different_hooks():
     ).once()
     flexmock(module).should_receive('restore_single_database').with_args(
         repository=object,
-        location=object,
-        storage=object,
-        hooks=object,
+        config=object,
         local_borg_version=object,
         global_arguments=object,
         local_path=object,
@@ -529,9 +502,7 @@ def test_run_restore_restores_databases_from_different_hooks():
 
     module.run_restore(
         repository={'path': 'repo'},
-        location=flexmock(),
-        storage=flexmock(),
-        hooks=flexmock(),
+        config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(
             repository='repo',

@@ -22,7 +22,7 @@ def test_break_lock_calls_borg_with_required_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -34,7 +34,7 @@ def test_break_lock_calls_borg_with_remote_path_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         remote_path='borg1',
@@ -47,7 +47,7 @@ def test_break_lock_calls_borg_with_umask_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={'umask': '0770'},
+        config={'umask': '0770'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -59,7 +59,7 @@ def test_break_lock_calls_borg_with_log_json_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=True),
     )
@@ -71,7 +71,7 @@ def test_break_lock_calls_borg_with_lock_wait_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={'lock_wait': '5'},
+        config={'lock_wait': '5'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -84,7 +84,7 @@ def test_break_lock_with_log_info_calls_borg_with_info_parameter():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -97,7 +97,7 @@ def test_break_lock_with_log_debug_calls_borg_with_debug_flags():
 
     module.break_lock(
         repository_path='repo',
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )

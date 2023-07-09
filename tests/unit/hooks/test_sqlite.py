@@ -17,7 +17,7 @@ def test_dump_databases_logs_and_skips_if_dump_already_exists():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == []
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == []
 
 
 def test_dump_databases_dumps_each_database():
@@ -37,7 +37,7 @@ def test_dump_databases_dumps_each_database():
         processes[1]
     )
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
@@ -55,7 +55,7 @@ def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
@@ -75,7 +75,7 @@ def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dump_databases_does_not_dump_if_dry_run():
@@ -89,7 +89,7 @@ def test_dump_databases_does_not_dump_if_dry_run():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=True) == []
 
 
 def test_restore_database_dump_restores_database():
@@ -110,8 +110,8 @@ def test_restore_database_dump_restores_database():
 
     module.restore_database_dump(
         database_config,
-        'test.yaml',
         {},
+        'test.yaml',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -138,8 +138,8 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
     module.restore_database_dump(
         database_config,
-        'test.yaml',
         {},
+        'test.yaml',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': 'cli/path/to/database'},
@@ -166,8 +166,8 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
     module.restore_database_dump(
         database_config,
-        'test.yaml',
         {},
+        'test.yaml',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -183,8 +183,8 @@ def test_restore_database_dump_does_not_restore_database_if_dry_run():
 
     module.restore_database_dump(
         database_config,
-        'test.yaml',
         {},
+        'test.yaml',
         dry_run=True,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -198,8 +198,8 @@ def test_restore_database_dump_raises_error_if_database_config_is_invalid():
     with pytest.raises(ValueError):
         module.restore_database_dump(
             database_config,
-            'test.yaml',
             {},
+            'test.yaml',
             dry_run=False,
             extract_process=extract_process,
             connection_params={'restore_path': None},

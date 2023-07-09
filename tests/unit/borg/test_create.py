@@ -170,79 +170,75 @@ def test_ensure_files_readable_opens_filenames(filename_lists, opened_filenames)
 
 def test_make_pattern_flags_includes_pattern_filename_when_given():
     pattern_flags = module.make_pattern_flags(
-        location_config={'patterns': ['R /', '- /var']}, pattern_filename='/tmp/patterns'
+        config={'patterns': ['R /', '- /var']}, pattern_filename='/tmp/patterns'
     )
 
     assert pattern_flags == ('--patterns-from', '/tmp/patterns')
 
 
 def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
-    pattern_flags = module.make_pattern_flags(
-        location_config={'patterns_from': ['patterns', 'other']}
-    )
+    pattern_flags = module.make_pattern_flags(config={'patterns_from': ['patterns', 'other']})
 
     assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', 'other')
 
 
 def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patterns_from_in_config():
     pattern_flags = module.make_pattern_flags(
-        location_config={'patterns_from': ['patterns']}, pattern_filename='/tmp/patterns'
+        config={'patterns_from': ['patterns']}, pattern_filename='/tmp/patterns'
     )
 
     assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', '/tmp/patterns')
 
 
 def test_make_pattern_flags_considers_none_patterns_from_filenames_as_empty():
-    pattern_flags = module.make_pattern_flags(location_config={'patterns_from': None})
+    pattern_flags = module.make_pattern_flags(config={'patterns_from': None})
 
     assert pattern_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
     exclude_flags = module.make_exclude_flags(
-        location_config={'exclude_patterns': ['*.pyc', '/var']}, exclude_filename='/tmp/excludes'
+        config={'exclude_patterns': ['*.pyc', '/var']}, exclude_filename='/tmp/excludes'
     )
 
     assert exclude_flags == ('--exclude-from', '/tmp/excludes')
 
 
 def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
-    exclude_flags = module.make_exclude_flags(
-        location_config={'exclude_from': ['excludes', 'other']}
-    )
+    exclude_flags = module.make_exclude_flags(config={'exclude_from': ['excludes', 'other']})
 
     assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', 'other')
 
 
 def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_exclude_from_in_config():
     exclude_flags = module.make_exclude_flags(
-        location_config={'exclude_from': ['excludes']}, exclude_filename='/tmp/excludes'
+        config={'exclude_from': ['excludes']}, exclude_filename='/tmp/excludes'
     )
 
     assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', '/tmp/excludes')
 
 
 def test_make_exclude_flags_considers_none_exclude_from_filenames_as_empty():
-    exclude_flags = module.make_exclude_flags(location_config={'exclude_from': None})
+    exclude_flags = module.make_exclude_flags(config={'exclude_from': None})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'exclude_caches': True})
+    exclude_flags = module.make_exclude_flags(config={'exclude_caches': True})
 
     assert exclude_flags == ('--exclude-caches',)
 
 
 def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'exclude_caches': False})
+    exclude_flags = module.make_exclude_flags(config={'exclude_caches': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
     exclude_flags = module.make_exclude_flags(
-        location_config={'exclude_if_present': ['exclude_me', 'also_me']}
+        config={'exclude_if_present': ['exclude_me', 'also_me']}
     )
 
     assert exclude_flags == (
@@ -254,31 +250,31 @@ def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
 
 
 def test_make_exclude_flags_includes_keep_exclude_tags_when_true_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'keep_exclude_tags': True})
+    exclude_flags = module.make_exclude_flags(config={'keep_exclude_tags': True})
 
     assert exclude_flags == ('--keep-exclude-tags',)
 
 
 def test_make_exclude_flags_does_not_include_keep_exclude_tags_when_false_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'keep_exclude_tags': False})
+    exclude_flags = module.make_exclude_flags(config={'keep_exclude_tags': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_nodump_when_true_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'exclude_nodump': True})
+    exclude_flags = module.make_exclude_flags(config={'exclude_nodump': True})
 
     assert exclude_flags == ('--exclude-nodump',)
 
 
 def test_make_exclude_flags_does_not_include_exclude_nodump_when_false_in_config():
-    exclude_flags = module.make_exclude_flags(location_config={'exclude_nodump': False})
+    exclude_flags = module.make_exclude_flags(config={'exclude_nodump': False})
 
     assert exclude_flags == ()
 
 
 def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
-    exclude_flags = module.make_exclude_flags(location_config={})
+    exclude_flags = module.make_exclude_flags(config={})
 
     assert exclude_flags == ()
 
@@ -504,12 +500,11 @@ def test_create_archive_calls_borg_with_parameters():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -548,12 +543,11 @@ def test_create_archive_calls_borg_with_environment():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -594,12 +588,11 @@ def test_create_archive_with_patterns_calls_borg_with_patterns_including_convert
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'patterns': ['pattern'],
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -644,11 +637,10 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
     )
@@ -689,12 +681,11 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': ['exclude'],
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -733,12 +724,11 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -774,12 +764,11 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         json=True,
@@ -819,12 +808,11 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -860,12 +848,11 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         json=True,
@@ -904,12 +891,11 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
     module.create_archive(
         dry_run=True,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -950,12 +936,11 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
     module.create_archive(
         dry_run=True,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stats=True,
@@ -994,12 +979,12 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'checkpoint_interval': 600,
         },
-        storage_config={'checkpoint_interval': 600},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1037,12 +1022,12 @@ def test_create_archive_with_checkpoint_volume_calls_borg_with_checkpoint_volume
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'checkpoint_volume': 1024,
         },
-        storage_config={'checkpoint_volume': 1024},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1080,12 +1065,12 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'chunker_params': '1,2,3,4',
         },
-        storage_config={'chunker_params': '1,2,3,4'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1123,12 +1108,12 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'compression': 'rle',
         },
-        storage_config={'compression': 'rle'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1172,12 +1157,12 @@ def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'upload_rate_limit': 100,
         },
-        storage_config={'upload_rate_limit': 100},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1217,13 +1202,12 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'working_directory': '/working/dir',
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1261,13 +1245,12 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'one_file_system': True,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1311,13 +1294,12 @@ def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'numeric_ids': True,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1365,13 +1347,12 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'read_special': True,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1421,13 +1402,12 @@ def test_create_archive_with_basic_option_calls_borg_with_corresponding_paramete
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             option_name: option_value,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1476,13 +1456,12 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'atime': option_value,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1531,13 +1510,12 @@ def test_create_archive_with_flags_option_calls_borg_with_corresponding_paramete
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'flags': option_value,
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1575,13 +1553,12 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'files_cache': 'ctime,size',
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1619,12 +1596,11 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         local_path='borg1',
@@ -1663,12 +1639,11 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         remote_path='borg1',
@@ -1707,12 +1682,12 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'umask': 740,
         },
-        storage_config={'umask': 740},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1750,12 +1725,11 @@ def test_create_archive_with_log_json_calls_borg_with_log_json_parameters():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=True, used_config_paths=[]),
     )
@@ -1793,12 +1767,12 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'lock_wait': 5,
         },
-        storage_config={'lock_wait': 5},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -1836,12 +1810,11 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stats=True,
@@ -1880,12 +1853,11 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_answer_out
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         list_files=True,
@@ -1930,12 +1902,11 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         progress=True,
@@ -1974,12 +1945,11 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         progress=True,
@@ -2035,12 +2005,11 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         progress=True,
@@ -2099,13 +2068,12 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
             'read_special': False,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stream_processes=processes,
@@ -2168,12 +2136,11 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stream_processes=processes,
@@ -2232,13 +2199,12 @@ def test_create_archive_with_stream_processes_and_read_special_does_not_add_spec
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
             'read_special': True,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stream_processes=processes,
@@ -2274,12 +2240,11 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
     json_output = module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         json=True,
@@ -2317,12 +2282,11 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
     json_output = module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         json=True,
@@ -2365,12 +2329,11 @@ def test_create_archive_with_source_directories_glob_expands():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo*'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2409,12 +2372,11 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo*'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2452,12 +2414,11 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo*'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2495,12 +2456,12 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'archive_name_format': 'ARCHIVE_NAME',
         },
-        storage_config={'archive_name_format': 'ARCHIVE_NAME'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2539,12 +2500,12 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
         },
-        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2583,12 +2544,12 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
     module.create_archive(
         dry_run=False,
         repository_path='{fqdn}',  # noqa: FS003
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['{fqdn}'],  # noqa: FS003
             'exclude_patterns': None,
+            'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
         },
-        storage_config={'archive_name_format': 'Documents_{hostname}-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2626,12 +2587,12 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'extra_borg_options': {'create': '--extra --options'},
         },
-        storage_config={'extra_borg_options': {'create': '--extra --options'}},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
     )
@@ -2687,12 +2648,11 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read
     module.create_archive(
         dry_run=False,
         repository_path='repo',
-        location_config={
+        config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        storage_config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=[]),
         stream_processes=processes,
@@ -2712,13 +2672,12 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
         module.create_archive(
             dry_run=False,
             repository_path='repo',
-            location_config={
+            config={
                 'source_directories': ['foo', 'bar'],
                 'repositories': ['repo'],
                 'exclude_patterns': None,
                 'source_directories_must_exist': True,
             },
-            storage_config={},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False, used_config_paths=[]),
         )

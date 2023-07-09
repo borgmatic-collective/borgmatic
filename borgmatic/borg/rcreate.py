@@ -14,7 +14,7 @@ RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
 def create_repository(
     dry_run,
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     encryption_mode,
@@ -27,15 +27,15 @@ def create_repository(
     remote_path=None,
 ):
     '''
-    Given a dry-run flag, a local or remote repository path, a storage configuration dict, the local
-    Borg version, a Borg encryption mode, the path to another repo whose key material should be
-    reused, whether the repository should be append-only, and the storage quota to use, create the
+    Given a dry-run flag, a local or remote repository path, a configuration dict, the local Borg
+    version, a Borg encryption mode, the path to another repo whose key material should be reused,
+    whether the repository should be append-only, and the storage quota to use, create the
     repository. If the repository already exists, then log and skip creation.
     '''
     try:
         rinfo.display_repository_info(
             repository_path,
-            storage_config,
+            config,
             local_borg_version,
             argparse.Namespace(json=True),
             global_arguments,
@@ -48,8 +48,8 @@ def create_repository(
         if error.returncode != RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
             raise
 
-    lock_wait = storage_config.get('lock_wait')
-    extra_borg_options = storage_config.get('extra_borg_options', {}).get('rcreate', '')
+    lock_wait = config.get('lock_wait')
+    extra_borg_options = config.get('extra_borg_options', {}).get('rcreate', '')
 
     rcreate_command = (
         (local_path,)
@@ -82,5 +82,5 @@ def create_repository(
         rcreate_command,
         output_file=DO_NOT_CAPTURE,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
     )
