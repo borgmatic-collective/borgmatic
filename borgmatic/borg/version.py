@@ -21,6 +21,7 @@ def local_borg_version(config, local_path='borg'):
     output = execute_command_and_capture_output(
         full_command,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
     )
 
     try:

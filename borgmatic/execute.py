@@ -241,13 +241,16 @@ def execute_command_and_capture_output(
     shell=False,
     extra_environment=None,
     working_directory=None,
+    borg_local_path=None,
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
     output (stdout). If capture stderr is True, then capture and return stderr in addition to
     stdout. If shell is True, execute the command within a shell. If an extra environment dict is
     given, then use it to augment the current environment, and pass the result into the command. If
-    a working directory is given, use that as the present working directory when running the command.
+    a working directory is given, use that as the present working directory when running the
+    command. If a Borg local path is given, and the command matches it (regardless of arguments),
+    treat exit code 1 as a warning instead of an error.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
@@ -264,7 +267,7 @@ def execute_command_and_capture_output(
             cwd=working_directory,
         )
     except subprocess.CalledProcessError as error:
-        if exit_code_indicates_error(command, error.returncode):
+        if exit_code_indicates_error(command, error.returncode, borg_local_path):
             raise
         output = error.output
 

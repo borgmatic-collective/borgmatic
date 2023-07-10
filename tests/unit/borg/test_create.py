@@ -451,13 +451,14 @@ def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
         capture_stderr=True,
         working_directory=None,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('Processing files ...\n- /foo\n+ /bar\n- /baz').once()
     flexmock(module).should_receive('special_file').and_return(True)
     flexmock(module).should_receive('any_parent_directories').and_return(False)
 
     module.collect_special_file_paths(
         ('borg', 'create', '--exclude-nodump'),
-        local_path=None,
+        local_path='borg',
         working_directory=None,
         borg_environment=None,
         skip_directories=flexmock(),
@@ -758,6 +759,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
         working_directory=None,
         extra_environment=None,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.INFO)
 
@@ -842,6 +844,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
         working_directory=None,
         extra_environment=None,
+        borg_local_path='borg',
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -2235,6 +2238,7 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
         working_directory=None,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('[]')
 
     json_output = module.create_archive(
@@ -2277,6 +2281,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
         ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
         working_directory=None,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('[]')
 
     json_output = module.create_archive(

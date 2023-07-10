@@ -73,6 +73,7 @@ def test_display_archives_info_with_log_info_and_json_suppresses_most_borg_outpu
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('[]')
 
     insert_logging_mock(logging.INFO)
@@ -127,6 +128,7 @@ def test_display_archives_info_with_log_debug_and_json_suppresses_most_borg_outp
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('[]')
 
     insert_logging_mock(logging.DEBUG)
@@ -154,6 +156,7 @@ def test_display_archives_info_with_json_calls_borg_with_json_parameter():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'info', '--json', '--repo', 'repo'),
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('[]')
 
     json_output = module.display_archives_info(

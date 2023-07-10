@@ -66,6 +66,7 @@ def display_archives_info(
         return execute_command_and_capture_output(
             full_command,
             extra_environment=environment.make_environment(config),
+            borg_local_path=local_path,
         )
     else:
         execute_command(

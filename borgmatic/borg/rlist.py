@@ -43,6 +43,7 @@ def resolve_archive_name(
     output = execute_command_and_capture_output(
         full_command,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
     )
     try:
         latest_archive = output.strip().splitlines()[-1]
@@ -138,7 +139,9 @@ def list_repository(
     )
 
     if rlist_arguments.json:
-        return execute_command_and_capture_output(main_command, extra_environment=borg_environment)
+        return execute_command_and_capture_output(
+            main_command, extra_environment=borg_environment, borg_local_path=local_path
+        )
     else:
         execute_command(
             main_command,

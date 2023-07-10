@@ -37,6 +37,7 @@ def test_resolve_archive_name_calls_borg_with_flags():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -57,6 +58,7 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_flag():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.INFO)
 
@@ -78,6 +80,7 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_flag():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.DEBUG)
 
@@ -99,6 +102,7 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg1',
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -120,6 +124,7 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--remote-path', 'borg1') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -140,6 +145,7 @@ def test_resolve_archive_name_without_archives_raises():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return('')
 
     with pytest.raises(ValueError):
@@ -159,6 +165,7 @@ def test_resolve_archive_name_with_log_json_calls_borg_with_log_json_flags():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--log-json') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -180,6 +187,7 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_flags():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--lock-wait', 'okay') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        borg_local_path='borg',
     ).and_return(expected_archive + '\n')
 
     assert (

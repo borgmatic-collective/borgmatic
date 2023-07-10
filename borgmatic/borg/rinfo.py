@@ -54,6 +54,7 @@ def display_repository_info(
         return execute_command_and_capture_output(
             full_command,
             extra_environment=extra_environment,
+            borg_local_path=local_path,
         )
     else:
         execute_command(

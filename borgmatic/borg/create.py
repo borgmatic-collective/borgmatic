@@ -292,6 +292,7 @@ def collect_special_file_paths(
         capture_stderr=True,
         working_directory=working_directory,
         extra_environment=borg_environment,
+        borg_local_path=local_path,
     )
 
     paths = tuple(
@@ -510,6 +511,7 @@ def create_archive(
             create_command,
             working_directory=working_directory,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
         )
     else:
         execute_command(

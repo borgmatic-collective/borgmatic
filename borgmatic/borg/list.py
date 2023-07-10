@@ -123,6 +123,7 @@ def capture_archive_listing(
                 remote_path,
             ),
             extra_environment=borg_environment,
+            borg_local_path=local_path,
         )
         .strip('\n')
         .split('\n')
@@ -217,6 +218,7 @@ def list_archive(
                     remote_path,
                 ),
                 extra_environment=borg_environment,
+                borg_local_path=local_path,
             )
             .strip('\n')
             .split('\n')

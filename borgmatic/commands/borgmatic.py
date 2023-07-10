@@ -141,6 +141,7 @@ def run_configuration(config_filename, config, arguments):
                             f'{repository.get("label", repository["path"])}: Error running actions for repository',
                             error,
                             levelno=logging.WARNING,
+                            log_command_error_output=True,
                         )
                     )
                     logger.warning(
@@ -530,24 +531,29 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
     return (configs, logs)
 
 
-def log_record(**kwargs):
+def log_record(suppress_log=False, **kwargs):
     '''
     Create a log record based on the given makeLogRecord() arguments, one of which must be
-    named "levelno". Log the record and return it.
+    named "levelno". Log the record (unless suppress log is set) and return it.
     '''
     record = logging.makeLogRecord(kwargs)
-    logger.handle(record)
+    if suppress_log:
+        return record
 
+    logger.handle(record)
     return record
 
 
 MAX_CAPTURED_OUTPUT_LENGTH = 1000
 
 
-def log_error_records(message, error=None, levelno=logging.CRITICAL):
+def log_error_records(
+    message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
+):
     '''
-    Given error message text, an optional exception object, and an optional log level, log error
-    summary information and also yield it as a series of logging.LogRecord instances.
+    Given error message text, an optional exception object, an optional log level, and whether to
+    log the error output of a CalledProcessError (if any), log error summary information and also
+    yield it as a series of logging.LogRecord instances.
 
     Note that because the logs are yielded as a generator, logs won't get logged unless you consume
     the generator output.
@@ -563,12 +569,18 @@ def log_error_records(message, error=None, levelno=logging.CRITICAL):
     except CalledProcessError as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=message)
         if error.output:
-            output = error.output.decode('utf-8')
+            try:
+                output = error.output.decode('utf-8')
+            except (UnicodeDecodeError, AttributeError):
+                output = error.output
+
+            # Suppress these logs for now and save full error output for the log summary at the end.
             yield log_record(
                 levelno=levelno,
                 levelname=level_name,
                 msg=output[:MAX_CAPTURED_OUTPUT_LENGTH]
                 + ' ...' * (len(output) > MAX_CAPTURED_OUTPUT_LENGTH),
+                suppress_log=True,
             )
         yield log_record(levelno=levelno, levelname=level_name, msg=error)
     except (ValueError, OSError) as error:
