@@ -25,7 +25,7 @@ def write_configuration(
 source_directories:
     - {source_directory}
 repositories:
-    - {repository_path}
+    - path: {repository_path}
 borgmatic_source_directory: {borgmatic_source_directory}
 
 encryption_passphrase: "test"
@@ -96,7 +96,7 @@ def write_custom_restore_configuration(
 source_directories:
     - {source_directory}
 repositories:
-    - {repository_path}
+    - path: {repository_path}
 borgmatic_source_directory: {borgmatic_source_directory}
 
 encryption_passphrase: "test"
@@ -158,7 +158,7 @@ def write_simple_custom_restore_configuration(
 source_directories:
     - {source_directory}
 repositories:
-    - {repository_path}
+    - path: {repository_path}
 borgmatic_source_directory: {borgmatic_source_directory}
 
 encryption_passphrase: "test"

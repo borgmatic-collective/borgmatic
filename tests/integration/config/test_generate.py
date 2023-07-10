@@ -58,14 +58,13 @@ foo:
         - baz
         - quux
 
-location:
-    repositories:
-        - one
-        - two
+repositories:
+    - one
+    - two
 
-    # This comment should be kept.
-    # COMMENT_OUT
-    other: thing
+# This comment should be kept.
+# COMMENT_OUT
+other: thing
     '''
 
     # flake8: noqa
@@ -75,13 +74,12 @@ location:
 #         - baz
 #         - quux
 
-location:
-    repositories:
-        - one
-        - two
+repositories:
+    - one
+    - two
 
-    # This comment should be kept.
-#     other: thing
+# This comment should be kept.
+# other: thing
     '''
 
     assert module.comment_out_optional_configuration(config.strip()) == expected_config.strip()
