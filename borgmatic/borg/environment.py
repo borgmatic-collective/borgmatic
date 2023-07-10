@@ -11,9 +11,13 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'temporary_directory': 'TMPDIR',
 }
 
-DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
+DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE = {
     'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
     'unknown_unencrypted_repo_access_is_ok': 'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK',
+}
+
+DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
+    'check_i_know_what_i_am_doing': 'BORG_CHECK_I_KNOW_WHAT_I_AM_DOING',
 }
 
 
@@ -33,8 +37,15 @@ def make_environment(storage_config):
     for (
         option_name,
         environment_variable_name,
-    ) in DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE.items():
+    ) in DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE.items():
         value = storage_config.get(option_name, False)
         environment[environment_variable_name] = 'yes' if value else 'no'
+
+    for (
+        option_name,
+        environment_variable_name,
+    ) in DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE.items():
+        value = storage_config.get(option_name, False)
+        environment[environment_variable_name] = 'YES' if value else 'NO'
 
     return environment

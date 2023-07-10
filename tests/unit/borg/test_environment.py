@@ -25,6 +25,7 @@ def test_make_environment_without_configuration_should_only_set_default_environm
     assert environment == {
         'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'no',
         'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'no',
+        'BORG_CHECK_I_KNOW_WHAT_I_AM_DOING': 'NO',
     }
 
 
@@ -32,6 +33,12 @@ def test_make_environment_with_relocated_repo_access_should_override_default():
     environment = module.make_environment({'relocated_repo_access_is_ok': True})
 
     assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'yes'
+
+
+def test_make_environment_check_i_know_what_i_am_doing_should_override_default():
+    environment = module.make_environment({'check_i_know_what_i_am_doing': True})
+
+    assert environment.get('BORG_CHECK_I_KNOW_WHAT_I_AM_DOING') == 'YES'
 
 
 def test_make_environment_with_integer_variable_value():
