@@ -20,6 +20,8 @@
  * All deprecated configuration option values now generate warning logs.
  * Remove the deprecated (and non-functional) "--excludes" flag in favor of excludes within
    configuration.
+ * Fix an error when logging too-long command output during error handling. Now, long command output
+   is truncated before logging.
 
 1.7.15
  * #326: Add configuration options and command-line flags for backing up a database from one

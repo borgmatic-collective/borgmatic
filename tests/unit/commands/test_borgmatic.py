@@ -238,7 +238,6 @@ def test_run_configuration_retries_hard_error():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()])
     error_logs = [flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
@@ -278,13 +277,11 @@ def test_run_configuration_retries_round_robin():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
     flexmock(module).should_receive('log_error_records').with_args(
         'bar: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
     foo_error_logs = [flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
@@ -314,13 +311,11 @@ def test_run_configuration_retries_one_passes():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
     flexmock(module).should_receive('log_error_records').with_args(
         'bar: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return(flexmock()).ordered()
     error_logs = [flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
@@ -344,7 +339,6 @@ def test_run_configuration_retry_wait():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(10).and_return().ordered()
@@ -352,7 +346,6 @@ def test_run_configuration_retry_wait():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(20).and_return().ordered()
@@ -360,7 +353,6 @@ def test_run_configuration_retry_wait():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(30).and_return().ordered()
@@ -389,13 +381,11 @@ def test_run_configuration_retries_timeout_multiple_repos():
         'foo: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
     flexmock(module).should_receive('log_error_records').with_args(
         'bar: Error running actions for repository',
         OSError,
         levelno=logging.WARNING,
-        log_command_error_output=True,
     ).and_return([flexmock()]).ordered()
 
     # Sleep before retrying foo (and passing)
@@ -826,10 +816,6 @@ def test_log_record_does_not_raise():
     module.log_record(levelno=1, foo='bar', baz='quux')
 
 
-def test_log_record_with_suppress_does_not_raise():
-    module.log_record(levelno=1, foo='bar', baz='quux', suppress_log=True)
-
-
 def test_log_error_records_generates_output_logs_for_message_only():
     flexmock(module).should_receive('log_record').replace_with(dict)
 
@@ -843,7 +829,7 @@ def test_log_error_records_generates_output_logs_for_called_process_error():
     flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
 
     logs = tuple(
-        module.log_error_records('Error', subprocess.CalledProcessError(1, 'ls', 'error output'))
+        module.log_error_records('Error', subprocess.CalledProcessError(1, 'ls', b'error output'))
     )
 
     assert {log['levelno'] for log in logs} == {logging.CRITICAL}
