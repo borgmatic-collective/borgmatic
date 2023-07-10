@@ -86,7 +86,7 @@ def test_initialize_monitor_creates_log_handler_with_ping_body_limit():
     ).once()
 
     module.initialize_monitor(
-        {'ping_body_limit': ping_body_limit}, 'test.yaml', monitoring_log_level, dry_run=False
+        {'ping_body_limit': ping_body_limit}, {}, 'test.yaml', monitoring_log_level, dry_run=False
     )
 
 
@@ -99,7 +99,7 @@ def test_initialize_monitor_creates_log_handler_with_default_ping_body_limit():
         monitoring_log_level,
     ).once()
 
-    module.initialize_monitor({}, 'test.yaml', monitoring_log_level, dry_run=False)
+    module.initialize_monitor({}, {}, 'test.yaml', monitoring_log_level, dry_run=False)
 
 
 def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
@@ -112,7 +112,7 @@ def test_initialize_monitor_creates_log_handler_with_zero_ping_body_limit():
     ).once()
 
     module.initialize_monitor(
-        {'ping_body_limit': ping_body_limit}, 'test.yaml', monitoring_log_level, dry_run=False
+        {'ping_body_limit': ping_body_limit}, {}, 'test.yaml', monitoring_log_level, dry_run=False
     )
 
 
@@ -121,7 +121,7 @@ def test_initialize_monitor_creates_log_handler_when_send_logs_true():
     flexmock(module).should_receive('Forgetful_buffering_handler').once()
 
     module.initialize_monitor(
-        {'send_logs': True}, 'test.yaml', monitoring_log_level=1, dry_run=False
+        {'send_logs': True}, {}, 'test.yaml', monitoring_log_level=1, dry_run=False
     )
 
 
@@ -130,7 +130,7 @@ def test_initialize_monitor_bails_when_send_logs_false():
     flexmock(module).should_receive('Forgetful_buffering_handler').never()
 
     module.initialize_monitor(
-        {'send_logs': False}, 'test.yaml', monitoring_log_level=1, dry_run=False
+        {'send_logs': False}, {}, 'test.yaml', monitoring_log_level=1, dry_run=False
     )
 
 

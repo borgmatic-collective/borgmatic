@@ -70,7 +70,7 @@ def format_buffered_logs_for_payload():
     return payload
 
 
-def initialize_monitor(hook_config, config_filename, monitoring_log_level, dry_run):
+def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
     '''
     Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
     we can send them all to Healthchecks upon a finish or failure state. But skip this if the
@@ -133,7 +133,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logger.warning(f'{config_filename}: Healthchecks error: {error}')
 
 
-def destroy_monitor(hook_config, config_filename, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.

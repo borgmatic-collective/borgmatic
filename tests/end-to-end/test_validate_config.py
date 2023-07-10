@@ -38,5 +38,4 @@ def test_validate_config_command_with_show_flag_displays_configuration():
             f'validate-borgmatic-config --config {config_path} --show'.split(' ')
         ).decode(sys.stdout.encoding)
 
-        assert 'location:' in output
         assert 'repositories:' in output

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def initialize_monitor(
-    ping_url, config_filename, monitoring_log_level, dry_run
+    ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     No initialization is necessary for this monitor.
@@ -75,7 +75,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
 
 def destroy_monitor(
-    ping_url_or_uuid, config_filename, monitoring_log_level, dry_run
+    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
