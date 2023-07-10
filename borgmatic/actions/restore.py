@@ -112,7 +112,6 @@ def restore_single_database(
         {hook_name: [database]},
         repository['path'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
-        config,
         global_arguments.dry_run,
         extract_process,
         connection_params,
