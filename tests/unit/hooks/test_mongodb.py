@@ -158,7 +158,7 @@ def test_dump_databases_runs_mongodumpall_for_all_databases():
 
 
 def test_restore_database_dump_runs_mongorestore():
-    database_config = [{'name': 'foo', 'schemas': None}]
+    databases_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -171,9 +171,10 @@ def test_restore_database_dump_runs_mongorestore():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -185,8 +186,8 @@ def test_restore_database_dump_runs_mongorestore():
     )
 
 
-def test_restore_database_dump_errors_on_multiple_database_config():
-    database_config = [{'name': 'foo'}, {'name': 'bar'}]
+def test_restore_database_dump_errors_on_empty_databases_config():
+    databases_config = []
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
@@ -195,9 +196,10 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config,
+            databases_config,
             {},
             'test.yaml',
+            database_name='foo',
             dry_run=False,
             extract_process=flexmock(),
             connection_params={
@@ -210,7 +212,7 @@ def test_restore_database_dump_errors_on_multiple_database_config():
 
 
 def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
-    database_config = [
+    databases_config = [
         {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -235,9 +237,10 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -250,7 +253,7 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
 
 
 def test_restore_database_dump_runs_mongorestore_with_username_and_password():
-    database_config = [
+    databases_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -283,9 +286,10 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -298,7 +302,7 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    database_config = [
+    databases_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -339,9 +343,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -354,7 +359,7 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
 
 def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
-    database_config = [
+    databases_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -395,9 +400,10 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -410,7 +416,7 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
 
 def test_restore_database_dump_runs_mongorestore_with_options():
-    database_config = [{'name': 'foo', 'restore_options': '--harder', 'schemas': None}]
+    databases_config = [{'name': 'foo', 'restore_options': '--harder', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -423,9 +429,10 @@ def test_restore_database_dump_runs_mongorestore_with_options():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -438,7 +445,7 @@ def test_restore_database_dump_runs_mongorestore_with_options():
 
 
 def test_restore_databases_dump_runs_mongorestore_with_schemas():
-    database_config = [{'name': 'foo', 'schemas': ['bar', 'baz']}]
+    databases_config = [{'name': 'foo', 'schemas': ['bar', 'baz']}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -461,9 +468,10 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -476,7 +484,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
 
 
 def test_restore_database_dump_runs_psql_for_all_database_dump():
-    database_config = [{'name': 'all', 'schemas': None}]
+    databases_config = [{'name': 'all', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -489,9 +497,10 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='all',
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -504,16 +513,17 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
 
 
 def test_restore_database_dump_with_dry_run_skips_restore():
-    database_config = [{'name': 'foo', 'schemas': None}]
+    databases_config = [{'name': 'foo', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=True,
         extract_process=flexmock(),
         connection_params={
@@ -526,7 +536,7 @@ def test_restore_database_dump_with_dry_run_skips_restore():
 
 
 def test_restore_database_dump_without_extract_process_restores_from_disk():
-    database_config = [{'name': 'foo', 'format': 'directory', 'schemas': None}]
+    databases_config = [{'name': 'foo', 'format': 'directory', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return('/dump/path')
@@ -538,9 +548,10 @@ def test_restore_database_dump_without_extract_process_restores_from_disk():
     ).once()
 
     module.restore_database_dump(
-        database_config,
+        databases_config,
         {},
         'test.yaml',
+        database_name='foo',
         dry_run=False,
         extract_process=None,
         connection_params={

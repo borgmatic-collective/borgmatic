@@ -109,8 +109,9 @@ def restore_single_database(
     # Run a single database restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hooks(
         'restore_database_dump',
-        {hook_name: [database]},
+        config,
         repository['path'],
+        database['name'],
         borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
         global_arguments.dry_run,
         extract_process,

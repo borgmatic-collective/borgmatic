@@ -84,22 +84,30 @@ def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pra
 
 
 def restore_database_dump(
-    database_config, config, log_prefix, dry_run, extract_process, connection_params
+    databases_config, config, log_prefix, database_name, dry_run, extract_process, connection_params
 ):
     '''
-    Restore the given SQLite3 database from an extract stream. The database is supplied as a
-    one-element sequence containing a dict describing the database, as per the configuration schema.
-    Use the given log prefix in any log entries. If this is a dry run, then don't actually restore
-    anything. Trigger the given active extract process (an instance of subprocess.Popen) to produce
-    output to consume.
+    Restore the given SQLite3 database from an extract stream. The databases are supplied as a
+    sequence containing one dict describing each database (as per the configuration schema), but
+    only the database corresponding to the given database name is restored. Use the given log prefix
+    in any log entries. If this is a dry run, then don't actually restore anything. Trigger the
+    given active extract process (an instance of subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
-    if len(database_config) != 1:
-        raise ValueError('The database configuration value is invalid')
+    try:
+        database = next(
+            database_config
+            for database_config in databases_config
+            if database_config.get('name') == database_name
+        )
+    except StopIteration:
+        raise ValueError(
+            f'A database named "{database_name}" could not be found in the configuration'
+        )
 
-    database_path = connection_params['restore_path'] or database_config[0].get(
-        'restore_path', database_config[0].get('path')
+    database_path = connection_params['restore_path'] or database.get(
+        'restore_path', database.get('path')
     )
 
     logger.debug(f'{log_prefix}: Restoring SQLite database at {database_path}{dry_run_label}')
