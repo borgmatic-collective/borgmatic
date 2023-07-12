@@ -373,6 +373,12 @@ properties:
             Bypass Borg error about a previously unknown unencrypted repository.
             Defaults to false.
         example: true
+    check_i_know_what_i_am_doing:
+        type: boolean
+        description: |
+            Bypass Borg confirmation about check with repair option.
+            Defaults to false.
+        example: true
     extra_borg_options:
         type: object
         additionalProperties: false

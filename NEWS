@@ -6,6 +6,8 @@
    https://torsion.org/borgmatic/docs/how-to/run-arbitrary-borg-commands/
  * #719: Fix an error when running "borg key export" through borgmatic.
  * #720: Fix an error when dumping a MySQL database and the "exclude_nodump" option is set.
+ * #724: Add "check_i_know_what_i_am_doing" option to bypass Borg confirmation prompt when running
+   "check --repair".
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
  * #721: Remove configuration sections ("location:", "storage:", "hooks:" etc.), while still keeping
