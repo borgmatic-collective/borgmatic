@@ -45,7 +45,7 @@ def make_environment(config):
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE.items():
-        value = storage_config.get(option_name, False)
+        value = config.get(option_name, False)
         environment[environment_variable_name] = 'YES' if value else 'NO'
 
     return environment
