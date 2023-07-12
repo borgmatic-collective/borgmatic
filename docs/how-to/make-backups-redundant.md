@@ -12,17 +12,19 @@ it. borgmatic supports this in its configuration by specifying multiple backup
 repositories. Here's an example:
 
 ```yaml
-location:
-    # List of source directories to backup.
-    source_directories:
-        - /home
-        - /etc
+# List of source directories to backup.
+source_directories:
+    - /home
+    - /etc
 
-    # Paths of local or remote repositories to backup to.
-    repositories:
-        - path: ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/./repo
-        - path: /var/lib/backups/local.borg
+# Paths of local or remote repositories to backup to.
+repositories:
+    - path: ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/./repo
+    - path: /var/lib/backups/local.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `location:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.

@@ -44,13 +44,15 @@ file](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/),
 say at `/etc/borgmatic.d/removable.yaml`:
 
 ```yaml
-location:
-    source_directories:
-        - /home
+source_directories:
+    - /home
 
-    repositories:
-        - path: /mnt/removable/backup.borg
+repositories:
+    - path: /mnt/removable/backup.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `location:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.
@@ -77,17 +79,19 @@ optionally using `before_actions` instead.
 You can imagine a similar check for the sometimes-online server case:
 
 ```yaml
-location:
-    source_directories:
-        - /home
+source_directories:
+    - /home
 
-    repositories:
-        - path: ssh://me@buddys-server.org/./backup.borg
+repositories:
+    - path: ssh://me@buddys-server.org/./backup.borg
 
-hooks:
-    before_backup:
-      - ping -q -c 1 buddys-server.org > /dev/null || exit 75
+before_backup:
+    - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put the
+first two options in the `location:` section of your configuration and the
+`before_backup` option within the `hooks:` section.
 
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.

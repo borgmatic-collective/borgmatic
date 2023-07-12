@@ -74,14 +74,15 @@ and borgmatic uses that format to name any new archive it creates. For
 instance:
 
 ```yaml
-storage:
-    ...
-    archive_name_format: home-directories-{now}
+archive_name_format: home-directories-{now}
 ```
 
-This means that when borgmatic creates an archive, its name will start with
-the string `home-directories-` and end with a timestamp for its creation time.
-If `archive_name_format` is unspecified, the default is
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `storage:` section of your configuration.
+
+This example means that when borgmatic creates an archive, its name will start
+with the string `home-directories-` and end with a timestamp for its creation
+time. If `archive_name_format` is unspecified, the default is
 `{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
 timestamp in a particular format.
 
@@ -156,23 +157,28 @@ them. To achieve this, you can put fragments of common configuration options
 into a file, and then include or inline that file into one or more borgmatic
 configuration files.
 
-Let's say that you want to include common retention configuration across all
+Let's say that you want to include common consistency check configuration across all
 of your configuration files. You could do that in each configuration file with
 the following:
 
 ```yaml
-location:
-   ...
+repositories:
+    - path: repo.borg
 
-retention:
-    !include /etc/borgmatic/common_retention.yaml
+checks:
+    !include /etc/borgmatic/common_checks.yaml
 ```
 
-And then the contents of `common_retention.yaml` could be:
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> These
+options were organized into sections like `location:` and `consistency:`.
+
+The contents of `common_checks.yaml` could be:
 
 ```yaml
-keep_hourly: 24
-keep_daily: 7
+- name: repository
+  frequency: 3 weeks
+- name: archives
+  frequency: 2 weeks
 ```
 
 To prevent borgmatic from trying to load these configuration fragments by
@@ -188,11 +194,11 @@ Note that this form of include must be a YAML value rather than a key. For
 example, this will not work:
 
 ```yaml
-location:
-   ...
+repositories:
+    - path: repo.borg
 
 # Don't do this. It won't work!
-!include /etc/borgmatic/common_retention.yaml
+!include /etc/borgmatic/common_checks.yaml
 ```
 
 But if you do want to merge in a YAML key *and* its values, keep reading!
@@ -203,45 +209,48 @@ But if you do want to merge in a YAML key *and* its values, keep reading!
 If you need to get even fancier and merge in common configuration options, you
 can perform a YAML merge of included configuration using the YAML `<<` key.
 For instance, here's an example of a main configuration file that pulls in
-retention and consistency options via a single include:
+retention and consistency checks options via a single include:
 
 ```yaml
-<<: !include /etc/borgmatic/common.yaml
+repositories:
+   - path: repo.borg
 
-location:
-   ...
+<<: !include /etc/borgmatic/common.yaml
 ```
 
 This is what `common.yaml` might look like:
 
 ```yaml
-retention:
-    keep_hourly: 24
-    keep_daily: 7
+keep_hourly: 24
+keep_daily: 7
 
-consistency:
-    checks:
-        - name: repository
+checks:
+    - name: repository
+      frequency: 3 weeks
+    - name: archives
+      frequency: 2 weeks
 ```
 
-Once this include gets merged in, the resulting configuration would have all
-of the `location` options from the original configuration file *and* the
-`retention` and `consistency` options from the include.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> These
+options were organized into sections like `retention:` and `consistency:`.
 
-Prior to borgmatic version 1.6.0, when there's a section collision between the
-local file and the merged include, the local file's section takes precedence.
-So if the `retention` section appears in both the local file and the include
-file, the included `retention` is ignored in favor of the local `retention`.
-But see below about deep merge in version 1.6.0+.
+Once this include gets merged in, the resulting configuration would have all
+of the options from the original configuration file *and* the options from the
+include.
+
+<span class="minilink minilink-addedin">Prior to version 1.6.0</span> When the
+same option appeared in both the local file and the merged include, the local
+file's value took precedence—meaning the included value was ignored in favor
+of the local one. But see below about deep merge in version 1.6.0+.
 
 Note that this `<<` include merging syntax is only for merging in mappings
 (configuration options and their values). But if you'd like to include a
-single value directly, please see the section above about standard includes.
+single value directly, please see the above about standard includes.
 
 Additionally, there is a limitation preventing multiple `<<` include merges
-per section. So for instance, that means you can do one `<<` merge at the
-global level, another `<<` within each configuration section, etc. (This is a
-YAML limitation.)
+per file or option value. So for instance, that means you can do one `<<`
+merge at the global level, another `<<` within each nested option value, etc.
+(This is a YAML limitation.)
 
 
 ### Deep merge
@@ -342,8 +351,8 @@ includes.
 ### Shallow merge
 
 Even though deep merging is generally pretty handy for included files,
-sometimes you want specific sections in the local file to take precedence over
-included sections—without any merging occurring for them.
+sometimes you want specific options in the local file to take precedence over
+included options—without any merging occurring for them.
 
 <span class="minilink minilink-addedin">New in version 1.7.12</span> That's
 where the `!retain` tag comes in. Whenever you're merging an included file
@@ -357,37 +366,38 @@ on the `retention` mapping:
 ```yaml
 <<: !include /etc/borgmatic/common.yaml
 
-location:
-   repositories:
-     - path: repo.borg
+repositories:
+    - path: repo.borg
 
-retention: !retain
-    keep_daily: 5
+checks: !retain
+    - name: repository
 ```
 
 And `common.yaml` like this:
 
 ```yaml
-location:
-   repositories:
-     - path: common.borg
+repositories:
+    - path: common.borg
 
-retention:
-    keep_hourly: 24
-    keep_daily: 7
+checks:
+    - name: archives
 ```
 
-Once this include gets merged in, the resulting configuration will have a
-`keep_daily` value of `5` and nothing else in the `retention` section. That's
-because the `!retain` tag says to retain the local version of `retention` and
-ignore any values coming in from the include. But because the `repositories`
-list doesn't have a `!retain` tag, it still gets merged together to contain
-both `common.borg` and `repo.borg`.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> These
+options were organized into sections like `location:` and `consistency:`.
 
-The `!retain` tag can only be placed on mappings and lists, and it goes right
-after the name of the option (and its colon) on the same line. The effects of
-`!retain` are recursive, meaning that if you place a `!retain` tag on a
-top-level mapping, even deeply nested values within it will not be merged.
+Once this include gets merged in, the resulting configuration will have a
+`checks` value with a name of `repository` and no other values. That's because
+the `!retain` tag says to retain the local version of `checks` and ignore any
+values coming in from the include. But because the `repositories` list doesn't
+have a `!retain` tag, it still gets merged together to contain both
+`common.borg` and `repo.borg`.
+
+The `!retain` tag can only be placed on mappings (keys/values) and lists, and
+it goes right after the name of the option (and its colon) on the same line.
+The effects of `!retain` are recursive, meaning that if you place a `!retain`
+tag on a top-level mapping, even deeply nested values within it will not be
+merged.
 
 Additionally, the `!retain` tag only works in a configuration file that also
 performs a merge include with `<<: !include`. It doesn't make sense within,
@@ -434,43 +444,50 @@ Whatever the reason, you can override borgmatic configuration options at the
 command-line via the `--override` flag. Here's an example:
 
 ```bash
-borgmatic create --override location.remote_path=/usr/local/bin/borg1
+borgmatic create --override remote_path=/usr/local/bin/borg1
 ```
 
 What this does is load your configuration files, and for each one, disregard
-the configured value for the `remote_path` option in the `location` section,
-and use the value of `/usr/local/bin/borg1` instead.
+the configured value for the `remote_path` option, and use the value of
+`/usr/local/bin/borg1` instead.
 
-You can even override multiple values at once. For instance:
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Don't
+forget to specify the section (like `location:`) that any option is in.
+
+You can even override nested values or multiple values at once. For instance:
 
 ```bash
-borgmatic create --override section.option1=value1 section.option2=value2
+borgmatic create --override parent_option.option1=value1 parent_option.option2=value2
 ```
 
 This will accomplish the same thing:
 
 ```bash
-borgmatic create --override section.option1=value1 --override section.option2=value2
+borgmatic create --override parent_option.option1=value1 --override parent_option.option2=value2
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Don't
+forget to specify the section that an option is in. That looks like a prefix
+on the option name, e.g. `location.repositories`.
 
 Note that each value is parsed as an actual YAML string, so you can even set
 list values by using brackets. For instance:
 
 ```bash
-borgmatic create --override location.repositories=[test1.borg,test2.borg]
+borgmatic create --override repositories=[test1.borg,test2.borg]
 ```
 
 Or even a single list element:
 
 ```bash
-borgmatic create --override location.repositories=[/root/test.borg]
+borgmatic create --override repositories=[/root/test.borg]
 ```
 
 If your override value contains special YAML characters like colons, then
 you'll need quotes for it to parse correctly:
 
 ```bash
-borgmatic create --override location.repositories="['user@server:test.borg']"
+borgmatic create --override repositories="['user@server:test.borg']"
 ```
 
 There is not currently a way to override a single element of a list without
@@ -486,7 +503,9 @@ indentation and a leading dash.)
 Be sure to quote your overrides if they contain spaces or other characters
 that your shell may interpret.
 
-An alternate to command-line overrides is passing in your values via [environment variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+An alternate to command-line overrides is passing in your values via
+[environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
 
 
 ## Constant interpolation
@@ -506,15 +525,18 @@ constants:
     user: foo
     archive_prefix: bar
 
-location:
-    source_directories:
-        - /home/{user}/.config
-        - /home/{user}/.ssh
-    ...
+source_directories:
+    - /home/{user}/.config
+    - /home/{user}/.ssh
 
-storage:
-    archive_name_format: '{archive_prefix}-{now}'
+...
+
+archive_name_format: '{archive_prefix}-{now}'
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Don't
+forget to specify the section (like `location:` or `storage:`) that any option
+is in.
 
 In this example, when borgmatic runs, all instances of `{user}` get replaced
 with `foo` and all instances of `{archive-prefix}` get replaced with `bar-`.
@@ -523,14 +545,13 @@ but gets passed directly to Borg.) After substitution, the logical result
 looks something like this:
 
 ```yaml
-location:
-    source_directories:
-        - /home/foo/.config
-        - /home/foo/.ssh
-    ...
+source_directories:
+    - /home/foo/.config
+    - /home/foo/.ssh
 
-storage:
-    archive_name_format: 'bar-{now}'
+...
+
+archive_name_format: 'bar-{now}'
 ```
 
 An alternate to constants is passing in your values via [environment

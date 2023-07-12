@@ -162,10 +162,12 @@ either for a single repository or for all repositories.
 Disabling all consistency checks looks like this:
 
 ```yaml
-consistency:
-    checks:
-        - name: disabled
+checks:
+    - name: disabled
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `consistency:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
 was a plain list of strings without the `name:` part. For instance:
@@ -181,9 +183,8 @@ you can keep running consistency checks, but only against a subset of the
 repositories:
 
 ```yaml
-consistency:
-    check_repositories:
-        - path/of/repository_to_check.borg
+check_repositories:
+    - path/of/repository_to_check.borg
 ```
 
 Finally, you can override your configuration file's consistency checks, and

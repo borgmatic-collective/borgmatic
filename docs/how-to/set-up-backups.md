@@ -140,13 +140,14 @@ use the `--destination` flag, for instance: `--destination
 
 You should edit the configuration file to suit your needs, as the generated
 values are only representative. All options are optional except where
-indicated, so feel free to ignore anything you don't need.
+indicated, so feel free to ignore anything you don't need. Be sure to use
+spaces rather than tabs for indentation; YAML does not allow tabs.
 
-Note that the configuration file is organized into distinct sections, each
-with a section name like `location:` or `storage:`. So take care that if you
-uncomment a particular option, also uncomment its containing section name, or
-else borgmatic won't recognize the option. Also be sure to use spaces rather
-than tabs for indentation; YAML does not allow tabs.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> The
+configuration file was organized into distinct sections, each with a section
+name like `location:` or `storage:`. So in older versions of borgmatic, take
+care that if you uncomment a particular option, also uncomment its containing
+section name—or else borgmatic won't recognize the option.
 
 You can get the same sample configuration file from the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/), the

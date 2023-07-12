@@ -16,49 +16,40 @@ The canonical home of borgmatic is at <a href="https://torsion.org/borgmatic">ht
 Here's an example configuration file:
 
 ```yaml
-location:
-    # List of source directories to backup.
-    source_directories:
-        - /home
-        - /etc
+# List of source directories to backup.
+source_directories:
+    - /home
+    - /etc
 
-    # Paths of local or remote repositories to backup to.
-    repositories:
-        - path: ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/./repo
-          label: borgbase
-        - path: /var/lib/backups/local.borg
-          label: local
+# Paths of local or remote repositories to backup to.
+repositories:
+    - path: ssh://k8pDxu32@k8pDxu32.repo.borgbase.com/./repo
+      label: borgbase
+    - path: /var/lib/backups/local.borg
+      label: local
 
-retention:
-    # Retention policy for how many backups to keep.
-    keep_daily: 7
-    keep_weekly: 4
-    keep_monthly: 6
+# Retention policy for how many backups to keep.
+keep_daily: 7
+keep_weekly: 4
+keep_monthly: 6
 
-consistency:
-    # List of checks to run to validate your backups.
-    checks:
-        - name: repository
-        - name: archives
-          frequency: 2 weeks
+# List of checks to run to validate your backups.
+checks:
+    - name: repository
+    - name: archives
+      frequency: 2 weeks
 
-hooks:
-    # Custom preparation scripts to run.
-    before_backup:
-        - prepare-for-backup.sh
+# Custom preparation scripts to run.
+before_backup:
+    - prepare-for-backup.sh
 
-    # Databases to dump and include in backups.
-    postgresql_databases:
-        - name: users
+# Databases to dump and include in backups.
+postgresql_databases:
+    - name: users
 
-    # Third-party services to notify you if backups aren't happening.
-    healthchecks: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
+# Third-party services to notify you if backups aren't happening.
+healthchecks: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
 ```
-
-Want to see borgmatic in action? Check out the <a
-href="https://asciinema.org/a/203761?autoplay=1" target="_blank">screencast</a>.
-
-<a href="https://asciinema.org/a/203761?autoplay=1" target="_blank"><img src="https://asciinema.org/a/203761.png" width="480"></a>
 
 borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 

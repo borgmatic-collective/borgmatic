@@ -196,6 +196,7 @@ it is a mandatory option there:
 ```yaml
 location:
     source_directories: []
+
 hooks:
     mysql_databases:
         - name: all
