@@ -21,11 +21,10 @@ running backups, and specify `after_backup` hooks to perform cleanup steps
 afterwards. Here's an example:
 
 ```yaml
-hooks:
-    before_backup:
-        - mount /some/filesystem
-    after_backup:
-        - umount /some/filesystem
+before_backup:
+    - mount /some/filesystem
+after_backup:
+    - umount /some/filesystem
 ```
 
 If your command contains a special YAML character such as a colon, you may
@@ -33,10 +32,22 @@ need to quote the entire string (or use a [multiline
 string](https://yaml-multiline.info/)) to avoid an error:
 
 ```yaml
-hooks:
-    before_backup:
-        - "echo Backup: start"
+before_backup:
+    - "echo Backup: start"
 ```
+
+There are additional hooks that run before/after other actions as well. For
+instance, `before_prune` runs before a `prune` action for a repository, while
+`after_prune` runs after it.
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `hooks:` section of your configuration.
+
+<span class="minilink minilink-addedin">New in version 1.7.0</span> The
+`before_actions` and `after_actions` hooks run before/after all the actions
+(like `create`, `prune`, etc.) for each repository. These hooks are a good
+place to run per-repository steps like mounting/unmounting a remote
+filesystem.
 
 <span class="minilink minilink-addedin">New in version 1.6.0</span> The
 `before_backup` and `after_backup` hooks each run once per repository in a
@@ -46,16 +57,6 @@ but not if an error occurs in a previous hook or in the backups themselves.
 (Prior to borgmatic 1.6.0, these hooks instead ran once per configuration file
 rather than once per repository.)
 
-There are additional hooks that run before/after other actions as well. For
-instance, `before_prune` runs before a `prune` action for a repository, while
-`after_prune` runs after it.
-
-<span class="minilink minilink-addedin">New in version 1.7.0</span> The
-`before_actions` and `after_actions` hooks run before/after all the actions
-(like `create`, `prune`, etc.) for each repository. These hooks are a good
-place to run per-repository steps like mounting/unmounting a remote
-filesystem.
-
 
 ## Variable interpolation
 
@@ -64,10 +65,12 @@ variables into the hook command. Here's an example that assumes you provide a
 separate shell script:
 
 ```yaml
-hooks:
-    after_prune:
-        - record-prune.sh "{configuration_filename}" "{repository}"
+after_prune:
+    - record-prune.sh "{configuration_filename}" "{repository}"
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 In this example, when the hook is triggered, borgmatic interpolates runtime
 values into the hook command: the borgmatic configuration filename and the
@@ -92,12 +95,14 @@ You can also use `before_everything` and `after_everything` hooks to perform
 global setup or cleanup:
 
 ```yaml
-hooks:
-    before_everything:
-        - set-up-stuff-globally
-    after_everything:
-        - clean-up-stuff-globally
+before_everything:
+    - set-up-stuff-globally
+after_everything:
+    - clean-up-stuff-globally
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `hooks:` section of your configuration.
 
 `before_everything` hooks collected from all borgmatic configuration files run
 once before all configuration files (prior to all actions), but only if there
@@ -109,6 +114,7 @@ but only if there is a `create` action. It runs even if an error occurs during
 a backup or a backup hook, but not if an error occurs during a
 `before_everything` hook.
 
+
 ## Error hooks
 
 borgmatic also runs `on_error` hooks if an error occurs, either when creating
@@ -116,12 +122,14 @@ a backup or running a backup hook. See the [monitoring and alerting
 documentation](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
 for more information.
 
+
 ## Hook output
 
 Any output produced by your hooks shows up both at the console and in syslog
 (when run in a non-interactive console). For more information, read about <a
 href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/">inspecting
 your backups</a>.
+
 
 ## Security
 

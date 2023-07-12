@@ -104,10 +104,11 @@ to filter archives when running supported actions.
 For instance, let's say that you have this in your configuration:
 
 ```yaml
-storage:
-    ...
-    archive_name_format: {hostname}-user-data-{now}
+archive_name_format: {hostname}-user-data-{now}
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `storage:` section of your configuration.
 
 borgmatic considers `{now}` an emphemeral data placeholder that will probably
 change per archive, while `{hostname}` won't. So it turns the example value
@@ -124,10 +125,8 @@ If this behavior isn't quite smart enough for your needs, you can use the
 filtering archives. For example:
 
 ```yaml
-storage:
-    ...
-    archive_name_format: {hostname}-user-data-{now}
-    match_archives: sh:myhost-user-data-*        
+archive_name_format: {hostname}-user-data-{now}
+match_archives: sh:myhost-user-data-*        
 ```
 
 For Borg 1.x, use a shell pattern for the `match_archives` value and see the
@@ -190,7 +189,7 @@ When a configuration include is a relative path, borgmatic loads it from either
 the current working directory or from the directory containing the file doing
 the including.
 
-Note that this form of include must be a YAML value rather than a key. For
+Note that this form of include must be a value rather than an option name. For
 example, this will not work:
 
 ```yaml
@@ -201,7 +200,7 @@ repositories:
 !include /etc/borgmatic/common_checks.yaml
 ```
 
-But if you do want to merge in a YAML key *and* its values, keep reading!
+But if you do want to merge in a option name *and* its values, keep reading!
 
 
 ## Include merging
@@ -238,11 +237,6 @@ Once this include gets merged in, the resulting configuration would have all
 of the options from the original configuration file *and* the options from the
 include.
 
-<span class="minilink minilink-addedin">Prior to version 1.6.0</span> When the
-same option appeared in both the local file and the merged include, the local
-file's value took precedence—meaning the included value was ignored in favor
-of the local one. But see below about deep merge in version 1.6.0+.
-
 Note that this `<<` include merging syntax is only for merging in mappings
 (configuration options and their values). But if you'd like to include a
 single value directly, please see the above about standard includes.
@@ -261,29 +255,30 @@ at all levels in the two configuration files. This allows you to include
 common configuration—up to full borgmatic configuration files—while overriding
 only the parts you want to customize.
 
-For instance, here's an example of a main configuration file that pulls in two
-retention options via an include and then overrides one of them locally:
+For instance, here's an example of a main configuration file that pulls in
+options via an include and then overrides one of them locally:
 
 ```yaml
 <<: !include /etc/borgmatic/common.yaml
 
-location:
-   ...
+constants:
+    hostname: myhostname
 
-retention:
-    keep_daily: 5
+repositories:
+    - path: repo.borg
 ```
 
 This is what `common.yaml` might look like:
 
 ```yaml
-retention:
-    keep_hourly: 24
-    keep_daily: 7
+constants:
+    prefix: myprefix
+    hostname: otherhost
 ```
 
 Once this include gets merged in, the resulting configuration would have a
-`keep_hourly` value of `24` and an overridden `keep_daily` value of `5`.
+`prefix` value of `myprefix` and an overridden `hostname` value of
+`myhostname`.
 
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence.
@@ -301,20 +296,21 @@ configuration file, you can omit it with an `!omit` tag. For instance:
 ```yaml
 <<: !include /etc/borgmatic/common.yaml
 
-location:
-   source_directories:
-     - !omit /home
-     - /var
+source_directories:
+    - !omit /home
+    - /var
 ```
 
 And `common.yaml` like this:
 
 ```yaml
-location:
-   source_directories:
-     - /home
-     - /etc
+source_directories:
+    - /home
+    - /etc
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `location:` section of your configuration.
 
 Once this include gets merged in, the resulting configuration will have a
 `source_directories` value of `/etc` and `/var`—with `/home` omitted.
@@ -328,16 +324,15 @@ an example of some things not to do:
 ```yaml
 <<: !include /etc/borgmatic/common.yaml
 
-location:
-   source_directories:
-     # Do not do this! It will not work. "!omit" belongs before "/home".
-     - /home !omit
+source_directories:
+    # Do not do this! It will not work. "!omit" belongs before "/home".
+    - /home !omit
 
-   # Do not do this either! "!omit" only works on scalar list items.
-   repositories: !omit
-     # Also do not do this for the same reason! This is a list item, but it's
-     # not a scalar.
-     - !omit path: repo.borg
+# Do not do this either! "!omit" only works on scalar list items.
+repositories: !omit
+    # Also do not do this for the same reason! This is a list item, but it's
+    # not a scalar.
+    - !omit path: repo.borg
 ```
 
 Additionally, the `!omit` tag only works in a configuration file that also
@@ -450,9 +445,6 @@ borgmatic create --override remote_path=/usr/local/bin/borg1
 What this does is load your configuration files, and for each one, disregard
 the configured value for the `remote_path` option, and use the value of
 `/usr/local/bin/borg1` instead.
-
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Don't
-forget to specify the section (like `location:`) that any option is in.
 
 You can even override nested values or multiple values at once. For instance:
 

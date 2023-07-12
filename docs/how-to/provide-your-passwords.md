@@ -20,9 +20,11 @@ pull your repository passphrase, your database passwords, or any other option
 values from environment variables. For instance:
 
 ```yaml
-storage:
-    encryption_passphrase: ${MY_PASSPHRASE}
+encryption_passphrase: ${MY_PASSPHRASE}
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `storage:` section of your configuration.
 
 This uses the `MY_PASSPHRASE` environment variable as your encryption
 passphrase. Note that the `{` `}` brackets are required. `$MY_PASSPHRASE` by
@@ -38,11 +40,13 @@ configuration](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 the same approach applies. For example:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          password: ${MY_DATABASE_PASSWORD}
+postgresql_databases:
+    - name: users
+      password: ${MY_DATABASE_PASSWORD}
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 This uses the `MY_DATABASE_PASSWORD` environment variable as your database
 password.
@@ -53,8 +57,7 @@ password.
 If you'd like to set a default for your environment variables, you can do so with the following syntax:
 
 ```yaml
-storage:
-    encryption_passphrase: ${MY_PASSPHRASE:-defaultpass}
+encryption_passphrase: ${MY_PASSPHRASE:-defaultpass}
 ```
 
 Here, "`defaultpass`" is the default passphrase if the `MY_PASSPHRASE`
@@ -72,8 +75,7 @@ can escape it with a backslash. For instance, if your password is literally
 `${A}@!`:
 
 ```yaml
-storage:
-    encryption_passphrase: \${A}@!
+encryption_passphrase: \${A}@!
 ```
 
 ### Related features

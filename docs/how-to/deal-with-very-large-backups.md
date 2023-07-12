@@ -65,19 +65,20 @@ configure borgmatic to run repository checks only. Configure this in the
 `consistency` section of borgmatic configuration:
 
 ```yaml
-consistency:
-    checks:
-        - name: repository
+checks:
+    - name: repository
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `consistency:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.6.2</span> The
 `checks` option was a plain list of strings without the `name:` part, and
 borgmatic ran each configured check every time checks were run. For example:
 
 ```yaml
-consistency:
-    checks:
-        - repository
+checks:
+    - repository
 ```
 
 
@@ -103,13 +104,15 @@ optionally configure checks to run on a periodic basis rather than every time
 borgmatic runs checks. For instance:
 
 ```yaml
-consistency:
-    checks:
-        - name: repository
-          frequency: 2 weeks
-        - name: archives
-          frequency: 1 month
+checks:
+    - name: repository
+      frequency: 2 weeks
+    - name: archives
+      frequency: 1 month
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `consistency:` section of your configuration.
 
 This tells borgmatic to run the `repository` consistency check at most once
 every two weeks for a given repository and the `archives` check at most once a
@@ -173,9 +176,8 @@ this option in the `consistency:` section of your configuration.
 was a plain list of strings without the `name:` part. For instance:
 
 ```yaml
-consistency:
-    checks:
-        - disabled
+checks:
+    - disabled
 ```
 
 If you have multiple repositories in your borgmatic configuration file,

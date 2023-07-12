@@ -62,10 +62,12 @@ the external `findmnt` utility to see whether the drive is mounted before
 proceeding.
 
 ```yaml
-hooks:
-    before_backup:
-      - findmnt /mnt/removable > /dev/null || exit 75
+before_backup:
+    - findmnt /mnt/removable > /dev/null || exit 75
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put this
+option in the `hooks:` section of your configuration.
 
 What this does is check if the `findmnt` command errors when probing for a
 particular mount point. If it does error, then it returns exit code 75 to
@@ -89,19 +91,11 @@ before_backup:
     - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put the
-first two options in the `location:` section of your configuration and the
-`before_backup` option within the `hooks:` section.
-
-<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
-the `path:` portion of the `repositories` list.
-
 Or to only run backups if the battery level is high enough:
 
 ```yaml
-hooks:
-    before_backup:
-      - is_battery_percent_at_least.sh 25
+before_backup:
+    - is_battery_percent_at_least.sh 25
 ```
 
 (Writing the battery script is left as an exercise to the reader.)

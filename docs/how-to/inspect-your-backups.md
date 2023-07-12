@@ -60,7 +60,7 @@ with `--format`. Refer to the [borg list --format
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/list.html#the-format-specifier-syntax)
 for available values.
 
-*(No borgmatic `list` or `info` actions? Upgrade borgmatic!)*
+(No borgmatic `list` or `info` actions? Upgrade borgmatic!)
 
 <span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
 There are also `rlist` and `rinfo` actions for displaying repository
