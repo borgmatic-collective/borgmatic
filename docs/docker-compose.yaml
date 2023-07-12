@@ -9,7 +9,7 @@ services:
       dockerfile: docs/Dockerfile
       context: ..
       args:
-        ENVIRONMENT: dev
+        ENVIRONMENT: development
   message:
     image: alpine
     container_name: message
