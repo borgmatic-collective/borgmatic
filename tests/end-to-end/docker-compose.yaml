@@ -35,7 +35,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: test2
     command: docker-entrypoint.sh --port=27018
   tests:
-    image: docker.io/alpine:3.13
+    image: docker.io/alpine:3.18
     environment:
       TEST_CONTAINER: true
     volumes:
@@ -47,6 +47,7 @@ services:
     working_dir: /app
     entrypoint: /app/scripts/run-full-tests
     command: --end-to-end-only
+    privileged: true
     depends_on:
       - postgresql
       - postgresql2
