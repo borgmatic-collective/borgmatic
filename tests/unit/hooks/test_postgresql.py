@@ -515,6 +515,30 @@ def test_restore_database_dump_runs_pg_restore():
     )
 
 
+def test_restore_database_dump_errors_when_database_missing_from_configuration():
+    databases_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').never()
+    flexmock(module).should_receive('execute_command').never()
+
+    with pytest.raises(ValueError):
+        module.restore_database_dump(
+            databases_config,
+            {},
+            'test.yaml',
+            database_name='other',
+            dry_run=False,
+            extract_process=extract_process,
+            connection_params={
+                'hostname': None,
+                'port': None,
+                'username': None,
+                'password': None,
+            },
+        )
+
+
 def test_restore_database_dump_runs_pg_restore_with_hostname_and_port():
     databases_config = [
         {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None}

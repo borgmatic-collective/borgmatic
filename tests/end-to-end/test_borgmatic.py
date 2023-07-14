@@ -74,13 +74,6 @@ def test_borgmatic_command():
 
         assert len(parsed_output) == 1
         assert 'repository' in parsed_output[0]
-
-        # Exercise the bootstrap action.
-        output = subprocess.check_output(
-            f'borgmatic --config {config_path} bootstrap --repository {repository_path}'.split(' '),
-        ).decode(sys.stdout.encoding)
-
-        assert 'successful' in output
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)

@@ -17,6 +17,9 @@
    values (unless one is not set).
  * #721: BREAKING: The storage umask and the hooks umask can no longer have different values (unless
    one is not set).
+ * BREAKING: Flags like "--config" that previously took multiple values now need to be given once
+   per value, e.g. "--config first.yaml --config second.yaml" instead of "--config first.yaml
+   second.yaml". This prevents argument parsing errors on ambiguous commands.
  * BREAKING: Remove the deprecated (and silently ignored) "--successful" flag on the "list" action,
    as newer versions of Borg list successful (non-checkpoint) archives by default.
  * All deprecated configuration option values now generate warning logs.

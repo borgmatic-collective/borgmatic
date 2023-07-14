@@ -17,10 +17,10 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     assert global_arguments.log_file_verbosity == 0
 
 
-def test_parse_arguments_with_multiple_config_paths_parses_as_list():
+def test_parse_arguments_with_multiple_config_flags_parses_as_list():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    arguments = module.parse_arguments('--config', 'myconfig', 'otherconfig')
+    arguments = module.parse_arguments('--config', 'myconfig', '--config', 'otherconfig')
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == ['myconfig', 'otherconfig']
@@ -109,20 +109,11 @@ def test_parse_arguments_with_single_override_parses():
     assert global_arguments.overrides == ['foo.bar=baz']
 
 
-def test_parse_arguments_with_multiple_overrides_parses():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    arguments = module.parse_arguments('--override', 'foo.bar=baz', 'foo.quux=7')
-
-    global_arguments = arguments['global']
-    assert global_arguments.overrides == ['foo.bar=baz', 'foo.quux=7']
-
-
-def test_parse_arguments_with_multiple_overrides_and_flags_parses():
+def test_parse_arguments_with_multiple_overrides_flags_parses():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     arguments = module.parse_arguments(
-        '--override', 'foo.bar=baz', '--override', 'foo.quux=7', 'this.that=8'
+        '--override', 'foo.bar=baz', '--override', 'foo.quux=7', '--override', 'this.that=8'
     )
 
     global_arguments = arguments['global']

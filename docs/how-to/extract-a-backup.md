@@ -65,7 +65,7 @@ everything from an archive. To do that, tack on one or more `--path` values.
 For instance:
 
 ```bash
-borgmatic extract --archive latest --path path/1 path/2
+borgmatic extract --archive latest --path path/1 --path path/2
 ```
 
 Note that the specified restore paths should not have a leading slash. Like a

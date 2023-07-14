@@ -449,12 +449,6 @@ the configured value for the `remote_path` option, and use the value of
 You can even override nested values or multiple values at once. For instance:
 
 ```bash
-borgmatic create --override parent_option.option1=value1 parent_option.option2=value2
-```
-
-This will accomplish the same thing:
-
-```bash
 borgmatic create --override parent_option.option1=value1 --override parent_option.option2=value2
 ```
 

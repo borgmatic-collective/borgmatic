@@ -295,7 +295,7 @@ restore one of them, use the `--database` flag to select one or more
 databases. For instance:
 
 ```bash
-borgmatic restore --archive host-2023-... --database users
+borgmatic restore --archive host-2023-... --database users --database orders
 ```
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> You can
