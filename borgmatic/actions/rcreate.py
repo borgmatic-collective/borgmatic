@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def run_rcreate(
     repository,
-    storage,
+    config,
     local_borg_version,
     rcreate_arguments,
     global_arguments,
@@ -27,7 +27,7 @@ def run_rcreate(
     borgmatic.borg.rcreate.create_repository(
         global_arguments.dry_run,
         repository['path'],
-        storage,
+        config,
         local_borg_version,
         global_arguments,
         rcreate_arguments.encryption_mode,

@@ -44,13 +44,15 @@ file](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/),
 say at `/etc/borgmatic.d/removable.yaml`:
 
 ```yaml
-location:
-    source_directories:
-        - /home
+source_directories:
+    - /home
 
-    repositories:
-        - path: /mnt/removable/backup.borg
+repositories:
+    - path: /mnt/removable/backup.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `location:` section of your configuration.
 
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.
@@ -60,10 +62,12 @@ the external `findmnt` utility to see whether the drive is mounted before
 proceeding.
 
 ```yaml
-hooks:
-    before_backup:
-      - findmnt /mnt/removable > /dev/null || exit 75
+before_backup:
+    - findmnt /mnt/removable > /dev/null || exit 75
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put this
+option in the `hooks:` section of your configuration.
 
 What this does is check if the `findmnt` command errors when probing for a
 particular mount point. If it does error, then it returns exit code 75 to
@@ -77,27 +81,21 @@ optionally using `before_actions` instead.
 You can imagine a similar check for the sometimes-online server case:
 
 ```yaml
-location:
-    source_directories:
-        - /home
+source_directories:
+    - /home
 
-    repositories:
-        - path: ssh://me@buddys-server.org/./backup.borg
+repositories:
+    - path: ssh://me@buddys-server.org/./backup.borg
 
-hooks:
-    before_backup:
-      - ping -q -c 1 buddys-server.org > /dev/null || exit 75
+before_backup:
+    - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
-
-<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
-the `path:` portion of the `repositories` list.
 
 Or to only run backups if the battery level is high enough:
 
 ```yaml
-hooks:
-    before_backup:
-      - is_battery_percent_at_least.sh 25
+before_backup:
+    - is_battery_percent_at_least.sh 25
 ```
 
 (Writing the battery script is left as an exercise to the reader.)

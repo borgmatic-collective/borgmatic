@@ -17,7 +17,7 @@ def test_dump_databases_logs_and_skips_if_dump_already_exists():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == []
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == []
 
 
 def test_dump_databases_dumps_each_database():
@@ -37,7 +37,7 @@ def test_dump_databases_dumps_each_database():
         processes[1]
     )
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
@@ -55,7 +55,7 @@ def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
@@ -75,7 +75,7 @@ def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=False) == processes
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
 def test_dump_databases_does_not_dump_if_dry_run():
@@ -89,11 +89,11 @@ def test_dump_databases_does_not_dump_if_dry_run():
     flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_databases(databases, 'test.yaml', {}, dry_run=True) == []
+    assert module.dump_databases(databases, {}, 'test.yaml', dry_run=True) == []
 
 
 def test_restore_database_dump_restores_database():
-    database_config = [{'path': '/path/to/database', 'name': 'database'}]
+    databases_config = [{'path': '/path/to/database', 'name': 'database'}, {'name': 'other'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -109,9 +109,10 @@ def test_restore_database_dump_restores_database():
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        database_config,
-        'test.yaml',
+        databases_config,
         {},
+        'test.yaml',
+        database_name='database',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -119,7 +120,7 @@ def test_restore_database_dump_restores_database():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    database_config = [
+    databases_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -137,9 +138,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        database_config,
-        'test.yaml',
+        databases_config,
         {},
+        'test.yaml',
+        database_name='database',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': 'cli/path/to/database'},
@@ -147,7 +149,7 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
 
 def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
-    database_config = [
+    databases_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -165,9 +167,10 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        database_config,
-        'test.yaml',
+        databases_config,
         {},
+        'test.yaml',
+        database_name='database',
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -175,31 +178,33 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
 
 def test_restore_database_dump_does_not_restore_database_if_dry_run():
-    database_config = [{'path': '/path/to/database', 'name': 'database'}]
+    databases_config = [{'path': '/path/to/database', 'name': 'database'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').never()
     flexmock(module.os).should_receive('remove').never()
 
     module.restore_database_dump(
-        database_config,
-        'test.yaml',
+        databases_config,
         {},
+        'test.yaml',
+        database_name='database',
         dry_run=True,
         extract_process=extract_process,
         connection_params={'restore_path': None},
     )
 
 
-def test_restore_database_dump_raises_error_if_database_config_is_invalid():
-    database_config = []
+def test_restore_database_dump_raises_error_if_database_config_is_empty():
+    databases_config = []
     extract_process = flexmock(stdout=flexmock())
 
     with pytest.raises(ValueError):
         module.restore_database_dump(
-            database_config,
-            'test.yaml',
+            databases_config,
             {},
+            'test.yaml',
+            database_name='database',
             dry_run=False,
             extract_process=extract_process,
             connection_params={'restore_path': None},

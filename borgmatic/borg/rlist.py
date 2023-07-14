@@ -10,14 +10,14 @@ logger = logging.getLogger(__name__)
 def resolve_archive_name(
     repository_path,
     archive,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, an archive name, a storage config dict, the local Borg
+    Given a local or remote repository path, an archive name, a configuration dict, the local Borg
     version, global arguments as an argparse.Namespace, a local Borg path, and a remote Borg path,
     return the archive name. But if the archive name is "latest", then instead introspect the
     repository for the latest archive and return its name.
@@ -34,7 +34,7 @@ def resolve_archive_name(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', storage_config.get('lock_wait'))
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('last', 1)
         + ('--short',)
         + flags.make_repository_flags(repository_path, local_borg_version)
@@ -42,7 +42,8 @@ def resolve_archive_name(
 
     output = execute_command_and_capture_output(
         full_command,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
     )
     try:
         latest_archive = output.strip().splitlines()[-1]
@@ -59,7 +60,7 @@ MAKE_FLAGS_EXCLUDES = ('repository', 'prefix', 'match_archives')
 
 def make_rlist_command(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     rlist_arguments,
     global_arguments,
@@ -67,7 +68,7 @@ def make_rlist_command(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, the
+    Given a local or remote repository path, a configuration dict, the local Borg version, the
     arguments to the rlist action, global arguments as an argparse.Namespace instance, and local and
     remote Borg paths, return a command as a tuple to list archives with a repository.
     '''
@@ -88,7 +89,7 @@ def make_rlist_command(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', storage_config.get('lock_wait'))
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
         + (
             (
                 flags.make_flags('match-archives', f'sh:{rlist_arguments.prefix}*')
@@ -98,8 +99,8 @@ def make_rlist_command(
             if rlist_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    rlist_arguments.match_archives or storage_config.get('match_archives'),
-                    storage_config.get('archive_name_format'),
+                    rlist_arguments.match_archives or config.get('match_archives'),
+                    config.get('archive_name_format'),
                     local_borg_version,
                 )
             )
@@ -111,7 +112,7 @@ def make_rlist_command(
 
 def list_repository(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     rlist_arguments,
     global_arguments,
@@ -119,17 +120,17 @@ def list_repository(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, the
+    Given a local or remote repository path, a configuration dict, the local Borg version, the
     arguments to the list action, global arguments as an argparse.Namespace instance, and local and
     remote Borg paths, display the output of listing Borg archives in the given repository (or
     return JSON output).
     '''
     borgmatic.logger.add_custom_log_levels()
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     main_command = make_rlist_command(
         repository_path,
-        storage_config,
+        config,
         local_borg_version,
         rlist_arguments,
         global_arguments,
@@ -138,7 +139,9 @@ def list_repository(
     )
 
     if rlist_arguments.json:
-        return execute_command_and_capture_output(main_command, extra_environment=borg_environment)
+        return execute_command_and_capture_output(
+            main_command, extra_environment=borg_environment, borg_local_path=local_path
+        )
     else:
         execute_command(
             main_command,

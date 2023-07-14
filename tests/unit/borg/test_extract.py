@@ -25,7 +25,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_last_archive():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -38,7 +38,7 @@ def test_extract_last_archive_dry_run_without_any_archives_should_not_raise():
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(('repo',))
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -55,7 +55,7 @@ def test_extract_last_archive_dry_run_with_log_info_calls_borg_with_info_paramet
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -74,7 +74,7 @@ def test_extract_last_archive_dry_run_with_log_debug_calls_borg_with_debug_param
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -90,7 +90,7 @@ def test_extract_last_archive_dry_run_calls_borg_via_local_path():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -109,7 +109,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_remote_path_flags():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -126,7 +126,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_log_json_flag():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=True),
         repository_path='repo',
@@ -144,7 +144,7 @@ def test_extract_last_archive_dry_run_calls_borg_with_lock_wait_flags():
     )
 
     module.extract_last_archive_dry_run(
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repository_path='repo',
@@ -168,8 +168,7 @@ def test_extract_archive_calls_borg_with_path_flags():
         repository='repo',
         archive='archive',
         paths=['path1', 'path2'],
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -191,8 +190,7 @@ def test_extract_archive_calls_borg_with_remote_path_flags():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         remote_path='borg1',
@@ -222,8 +220,7 @@ def test_extract_archive_calls_borg_with_numeric_ids_parameter(feature_available
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={'numeric_ids': True},
-        storage_config={},
+        config={'numeric_ids': True},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -245,8 +242,7 @@ def test_extract_archive_calls_borg_with_umask_flags():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={'umask': '0770'},
+        config={'umask': '0770'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -265,8 +261,7 @@ def test_extract_archive_calls_borg_with_log_json_flags():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=True),
     )
@@ -288,8 +283,7 @@ def test_extract_archive_calls_borg_with_lock_wait_flags():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={'lock_wait': '5'},
+        config={'lock_wait': '5'},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -312,8 +306,7 @@ def test_extract_archive_with_log_info_calls_borg_with_info_parameter():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -338,8 +331,7 @@ def test_extract_archive_with_log_debug_calls_borg_with_debug_flags():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -361,8 +353,7 @@ def test_extract_archive_calls_borg_with_dry_run_parameter():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -384,8 +375,7 @@ def test_extract_archive_calls_borg_with_destination_path():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         destination_path='/dest',
@@ -408,8 +398,7 @@ def test_extract_archive_calls_borg_with_strip_components():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         strip_components=5,
@@ -442,8 +431,7 @@ def test_extract_archive_calls_borg_with_strip_components_calculated_from_all():
         repository='repo',
         archive='archive',
         paths=['foo/bar/baz.txt', 'foo/bar.txt'],
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         strip_components='all',
@@ -467,8 +455,7 @@ def test_extract_archive_with_strip_components_all_and_no_paths_raises():
             repository='repo',
             archive='archive',
             paths=None,
-            location_config={},
-            storage_config={},
+            config={},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
             strip_components='all',
@@ -497,8 +484,7 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         repository='repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         progress=True,
@@ -514,8 +500,7 @@ def test_extract_archive_with_progress_and_extract_to_stdout_raises():
             repository='repo',
             archive='archive',
             paths=None,
-            location_config={},
-            storage_config={},
+            config={},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
             progress=True,
@@ -548,8 +533,7 @@ def test_extract_archive_calls_borg_with_stdout_parameter_and_returns_process():
             repository='repo',
             archive='archive',
             paths=None,
-            location_config={},
-            storage_config={},
+            config={},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
             extract_to_stdout=True,
@@ -579,8 +563,7 @@ def test_extract_archive_skips_abspath_for_remote_repository():
         repository='server:repo',
         archive='archive',
         paths=None,
-        location_config={},
-        storage_config={},
+        config={},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )

@@ -7,9 +7,9 @@ from borgmatic.execute import execute_command
 logger = logging.getLogger(__name__)
 
 
-def make_prune_flags(storage_config, retention_config, local_borg_version):
+def make_prune_flags(config, local_borg_version):
     '''
-    Given a retention config dict mapping from option name to value, transform it into an sequence of
+    Given a configuration dict mapping from option name to value, transform it into an sequence of
     command-line flags.
 
     For example, given a retention config of:
@@ -23,12 +23,12 @@ def make_prune_flags(storage_config, retention_config, local_borg_version):
             ('--keep-monthly', '6'),
         )
     '''
-    config = retention_config.copy()
-    prefix = config.pop('prefix', None)
-
     flag_pairs = (
-        ('--' + option_name.replace('_', '-'), str(value)) for option_name, value in config.items()
+        ('--' + option_name.replace('_', '-'), str(value))
+        for option_name, value in config.items()
+        if option_name.startswith('keep_')
     )
+    prefix = config.get('prefix')
 
     return tuple(element for pair in flag_pairs for element in pair) + (
         (
@@ -39,8 +39,8 @@ def make_prune_flags(storage_config, retention_config, local_borg_version):
         if prefix
         else (
             flags.make_match_archives_flags(
-                storage_config.get('match_archives'),
-                storage_config.get('archive_name_format'),
+                config.get('match_archives'),
+                config.get('archive_name_format'),
                 local_borg_version,
             )
         )
@@ -50,8 +50,7 @@ def make_prune_flags(storage_config, retention_config, local_borg_version):
 def prune_archives(
     dry_run,
     repository_path,
-    storage_config,
-    retention_config,
+    config,
     local_borg_version,
     prune_arguments,
     global_arguments,
@@ -59,18 +58,17 @@ def prune_archives(
     remote_path=None,
 ):
     '''
-    Given dry-run flag, a local or remote repository path, a storage config dict, and a
-    retention config dict, prune Borg archives according to the retention policy specified in that
-    configuration.
+    Given dry-run flag, a local or remote repository path, and a configuration dict, prune Borg
+    archives according to the retention policy specified in that configuration.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
-    extra_borg_options = storage_config.get('extra_borg_options', {}).get('prune', '')
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('prune', '')
 
     full_command = (
         (local_path, 'prune')
-        + make_prune_flags(storage_config, retention_config, local_borg_version)
+        + make_prune_flags(config, local_borg_version)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
@@ -97,5 +95,5 @@ def prune_archives(
         full_command,
         output_log_level=output_log_level,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
     )

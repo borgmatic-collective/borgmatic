@@ -1,6 +1,6 @@
 type: object
 required:
-    - location
+    - repositories
 additionalProperties: false
 properties:
     constants:
@@ -14,1397 +14,1274 @@ properties:
         example:
             hostname: myhostname
             prefix: myprefix
-    location:
-        type: object
+    source_directories:
+        type: array
+        items:
+            type: string
         description: |
-            Where to look for files to backup, and where to store those backups.
-            See https://borgbackup.readthedocs.io/en/stable/quickstart.html and
-            https://borgbackup.readthedocs.io/en/stable/usage/create.html
-            for details.
-        required:
-            - repositories
+            List of source directories and files to backup. Globs and tildes are
+            expanded. Do not backslash spaces in path names.
+        example:
+            - /home
+            - /etc
+            - /var/log/syslog*
+            - /home/user/path with spaces
+    repositories:
+        type: array
+        items:
+            type: object 
+            required:
+                - path
+            properties:
+                path:
+                    type: string
+                    example: ssh://user@backupserver/./{fqdn}
+                label:
+                    type: string
+                    example: backupserver
+        description: |
+            A required list of local or remote repositories with paths and
+            optional labels (which can be used with the --repository flag to
+            select a repository). Tildes are expanded. Multiple repositories are
+            backed up to in sequence. Borg placeholders can be used. See the
+            output of "borg help placeholders" for details. See ssh_command for
+            SSH options like identity file or port. If systemd service is used,
+            then add local repository paths in the systemd service file to the
+            ReadWritePaths list. Prior to borgmatic 1.7.10, repositories was a
+            list of plain path strings.
+        example:
+            - path: ssh://user@backupserver/./sourcehostname.borg
+              label: backupserver
+            - path: /mnt/backup
+              label: local
+    working_directory:
+        type: string
+        description: |
+            Working directory for the "borg create" command. Tildes are
+            expanded. Useful for backing up using relative paths. See
+            http://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to not set.
+        example: /path/to/working/directory
+    one_file_system:
+        type: boolean
+        description: |
+            Stay in same file system; do not cross mount points beyond the given
+            source directories. Defaults to false. But when a database hook is
+            used, the setting here is ignored and one_file_system is considered
+            true.
+        example: true
+    numeric_ids:
+        type: boolean
+        description: |
+            Only store/extract numeric user and group identifiers. Defaults to
+            false.
+        example: true
+    atime:
+        type: boolean
+        description: |
+            Store atime into archive. Defaults to true in Borg < 1.2, false in
+            Borg 1.2+.
+        example: false
+    ctime:
+        type: boolean
+        description: Store ctime into archive. Defaults to true.
+        example: false
+    birthtime:
+        type: boolean
+        description: |
+            Store birthtime (creation date) into archive. Defaults to true.
+        example: false
+    read_special:
+        type: boolean
+        description: |
+            Use Borg's --read-special flag to allow backup of block and other
+            special devices. Use with caution, as it will lead to problems if
+            used when backing up special devices such as /dev/zero. Defaults to
+            false. But when a database hook is used, the setting here is ignored
+            and read_special is considered true.
+        example: false
+    flags:
+        type: boolean
+        description: |
+            Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
+            Defaults to true.
+        example: true
+    files_cache:
+        type: string
+        description: |
+            Mode in which to operate the files cache. See
+            http://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to "ctime,size,inode".
+        example: ctime,size,inode
+    local_path:
+        type: string
+        description: |
+            Alternate Borg local executable. Defaults to "borg".
+        example: borg1
+    remote_path:
+        type: string
+        description: |
+            Alternate Borg remote executable. Defaults to "borg".
+        example: borg1
+    patterns:
+        type: array
+        items:
+            type: string
+        description: |
+            Any paths matching these patterns are included/excluded from
+            backups. Globs are expanded. (Tildes are not.) See the output of
+            "borg help patterns" for more details. Quote any value if it
+            contains leading punctuation, so it parses correctly. Note that only
+            one of "patterns" and "source_directories" may be used.
+        example:
+            - 'R /'
+            - '- /home/*/.cache'
+            - '+ /home/susan'
+            - '- /home/*'
+    patterns_from:
+        type: array
+        items:
+            type: string
+        description: |
+            Read include/exclude patterns from one or more separate named files,
+            one pattern per line. Note that Borg considers this option
+            experimental. See the output of "borg help patterns" for more
+            details.
+        example:
+            - /etc/borgmatic/patterns
+    exclude_patterns:
+        type: array
+        items:
+            type: string
+        description: |
+            Any paths matching these patterns are excluded from backups. Globs
+            and tildes are expanded. Note that a glob pattern must either start
+            with a glob or be an absolute path. Do not backslash spaces in path
+            names. See the output of "borg help patterns" for more details.
+        example:
+            - '*.pyc'
+            - /home/*/.cache
+            - '*/.vim*.tmp'
+            - /etc/ssl
+            - /home/user/path with spaces
+    exclude_from:
+        type: array
+        items:
+            type: string
+        description: |
+            Read exclude patterns from one or more separate named files, one
+            pattern per line. See the output of "borg help patterns" for more
+            details.
+        example:
+            - /etc/borgmatic/excludes
+    exclude_caches:
+        type: boolean
+        description: |
+            Exclude directories that contain a CACHEDIR.TAG file. See
+            http://www.brynosaurus.com/cachedir/spec.html for details. Defaults
+            to false.
+        example: true
+    exclude_if_present:
+        type: array
+        items:
+            type: string
+        description: |
+            Exclude directories that contain a file with the given filenames.
+            Defaults to not set.
+        example:
+            - .nobackup
+    keep_exclude_tags:
+        type: boolean
+        description: |
+            If true, the exclude_if_present filename is included in backups.
+            Defaults to false, meaning that the exclude_if_present filename is
+            omitted from backups.
+        example: true
+    exclude_nodump:
+        type: boolean
+        description: |
+            Exclude files with the NODUMP flag. Defaults to false.
+        example: true
+    borgmatic_source_directory:
+        type: string
+        description: |
+            Path for additional source files used for temporary internal state
+            like borgmatic database dumps. Note that changing this path prevents
+            "borgmatic restore" from finding any database dumps created before
+            the change. Defaults to ~/.borgmatic
+        example: /tmp/borgmatic
+    source_directories_must_exist:
+        type: boolean
+        description: |
+            If true, then source directories must exist, otherwise an error is
+            raised. Defaults to false.
+        example: true
+    encryption_passcommand:
+        type: string
+        description: |
+            The standard output of this command is used to unlock the encryption
+            key. Only use on repositories that were initialized with
+            passcommand/repokey/keyfile encryption. Note that if both
+            encryption_passcommand and encryption_passphrase are set, then
+            encryption_passphrase takes precedence. Defaults to not set.
+        example: "secret-tool lookup borg-repository repo-name"
+    encryption_passphrase:
+        type: string
+        description: |
+            Passphrase to unlock the encryption key with. Only use on
+            repositories that were initialized with passphrase/repokey/keyfile
+            encryption. Quote the value if it contains punctuation, so it parses
+            correctly. And backslash any quote or backslash literals as well.
+            Defaults to not set.
+        example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+    checkpoint_interval:
+        type: integer
+        description: |
+            Number of seconds between each checkpoint during a long-running
+            backup. See https://borgbackup.readthedocs.io/en/stable/faq.html for
+            details. Defaults to checkpoints every 1800 seconds (30 minutes).
+        example: 1800
+    checkpoint_volume:
+        type: integer
+        description: |
+            Number of backed up bytes between each checkpoint during a
+            long-running backup. Only supported with Borg 2+. See
+            https://borgbackup.readthedocs.io/en/stable/faq.html for details.
+            Defaults to only time-based checkpointing (see
+            "checkpoint_interval") instead of volume-based checkpointing.
+        example: 1048576
+    chunker_params:
+        type: string
+        description: |
+            Specify the parameters passed to then chunker (CHUNK_MIN_EXP,
+            CHUNK_MAX_EXP, HASH_MASK_BITS, HASH_WINDOW_SIZE). See
+            https://borgbackup.readthedocs.io/en/stable/internals.html for
+            details. Defaults to "19,23,21,4095".
+        example: 19,23,21,4095
+    compression:
+        type: string
+        description: |
+            Type of compression to use when creating archives. See
+            http://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            details. Defaults to "lz4".
+        example: lz4
+    upload_rate_limit:
+        type: integer
+        description: |
+            Remote network upload rate limit in kiBytes/second. Defaults to
+            unlimited.
+        example: 100
+    retries:
+        type: integer
+        description: |
+            Number of times to retry a failing backup before giving up. Defaults
+            to 0 (i.e., does not attempt retry).
+        example: 3
+    retry_wait:
+        type: integer
+        description: |
+            Wait time between retries (in seconds) to allow transient issues to
+            pass. Increases after each retry as a form of backoff. Defaults to 0
+            (no wait).
+        example: 10
+    temporary_directory:
+        type: string
+        description: |
+            Directory where temporary files are stored. Defaults to $TMPDIR.
+        example: /path/to/tmpdir
+    ssh_command:
+        type: string
+        description: |
+            Command to use instead of "ssh". This can be used to specify ssh
+            options.  Defaults to not set.
+        example: ssh -i /path/to/private/key
+    borg_base_directory:
+        type: string
+        description: |
+            Base path used for various Borg directories. Defaults to $HOME,
+            ~$USER, or ~.
+        example: /path/to/base
+    borg_config_directory:
+        type: string
+        description: |
+            Path for Borg configuration files. Defaults to
+            $borg_base_directory/.config/borg
+        example: /path/to/base/config
+    borg_cache_directory:
+        type: string
+        description: |
+            Path for Borg cache files. Defaults to
+            $borg_base_directory/.cache/borg
+        example: /path/to/base/cache
+    borg_files_cache_ttl:
+        type: integer
+        description: |
+            Maximum time to live (ttl) for entries in the Borg files cache.
+        example: 20
+    borg_security_directory:
+        type: string
+        description: |
+            Path for Borg security and encryption nonce files. Defaults to
+            $borg_base_directory/.config/borg/security
+        example: /path/to/base/config/security
+    borg_keys_directory:
+        type: string
+        description: |
+            Path for Borg encryption key files. Defaults to
+            $borg_base_directory/.config/borg/keys
+        example: /path/to/base/config/keys
+    umask:
+        type: integer
+        description: |
+            Umask used for when executing Borg or calling hooks. Defaults to
+            0077 for Borg or the umask that borgmatic is run with for hooks.
+        example: 0077
+    lock_wait:
+        type: integer
+        description: |
+            Maximum seconds to wait for acquiring a repository/cache lock.
+            Defaults to 1.
+        example: 5
+    archive_name_format:
+        type: string
+        description: |
+            Name of the archive. Borg placeholders can be used. See the output
+            of "borg help placeholders" for details. Defaults to
+            "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". When running actions like
+            rlist, info, or check, borgmatic automatically tries to match only
+            archives created with this name format.
+        example: "{hostname}-documents-{now}"
+    match_archives:
+        type: string
+        description: |
+            A Borg pattern for filtering down the archives used by borgmatic
+            actions that operate on multiple archives. For Borg 1.x, use a shell
+            pattern here and see the output of "borg help placeholders" for
+            details. For Borg 2.x, see the output of "borg help match-archives".
+            If match_archives is not specified, borgmatic defaults to deriving
+            the match_archives value from archive_name_format.
+        example: "sh:{hostname}-*"
+    relocated_repo_access_is_ok:
+        type: boolean
+        description: |
+            Bypass Borg error about a repository that has been moved. Defaults
+            to false.
+        example: true
+    unknown_unencrypted_repo_access_is_ok:
+        type: boolean
+        description: |
+            Bypass Borg error about a previously unknown unencrypted repository.
+            Defaults to false.
+        example: true
+    check_i_know_what_i_am_doing:
+        type: boolean
+        description: |
+            Bypass Borg confirmation about check with repair option.
+            Defaults to false.
+        example: true
+    extra_borg_options:
+        type: object
         additionalProperties: false
         properties:
-            source_directories:
+            init:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg init".
+                example: "--extra-option"
+            create:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg create".
+                example: "--extra-option"
+            prune:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg prune".
+                example: "--extra-option"
+            compact:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg compact".
+                example: "--extra-option"
+            check:
+                type: string
+                description: |
+                  Extra command-line options to pass to "borg check".
+                example: "--extra-option"
+        description: |
+            Additional options to pass directly to particular Borg commands,
+            handy for Borg options that borgmatic does not yet support natively.
+            Note that borgmatic does not perform any validation on these
+            options. Running borgmatic with "--verbosity 2" shows the exact Borg
+            command-line invocation.
+    keep_within:
+        type: string
+        description: Keep all archives within this time interval.
+        example: 3H
+    keep_secondly:
+        type: integer
+        description: Number of secondly archives to keep.
+        example: 60
+    keep_minutely:
+        type: integer
+        description: Number of minutely archives to keep.
+        example: 60
+    keep_hourly:
+        type: integer
+        description: Number of hourly archives to keep.
+        example: 24
+    keep_daily:
+        type: integer
+        description: Number of daily archives to keep.
+        example: 7
+    keep_weekly:
+        type: integer
+        description: Number of weekly archives to keep.
+        example: 4
+    keep_monthly:
+        type: integer
+        description: Number of monthly archives to keep.
+        example: 6
+    keep_yearly:
+        type: integer
+        description: Number of yearly archives to keep.
+        example: 1
+    prefix:
+        type: string
+        description: |
+            Deprecated. When pruning or checking archives, only consider archive
+            names starting with this prefix. Borg placeholders can be used. See
+            the output of "borg help placeholders" for details. If a prefix is
+            not specified, borgmatic defaults to matching archives based on the
+            archive_name_format (see above).
+        example: sourcehostname
+    checks:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    enum:
+                        - repository
+                        - archives
+                        - data
+                        - extract
+                        - disabled
+                    description: |
+                        Name of consistency check to run: "repository",
+                        "archives", "data", and/or "extract". Set to "disabled"
+                        to disable all consistency checks. "repository" checks
+                        the consistency of the repository, "archives" checks all
+                        of the archives, "data" verifies the integrity of the
+                        data within the archives, and "extract" does an
+                        extraction dry-run of the most recent archive. Note that
+                        "data" implies "archives".
+                    example: repository
+                frequency:
+                    type: string
+                    description: |
+                        How frequently to run this type of consistency check (as
+                        a best effort). The value is a number followed by a unit
+                        of time. E.g., "2 weeks" to run this consistency check
+                        no more than every two weeks for a given repository or
+                        "1 month" to run it no more than monthly. Defaults to
+                        "always": running this check every time checks are run.
+                    example: 2 weeks
+        description: |
+            List of one or more consistency checks to run on a periodic basis
+            (if "frequency" is set) or every time borgmatic runs checks (if
+            "frequency" is omitted).
+    check_repositories:
+        type: array
+        items:
+            type: string
+        description: |
+            Paths or labels for a subset of the configured "repositories" (see
+            above) on which to run consistency checks. Handy in case some of
+            your repositories are very large, and so running consistency checks
+            on them would take too long. Defaults to running consistency checks
+            on all configured repositories.
+        example:
+            - user@backupserver:sourcehostname.borg
+    check_last:
+        type: integer
+        description: |
+            Restrict the number of checked archives to the last n. Applies only
+            to the "archives" check. Defaults to checking all archives.
+        example: 3
+    color:
+        type: boolean
+        description: |
+            Apply color to console output. Can be overridden with --no-color
+            command-line flag. Defaults to true.
+        example: false
+    before_actions:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before all
+            the actions for each repository.
+        example:
+            - "echo Starting actions."
+    before_backup:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            creating a backup, run once per repository.
+        example:
+            - "echo Starting a backup."
+    before_prune:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            pruning, run once per repository.
+        example:
+            - "echo Starting pruning."
+    before_compact:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            compaction, run once per repository.
+        example:
+            - "echo Starting compaction."
+    before_check:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            consistency checks, run once per repository.
+        example:
+            - "echo Starting checks."
+    before_extract:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            extracting a backup, run once per repository.
+        example:
+            - "echo Starting extracting."
+    after_backup:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            creating a backup, run once per repository.
+        example:
+            - "echo Finished a backup."
+    after_compact:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            compaction, run once per repository.
+        example:
+            - "echo Finished compaction."
+    after_prune:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            pruning, run once per repository.
+        example:
+            - "echo Finished pruning."
+    after_check:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            consistency checks, run once per repository.
+        example:
+            - "echo Finished checks."
+    after_extract:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            extracting a backup, run once per repository.
+        example:
+            - "echo Finished extracting."
+    after_actions:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after all
+            actions for each repository.
+        example:
+            - "echo Finished actions."
+    on_error:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute when an
+            exception occurs during a "create", "prune", "compact", or "check"
+            action or an associated before/after hook.
+        example:
+            - "echo Error during create/prune/compact/check."
+    before_everything:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute before
+            running all actions (if one of them is "create"). These are
+            collected from all configuration files and then run once before all
+            of them (prior to all actions).
+        example:
+            - "echo Starting actions."
+    after_everything:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more shell commands or scripts to execute after
+            running all actions (if one of them is "create"). These are
+            collected from all configuration files and then run once after all
+            of them (after any action).
+        example:
+            - "echo Completed actions."
+    postgresql_databases:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        Database name (required if using this hook). Or "all" to
+                        dump all databases on the host. (Also set the "format"
+                        to dump each database to a separate file instead of one
+                        combined file.) Note that using this database hook
+                        implicitly enables both read_special and one_file_system
+                        (see above) to support dump and restore streaming.
+                    example: users
+                hostname:
+                    type: string
+                    description: |
+                        Database hostname to connect to. Defaults to connecting
+                        via local Unix socket.
+                    example: database.example.org
+                restore_hostname:
+                    type: string
+                    description: |
+                        Database hostname to restore to. Defaults to the
+                        "hostname" option.
+                    example: database.example.org
+                port:
+                    type: integer
+                    description: Port to connect to. Defaults to 5432.
+                    example: 5433
+                restore_port:
+                    type: integer
+                    description: |
+                        Port to restore to. Defaults to the "port" option.
+                    example: 5433
+                username:
+                    type: string
+                    description: |
+                        Username with which to connect to the database. Defaults
+                        to the username of the current user. You probably want
+                        to specify the "postgres" superuser here when the
+                        database name is "all".
+                    example: dbuser
+                restore_username:
+                    type: string
+                    description: |
+                        Username with which to restore the database. Defaults to
+                        the "username" option.
+                    example: dbuser
+                password:
+                    type: string
+                    description: |
+                        Password with which to connect to the database. Omitting
+                        a password will only work if PostgreSQL is configured to
+                        trust the configured username without a password or you
+                        create a ~/.pgpass file.
+                    example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option.
+                    example: trustsome1
+                no_owner:
+                    type: boolean
+                    description: |
+                        Do not output commands to set ownership of objects to
+                        match the original database. By default, pg_dump and
+                        pg_restore issue ALTER OWNER or SET SESSION
+                        AUTHORIZATION statements to set ownership of created
+                        schema elements. These statements will fail unless the
+                        initial connection to the database is made by a
+                        superuser.
+                    example: true
+                format:
+                    type: string
+                    enum: ['plain', 'custom', 'directory', 'tar']
+                    description: |
+                        Database dump output format. One of "plain", "custom",
+                        "directory", or "tar". Defaults to "custom" (unlike raw
+                        pg_dump) for a single database. Or, when database name
+                        is "all" and format is blank, dumps all databases to a
+                        single file. But if a format is specified with an "all"
+                        database name, dumps each database to a separate file of
+                        that format, allowing more convenient restores of
+                        individual databases. See the pg_dump documentation for
+                        more about formats.
+                    example: directory
+                ssl_mode:
+                    type: string
+                    enum: ['disable', 'allow', 'prefer',
+                          'require', 'verify-ca', 'verify-full']
+                    description: |
+                        SSL mode to use to connect to the database server. One
+                        of "disable", "allow", "prefer", "require", "verify-ca"
+                        or "verify-full". Defaults to "disable".
+                    example: require
+                ssl_cert:
+                    type: string
+                    description: |
+                        Path to a client certificate.
+                    example: "/root/.postgresql/postgresql.crt"
+                ssl_key:
+                    type: string
+                    description: |
+                        Path to a private client key.
+                    example: "/root/.postgresql/postgresql.key"
+                ssl_root_cert:
+                    type: string
+                    description: |
+                        Path to a root certificate containing a list of trusted
+                        certificate authorities.
+                    example: "/root/.postgresql/root.crt"
+                ssl_crl:
+                    type: string
+                    description: |
+                        Path to a certificate revocation list.
+                    example: "/root/.postgresql/root.crl"
+                pg_dump_command:
+                    type: string
+                    description: |
+                        Command to use instead of "pg_dump" or "pg_dumpall".
+                        This can be used to run a specific pg_dump version
+                        (e.g., one inside a running container). Defaults to
+                        "pg_dump" for single database dump or "pg_dumpall" to
+                        dump all databases.
+                    example: docker exec my_pg_container pg_dump
+                pg_restore_command:
+                    type: string
+                    description: |
+                        Command to use instead of "pg_restore". This can be used
+                        to run a specific pg_restore version (e.g., one inside a
+                        running container). Defaults to "pg_restore".
+                    example: docker exec my_pg_container pg_restore
+                psql_command:
+                    type: string
+                    description: |
+                        Command to use instead of "psql". This can be used to
+                        run a specific psql version (e.g., one inside a running
+                        container). Defaults to "psql".
+                    example: docker exec my_pg_container psql
+                options:
+                    type: string
+                    description: |
+                        Additional pg_dump/pg_dumpall options to pass directly
+                        to the dump command, without performing any validation
+                        on them. See pg_dump documentation for details.
+                    example: --role=someone
+                list_options:
+                    type: string
+                    description: |
+                        Additional psql options to pass directly to the psql
+                        command that lists available databases, without
+                        performing any validation on them. See psql
+                        documentation for details.
+                    example: --role=someone
+                restore_options:
+                    type: string
+                    description: |
+                        Additional pg_restore/psql options to pass directly to
+                        the restore command, without performing any validation
+                        on them. See pg_restore/psql documentation for details.
+                    example: --role=someone
+                analyze_options:
+                    type: string
+                    description: |
+                        Additional psql options to pass directly to the analyze
+                        command run after a restore, without performing any
+                        validation on them. See psql documentation for details.
+                    example: --role=someone
+        description: |
+            List of one or more PostgreSQL databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime, backed up, and removed
+            afterwards. Requires pg_dump/pg_dumpall/pg_restore commands. See
+            https://www.postgresql.org/docs/current/app-pgdump.html and
+            https://www.postgresql.org/docs/current/libpq-ssl.html for details.
+    mysql_databases:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        Database name (required if using this hook). Or "all" to
+                        dump all databases on the host. Note that using this
+                        database hook implicitly enables both read_special and
+                        one_file_system (see above) to support dump and restore
+                        streaming.
+                    example: users
+                hostname:
+                    type: string
+                    description: |
+                        Database hostname to connect to. Defaults to connecting
+                        via local Unix socket.
+                    example: database.example.org
+                restore_hostname:
+                    type: string
+                    description: |
+                        Database hostname to restore to. Defaults to the
+                        "hostname" option.
+                    example: database.example.org
+                port:
+                    type: integer
+                    description: Port to connect to. Defaults to 3306.
+                    example: 3307
+                restore_port:
+                    type: integer
+                    description: |
+                        Port to restore to. Defaults to the "port" option.
+                    example: 5433
+                username:
+                    type: string
+                    description: |
+                        Username with which to connect to the database. Defaults
+                        to the username of the current user.
+                    example: dbuser
+                restore_username:
+                    type: string
+                    description: |
+                        Username with which to restore the database. Defaults to
+                        the "username" option.
+                    example: dbuser                        
+                password:
+                    type: string
+                    description: |
+                        Password with which to connect to the database. Omitting
+                        a password will only work if MySQL is configured to
+                        trust the configured username without a password.
+                    example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option.
+                    example: trustsome1                        
+                format:
+                    type: string
+                    enum: ['sql']
+                    description: |
+                        Database dump output format. Currently only "sql" is
+                        supported. Defaults to "sql" for a single database. Or,
+                        when database name is "all" and format is blank, dumps
+                        all databases to a single file. But if a format is
+                        specified with an "all" database name, dumps each
+                        database to a separate file of that format, allowing
+                        more convenient restores of individual databases.
+                    example: directory
+                add_drop_database:
+                    type: boolean
+                    description: |
+                        Use the "--add-drop-database" flag with mysqldump,
+                        causing the database to be dropped right before restore.
+                        Defaults to true.
+                    example: false
+                options:
+                    type: string
+                    description: |
+                        Additional mysqldump options to pass directly to the
+                        dump command, without performing any validation on them.
+                        See mysqldump documentation for details.
+                    example: --skip-comments
+                list_options:
+                    type: string
+                    description: |
+                        Additional mysql options to pass directly to the mysql
+                        command that lists available databases, without
+                        performing any validation on them. See mysql
+                        documentation for details.
+                    example: --defaults-extra-file=my.cnf
+                restore_options:
+                    type: string
+                    description: |
+                        Additional mysql options to pass directly to the mysql
+                        command that restores database dumps, without performing
+                        any validation on them. See mysql documentation for
+                        details.
+                    example: --defaults-extra-file=my.cnf
+        description: |
+            List of one or more MySQL/MariaDB databases to dump before creating
+            a backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime, backed up, and removed
+            afterwards. Requires mysqldump/mysql commands (from either MySQL or
+            MariaDB). See https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html
+            or https://mariadb.com/kb/en/library/mysqldump/ for details.
+    sqlite_databases:
+        type: array
+        items:
+            type: object
+            required: ['path','name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        This is used to tag the database dump file with a name.
+                        It is not the path to the database file itself. The name
+                        "all" has no special meaning for SQLite databases.
+                    example: users
+                path:
+                    type: string
+                    description: |
+                        Path to the SQLite database file to dump. If relative,
+                        it is relative to the current working directory. Note
+                        that using this database hook implicitly enables both
+                        read_special and one_file_system (see above) to support
+                        dump and restore streaming.
+                    example: /var/lib/sqlite/users.db
+                restore_path:
+                    type: string
+                    description: |
+                        Path to the SQLite database file to restore to. Defaults
+                        to the "path" option.
+                    example: /var/lib/sqlite/users.db
+    mongodb_databases:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        Database name (required if using this hook). Or "all" to
+                        dump all databases on the host. Note that using this
+                        database hook implicitly enables both read_special and
+                        one_file_system (see above) to support dump and restore
+                        streaming.
+                    example: users
+                hostname:
+                    type: string
+                    description: |
+                        Database hostname to connect to. Defaults to connecting
+                        to localhost.
+                    example: database.example.org
+                restore_hostname:
+                    type: string
+                    description: |
+                        Database hostname to restore to. Defaults to the
+                        "hostname" option.
+                    example: database.example.org
+                port:
+                    type: integer
+                    description: Port to connect to. Defaults to 27017.
+                    example: 27018
+                restore_port:
+                    type: integer
+                    description: |
+                        Port to restore to. Defaults to the "port" option.
+                    example: 5433                        
+                username:
+                    type: string
+                    description: |
+                        Username with which to connect to the database. Skip it
+                        if no authentication is needed.
+                    example: dbuser
+                restore_username:
+                    type: string
+                    description: |
+                        Username with which to restore the database. Defaults to
+                        the "username" option.
+                    example: dbuser                        
+                password:
+                    type: string
+                    description: |
+                        Password with which to connect to the database. Skip it
+                        if no authentication is needed.
+                    example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option.
+                    example: trustsome1
+                authentication_database:
+                    type: string
+                    description: |
+                        Authentication database where the specified username
+                        exists. If no authentication database is specified, the
+                        database provided in "name" is used. If "name" is "all",
+                        the "admin" database is used.
+                    example: admin
+                format:
+                    type: string
+                    enum: ['archive', 'directory']
+                    description: |
+                        Database dump output format. One of "archive", or
+                        "directory". Defaults to "archive". See mongodump
+                        documentation for details. Note that format is ignored
+                        when the database name is "all".
+                    example: directory
+                options:
+                    type: string
+                    description: |
+                        Additional mongodump options to pass directly to the
+                        dump command, without performing any validation on them.
+                        See mongodump documentation for details.
+                    example: --dumpDbUsersAndRoles
+                restore_options:
+                    type: string
+                    description: |
+                        Additional mongorestore options to pass directly to the
+                        dump command, without performing any validation on them.
+                        See mongorestore documentation for details.
+                    example: --restoreDbUsersAndRoles
+        description: |
+            List of one or more MongoDB databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime, backed up, and removed
+            afterwards. Requires mongodump/mongorestore commands. See
+            https://docs.mongodb.com/database-tools/mongodump/ and
+            https://docs.mongodb.com/database-tools/mongorestore/ for details.
+    ntfy:
+        type: object
+        required: ['topic']
+        additionalProperties: false
+        properties:
+            topic:
+                type: string
+                description: |
+                    The topic to publish to. See https://ntfy.sh/docs/publish/
+                    for details.
+                example: topic
+            server:
+                type: string
+                description: |
+                    The address of your self-hosted ntfy.sh instance.
+                example: https://ntfy.your-domain.com
+            username:
+                type: string
+                description: |
+                    The username used for authentication.
+                example: testuser
+            password:
+                type: string
+                description: |
+                    The password used for authentication.
+                example: fakepassword
+            start:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            The title of the message.
+                        example: Ping!
+                    message:
+                        type: string
+                        description: |
+                            The message body to publish.
+                        example: Your backups have failed.
+                    priority:
+                        type: string
+                        description: |
+                            The priority to set.
+                        example: urgent
+                    tags:
+                        type: string
+                        description: |
+                            Tags to attach to the message.
+                        example: incoming_envelope
+            finish:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            The title of the message.
+                        example: Ping!
+                    message:
+                        type: string
+                        description: |
+                            The message body to publish.
+                        example: Your backups have failed.
+                    priority:
+                        type: string
+                        description: |
+                            The priority to set.
+                        example: urgent
+                    tags:
+                        type: string
+                        description: |
+                            Tags to attach to the message.
+                        example: incoming_envelope
+            fail:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            The title of the message.
+                        example: Ping!
+                    message:
+                        type: string
+                        description: |
+                            The message body to publish.
+                        example: Your backups have failed.
+                    priority:
+                        type: string
+                        description: |
+                            The priority to set.
+                        example: urgent
+                    tags:
+                        type: string
+                        description: |
+                            Tags to attach to the message.
+                        example: incoming_envelope
+            states:
                 type: array
                 items:
                     type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
                 description: |
-                    List of source directories and files to backup. Globs and
-                    tildes are expanded. Do not backslash spaces in path names.
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", and/or "fail". Defaults to pinging for failure
+                    only.
                 example:
-                    - /home
-                    - /etc
-                    - /var/log/syslog*
-                    - /home/user/path with spaces
-            repositories:
-                type: array
-                items:
-                    type: object 
-                    required:
-                        - path
-                    properties:
-                        path:
-                            type: string
-                            example: ssh://user@backupserver/./{fqdn}
-                        label:
-                            type: string
-                            example: backupserver
-                description: |
-                    A required list of local or remote repositories with paths
-                    and optional labels (which can be used with the --repository
-                    flag to select a repository). Tildes are expanded. Multiple
-                    repositories are backed up to in sequence. Borg placeholders
-                    can be used. See the output of "borg help placeholders" for
-                    details. See ssh_command for SSH options like identity file
-                    or port. If systemd service is used, then add local
-                    repository paths in the systemd service file to the
-                    ReadWritePaths list. Prior to borgmatic 1.7.10, repositories
-                    was a list of plain path strings.
-                example:
-                    - path: ssh://user@backupserver/./sourcehostname.borg
-                      label: backupserver
-                    - path: /mnt/backup
-                      label: local
-            working_directory:
+                    - start
+                    - finish
+    healthchecks:
+        type: object
+        required: ['ping_url']
+        additionalProperties: false
+        properties:
+            ping_url:
                 type: string
                 description: |
-                    Working directory for the "borg create" command. Tildes are
-                    expanded. Useful for backing up using relative paths. See
-                    http://borgbackup.readthedocs.io/en/stable/usage/create.html
-                    for details. Defaults to not set.
-                example: /path/to/working/directory
-            one_file_system:
+                    Healthchecks ping URL or UUID to notify when a backup
+                    begins, ends, errors, or to send only logs.
+                example: https://hc-ping.com/your-uuid-here
+            verify_tls:
                 type: boolean
                 description: |
-                    Stay in same file system: do not cross mount points beyond
-                    the given source directories. Defaults to false. But when a
-                    database hook is used, the setting here is ignored and
-                    one_file_system is considered true.
-                example: true
-            numeric_ids:
-                type: boolean
-                description: |
-                    Only store/extract numeric user and group identifiers.
-                    Defaults to false.
-                example: true
-            atime:
-                type: boolean
-                description: |
-                    Store atime into archive. Defaults to true in Borg < 1.2,
-                    false in Borg 1.2+.
-                example: false
-            ctime:
-                type: boolean
-                description: Store ctime into archive. Defaults to true.
-                example: false
-            birthtime:
-                type: boolean
-                description: |
-                    Store birthtime (creation date) into archive. Defaults to
+                    Verify the TLS certificate of the ping URL host. Defaults to
                     true.
                 example: false
-            read_special:
+            send_logs:
                 type: boolean
                 description: |
-                    Use Borg's --read-special flag to allow backup of block and
-                    other special devices. Use with caution, as it will lead to
-                    problems if used when backing up special devices such as
-                    /dev/zero. Defaults to false. But when a database hook is
-                    used, the setting here is ignored and read_special is
-                    considered true.
+                    Send borgmatic logs to Healthchecks as part the "finish",
+                    "fail", and "log" states. Defaults to true.
                 example: false
-            flags:
-                type: boolean
+            ping_body_limit:
+                type: integer
                 description: |
-                    Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
-                    Defaults to true.
-                example: true
-            files_cache:
-                type: string
-                description: |
-                    Mode in which to operate the files cache. See
-                    http://borgbackup.readthedocs.io/en/stable/usage/create.html
-                    for details. Defaults to "ctime,size,inode".
-                example: ctime,size,inode
-            local_path:
-                type: string
-                description: |
-                    Alternate Borg local executable. Defaults to "borg".
-                example: borg1
-            remote_path:
-                type: string
-                description: |
-                    Alternate Borg remote executable. Defaults to "borg".
-                example: borg1
-            patterns:
+                    Number of bytes of borgmatic logs to send to Healthchecks,
+                    ideally the same as PING_BODY_LIMIT configured on the
+                    Healthchecks server. Set to 0 to send all logs and disable
+                    this truncation. Defaults to 100000.
+                example: 200000
+            states:
                 type: array
                 items:
                     type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                        - log
+                    uniqueItems: true
                 description: |
-                    Any paths matching these patterns are included/excluded from
-                    backups. Globs are expanded. (Tildes are not.) See the
-                    output of "borg help patterns" for more details. Quote any
-                    value if it contains leading punctuation, so it parses
-                    correctly. Note that only one of "patterns" and
-                    "source_directories" may be used.
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", "fail", and/or "log". Defaults to pinging for all
+                    states.
                 example:
-                    - 'R /'
-                    - '- /home/*/.cache'
-                    - '+ /home/susan'
-                    - '- /home/*'
-            patterns_from:
-                type: array
-                items:
-                    type: string
-                description: |
-                    Read include/exclude patterns from one or more separate
-                    named files, one pattern per line. Note that Borg considers
-                    this option experimental. See the output of "borg help
-                    patterns" for more details.
-                example:
-                    - /etc/borgmatic/patterns
-            exclude_patterns:
-                type: array
-                items:
-                    type: string
-                description: |
-                    Any paths matching these patterns are excluded from backups.
-                    Globs and tildes are expanded. Note that a glob pattern must
-                    either start with a glob or be an absolute path. Do not
-                    backslash spaces in path names. See the output of "borg help
-                    patterns" for more details.
-                example:
-                    - '*.pyc'
-                    - /home/*/.cache
-                    - '*/.vim*.tmp'
-                    - /etc/ssl
-                    - /home/user/path with spaces
-            exclude_from:
-                type: array
-                items:
-                    type: string
-                description: |
-                    Read exclude patterns from one or more separate named files,
-                    one pattern per line. See the output of "borg help patterns"
-                    for more details.
-                example:
-                    - /etc/borgmatic/excludes
-            exclude_caches:
-                type: boolean
-                description: |
-                    Exclude directories that contain a CACHEDIR.TAG file. See
-                    http://www.brynosaurus.com/cachedir/spec.html for details.
-                    Defaults to false.
-                example: true
-            exclude_if_present:
-                type: array
-                items:
-                    type: string
-                description: |
-                    Exclude directories that contain a file with the given
-                    filenames. Defaults to not set.
-                example:
-                    - .nobackup
-            keep_exclude_tags:
-                type: boolean
-                description: |
-                    If true, the exclude_if_present filename is included in
-                    backups. Defaults to false, meaning that the
-                    exclude_if_present filename is omitted from backups.
-                example: true
-            exclude_nodump:
-                type: boolean
-                description: |
-                    Exclude files with the NODUMP flag. Defaults to false.
-                example: true
-            borgmatic_source_directory:
-                type: string
-                description: |
-                    Path for additional source files used for temporary internal
-                    state like borgmatic database dumps. Note that changing this
-                    path prevents "borgmatic restore" from finding any database
-                    dumps created before the change. Defaults to ~/.borgmatic
-                example: /tmp/borgmatic
-            source_directories_must_exist:
-                type: boolean
-                description: |
-                    If true, then source directories must exist, otherwise an
-                    error is raised. Defaults to false.
-                example: true
-    storage:
-        type: object
+                    - finish
         description: |
-            Repository storage options. See
-            https://borgbackup.readthedocs.io/en/stable/usage/create.html and
-            https://borgbackup.readthedocs.io/en/stable/usage/general.html for
-            details.
+            Configuration for a monitoring integration with Healthchecks. Create
+            an account at https://healthchecks.io (or self-host Healthchecks) if
+            you'd like to use this service. See borgmatic monitoring
+            documentation for details.
+    cronitor:
+        type: object
+        required: ['ping_url']
         additionalProperties: false
         properties:
-            encryption_passcommand:
+            ping_url:
                 type: string
                 description: |
-                    The standard output of this command is used to unlock the
-                    encryption key. Only use on repositories that were
-                    initialized with passcommand/repokey/keyfile encryption.
-                    Note that if both encryption_passcommand and
-                    encryption_passphrase are set, then encryption_passphrase
-                    takes precedence. Defaults to not set.
-                example: "secret-tool lookup borg-repository repo-name"
-            encryption_passphrase:
-                type: string
-                description: |
-                    Passphrase to unlock the encryption key with. Only use on
-                    repositories that were initialized with
-                    passphrase/repokey/keyfile encryption. Quote the value if it
-                    contains punctuation, so it parses correctly. And backslash
-                    any quote or backslash literals as well. Defaults to not
-                    set.
-                example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-            checkpoint_interval:
-                type: integer
-                description: |
-                    Number of seconds between each checkpoint during a
-                    long-running backup. See
-                    https://borgbackup.readthedocs.io/en/stable/faq.html
-                    for details. Defaults to checkpoints every 1800 seconds (30
-                    minutes).
-                example: 1800
-            checkpoint_volume:
-                type: integer
-                description: |
-                    Number of backed up bytes between each checkpoint during a
-                    long-running backup. Only supported with Borg 2+. See
-                    https://borgbackup.readthedocs.io/en/stable/faq.html
-                    for details. Defaults to only time-based checkpointing (see
-                    "checkpoint_interval") instead of volume-based
-                    checkpointing.
-                example: 1048576
-            chunker_params:
-                type: string
-                description: |
-                    Specify the parameters passed to then chunker
-                    (CHUNK_MIN_EXP, CHUNK_MAX_EXP, HASH_MASK_BITS,
-                    HASH_WINDOW_SIZE). See
-                    https://borgbackup.readthedocs.io/en/stable/internals.html
-                    for details. Defaults to "19,23,21,4095".
-                example: 19,23,21,4095
-            compression:
-                type: string
-                description: |
-                    Type of compression to use when creating archives. See
-                    http://borgbackup.readthedocs.io/en/stable/usage/create.html
-                    for details. Defaults to "lz4".
-                example: lz4
-            upload_rate_limit:
-                type: integer
-                description: |
-                    Remote network upload rate limit in kiBytes/second. Defaults
-                    to unlimited.
-                example: 100
-            retries:
-                type: integer
-                description: |
-                    Number of times to retry a failing backup before giving up.
-                    Defaults to 0 (i.e., does not attempt retry).
-                example: 3
-            retry_wait:
-                type: integer
-                description: |
-                    Wait time between retries (in seconds) to allow transient
-                    issues to pass. Increases after each retry as a form of
-                    backoff. Defaults to 0 (no wait).
-                example: 10
-            temporary_directory:
-                type: string
-                description: |
-                    Directory where temporary files are stored. Defaults to
-                    $TMPDIR
-                example: /path/to/tmpdir
-            ssh_command:
-                type: string
-                description: |
-                    Command to use instead of "ssh". This can be used to specify
-                    ssh options.  Defaults to not set.
-                example: ssh -i /path/to/private/key
-            borg_base_directory:
-                type: string
-                description: |
-                    Base path used for various Borg directories. Defaults to
-                    $HOME, ~$USER, or ~.
-                example: /path/to/base
-            borg_config_directory:
-                type: string
-                description: |
-                    Path for Borg configuration files. Defaults to
-                    $borg_base_directory/.config/borg
-                example: /path/to/base/config
-            borg_cache_directory:
-                type: string
-                description: |
-                    Path for Borg cache files. Defaults to
-                    $borg_base_directory/.cache/borg
-                example: /path/to/base/cache
-            borg_files_cache_ttl:
-                type: integer
-                description: |
-                    Maximum time to live (ttl) for entries in the Borg files
-                    cache.
-                example: 20
-            borg_security_directory:
-                type: string
-                description: |
-                    Path for Borg security and encryption nonce files. Defaults
-                    to $borg_base_directory/.config/borg/security
-                example: /path/to/base/config/security
-            borg_keys_directory:
-                type: string
-                description: |
-                    Path for Borg encryption key files. Defaults to
-                    $borg_base_directory/.config/borg/keys
-                example: /path/to/base/config/keys
-            umask:
-                type: integer
-                description: Umask to be used for borg create. Defaults to 0077.
-                example: 0077
-            lock_wait:
-                type: integer
-                description: |
-                    Maximum seconds to wait for acquiring a repository/cache
-                    lock. Defaults to 1.
-                example: 5
-            archive_name_format:
-                type: string
-                description: |
-                    Name of the archive. Borg placeholders can be used. See the
-                    output of "borg help placeholders" for details. Defaults to
-                    "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". When running
-                    actions like rlist, info, or check, borgmatic automatically
-                    tries to match only archives created with this name format.
-                example: "{hostname}-documents-{now}"
-            match_archives:
-                type: string
-                description: |
-                    A Borg pattern for filtering down the archives used by
-                    borgmatic actions that operate on multiple archives. For
-                    Borg 1.x, use a shell pattern here and see the output of
-                    "borg help placeholders" for details. For Borg 2.x, see the
-                    output of "borg help match-archives". If match_archives is
-                    not specified, borgmatic defaults to deriving the
-                    match_archives value from archive_name_format.
-                example: "sh:{hostname}-*"
-            relocated_repo_access_is_ok:
-                type: boolean
-                description: |
-                    Bypass Borg error about a repository that has been moved.
-                    Defaults to false.
-                example: true
-            unknown_unencrypted_repo_access_is_ok:
-                type: boolean
-                description: |
-                    Bypass Borg error about a previously unknown unencrypted
-                    repository. Defaults to false.
-                example: true
-            check_i_know_what_i_am_doing:
-                type: boolean
-                description: |
-                    Bypass Borg confirmation about check with repair option.
-                    Defaults to false.
-                example: true
-            extra_borg_options:
-                type: object
-                additionalProperties: false
-                properties:
-                    init:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg init".
-                        example: "--extra-option"
-                    create:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg create".
-                        example: "--extra-option"
-                    prune:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg prune".
-                        example: "--extra-option"
-                    compact:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg compact".
-                        example: "--extra-option"
-                    check:
-                        type: string
-                        description: |
-                          Extra command-line options to pass to "borg check".
-                        example: "--extra-option"
-                description: |
-                    Additional options to pass directly to particular Borg
-                    commands, handy for Borg options that borgmatic does not yet
-                    support natively. Note that borgmatic does not perform any
-                    validation on these options. Running borgmatic with
-                    "--verbosity 2" shows the exact Borg command-line
-                    invocation.
-    retention:
-        type: object
+                    Cronitor ping URL to notify when a backup begins,
+                    ends, or errors.
+                example: https://cronitor.link/d3x0c1
         description: |
-            Retention policy for how many backups to keep in each category. See
-            https://borgbackup.readthedocs.io/en/stable/usage/prune.html for
-            details. At least one of the "keep" options is required for pruning
-            to work. To skip pruning entirely, run "borgmatic create" or "check"
-            without the "prune" action. See borgmatic documentation for details.
+            Configuration for a monitoring integration with Cronitor. Create an
+            account at https://cronitor.io if you'd like to use this service.
+            See borgmatic monitoring documentation for details.
+    pagerduty:
+        type: object
+        required: ['integration_key']
         additionalProperties: false
         properties:
-            keep_within:
-                type: string
-                description: Keep all archives within this time interval.
-                example: 3H
-            keep_secondly:
-                type: integer
-                description: Number of secondly archives to keep.
-                example: 60
-            keep_minutely:
-                type: integer
-                description: Number of minutely archives to keep.
-                example: 60
-            keep_hourly:
-                type: integer
-                description: Number of hourly archives to keep.
-                example: 24
-            keep_daily:
-                type: integer
-                description: Number of daily archives to keep.
-                example: 7
-            keep_weekly:
-                type: integer
-                description: Number of weekly archives to keep.
-                example: 4
-            keep_monthly:
-                type: integer
-                description: Number of monthly archives to keep.
-                example: 6
-            keep_yearly:
-                type: integer
-                description: Number of yearly archives to keep.
-                example: 1
-            prefix:
+            integration_key:
                 type: string
                 description: |
-                    Deprecated. When pruning, only consider archive names
-                    starting with this prefix. Borg placeholders can be used.
-                    See the output of "borg help placeholders" for details.
-                    If a prefix is not specified, borgmatic defaults to
-                    matching archives based on the archive_name_format (see
-                    above).
-                example: sourcehostname
-    consistency:
-        type: object
+                    PagerDuty integration key used to notify PagerDuty
+                    when a backup errors.
+                example: a177cad45bd374409f78906a810a3074
         description: |
-            Consistency checks to run after backups. See
-            https://borgbackup.readthedocs.io/en/stable/usage/check.html and
-            https://borgbackup.readthedocs.io/en/stable/usage/extract.html for
-            details.
+            Configuration for a monitoring integration with PagerDuty. Create an
+            account at https://www.pagerduty.com/ if you'd like to use this
+            service. See borgmatic monitoring documentation for details.
+    cronhub:
+        type: object
+        required: ['ping_url']
         additionalProperties: false
         properties:
-            checks:
-                type: array
-                items:
-                    type: object
-                    required: ['name']
-                    additionalProperties: false
-                    properties:
-                        name:
-                            type: string
-                            enum:
-                                - repository
-                                - archives
-                                - data
-                                - extract
-                                - disabled
-                            description: |
-                                Name of consistency check to run: "repository",
-                                "archives", "data", and/or "extract". Set to
-                                "disabled" to disable all consistency checks.
-                                "repository" checks the consistency of the
-                                repository, "archives" checks all of the
-                                archives, "data" verifies the integrity of the
-                                data within the archives, and "extract" does an
-                                extraction dry-run of the most recent archive.
-                                Note that "data" implies "archives".
-                            example: repository
-                        frequency:
-                            type: string
-                            description: |
-                                How frequently to run this type of consistency
-                                check (as a best effort). The value is a number
-                                followed by a unit of time. E.g., "2 weeks" to
-                                run this consistency check no more than every
-                                two weeks for a given repository or "1 month" to
-                                run it no more than monthly. Defaults to
-                                "always": running this check every time checks
-                                are run.
-                            example: 2 weeks
-                description: |
-                    List of one or more consistency checks to run on a periodic
-                    basis (if "frequency" is set) or every time borgmatic runs
-                    checks (if "frequency" is omitted).
-            check_repositories:
-                type: array
-                items:
-                    type: string
-                description: |
-                    Paths or labels for a subset of the repositories in the
-                    location section on which to run consistency checks. Handy
-                    in case some of your repositories are very large, and so
-                    running consistency checks on them would take too long.
-                    Defaults to running consistency checks on all repositories
-                    configured in the location section.
-                example:
-                    - user@backupserver:sourcehostname.borg
-            check_last:
-                type: integer
-                description: |
-                    Restrict the number of checked archives to the last n.
-                    Applies only to the "archives" check. Defaults to checking
-                    all archives.
-                example: 3
-            prefix:
+            ping_url:
                 type: string
                 description: |
-                    Deprecated. When performing the "archives" check, only
-                    consider archive names starting with this prefix. Borg
-                    placeholders can be used. See the output of "borg help
-                    placeholders" for details. If a prefix is not specified,
-                    borgmatic defaults to matching archives based on the
-                    archive_name_format (see above).
-                example: sourcehostname
-    output:
-        type: object
+                    Cronhub ping URL to notify when a backup begins,
+                    ends, or errors.
+                example: https://cronhub.io/ping/1f5e3410-254c-5587
         description: |
-            Options for customizing borgmatic's own output and logging.
-        additionalProperties: false
-        properties:
-            color:
-                type: boolean
-                description: |
-                    Apply color to console output. Can be overridden with
-                    --no-color command-line flag. Defaults to true.
-                example: false
-    hooks:
-        type: object
-        description: |
-            Shell commands, scripts, or integrations to execute at various
-            points during a borgmatic run. IMPORTANT: All provided commands and
-            scripts are executed with user permissions of borgmatic. Do not
-            forget to set secure permissions on this configuration file (chmod
-            0600) as well as on any script called from a hook (chmod 0700) to
-            prevent potential shell injection or privilege escalation.
-        additionalProperties: false
-        properties:
-            before_actions:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before all the actions for each repository.
-                example:
-                    - "echo Starting actions."
-            before_backup:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before creating a backup, run once per repository.
-                example:
-                    - "echo Starting a backup."
-            before_prune:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before pruning, run once per repository.
-                example:
-                    - "echo Starting pruning."
-            before_compact:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before compaction, run once per repository.
-                example:
-                    - "echo Starting compaction."
-            before_check:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before consistency checks, run once per repository.
-                example:
-                    - "echo Starting checks."
-            before_extract:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before extracting a backup, run once per repository.
-                example:
-                    - "echo Starting extracting."
-            after_backup:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after creating a backup, run once per repository.
-                example:
-                    - "echo Finished a backup."
-            after_compact:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after compaction, run once per repository.
-                example:
-                    - "echo Finished compaction."
-            after_prune:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after pruning, run once per repository.
-                example:
-                    - "echo Finished pruning."
-            after_check:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after consistency checks, run once per repository.
-                example:
-                    - "echo Finished checks."
-            after_extract:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after extracting a backup, run once per repository.
-                example:
-                    - "echo Finished extracting."
-            after_actions:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after all actions for each repository.
-                example:
-                    - "echo Finished actions."
-            on_error:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    when an exception occurs during a "create", "prune",
-                    "compact", or "check" action or an associated before/after
-                    hook.
-                example:
-                    - "echo Error during create/prune/compact/check."
-            before_everything:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    before running all actions (if one of them is "create").
-                    These are collected from all configuration files and then
-                    run once before all of them (prior to all actions).
-                example:
-                    - "echo Starting actions."
-            after_everything:
-                type: array
-                items:
-                    type: string
-                description: |
-                    List of one or more shell commands or scripts to execute
-                    after running all actions (if one of them is "create").
-                    These are collected from all configuration files and then
-                    run once after all of them (after any action).
-                example:
-                    - "echo Completed actions."
-            postgresql_databases:
-                type: array
-                items:
-                    type: object
-                    required: ['name']
-                    additionalProperties: false
-                    properties:
-                        name:
-                            type: string
-                            description: |
-                                Database name (required if using this hook). Or
-                                "all" to dump all databases on the host. (Also
-                                set the "format" to dump each database to a
-                                separate file instead of one combined file.)
-                                Note that using this database hook implicitly
-                                enables both read_special and one_file_system
-                                (see above) to support dump and restore
-                                streaming.
-                            example: users
-                        hostname:
-                            type: string
-                            description: |
-                                Database hostname to connect to. Defaults to
-                                connecting via local Unix socket.
-                            example: database.example.org
-                        restore_hostname:
-                            type: string
-                            description: |
-                                Database hostname to restore to. Defaults to
-                                the "hostname" option.
-                            example: database.example.org
-                        port:
-                            type: integer
-                            description: Port to connect to. Defaults to 5432.
-                            example: 5433
-                        restore_port:
-                            type: integer
-                            description: Port to restore to. Defaults to the
-                                "port" option.
-                            example: 5433
-                        username:
-                            type: string
-                            description: |
-                                Username with which to connect to the database.
-                                Defaults to the username of the current user.
-                                You probably want to specify the "postgres"
-                                superuser here when the database name is "all".
-                            example: dbuser
-                        restore_username:
-                            type: string
-                            description: |
-                                Username with which to restore the database.
-                                Defaults to the "username" option.
-                            example: dbuser
-                        password:
-                            type: string
-                            description: |
-                                Password with which to connect to the database.
-                                Omitting a password will only work if PostgreSQL
-                                is configured to trust the configured username
-                                without a password or you create a ~/.pgpass
-                                file.
-                            example: trustsome1
-                        restore_password:
-                            type: string
-                            description: |
-                                Password with which to connect to the restore
-                                database. Defaults to the "password" option.
-                            example: trustsome1
-                        no_owner:
-                            type: boolean
-                            description: |
-                                Do not output commands to set ownership of
-                                objects to match the original database. By
-                                default, pg_dump and pg_restore issue ALTER 
-                                OWNER or SET SESSION AUTHORIZATION statements 
-                                to set ownership of created schema elements. 
-                                These statements will fail unless the initial
-                                connection to the database is made by a 
-                                superuser.
-                            example: true
-                        format:
-                            type: string
-                            enum: ['plain', 'custom', 'directory', 'tar']
-                            description: |
-                                Database dump output format. One of "plain",
-                                "custom", "directory", or "tar". Defaults to
-                                "custom" (unlike raw pg_dump) for a single
-                                database. Or, when database name is "all" and
-                                format is blank, dumps all databases to a single
-                                file. But if a format is specified with an "all"
-                                database name, dumps each database to a separate
-                                file of that format, allowing more convenient
-                                restores of individual databases. See the
-                                pg_dump documentation for more about formats.
-                            example: directory
-                        ssl_mode:
-                            type: string
-                            enum: ['disable', 'allow', 'prefer',
-                                  'require', 'verify-ca', 'verify-full']
-                            description: |
-                                SSL mode to use to connect to the database
-                                server. One of "disable", "allow", "prefer",
-                                "require", "verify-ca" or "verify-full".
-                                Defaults to "disable".
-                            example: require
-                        ssl_cert:
-                            type: string
-                            description: |
-                                Path to a client certificate.
-                            example: "/root/.postgresql/postgresql.crt"
-                        ssl_key:
-                            type: string
-                            description: |
-                                Path to a private client key.
-                            example: "/root/.postgresql/postgresql.key"
-                        ssl_root_cert:
-                            type: string
-                            description: |
-                                Path to a root certificate containing a list of
-                                trusted certificate authorities.
-                            example: "/root/.postgresql/root.crt"
-                        ssl_crl:
-                            type: string
-                            description: |
-                                Path to a certificate revocation list.
-                            example: "/root/.postgresql/root.crl"
-                        pg_dump_command:
-                            type: string
-                            description: |
-                                Command to use instead of "pg_dump" or
-                                "pg_dumpall". This can be used to run a specific
-                                pg_dump version (e.g., one inside a running
-                                container). Defaults to "pg_dump" for single
-                                database dump or "pg_dumpall" to dump all
-                                databases.
-                            example: docker exec my_pg_container pg_dump
-                        pg_restore_command:
-                            type: string
-                            description: |
-                                Command to use instead of "pg_restore". This
-                                can be used to run a specific pg_restore
-                                version (e.g., one inside a running container).
-                                Defaults to "pg_restore".
-                            example: docker exec my_pg_container pg_restore
-                        psql_command:
-                            type: string
-                            description: |
-                                Command to use instead of "psql". This can be
-                                used to run a specific psql version (e.g.,
-                                one inside a running container). Defaults to
-                                "psql".
-                            example: docker exec my_pg_container psql
-                        options:
-                            type: string
-                            description: |
-                                Additional pg_dump/pg_dumpall options to pass
-                                directly to the dump command, without performing
-                                any validation on them. See pg_dump
-                                documentation for details.
-                            example: --role=someone
-                        list_options:
-                            type: string
-                            description: |
-                                Additional psql options to pass directly to the
-                                psql command that lists available databases,
-                                without performing any validation on them. See
-                                psql documentation for details.
-                            example: --role=someone
-                        restore_options:
-                            type: string
-                            description: |
-                                Additional pg_restore/psql options to pass
-                                directly to the restore command, without
-                                performing any validation on them. See
-                                pg_restore/psql documentation for details.
-                            example: --role=someone
-                        analyze_options:
-                            type: string
-                            description: |
-                                Additional psql options to pass directly to the
-                                analyze command run after a restore, without
-                                performing any validation on them. See psql
-                                documentation for details.
-                            example: --role=someone
-                description: |
-                    List of one or more PostgreSQL databases to dump before
-                    creating a backup, run once per configuration file. The
-                    database dumps are added to your source directories at
-                    runtime, backed up, and removed afterwards. Requires
-                    pg_dump/pg_dumpall/pg_restore commands. See
-                    https://www.postgresql.org/docs/current/app-pgdump.html and
-                    https://www.postgresql.org/docs/current/libpq-ssl.html for
-                    details.
-            mysql_databases:
-                type: array
-                items:
-                    type: object
-                    required: ['name']
-                    additionalProperties: false
-                    properties:
-                        name:
-                            type: string
-                            description: |
-                                Database name (required if using this hook). Or
-                                "all" to dump all databases on the host. Note
-                                that using this database hook implicitly enables
-                                both read_special and one_file_system (see
-                                above) to support dump and restore streaming.
-                            example: users
-                        hostname:
-                            type: string
-                            description: |
-                                Database hostname to connect to. Defaults to
-                                connecting via local Unix socket.
-                            example: database.example.org
-                        restore_hostname:
-                            type: string
-                            description: |
-                                Database hostname to restore to. Defaults to
-                                the "hostname" option.
-                            example: database.example.org
-                        port:
-                            type: integer
-                            description: Port to connect to. Defaults to 3306.
-                            example: 3307
-                        restore_port:
-                            type: integer
-                            description: Port to restore to. Defaults to the
-                                "port" option.
-                            example: 5433
-                        username:
-                            type: string
-                            description: |
-                                Username with which to connect to the database.
-                                Defaults to the username of the current user.
-                            example: dbuser
-                        restore_username:
-                            type: string
-                            description: |
-                                Username with which to restore the database.
-                                Defaults to the "username" option.
-                            example: dbuser                        
-                        password:
-                            type: string
-                            description: |
-                                Password with which to connect to the database.
-                                Omitting a password will only work if MySQL is
-                                configured to trust the configured username
-                                without a password.
-                            example: trustsome1
-                        restore_password:
-                            type: string
-                            description: |
-                                Password with which to connect to the restore
-                                database. Defaults to the "password" option.
-                            example: trustsome1                        
-                        format:
-                            type: string
-                            enum: ['sql']
-                            description: |
-                                Database dump output format. Currently only
-                                "sql" is supported. Defaults to "sql" for a
-                                single database. Or, when database name is "all"
-                                and format is blank, dumps all databases to a
-                                single file. But if a format is specified with
-                                an "all" database name, dumps each database to a
-                                separate file of that format, allowing more
-                                convenient restores of individual databases.
-                            example: directory
-                        add_drop_database:
-                            type: boolean
-                            description: |
-                                Use the "--add-drop-database" flag with
-                                mysqldump, causing the database to be dropped
-                                right before restore. Defaults to true.
-                            example: false
-                        options:
-                            type: string
-                            description: |
-                                Additional mysqldump options to pass directly to
-                                the dump command, without performing any
-                                validation on them. See mysqldump documentation
-                                for details.
-                            example: --skip-comments
-                        list_options:
-                            type: string
-                            description: |
-                                Additional mysql options to pass directly to
-                                the mysql command that lists available
-                                databases, without performing any validation on
-                                them. See mysql documentation for details.
-                            example: --defaults-extra-file=my.cnf
-                        restore_options:
-                            type: string
-                            description: |
-                                Additional mysql options to pass directly to
-                                the mysql command that restores database dumps,
-                                without performing any validation on them. See
-                                mysql documentation for details.
-                            example: --defaults-extra-file=my.cnf
-                description: |
-                    List of one or more MySQL/MariaDB databases to dump before
-                    creating a backup, run once per configuration file. The
-                    database dumps are added to your source directories at
-                    runtime, backed up, and removed afterwards. Requires
-                    mysqldump/mysql commands (from either MySQL or MariaDB). See
-                    https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html or
-                    https://mariadb.com/kb/en/library/mysqldump/ for details.
-            sqlite_databases:
-                type: array
-                items:
-                    type: object
-                    required: ['path','name']
-                    additionalProperties: false
-                    properties:
-                        name:
-                            type: string
-                            description: |
-                                This is used to tag the database dump file
-                                with a name. It is not the path to the database
-                                file itself. The name "all" has no special
-                                meaning for SQLite databases.
-                            example: users
-                        path:
-                            type: string
-                            description: |
-                                Path to the SQLite database file to dump. If
-                                relative, it is relative to the current working
-                                directory. Note that using this
-                                database hook implicitly enables both
-                                read_special and one_file_system (see above) to
-                                support dump and restore streaming.
-                            example: /var/lib/sqlite/users.db
-                        restore_path:
-                            type: string
-                            description: |
-                                Path to the SQLite database file to restore to.
-                                Defaults to the "path" option.
-                            example: /var/lib/sqlite/users.db
-            mongodb_databases:
-                type: array
-                items:
-                    type: object
-                    required: ['name']
-                    additionalProperties: false
-                    properties:
-                        name:
-                            type: string
-                            description: |
-                                Database name (required if using this hook). Or
-                                "all" to dump all databases on the host. Note
-                                that using this database hook implicitly enables
-                                both read_special and one_file_system (see
-                                above) to support dump and restore streaming.
-                            example: users
-                        hostname:
-                            type: string
-                            description: |
-                                Database hostname to connect to. Defaults to
-                                connecting to localhost.
-                            example: database.example.org
-                        restore_hostname:
-                            type: string
-                            description: |
-                                Database hostname to restore to. Defaults to
-                                the "hostname" option.
-                            example: database.example.org
-                        port:
-                            type: integer
-                            description: Port to connect to. Defaults to 27017.
-                            example: 27018
-                        restore_port:
-                            type: integer
-                            description: Port to restore to. Defaults to the
-                                "port" option.
-                            example: 5433                        
-                        username:
-                            type: string
-                            description: |
-                                Username with which to connect to the database.
-                                Skip it if no authentication is needed.
-                            example: dbuser
-                        restore_username:
-                            type: string
-                            description: |
-                                Username with which to restore the database.
-                                Defaults to the "username" option.
-                            example: dbuser                        
-                        password:
-                            type: string
-                            description: |
-                                Password with which to connect to the database.
-                                Skip it if no authentication is needed.
-                            example: trustsome1
-                        restore_password:
-                            type: string
-                            description: |
-                                Password with which to connect to the restore
-                                database. Defaults to the "password" option.
-                            example: trustsome1
-                        authentication_database:
-                            type: string
-                            description: |
-                                Authentication database where the specified
-                                username exists. If no authentication database
-                                is specified, the database provided in "name"
-                                is used. If "name" is "all", the "admin"
-                                database is used.
-                            example: admin
-                        format:
-                            type: string
-                            enum: ['archive', 'directory']
-                            description: |
-                                Database dump output format. One of "archive",
-                                or "directory". Defaults to "archive". See
-                                mongodump documentation for details. Note that
-                                format is ignored when the database name is
-                                "all".
-                            example: directory
-                        options:
-                            type: string
-                            description: |
-                                Additional mongodump options to pass
-                                directly to the dump command, without performing
-                                any validation on them. See mongodump
-                                documentation for details.
-                            example: --dumpDbUsersAndRoles
-                        restore_options:
-                            type: string
-                            description: |
-                                Additional mongorestore options to pass
-                                directly to the dump command, without performing
-                                any validation on them. See mongorestore
-                                documentation for details.
-                            example: --restoreDbUsersAndRoles
-                description: |
-                    List of one or more MongoDB databases to dump before
-                    creating a backup, run once per configuration file. The
-                    database dumps are added to your source directories at
-                    runtime, backed up, and removed afterwards. Requires
-                    mongodump/mongorestore commands. See
-                    https://docs.mongodb.com/database-tools/mongodump/ and
-                    https://docs.mongodb.com/database-tools/mongorestore/ for
-                    details.
-            ntfy:
-                type: object
-                required: ['topic']
-                additionalProperties: false
-                properties:
-                    topic:
-                        type: string
-                        description: |
-                            The topic to publish to.
-                            (https://ntfy.sh/docs/publish/)
-                        example: topic
-                    server:
-                        type: string
-                        description: |
-                            The address of your self-hosted ntfy.sh instance.
-                        example: https://ntfy.your-domain.com
-                    username:
-                        type: string
-                        description: |
-                            The username used for authentication.
-                        example: testuser
-                    password:
-                        type: string
-                        description: |
-                            The password used for authentication.
-                        example: fakepassword
-                    start:
-                        type: object
-                        properties:
-                            title:
-                                type: string
-                                description: |
-                                    The title of the message
-                                example: Ping!
-                            message:
-                                type: string
-                                description: |
-                                    The message body to publish.
-                                example: Your backups have failed.
-                            priority:
-                                type: string
-                                description: |
-                                    The priority to set.
-                                example: urgent
-                            tags:
-                                type: string
-                                description: |
-                                    Tags to attach to the message.
-                                example: incoming_envelope
-                    finish:
-                        type: object
-                        properties:
-                            title:
-                                type: string
-                                description: |
-                                    The title of the message.
-                                example: Ping!
-                            message:
-                                type: string
-                                description: |
-                                    The message body to publish.
-                                example: Your backups have failed.
-                            priority:
-                                type: string
-                                description: |
-                                    The priority to set.
-                                example: urgent
-                            tags:
-                                type: string
-                                description: |
-                                    Tags to attach to the message.
-                                example: incoming_envelope
-                    fail:
-                        type: object
-                        properties:
-                            title:
-                                type: string
-                                description: |
-                                    The title of the message.
-                                example: Ping!
-                            message:
-                                type: string
-                                description: |
-                                    The message body to publish.
-                                example: Your backups have failed.
-                            priority:
-                                type: string
-                                description: |
-                                    The priority to set.
-                                example: urgent
-                            tags:
-                                type: string
-                                description: |
-                                    Tags to attach to the message.
-                                example: incoming_envelope
-                    states:
-                        type: array
-                        items:
-                            type: string
-                            enum:
-                                - start
-                                - finish
-                                - fail
-                            uniqueItems: true
-                        description: |
-                            List of one or more monitoring states to ping for:
-                            "start", "finish", and/or "fail". Defaults to
-                            pinging for failure only.
-                        example:
-                            - start
-                            - finish
-            healthchecks:
-                type: object
-                required: ['ping_url']
-                additionalProperties: false
-                properties:
-                    ping_url:
-                        type: string
-                        description: |
-                            Healthchecks ping URL or UUID to notify when a
-                            backup begins, ends, errors, or to send only logs.
-                        example: https://hc-ping.com/your-uuid-here
-                    verify_tls:
-                        type: boolean
-                        description: |
-                            Verify the TLS certificate of the ping URL host.
-                            Defaults to true.
-                        example: false
-                    send_logs:
-                        type: boolean
-                        description: |
-                            Send borgmatic logs to Healthchecks as part the
-                            "finish", "fail", and "log" states. Defaults to
-                            true.
-                        example: false
-                    ping_body_limit:
-                        type: integer
-                        description: |
-                            Number of bytes of borgmatic logs to send to
-                            Healthchecks, ideally the same as PING_BODY_LIMIT
-                            configured on the Healthchecks server. Set to 0 to
-                            send all logs and disable this truncation. Defaults
-                            to 100000.
-                        example: 200000
-                    states:
-                        type: array
-                        items:
-                            type: string
-                            enum:
-                                - start
-                                - finish
-                                - fail
-                                - log
-                            uniqueItems: true
-                        description: |
-                            List of one or more monitoring states to ping for:
-                            "start", "finish", "fail", and/or "log". Defaults to
-                            pinging for all states.
-                        example:
-                            - finish
-                description: |
-                    Configuration for a monitoring integration with
-                    Healthchecks. Create an account at https://healthchecks.io
-                    (or self-host Healthchecks) if you'd like to use this
-                    service. See borgmatic monitoring documentation for details.
-            cronitor:
-                type: object
-                required: ['ping_url']
-                additionalProperties: false
-                properties:
-                    ping_url:
-                        type: string
-                        description: |
-                            Cronitor ping URL to notify when a backup begins,
-                            ends, or errors.
-                        example: https://cronitor.link/d3x0c1
-                description: |
-                    Configuration for a monitoring integration with Cronitor.
-                    Create an account at https://cronitor.io if you'd
-                    like to use this service. See borgmatic monitoring
-                    documentation for details.
-            pagerduty:
-                type: object
-                required: ['integration_key']
-                additionalProperties: false
-                properties:
-                    integration_key:
-                        type: string
-                        description: |
-                            PagerDuty integration key used to notify PagerDuty
-                            when a backup errors.
-                        example: a177cad45bd374409f78906a810a3074
-                description: |
-                    Configuration for a monitoring integration with PagerDuty.
-                    Create an account at https://www.pagerduty.com/ if you'd
-                    like to use this service. See borgmatic monitoring
-                    documentation for details.
-            cronhub:
-                type: object
-                required: ['ping_url']
-                additionalProperties: false
-                properties:
-                    ping_url:
-                        type: string
-                        description: |
-                            Cronhub ping URL to notify when a backup begins,
-                            ends, or errors.
-                        example: https://cronhub.io/ping/1f5e3410-254c-5587
-                description: |
-                    Configuration for a monitoring integration with Crunhub.
-                    Create an account at https://cronhub.io if you'd like to
-                    use this service. See borgmatic monitoring documentation
-                    for details.
-            umask:
-                type: integer
-                description: |
-                    Umask used when executing hooks. Defaults to the umask that
-                    borgmatic is run with.
-                example: 0077
+            Configuration for a monitoring integration with Crunhub. Create an
+            account at https://cronhub.io if you'd like to use this service. See
+            borgmatic monitoring documentation for details.

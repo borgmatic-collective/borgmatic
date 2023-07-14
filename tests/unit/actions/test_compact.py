@@ -17,9 +17,7 @@ def test_compact_actions_calls_hooks_for_configured_repository():
     module.run_compact(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        storage={},
-        retention={},
-        hooks={},
+        config={},
         hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,
@@ -45,9 +43,7 @@ def test_compact_runs_with_selected_repository():
     module.run_compact(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        storage={},
-        retention={},
-        hooks={},
+        config={},
         hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,
@@ -73,9 +69,7 @@ def test_compact_bails_if_repository_does_not_match():
     module.run_compact(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        storage={},
-        retention={},
-        hooks={},
+        config={},
         hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,

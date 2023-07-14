@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def run_list(
     repository,
-    storage,
+    config,
     local_borg_version,
     list_arguments,
     global_arguments,
@@ -34,7 +34,7 @@ def run_list(
         archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             list_arguments.archive,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path,
@@ -42,7 +42,7 @@ def run_list(
         )
         json_output = borgmatic.borg.list.list_archive(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             borgmatic.actions.arguments.update_arguments(list_arguments, archive=archive_name),
             global_arguments,

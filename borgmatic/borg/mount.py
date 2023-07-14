@@ -10,7 +10,7 @@ def mount_archive(
     repository_path,
     archive,
     mount_arguments,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -22,8 +22,8 @@ def mount_archive(
     dict, the local Borg version, global arguments as an argparse.Namespace instance, and optional
     local and remote Borg paths, mount the archive onto the mount point.
     '''
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
 
     full_command = (
         (local_path, 'mount')
@@ -58,7 +58,7 @@ def mount_archive(
         + (tuple(mount_arguments.paths) if mount_arguments.paths else ())
     )
 
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
     if mount_arguments.foreground:

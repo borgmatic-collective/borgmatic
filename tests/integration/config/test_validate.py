@@ -40,35 +40,32 @@ def mock_config_and_schema(config_yaml, schema_yaml=None):
 def test_parse_configuration_transforms_file_into_mapping():
     mock_config_and_schema(
         '''
-        location:
-            source_directories:
-                - /home
-                - /etc
+        source_directories:
+            - /home
+            - /etc
 
-            repositories:
-                - path: hostname.borg
+        repositories:
+            - path: hostname.borg
 
-        retention:
-            keep_minutely: 60
-            keep_hourly: 24
-            keep_daily: 7
+        keep_minutely: 60
+        keep_hourly: 24
+        keep_daily: 7
 
-        consistency:
-            checks:
-                - name: repository
-                - name: archives
+        checks:
+            - name: repository
+            - name: archives
         '''
     )
 
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {
-            'source_directories': ['/home', '/etc'],
-            'repositories': [{'path': 'hostname.borg'}],
-        },
-        'retention': {'keep_daily': 7, 'keep_hourly': 24, 'keep_minutely': 60},
-        'consistency': {'checks': [{'name': 'repository'}, {'name': 'archives'}]},
+        'source_directories': ['/home', '/etc'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'keep_daily': 7,
+        'keep_hourly': 24,
+        'keep_minutely': 60,
+        'checks': [{'name': 'repository'}, {'name': 'archives'}],
     }
     assert logs == []
 
@@ -78,22 +75,19 @@ def test_parse_configuration_passes_through_quoted_punctuation():
 
     mock_config_and_schema(
         f'''
-        location:
-            source_directories:
-                - "/home/{escaped_punctuation}"
+        source_directories:
+            - "/home/{escaped_punctuation}"
 
-            repositories:
-                - path: test.borg
+        repositories:
+            - path: test.borg
         '''
     )
 
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {
-            'source_directories': [f'/home/{string.punctuation}'],
-            'repositories': [{'path': 'test.borg'}],
-        }
+        'source_directories': [f'/home/{string.punctuation}'],
+        'repositories': [{'path': 'test.borg'}],
     }
     assert logs == []
 
@@ -101,26 +95,22 @@ def test_parse_configuration_passes_through_quoted_punctuation():
 def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
     mock_config_and_schema(
         '''
-        location:
-            source_directories:
-                - /home
+        source_directories:
+            - /home
 
-            repositories:
-                - path: hostname.borg
+        repositories:
+            - path: hostname.borg
         ''',
         '''
         map:
-            location:
+            source_directories:
                 required: true
-                map:
-                    source_directories:
-                        required: true
-                        seq:
-                            - type: scalar
-                    repositories:
-                        required: true
-                        seq:
-                            - type: scalar
+                seq:
+                    - type: scalar
+            repositories:
+                required: true
+                seq:
+                    - type: scalar
         ''',
     )
 
@@ -130,12 +120,11 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
 def test_parse_configuration_inlines_include():
     mock_config_and_schema(
         '''
-        location:
-            source_directories:
-                - /home
+        source_directories:
+            - /home
 
-            repositories:
-                - path: hostname.borg
+        repositories:
+            - path: hostname.borg
 
         retention:
             !include include.yaml
@@ -154,25 +143,25 @@ def test_parse_configuration_inlines_include():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {'source_directories': ['/home'], 'repositories': [{'path': 'hostname.borg'}]},
-        'retention': {'keep_daily': 7, 'keep_hourly': 24},
+        'source_directories': ['/home'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'keep_daily': 7,
+        'keep_hourly': 24,
     }
-    assert logs == []
+    assert len(logs) == 1
 
 
 def test_parse_configuration_merges_include():
     mock_config_and_schema(
         '''
-        location:
-            source_directories:
-                - /home
+        source_directories:
+            - /home
 
-            repositories:
-                - path: hostname.borg
+        repositories:
+            - path: hostname.borg
 
-        retention:
-            keep_daily: 1
-            <<: !include include.yaml
+        keep_daily: 1
+        <<: !include include.yaml
         '''
     )
     builtins = flexmock(sys.modules['builtins'])
@@ -188,8 +177,10 @@ def test_parse_configuration_merges_include():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {'source_directories': ['/home'], 'repositories': [{'path': 'hostname.borg'}]},
-        'retention': {'keep_daily': 1, 'keep_hourly': 24},
+        'source_directories': ['/home'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'keep_daily': 1,
+        'keep_hourly': 24,
     }
     assert logs == []
 
@@ -218,10 +209,9 @@ def test_parse_configuration_raises_for_syntax_error():
 def test_parse_configuration_raises_for_validation_error():
     mock_config_and_schema(
         '''
-        location:
-            source_directories: yes
-            repositories:
-                - path: hostname.borg
+        source_directories: yes
+        repositories:
+            - path: hostname.borg
         '''
     )
 
@@ -232,14 +222,13 @@ def test_parse_configuration_raises_for_validation_error():
 def test_parse_configuration_applies_overrides():
     mock_config_and_schema(
         '''
-        location:
-            source_directories:
-                - /home
+        source_directories:
+            - /home
 
-            repositories:
-                - path: hostname.borg
+        repositories:
+            - path: hostname.borg
 
-            local_path: borg1
+        local_path: borg1
         '''
     )
 
@@ -248,11 +237,9 @@ def test_parse_configuration_applies_overrides():
     )
 
     assert config == {
-        'location': {
-            'source_directories': ['/home'],
-            'repositories': [{'path': 'hostname.borg'}],
-            'local_path': 'borg2',
-        }
+        'source_directories': ['/home'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'local_path': 'borg2',
     }
     assert logs == []
 
@@ -274,10 +261,8 @@ def test_parse_configuration_applies_normalization():
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
-        'location': {
-            'source_directories': ['/home'],
-            'repositories': [{'path': 'hostname.borg'}],
-            'exclude_if_present': ['.nobackup'],
-        }
+        'source_directories': ['/home'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'exclude_if_present': ['.nobackup'],
     }
     assert logs

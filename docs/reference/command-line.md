@@ -15,7 +15,7 @@ listed here do not have equivalents in borgmatic's [configuration
 file](https://torsion.org/borgmatic/docs/reference/configuration/).
 
 If you're using an older version of borgmatic, some of these flags may not be
-present in that version, and you should instead use `borgmatic --help` or
+present in that version and you should instead use `borgmatic --help` or
 `borgmatic [action name] --help` (where `[action name]` is the name of an
 action like `list`, `create`, etc.).
 

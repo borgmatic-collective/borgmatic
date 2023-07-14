@@ -99,8 +99,7 @@ def test_filter_checks_on_frequency_without_config_uses_default_checks():
     flexmock(module).should_receive('probe_for_check_time').and_return(None)
 
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={},
+        config={},
         borg_repository_id='repo',
         checks=('repository', 'archives'),
         force=False,
@@ -110,8 +109,7 @@ def test_filter_checks_on_frequency_without_config_uses_default_checks():
 
 def test_filter_checks_on_frequency_retains_unconfigured_check():
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={},
+        config={},
         borg_repository_id='repo',
         checks=('data',),
         force=False,
@@ -122,8 +120,7 @@ def test_filter_checks_on_frequency_retains_check_without_frequency():
     flexmock(module).should_receive('parse_frequency').and_return(None)
 
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={'checks': [{'name': 'archives'}]},
+        config={'checks': [{'name': 'archives'}]},
         borg_repository_id='repo',
         checks=('archives',),
         force=False,
@@ -141,8 +138,7 @@ def test_filter_checks_on_frequency_retains_check_with_elapsed_frequency():
     )
 
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+        config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
         checks=('archives',),
         force=False,
@@ -158,8 +154,7 @@ def test_filter_checks_on_frequency_retains_check_with_missing_check_time_file()
     flexmock(module).should_receive('probe_for_check_time').and_return(None)
 
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+        config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
         checks=('archives',),
         force=False,
@@ -178,8 +173,7 @@ def test_filter_checks_on_frequency_skips_check_with_unelapsed_frequency():
 
     assert (
         module.filter_checks_on_frequency(
-            location_config={},
-            consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+            config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
             borg_repository_id='repo',
             checks=('archives',),
             force=False,
@@ -191,8 +185,7 @@ def test_filter_checks_on_frequency_skips_check_with_unelapsed_frequency():
 
 def test_filter_checks_on_frequency_restains_check_with_unelapsed_frequency_and_force():
     assert module.filter_checks_on_frequency(
-        location_config={},
-        consistency_config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+        config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
         checks=('archives',),
         force=True,
@@ -616,7 +609,7 @@ def test_upgrade_check_times_renames_stale_temporary_check_path():
 
 def test_check_archives_with_progress_calls_borg_with_progress_parameter():
     checks = ('repository',)
-    consistency_config = {'check_last': None}
+    config = {'check_last': None}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -639,9 +632,7 @@ def test_check_archives_with_progress_calls_borg_with_progress_parameter():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         progress=True,
@@ -650,7 +641,7 @@ def test_check_archives_with_progress_calls_borg_with_progress_parameter():
 
 def test_check_archives_with_repair_calls_borg_with_repair_parameter():
     checks = ('repository',)
-    consistency_config = {'check_last': None}
+    config = {'check_last': None}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -673,9 +664,7 @@ def test_check_archives_with_repair_calls_borg_with_repair_parameter():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         repair=True,
@@ -693,7 +682,7 @@ def test_check_archives_with_repair_calls_borg_with_repair_parameter():
 )
 def test_check_archives_calls_borg_with_parameters(checks):
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -710,9 +699,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -721,7 +708,7 @@ def test_check_archives_calls_borg_with_parameters(checks):
 def test_check_archives_with_json_error_raises():
     checks = ('archives',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"unexpected": {"id": "repo"}}'
     )
@@ -734,9 +721,7 @@ def test_check_archives_with_json_error_raises():
     with pytest.raises(ValueError):
         module.check_archives(
             repository_path='repo',
-            location_config={},
-            storage_config={},
-            consistency_config=consistency_config,
+            config=config,
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
         )
@@ -745,7 +730,7 @@ def test_check_archives_with_json_error_raises():
 def test_check_archives_with_missing_json_keys_raises():
     checks = ('archives',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return('{invalid JSON')
     flexmock(module).should_receive('upgrade_check_times')
     flexmock(module).should_receive('parse_checks')
@@ -756,9 +741,7 @@ def test_check_archives_with_missing_json_keys_raises():
     with pytest.raises(ValueError):
         module.check_archives(
             repository_path='repo',
-            location_config={},
-            storage_config={},
-            consistency_config=consistency_config,
+            config=config,
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
         )
@@ -767,7 +750,7 @@ def test_check_archives_with_missing_json_keys_raises():
 def test_check_archives_with_extract_check_calls_extract_only():
     checks = ('extract',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -784,9 +767,7 @@ def test_check_archives_with_extract_check_calls_extract_only():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -794,7 +775,7 @@ def test_check_archives_with_extract_check_calls_extract_only():
 
 def test_check_archives_with_log_info_calls_borg_with_info_parameter():
     checks = ('repository',)
-    consistency_config = {'check_last': None}
+    config = {'check_last': None}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -812,9 +793,7 @@ def test_check_archives_with_log_info_calls_borg_with_info_parameter():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -822,7 +801,7 @@ def test_check_archives_with_log_info_calls_borg_with_info_parameter():
 
 def test_check_archives_with_log_debug_calls_borg_with_debug_parameter():
     checks = ('repository',)
-    consistency_config = {'check_last': None}
+    config = {'check_last': None}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -840,16 +819,14 @@ def test_check_archives_with_log_debug_calls_borg_with_debug_parameter():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
 
 
 def test_check_archives_without_any_checks_bails():
-    consistency_config = {'check_last': None}
+    config = {'check_last': None}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -862,9 +839,7 @@ def test_check_archives_without_any_checks_bails():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -873,7 +848,7 @@ def test_check_archives_without_any_checks_bails():
 def test_check_archives_with_local_path_calls_borg_via_local_path():
     checks = ('repository',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -890,9 +865,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         local_path='borg1',
@@ -902,7 +875,7 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
 def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters():
     checks = ('repository',)
     check_last = flexmock()
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -919,9 +892,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         remote_path='borg1',
@@ -931,8 +902,7 @@ def test_check_archives_with_remote_path_calls_borg_with_remote_path_parameters(
 def test_check_archives_with_log_json_calls_borg_with_log_json_parameters():
     checks = ('repository',)
     check_last = flexmock()
-    storage_config = {}
-    consistency_config = {'check_last': check_last}
+    config = {'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -949,9 +919,7 @@ def test_check_archives_with_log_json_calls_borg_with_log_json_parameters():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config=storage_config,
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=True),
     )
@@ -960,8 +928,7 @@ def test_check_archives_with_log_json_calls_borg_with_log_json_parameters():
 def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
     checks = ('repository',)
     check_last = flexmock()
-    storage_config = {'lock_wait': 5}
-    consistency_config = {'check_last': check_last}
+    config = {'lock_wait': 5, 'check_last': check_last}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -978,9 +945,7 @@ def test_check_archives_with_lock_wait_calls_borg_with_lock_wait_parameters():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config=storage_config,
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -990,7 +955,7 @@ def test_check_archives_with_retention_prefix():
     checks = ('repository',)
     check_last = flexmock()
     prefix = 'foo-'
-    consistency_config = {'check_last': check_last, 'prefix': prefix}
+    config = {'check_last': check_last, 'prefix': prefix}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -1007,9 +972,7 @@ def test_check_archives_with_retention_prefix():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )
@@ -1017,7 +980,7 @@ def test_check_archives_with_retention_prefix():
 
 def test_check_archives_with_extra_borg_options_calls_borg_with_extra_options():
     checks = ('repository',)
-    consistency_config = {'check_last': None}
+    config = {'check_last': None, 'extra_borg_options': {'check': '--extra --options'}}
     flexmock(module.rinfo).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
@@ -1034,9 +997,7 @@ def test_check_archives_with_extra_borg_options_calls_borg_with_extra_options():
 
     module.check_archives(
         repository_path='repo',
-        location_config={},
-        storage_config={'extra_borg_options': {'check': '--extra --options'}},
-        consistency_config=consistency_config,
+        config=config,
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
     )

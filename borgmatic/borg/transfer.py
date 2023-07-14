@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def transfer_archives(
     dry_run,
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     transfer_arguments,
     global_arguments,
@@ -18,7 +18,7 @@ def transfer_archives(
     remote_path=None,
 ):
     '''
-    Given a dry-run flag, a local or remote repository path, a storage config dict, the local Borg
+    Given a dry-run flag, a local or remote repository path, a configuration dict, the local Borg
     version, the arguments to the transfer action, and global arguments as an argparse.Namespace
     instance, transfer archives to the given repository.
     '''
@@ -30,7 +30,7 @@ def transfer_archives(
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', storage_config.get('lock_wait', None))
+        + flags.make_flags('lock-wait', config.get('lock_wait', None))
         + (
             flags.make_flags_from_arguments(
                 transfer_arguments,
@@ -40,8 +40,8 @@ def transfer_archives(
                 flags.make_match_archives_flags(
                     transfer_arguments.match_archives
                     or transfer_arguments.archive
-                    or storage_config.get('match_archives'),
-                    storage_config.get('archive_name_format'),
+                    or config.get('match_archives'),
+                    config.get('archive_name_format'),
                     local_borg_version,
                 )
             )
@@ -56,5 +56,5 @@ def transfer_archives(
         output_log_level=logging.ANSWER,
         output_file=DO_NOT_CAPTURE if transfer_arguments.progress else None,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
     )

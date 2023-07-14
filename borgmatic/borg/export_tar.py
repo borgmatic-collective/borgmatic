@@ -13,7 +13,7 @@ def export_tar_archive(
     archive,
     paths,
     destination_path,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -24,16 +24,16 @@ def export_tar_archive(
 ):
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
-    export from the archive, a destination path to export to, a storage configuration dict, the
-    local Borg version, optional local and remote Borg paths, an optional filter program, whether to
-    include per-file details, and an optional number of path components to strip, export the archive
-    into the given destination path as a tar-formatted file.
+    export from the archive, a destination path to export to, a configuration dict, the local Borg
+    version, optional local and remote Borg paths, an optional filter program, whether to include
+    per-file details, and an optional number of path components to strip, export the archive into
+    the given destination path as a tar-formatted file.
 
     If the destination path is "-", then stream the output to stdout instead of to a file.
     '''
     borgmatic.logger.add_custom_log_levels()
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
 
     full_command = (
         (local_path, 'export-tar')
@@ -70,5 +70,5 @@ def export_tar_archive(
         output_file=DO_NOT_CAPTURE if destination_path == '-' else None,
         output_log_level=output_log_level,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
     )

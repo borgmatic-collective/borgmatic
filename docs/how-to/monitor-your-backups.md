@@ -89,19 +89,20 @@ notifications or take other actions, so you can get alerted as soon as
 something goes wrong. Here's a not-so-useful example:
 
 ```yaml
-hooks:
-    on_error:
-        - echo "Error while creating a backup or running a backup hook."
+on_error:
+    - echo "Error while creating a backup or running a backup hook."
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 The `on_error` hook supports interpolating particular runtime variables into
 the hook command. Here's an example that assumes you provide a separate shell
 script to handle the alerting:
 
 ```yaml
-hooks:
-    on_error:
-        - send-text-message.sh "{configuration_filename}" "{repository}"
+on_error:
+    - send-text-message.sh "{configuration_filename}" "{repository}"
 ```
 
 In this example, when the error occurs, borgmatic interpolates runtime values
@@ -135,10 +136,12 @@ URL" for your project. Here's an example:
 
 
 ```yaml
-hooks:
-    healthchecks:
-        ping_url: https://hc-ping.com/addffa72-da17-40ae-be9c-ff591afb942a
+healthchecks:
+    ping_url: https://hc-ping.com/addffa72-da17-40ae-be9c-ff591afb942a
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Healthchecks project when a
 backup begins, ends, or errors. Specifically, after the <a
@@ -179,10 +182,12 @@ API URL" for your monitor. Here's an example:
 
 
 ```yaml
-hooks:
-    cronitor:
-        ping_url: https://cronitor.link/d3x0c1
+cronitor:
+    ping_url: https://cronitor.link/d3x0c1
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Cronitor monitor when a backup
 begins, ends, or errors. Specifically, after the <a
@@ -208,10 +213,12 @@ URL" for your monitor. Here's an example:
 
 
 ```yaml
-hooks:
-    cronhub:
-        ping_url: https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
+cronhub:
+    ping_url: https://cronhub.io/start/1f5e3410-254c-11e8-b61d-55875966d031
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Cronhub monitor when a backup
 begins, ends, or errors. Specifically, after the <a
@@ -251,10 +258,12 @@ Here's an example:
 
 
 ```yaml
-hooks:
-    pagerduty:
-        integration_key: a177cad45bd374409f78906a810a3074
+pagerduty:
+    integration_key: a177cad45bd374409f78906a810a3074
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic creates a PagerDuty event for your service
 whenever backups fail. Specifically, if an error occurs during a `create`,
@@ -291,30 +300,33 @@ An example configuration is shown here, with all the available options, includin
 [tags](https://ntfy.sh/docs/publish/#tags-emojis):
 
 ```yaml
-hooks:
-    ntfy:
-        topic: my-unique-topic
-        server: https://ntfy.my-domain.com
-        start:
-            title: A Borgmatic backup started
-            message: Watch this space...
-            tags: borgmatic
-            priority: min
-        finish:
-            title: A Borgmatic backup completed successfully
-            message: Nice!
-            tags: borgmatic,+1
-            priority: min
-        fail:
-            title: A Borgmatic backup failed
-            message: You should probably fix it
-            tags: borgmatic,-1,skull
-            priority: max
-        states:
-            - start
-            - finish
-            - fail
+ntfy:
+    topic: my-unique-topic
+    server: https://ntfy.my-domain.com
+    start:
+        title: A Borgmatic backup started
+        message: Watch this space...
+        tags: borgmatic
+        priority: min
+    finish:
+        title: A Borgmatic backup completed successfully
+        message: Nice!
+        tags: borgmatic,+1
+        priority: min
+    fail:
+        title: A Borgmatic backup failed
+        message: You should probably fix it
+        tags: borgmatic,-1,skull
+        priority: max
+    states:
+        - start
+        - finish
+        - fail
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+the `ntfy:` option in the `hooks:` section of your configuration.
+
 
 ## Scripting borgmatic
 

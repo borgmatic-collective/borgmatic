@@ -18,31 +18,32 @@ prior to running backups. For example, here is everything you need to dump and
 backup a couple of local PostgreSQL databases and a MySQL/MariaDB database.
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-        - name: orders
-    mysql_databases:
-        - name: posts
+postgresql_databases:
+    - name: users
+    - name: orders
+mysql_databases:
+    - name: posts
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these and other database options in the `hooks:` section of your
+configuration.
 
 <span class="minilink minilink-addedin">New in version 1.5.22</span> You can
 also dump MongoDB databases. For example:
 
 ```yaml
-hooks:
-    mongodb_databases:
-        - name: messages
+mongodb_databases:
+    - name: messages
 ```
 
 <span class="minilink minilink-addedin">New in version 1.7.9</span>
 Additionally, you can dump SQLite databases. For example:
 
 ```yaml
-hooks:
-    sqlite_databases:
-        - name: mydb
-          path: /var/lib/sqlite3/mydb.sqlite
+sqlite_databases:
+    - name: mydb
+      path: /var/lib/sqlite3/mydb.sqlite
 ```
 
 As part of each backup, borgmatic streams a database dump for each configured
@@ -54,7 +55,7 @@ temporary disk space.)
 
 To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
 default. To customize this path, set the `borgmatic_source_directory` option
-in the `location` section of borgmatic's configuration.
+in borgmatic's configuration.
 
 Also note that using a database hook implicitly enables both the
 `read_special` and `one_file_system` configuration settings (even if they're
@@ -64,35 +65,34 @@ See Limitations below for more on this.
 Here's a more involved example that connects to remote databases:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          hostname: database1.example.org
-        - name: orders
-          hostname: database2.example.org
-          port: 5433
-          username: postgres
-          password: trustsome1
-          format: tar
-          options: "--role=someone"
-    mysql_databases:
-        - name: posts
-          hostname: database3.example.org
-          port: 3307
-          username: root
-          password: trustsome1
-          options: "--skip-comments"
-    mongodb_databases:
-        - name: messages
-          hostname: database4.example.org
-          port: 27018
-          username: dbuser
-          password: trustsome1
-          authentication_database: mongousers
-          options: "--ssl"
-    sqlite_databases:
-        - name: mydb
-          path: /var/lib/sqlite3/mydb.sqlite
+postgresql_databases:
+    - name: users
+      hostname: database1.example.org
+    - name: orders
+      hostname: database2.example.org
+      port: 5433
+      username: postgres
+      password: trustsome1
+      format: tar
+      options: "--role=someone"
+mysql_databases:
+    - name: posts
+      hostname: database3.example.org
+      port: 3307
+      username: root
+      password: trustsome1
+      options: "--skip-comments"
+mongodb_databases:
+    - name: messages
+      hostname: database4.example.org
+      port: 27018
+      username: dbuser
+      password: trustsome1
+      authentication_database: mongousers
+      options: "--ssl"
+sqlite_databases:
+    - name: mydb
+      path: /var/lib/sqlite3/mydb.sqlite
 ```
 
 See your [borgmatic configuration
@@ -106,19 +106,21 @@ listing databases, restoring databases, etc.).
 If you want to dump all databases on a host, use `all` for the database name:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: all
-    mysql_databases:
-        - name: all
-    mongodb_databases:
-        - name: all
+postgresql_databases:
+    - name: all
+mysql_databases:
+    - name: all
+mongodb_databases:
+    - name: all
 ```
 
 Note that you may need to use a `username` of the `postgres` superuser for
 this to work with PostgreSQL.
 
 The SQLite hook in particular does not consider "all" a special database name.
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `hooks:` section of your configuration.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> With
 PostgreSQL and MySQL, you can optionally dump "all" databases to separate
@@ -127,13 +129,12 @@ individual databases. Enable this by specifying your desired database dump
 `format`:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: all
-          format: custom
-    mysql_databases:
-        - name: all
-          format: sql
+postgresql_databases:
+    - name: all
+      format: custom
+mysql_databases:
+    - name: all
+      format: sql
 ```
 
 ### Containers
@@ -143,14 +144,16 @@ problem—configure borgmatic to connect to the container's name on its exposed
 port. For instance:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          hostname: your-database-container-name
-          port: 5433
-          username: postgres
-          password: trustsome1
+postgresql_databases:
+    - name: users
+      hostname: your-database-container-name
+      port: 5433
+      username: postgres
+      password: trustsome1
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+these options in the `hooks:` section of your configuration.
 
 But what if borgmatic is running on the host? You can still connect to a
 database container if its ports are properly exposed to the host. For
@@ -179,8 +182,7 @@ hooks:
           password: trustsome1
 ```
 
-You can alter the ports in these examples to suit your particular database
-system.
+Alter the ports in these examples to suit your particular database system.
 
 
 ### No source directories
@@ -196,6 +198,7 @@ it is a mandatory option there:
 ```yaml
 location:
     source_directories: []
+
 hooks:
     mysql_databases:
         - name: all
@@ -292,7 +295,7 @@ restore one of them, use the `--database` flag to select one or more
 databases. For instance:
 
 ```bash
-borgmatic restore --archive host-2023-... --database users
+borgmatic restore --archive host-2023-... --database users --database orders
 ```
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> You can
@@ -427,10 +430,9 @@ You can add any additional flags to the `options:` in your database
 configuration. Here's an example:
 
 ```yaml
-hooks:
-    mysql_databases:
-        - name: posts
-          options: "--single-transaction --quick"
+mysql_databases:
+    - name: posts
+      options: "--single-transaction --quick"
 ```
 
 ### borgmatic hangs during backup

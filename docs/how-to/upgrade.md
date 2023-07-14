@@ -131,21 +131,22 @@ Let's say your original borgmatic repository configuration file looks something
 like this:
 
 ```yaml
-location:
-    repositories:
-        - path: original.borg
+repositories:
+    - path: original.borg
 ```
-
-<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
-the `path:` portion of the `repositories` list.
 
 Change it to a new (not yet created) repository path:
 
 ```yaml
-location:
-    repositories:
-        - path: upgraded.borg
+repositories:
+    - path: upgraded.borg
 ```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> This
+option was found in the `location:` section of your configuration.
+
+<span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
+the `path:` portion of the `repositories` list.
 
 Then, run the `rcreate` action (formerly `init`) to create that new Borg 2
 repository:

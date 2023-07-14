@@ -10,10 +10,7 @@ logger = logging.getLogger(__name__)
 def run_check(
     config_filename,
     repository,
-    location,
-    storage,
-    consistency,
-    hooks,
+    config,
     hook_context,
     local_borg_version,
     check_arguments,
@@ -30,8 +27,8 @@ def run_check(
         return
 
     borgmatic.hooks.command.execute_hook(
-        hooks.get('before_check'),
-        hooks.get('umask'),
+        config.get('before_check'),
+        config.get('umask'),
         config_filename,
         'pre-check',
         global_arguments.dry_run,
@@ -40,9 +37,7 @@ def run_check(
     logger.info(f'{repository.get("label", repository["path"])}: Running consistency checks')
     borgmatic.borg.check.check_archives(
         repository['path'],
-        location,
-        storage,
-        consistency,
+        config,
         local_borg_version,
         global_arguments,
         local_path=local_path,
@@ -53,8 +48,8 @@ def run_check(
         force=check_arguments.force,
     )
     borgmatic.hooks.command.execute_hook(
-        hooks.get('after_check'),
-        hooks.get('umask'),
+        config.get('after_check'),
+        config.get('umask'),
         config_filename,
         'post-check',
         global_arguments.dry_run,

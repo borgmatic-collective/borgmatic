@@ -21,9 +21,7 @@ def test_run_extract_calls_hooks():
     module.run_extract(
         config_filename='test.yaml',
         repository={'path': 'repo'},
-        location={'repositories': ['repo']},
-        storage={},
-        hooks={},
+        config={'repositories': ['repo']},
         hook_context={},
         local_borg_version=None,
         extract_arguments=extract_arguments,

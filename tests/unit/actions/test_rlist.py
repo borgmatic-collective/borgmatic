@@ -12,7 +12,7 @@ def test_run_rlist_does_not_raise():
     list(
         module.run_rlist(
             repository={'path': 'repo'},
-            storage={},
+            config={},
             local_borg_version=None,
             rlist_arguments=rlist_arguments,
             global_arguments=flexmock(),

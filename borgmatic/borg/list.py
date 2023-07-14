@@ -21,7 +21,7 @@ MAKE_FLAGS_EXCLUDES = (
 
 def make_list_command(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     list_arguments,
     global_arguments,
@@ -29,11 +29,11 @@ def make_list_command(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the arguments to the list
-    action, and local and remote Borg paths, return a command as a tuple to list archives or paths
-    within an archive.
+    Given a local or remote repository path, a configuration dict, the arguments to the list action,
+    and local and remote Borg paths, return a command as a tuple to list archives or paths within an
+    archive.
     '''
-    lock_wait = storage_config.get('lock_wait', None)
+    lock_wait = config.get('lock_wait', None)
 
     return (
         (local_path, 'list')
@@ -89,7 +89,7 @@ def make_find_paths(find_paths):
 def capture_archive_listing(
     repository_path,
     archive,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     list_path=None,
@@ -97,18 +97,18 @@ def capture_archive_listing(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, an archive name, a storage config dict, the local Borg
+    Given a local or remote repository path, an archive name, a configuration dict, the local Borg
     version, global arguments as an argparse.Namespace, the archive path in which to list files, and
     local and remote Borg paths, capture the output of listing that archive and return it as a list
     of file paths.
     '''
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     return tuple(
         execute_command_and_capture_output(
             make_list_command(
                 repository_path,
-                storage_config,
+                config,
                 local_borg_version,
                 argparse.Namespace(
                     repository=repository_path,
@@ -123,6 +123,7 @@ def capture_archive_listing(
                 remote_path,
             ),
             extra_environment=borg_environment,
+            borg_local_path=local_path,
         )
         .strip('\n')
         .split('\n')
@@ -131,7 +132,7 @@ def capture_archive_listing(
 
 def list_archive(
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     list_arguments,
     global_arguments,
@@ -139,7 +140,7 @@ def list_archive(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a storage config dict, the local Borg version, global
+    Given a local or remote repository path, a configuration dict, the local Borg version, global
     arguments as an argparse.Namespace, the arguments to the list action as an argparse.Namespace,
     and local and remote Borg paths, display the output of listing the files of a Borg archive (or
     return JSON output). If list_arguments.find_paths are given, list the files by searching across
@@ -167,7 +168,7 @@ def list_archive(
         )
         return rlist.list_repository(
             repository_path,
-            storage_config,
+            config,
             local_borg_version,
             rlist_arguments,
             global_arguments,
@@ -187,7 +188,7 @@ def list_archive(
             'The --json flag on the list action is not supported when using the --archive/--find flags.'
         )
 
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     # If there are any paths to find (and there's not a single archive already selected), start by
     # getting a list of archives to search.
@@ -209,7 +210,7 @@ def list_archive(
             execute_command_and_capture_output(
                 rlist.make_rlist_command(
                     repository_path,
-                    storage_config,
+                    config,
                     local_borg_version,
                     rlist_arguments,
                     global_arguments,
@@ -217,6 +218,7 @@ def list_archive(
                     remote_path,
                 ),
                 extra_environment=borg_environment,
+                borg_local_path=local_path,
             )
             .strip('\n')
             .split('\n')
@@ -238,7 +240,7 @@ def list_archive(
 
         main_command = make_list_command(
             repository_path,
-            storage_config,
+            config,
             local_borg_version,
             archive_arguments,
             global_arguments,

@@ -13,35 +13,20 @@ def test_schema_to_sample_configuration_generates_config_map_with_examples():
         'type': 'object',
         'properties': OrderedDict(
             [
-                (
-                    'section1',
-                    {
-                        'type': 'object',
-                        'properties': {'field1': OrderedDict([('example', 'Example 1')])},
-                    },
-                ),
-                (
-                    'section2',
-                    {
-                        'type': 'object',
-                        'properties': OrderedDict(
-                            [
-                                ('field2', {'example': 'Example 2'}),
-                                ('field3', {'example': 'Example 3'}),
-                            ]
-                        ),
-                    },
-                ),
+                ('field1', {'example': 'Example 1'}),
+                ('field2', {'example': 'Example 2'}),
+                ('field3', {'example': 'Example 3'}),
             ]
         ),
     }
 
-    config = module._schema_to_sample_configuration(schema)
+    config = module.schema_to_sample_configuration(schema)
 
     assert config == OrderedDict(
         [
-            ('section1', OrderedDict([('field1', 'Example 1')])),
-            ('section2', OrderedDict([('field2', 'Example 2'), ('field3', 'Example 3')])),
+            ('field1', 'Example 1'),
+            ('field2', 'Example 2'),
+            ('field3', 'Example 3'),
         ]
     )
 
@@ -51,7 +36,7 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_strings_wit
     flexmock(module).should_receive('add_comments_to_configuration_sequence')
     schema = {'type': 'array', 'items': {'type': 'string'}, 'example': ['hi']}
 
-    config = module._schema_to_sample_configuration(schema)
+    config = module.schema_to_sample_configuration(schema)
 
     assert config == ['hi']
 
@@ -70,7 +55,7 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_e
         },
     }
 
-    config = module._schema_to_sample_configuration(schema)
+    config = module.schema_to_sample_configuration(schema)
 
     assert config == [OrderedDict([('field1', 'Example 1'), ('field2', 'Example 2')])]
 
@@ -79,7 +64,7 @@ def test_schema_to_sample_configuration_with_unsupported_schema_raises():
     schema = {'gobbledygook': [{'type': 'not-your'}]}
 
     with pytest.raises(ValueError):
-        module._schema_to_sample_configuration(schema)
+        module.schema_to_sample_configuration(schema)
 
 
 def test_merge_source_configuration_into_destination_inserts_map_fields():

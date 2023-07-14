@@ -21,15 +21,15 @@ DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
 }
 
 
-def make_environment(storage_config):
+def make_environment(config):
     '''
-    Given a borgmatic storage configuration dict, return its options converted to a Borg environment
+    Given a borgmatic configuration dict, return its options converted to a Borg environment
     variable dict.
     '''
     environment = {}
 
     for option_name, environment_variable_name in OPTION_TO_ENVIRONMENT_VARIABLE.items():
-        value = storage_config.get(option_name)
+        value = config.get(option_name)
 
         if value:
             environment[environment_variable_name] = str(value)
@@ -38,14 +38,14 @@ def make_environment(storage_config):
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE.items():
-        value = storage_config.get(option_name, False)
+        value = config.get(option_name, False)
         environment[environment_variable_name] = 'yes' if value else 'no'
 
     for (
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE.items():
-        value = storage_config.get(option_name, False)
+        value = config.get(option_name, False)
         environment[environment_variable_name] = 'YES' if value else 'NO'
 
     return environment

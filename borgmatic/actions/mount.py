@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_mount(
     repository,
-    storage,
+    config,
     local_borg_version,
     mount_arguments,
     global_arguments,
@@ -34,14 +34,14 @@ def run_mount(
             borgmatic.borg.rlist.resolve_archive_name(
                 repository['path'],
                 mount_arguments.archive,
-                storage,
+                config,
                 local_borg_version,
                 global_arguments,
                 local_path,
                 remote_path,
             ),
             mount_arguments,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path=local_path,

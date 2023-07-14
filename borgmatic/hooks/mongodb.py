@@ -6,21 +6,20 @@ from borgmatic.hooks import dump
 logger = logging.getLogger(__name__)
 
 
-def make_dump_path(location_config):  # pragma: no cover
+def make_dump_path(config):  # pragma: no cover
     '''
-    Make the dump path from the given location configuration and the name of this hook.
+    Make the dump path from the given configuration dict and the name of this hook.
     '''
     return dump.make_database_dump_path(
-        location_config.get('borgmatic_source_directory'), 'mongodb_databases'
+        config.get('borgmatic_source_directory'), 'mongodb_databases'
     )
 
 
-def dump_databases(databases, log_prefix, location_config, dry_run):
+def dump_databases(databases, config, log_prefix, dry_run):
     '''
     Dump the given MongoDB databases to a named pipe. The databases are supplied as a sequence of
-    dicts, one dict describing each database as per the configuration schema. Use the given log
-    prefix in any log entries. Use the given location configuration dict to construct the
-    destination path.
+    dicts, one dict describing each database as per the configuration schema. Use the configuration
+    dict to construct the destination path and the given log prefix in any log entries.
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
@@ -33,7 +32,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     for database in databases:
         name = database['name']
         dump_filename = dump.make_database_dump_filename(
-            make_dump_path(location_config), name, database.get('hostname')
+            make_dump_path(config), name, database.get('hostname')
         )
         dump_format = database.get('format', 'archive')
 
@@ -82,47 +81,53 @@ def build_dump_command(database, dump_filename, dump_format):
     return command
 
 
-def remove_database_dumps(databases, log_prefix, location_config, dry_run):  # pragma: no cover
+def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the log
-    prefix in any log entries. Use the given location configuration dict to construct the
-    destination path. If this is a dry run, then don't actually remove anything.
+    prefix in any log entries. Use the given configuration dict to construct the destination path.
+    If this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(make_dump_path(location_config), 'MongoDB', log_prefix, dry_run)
+    dump.remove_database_dumps(make_dump_path(config), 'MongoDB', log_prefix, dry_run)
 
 
-def make_database_dump_pattern(
-    databases, log_prefix, location_config, name=None
-):  # pragma: no cover
+def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
-    Given a sequence of configurations dicts, a prefix to log with, a location configuration dict,
+    Given a sequence of database configurations dicts, a configuration dict, a prefix to log with,
     and a database name to match, return the corresponding glob patterns to match the database dump
     in an archive.
     '''
-    return dump.make_database_dump_filename(make_dump_path(location_config), name, hostname='*')
+    return dump.make_database_dump_filename(make_dump_path(config), name, hostname='*')
 
 
 def restore_database_dump(
-    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+    databases_config, config, log_prefix, database_name, dry_run, extract_process, connection_params
 ):
     '''
-    Restore the given MongoDB database from an extract stream. The database is supplied as a
-    one-element sequence containing a dict describing the database, as per the configuration schema.
-    Use the given log prefix in any log entries. If this is a dry run, then don't actually restore
-    anything. Trigger the given active extract process (an instance of subprocess.Popen) to produce
-    output to consume.
+    Restore the given MongoDB database from an extract stream. The databases are supplied as a
+    sequence containing one dict describing each database (as per the configuration schema), but
+    only the database corresponding to the given database name is restored. Use the configuration
+    dict to construct the destination path and the given log prefix in any log entries. If this is a
+    dry run, then don't actually restore anything. Trigger the given active extract process (an
+    instance of subprocess.Popen) to produce output to consume.
 
     If the extract process is None, then restore the dump from the filesystem rather than from an
     extract stream.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
-    if len(database_config) != 1:
-        raise ValueError('The database configuration value is invalid')
+    try:
+        database = next(
+            database_config
+            for database_config in databases_config
+            if database_config.get('name') == database_name
+        )
+    except StopIteration:
+        raise ValueError(
+            f'A database named "{database_name}" could not be found in the configuration'
+        )
 
-    database = database_config[0]
     dump_filename = dump.make_database_dump_filename(
-        make_dump_path(location_config), database['name'], database.get('hostname')
+        make_dump_path(config), database['name'], database.get('hostname')
     )
     restore_command = build_restore_command(
         extract_process, database, dump_filename, connection_params

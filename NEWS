@@ -10,11 +10,23 @@
    "check --repair".
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
+ * #721: Remove configuration sections ("location:", "storage:", "hooks:" etc.), while still keeping
+   deprecated support for them. Now, all options are at the same level, and you don't need to worry
+   about commenting/uncommenting section headers when you change an option.
+ * #721: BREAKING: The retention prefix and the consistency prefix can no longer have different
+   values (unless one is not set).
+ * #721: BREAKING: The storage umask and the hooks umask can no longer have different values (unless
+   one is not set).
+ * BREAKING: Flags like "--config" that previously took multiple values now need to be given once
+   per value, e.g. "--config first.yaml --config second.yaml" instead of "--config first.yaml
+   second.yaml". This prevents argument parsing errors on ambiguous commands.
  * BREAKING: Remove the deprecated (and silently ignored) "--successful" flag on the "list" action,
    as newer versions of Borg list successful (non-checkpoint) archives by default.
  * All deprecated configuration option values now generate warning logs.
  * Remove the deprecated (and non-functional) "--excludes" flag in favor of excludes within
    configuration.
+ * Fix an error when logging too-long command output during error handling. Now, long command output
+   is truncated before logging.
 
 1.7.15
  * #326: Add configuration options and command-line flags for backing up a database from one

@@ -22,60 +22,57 @@ def write_configuration(
     storing database dumps, dump format (for PostgreSQL), and encryption passphrase.
     '''
     config = f'''
-location:
-    source_directories:
-        - {source_directory}
-    repositories:
-        - {repository_path}
-    borgmatic_source_directory: {borgmatic_source_directory}
+source_directories:
+    - {source_directory}
+repositories:
+    - path: {repository_path}
+borgmatic_source_directory: {borgmatic_source_directory}
 
-storage:
-    encryption_passphrase: "test"
+encryption_passphrase: "test"
 
-hooks:
-    postgresql_databases:
-        - name: test
-          hostname: postgresql
-          username: postgres
-          password: test
-          format: {postgresql_dump_format}
-        - name: all
-          hostname: postgresql
-          username: postgres
-          password: test
-        - name: all
-          format: custom
-          hostname: postgresql
-          username: postgres
-          password: test
-    mysql_databases:
-        - name: test
-          hostname: mysql
-          username: root
-          password: test
-        - name: all
-          hostname: mysql
-          username: root
-          password: test
-        - name: all
-          format: sql
-          hostname: mysql
-          username: root
-          password: test
-    mongodb_databases:
-        - name: test
-          hostname: mongodb
-          username: root
-          password: test
-          authentication_database: admin
-          format: {mongodb_dump_format}
-        - name: all
-          hostname: mongodb
-          username: root
-          password: test
-    sqlite_databases:
-        - name: sqlite_test
-          path: /tmp/sqlite_test.db
+postgresql_databases:
+    - name: test
+      hostname: postgresql
+      username: postgres
+      password: test
+      format: {postgresql_dump_format}
+    - name: all
+      hostname: postgresql
+      username: postgres
+      password: test
+    - name: all
+      format: custom
+      hostname: postgresql
+      username: postgres
+      password: test
+mysql_databases:
+    - name: test
+      hostname: mysql
+      username: root
+      password: test
+    - name: all
+      hostname: mysql
+      username: root
+      password: test
+    - name: all
+      format: sql
+      hostname: mysql
+      username: root
+      password: test
+mongodb_databases:
+    - name: test
+      hostname: mongodb
+      username: root
+      password: test
+      authentication_database: admin
+      format: {mongodb_dump_format}
+    - name: all
+      hostname: mongodb
+      username: root
+      password: test
+sqlite_databases:
+    - name: sqlite_test
+      path: /tmp/sqlite_test.db
 '''
 
     with open(config_path, 'w') as config_file:
@@ -96,51 +93,48 @@ def write_custom_restore_configuration(
     restore_username, restore_password and restore_path.
     '''
     config = f'''
-location:
-    source_directories:
-        - {source_directory}
-    repositories:
-        - {repository_path}
-    borgmatic_source_directory: {borgmatic_source_directory}
+source_directories:
+    - {source_directory}
+repositories:
+    - path: {repository_path}
+borgmatic_source_directory: {borgmatic_source_directory}
 
-storage:
-    encryption_passphrase: "test"
+encryption_passphrase: "test"
 
-hooks:
-    postgresql_databases:
-        - name: test
-          hostname: postgresql
-          username: postgres
-          password: test
-          format: {postgresql_dump_format}
-          restore_hostname: postgresql2
-          restore_port: 5433
-          restore_username: postgres2
-          restore_password: test2
-    mysql_databases:
-        - name: test
-          hostname: mysql
-          username: root
-          password: test
-          restore_hostname: mysql2
-          restore_port: 3307
-          restore_username: root
-          restore_password: test2
-    mongodb_databases:
-        - name: test
-          hostname: mongodb
-          username: root
-          password: test
-          authentication_database: admin
-          format: {mongodb_dump_format}
-          restore_hostname: mongodb2
-          restore_port: 27018
-          restore_username: root2
-          restore_password: test2
-    sqlite_databases:
-        - name: sqlite_test
-          path: /tmp/sqlite_test.db
-          restore_path: /tmp/sqlite_test2.db
+postgresql_databases:
+    - name: test
+      hostname: postgresql
+      username: postgres
+      password: test
+      format: {postgresql_dump_format}
+      restore_hostname: postgresql2
+      restore_port: 5433
+      restore_username: postgres2
+      restore_password: test2
+mysql_databases:
+    - name: test
+      hostname: mysql
+      username: root
+      password: test
+      restore_hostname: mysql2
+      restore_port: 3307
+      restore_username: root
+      restore_password: test2
+mongodb_databases:
+    - name: test
+      hostname: mongodb
+      username: root
+      password: test
+      authentication_database: admin
+      format: {mongodb_dump_format}
+      restore_hostname: mongodb2
+      restore_port: 27018
+      restore_username: root2
+      restore_password: test2
+sqlite_databases:
+    - name: sqlite_test
+      path: /tmp/sqlite_test.db
+      restore_path: /tmp/sqlite_test2.db
 '''
 
     with open(config_path, 'w') as config_file:
@@ -161,23 +155,20 @@ def write_simple_custom_restore_configuration(
     these options for PostgreSQL.
     '''
     config = f'''
-location:
-    source_directories:
-        - {source_directory}
-    repositories:
-        - {repository_path}
-    borgmatic_source_directory: {borgmatic_source_directory}
+source_directories:
+    - {source_directory}
+repositories:
+    - path: {repository_path}
+borgmatic_source_directory: {borgmatic_source_directory}
 
-storage:
-    encryption_passphrase: "test"
+encryption_passphrase: "test"
 
-hooks:
-    postgresql_databases:
-        - name: test
-          hostname: postgresql
-          username: postgres
-          password: test
-          format: {postgresql_dump_format}
+postgresql_databases:
+    - name: test
+      hostname: postgresql
+      username: postgres
+      password: test
+      format: {postgresql_dump_format}
 '''
 
     with open(config_path, 'w') as config_file:

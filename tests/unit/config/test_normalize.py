@@ -1,4 +1,5 @@
 import pytest
+from flexmock import flexmock
 
 from borgmatic.config import normalize as module
 
@@ -7,138 +8,220 @@ from borgmatic.config import normalize as module
     'config,expected_config,produces_logs',
     (
         (
-            {'location': {'exclude_if_present': '.nobackup'}},
-            {'location': {'exclude_if_present': ['.nobackup']}},
+            {'location': {'foo': 'bar', 'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
             True,
         ),
         (
-            {'location': {'exclude_if_present': ['.nobackup']}},
-            {'location': {'exclude_if_present': ['.nobackup']}},
+            {'retention': {'foo': 'bar', 'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
+            True,
+        ),
+        (
+            {'consistency': {'foo': 'bar', 'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
+            True,
+        ),
+        (
+            {'output': {'foo': 'bar', 'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
+            True,
+        ),
+        (
+            {'hooks': {'foo': 'bar', 'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
+            True,
+        ),
+        (
+            {'location': {'foo': 'bar'}, 'storage': {'baz': 'quux'}},
+            {'foo': 'bar', 'baz': 'quux'},
+            True,
+        ),
+        (
+            {'foo': 'bar', 'baz': 'quux'},
+            {'foo': 'bar', 'baz': 'quux'},
             False,
         ),
         (
-            {'location': {'source_directories': ['foo', 'bar']}},
-            {'location': {'source_directories': ['foo', 'bar']}},
+            {'location': {'prefix': 'foo'}, 'consistency': {'prefix': 'foo'}},
+            {'prefix': 'foo'},
+            True,
+        ),
+        (
+            {'location': {'prefix': 'foo'}, 'consistency': {'prefix': 'foo'}},
+            {'prefix': 'foo'},
+            True,
+        ),
+        (
+            {'location': {'prefix': 'foo'}, 'consistency': {'bar': 'baz'}},
+            {'prefix': 'foo', 'bar': 'baz'},
+            True,
+        ),
+        (
+            {'storage': {'umask': 'foo'}, 'hooks': {'umask': 'foo'}},
+            {'umask': 'foo'},
+            True,
+        ),
+        (
+            {'storage': {'umask': 'foo'}, 'hooks': {'umask': 'foo'}},
+            {'umask': 'foo'},
+            True,
+        ),
+        (
+            {'storage': {'umask': 'foo'}, 'hooks': {'bar': 'baz'}},
+            {'umask': 'foo', 'bar': 'baz'},
+            True,
+        ),
+        (
+            {'location': {'bar': 'baz'}, 'consistency': {'prefix': 'foo'}},
+            {'bar': 'baz', 'prefix': 'foo'},
+            True,
+        ),
+        (
+            {},
+            {},
+            False,
+        ),
+    ),
+)
+def test_normalize_sections_moves_section_options_to_global_scope(
+    config, expected_config, produces_logs
+):
+    logs = module.normalize_sections('test.yaml', config)
+
+    assert config == expected_config
+
+    if produces_logs:
+        assert logs
+    else:
+        assert logs == []
+
+
+def test_normalize_sections_with_different_prefix_values_raises():
+    config = {'location': {'prefix': 'foo'}, 'consistency': {'prefix': 'bar'}}
+
+    with pytest.raises(ValueError):
+        module.normalize_sections('test.yaml', config)
+
+
+def test_normalize_sections_with_different_umask_values_raises():
+    config = {'storage': {'umask': 'foo'}, 'hooks': {'umask': 'bar'}}
+
+    with pytest.raises(ValueError):
+        module.normalize_sections('test.yaml', config)
+
+
+@pytest.mark.parametrize(
+    'config,expected_config,produces_logs',
+    (
+        (
+            {'exclude_if_present': '.nobackup'},
+            {'exclude_if_present': ['.nobackup']},
+            True,
+        ),
+        (
+            {'exclude_if_present': ['.nobackup']},
+            {'exclude_if_present': ['.nobackup']},
             False,
         ),
         (
-            {'location': None},
-            {'location': None},
+            {'source_directories': ['foo', 'bar']},
+            {'source_directories': ['foo', 'bar']},
             False,
         ),
         (
-            {'storage': {'compression': 'yes_please'}},
-            {'storage': {'compression': 'yes_please'}},
+            {'compression': 'yes_please'},
+            {'compression': 'yes_please'},
             False,
         ),
         (
-            {'storage': None},
-            {'storage': None},
+            {'healthchecks': 'https://example.com'},
+            {'healthchecks': {'ping_url': 'https://example.com'}},
+            True,
+        ),
+        (
+            {'cronitor': 'https://example.com'},
+            {'cronitor': {'ping_url': 'https://example.com'}},
+            True,
+        ),
+        (
+            {'pagerduty': 'https://example.com'},
+            {'pagerduty': {'integration_key': 'https://example.com'}},
+            True,
+        ),
+        (
+            {'cronhub': 'https://example.com'},
+            {'cronhub': {'ping_url': 'https://example.com'}},
+            True,
+        ),
+        (
+            {'checks': ['archives']},
+            {'checks': [{'name': 'archives'}]},
+            True,
+        ),
+        (
+            {'checks': ['archives']},
+            {'checks': [{'name': 'archives'}]},
+            True,
+        ),
+        (
+            {'numeric_owner': False},
+            {'numeric_ids': False},
+            True,
+        ),
+        (
+            {'bsd_flags': False},
+            {'flags': False},
+            True,
+        ),
+        (
+            {'remote_rate_limit': False},
+            {'upload_rate_limit': False},
+            True,
+        ),
+        (
+            {'repositories': ['foo@bar:/repo']},
+            {'repositories': [{'path': 'ssh://foo@bar/repo'}]},
+            True,
+        ),
+        (
+            {'repositories': ['foo@bar:repo']},
+            {'repositories': [{'path': 'ssh://foo@bar/./repo'}]},
+            True,
+        ),
+        (
+            {'repositories': ['foo@bar:~/repo']},
+            {'repositories': [{'path': 'ssh://foo@bar/~/repo'}]},
+            True,
+        ),
+        (
+            {'repositories': ['ssh://foo@bar:1234/repo']},
+            {'repositories': [{'path': 'ssh://foo@bar:1234/repo'}]},
+            True,
+        ),
+        (
+            {'repositories': ['file:///repo']},
+            {'repositories': [{'path': '/repo'}]},
+            True,
+        ),
+        (
+            {'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}]},
+            {'repositories': [{'path': 'ssh://foo@bar/repo', 'label': 'foo'}]},
+            True,
+        ),
+        (
+            {'repositories': [{'path': 'file:///repo', 'label': 'foo'}]},
+            {'repositories': [{'path': '/repo', 'label': 'foo'}]},
             False,
         ),
         (
-            {'hooks': {'healthchecks': 'https://example.com'}},
-            {'hooks': {'healthchecks': {'ping_url': 'https://example.com'}}},
-            True,
-        ),
-        (
-            {'hooks': {'cronitor': 'https://example.com'}},
-            {'hooks': {'cronitor': {'ping_url': 'https://example.com'}}},
-            True,
-        ),
-        (
-            {'hooks': {'pagerduty': 'https://example.com'}},
-            {'hooks': {'pagerduty': {'integration_key': 'https://example.com'}}},
-            True,
-        ),
-        (
-            {'hooks': {'cronhub': 'https://example.com'}},
-            {'hooks': {'cronhub': {'ping_url': 'https://example.com'}}},
-            True,
-        ),
-        (
-            {'hooks': None},
-            {'hooks': None},
+            {'repositories': [{'path': '/repo', 'label': 'foo'}]},
+            {'repositories': [{'path': '/repo', 'label': 'foo'}]},
             False,
         ),
         (
-            {'consistency': {'checks': ['archives']}},
-            {'consistency': {'checks': [{'name': 'archives'}]}},
-            True,
-        ),
-        (
-            {'consistency': {'checks': ['archives']}},
-            {'consistency': {'checks': [{'name': 'archives'}]}},
-            True,
-        ),
-        (
-            {'consistency': None},
-            {'consistency': None},
-            False,
-        ),
-        (
-            {'location': {'numeric_owner': False}},
-            {'location': {'numeric_ids': False}},
-            True,
-        ),
-        (
-            {'location': {'bsd_flags': False}},
-            {'location': {'flags': False}},
-            True,
-        ),
-        (
-            {'storage': {'remote_rate_limit': False}},
-            {'storage': {'upload_rate_limit': False}},
-            True,
-        ),
-        (
-            {'location': {'repositories': ['foo@bar:/repo']}},
-            {'location': {'repositories': [{'path': 'ssh://foo@bar/repo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': ['foo@bar:repo']}},
-            {'location': {'repositories': [{'path': 'ssh://foo@bar/./repo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': ['foo@bar:~/repo']}},
-            {'location': {'repositories': [{'path': 'ssh://foo@bar/~/repo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': ['ssh://foo@bar:1234/repo']}},
-            {'location': {'repositories': [{'path': 'ssh://foo@bar:1234/repo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': ['file:///repo']}},
-            {'location': {'repositories': [{'path': '/repo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}]}},
-            {'location': {'repositories': [{'path': 'ssh://foo@bar/repo', 'label': 'foo'}]}},
-            True,
-        ),
-        (
-            {'location': {'repositories': [{'path': 'file:///repo', 'label': 'foo'}]}},
-            {'location': {'repositories': [{'path': '/repo', 'label': 'foo'}]}},
-            False,
-        ),
-        (
-            {'location': {'repositories': [{'path': '/repo', 'label': 'foo'}]}},
-            {'location': {'repositories': [{'path': '/repo', 'label': 'foo'}]}},
-            False,
-        ),
-        (
-            {'consistency': {'prefix': 'foo'}},
-            {'consistency': {'prefix': 'foo'}},
-            True,
-        ),
-        (
-            {'retention': {'prefix': 'foo'}},
-            {'retention': {'prefix': 'foo'}},
+            {'prefix': 'foo'},
+            {'prefix': 'foo'},
             True,
         ),
     ),
@@ -146,6 +229,8 @@ from borgmatic.config import normalize as module
 def test_normalize_applies_hard_coded_normalization_to_config(
     config, expected_config, produces_logs
 ):
+    flexmock(module).should_receive('normalize_sections').and_return([])
+
     logs = module.normalize('test.yaml', config)
 
     assert config == expected_config
@@ -157,12 +242,12 @@ def test_normalize_applies_hard_coded_normalization_to_config(
 
 
 def test_normalize_raises_error_if_repository_data_is_not_consistent():
+    flexmock(module).should_receive('normalize_sections').and_return([])
+
     with pytest.raises(TypeError):
         module.normalize(
             'test.yaml',
             {
-                'location': {
-                    'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}, 'file:///repo']
-                }
+                'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}, 'file:///repo'],
             },
         )

@@ -13,43 +13,43 @@ def test_insert_newline_before_comment_does_not_raise():
     config = module.yaml.comments.CommentedMap([(field_name, 33)])
     config.yaml_set_comment_before_after_key(key=field_name, before='Comment')
 
-    module._insert_newline_before_comment(config, field_name)
+    module.insert_newline_before_comment(config, field_name)
 
 
 def test_comment_out_line_skips_blank_line():
     line = '    \n'
 
-    assert module._comment_out_line(line) == line
+    assert module.comment_out_line(line) == line
 
 
 def test_comment_out_line_skips_already_commented_out_line():
     line = '    # foo'
 
-    assert module._comment_out_line(line) == line
+    assert module.comment_out_line(line) == line
 
 
 def test_comment_out_line_comments_section_name():
     line = 'figgy-pudding:'
 
-    assert module._comment_out_line(line) == '# ' + line
+    assert module.comment_out_line(line) == '# ' + line
 
 
 def test_comment_out_line_comments_indented_option():
     line = '    enabled: true'
 
-    assert module._comment_out_line(line) == '    # enabled: true'
+    assert module.comment_out_line(line) == '    # enabled: true'
 
 
 def test_comment_out_line_comments_twice_indented_option():
     line = '        - item'
 
-    assert module._comment_out_line(line) == '        # - item'
+    assert module.comment_out_line(line) == '        # - item'
 
 
 def test_comment_out_optional_configuration_comments_optional_config_only():
     # The "# COMMENT_OUT" comment is a sentinel used to express that the following key is optional.
     # It's stripped out of the final output.
-    flexmock(module)._comment_out_line = lambda line: '# ' + line
+    flexmock(module).comment_out_line = lambda line: '# ' + line
     config = '''
 # COMMENT_OUT
 foo:
@@ -58,14 +58,13 @@ foo:
         - baz
         - quux
 
-location:
-    repositories:
-        - one
-        - two
+repositories:
+    - one
+    - two
 
-    # This comment should be kept.
-    # COMMENT_OUT
-    other: thing
+# This comment should be kept.
+# COMMENT_OUT
+other: thing
     '''
 
     # flake8: noqa
@@ -75,16 +74,15 @@ location:
 #         - baz
 #         - quux
 
-location:
-    repositories:
-        - one
-        - two
+repositories:
+    - one
+    - two
 
-    # This comment should be kept.
-#     other: thing
+# This comment should be kept.
+# other: thing
     '''
 
-    assert module._comment_out_optional_configuration(config.strip()) == expected_config.strip()
+    assert module.comment_out_optional_configuration(config.strip()) == expected_config.strip()
 
 
 def test_render_configuration_converts_configuration_to_yaml_string():
@@ -204,10 +202,10 @@ def test_generate_sample_configuration_does_not_raise():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml').and_return('')
     flexmock(module.yaml).should_receive('round_trip_load')
-    flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('_comment_out_optional_configuration')
+    flexmock(module).should_receive('comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
     module.generate_sample_configuration(False, None, 'dest.yaml', 'schema.yaml')
@@ -219,10 +217,10 @@ def test_generate_sample_configuration_with_source_filename_does_not_raise():
     flexmock(module.yaml).should_receive('round_trip_load')
     flexmock(module.load).should_receive('load_configuration')
     flexmock(module.normalize).should_receive('normalize')
-    flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('_comment_out_optional_configuration')
+    flexmock(module).should_receive('comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration')
 
     module.generate_sample_configuration(False, 'source.yaml', 'dest.yaml', 'schema.yaml')
@@ -232,10 +230,10 @@ def test_generate_sample_configuration_with_dry_run_does_not_write_file():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml').and_return('')
     flexmock(module.yaml).should_receive('round_trip_load')
-    flexmock(module).should_receive('_schema_to_sample_configuration')
+    flexmock(module).should_receive('schema_to_sample_configuration')
     flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('render_configuration')
-    flexmock(module).should_receive('_comment_out_optional_configuration')
+    flexmock(module).should_receive('comment_out_optional_configuration')
     flexmock(module).should_receive('write_configuration').never()
 
     module.generate_sample_configuration(True, None, 'dest.yaml', 'schema.yaml')

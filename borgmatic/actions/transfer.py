@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def run_transfer(
     repository,
-    storage,
+    config,
     local_borg_version,
     transfer_arguments,
     global_arguments,
@@ -23,7 +23,7 @@ def run_transfer(
     borgmatic.borg.transfer.transfer_archives(
         global_arguments.dry_run,
         repository['path'],
-        storage,
+        config,
         local_borg_version,
         transfer_arguments,
         global_arguments,

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def run_borg(
     repository,
-    storage,
+    config,
     local_borg_version,
     borg_arguments,
     global_arguments,
@@ -28,7 +28,7 @@ def run_borg(
         archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             borg_arguments.archive,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path,
@@ -36,7 +36,7 @@ def run_borg(
         )
         borgmatic.borg.borg.run_arbitrary_borg(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             options=borg_arguments.options,
             archive=archive_name,

@@ -1,7 +1,7 @@
 import collections
 import itertools
 import sys
-from argparse import Action, ArgumentParser
+from argparse import ArgumentParser
 
 from borgmatic.config import collect
 
@@ -216,40 +216,10 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     arguments['global'], remaining = global_parser.parse_known_args(unparsed_arguments)
     remaining_action_arguments.append(remaining)
 
-    # Prevent action names and arguments that follow "--config" paths from being considered as
-    # additional paths.
-    for argument_name in arguments.keys():
-        if argument_name == 'global':
-            continue
-
-        for action_name in [argument_name] + ACTION_ALIASES.get(argument_name, []):
-            try:
-                action_name_index = arguments['global'].config_paths.index(action_name)
-                arguments['global'].config_paths = arguments['global'].config_paths[
-                    :action_name_index
-                ]
-                break
-            except ValueError:
-                pass
-
     return (
         arguments,
         tuple(remaining_action_arguments) if arguments else unparsed_arguments,
     )
-
-
-class Extend_action(Action):
-    '''
-    An argparse action to support Python 3.8's "extend" action in older versions of Python.
-    '''
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        items = getattr(namespace, self.dest, None)
-
-        if items:
-            items.extend(values)  # pragma: no cover
-        else:
-            setattr(namespace, self.dest, list(values))
 
 
 def make_parsers():
@@ -263,16 +233,14 @@ def make_parsers():
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
     global_parser = ArgumentParser(add_help=False)
-    global_parser.register('action', 'extend', Extend_action)
     global_group = global_parser.add_argument_group('global arguments')
 
     global_group.add_argument(
         '-c',
         '--config',
-        nargs='*',
         dest='config_paths',
-        default=config_paths,
-        help=f"Configuration filenames or directories, defaults to: {' '.join(unexpanded_config_paths)}",
+        action='append',
+        help=f"Configuration filename or directory, can specify flag multiple times, defaults to: {' '.join(unexpanded_config_paths)}",
     )
     global_group.add_argument(
         '-n',
@@ -330,11 +298,10 @@ def make_parsers():
     )
     global_group.add_argument(
         '--override',
-        metavar='SECTION.OPTION=VALUE',
-        nargs='+',
+        metavar='OPTION.SUBOPTION=VALUE',
         dest='overrides',
-        action='extend',
-        help='One or more configuration file options to override with specified values',
+        action='append',
+        help='Configuration file option to override with specified value, can specify flag multiple times',
     )
     global_group.add_argument(
         '--no-environment-interpolation',
@@ -672,9 +639,9 @@ def make_parsers():
         '--path',
         '--restore-path',
         metavar='PATH',
-        nargs='+',
         dest='paths',
-        help='Paths to extract from archive, defaults to the entire archive',
+        action='append',
+        help='Path to extract from archive, can specify flag multiple times, defaults to the entire archive',
     )
     extract_group.add_argument(
         '--destination',
@@ -826,9 +793,9 @@ def make_parsers():
     export_tar_group.add_argument(
         '--path',
         metavar='PATH',
-        nargs='+',
         dest='paths',
-        help='Paths to export from archive, defaults to the entire archive',
+        action='append',
+        help='Path to export from archive, can specify flag multiple times, defaults to the entire archive',
     )
     export_tar_group.add_argument(
         '--destination',
@@ -877,9 +844,9 @@ def make_parsers():
     mount_group.add_argument(
         '--path',
         metavar='PATH',
-        nargs='+',
         dest='paths',
-        help='Paths to mount from archive, defaults to the entire archive',
+        action='append',
+        help='Path to mount from archive, can specify multiple times, defaults to the entire archive',
     )
     mount_group.add_argument(
         '--foreground',
@@ -954,16 +921,16 @@ def make_parsers():
     restore_group.add_argument(
         '--database',
         metavar='NAME',
-        nargs='+',
         dest='databases',
-        help="Names of databases to restore from archive, defaults to all databases. Note that any databases to restore must be defined in borgmatic's configuration",
+        action='append',
+        help="Name of database to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all databases",
     )
     restore_group.add_argument(
         '--schema',
         metavar='NAME',
-        nargs='+',
         dest='schemas',
-        help='Names of schemas to restore from the database, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
+        action='append',
+        help='Name of schema to restore from the database, can specify flag multiple times, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
     )
     restore_group.add_argument(
         '--hostname',
@@ -1065,16 +1032,16 @@ def make_parsers():
     list_group.add_argument(
         '--path',
         metavar='PATH',
-        nargs='+',
         dest='paths',
-        help='Paths or patterns to list from a single selected archive (via "--archive"), defaults to listing the entire archive',
+        action='append',
+        help='Path or pattern to list from a single selected archive (via "--archive"), can specify flag multiple times, defaults to listing the entire archive',
     )
     list_group.add_argument(
         '--find',
         metavar='PATH',
-        nargs='+',
         dest='find_paths',
-        help='Partial paths or patterns to search for and list across multiple archives',
+        action='append',
+        help='Partial path or pattern to search for and list across multiple archives, can specify flag multiple times',
     )
     list_group.add_argument(
         '--short', default=False, action='store_true', help='Output only path names'
@@ -1247,6 +1214,9 @@ def parse_arguments(*unparsed_arguments):
     arguments, remaining_action_arguments = parse_arguments_for_actions(
         unparsed_arguments, action_parsers.choices, global_parser
     )
+
+    if not arguments['global'].config_paths:
+        arguments['global'].config_paths = collect.get_default_config_paths(expand_home=True)
 
     for action_name in ('bootstrap', 'generate', 'validate'):
         if (

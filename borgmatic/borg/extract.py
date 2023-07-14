@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def extract_last_archive_dry_run(
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     repository_path,
@@ -32,7 +32,7 @@ def extract_last_archive_dry_run(
         last_archive_name = rlist.resolve_archive_name(
             repository_path,
             'latest',
-            storage_config,
+            config,
             local_borg_version,
             global_arguments,
             local_path,
@@ -43,7 +43,7 @@ def extract_last_archive_dry_run(
         return
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + (('--remote-path', remote_path) if remote_path else ())
@@ -66,8 +66,7 @@ def extract_archive(
     repository,
     archive,
     paths,
-    location_config,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -80,22 +79,22 @@ def extract_archive(
     '''
     Given a dry-run flag, a local or remote repository path, an archive name, zero or more paths to
     restore from the archive, the local Borg version string, an argparse.Namespace of global
-    arguments, location/storage configuration dicts, optional local and remote Borg paths, and an
-    optional destination path to extract to, extract the archive into the current directory.
+    arguments, a configuration dict, optional local and remote Borg paths, and an optional
+    destination path to extract to, extract the archive into the current directory.
 
     If extract to stdout is True, then start the extraction streaming to stdout, and return that
     extract process as an instance of subprocess.Popen.
     '''
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
 
     if progress and extract_to_stdout:
         raise ValueError('progress and extract_to_stdout cannot both be set')
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
-        numeric_ids_flags = ('--numeric-ids',) if location_config.get('numeric_ids') else ()
+        numeric_ids_flags = ('--numeric-ids',) if config.get('numeric_ids') else ()
     else:
-        numeric_ids_flags = ('--numeric-owner',) if location_config.get('numeric_ids') else ()
+        numeric_ids_flags = ('--numeric-owner',) if config.get('numeric_ids') else ()
 
     if strip_components == 'all':
         if not paths:
@@ -127,7 +126,7 @@ def extract_archive(
         + (tuple(paths) if paths else ())
     )
 
-    borg_environment = environment.make_environment(storage_config)
+    borg_environment = environment.make_environment(config)
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.

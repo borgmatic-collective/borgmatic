@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def compact_segments(
     dry_run,
     repository_path,
-    storage_config,
+    config,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -19,12 +19,12 @@ def compact_segments(
     threshold=None,
 ):
     '''
-    Given dry-run flag, a local or remote repository path, a storage config dict, and the local
-    Borg version, compact the segments in a repository.
+    Given dry-run flag, a local or remote repository path, a configuration dict, and the local Borg
+    version, compact the segments in a repository.
     '''
-    umask = storage_config.get('umask', None)
-    lock_wait = storage_config.get('lock_wait', None)
-    extra_borg_options = storage_config.get('extra_borg_options', {}).get('compact', '')
+    umask = config.get('umask', None)
+    lock_wait = config.get('lock_wait', None)
+    extra_borg_options = config.get('extra_borg_options', {}).get('compact', '')
 
     full_command = (
         (local_path, 'compact')
@@ -49,5 +49,5 @@ def compact_segments(
         full_command,
         output_log_level=logging.INFO,
         borg_local_path=local_path,
-        extra_environment=environment.make_environment(storage_config),
+        extra_environment=environment.make_environment(config),
     )

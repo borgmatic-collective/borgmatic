@@ -58,16 +58,12 @@ def run_configuration(config_filename, config, arguments):
       * JSON output strings from successfully executing any actions that produce JSON
       * logging.LogRecord instances containing errors from any actions or backup hooks that fail
     '''
-    (location, storage, retention, consistency, hooks) = (
-        config.get(section_name, {})
-        for section_name in ('location', 'storage', 'retention', 'consistency', 'hooks')
-    )
     global_arguments = arguments['global']
 
-    local_path = location.get('local_path', 'borg')
-    remote_path = location.get('remote_path')
-    retries = storage.get('retries', 0)
-    retry_wait = storage.get('retry_wait', 0)
+    local_path = config.get('local_path', 'borg')
+    remote_path = config.get('remote_path')
+    retries = config.get('retries', 0)
+    retry_wait = config.get('retry_wait', 0)
     encountered_error = None
     error_repository = ''
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
@@ -75,7 +71,7 @@ def run_configuration(config_filename, config, arguments):
     monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
 
     try:
-        local_borg_version = borg_version.local_borg_version(storage, local_path)
+        local_borg_version = borg_version.local_borg_version(config, local_path)
     except (OSError, CalledProcessError, ValueError) as error:
         yield from log_error_records(f'{config_filename}: Error getting local Borg version', error)
         return
@@ -84,7 +80,7 @@ def run_configuration(config_filename, config, arguments):
         if monitoring_hooks_are_activated:
             dispatch.call_hooks(
                 'initialize_monitor',
-                hooks,
+                config,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitoring_log_level,
@@ -93,7 +89,7 @@ def run_configuration(config_filename, config, arguments):
 
             dispatch.call_hooks(
                 'ping_monitor',
-                hooks,
+                config,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitor.State.START,
@@ -109,7 +105,7 @@ def run_configuration(config_filename, config, arguments):
 
     if not encountered_error:
         repo_queue = Queue()
-        for repo in location['repositories']:
+        for repo in config['repositories']:
             repo_queue.put(
                 (repo, 0),
             )
@@ -129,11 +125,7 @@ def run_configuration(config_filename, config, arguments):
                 yield from run_actions(
                     arguments=arguments,
                     config_filename=config_filename,
-                    location=location,
-                    storage=storage,
-                    retention=retention,
-                    consistency=consistency,
-                    hooks=hooks,
+                    config=config,
                     local_path=local_path,
                     remote_path=remote_path,
                     local_borg_version=local_borg_version,
@@ -172,7 +164,7 @@ def run_configuration(config_filename, config, arguments):
             # send logs irrespective of error
             dispatch.call_hooks(
                 'ping_monitor',
-                hooks,
+                config,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitor.State.LOG,
@@ -191,7 +183,7 @@ def run_configuration(config_filename, config, arguments):
             if monitoring_hooks_are_activated:
                 dispatch.call_hooks(
                     'ping_monitor',
-                    hooks,
+                    config,
                     config_filename,
                     monitor.MONITOR_HOOK_NAMES,
                     monitor.State.FINISH,
@@ -200,7 +192,7 @@ def run_configuration(config_filename, config, arguments):
                 )
                 dispatch.call_hooks(
                     'destroy_monitor',
-                    hooks,
+                    config,
                     config_filename,
                     monitor.MONITOR_HOOK_NAMES,
                     monitoring_log_level,
@@ -216,8 +208,8 @@ def run_configuration(config_filename, config, arguments):
     if encountered_error and using_primary_action:
         try:
             command.execute_hook(
-                hooks.get('on_error'),
-                hooks.get('umask'),
+                config.get('on_error'),
+                config.get('umask'),
                 config_filename,
                 'on-error',
                 global_arguments.dry_run,
@@ -227,7 +219,7 @@ def run_configuration(config_filename, config, arguments):
             )
             dispatch.call_hooks(
                 'ping_monitor',
-                hooks,
+                config,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitor.State.FAIL,
@@ -236,7 +228,7 @@ def run_configuration(config_filename, config, arguments):
             )
             dispatch.call_hooks(
                 'destroy_monitor',
-                hooks,
+                config,
                 config_filename,
                 monitor.MONITOR_HOOK_NAMES,
                 monitoring_log_level,
@@ -253,11 +245,7 @@ def run_actions(
     *,
     arguments,
     config_filename,
-    location,
-    storage,
-    retention,
-    consistency,
-    hooks,
+    config,
     local_path,
     remote_path,
     local_borg_version,
@@ -282,13 +270,13 @@ def run_actions(
     hook_context = {
         'repository': repository_path,
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
-        'repositories': ','.join([repo['path'] for repo in location['repositories']]),
+        'repositories': ','.join([repo['path'] for repo in config['repositories']]),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
     }
 
     command.execute_hook(
-        hooks.get('before_actions'),
-        hooks.get('umask'),
+        config.get('before_actions'),
+        config.get('umask'),
         config_filename,
         'pre-actions',
         global_arguments.dry_run,
@@ -299,7 +287,7 @@ def run_actions(
         if action_name == 'rcreate':
             borgmatic.actions.rcreate.run_rcreate(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -309,7 +297,7 @@ def run_actions(
         elif action_name == 'transfer':
             borgmatic.actions.transfer.run_transfer(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -320,9 +308,7 @@ def run_actions(
             yield from borgmatic.actions.create.run_create(
                 config_filename,
                 repository,
-                location,
-                storage,
-                hooks,
+                config,
                 hook_context,
                 local_borg_version,
                 action_arguments,
@@ -335,9 +321,7 @@ def run_actions(
             borgmatic.actions.prune.run_prune(
                 config_filename,
                 repository,
-                storage,
-                retention,
-                hooks,
+                config,
                 hook_context,
                 local_borg_version,
                 action_arguments,
@@ -350,9 +334,7 @@ def run_actions(
             borgmatic.actions.compact.run_compact(
                 config_filename,
                 repository,
-                storage,
-                retention,
-                hooks,
+                config,
                 hook_context,
                 local_borg_version,
                 action_arguments,
@@ -362,14 +344,11 @@ def run_actions(
                 remote_path,
             )
         elif action_name == 'check':
-            if checks.repository_enabled_for_checks(repository, consistency):
+            if checks.repository_enabled_for_checks(repository, config):
                 borgmatic.actions.check.run_check(
                     config_filename,
                     repository,
-                    location,
-                    storage,
-                    consistency,
-                    hooks,
+                    config,
                     hook_context,
                     local_borg_version,
                     action_arguments,
@@ -381,9 +360,7 @@ def run_actions(
             borgmatic.actions.extract.run_extract(
                 config_filename,
                 repository,
-                location,
-                storage,
-                hooks,
+                config,
                 hook_context,
                 local_borg_version,
                 action_arguments,
@@ -394,7 +371,7 @@ def run_actions(
         elif action_name == 'export-tar':
             borgmatic.actions.export_tar.run_export_tar(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -404,7 +381,7 @@ def run_actions(
         elif action_name == 'mount':
             borgmatic.actions.mount.run_mount(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -414,9 +391,7 @@ def run_actions(
         elif action_name == 'restore':
             borgmatic.actions.restore.run_restore(
                 repository,
-                location,
-                storage,
-                hooks,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -426,7 +401,7 @@ def run_actions(
         elif action_name == 'rlist':
             yield from borgmatic.actions.rlist.run_rlist(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -436,7 +411,7 @@ def run_actions(
         elif action_name == 'list':
             yield from borgmatic.actions.list.run_list(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -446,7 +421,7 @@ def run_actions(
         elif action_name == 'rinfo':
             yield from borgmatic.actions.rinfo.run_rinfo(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -456,7 +431,7 @@ def run_actions(
         elif action_name == 'info':
             yield from borgmatic.actions.info.run_info(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -466,7 +441,7 @@ def run_actions(
         elif action_name == 'break-lock':
             borgmatic.actions.break_lock.run_break_lock(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -476,7 +451,7 @@ def run_actions(
         elif action_name == 'borg':
             borgmatic.actions.borg.run_borg(
                 repository,
-                storage,
+                config,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -485,8 +460,8 @@ def run_actions(
             )
 
     command.execute_hook(
-        hooks.get('after_actions'),
-        hooks.get('umask'),
+        config.get('after_actions'),
+        config.get('umask'),
         config_filename,
         'post-actions',
         global_arguments.dry_run,
@@ -569,6 +544,9 @@ def log_record(suppress_log=False, **kwargs):
     return record
 
 
+MAX_CAPTURED_OUTPUT_LENGTH = 1000
+
+
 def log_error_records(
     message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
 ):
@@ -591,12 +569,18 @@ def log_error_records(
     except CalledProcessError as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=message)
         if error.output:
+            try:
+                output = error.output.decode('utf-8')
+            except (UnicodeDecodeError, AttributeError):
+                output = error.output
+
             # Suppress these logs for now and save full error output for the log summary at the end.
             yield log_record(
                 levelno=levelno,
                 levelname=level_name,
-                msg=error.output,
-                suppress_log=not log_command_error_output,
+                msg=output[:MAX_CAPTURED_OUTPUT_LENGTH]
+                + ' ...' * (len(output) > MAX_CAPTURED_OUTPUT_LENGTH),
+                suppress_log=True,
             )
         yield log_record(levelno=levelno, levelname=level_name, msg=error)
     except (ValueError, OSError) as error:
@@ -613,7 +597,7 @@ def get_local_path(configs):
     Arbitrarily return the local path from the first configuration dict. Default to "borg" if not
     set.
     '''
-    return next(iter(configs.values())).get('location', {}).get('local_path', 'borg')
+    return next(iter(configs.values())).get('local_path', 'borg')
 
 
 def collect_highlander_action_summary_logs(configs, arguments, configuration_parse_errors):
@@ -627,6 +611,8 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     A highlander action is an action that cannot coexist with other actions on the borgmatic
     command-line, and borgmatic exits after processing such an action.
     '''
+    add_custom_log_levels()
+
     if 'bootstrap' in arguments:
         try:
             # No configuration file is needed for bootstrap.
@@ -744,10 +730,9 @@ def collect_configuration_run_summary_logs(configs, arguments):
     if 'create' in arguments:
         try:
             for config_filename, config in configs.items():
-                hooks = config.get('hooks', {})
                 command.execute_hook(
-                    hooks.get('before_everything'),
-                    hooks.get('umask'),
+                    config.get('before_everything'),
+                    config.get('umask'),
                     config_filename,
                     'pre-everything',
                     arguments['global'].dry_run,
@@ -792,10 +777,9 @@ def collect_configuration_run_summary_logs(configs, arguments):
     if 'create' in arguments:
         try:
             for config_filename, config in configs.items():
-                hooks = config.get('hooks', {})
                 command.execute_hook(
-                    hooks.get('after_everything'),
-                    hooks.get('umask'),
+                    config.get('after_everything'),
+                    config.get('umask'),
                     config_filename,
                     'post-everything',
                     arguments['global'].dry_run,

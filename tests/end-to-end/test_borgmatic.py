@@ -22,7 +22,7 @@ def generate_configuration(config_path, repository_path):
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
-        + 'storage:\n    encryption_passphrase: "test"'
+        + 'encryption_passphrase: "test"'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)

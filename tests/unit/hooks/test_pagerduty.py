@@ -8,6 +8,7 @@ def test_ping_monitor_ignores_start_state():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.START,
         monitoring_log_level=1,
@@ -20,6 +21,7 @@ def test_ping_monitor_ignores_finish_state():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.FINISH,
         monitoring_log_level=1,
@@ -32,6 +34,7 @@ def test_ping_monitor_calls_api_for_fail_state():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -44,6 +47,7 @@ def test_ping_monitor_dry_run_does_not_call_api():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -59,6 +63,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.FAIL,
         monitoring_log_level=1,
@@ -76,6 +81,7 @@ def test_ping_monitor_with_other_error_logs_warning():
 
     module.ping_monitor(
         {'integration_key': 'abc123'},
+        {},
         'config.yaml',
         module.monitor.State.FAIL,
         monitoring_log_level=1,

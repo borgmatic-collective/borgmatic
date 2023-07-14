@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def run_info(
     repository,
-    storage,
+    config,
     local_borg_version,
     info_arguments,
     global_arguments,
@@ -33,7 +33,7 @@ def run_info(
         archive_name = borgmatic.borg.rlist.resolve_archive_name(
             repository['path'],
             info_arguments.archive,
-            storage,
+            config,
             local_borg_version,
             global_arguments,
             local_path,
@@ -41,7 +41,7 @@ def run_info(
         )
         json_output = borgmatic.borg.info.display_archives_info(
             repository['path'],
-            storage,
+            config,
             local_borg_version,
             borgmatic.actions.arguments.update_arguments(info_arguments, archive=archive_name),
             global_arguments,

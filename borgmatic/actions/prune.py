@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 def run_prune(
     config_filename,
     repository,
-    storage,
-    retention,
-    hooks,
+    config,
     hook_context,
     local_borg_version,
     prune_arguments,
@@ -30,8 +28,8 @@ def run_prune(
         return
 
     borgmatic.hooks.command.execute_hook(
-        hooks.get('before_prune'),
-        hooks.get('umask'),
+        config.get('before_prune'),
+        config.get('umask'),
         config_filename,
         'pre-prune',
         global_arguments.dry_run,
@@ -41,8 +39,7 @@ def run_prune(
     borgmatic.borg.prune.prune_archives(
         global_arguments.dry_run,
         repository['path'],
-        storage,
-        retention,
+        config,
         local_borg_version,
         prune_arguments,
         global_arguments,
@@ -50,8 +47,8 @@ def run_prune(
         remote_path=remote_path,
     )
     borgmatic.hooks.command.execute_hook(
-        hooks.get('after_prune'),
-        hooks.get('umask'),
+        config.get('after_prune'),
+        config.get('umask'),
         config_filename,
         'post-prune',
         global_arguments.dry_run,

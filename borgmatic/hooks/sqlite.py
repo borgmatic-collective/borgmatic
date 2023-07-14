@@ -7,21 +7,21 @@ from borgmatic.hooks import dump
 logger = logging.getLogger(__name__)
 
 
-def make_dump_path(location_config):  # pragma: no cover
+def make_dump_path(config):  # pragma: no cover
     '''
-    Make the dump path from the given location configuration and the name of this hook.
+    Make the dump path from the given configuration dict and the name of this hook.
     '''
     return dump.make_database_dump_path(
-        location_config.get('borgmatic_source_directory'), 'sqlite_databases'
+        config.get('borgmatic_source_directory'), 'sqlite_databases'
     )
 
 
-def dump_databases(databases, log_prefix, location_config, dry_run):
+def dump_databases(databases, config, log_prefix, dry_run):
     '''
     Dump the given SQLite3 databases to a file. The databases are supplied as a sequence of
-    configuration dicts, as per the configuration schema. Use the given log prefix in any log
-    entries. Use the given location configuration dict to construct the destination path. If this
-    is a dry run, then don't actually dump anything.
+    configuration dicts, as per the configuration schema. Use the given configuration dict to
+    construct the destination path and the given log prefix in any log entries. If this is a dry
+    run, then don't actually dump anything.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -38,7 +38,7 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
                 f'{log_prefix}: No SQLite database at {database_path}; An empty database will be created and dumped'
             )
 
-        dump_path = make_dump_path(location_config)
+        dump_path = make_dump_path(config)
         dump_filename = dump.make_database_dump_filename(dump_path, database['name'])
         if os.path.exists(dump_filename):
             logger.warning(
@@ -65,43 +65,49 @@ def dump_databases(databases, log_prefix, location_config, dry_run):
     return processes
 
 
-def remove_database_dumps(databases, log_prefix, location_config, dry_run):  # pragma: no cover
+def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove the given SQLite3 database dumps from the filesystem. The databases are supplied as a
-    sequence of configuration dicts, as per the configuration schema. Use the given log prefix in
-    any log entries. Use the given location configuration dict to construct the destination path.
-    If this is a dry run, then don't actually remove anything.
+    sequence of configuration dicts, as per the configuration schema. Use the given configuration
+    dict to construct the destination path and the given log prefix in any log entries. If this is a
+    dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(make_dump_path(location_config), 'SQLite', log_prefix, dry_run)
+    dump.remove_database_dumps(make_dump_path(config), 'SQLite', log_prefix, dry_run)
 
 
-def make_database_dump_pattern(
-    databases, log_prefix, location_config, name=None
-):  # pragma: no cover
+def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
     Make a pattern that matches the given SQLite3 databases. The databases are supplied as a
     sequence of configuration dicts, as per the configuration schema.
     '''
-    return dump.make_database_dump_filename(make_dump_path(location_config), name)
+    return dump.make_database_dump_filename(make_dump_path(config), name)
 
 
 def restore_database_dump(
-    database_config, log_prefix, location_config, dry_run, extract_process, connection_params
+    databases_config, config, log_prefix, database_name, dry_run, extract_process, connection_params
 ):
     '''
-    Restore the given SQLite3 database from an extract stream. The database is supplied as a
-    one-element sequence containing a dict describing the database, as per the configuration schema.
-    Use the given log prefix in any log entries. If this is a dry run, then don't actually restore
-    anything. Trigger the given active extract process (an instance of subprocess.Popen) to produce
-    output to consume.
+    Restore the given SQLite3 database from an extract stream. The databases are supplied as a
+    sequence containing one dict describing each database (as per the configuration schema), but
+    only the database corresponding to the given database name is restored. Use the given log prefix
+    in any log entries. If this is a dry run, then don't actually restore anything. Trigger the
+    given active extract process (an instance of subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
 
-    if len(database_config) != 1:
-        raise ValueError('The database configuration value is invalid')
+    try:
+        database = next(
+            database_config
+            for database_config in databases_config
+            if database_config.get('name') == database_name
+        )
+    except StopIteration:
+        raise ValueError(
+            f'A database named "{database_name}" could not be found in the configuration'
+        )
 
-    database_path = connection_params['restore_path'] or database_config[0].get(
-        'restore_path', database_config[0].get('path')
+    database_path = connection_params['restore_path'] or database.get(
+        'restore_path', database.get('path')
     )
 
     logger.debug(f'{log_prefix}: Restoring SQLite database at {database_path}{dry_run_label}')
