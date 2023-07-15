@@ -45,6 +45,22 @@ in the right place before running the command—or see below about the
 `--destination` flag.
 
 
+## Extract the configuration file used to create an archive
+
+<span class="minilink minilink-addedin">New in version 1.7.15</span> Borgmatic
+also stores the configuration file used to create an archive, inside the
+archive itself. This is useful in cases where you've lost your configuration
+file, or you want to see what configuration was used to create a particular
+archive.
+
+To extract the configuration file from an archive, use the `config bootstrap` action:
+
+```bash 
+borgmatic config bootstrap --repository repo.borg --destination /tmp
+```
+
+This extracts the configuration file from the latest archive in the repository `repo.borg` to `/tmp/config.yaml`.
+
 ## Repository selection
 
 If you have a single repository in your borgmatic configuration file(s), no
