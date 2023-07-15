@@ -2,7 +2,7 @@ name: "Feature"
 about: "For filing a feature request or idea"
 body:
   - type: markdown
-    value:
+    value: " "
   - type: textarea
     id: request
     attributes:
