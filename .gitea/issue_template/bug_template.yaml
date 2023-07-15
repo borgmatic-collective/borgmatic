@@ -1,8 +1,6 @@
 name: "Bug or question/support"
 about: "For filing a bug or getting support"
 body:
-  - type: markdown
-    value: " "
   - type: textarea
     id: problem
     attributes:
