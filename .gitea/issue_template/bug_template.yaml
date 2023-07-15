@@ -65,7 +65,7 @@ body:
     id: database_version
     attributes:
       label: Database version (if applicable)
-      description: Use `psql --version`, `mysql --version`, `mongodump --version`, or `sqlite3 --version`
+      description: Use `psql --version` / `mysql --version` / `mongodump --version` / `sqlite3 --version`
     validations:
       required: false
   - type: input
