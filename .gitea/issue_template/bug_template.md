@@ -1,14 +1,22 @@
+---
+
+name: "Bug or question/support"
+about: "This is for filing a bug or getting support"
+ref: "main"
+
+---
+
 #### What I'm trying to do and why
 
-#### Steps to reproduce (if a bug)
+#### Steps to reproduce
 
 Include (sanitized) borgmatic configuration files if applicable.
 
-#### Actual behavior (if a bug)
+#### Actual behavior
 
 Include (sanitized) `--verbosity 2` output if applicable.
 
-#### Expected behavior (if a bug)
+#### Expected behavior
 
 #### Other notes / implementation ideas
 
