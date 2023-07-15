@@ -1,33 +1,33 @@
 name: "Bug or question/support"
 about: "For filing a bug or getting support"
 body:
-  - type: markdown
+  - type: textarea
     id: problem
     attributes:
       label: What I'm trying to do and why
     validations:
       required: true
-  - type: markdown
+  - type: textarea
     id: repro_steps
     attributes:
       label: Steps to reproduce
       description: Include (sanitized) borgmatic configuration files if applicable.
     validations:
       required: false
-  - type: markdown
+  - type: textarea
     id: actual_behavior
     attributes:
       label: Actual behavior
       description: Include (sanitized) `--verbosity 2` output if applicable.
     validations:
       required: false
-  - type: markdown
+  - type: textarea
     id: expected_behavior
     attributes:
       label: Expected behavior
     validations:
       required: false
-  - type: markdown
+  - type: textarea
     id: notes
     attributes:
       label: Other notes / implementation ideas

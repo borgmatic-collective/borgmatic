@@ -1,13 +1,13 @@
 name: "Feature"
 about: "For filing a feature request or idea"
 body:
-  - type: markdown
+  - type: textarea
     id: request
     attributes:
       label: What I'd like to do and why
     validations:
       required: true
-  - type: markdown
+  - type: textarea
     id: notes
     attributes:
       label: Other notes / implementation ideas
