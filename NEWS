@@ -1,18 +1,19 @@
-1.8.0.dev0
+1.8.0
  * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting
    repository/archive into the resulting Borg command-line, pass repository to Borg via an
    environment variable and make archive available for explicit use in your commands. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/run-arbitrary-borg-commands/
  * #719: Fix an error when running "borg key export" through borgmatic.
- * #720: Fix an error when dumping a MySQL database and the "exclude_nodump" option is set.
+ * #720: Fix an error when dumping a database and the "exclude_nodump" option is set.
  * #724: Add "check_i_know_what_i_am_doing" option to bypass Borg confirmation prompt when running
    "check --repair".
  * When merging two configuration files, error gracefully if the two files do not adhere to the same
    format.
  * #721: Remove configuration sections ("location:", "storage:", "hooks:" etc.), while still keeping
    deprecated support for them. Now, all options are at the same level, and you don't need to worry
-   about commenting/uncommenting section headers when you change an option.
+   about commenting/uncommenting section headers when you change an option (if you remove your
+   sections first).
  * #721: BREAKING: The retention prefix and the consistency prefix can no longer have different
    values (unless one is not set).
  * #721: BREAKING: The storage umask and the hooks umask can no longer have different values (unless

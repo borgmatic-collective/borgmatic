@@ -46,7 +46,7 @@ def normalize_sections(config_filename, config):
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: Configuration sections like location: and storage: are deprecated and support will be removed from a future release. To prepare for this, move your options out of sections to the global scope.',
+                    msg=f'{config_filename}: Configuration sections (like location: and storage:) are deprecated and support will be removed from a future release. To prepare for this, move your options out of sections to the global scope.',
                 )
             )
         ]
