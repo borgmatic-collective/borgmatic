@@ -16,4 +16,4 @@ each.
 If you find a security vulnerability, please [file a
 ticket](https://torsion.org/borgmatic/#issues) or [send email
 directly](mailto:witten@torsion.org) as appropriate. You should expect to hear
-back within a few days at most, and generally sooner.
+back within a few days at most and generally sooner.

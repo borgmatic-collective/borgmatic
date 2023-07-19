@@ -189,7 +189,7 @@ check_repositories:
     - path/of/repository_to_check.borg
 ```
 
-Finally, you can override your configuration file's consistency checks, and
+Finally, you can override your configuration file's consistency checks and
 run particular checks via the command-line. For instance:
 
 ```bash

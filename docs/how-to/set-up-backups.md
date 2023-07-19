@@ -59,11 +59,11 @@ borgmatic's path.
 
 ### Global install option
 
-If you try the user site installation above, and have problems making
-borgmatic commands runnable on your system `PATH`, an alternate approach is to
-install borgmatic globally.
+If you try the user site installation above and have problems making borgmatic
+commands runnable on your system `PATH`, an alternate approach is to install
+borgmatic globally.
 
-The following uninstalls borgmatic, and then reinstalls it such that borgmatic
+The following uninstalls borgmatic and then reinstalls it such that borgmatic
 commands are on the default system `PATH`:
 
 ```bash
@@ -229,7 +229,7 @@ sudo borgmatic rcreate --encryption repokey-aes-ocb
 certain platforms like ARM64.)
 
 This uses the borgmatic configuration file you created above to determine
-which local or remote repository to create, and encrypts it with the
+which local or remote repository to create and encrypts it with the
 encryption passphrase specified there if one is provided. Read about [Borg
 encryption
 modes](https://borgbackup.readthedocs.io/en/stable/usage/init.html#encryption-mode-tldr)

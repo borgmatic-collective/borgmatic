@@ -63,7 +63,7 @@ and, if desired, replace your original configuration file with it.
 ### Upgrading from borgmatic 1.0.x
 
 borgmatic changed its configuration file format in version 1.1.0 from
-INI-style to YAML. This better supports validation, and has a more natural way
+INI-style to YAML. This better supports validation and has a more natural way
 to express lists of values. To upgrade your existing configuration, first
 upgrade to the last version of borgmatic to support converting configuration:
 borgmatic 1.7.14.

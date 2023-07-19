@@ -17,7 +17,7 @@ feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.
 
 You can specify `before_backup` hooks to perform preparation steps before
-running backups, and specify `after_backup` hooks to perform cleanup steps
+running backups and specify `after_backup` hooks to perform cleanup steps
 afterwards. Here's an example:
 
 ```yaml

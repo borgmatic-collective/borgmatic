@@ -153,7 +153,7 @@ in newer versions of borgmatic.
 Once you have multiple different configuration files, you might want to share
 common configuration options across these files with having to copy and paste
 them. To achieve this, you can put fragments of common configuration options
-into a file, and then include or inline that file into one or more borgmatic
+into a file and then include or inline that file into one or more borgmatic
 configuration files.
 
 Let's say that you want to include common consistency check configuration across all
@@ -442,8 +442,8 @@ command-line via the `--override` flag. Here's an example:
 borgmatic create --override remote_path=/usr/local/bin/borg1
 ```
 
-What this does is load your configuration files, and for each one, disregard
-the configured value for the `remote_path` option, and use the value of
+What this does is load your configuration files and for each one, disregard
+the configured value for the `remote_path` option and use the value of
 `/usr/local/bin/borg1` instead.
 
 You can even override nested values or multiple values at once. For instance:

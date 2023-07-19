@@ -106,7 +106,7 @@ on_error:
 ```
 
 In this example, when the error occurs, borgmatic interpolates runtime values
-into the hook command: the borgmatic configuration filename, and the path of
+into the hook command: the borgmatic configuration filename and the path of
 the repository. Here's the full set of supported variables you can use here:
 
  * `configuration_filename`: borgmatic configuration filename in which the
@@ -118,7 +118,7 @@ the repository. Here's the full set of supported variables you can use here:
    occurred without running a command)
 
 Note that borgmatic runs the `on_error` hooks only for `create`, `prune`,
-`compact`, or `check` actions or hooks in which an error occurs, and not other
+`compact`, or `check` actions/hooks in which an error occurs and not other
 actions. borgmatic does not run `on_error` hooks if an error occurs within a
 `before_everything` or `after_everything` hook. For more about hooks, see the
 [borgmatic hooks
@@ -150,7 +150,7 @@ hooks</a> run, borgmatic lets Healthchecks know that it has started if any of
 the `create`, `prune`, `compact`, or `check` actions are run.
 
 Then, if the actions complete successfully, borgmatic notifies Healthchecks of
-the success after the `after_backup` hooks run, and includes borgmatic logs in
+the success after the `after_backup` hooks run and includes borgmatic logs in
 the payload data sent to Healthchecks. This means that borgmatic logs show up
 in the Healthchecks UI, although be aware that Healthchecks currently has a
 10-kilobyte limit for the logs in each ping.
@@ -336,7 +336,7 @@ output formatted as JSON.
 
 Note that when you specify the `--json` flag, Borg's other non-JSON output is
 suppressed so as not to interfere with the captured JSON. Also note that JSON
-output only shows up at the console, and not in syslog.
+output only shows up at the console and not in syslog.
 
 
 ### Latest backups
