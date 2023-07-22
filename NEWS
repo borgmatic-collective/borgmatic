@@ -1,3 +1,6 @@
+1.8.1.dev0
+ * #728: Fix for "prune" action error when using the "keep_exclude_tags" option in configuration.
+
 1.8.0
  * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting
    repository/archive into the resulting Borg command-line, pass repository to Borg via an

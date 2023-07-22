@@ -118,6 +118,19 @@ def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
     assert result == expected
 
 
+def test_make_prune_flags_ignores_keep_exclude_tags_in_config():
+    config = {
+        'keep_daily': 1,
+        'keep_exclude_tags': True,
+    }
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+
+    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+
+    assert result == ('--keep-daily', '1')
+
+
 PRUNE_COMMAND = ('borg', 'prune', '--keep-daily', '1', '--keep-weekly', '2', '--keep-monthly', '3')
 
 

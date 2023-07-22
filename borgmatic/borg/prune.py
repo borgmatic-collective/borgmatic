@@ -26,7 +26,7 @@ def make_prune_flags(config, local_borg_version):
     flag_pairs = (
         ('--' + option_name.replace('_', '-'), str(value))
         for option_name, value in config.items()
-        if option_name.startswith('keep_')
+        if option_name.startswith('keep_') and option_name != 'keep_exclude_tags'
     )
     prefix = config.get('prefix')
 
