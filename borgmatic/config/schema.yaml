@@ -365,19 +365,19 @@ properties:
         type: boolean
         description: |
             Bypass Borg error about a repository that has been moved. Defaults
-            to false.
+            to not bypassing.
         example: true
     unknown_unencrypted_repo_access_is_ok:
         type: boolean
         description: |
             Bypass Borg error about a previously unknown unencrypted repository.
-            Defaults to false.
+            Defaults to not bypassing.
         example: true
     check_i_know_what_i_am_doing:
         type: boolean
         description: |
-            Bypass Borg confirmation about check with repair option.
-            Defaults to false.
+            Bypass Borg confirmation about check with repair option. Defaults to
+            an interactive prompt from Borg.
         example: true
     extra_borg_options:
         type: object

@@ -1,5 +1,7 @@
 1.8.1.dev0
  * #728: Fix for "prune" action error when using the "keep_exclude_tags" option in configuration.
+ * #730: Fix for Borg's interactive prompt on the "check --repair" action automatically getting
+   answered "NO" even when the "check_i_know_what_i_am_doing" option isn't set.
 
 1.8.0
  * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting

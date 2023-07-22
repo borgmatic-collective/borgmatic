@@ -38,14 +38,16 @@ def make_environment(config):
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE.items():
-        value = config.get(option_name, False)
-        environment[environment_variable_name] = 'yes' if value else 'no'
+        value = config.get(option_name)
+        if value is not None:
+            environment[environment_variable_name] = 'yes' if value else 'no'
 
     for (
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE.items():
-        value = config.get(option_name, False)
-        environment[environment_variable_name] = 'YES' if value else 'NO'
+        value = config.get(option_name)
+        if value is not None:
+            environment[environment_variable_name] = 'YES' if value else 'NO'
 
     return environment
