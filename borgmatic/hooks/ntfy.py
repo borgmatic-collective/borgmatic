@@ -28,8 +28,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         state_config = hook_config.get(
             state.name.lower(),
             {
-                'title': f'A Borgmatic {state.name} event happened',
-                'message': f'A Borgmatic {state.name} event happened',
+                'title': f'A borgmatic {state.name} event happened',
+                'message': f'A borgmatic {state.name} event happened',
                 'priority': 'default',
                 'tags': 'borgmatic',
             },

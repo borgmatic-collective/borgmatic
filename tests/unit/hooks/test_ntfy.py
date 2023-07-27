@@ -10,8 +10,8 @@ custom_base_url = 'https://ntfy.example.com'
 topic = 'borgmatic-unit-testing'
 
 custom_message_config = {
-    'title': 'Borgmatic unit testing',
-    'message': 'Borgmatic unit testing',
+    'title': 'borgmatic unit testing',
+    'message': 'borgmatic unit testing',
     'priority': 'min',
     'tags': '+1',
 }
@@ -26,8 +26,8 @@ custom_message_headers = {
 
 def return_default_message_headers(state=Enum):
     headers = {
-        'X-Title': f'A Borgmatic {state.name} event happened',
-        'X-Message': f'A Borgmatic {state.name} event happened',
+        'X-Title': f'A borgmatic {state.name} event happened',
+        'X-Message': f'A borgmatic {state.name} event happened',
         'X-Priority': 'default',
         'X-Tags': 'borgmatic',
     }

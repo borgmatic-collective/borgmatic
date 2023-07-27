@@ -304,17 +304,17 @@ ntfy:
     topic: my-unique-topic
     server: https://ntfy.my-domain.com
     start:
-        title: A Borgmatic backup started
+        title: A borgmatic backup started
         message: Watch this space...
         tags: borgmatic
         priority: min
     finish:
-        title: A Borgmatic backup completed successfully
+        title: A borgmatic backup completed successfully
         message: Nice!
         tags: borgmatic,+1
         priority: min
     fail:
-        title: A Borgmatic backup failed
+        title: A borgmatic backup failed
         message: You should probably fix it
         tags: borgmatic,-1,skull
         priority: max
