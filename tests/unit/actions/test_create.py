@@ -39,6 +39,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
         )
     )
 
+
 def test_run_create_with_store_config_files_false_does_not_create_borgmatic_manifest():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
@@ -62,9 +63,7 @@ def test_run_create_with_store_config_files_false_does_not_create_borgmatic_mani
         module.run_create(
             config_filename='test.yaml',
             repository={'path': 'repo'},
-            config={
-                'store_config_files': False
-            },
+            config={'store_config_files': False},
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
@@ -74,6 +73,7 @@ def test_run_create_with_store_config_files_false_does_not_create_borgmatic_mani
             remote_path=None,
         )
     )
+
 
 def test_run_create_runs_with_selected_repository():
     flexmock(module.logger).answer = lambda message: None

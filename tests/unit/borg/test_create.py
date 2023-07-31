@@ -646,18 +646,17 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
         global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
     )
 
+
 def test_create_archive_with_sources_and_used_config_paths_with_store_config_files_false_calls_borg_with_sources_and_no_config_paths():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('deduplicate_directories').and_return(
-        ('foo', 'bar')
-    )
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
-    flexmock(module).should_receive('expand_directories').with_args(
+    flexmock(module).should_receive('expand_directories').with_args(('foo', 'bar')).and_return(
         ('foo', 'bar')
-    ).and_return(('foo', 'bar'))
+    )
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
@@ -693,6 +692,7 @@ def test_create_archive_with_sources_and_used_config_paths_with_store_config_fil
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
     )
+
 
 def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
