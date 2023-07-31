@@ -210,6 +210,13 @@ properties:
             "borgmatic restore" from finding any database dumps created before
             the change. Defaults to ~/.borgmatic
         example: /tmp/borgmatic
+    store_config_files:
+        type: boolean
+        description: |
+            Store configuration files used to create a backup in the backup
+            itself. Defaults to true. Changing this to false prevents "borgmatic
+            bootstrap" from extracting configuration files from the backup. 
+        example: true
     source_directories_must_exist:
         type: boolean
         description: |
