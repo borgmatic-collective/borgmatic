@@ -1,4 +1,8 @@
 1.8.1.dev0
+ * #326: Add documentation for restoring a database to an alternate host:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-to-an-alternate-host
+ * #697: Add documentation for "bootstrap" action:
+   https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive
  * #728: Fix for "prune" action error when using the "keep_exclude_tags" option.
  * #730: Fix for Borg's interactive prompt on the "check --repair" action automatically getting
    answered "NO" even when the "check_i_know_what_i_am_doing" option isn't set.
