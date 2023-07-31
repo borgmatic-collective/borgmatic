@@ -92,7 +92,9 @@ def run_create(
         global_arguments.dry_run,
     )
     if config.get('store_config_files', True):
-        create_borgmatic_manifest(config, global_arguments.used_config_paths, global_arguments.dry_run)
+        create_borgmatic_manifest(
+            config, global_arguments.used_config_paths, global_arguments.dry_run
+        )
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
     json_output = borgmatic.borg.create.create_archive(
