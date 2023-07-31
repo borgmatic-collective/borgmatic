@@ -646,6 +646,53 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
         global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
     )
 
+def test_create_archive_with_sources_and_used_config_paths_with_store_config_files_false_calls_borg_with_sources_and_no_config_paths():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('deduplicate_directories').and_return(
+        ('foo', 'bar')
+    )
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
+    flexmock(module).should_receive('expand_directories').with_args(
+        ('foo', 'bar')
+    ).and_return(('foo', 'bar'))
+    flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
+    flexmock(module).should_receive('pattern_root_directories').and_return([])
+    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module).should_receive('ensure_files_readable')
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
+    environment = {'BORG_THINGY': 'YUP'}
+    flexmock(module.environment).should_receive('make_environment').and_return(environment)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+        working_directory=None,
+        extra_environment=environment,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'store_config_files': False,
+        },
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
+    )
 
 def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')

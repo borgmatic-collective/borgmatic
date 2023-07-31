@@ -354,7 +354,11 @@ def create_archive(
             expand_directories(
                 tuple(config.get('source_directories', ()))
                 + borgmatic_source_directories
-                + tuple(global_arguments.used_config_paths)
+                + tuple(
+                    global_arguments.used_config_paths
+                    if config.get('store_config_files', True)
+                    else ()
+                )
             )
         ),
         additional_directory_devices=map_directories_to_devices(
