@@ -338,6 +338,28 @@ within the database dump:
 borgmatic restore --archive latest --database users --schema tentant1
 ```
 
+### Restore to an alternate host
+<span class="minilink minilink-addedin">New in version 1.7.15</span>
+A database dump can be restored to a host other than the one from which it was
+originally dumped. The connection parameters like the username, password, and
+port can also be changed. This can be done from the command line:
+
+```bash
+borgmatic restore --archive latest --database users --hostname database2.example.org --port 5433 --username postgres --password trustsome1
+```
+
+Or from the configuration file:
+
+```yaml
+postgresql_databases:
+    - name: users
+        hostname: database1.example.org
+        restore_hostname: database1.example.org
+        restore_port: 5433
+        restore_username: postgres
+        restore_password: trustsome1
+```
+
 
 ### Limitations
 
