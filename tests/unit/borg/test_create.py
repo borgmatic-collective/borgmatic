@@ -651,13 +651,13 @@ def test_create_archive_with_sources_and_used_config_paths_with_store_config_fil
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(
-        ('foo', 'bar', '/etc/borgmatic/config.yaml')
+        ('foo', 'bar')
     )
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('expand_directories').with_args(
-        ('foo', 'bar', '/etc/borgmatic/config.yaml')
-    ).and_return(('foo', 'bar', '/etc/borgmatic/config.yaml'))
+        ('foo', 'bar')
+    ).and_return(('foo', 'bar'))
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
