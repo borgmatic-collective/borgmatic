@@ -150,7 +150,7 @@ borgmatic umount --mount-point /mnt
 <span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
 automatically stores all the configuration files used to create an archive inside the
 archive itself. This is useful in cases where you've lost a configuration
-file, or you want to see what configurations were used to create a particular
+file or you want to see what configurations were used to create a particular
 archive.
 
 To extract the configuration files from an archive, use the `config bootstrap` action. For example:
@@ -161,9 +161,9 @@ borgmatic config bootstrap --repository repo.borg --destination /tmp
 
 This extracts the configuration file from the latest archive in the repository `repo.borg` to `/tmp/etc/borgmatic/config.yaml`, assuming that the only configuration file used to create this archive was located at `/etc/borgmatic/config.yaml` when the archive was created.
 
-Note that to run the `config bootstrap` action, you don't need to have a borgmatic configuration file. You only need to specify the repository to use via the `--repository` flag, borgmatic will figure out the rest.
+Note that to run the `config bootstrap` action, you don't need to have a borgmatic configuration file. You only need to specify the repository to use via the `--repository` flag; borgmatic will figure out the rest.
 
-If a destination directory is not specified, the configuration files will be extracted to their original locations, silently **overwriting** any configuration files that may already exist. For example, if a configuration file was located at `/etc/borgmatic/config.yaml` when the archive was created, it will be extracted to `/etc/borgmatic/config.yaml` too. This is in line with the `extract` action, which extracts files to their original locations by default.
+If a destination directory is not specified, the configuration files will be extracted to their original locations, silently **overwriting** any configuration files that may already exist. For example, if a configuration file was located at `/etc/borgmatic/config.yaml` when the archive was created, it will be extracted to `/etc/borgmatic/config.yaml` too.
 
 If you want to extract the configuration file from a specific archive, use the `--archive` flag:
 
