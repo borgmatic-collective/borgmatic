@@ -44,6 +44,14 @@ def test_load_configuration_replaces_complex_constants():
     assert module.load_configuration('config.yaml') == {'key': {'subkey': 'value'}}
 
 
+def test_load_configuration_with_only_integer_value_does_not_raise():
+    builtins = flexmock(sys.modules['builtins'])
+    config_file = io.StringIO('33')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    assert module.load_configuration('config.yaml') == 33
+
+
 def test_load_configuration_inlines_include_relative_to_current_directory():
     builtins = flexmock(sys.modules['builtins'])
     flexmock(module.os).should_receive('getcwd').and_return('/tmp')
@@ -124,6 +132,37 @@ def test_load_configuration_raises_if_absolute_include_does_not_exist():
         assert module.load_configuration('config.yaml')
 
 
+def test_load_configuration_inlines_multiple_file_include_as_list():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(True)
+    flexmock(module.os.path).should_receive('exists').never()
+    include1_file = io.StringIO('value1')
+    include1_file.name = '/root/include1.yaml'
+    builtins.should_receive('open').with_args('/root/include1.yaml').and_return(include1_file)
+    include2_file = io.StringIO('value2')
+    include2_file.name = '/root/include2.yaml'
+    builtins.should_receive('open').with_args('/root/include2.yaml').and_return(include2_file)
+    config_file = io.StringIO('key: !include [/root/include1.yaml, /root/include2.yaml]')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+
+    assert module.load_configuration('config.yaml') == {'key': ['value2', 'value1']}
+
+
+def test_load_configuration_include_with_unsupported_filename_type_raises():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(True)
+    flexmock(module.os.path).should_receive('exists').never()
+    config_file = io.StringIO('key: !include {path: /root/include.yaml}')
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+
+    with pytest.raises(ValueError):
+        module.load_configuration('config.yaml')
+
+
 def test_load_configuration_merges_include():
     builtins = flexmock(sys.modules['builtins'])
     flexmock(module.os).should_receive('getcwd').and_return('/tmp')
@@ -147,6 +186,43 @@ def test_load_configuration_merges_include():
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
 
     assert module.load_configuration('config.yaml') == {'foo': 'override', 'baz': 'quux'}
+
+
+def test_load_configuration_merges_multiple_file_include():
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
+    flexmock(module.os.path).should_receive('isabs').and_return(False)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    include1_file = io.StringIO(
+        '''
+        foo: bar
+        baz: quux
+        original: yes
+        '''
+    )
+    include1_file.name = 'include1.yaml'
+    builtins.should_receive('open').with_args('/tmp/include1.yaml').and_return(include1_file)
+    include2_file = io.StringIO(
+        '''
+        baz: second
+        '''
+    )
+    include2_file.name = 'include2.yaml'
+    builtins.should_receive('open').with_args('/tmp/include2.yaml').and_return(include2_file)
+    config_file = io.StringIO(
+        '''
+        foo: override
+        <<: !include [include1.yaml, include2.yaml]
+        '''
+    )
+    config_file.name = 'config.yaml'
+    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+
+    assert module.load_configuration('config.yaml') == {
+        'foo': 'override',
+        'baz': 'second',
+        'original': 'yes',
+    }
 
 
 def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_values():

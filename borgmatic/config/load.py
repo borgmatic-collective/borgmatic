@@ -56,14 +56,20 @@ def include_configuration(loader, filename_node, include_directory):
     if isinstance(filename_node.value, str):
         return probe_and_include_file(filename_node.value, include_directories)
 
-    if isinstance(filename_node.value, list):
+    if (
+        isinstance(filename_node.value, list)
+        and len(filename_node.value)
+        and isinstance(filename_node.value[0], ruamel.yaml.nodes.ScalarNode)
+    ):
+        # Reversing the values ensures the correct ordering if these includes are subsequently
+        # merged together.
         return [
             probe_and_include_file(node.value, include_directories)
             for node in reversed(filename_node.value)
         ]
 
     raise ValueError(
-        f'!include value type ({type(filename_node.value)}) is not supported; use a single filename or a list of filenames'
+        '!include value is not supported; use a single filename or a list of filenames'
     )
 
 
