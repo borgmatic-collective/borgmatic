@@ -309,8 +309,8 @@ source_directories:
     - /etc
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `location:` section of your configuration.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put the
+`source_directories` option in the `location:` section of your configuration.
 
 Once this include gets merged in, the resulting configuration will have a
 `source_directories` value of `/etc` and `/var`—with `/home` omitted.

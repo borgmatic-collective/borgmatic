@@ -331,9 +331,8 @@ def make_parsers():
 
     global_plus_action_parser = ArgumentParser(
         description='''
-            Simple, configuration-driven backup software for servers and workstations. If none of
-            the action options are given, then borgmatic defaults to: create, prune, compact, and
-            check.
+            Simple, configuration-driven backup software for servers and workstations. If no actions
+            are given, then borgmatic defaults to: create, prune, compact, and check.
             ''',
         parents=[global_parser],
     )

@@ -438,8 +438,9 @@ def test_raise_omit_node_error_raises():
         module.raise_omit_node_error(loader=flexmock(), node=flexmock())
 
 
-def test_filter_omitted_nodes():
-    nodes = [
+def test_filter_omitted_nodes_discards_values_with_omit_tag_and_also_equal_values():
+    nodes = [flexmock(), flexmock()]
+    values = [
         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='a'),
         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='b'),
         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='c'),
@@ -448,9 +449,25 @@ def test_filter_omitted_nodes():
         module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='c'),
     ]
 
-    result = module.filter_omitted_nodes(nodes)
+    result = module.filter_omitted_nodes(nodes, values)
 
     assert [item.value for item in result] == ['a', 'c', 'a', 'c']
+
+
+def test_filter_omitted_nodes_keeps_all_values_when_given_only_one_node():
+    nodes = [flexmock()]
+    values = [
+        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='a'),
+        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='b'),
+        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='c'),
+        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='a'),
+        module.ruamel.yaml.nodes.ScalarNode(tag='!omit', value='b'),
+        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='c'),
+    ]
+
+    result = module.filter_omitted_nodes(nodes, values)
+
+    assert [item.value for item in result] == ['a', 'b', 'c', 'a', 'b', 'c']
 
 
 def test_deep_merge_nodes_replaces_colliding_scalar_values():
@@ -499,10 +516,10 @@ def test_deep_merge_nodes_replaces_colliding_scalar_values():
     assert section_key.value == 'retention'
     options = section_value.value
     assert len(options) == 2
-    assert options[0][0].value == 'keep_hourly'
-    assert options[0][1].value == '24'
-    assert options[1][0].value == 'keep_daily'
-    assert options[1][1].value == '5'
+    assert options[0][0].value == 'keep_daily'
+    assert options[0][1].value == '5'
+    assert options[1][0].value == 'keep_hourly'
+    assert options[1][1].value == '24'
 
 
 def test_deep_merge_nodes_keeps_non_colliding_scalar_values():
@@ -553,10 +570,10 @@ def test_deep_merge_nodes_keeps_non_colliding_scalar_values():
     assert section_key.value == 'retention'
     options = section_value.value
     assert len(options) == 3
-    assert options[0][0].value == 'keep_hourly'
-    assert options[0][1].value == '24'
-    assert options[1][0].value == 'keep_daily'
-    assert options[1][1].value == '7'
+    assert options[0][0].value == 'keep_daily'
+    assert options[0][1].value == '7'
+    assert options[1][0].value == 'keep_hourly'
+    assert options[1][1].value == '24'
     assert options[2][0].value == 'keep_minutely'
     assert options[2][1].value == '10'
 
@@ -629,10 +646,10 @@ def test_deep_merge_nodes_keeps_deeply_nested_values():
     assert section_key.value == 'storage'
     options = section_value.value
     assert len(options) == 2
-    assert options[0][0].value == 'lock_wait'
-    assert options[0][1].value == '5'
-    assert options[1][0].value == 'extra_borg_options'
-    nested_options = options[1][1].value
+    assert options[0][0].value == 'extra_borg_options'
+    assert options[1][0].value == 'lock_wait'
+    assert options[1][1].value == '5'
+    nested_options = options[0][1].value
     assert len(nested_options) == 2
     assert nested_options[0][0].value == 'init'
     assert nested_options[0][1].value == '--init-option'

@@ -8,6 +8,7 @@
  * #728: Fix for "prune" action error when using the "keep_exclude_tags" option.
  * #730: Fix for Borg's interactive prompt on the "check --repair" action automatically getting
    answered "NO" even when the "check_i_know_what_i_am_doing" option isn't set.
+ * #732: Include multiple configuration files with a single "!include".
 
 1.8.0
  * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting

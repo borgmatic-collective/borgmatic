@@ -10,7 +10,11 @@ def normalize_sections(config_filename, config):
 
     Raise ValueError if the "prefix" option is set in both "location" and "consistency" sections.
     '''
-    location = config.get('location') or {}
+    try:
+        location = config.get('location') or {}
+    except AttributeError:
+        raise ValueError('Configuration does not contain any options')
+
     storage = config.get('storage') or {}
     consistency = config.get('consistency') or {}
     hooks = config.get('hooks') or {}
