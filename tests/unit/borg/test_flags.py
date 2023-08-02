@@ -86,28 +86,28 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
 
 
 @pytest.mark.parametrize(
-    'match_archives, archive_name_format,feature_available,expected_result',
+    'match_archives,archive_name_format,feature_available,expected_result',
     (
         (None, None, True, ()),
         (None, '', True, ()),
         (
             're:foo-.*',
-            '{hostname}-{now}',
+            '{hostname}-{now}',  # noqa: FS003
             True,
             ('--match-archives', 're:foo-.*'),
-        ),  # noqa: FS003
+        ),
         (
             'sh:foo-*',
-            '{hostname}-{now}',
+            '{hostname}-{now}',  # noqa: FS003
             False,
             ('--glob-archives', 'foo-*'),
-        ),  # noqa: FS003
+        ),
         (
             'foo-*',
-            '{hostname}-{now}',
+            '{hostname}-{now}',  # noqa: FS003
             False,
             ('--glob-archives', 'foo-*'),
-        ),  # noqa: FS003
+        ),
         (
             None,
             '{hostname}-docs-{now}',  # noqa: FS003
@@ -132,6 +132,18 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
             '{hostname}-docs-{now}',  # noqa: FS003
             False,
             ('--glob-archives', '{hostname}-docs-*'),  # noqa: FS003
+        ),
+        (
+            None,
+            '{now}',  # noqa: FS003
+            False,
+            (),
+        ),
+        (
+            None,
+            '{now}',  # noqa: FS003
+            True,
+            (),
         ),
         (None, '{utcnow}-docs-{user}', False, ('--glob-archives', '*-docs-{user}')),  # noqa: FS003
     ),

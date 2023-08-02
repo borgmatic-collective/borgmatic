@@ -11,6 +11,8 @@
  * #732: Include multiple configuration files with a single "!include". See the documentation for
    more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#multiple-merge-includes
+ * #734: Omit "--glob-archives" or "--match-archives" Borg flag when its value would be "*" (meaning
+   all archives).
 
 1.8.0
  * #575: BREAKING: For the "borgmatic borg" action, instead of implicitly injecting

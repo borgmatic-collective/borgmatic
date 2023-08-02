@@ -77,6 +77,9 @@ def make_match_archives_flags(match_archives, archive_name_format, local_borg_ve
 
     derived_match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
 
+    if derived_match_archives == '*':
+        return ()
+
     if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
         return ('--match-archives', f'sh:{derived_match_archives}')
     else:
