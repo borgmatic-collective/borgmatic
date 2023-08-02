@@ -546,6 +546,118 @@ def test_filter_omitted_nodes_keeps_all_values_when_given_only_one_node():
     assert [item.value for item in result] == ['a', 'b', 'c', 'a', 'b', 'c']
 
 
+def test_merge_values_combines_mapping_values():
+    nodes = [
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='keep_hourly'
+                        ),
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:int', value='24'
+                        ),
+                    ),
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                        ),
+                        module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='7'),
+                    ),
+                ],
+            ),
+        ),
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='keep_daily'
+                        ),
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:int', value='25'
+                        ),
+                    ),
+                ],
+            ),
+        ),
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.MappingNode(
+                tag='tag:yaml.org,2002:map',
+                value=[
+                    (
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:str', value='keep_nanosecondly'
+                        ),
+                        module.ruamel.yaml.nodes.ScalarNode(
+                            tag='tag:yaml.org,2002:int', value='1000'
+                        ),
+                    ),
+                ],
+            ),
+        ),
+    ]
+
+    values = module.merge_values(nodes)
+
+    assert len(values) == 4
+    assert values[0][0].value == 'keep_hourly'
+    assert values[0][1].value == '24'
+    assert values[1][0].value == 'keep_daily'
+    assert values[1][1].value == '7'
+    assert values[2][0].value == 'keep_daily'
+    assert values[2][1].value == '25'
+    assert values[3][0].value == 'keep_nanosecondly'
+    assert values[3][1].value == '1000'
+
+
+def test_merge_values_combines_sequence_values():
+    nodes = [
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.SequenceNode(
+                tag='tag:yaml.org,2002:seq',
+                value=[
+                    module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='1'),
+                    module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='2'),
+                ],
+            ),
+        ),
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.SequenceNode(
+                tag='tag:yaml.org,2002:seq',
+                value=[
+                    module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='3'),
+                ],
+            ),
+        ),
+        (
+            module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:str', value='option'),
+            module.ruamel.yaml.nodes.SequenceNode(
+                tag='tag:yaml.org,2002:seq',
+                value=[
+                    module.ruamel.yaml.nodes.ScalarNode(tag='tag:yaml.org,2002:int', value='4'),
+                ],
+            ),
+        ),
+    ]
+
+    values = module.merge_values(nodes)
+
+    assert len(values) == 4
+    assert values[0].value == '1'
+    assert values[1].value == '2'
+    assert values[2].value == '3'
+    assert values[3].value == '4'
+
+
 def test_deep_merge_nodes_replaces_colliding_scalar_values():
     node_values = [
         (
