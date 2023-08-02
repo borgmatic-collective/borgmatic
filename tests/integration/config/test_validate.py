@@ -117,7 +117,7 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
     module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
 
-def test_parse_configuration_inlines_include():
+def test_parse_configuration_inlines_include_inside_deprecated_section():
     mock_config_and_schema(
         '''
         source_directories:

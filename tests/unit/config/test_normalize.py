@@ -111,6 +111,13 @@ def test_normalize_sections_with_different_umask_values_raises():
         module.normalize_sections('test.yaml', config)
 
 
+def test_normalize_sections_with_only_scalar_raises():
+    config = 33
+
+    with pytest.raises(ValueError):
+        module.normalize_sections('test.yaml', config)
+
+
 @pytest.mark.parametrize(
     'config,expected_config,produces_logs',
     (

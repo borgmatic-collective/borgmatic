@@ -233,18 +233,57 @@ checks:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> These
 options were organized into sections like `retention:` and `consistency:`.
 
-Once this include gets merged in, the resulting configuration would have all
-of the options from the original configuration file *and* the options from the
+Once this include gets merged in, the resulting configuration has all of the
+options from the original configuration file *and* the options from the
 include.
 
 Note that this `<<` include merging syntax is only for merging in mappings
-(configuration options and their values). But if you'd like to include a
-single value directly, please see the above about standard includes.
+(configuration options and their values). If you'd like to include a single
+value directly, please see above about standard includes.
 
-Additionally, there is a limitation preventing multiple `<<` include merges
-per file or option value. So for instance, that means you can do one `<<`
-merge at the global level, another `<<` within each nested option value, etc.
-(This is a YAML limitation.)
+
+### Multiple merge includes
+
+borgmatic has a limitation preventing multiple `<<` include merges per file or
+option value. This means you can do a single `<<` merge at the global level,
+another `<<` within each nested option value, etc. (This is a YAML
+limitation.) For instance:
+
+```yaml
+repositories:
+   - path: repo.borg
+
+# This won't work! You can't do multiple merges like this at the same level.
+<<: !include common1.yaml
+<<: !include common2.yaml
+```
+
+But read on for a way around this.
+
+<span class="minilink minilink-addedin">New in version 1.8.1</span> You can
+include and merge multiple configuration files all at once. For instance:
+
+```yaml
+repositories:
+   - path: repo.borg
+
+<<: !include [common1.yaml, common2.yaml, common3.yaml]
+```
+
+This merges in each included configuration file in turn, such that later files
+replace the options in earlier ones.
+
+Here's another way to do the same thing:
+
+```yaml
+repositories:
+   - path: repo.borg
+
+<<: !include
+    - common1.yaml
+    - common2.yaml
+    - common3.yaml
+```
 
 
 ### Deep merge
@@ -309,8 +348,8 @@ source_directories:
     - /etc
 ```
 
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `location:` section of your configuration.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put the
+`source_directories` option in the `location:` section of your configuration.
 
 Once this include gets merged in, the resulting configuration will have a
 `source_directories` value of `/etc` and `/var`—with `/home` omitted.
