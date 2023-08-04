@@ -1,4 +1,4 @@
-1.8.1.dev0
+1.8.1
  * #326: Add documentation for restoring a database to an alternate host:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#restore-to-an-alternate-host
  * #697: Add documentation for "bootstrap" action:
