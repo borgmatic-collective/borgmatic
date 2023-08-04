@@ -148,25 +148,42 @@ borgmatic umount --mount-point /mnt
 ## Extract the configuration files used to create an archive
 
 <span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
-automatically stores all the configuration files used to create an archive inside the
-archive itself. This is useful in cases where you've lost a configuration
-file or you want to see what configurations were used to create a particular
-archive.
+automatically stores all the configuration files used to create an archive
+inside the archive itself. This is useful in cases where you've lost a
+configuration file or you want to see what configurations were used to create a
+particular archive.
 
-To extract the configuration files from an archive, use the `config bootstrap` action. For example:
+To extract the configuration files from an archive, use the `config bootstrap`
+action. For example:
 
 ```bash 
 borgmatic config bootstrap --repository repo.borg --destination /tmp
 ```
 
-This extracts the configuration file from the latest archive in the repository `repo.borg` to `/tmp/etc/borgmatic/config.yaml`, assuming that the only configuration file used to create this archive was located at `/etc/borgmatic/config.yaml` when the archive was created.
+This extracts the configuration file from the latest archive in the repository
+`repo.borg` to `/tmp/etc/borgmatic/config.yaml`, assuming that the only
+configuration file used to create this archive was located at
+`/etc/borgmatic/config.yaml` when the archive was created.
 
-Note that to run the `config bootstrap` action, you don't need to have a borgmatic configuration file. You only need to specify the repository to use via the `--repository` flag; borgmatic will figure out the rest.
+Note that to run the `config bootstrap` action, you don't need to have a
+borgmatic configuration file. You only need to specify the repository to use via
+the `--repository` flag; borgmatic will figure out the rest.
 
-If a destination directory is not specified, the configuration files will be extracted to their original locations, silently **overwriting** any configuration files that may already exist. For example, if a configuration file was located at `/etc/borgmatic/config.yaml` when the archive was created, it will be extracted to `/etc/borgmatic/config.yaml` too.
+If a destination directory is not specified, the configuration files will be
+extracted to their original locations, silently *overwriting* any configuration
+files that may already exist. For example, if a configuration file was located
+at `/etc/borgmatic/config.yaml` when the archive was created, it will be
+extracted to `/etc/borgmatic/config.yaml` too.
 
-If you want to extract the configuration file from a specific archive, use the `--archive` flag:
+If you want to extract the configuration file from a specific archive, use the
+`--archive` flag:
 
 ```bash
 borgmatic config bootstrap --repository repo.borg --archive host-2023-01-02T04:06:07.080910 --destination /tmp
 ```
+
+<span class="minilink minilink-addedin">New in version 1.8.1</span> Set the
+`store_config_files` option to `false` to disable the automatic backup of
+borgmatic configuration files, for instance if they contain sensitive
+information you don't want to store even inside your encrypted backups. If you
+do this though, the `config bootstrap` action will no longer work.
