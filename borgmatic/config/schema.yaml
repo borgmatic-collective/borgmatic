@@ -841,10 +841,121 @@ properties:
         description: |
             List of one or more PostgreSQL databases to dump before creating a
             backup, run once per configuration file. The database dumps are
-            added to your source directories at runtime, backed up, and removed
-            afterwards. Requires pg_dump/pg_dumpall/pg_restore commands. See
+            added to your source directories at runtime and streamed directly
+            to Borg. Requires pg_dump/pg_dumpall/pg_restore commands. See
             https://www.postgresql.org/docs/current/app-pgdump.html and
-            https://www.postgresql.org/docs/current/libpq-ssl.html for details.
+            https://www.postgresql.org/docs/current/libpq-ssl.html for
+            details.
+    mariadb_databases:
+        type: array
+        items:
+            type: object
+            required: ['name']
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                    description: |
+                        Database name (required if using this hook). Or "all" to
+                        dump all databases on the host. Note that using this
+                        database hook implicitly enables both read_special and
+                        one_file_system (see above) to support dump and restore
+                        streaming.
+                    example: users
+                hostname:
+                    type: string
+                    description: |
+                        Database hostname to connect to. Defaults to connecting
+                        via local Unix socket.
+                    example: database.example.org
+                restore_hostname:
+                    type: string
+                    description: |
+                        Database hostname to restore to. Defaults to the
+                        "hostname" option.
+                    example: database.example.org
+                port:
+                    type: integer
+                    description: Port to connect to. Defaults to 3306.
+                    example: 3307
+                restore_port:
+                    type: integer
+                    description: |
+                        Port to restore to. Defaults to the "port" option.
+                    example: 5433
+                username:
+                    type: string
+                    description: |
+                        Username with which to connect to the database. Defaults
+                        to the username of the current user.
+                    example: dbuser
+                restore_username:
+                    type: string
+                    description: |
+                        Username with which to restore the database. Defaults to
+                        the "username" option.
+                    example: dbuser
+                password:
+                    type: string
+                    description: |
+                        Password with which to connect to the database. Omitting
+                        a password will only work if MariaDB is configured to
+                        trust the configured username without a password.
+                    example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option.
+                    example: trustsome1
+                format:
+                    type: string
+                    enum: ['sql']
+                    description: |
+                        Database dump output format. Currently only "sql" is
+                        supported. Defaults to "sql" for a single database. Or,
+                        when database name is "all" and format is blank, dumps
+                        all databases to a single file. But if a format is
+                        specified with an "all" database name, dumps each
+                        database to a separate file of that format, allowing
+                        more convenient restores of individual databases.
+                    example: directory
+                add_drop_database:
+                    type: boolean
+                    description: |
+                        Use the "--add-drop-database" flag with mariadb-dump,
+                        causing the database to be dropped right before restore.
+                        Defaults to true.
+                    example: false
+                options:
+                    type: string
+                    description: |
+                        Additional mariadb-dump options to pass directly to the
+                        dump command, without performing any validation on them.
+                        See mariadb-dump documentation for details.
+                    example: --skip-comments
+                list_options:
+                    type: string
+                    description: |
+                        Additional options to pass directly to the mariadb
+                        command that lists available databases, without
+                        performing any validation on them. See mariadb command
+                        documentation for details.
+                    example: --defaults-extra-file=mariadb.cnf
+                restore_options:
+                    type: string
+                    description: |
+                        Additional options to pass directly to the mariadb
+                        command that restores database dumps, without
+                        performing any validation on them. See mariadb command
+                        documentation for details.
+                    example: --defaults-extra-file=mariadb.cnf
+        description: |
+            List of one or more MariaDB databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly
+            to Borg. Requires mariadb-dump/mariadb commands. See
+            https://mariadb.com/kb/en/library/mysqldump/ for details.
     mysql_databases:
         type: array
         items:
@@ -893,7 +1004,7 @@ properties:
                     description: |
                         Username with which to restore the database. Defaults to
                         the "username" option.
-                    example: dbuser                        
+                    example: dbuser
                 password:
                     type: string
                     description: |
@@ -906,7 +1017,7 @@ properties:
                     description: |
                         Password with which to connect to the restore database.
                         Defaults to the "password" option.
-                    example: trustsome1                        
+                    example: trustsome1
                 format:
                     type: string
                     enum: ['sql']
@@ -936,26 +1047,26 @@ properties:
                 list_options:
                     type: string
                     description: |
-                        Additional mysql options to pass directly to the mysql
+                        Additional options to pass directly to the mysql
                         command that lists available databases, without
-                        performing any validation on them. See mysql
+                        performing any validation on them. See mysql command
                         documentation for details.
                     example: --defaults-extra-file=my.cnf
                 restore_options:
                     type: string
                     description: |
-                        Additional mysql options to pass directly to the mysql
-                        command that restores database dumps, without performing
-                        any validation on them. See mysql documentation for
-                        details.
+                        Additional options to pass directly to the mysql
+                        command that restores database dumps, without
+                        performing any validation on them. See mysql command
+                        documentation for details.
                     example: --defaults-extra-file=my.cnf
         description: |
-            List of one or more MySQL/MariaDB databases to dump before creating
-            a backup, run once per configuration file. The database dumps are
-            added to your source directories at runtime, backed up, and removed
-            afterwards. Requires mysqldump/mysql commands (from either MySQL or
-            MariaDB). See https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html
-            or https://mariadb.com/kb/en/library/mysqldump/ for details.
+            List of one or more MySQL databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly
+            to Borg. Requires mysqldump/mysql commands. See
+            https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html for
+            details.
     sqlite_databases:
         type: array
         items:
@@ -1033,7 +1144,7 @@ properties:
                     description: |
                         Username with which to restore the database. Defaults to
                         the "username" option.
-                    example: dbuser                        
+                    example: dbuser
                 password:
                     type: string
                     description: |
@@ -1080,8 +1191,8 @@ properties:
         description: |
             List of one or more MongoDB databases to dump before creating a
             backup, run once per configuration file. The database dumps are
-            added to your source directories at runtime, backed up, and removed
-            afterwards. Requires mongodump/mongorestore commands. See
+            added to your source directories at runtime and streamed directly
+            to Borg. Requires mongodump/mongorestore commands. See
             https://docs.mongodb.com/database-tools/mongodump/ and
             https://docs.mongodb.com/database-tools/mongorestore/ for details.
     ntfy:

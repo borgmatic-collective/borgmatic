@@ -59,26 +59,23 @@ def build_dump_command(database, dump_filename, dump_format):
     Return the mongodump command from a single database configuration.
     '''
     all_databases = database['name'] == 'all'
-    command = ['mongodump']
-    if dump_format == 'directory':
-        command.extend(('--out', dump_filename))
-    if 'hostname' in database:
-        command.extend(('--host', database['hostname']))
-    if 'port' in database:
-        command.extend(('--port', str(database['port'])))
-    if 'username' in database:
-        command.extend(('--username', database['username']))
-    if 'password' in database:
-        command.extend(('--password', database['password']))
-    if 'authentication_database' in database:
-        command.extend(('--authenticationDatabase', database['authentication_database']))
-    if not all_databases:
-        command.extend(('--db', database['name']))
-    if 'options' in database:
-        command.extend(database['options'].split(' '))
-    if dump_format != 'directory':
-        command.extend(('--archive', '>', dump_filename))
-    return command
+
+    return (
+        ('mongodump',)
+        + (('--out', dump_filename) if dump_format == 'directory' else ())
+        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--port', str(database['port'])) if 'port' in database else ())
+        + (('--username', database['username']) if 'username' in database else ())
+        + (('--password', database['password']) if 'password' in database else ())
+        + (
+            ('--authenticationDatabase', database['authentication_database'])
+            if 'authentication_database' in database
+            else ()
+        )
+        + (('--db', database['name']) if not all_databases else ())
+        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + (('--archive', '>', dump_filename) if dump_format != 'directory' else ())
+    )
 
 
 def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover

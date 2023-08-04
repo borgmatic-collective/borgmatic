@@ -15,7 +15,7 @@ consistent snapshot that is more suited for backups.
 
 Fortunately, borgmatic includes built-in support for creating database dumps
 prior to running backups. For example, here is everything you need to dump and
-backup a couple of local PostgreSQL databases and a MySQL/MariaDB database.
+backup a couple of local PostgreSQL databases and a MySQL database.
 
 ```yaml
 postgresql_databases:
@@ -44,6 +44,16 @@ Additionally, you can dump SQLite databases. For example:
 sqlite_databases:
     - name: mydb
       path: /var/lib/sqlite3/mydb.sqlite
+```
+
+<span class="minilink minilink-addedin">New in version 1.8.2</span> If you're
+using MariaDB, use the MariaDB database hook instead of `mysql_databases:` as
+the MariaDB hook calls native MariaDB commands instead of the deprecated MySQL
+ones. For instance:
+
+```yaml
+mariadb_databases:
+    - name: comments
 ```
 
 As part of each backup, borgmatic streams a database dump for each configured
@@ -75,16 +85,23 @@ postgresql_databases:
       password: trustsome1
       format: tar
       options: "--role=someone"
+mariadb_databases:
+    - name: photos
+      hostname: database3.example.org
+      port: 3307
+      username: root
+      password: trustsome1
+      options: "--skip-comments"
 mysql_databases:
     - name: posts
-      hostname: database3.example.org
+      hostname: database4.example.org
       port: 3307
       username: root
       password: trustsome1
       options: "--skip-comments"
 mongodb_databases:
     - name: messages
-      hostname: database4.example.org
+      hostname: database5.example.org
       port: 27018
       username: dbuser
       password: trustsome1
@@ -108,6 +125,8 @@ If you want to dump all databases on a host, use `all` for the database name:
 ```yaml
 postgresql_databases:
     - name: all
+mariadb_databases:
+    - name: all
 mysql_databases:
     - name: all
 mongodb_databases:
@@ -123,15 +142,18 @@ The SQLite hook in particular does not consider "all" a special database name.
 these options in the `hooks:` section of your configuration.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> With
-PostgreSQL and MySQL, you can optionally dump "all" databases to separate
-files instead of one combined dump file, allowing more convenient restores of
-individual databases. Enable this by specifying your desired database dump
-`format`:
+PostgreSQL, MariaDB, and MySQL, you can optionally dump "all" databases to
+separate files instead of one combined dump file, allowing more convenient
+restores of individual databases. Enable this by specifying your desired
+database dump `format`:
 
 ```yaml
 postgresql_databases:
     - name: all
       format: custom
+mariadb_databases:
+    - name: all
+      format: sql
 mysql_databases:
     - name: all
       format: sql
@@ -222,10 +244,16 @@ to prepare for this situation, it's a good idea to include borgmatic's own
 configuration files as part of your regular backups. That way, you can always
 bring back any missing configuration files in order to restore a database.
 
+<span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
+automatically includes configuration files in your backup. See [the
+documentation on the `config bootstrap`
+action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive)
+for more information.
+
 
 ## Supported databases
 
-As of now, borgmatic supports PostgreSQL, MySQL/MariaDB, MongoDB, and SQLite
+As of now, borgmatic supports PostgreSQL, MariaDB, MySQL, MongoDB, and SQLite
 databases directly. But see below about general-purpose preparation and
 cleanup hooks as a work-around with other database systems. Also, please [file
 a ticket](https://torsion.org/borgmatic/#issues) for additional database
@@ -420,9 +448,9 @@ dumps with any database system.
 
 ## Troubleshooting
 
-### PostgreSQL/MySQL authentication errors
+### Authentication errors
 
-With PostgreSQL and MySQL/MariaDB, if you're getting authentication errors
+With PostgreSQL, MariaDB, and MySQL, if you're getting authentication errors
 when borgmatic tries to connect to your database, a natural reaction is to
 increase your borgmatic verbosity with `--verbosity 2` and go looking in the
 logs. You'll notice though that your database password does not show up in the
@@ -436,23 +464,24 @@ authenticated. For instance, with PostgreSQL, check your
 [pg_hba.conf](https://www.postgresql.org/docs/current/auth-pg-hba-conf.html)
 file for that configuration.
 
-Additionally, MySQL/MariaDB may be picking up some of your credentials from a
-defaults file like `~/.my.cnf`. If that's the case, then it's possible
-MySQL/MariaDB ends up using, say, a username from borgmatic's configuration
-and a password from `~/.my.cnf`. This may result in authentication errors if
-this combination of credentials is not what you intend.
+Additionally, MariaDB or MySQL may be picking up some of your credentials from
+a defaults file like `~/mariadb.cnf` or `~/.my.cnf`. If that's the case, then
+it's possible MariaDB or MySQL end up using, say, a username from borgmatic's
+configuration and a password from `~/mariadb.cnf` or `~/.my.cnf`. This may
+result in authentication errors if this combination of credentials is not what
+you intend.
 
 
-### MySQL table lock errors
+### MariaDB or MySQL table lock errors
 
-If you encounter table lock errors during a database dump with MySQL/MariaDB,
-you may need to [use a
-transaction](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html#option_mysqldump_single-transaction).
+If you encounter table lock errors during a database dump with MariaDB or
+MySQL, you may need to [use a
+transaction](https://mariadb.com/docs/skysql-dbaas/ref/mdb/cli/mariadb-dump/single-transaction/).
 You can add any additional flags to the `options:` in your database
-configuration. Here's an example:
+configuration. Here's an example with MariaDB:
 
 ```yaml
-mysql_databases:
+mariadb_databases:
     - name: posts
       options: "--single-transaction --quick"
 ```

@@ -45,18 +45,32 @@ postgresql_databases:
       hostname: postgresql
       username: postgres
       password: test
-mysql_databases:
+mariadb_databases:
     - name: test
-      hostname: mysql
+      hostname: mariadb
       username: root
       password: test
     - name: all
-      hostname: mysql
+      hostname: mariadb
       username: root
       password: test
     - name: all
       format: sql
-      hostname: mysql
+      hostname: mariadb
+      username: root
+      password: test
+mysql_databases:
+    - name: test
+      hostname: mariadb
+      username: root
+      password: test
+    - name: all
+      hostname: mariadb
+      username: root
+      password: test
+    - name: all
+      format: sql
+      hostname: mariadb
       username: root
       password: test
 mongodb_databases:
@@ -111,12 +125,21 @@ postgresql_databases:
       restore_port: 5433
       restore_username: postgres2
       restore_password: test2
-mysql_databases:
+mariadb_databases:
     - name: test
-      hostname: mysql
+      hostname: mariadb
       username: root
       password: test
-      restore_hostname: mysql2
+      restore_hostname: mariadb2
+      restore_port: 3307
+      restore_username: root
+      restore_password: test2
+mysql_databases:
+    - name: test
+      hostname: mariadb
+      username: root
+      password: test
+      restore_hostname: mariadb2
       restore_port: 3307
       restore_username: root
       restore_password: test2

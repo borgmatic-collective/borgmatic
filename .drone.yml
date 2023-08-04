@@ -16,16 +16,16 @@ services:
       POSTGRES_USER: postgres2
     commands:
       - docker-entrypoint.sh -p 5433
-  - name: mysql
-    image: docker.io/mariadb:10.5
+  - name: mariadb
+    image: docker.io/mariadb:10.11.4
     environment:
-      MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: test
-  - name: mysql2
-    image: docker.io/mariadb:10.5
+      MARIADB_ROOT_PASSWORD: test
+      MARIADB_DATABASE: test
+  - name: mariadb2
+    image: docker.io/mariadb:10.11.4
     environment:
-      MYSQL_ROOT_PASSWORD: test2
-      MYSQL_DATABASE: test
+      MARIADB_ROOT_PASSWORD: test2
+      MARIADB_DATABASE: test
     commands:
       - docker-entrypoint.sh --port=3307
   - name: mongodb

@@ -12,16 +12,16 @@ services:
       POSTGRES_DB: test
       POSTGRES_USER: postgres2
     command: docker-entrypoint.sh -p 5433
-  mysql:
-    image: docker.io/mariadb:10.5
+  mariadb:
+    image: docker.io/mariadb:10.11.4
     environment:
-      MYSQL_ROOT_PASSWORD: test
-      MYSQL_DATABASE: test
-  mysql2:
-    image: docker.io/mariadb:10.5
+      MARIADB_ROOT_PASSWORD: test
+      MARIADB_DATABASE: test
+  mariadb2:
+    image: docker.io/mariadb:10.11.4
     environment:
-      MYSQL_ROOT_PASSWORD: test2
-      MYSQL_DATABASE: test
+      MARIADB_ROOT_PASSWORD: test2
+      MARIADB_DATABASE: test
     command: docker-entrypoint.sh --port=3307
   mongodb:
     image: docker.io/mongo:5.0.5
@@ -50,7 +50,7 @@ services:
     depends_on:
       - postgresql
       - postgresql2
-      - mysql
-      - mysql2
+      - mariadb
+      - mariadb2
       - mongodb
       - mongodb2

@@ -7,9 +7,10 @@ from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 logger = logging.getLogger(__name__)
 
 DATABASE_HOOK_NAMES = (
-    'postgresql_databases',
+    'mariadb_databases',
     'mysql_databases',
     'mongodb_databases',
+    'postgresql_databases',
     'sqlite_databases',
 )
 

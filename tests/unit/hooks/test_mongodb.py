@@ -17,7 +17,7 @@ def test_dump_databases_runs_mongodump_for_each_database():
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_command').with_args(
-            ['mongodump', '--db', name, '--archive', '>', f'databases/localhost/{name}'],
+            ('mongodump', '--db', name, '--archive', '>', f'databases/localhost/{name}'),
             shell=True,
             run_to_completion=False,
         ).and_return(process).once()
@@ -47,7 +47,7 @@ def test_dump_databases_runs_mongodump_with_hostname_and_port():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        [
+        (
             'mongodump',
             '--host',
             'database.example.org',
@@ -58,7 +58,7 @@ def test_dump_databases_runs_mongodump_with_hostname_and_port():
             '--archive',
             '>',
             'databases/database.example.org/foo',
-        ],
+        ),
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
@@ -83,7 +83,7 @@ def test_dump_databases_runs_mongodump_with_username_and_password():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        [
+        (
             'mongodump',
             '--username',
             'mongo',
@@ -96,7 +96,7 @@ def test_dump_databases_runs_mongodump_with_username_and_password():
             '--archive',
             '>',
             'databases/localhost/foo',
-        ],
+        ),
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
@@ -114,7 +114,7 @@ def test_dump_databases_runs_mongodump_with_directory_format():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
 
     flexmock(module).should_receive('execute_command').with_args(
-        ['mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'],
+        ('mongodump', '--out', 'databases/localhost/foo', '--db', 'foo'),
         shell=True,
     ).and_return(flexmock()).once()
 
@@ -131,7 +131,7 @@ def test_dump_databases_runs_mongodump_with_options():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ['mongodump', '--db', 'foo', '--stuff=such', '--archive', '>', 'databases/localhost/foo'],
+        ('mongodump', '--db', 'foo', '--stuff=such', '--archive', '>', 'databases/localhost/foo'),
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
@@ -149,7 +149,7 @@ def test_dump_databases_runs_mongodumpall_for_all_databases():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ['mongodump', '--archive', '>', 'databases/localhost/all'],
+        ('mongodump', '--archive', '>', 'databases/localhost/all'),
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
