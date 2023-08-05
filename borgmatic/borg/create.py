@@ -420,7 +420,7 @@ def create_archive(
             f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
 
-    create_command = (
+    create_flags = (
         tuple(local_path.split(' '))
         + ('create',)
         + make_pattern_flags(config, pattern_file.name if pattern_file else None)
@@ -449,11 +449,11 @@ def create_archive(
         )
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_archive_flags(
-            repository_path, archive_name_format, local_borg_version
-        )
-        + (sources if not pattern_file else ())
     )
+
+    create_positional_arguments = flags.make_repository_archive_flags(
+        repository_path, archive_name_format, local_borg_version
+    ) + (sources if not pattern_file else ())
 
     if json:
         output_log_level = None
@@ -473,7 +473,7 @@ def create_archive(
     if stream_processes and not config.get('read_special'):
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
-            create_command,
+            create_flags + create_positional_arguments,
             local_path,
             working_directory,
             borg_environment,
@@ -490,9 +490,9 @@ def create_archive(
                 ),
                 pattern_file=exclude_file,
             )
-            create_command += make_exclude_flags(config, exclude_file.name)
+            create_flags += make_exclude_flags(config, exclude_file.name)
 
-    create_command += (
+    create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (('--stats',) if stats and not json and not dry_run else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
@@ -502,7 +502,7 @@ def create_archive(
 
     if stream_processes:
         return execute_command_with_processes(
-            create_command,
+            create_flags + create_positional_arguments,
             stream_processes,
             output_log_level,
             output_file,
@@ -512,14 +512,14 @@ def create_archive(
         )
     elif output_log_level is None:
         return execute_command_and_capture_output(
-            create_command,
+            create_flags + create_positional_arguments,
             working_directory=working_directory,
             extra_environment=borg_environment,
             borg_local_path=local_path,
         )
     else:
         execute_command(
-            create_command,
+            create_flags + create_positional_arguments,
             output_log_level,
             output_file,
             borg_local_path=local_path,

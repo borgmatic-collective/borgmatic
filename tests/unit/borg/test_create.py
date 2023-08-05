@@ -760,7 +760,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--info',),
+        ('borg', 'create', '--info') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -803,7 +803,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
+        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -845,7 +845,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--debug', '--show-rc'),
+        ('borg', 'create', '--debug', '--show-rc') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -888,7 +888,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
+        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -974,7 +974,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--dry-run') + REPO_ARCHIVE_WITH_PATHS + ('--info',),
+        ('borg', 'create', '--dry-run', '--info') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1849,7 +1849,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--stats',),
+        ('borg', 'create', '--stats') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',
@@ -1935,12 +1935,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create')
-        + REPO_ARCHIVE_WITH_PATHS
-        + (
-            '--info',
-            '--progress',
-        ),
+        ('borg', 'create', '--info', '--progress') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path='borg',
@@ -1984,7 +1979,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--progress',),
+        ('borg', 'create', '--progress') + REPO_ARCHIVE_WITH_PATHS,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path='borg',
@@ -2029,10 +2024,12 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('collect_special_file_paths').and_return(())
     create_command = (
-        ('borg', 'create', '--one-file-system', '--read-special')
-        + REPO_ARCHIVE_WITH_PATHS
-        + ('--progress',)
-    )
+        'borg',
+        'create',
+        '--one-file-system',
+        '--read-special',
+        '--progress',
+    ) + REPO_ARCHIVE_WITH_PATHS
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         create_command + ('--dry-run', '--list'),
         processes=processes,
@@ -2158,14 +2155,14 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('collect_special_file_paths').and_return(('special',))
-    create_command = (
+    create_flags = (
         'borg',
         'create',
         '--one-file-system',
         '--read-special',
-    ) + REPO_ARCHIVE_WITH_PATHS
+    )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command + ('--dry-run', '--list'),
+        create_flags + ('--dry-run', '--list') + REPO_ARCHIVE_WITH_PATHS,
         processes=processes,
         output_log_level=logging.INFO,
         output_file=None,
@@ -2174,7 +2171,7 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
         extra_environment=None,
     )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command + ('--exclude-from', '/excludes'),
+        create_flags + ('--exclude-from', '/excludes') + REPO_ARCHIVE_WITH_PATHS,
         processes=processes,
         output_log_level=logging.INFO,
         output_file=None,
@@ -2282,7 +2279,7 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
+        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -2325,7 +2322,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('--json',),
+        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
