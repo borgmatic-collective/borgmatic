@@ -7,7 +7,7 @@ properties:
         type: object
         description: |
             Constants to use in the configuration file. All occurrences of the
-            constant name within culy braces will be replaced with the value.
+            constant name within curly braces will be replaced with the value.
             For example, if you have a constant named "hostname" with the value
             "myhostname", then the string "{hostname}" will be replaced with
             "myhostname" in the configuration file.
@@ -19,8 +19,8 @@ properties:
         items:
             type: string
         description: |
-            List of source directories and files to backup. Globs and tildes are
-            expanded. Do not backslash spaces in path names.
+            List of source directories and files to back up. Globs and tildes
+            are expanded. Do not backslash spaces in path names.
         example:
             - /home
             - /etc
@@ -29,7 +29,7 @@ properties:
     repositories:
         type: array
         items:
-            type: object 
+            type: object
             required:
                 - path
             properties:
@@ -215,7 +215,7 @@ properties:
         description: |
             Store configuration files used to create a backup in the backup
             itself. Defaults to true. Changing this to false prevents "borgmatic
-            bootstrap" from extracting configuration files from the backup. 
+            bootstrap" from extracting configuration files from the backup.
         example: true
     source_directories_must_exist:
         type: boolean
@@ -260,7 +260,7 @@ properties:
     chunker_params:
         type: string
         description: |
-            Specify the parameters passed to then chunker (CHUNK_MIN_EXP,
+            Specify the parameters passed to the chunker (CHUNK_MIN_EXP,
             CHUNK_MAX_EXP, HASH_MASK_BITS, HASH_WINDOW_SIZE). See
             https://borgbackup.readthedocs.io/en/stable/internals.html for
             details. Defaults to "19,23,21,4095".
@@ -300,7 +300,7 @@ properties:
         type: string
         description: |
             Command to use instead of "ssh". This can be used to specify ssh
-            options.  Defaults to not set.
+            options. Defaults to not set.
         example: ssh -i /path/to/private/key
     borg_base_directory:
         type: string
@@ -1132,7 +1132,7 @@ properties:
                     type: integer
                     description: |
                         Port to restore to. Defaults to the "port" option.
-                    example: 5433                        
+                    example: 5433
                 username:
                     type: string
                     description: |
@@ -1386,7 +1386,7 @@ properties:
                 example: a177cad45bd374409f78906a810a3074
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
-            account at https://www.pagerduty.com/ if you'd like to use this
+            account at https://www.pagerduty.com if you'd like to use this
             service. See borgmatic monitoring documentation for details.
     cronhub:
         type: object
