@@ -310,7 +310,8 @@ problem: the `restore` action figures out which repository to use.
 
 But if you have multiple repositories configured, then you'll need to specify
 the repository to use via the `--repository` flag. This can be done either
-with the repository's path or its label as configured in your borgmatic configuration file.
+with the repository's path or its label as configured in your borgmatic
+configuration file.
 
 ```bash
 borgmatic restore --repository repo.borg --archive host-2023-...

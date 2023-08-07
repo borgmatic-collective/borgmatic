@@ -22,6 +22,7 @@ import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
+import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
 import borgmatic.actions.info
@@ -440,6 +441,16 @@ def run_actions(
             )
         elif action_name == 'break-lock':
             borgmatic.actions.break_lock.run_break_lock(
+                repository,
+                config,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'export':
+            borgmatic.actions.export_key.run_export_key(
                 repository,
                 config,
                 local_borg_version,

@@ -23,6 +23,7 @@ ACTION_ALIASES = {
     'info': ['-i'],
     'transfer': [],
     'break-lock': [],
+    'key': [],
     'borg': [],
 }
 
@@ -1173,6 +1174,51 @@ def make_parsers():
         help='Path of repository to break the lock for, defaults to the configured repository if there is only one',
     )
     break_lock_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    key_parser = action_parsers.add_parser(
+        'key',
+        aliases=ACTION_ALIASES['key'],
+        help='Perform repository key related operations',
+        description='Perform repository key related operations',
+        add_help=False,
+    )
+
+    key_group = key_parser.add_argument_group('key arguments')
+    key_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    key_parsers = key_parser.add_subparsers(
+        title='key sub-actions',
+    )
+
+    key_export_parser = key_parsers.add_parser(
+        'export',
+        help='Export a copy of the repository key for safekeeping in case the original goes missing or gets damaged',
+        description='Export a copy of the repository key for safekeeping in case the original goes missing or gets damaged',
+        add_help=False,
+    )
+    key_export_group = key_export_parser.add_argument_group('key export arguments')
+    key_export_group.add_argument(
+        '--paper',
+        action='store_true',
+        help='Export the key in a text format suitable for printing and later manual entry',
+    )
+    key_export_group.add_argument(
+        '--qr-html',
+        action='store_true',
+        help='Export the key in an HTML format suitable for printing and later manual entry or QR code scanning',
+    )
+    key_export_group.add_argument(
+        '--repository',
+        help='Path of repository to export the key for, defaults to the configured repository if there is only one',
+    )
+    key_export_group.add_argument(
+        '--path',
+        metavar='PATH',
+        help='Path to export the key to, defaults to stdout (but be careful about dirtying the output with --verbosity)',
+    )
+    key_export_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

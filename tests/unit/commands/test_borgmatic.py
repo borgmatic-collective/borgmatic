@@ -748,6 +748,24 @@ def test_run_actions_runs_break_lock():
     )
 
 
+def test_run_actions_runs_export_key():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.export_key).should_receive('run_export_key').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'export': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_borg():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
