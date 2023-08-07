@@ -2,6 +2,8 @@
  * #727: Add a MariaDB database hook that uses native MariaDB commands instead of the deprecated
    MySQL ones. Be aware though that any existing backups made with the "mysql_databases:" hook are
    only restorable with a "mysql_databases:" configuration.
+ * Add a source code reference for getting oriented with the borgmatic code as a developer:
+   https://torsion.org/borgmatic/docs/reference/source-code/
 
 1.8.1
  * #326: Add documentation for restoring a database to an alternate host:

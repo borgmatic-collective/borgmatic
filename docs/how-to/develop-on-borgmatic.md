@@ -37,6 +37,9 @@ install (so without `--user`, as root), or even into a
 borgmatic is up to you, but generally an editable install makes development
 and testing easier.
 
+To get oriented with the borgmatic source code, have a look at the [source
+code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
+
 
 ## Automated tests
 
