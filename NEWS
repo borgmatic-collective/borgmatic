@@ -1,4 +1,4 @@
-1.8.2.dev0
+1.8.2
  * #345: Add "key export" action to export a copy of the repository key for safekeeping in case
    the original goes missing or gets damaged.
  * #727: Add a MariaDB database hook that uses native MariaDB commands instead of the deprecated
