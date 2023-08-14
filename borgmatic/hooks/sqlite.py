@@ -32,10 +32,10 @@ def dump_databases(databases, config, log_prefix, dry_run):
         database_path = database['path']
 
         if database['name'] == 'all':
-            logger.warning('The "all" database name has no meaning for SQLite3 databases')
+            logger.warning('The "all" database name has no meaning for SQLite databases')
         if not os.path.exists(database_path):
             logger.warning(
-                f'{log_prefix}: No SQLite database at {database_path}; An empty database will be created and dumped'
+                f'{log_prefix}: No SQLite database at {database_path}; an empty database will be created and dumped'
             )
 
         dump_path = make_dump_path(config)
@@ -84,28 +84,16 @@ def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pra
 
 
 def restore_database_dump(
-    databases_config, config, log_prefix, database_name, dry_run, extract_process, connection_params
+    hook_config, config, log_prefix, database, dry_run, extract_process, connection_params
 ):
     '''
-    Restore the given SQLite3 database from an extract stream. The databases are supplied as a
-    sequence containing one dict describing each database (as per the configuration schema), but
-    only the database corresponding to the given database name is restored. Use the given log prefix
-    in any log entries. If this is a dry run, then don't actually restore anything. Trigger the
-    given active extract process (an instance of subprocess.Popen) to produce output to consume.
+    Restore a database from the given extract stream. The database is supplied as a configuration
+    dict, but the given hook configuration is ignored. The given configuration dict is used to
+    construct the destination path, and the given log prefix is used for any log entries. If this is
+    a dry run, then don't actually restore anything. Trigger the given active extract process (an
+    instance of subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-
-    try:
-        database = next(
-            database_config
-            for database_config in databases_config
-            if database_config.get('name') == database_name
-        )
-    except StopIteration:
-        raise ValueError(
-            f'A database named "{database_name}" could not be found in the configuration'
-        )
-
     database_path = connection_params['restore_path'] or database.get(
         'restore_path', database.get('path')
     )

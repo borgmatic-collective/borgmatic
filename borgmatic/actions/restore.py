@@ -27,7 +27,8 @@ def get_configured_database(
     hooks for the named database. If a configuration database name is given, use that instead of the
     database name to lookup the database in the given hooks configuration.
 
-    Return the found database as a tuple of (found hook name, database configuration dict).
+    Return the found database as a tuple of (found hook name, database configuration dict) or (None,
+    None) if not found.
     '''
     if not configuration_database_name:
         configuration_database_name = database_name
@@ -39,7 +40,10 @@ def get_configured_database(
             if hook_name in borgmatic.hooks.dump.DATABASE_HOOK_NAMES
         }
     else:
-        hooks_to_search = {hook_name: config[hook_name]}
+        try:
+            hooks_to_search = {hook_name: config[hook_name]}
+        except KeyError:
+            return (None, None)
 
     return next(
         (
@@ -73,9 +77,9 @@ def restore_single_database(
     connection_params,
 ):  # pragma: no cover
     '''
-    Given (among other things) an archive name, a database hook name, the hostname,
-    port, username and password as connection params, and a configured database
-    configuration dict, restore that database from the archive.
+    Given (among other things) an archive name, a database hook name, the hostname, port,
+    username/password as connection params, and a configured database configuration dict, restore
+    that database from the archive.
     '''
     logger.info(
         f'{repository.get("label", repository["path"])}: Restoring database {database["name"]}'
@@ -108,14 +112,14 @@ def restore_single_database(
 
     # Run a single database restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hooks(
-        'restore_database_dump',
-        config,
-        repository['path'],
-        database['name'],
-        borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
-        global_arguments.dry_run,
-        extract_process,
-        connection_params,
+        function_name='restore_database_dump',
+        config=config,
+        log_prefix=repository['path'],
+        hook_names=[hook_name],
+        database=database,
+        dry_run=global_arguments.dry_run,
+        extract_process=extract_process,
+        connection_params=connection_params,
     )
 
 
@@ -333,7 +337,7 @@ def run_restore(
                 connection_params,
             )
 
-    # For any database that weren't found via exact matches in the configuration, try to fallback
+    # For any databases that weren't found via exact matches in the configuration, try to fallback
     # to "all" entries.
     for hook_name, database_names in remaining_restore_names.items():
         for database_name in database_names:

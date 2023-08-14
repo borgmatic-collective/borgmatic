@@ -1,6 +1,5 @@
 import logging
 
-import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks import mongodb as module
@@ -131,7 +130,15 @@ def test_dump_databases_runs_mongodump_with_options():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
-        ('mongodump', '--db', 'foo', '--stuff=such', '--archive', '>', 'databases/localhost/foo'),
+        (
+            'mongodump',
+            '--db',
+            'foo',
+            '--stuff=such',
+            '--archive',
+            '>',
+            'databases/localhost/foo',
+        ),
         shell=True,
         run_to_completion=False,
     ).and_return(process).once()
@@ -158,23 +165,23 @@ def test_dump_databases_runs_mongodumpall_for_all_databases():
 
 
 def test_restore_database_dump_runs_mongorestore():
-    databases_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
+    hook_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ['mongorestore', '--archive', '--drop', '--db', 'foo'],
+        ['mongorestore', '--archive', '--drop'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -186,33 +193,8 @@ def test_restore_database_dump_runs_mongorestore():
     )
 
 
-def test_restore_database_dump_errors_on_empty_databases_config():
-    databases_config = []
-
-    flexmock(module).should_receive('make_dump_path')
-    flexmock(module.dump).should_receive('make_database_dump_filename')
-    flexmock(module).should_receive('execute_command_with_processes').never()
-    flexmock(module).should_receive('execute_command').never()
-
-    with pytest.raises(ValueError):
-        module.restore_database_dump(
-            databases_config,
-            {},
-            'test.yaml',
-            database_name='foo',
-            dry_run=False,
-            extract_process=flexmock(),
-            connection_params={
-                'hostname': None,
-                'port': None,
-                'username': None,
-                'password': None,
-            },
-        )
-
-
 def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
-    databases_config = [
+    hook_config = [
         {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -224,8 +206,6 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
             'mongorestore',
             '--archive',
             '--drop',
-            '--db',
-            'foo',
             '--host',
             'database.example.org',
             '--port',
@@ -237,10 +217,10 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -253,7 +233,7 @@ def test_restore_database_dump_runs_mongorestore_with_hostname_and_port():
 
 
 def test_restore_database_dump_runs_mongorestore_with_username_and_password():
-    databases_config = [
+    hook_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -271,8 +251,6 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
             'mongorestore',
             '--archive',
             '--drop',
-            '--db',
-            'foo',
             '--username',
             'mongo',
             '--password',
@@ -286,10 +264,10 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -302,7 +280,7 @@ def test_restore_database_dump_runs_mongorestore_with_username_and_password():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    databases_config = [
+    hook_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -324,8 +302,6 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
             'mongorestore',
             '--archive',
             '--drop',
-            '--db',
-            'foo',
             '--host',
             'clihost',
             '--port',
@@ -343,10 +319,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -359,7 +335,7 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
 
 def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
-    databases_config = [
+    hook_config = [
         {
             'name': 'foo',
             'username': 'mongo',
@@ -381,8 +357,6 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
             'mongorestore',
             '--archive',
             '--drop',
-            '--db',
-            'foo',
             '--host',
             'restorehost',
             '--port',
@@ -400,10 +374,10 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -416,23 +390,23 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
 
 def test_restore_database_dump_runs_mongorestore_with_options():
-    databases_config = [{'name': 'foo', 'restore_options': '--harder', 'schemas': None}]
+    hook_config = [{'name': 'foo', 'restore_options': '--harder', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ['mongorestore', '--archive', '--drop', '--db', 'foo', '--harder'],
+        ['mongorestore', '--archive', '--drop', '--harder'],
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -445,7 +419,7 @@ def test_restore_database_dump_runs_mongorestore_with_options():
 
 
 def test_restore_databases_dump_runs_mongorestore_with_schemas():
-    databases_config = [{'name': 'foo', 'schemas': ['bar', 'baz']}]
+    hook_config = [{'name': 'foo', 'schemas': ['bar', 'baz']}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -455,8 +429,6 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
             'mongorestore',
             '--archive',
             '--drop',
-            '--db',
-            'foo',
             '--nsInclude',
             'bar',
             '--nsInclude',
@@ -468,10 +440,10 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -484,7 +456,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
 
 
 def test_restore_database_dump_runs_psql_for_all_database_dump():
-    databases_config = [{'name': 'all', 'schemas': None}]
+    hook_config = [{'name': 'all', 'schemas': None}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
@@ -497,10 +469,10 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='all',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -513,17 +485,17 @@ def test_restore_database_dump_runs_psql_for_all_database_dump():
 
 
 def test_restore_database_dump_with_dry_run_skips_restore():
-    databases_config = [{'name': 'foo', 'schemas': None}]
+    hook_config = [{'name': 'foo', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
         connection_params={
@@ -536,22 +508,22 @@ def test_restore_database_dump_with_dry_run_skips_restore():
 
 
 def test_restore_database_dump_without_extract_process_restores_from_disk():
-    databases_config = [{'name': 'foo', 'format': 'directory', 'schemas': None}]
+    hook_config = [{'name': 'foo', 'format': 'directory', 'schemas': None}]
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_database_dump_filename').and_return('/dump/path')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
-        ['mongorestore', '--dir', '/dump/path', '--drop', '--db', 'foo'],
+        ['mongorestore', '--dir', '/dump/path', '--drop'],
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database={'name': 'foo'},
         dry_run=False,
         extract_process=None,
         connection_params={

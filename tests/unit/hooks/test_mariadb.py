@@ -380,7 +380,7 @@ def test_dump_databases_does_not_error_for_missing_all_databases_with_dry_run():
 
 
 def test_restore_database_dump_runs_mariadb_to_restore():
-    databases_config = [{'name': 'foo'}, {'name': 'bar'}]
+    hook_config = [{'name': 'foo'}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -392,10 +392,10 @@ def test_restore_database_dump_runs_mariadb_to_restore():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -407,31 +407,8 @@ def test_restore_database_dump_runs_mariadb_to_restore():
     )
 
 
-def test_restore_database_dump_errors_when_database_missing_from_configuration():
-    databases_config = [{'name': 'foo'}, {'name': 'bar'}]
-    extract_process = flexmock(stdout=flexmock())
-
-    flexmock(module).should_receive('execute_command_with_processes').never()
-
-    with pytest.raises(ValueError):
-        module.restore_database_dump(
-            databases_config,
-            {},
-            'test.yaml',
-            database_name='other',
-            dry_run=False,
-            extract_process=extract_process,
-            connection_params={
-                'hostname': None,
-                'port': None,
-                'username': None,
-                'password': None,
-            },
-        )
-
-
 def test_restore_database_dump_runs_mariadb_with_options():
-    databases_config = [{'name': 'foo', 'restore_options': '--harder'}]
+    hook_config = [{'name': 'foo', 'restore_options': '--harder'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -443,10 +420,10 @@ def test_restore_database_dump_runs_mariadb_with_options():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -459,7 +436,7 @@ def test_restore_database_dump_runs_mariadb_with_options():
 
 
 def test_restore_database_dump_runs_mariadb_with_hostname_and_port():
-    databases_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
+    hook_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -480,10 +457,10 @@ def test_restore_database_dump_runs_mariadb_with_hostname_and_port():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -496,7 +473,7 @@ def test_restore_database_dump_runs_mariadb_with_hostname_and_port():
 
 
 def test_restore_database_dump_runs_mariadb_with_username_and_password():
-    databases_config = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
+    hook_config = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -508,10 +485,10 @@ def test_restore_database_dump_runs_mariadb_with_username_and_password():
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -524,7 +501,7 @@ def test_restore_database_dump_runs_mariadb_with_username_and_password():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    databases_config = [
+    hook_config = [
         {
             'name': 'foo',
             'username': 'root',
@@ -557,10 +534,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -573,7 +550,7 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
 
 def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
-    databases_config = [
+    hook_config = [
         {
             'name': 'foo',
             'username': 'root',
@@ -608,10 +585,10 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
     ).once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -624,15 +601,15 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
 
 def test_restore_database_dump_with_dry_run_skips_restore():
-    databases_config = [{'name': 'foo'}]
+    hook_config = [{'name': 'foo'}]
 
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='foo',
+        database={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
         connection_params={

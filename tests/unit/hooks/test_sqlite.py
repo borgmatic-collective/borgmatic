@@ -1,6 +1,5 @@
 import logging
 
-import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks import sqlite as module
@@ -93,7 +92,7 @@ def test_dump_databases_does_not_dump_if_dry_run():
 
 
 def test_restore_database_dump_restores_database():
-    databases_config = [{'path': '/path/to/database', 'name': 'database'}, {'name': 'other'}]
+    hook_config = [{'path': '/path/to/database', 'name': 'database'}, {'name': 'other'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -109,10 +108,10 @@ def test_restore_database_dump_restores_database():
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='database',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -120,7 +119,7 @@ def test_restore_database_dump_restores_database():
 
 
 def test_restore_database_dump_with_connection_params_uses_connection_params_for_restore():
-    databases_config = [
+    hook_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -138,10 +137,10 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='database',
+        database={'name': 'database'},
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': 'cli/path/to/database'},
@@ -149,7 +148,7 @@ def test_restore_database_dump_with_connection_params_uses_connection_params_for
 
 
 def test_restore_database_dump_without_connection_params_uses_restore_params_in_config_for_restore():
-    databases_config = [
+    hook_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
     ]
     extract_process = flexmock(stdout=flexmock())
@@ -167,10 +166,10 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
     flexmock(module.os).should_receive('remove').once()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='database',
+        database=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
         connection_params={'restore_path': None},
@@ -178,34 +177,18 @@ def test_restore_database_dump_without_connection_params_uses_restore_params_in_
 
 
 def test_restore_database_dump_does_not_restore_database_if_dry_run():
-    databases_config = [{'path': '/path/to/database', 'name': 'database'}]
+    hook_config = [{'path': '/path/to/database', 'name': 'database'}]
     extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('execute_command_with_processes').never()
     flexmock(module.os).should_receive('remove').never()
 
     module.restore_database_dump(
-        databases_config,
+        hook_config,
         {},
         'test.yaml',
-        database_name='database',
+        database={'name': 'database'},
         dry_run=True,
         extract_process=extract_process,
         connection_params={'restore_path': None},
     )
-
-
-def test_restore_database_dump_raises_error_if_database_config_is_empty():
-    databases_config = []
-    extract_process = flexmock(stdout=flexmock())
-
-    with pytest.raises(ValueError):
-        module.restore_database_dump(
-            databases_config,
-            {},
-            'test.yaml',
-            database_name='database',
-            dry_run=False,
-            extract_process=extract_process,
-            connection_params={'restore_path': None},
-        )

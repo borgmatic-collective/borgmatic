@@ -16,6 +16,15 @@ def test_get_configured_database_matches_database_by_name():
     ) == ('postgresql_databases', {'name': 'bar'})
 
 
+def test_get_configured_database_matches_nothing_when_nothing_configured():
+    assert module.get_configured_database(
+        config={},
+        archive_database_names={'postgresql_databases': ['foo']},
+        hook_name='postgresql_databases',
+        database_name='quux',
+    ) == (None, None)
+
+
 def test_get_configured_database_matches_nothing_when_database_name_not_configured():
     assert module.get_configured_database(
         config={'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}]},

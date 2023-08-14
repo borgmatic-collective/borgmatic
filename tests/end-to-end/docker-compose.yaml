@@ -10,7 +10,6 @@ services:
     environment:
       POSTGRES_PASSWORD: test2
       POSTGRES_DB: test
-      POSTGRES_USER: postgres2
     command: docker-entrypoint.sh -p 5433
   mariadb:
     image: docker.io/mariadb:10.11.4
@@ -18,6 +17,17 @@ services:
       MARIADB_ROOT_PASSWORD: test
       MARIADB_DATABASE: test
   mariadb2:
+    image: docker.io/mariadb:10.11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: test2
+      MARIADB_DATABASE: test
+    command: docker-entrypoint.sh --port=3307
+  not-actually-mysql:
+    image: docker.io/mariadb:10.11.4
+    environment:
+      MARIADB_ROOT_PASSWORD: test
+      MARIADB_DATABASE: test
+  not-actually-mysql2:
     image: docker.io/mariadb:10.11.4
     environment:
       MARIADB_ROOT_PASSWORD: test2
