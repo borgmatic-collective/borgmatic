@@ -4,6 +4,7 @@ from borgmatic.hooks import (
     cronhub,
     cronitor,
     healthchecks,
+    loki,
     mariadb,
     mongodb,
     mysql,
@@ -11,7 +12,6 @@ from borgmatic.hooks import (
     pagerduty,
     postgresql,
     sqlite,
-    loki,
 )
 
 logger = logging.getLogger(__name__)
