@@ -11,6 +11,7 @@ from borgmatic.hooks import (
     pagerduty,
     postgresql,
     sqlite,
+    loki,
 )
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ HOOK_NAME_TO_MODULE = {
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
     'sqlite_databases': sqlite,
+    'loki': loki,
 }
 
 
