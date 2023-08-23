@@ -132,8 +132,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     '''
     Add an entry to the loki logger with the current state.
     '''
-    if dry_run:
-        return
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, Loki_log_handler):
             if state in MONITOR_STATE_TO_LOKI.keys():
