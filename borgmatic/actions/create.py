@@ -78,17 +78,17 @@ def run_create(
     )
     logger.info(f'{repository.get("label", repository["path"])}: Creating archive{dry_run_label}')
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-        'remove_database_dumps',
+        'remove_data_source_dumps',
         config,
         repository['path'],
-        borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
+        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
         global_arguments.dry_run,
     )
     active_dumps = borgmatic.hooks.dispatch.call_hooks(
-        'dump_databases',
+        'dump_data_sources',
         config,
         repository['path'],
-        borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
+        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
         global_arguments.dry_run,
     )
     if config.get('store_config_files', True):
@@ -115,10 +115,10 @@ def run_create(
         yield json.loads(json_output)
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-        'remove_database_dumps',
+        'remove_data_source_dumps',
         config,
         config_filename,
-        borgmatic.hooks.dump.DATABASE_HOOK_NAMES,
+        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
         global_arguments.dry_run,
     )
     borgmatic.hooks.command.execute_hook(

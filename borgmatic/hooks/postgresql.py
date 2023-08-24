@@ -18,7 +18,7 @@ def make_dump_path(config):  # pragma: no cover
     '''
     Make the dump path from the given configuration dict and the name of this hook.
     '''
-    return dump.make_database_dump_path(
+    return dump.make_data_source_dump_path(
         config.get('borgmatic_source_directory'), 'postgresql_databases'
     )
 
@@ -92,7 +92,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     )
 
 
-def dump_databases(databases, config, log_prefix, dry_run):
+def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
     Dump the given PostgreSQL databases to a named pipe. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the given
@@ -126,7 +126,7 @@ def dump_databases(databases, config, log_prefix, dry_run):
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
             default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
             dump_command = database.get('pg_dump_command') or default_dump_command
-            dump_filename = dump.make_database_dump_filename(
+            dump_filename = dump.make_data_source_dump_filename(
                 dump_path, database_name, database.get('hostname')
             )
             if os.path.exists(dump_filename):
@@ -183,33 +183,33 @@ def dump_databases(databases, config, log_prefix, dry_run):
     return processes
 
 
-def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
+def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the given
     configuration dict to construct the destination path and the log prefix in any log entries. If
     this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(make_dump_path(config), 'PostgreSQL', log_prefix, dry_run)
+    dump.remove_data_source_dumps(make_dump_path(config), 'PostgreSQL', log_prefix, dry_run)
 
 
-def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, a prefix to log with, and a
     database name to match, return the corresponding glob patterns to match the database dump in an
     archive.
     '''
-    return dump.make_database_dump_filename(make_dump_path(config), name, hostname='*')
+    return dump.make_data_source_dump_filename(make_dump_path(config), name, hostname='*')
 
 
-def restore_database_dump(
-    hook_config, config, log_prefix, database, dry_run, extract_process, connection_params
+def restore_data_source_dump(
+    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
 ):
     '''
-    Restore a database from the given extract stream. The database is supplied as a configuration
-    dict, but the given hook configuration is ignored. The given configuration dict is used to
-    construct the destination path, and the given log prefix is used for any log entries. If this is
-    a dry run, then don't actually restore anything. Trigger the given active extract process (an
-    instance of subprocess.Popen) to produce output to consume.
+    Restore a database from the given extract stream. The database is supplied as a data source
+    configuration dict, but the given hook configuration is ignored. The given configuration dict is
+    used to construct the destination path, and the given log prefix is used for any log entries. If
+    this is a dry run, then don't actually restore anything. Trigger the given active extract
+    process (an instance of subprocess.Popen) to produce output to consume.
 
     If the extract process is None, then restore the dump from the filesystem rather than from an
     extract stream.
@@ -218,54 +218,66 @@ def restore_database_dump(
     hostname, port, username, and password.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or database.get(
-        'restore_hostname', database.get('hostname')
+    hostname = connection_params['hostname'] or data_source.get(
+        'restore_hostname', data_source.get('hostname')
     )
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get(
-        'restore_username', database.get('username')
+    port = str(
+        connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
+    )
+    username = connection_params['username'] or data_source.get(
+        'restore_username', data_source.get('username')
     )
 
-    all_databases = bool(database['name'] == 'all')
-    dump_filename = dump.make_database_dump_filename(
-        make_dump_path(config), database['name'], database.get('hostname')
+    all_databases = bool(data_source['name'] == 'all')
+    dump_filename = dump.make_data_source_dump_filename(
+        make_dump_path(config), data_source['name'], data_source.get('hostname')
     )
-    psql_command = shlex.split(database.get('psql_command') or 'psql')
+    psql_command = shlex.split(data_source.get('psql_command') or 'psql')
     analyze_command = (
         tuple(psql_command)
         + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', hostname) if hostname else ())
         + (('--port', port) if port else ())
         + (('--username', username) if username else ())
-        + (('--dbname', database['name']) if not all_databases else ())
-        + (tuple(database['analyze_options'].split(' ')) if 'analyze_options' in database else ())
+        + (('--dbname', data_source['name']) if not all_databases else ())
+        + (
+            tuple(data_source['analyze_options'].split(' '))
+            if 'analyze_options' in data_source
+            else ()
+        )
         + ('--command', 'ANALYZE')
     )
-    use_psql_command = all_databases or database.get('format') == 'plain'
-    pg_restore_command = shlex.split(database.get('pg_restore_command') or 'pg_restore')
+    use_psql_command = all_databases or data_source.get('format') == 'plain'
+    pg_restore_command = shlex.split(data_source.get('pg_restore_command') or 'pg_restore')
     restore_command = (
         tuple(psql_command if use_psql_command else pg_restore_command)
         + ('--no-password',)
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
-        + (('--dbname', database['name']) if not all_databases else ())
+        + (('--dbname', data_source['name']) if not all_databases else ())
         + (('--host', hostname) if hostname else ())
         + (('--port', port) if port else ())
         + (('--username', username) if username else ())
-        + (('--no-owner',) if database.get('no_owner', False) else ())
-        + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
+        + (('--no-owner',) if data_source.get('no_owner', False) else ())
+        + (
+            tuple(data_source['restore_options'].split(' '))
+            if 'restore_options' in data_source
+            else ()
+        )
         + (() if extract_process else (dump_filename,))
         + tuple(
-            itertools.chain.from_iterable(('--schema', schema) for schema in database['schemas'])
-            if database.get('schemas')
+            itertools.chain.from_iterable(('--schema', schema) for schema in data_source['schemas'])
+            if data_source.get('schemas')
             else ()
         )
     )
 
     extra_environment = make_extra_environment(
-        database, restore_connection_params=connection_params
+        data_source, restore_connection_params=connection_params
     )
 
-    logger.debug(f"{log_prefix}: Restoring PostgreSQL database {database['name']}{dry_run_label}")
+    logger.debug(
+        f"{log_prefix}: Restoring PostgreSQL database {data_source['name']}{dry_run_label}"
+    )
     if dry_run:
         return
 

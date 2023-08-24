@@ -6,7 +6,7 @@ from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
 logger = logging.getLogger(__name__)
 
-DATABASE_HOOK_NAMES = (
+DATA_SOURCE_HOOK_NAMES = (
     'mariadb_databases',
     'mysql_databases',
     'mongodb_databases',
@@ -15,26 +15,26 @@ DATABASE_HOOK_NAMES = (
 )
 
 
-def make_database_dump_path(borgmatic_source_directory, database_hook_name):
+def make_data_source_dump_path(borgmatic_source_directory, data_source_hook_name):
     '''
-    Given a borgmatic source directory (or None) and a database hook name, construct a database dump
-    path.
+    Given a borgmatic source directory (or None) and a data source hook name, construct a data
+    source dump path.
     '''
     if not borgmatic_source_directory:
         borgmatic_source_directory = DEFAULT_BORGMATIC_SOURCE_DIRECTORY
 
-    return os.path.join(borgmatic_source_directory, database_hook_name)
+    return os.path.join(borgmatic_source_directory, data_source_hook_name)
 
 
-def make_database_dump_filename(dump_path, name, hostname=None):
+def make_data_source_dump_filename(dump_path, name, hostname=None):
     '''
-    Based on the given dump directory path, database name, and hostname, return a filename to use
-    for the database dump. The hostname defaults to localhost.
+    Based on the given dump directory path, data source name, and hostname, return a filename to use
+    for the data source dump. The hostname defaults to localhost.
 
-    Raise ValueError if the database name is invalid.
+    Raise ValueError if the data source name is invalid.
     '''
     if os.path.sep in name:
-        raise ValueError(f'Invalid database name {name}')
+        raise ValueError(f'Invalid data source name {name}')
 
     return os.path.join(os.path.expanduser(dump_path), hostname or 'localhost', name)
 
@@ -54,14 +54,14 @@ def create_named_pipe_for_dump(dump_path):
     os.mkfifo(dump_path, mode=0o600)
 
 
-def remove_database_dumps(dump_path, database_type_name, log_prefix, dry_run):
+def remove_data_source_dumps(dump_path, data_source_type_name, log_prefix, dry_run):
     '''
-    Remove all database dumps in the given dump directory path (including the directory itself). If
-    this is a dry run, then don't actually remove anything.
+    Remove all data source dumps in the given dump directory path (including the directory itself).
+    If this is a dry run, then don't actually remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
-    logger.debug(f'{log_prefix}: Removing {database_type_name} database dumps{dry_run_label}')
+    logger.debug(f'{log_prefix}: Removing {data_source_type_name} data source dumps{dry_run_label}')
 
     expanded_path = os.path.expanduser(dump_path)
 

@@ -906,8 +906,8 @@ def make_parsers():
     restore_parser = action_parsers.add_parser(
         'restore',
         aliases=ACTION_ALIASES['restore'],
-        help='Restore database dumps from a named archive',
-        description='Restore database dumps from a named archive. (To extract files instead, use "borgmatic extract".)',
+        help='Restore data source (e.g. database) dumps from a named archive',
+        description='Restore data source (e.g. database) dumps from a named archive. (To extract files instead, use "borgmatic extract".)',
         add_help=False,
     )
     restore_group = restore_parser.add_argument_group('restore arguments')
@@ -919,18 +919,19 @@ def make_parsers():
         '--archive', help='Name of archive to restore from (or "latest")', required=True
     )
     restore_group.add_argument(
+        '--data-source',
         '--database',
         metavar='NAME',
-        dest='databases',
+        dest='data_sources',
         action='append',
-        help="Name of database to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all databases",
+        help="Name of data source (e.g. database) to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all databases",
     )
     restore_group.add_argument(
         '--schema',
         metavar='NAME',
         dest='schemas',
         action='append',
-        help='Name of schema to restore from the database, can specify flag multiple times, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
+        help='Name of schema to restore from the data source, can specify flag multiple times, defaults to all schemas. Schemas are only supported for PostgreSQL and MongoDB databases',
     )
     restore_group.add_argument(
         '--hostname',
@@ -938,7 +939,7 @@ def make_parsers():
     )
     restore_group.add_argument(
         '--port',
-        help='Port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
+        help='Database port to restore to. Defaults to the "restore_port" option in borgmatic\'s configuration',
     )
     restore_group.add_argument(
         '--username',

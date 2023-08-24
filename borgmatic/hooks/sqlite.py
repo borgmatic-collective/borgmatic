@@ -11,12 +11,12 @@ def make_dump_path(config):  # pragma: no cover
     '''
     Make the dump path from the given configuration dict and the name of this hook.
     '''
-    return dump.make_database_dump_path(
+    return dump.make_data_source_dump_path(
         config.get('borgmatic_source_directory'), 'sqlite_databases'
     )
 
 
-def dump_databases(databases, config, log_prefix, dry_run):
+def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
     Dump the given SQLite3 databases to a file. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given configuration dict to
@@ -39,7 +39,7 @@ def dump_databases(databases, config, log_prefix, dry_run):
             )
 
         dump_path = make_dump_path(config)
-        dump_filename = dump.make_database_dump_filename(dump_path, database['name'])
+        dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
         if os.path.exists(dump_filename):
             logger.warning(
                 f'{log_prefix}: Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
@@ -65,37 +65,37 @@ def dump_databases(databases, config, log_prefix, dry_run):
     return processes
 
 
-def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
+def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove the given SQLite3 database dumps from the filesystem. The databases are supplied as a
     sequence of configuration dicts, as per the configuration schema. Use the given configuration
     dict to construct the destination path and the given log prefix in any log entries. If this is a
     dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(make_dump_path(config), 'SQLite', log_prefix, dry_run)
+    dump.remove_data_source_dumps(make_dump_path(config), 'SQLite', log_prefix, dry_run)
 
 
-def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
     Make a pattern that matches the given SQLite3 databases. The databases are supplied as a
     sequence of configuration dicts, as per the configuration schema.
     '''
-    return dump.make_database_dump_filename(make_dump_path(config), name)
+    return dump.make_data_source_dump_filename(make_dump_path(config), name)
 
 
-def restore_database_dump(
-    hook_config, config, log_prefix, database, dry_run, extract_process, connection_params
+def restore_data_source_dump(
+    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
 ):
     '''
-    Restore a database from the given extract stream. The database is supplied as a configuration
-    dict, but the given hook configuration is ignored. The given configuration dict is used to
-    construct the destination path, and the given log prefix is used for any log entries. If this is
-    a dry run, then don't actually restore anything. Trigger the given active extract process (an
-    instance of subprocess.Popen) to produce output to consume.
+    Restore a database from the given extract stream. The database is supplied as a data source
+    configuration dict, but the given hook configuration is ignored. The given configuration dict is
+    used to construct the destination path, and the given log prefix is used for any log entries. If
+    this is a dry run, then don't actually restore anything. Trigger the given active extract
+    process (an instance of subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    database_path = connection_params['restore_path'] or database.get(
-        'restore_path', database.get('path')
+    database_path = connection_params['restore_path'] or data_source.get(
+        'restore_path', data_source.get('path')
     )
 
     logger.debug(f'{log_prefix}: Restoring SQLite database at {database_path}{dry_run_label}')

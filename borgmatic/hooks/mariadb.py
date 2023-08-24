@@ -16,7 +16,7 @@ def make_dump_path(config):  # pragma: no cover
     '''
     Make the dump path from the given configuration dict and the name of this hook.
     '''
-    return dump.make_database_dump_path(
+    return dump.make_data_source_dump_path(
         config.get('borgmatic_source_directory'), 'mariadb_databases'
     )
 
@@ -69,7 +69,7 @@ def execute_dump_command(
     this is a dry run, then don't actually dump anything and return None.
     '''
     database_name = database['name']
-    dump_filename = dump.make_database_dump_filename(
+    dump_filename = dump.make_data_source_dump_filename(
         dump_path, database['name'], database.get('hostname')
     )
     if os.path.exists(dump_filename):
@@ -106,7 +106,7 @@ def execute_dump_command(
     )
 
 
-def dump_databases(databases, config, log_prefix, dry_run):
+def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
     Dump the given MariaDB databases to a named pipe. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the given
@@ -165,49 +165,55 @@ def dump_databases(databases, config, log_prefix, dry_run):
     return [process for process in processes if process]
 
 
-def remove_database_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
+def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the given
     configuration dict to construct the destination path and the log prefix in any log entries. If
     this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_database_dumps(make_dump_path(config), 'MariaDB', log_prefix, dry_run)
+    dump.remove_data_source_dumps(make_dump_path(config), 'MariaDB', log_prefix, dry_run)
 
 
-def make_database_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, a prefix to log with, and a
     database name to match, return the corresponding glob patterns to match the database dump in an
     archive.
     '''
-    return dump.make_database_dump_filename(make_dump_path(config), name, hostname='*')
+    return dump.make_data_source_dump_filename(make_dump_path(config), name, hostname='*')
 
 
-def restore_database_dump(
-    hook_config, config, log_prefix, database, dry_run, extract_process, connection_params
+def restore_data_source_dump(
+    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
 ):
     '''
-    Restore a database from the given extract stream. The database is supplied as a configuration
-    dict, but the given hook configuration is ignored. The given configuration dict is used to
-    construct the destination path, and the given log prefix is used for any log entries. If this is
-    a dry run, then don't actually restore anything. Trigger the given active extract process (an
-    instance of subprocess.Popen) to produce output to consume.
+    Restore a database from the given extract stream. The database is supplied as a data source
+    configuration dict, but the given hook configuration is ignored. The given configuration dict is
+    used to construct the destination path, and the given log prefix is used for any log entries. If
+    this is a dry run, then don't actually restore anything. Trigger the given active extract
+    process (an instance of subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
-    hostname = connection_params['hostname'] or database.get(
-        'restore_hostname', database.get('hostname')
+    hostname = connection_params['hostname'] or data_source.get(
+        'restore_hostname', data_source.get('hostname')
     )
-    port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get(
-        'restore_username', database.get('username')
+    port = str(
+        connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
-    password = connection_params['password'] or database.get(
-        'restore_password', database.get('password')
+    username = connection_params['username'] or data_source.get(
+        'restore_username', data_source.get('username')
+    )
+    password = connection_params['password'] or data_source.get(
+        'restore_password', data_source.get('password')
     )
 
     restore_command = (
         ('mariadb', '--batch')
-        + (tuple(database['restore_options'].split(' ')) if 'restore_options' in database else ())
+        + (
+            tuple(data_source['restore_options'].split(' '))
+            if 'restore_options' in data_source
+            else ()
+        )
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
@@ -215,7 +221,7 @@ def restore_database_dump(
     )
     extra_environment = {'MYSQL_PWD': password} if password else None
 
-    logger.debug(f"{log_prefix}: Restoring MariaDB database {database['name']}{dry_run_label}")
+    logger.debug(f"{log_prefix}: Restoring MariaDB database {data_source['name']}{dry_run_label}")
     if dry_run:
         return
 
