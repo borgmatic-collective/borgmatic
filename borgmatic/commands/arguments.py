@@ -924,7 +924,7 @@ def make_parsers():
         metavar='NAME',
         dest='data_sources',
         action='append',
-        help="Name of data source (e.g. database) to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all databases",
+        help="Name of data source (e.g. database) to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all data sources in the archive",
     )
     restore_group.add_argument(
         '--schema',
