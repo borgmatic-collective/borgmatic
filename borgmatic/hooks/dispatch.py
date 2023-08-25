@@ -4,6 +4,7 @@ from borgmatic.hooks import (
     cronhub,
     cronitor,
     healthchecks,
+    loki,
     mariadb,
     mongodb,
     mysql,
@@ -26,6 +27,7 @@ HOOK_NAME_TO_MODULE = {
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
     'sqlite_databases': sqlite,
+    'loki': loki,
 }
 
 

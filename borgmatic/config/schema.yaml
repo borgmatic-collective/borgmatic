@@ -1403,3 +1403,33 @@ properties:
             Configuration for a monitoring integration with Crunhub. Create an
             account at https://cronhub.io if you'd like to use this service. See
             borgmatic monitoring documentation for details.
+    loki:
+        type: object
+        required: ['url', 'labels']
+        additionalProperties: false
+        properties:
+            url:
+                type: string
+                description: |
+                    Grafana loki log URL to notify when a backup begins,
+                    ends, or fails.
+                example: "http://localhost:3100/loki/api/v1/push"
+            labels:
+                type: object
+                additionalProperties:
+                    type: string
+                description: |
+                    Allows setting custom labels for the logging stream. At
+                    least one label is required. "__hostname" gets replaced by
+                    the machine hostname automatically. "__config" gets replaced
+                    by just the name of the configuration file. "__config_path"
+                    gets replaced by the full path of the configuration file.
+                example:
+                    app: "borgmatic"
+                    config: "__config"
+                    hostname: "__hostname"
+        description: |
+            Configuration for a monitoring integration with Grafana loki. You
+            can send the logs to a self-hosted instance or create an account at
+            https://grafana.com/auth/sign-up/create-user. See borgmatic
+            monitoring documentation for details.
