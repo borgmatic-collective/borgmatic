@@ -62,7 +62,7 @@ def execute_dump_command(
 ):
     '''
     Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
-    pipe constructed from the given dump path and database names. Use the given log prefix in any
+    pipe constructed from the given dump path and database name. Use the given log prefix in any
     log entries.
 
     Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
@@ -72,6 +72,7 @@ def execute_dump_command(
     dump_filename = dump.make_data_source_dump_filename(
         dump_path, database['name'], database.get('hostname')
     )
+
     if os.path.exists(dump_filename):
         logger.warning(
             f'{log_prefix}: Skipping duplicate dump of MariaDB database "{database_name}" to {dump_filename}'

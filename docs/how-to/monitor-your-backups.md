@@ -38,11 +38,11 @@ below for how to configure this.
 
 borgmatic integrates with monitoring services like
 [Healthchecks](https://healthchecks.io/), [Cronitor](https://cronitor.io),
-[Cronhub](https://cronhub.io), [PagerDuty](https://www.pagerduty.com/), and
-[ntfy](https://ntfy.sh/) and pings these services whenever borgmatic runs.
-That way, you'll receive an alert when something goes wrong or (for certain
-hooks) the service doesn't hear from borgmatic for a configured interval. See
-[Healthchecks
+[Cronhub](https://cronhub.io), [PagerDuty](https://www.pagerduty.com/),
+[ntfy](https://ntfy.sh/), and [Grafana Loki](https://grafana.com/oss/loki/)
+and pings these services whenever borgmatic runs. That way, you'll receive an
+alert when something goes wrong or (for certain hooks) the service doesn't
+hear from borgmatic for a configured interval. See [Healthchecks
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook),
 [Cronitor
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook),
@@ -50,7 +50,10 @@ hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-h
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook),
 [PagerDuty
 hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook),
-and [ntfy hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
+[ntfy
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook),
+and [Loki
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook),
 below for how to configure this.
 
 While these services offer different features, you probably only need to use
@@ -129,7 +132,7 @@ especially the security information.
 ## Healthchecks hook
 
 [Healthchecks](https://healthchecks.io/) is a service that provides "instant
-alerts when your cron jobs fail silently", and borgmatic has built-in
+alerts when your cron jobs fail silently," and borgmatic has built-in
 integration with it. Once you create a Healthchecks account and project on
 their site, all you need to do is configure borgmatic with the unique "Ping
 URL" for your project. Here's an example:
@@ -144,21 +147,19 @@ healthchecks:
 this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Healthchecks project when a
-backup begins, ends, or errors. Specifically, after the <a
-href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Healthchecks know that it has started if any of
-the `create`, `prune`, `compact`, or `check` actions are run.
+backup begins, ends, or errors, but only when any of the `create`, `prune`,
+`compact`, or `check` actions are run.
 
 Then, if the actions complete successfully, borgmatic notifies Healthchecks of
-the success after the `after_backup` hooks run and includes borgmatic logs in
-the payload data sent to Healthchecks. This means that borgmatic logs show up
-in the Healthchecks UI, although be aware that Healthchecks currently has a
-10-kilobyte limit for the logs in each ping.
+the success and includes borgmatic logs in the payload data sent to
+Healthchecks. This means that borgmatic logs show up in the Healthchecks UI,
+although be aware that Healthchecks currently has a 10-kilobyte limit for the
+logs in each ping.
 
-If an error occurs during any action or hook, borgmatic notifies Healthchecks
-after the `on_error` hooks run, also tacking on logs including the error
-itself. But the logs are only included for errors that occur when a `create`,
-`prune`, `compact`, or `check` action is run.
+If an error occurs during any action or hook, borgmatic notifies Healthchecks,
+also tacking on logs including the error itself. But the logs are only
+included for errors that occur when a `create`, `prune`, `compact`, or `check`
+action is run.
 
 You can customize the verbosity of the logs that are sent to Healthchecks with
 borgmatic's `--monitoring-verbosity` flag. The `--list` and `--stats` flags
@@ -175,7 +176,7 @@ or it doesn't hear from borgmatic for a certain period of time.
 ## Cronitor hook
 
 [Cronitor](https://cronitor.io/) provides "Cron monitoring and uptime healthchecks
-for websites, services and APIs", and borgmatic has built-in
+for websites, services and APIs," and borgmatic has built-in
 integration with it. Once you create a Cronitor account and cron job monitor on
 their site, all you need to do is configure borgmatic with the unique "Ping
 API URL" for your monitor. Here's an example:
@@ -190,13 +191,9 @@ cronitor:
 this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Cronitor monitor when a backup
-begins, ends, or errors. Specifically, after the <a
-href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Cronitor know that it has started if any of the
-`prune`, `compact`, `create`, or `check` actions are run. Then, if the actions
-complete successfully, borgmatic notifies Cronitor of the success after the
-`after_backup` hooks run. And if an error occurs during any action or hook,
-borgmatic notifies Cronitor after the `on_error` hooks run.
+begins, ends, or errors, but only when any of the `prune`, `compact`,
+`create`, or `check` actions are run. Then, if the actions complete
+successfully or errors, borgmatic notifies Cronitor accordingly.
 
 You can configure Cronitor to notify you by a [variety of
 mechanisms](https://cronitor.io/docs/cron-job-notifications) when backups fail
@@ -206,7 +203,7 @@ or it doesn't hear from borgmatic for a certain period of time.
 ## Cronhub hook
 
 [Cronhub](https://cronhub.io/) provides "instant alerts when any of your
-background jobs fail silently or run longer than expected", and borgmatic has
+background jobs fail silently or run longer than expected," and borgmatic has
 built-in integration with it. Once you create a Cronhub account and monitor on
 their site, all you need to do is configure borgmatic with the unique "Ping
 URL" for your monitor. Here's an example:
@@ -221,13 +218,9 @@ cronhub:
 this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic pings your Cronhub monitor when a backup
-begins, ends, or errors. Specifically, after the <a
-href="https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/">`before_backup`
-hooks</a> run, borgmatic lets Cronhub know that it has started if any of the
-`prune`, `compact`, `create`, or `check` actions are run. Then, if the actions
-complete successfully, borgmatic notifies Cronhub of the success after the
-`after_backup` hooks run. And if an error occurs during any action or hook,
-borgmatic notifies Cronhub after the `on_error` hooks run.
+begins, ends, or errors, but only when any of the `prune`, `compact`,
+`create`, or `check` actions are run. Then, if the actions complete
+successfully or errors, borgmatic notifies Cronhub accordingly.
 
 Note that even though you configure borgmatic with the "start" variant of the
 ping URL, borgmatic substitutes the correct state into the URL when pinging
@@ -266,10 +259,9 @@ pagerduty:
 this option in the `hooks:` section of your configuration.
 
 With this hook in place, borgmatic creates a PagerDuty event for your service
-whenever backups fail. Specifically, if an error occurs during a `create`,
-`prune`, `compact`, or `check` action, borgmatic sends an event to PagerDuty
-before the `on_error` hooks run. Note that borgmatic does not contact
-PagerDuty when a backup starts or ends without error.
+whenever backups fail, but only when any of the `create`, `prune`, `compact`,
+or `check` actions are run. Note that borgmatic does not contact PagerDuty
+when a backup starts or when it ends without error.
 
 You can configure PagerDuty to notify you by a [variety of
 mechanisms](https://support.pagerduty.com/docs/notifications) when backups
@@ -326,6 +318,58 @@ ntfy:
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 the `ntfy:` option in the `hooks:` section of your configuration.
+
+
+## Loki hook
+
+[Grafana Loki](https://grafana.com/oss/loki/) is a "horizontally scalable,
+highly available, multi-tenant log aggregation system inspired by Prometheus."
+borgmatic has built-in integration with Loki, sending both backup status and
+borgmatic logs.
+
+You can configure borgmatic to use either a [self-hosted Loki
+instance](https://grafana.com/docs/loki/latest/installation/) or [a Grafana
+Cloud account](https://grafana.com/auth/sign-up/create-user). Start by setting
+your Loki API push URL. Here's an example:
+
+```yaml
+loki:
+    url: http://localhost:3100/loki/api/v1/push
+```
+
+With this hook in place, borgmatic sends its logs to your Loki instance as any
+of the `prune`, `compact`, `create`, or `check` actions are run. Then, after
+the actions complete, borgmatic notifies Loki of success or failure.
+
+This hook supports sending arbitrary labels to Loki. For instance:
+
+```yaml
+loki:
+    url: http://localhost:3100/loki/api/v1/push
+
+    labels:
+        app: borgmatic
+        hostname: example.org
+```
+
+There are also a few placeholders you can optionally use as label values:
+
+ * `__config`: name of the borgmatic configuration file
+ * `__config_path`: full path of the borgmatic configuration file
+ * `__hostname`: the local machine hostname
+
+These placeholders are only substituted for the whole label value, not
+interpolated into a larger string. For instance:
+
+```yaml
+loki:
+    url: http://localhost:3100/loki/api/v1/push
+
+    labels:
+        app: borgmatic
+        config: __config
+        hostname: __hostname
+```
 
 
 ## Scripting borgmatic

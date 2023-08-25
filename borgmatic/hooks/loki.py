@@ -67,6 +67,7 @@ class Loki_log_buffer:
         request_body = self.to_request()
         self.root['streams'][0]['values'] = []
         request_header = {'Content-Type': 'application/json'}
+
         try:
             result = requests.post(self.url, headers=request_header, data=request_body, timeout=5)
             result.raise_for_status()
@@ -100,6 +101,7 @@ class Loki_log_handler(logging.Handler):
         Add an arbitrary string as a log entry to the stream.
         '''
         self.buffer.add_value(msg)
+
         if len(self.buffer) > MAX_BUFFER_LINES:
             self.buffer.flush()
 
@@ -116,6 +118,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
     '''
     url = hook_config.get('url')
     loki = Loki_log_handler(url, dry_run)
+
     for key, value in hook_config.get('labels').items():
         if value == '__hostname':
             loki.add_label(key, platform.node())
@@ -125,6 +128,7 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
             loki.add_label(key, config_filename)
         else:
             loki.add_label(key, value)
+
     logging.getLogger().addHandler(loki)
 
 
@@ -143,6 +147,7 @@ def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, 
     Remove the monitor handler that was added to the root logger.
     '''
     logger = logging.getLogger()
+
     for handler in tuple(logger.handlers):
         if isinstance(handler, Loki_log_handler):
             handler.flush()
