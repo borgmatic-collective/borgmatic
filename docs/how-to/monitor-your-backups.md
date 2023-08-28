@@ -273,10 +273,12 @@ us](https://torsion.org/borgmatic/#support-and-contributing).
 
 ## ntfy hook
 
-[ntfy](https://ntfy.sh) is a free, simple, service (either hosted or self-hosted)
-which offers simple pub/sub push notifications to multiple platforms including
-[web](https://ntfy.sh/stats), [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
-and [iOS](https://apps.apple.com/us/app/ntfy/id1625396347).
+<span class="minilink minilink-addedin">New in version 1.6.3</span>
+[ntfy](https://ntfy.sh) is a free, simple, service (either hosted or
+self-hosted) which offers simple pub/sub push notifications to multiple
+platforms including [web](https://ntfy.sh/stats),
+[Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy) and
+[iOS](https://apps.apple.com/us/app/ntfy/id1625396347).
 
 Since push notifications for regular events might soon become quite annoying,
 this hook only fires on any errors by default in order to instantly alert you to issues.
@@ -322,8 +324,9 @@ the `ntfy:` option in the `hooks:` section of your configuration.
 
 ## Loki hook
 
-[Grafana Loki](https://grafana.com/oss/loki/) is a "horizontally scalable,
-highly available, multi-tenant log aggregation system inspired by Prometheus."
+<span class="minilink minilink-addedin">New in version 1.8.3</span> [Grafana
+Loki](https://grafana.com/oss/loki/) is a "horizontally scalable, highly
+available, multi-tenant log aggregation system inspired by Prometheus."
 borgmatic has built-in integration with Loki, sending both backup status and
 borgmatic logs.
 

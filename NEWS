@@ -1,3 +1,8 @@
+1.8.3.dev0
+ * #743: Add a monitoring hook for sending backup status and logs to to Grafana Loki. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
+
 1.8.2
  * #345: Add "key export" action to export a copy of the repository key for safekeeping in case
    the original goes missing or gets damaged.
@@ -6,9 +11,6 @@
    only restorable with a "mysql_databases:" configuration.
  * #738: Fix for potential data loss (data not getting restored) in which the database "restore"
    action didn't actually restore anything and indicated success anyway.
- * #743: Add a monitoring hook for sending backup status and logs to to Grafana Loki. See the
-   documentation for more information:
-   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
  * Remove the deprecated use of the MongoDB hook's "--db" flag for database restoration.
  * Add source code reference documentation for getting oriented with the borgmatic code as a
    developer: https://torsion.org/borgmatic/docs/reference/source-code/
