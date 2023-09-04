@@ -7,7 +7,12 @@ eleventyNavigation:
 ---
 ## Source code
 
-To get set up to develop on borgmatic, first clone it via HTTPS or SSH:
+To get set up to develop on borgmatic, first [`install
+pipx`](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation)
+to make managing your borgmatic environment easy without impacting other
+Python applications on your system.
+
+Then, clone borgmatic via HTTPS or SSH:
 
 ```bash
 git clone https://projects.torsion.org/borgmatic-collective/borgmatic.git
@@ -19,23 +24,15 @@ Or:
 git clone ssh://git@projects.torsion.org:3022/borgmatic-collective/borgmatic.git
 ```
 
-Then, install borgmatic
-"[editable](https://pip.pypa.io/en/stable/cli/pip_install/#editable-installs)"
+Finally, install borgmatic
+"[editable](https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs)"
 so that you can run borgmatic actions during development to make sure your
-changes work.
+changes work:
 
 ```bash
 cd borgmatic
-pip3 install --user --editable .
+pipx install --editable .
 ```
-
-Note that this will typically install the borgmatic commands into
-`~/.local/bin`, which may or may not be on your PATH. There are other ways to
-install borgmatic editable as well, for instance into the system Python
-install (so without `--user`, as root), or even into a
-[virtualenv](https://virtualenv.pypa.io/en/stable/). How or where you install
-borgmatic is up to you, but generally an editable install makes development
-and testing easier.
 
 To get oriented with the borgmatic source code, have a look at the [source
 code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
@@ -43,15 +40,17 @@ code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
 
 ## Automated tests
 
-Assuming you've cloned the borgmatic source code as described above, and
-you're in the `borgmatic/` working copy, install tox, which is used for
-setting up testing environments:
+Assuming you've cloned the borgmatic source code as described above and you're
+in the `borgmatic/` working copy, install tox, which is used for setting up
+testing environments. You can either install a system package of tox (likely
+called `tox` or `python-tox`) or you can install tox with pipx:
 
 ```bash
-pip3 install --user tox
+pipx install tox
 ```
 
-Finally, to actually run tests, run:
+Finally, to actually run tests, run tox from inside the borgmatic
+sourcedirectory:
 
 ```bash
 tox

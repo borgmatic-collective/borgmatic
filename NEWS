@@ -2,6 +2,10 @@
  * #743: Add a monitoring hook for sending backup status and logs to to Grafana Loki. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
+ * Update documentation to recommend installing/upgrading borgmatic with pipx instead of pip. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation
+   https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-borgmatic
 
 1.8.2
  * #345: Add "key export" action to export a copy of the repository key for safekeeping in case

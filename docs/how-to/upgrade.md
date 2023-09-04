@@ -7,26 +7,36 @@ eleventyNavigation:
 ---
 ## Upgrading borgmatic
 
-In general, all you should need to do to upgrade borgmatic is run the
-following:
+In general, all you should need to do to upgrade borgmatic if you've
+[installed it with
+pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation)
+is to run the following:
 
 ```bash
-sudo pip3 install --user --upgrade borgmatic
+sudo pipx upgrade borgmatic
 ```
 
-See below about special cases with old versions of borgmatic. Additionally, if
-you installed borgmatic [without using `pip3 install
---user`](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install),
-then your upgrade process may be different.
+(Or without `sudo` if you installed borgmatic as a non-root user.)
+
+If you originally installed borgmatic with `sudo pip3 install --user`, you can
+uninstall it first with `sudo pip3 uninstall borgmatic` and then [install it
+again with
+pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
+which should better isolate borgmatic from your other Python applications.
+
+But if you [installed borgmatic without pipx or
+pip3](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#other-ways-to-install),
+then your upgrade method may be different.
+
 
 
 ### Upgrading your configuration
 
-The borgmatic configuration file format is almost always backwards-compatible
-from release to release without any changes, but you may still want to update
-your configuration file when you upgrade to take advantage of new
-configuration options. This is completely optional. If you prefer, you can add
-new configuration options manually.
+The borgmatic configuration file format is usually backwards-compatible from
+release to release without any changes, but you may still want to update your
+configuration file when you upgrade to take advantage of new configuration
+options or avoid old configuration from eventually becoming unsupported. If
+you prefer, you can add new configuration options manually.
 
 If you do want to upgrade your configuration file to include new options, use
 the `borgmatic config generate` action with its optional `--source` flag that
@@ -64,45 +74,10 @@ and, if desired, replace your original configuration file with it.
 
 borgmatic changed its configuration file format in version 1.1.0 from
 INI-style to YAML. This better supports validation and has a more natural way
-to express lists of values. To upgrade your existing configuration, first
-upgrade to the last version of borgmatic to support converting configuration:
-borgmatic 1.7.14.
-
-As of version 1.1.0, borgmatic no longer supports Python 2. If you were
-already running borgmatic with Python 3, then you can upgrade borgmatic
-in-place:
-
-```bash
-sudo pip3 install --user --upgrade borgmatic==1.7.14
-```
-
-But if you were running borgmatic with Python 2, uninstall and reinstall instead:
-
-```bash
-sudo pip uninstall borgmatic
-sudo pip3 install --user borgmatic==1.7.14
-```
-
-The pip binary names for different versions of Python can differ, so the above
-commands may need some tweaking to work on your machine.
-
-
-Once borgmatic is upgraded, run:
-
-```bash
-sudo upgrade-borgmatic-config
-```
-
-That will generate a new YAML configuration file at /etc/borgmatic/config.yaml
-(by default) using the values from both your existing configuration and
-excludes files. The new version of borgmatic will consume the YAML
-configuration file instead of the old one.
-
-Now you can upgrade to a newer version of borgmatic:
-
-```bash
-sudo pip3 install --user borgmatic
-```
+to express lists of values. Modern versions of borgmatic no longer include
+support for upgrading configuration files this old, but feel free to [file a
+ticket](https://torsion.org/borgmatic/#issues) for help with upgrading any old
+INI-style configuration files you may have.
 
 
 ## Upgrading Borg

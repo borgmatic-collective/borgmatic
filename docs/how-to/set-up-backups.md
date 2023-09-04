@@ -7,43 +7,30 @@ eleventyNavigation:
 ---
 ## Installation
 
-Many users need to backup system files that require privileged access, so
-these instructions install and run borgmatic as root. If you don't need to
-backup such files, then you are welcome to install and run borgmatic as a
-non-root user.
-
-First, manually [install
+First, [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
 version 1.1. borgmatic does not install Borg automatically so as to avoid
 conflicts with existing Borg installations.
 
-Then, download and install borgmatic as a [user site
-installation](https://packaging.python.org/tutorials/installing-packages/#installing-to-the-user-site)
-by running the following command:
+Then, [install pipx](https://pypa.github.io/pipx/installation/) as the root
+user (with `sudo`) to make installing borgmatic easy without impacting other
+Python applications on your system. If you have trouble installing pipx with
+pip, then you can install a system package instead. E.g. on Ubuntu or Debian,
+run:
 
-```bash
-sudo pip3 install --user --upgrade borgmatic
+```
+sudo apt update
+sudo apt install pipx
+sudo pipx ensurepath
 ```
 
-This installs borgmatic and its commands at the `/root/.local/bin` path.
-
-Your pip binary may have a different name than "pip3". Make sure you're using
-Python 3.7+, as borgmatic does not support older versions of Python.
-
-The next step is to ensure that borgmatic's commands available are on your
-system `PATH`, so that you can run borgmatic:
+Finally, install borgmatic with pipx by running the following command:
 
 ```bash
-echo export 'PATH="$PATH:/root/.local/bin"' >> ~/.bashrc
-source ~/.bashrc
+sudo pipx install borgmatic
 ```
 
-This adds `/root/.local/bin` to your non-root user's system `PATH`.
-
-If you're using a command shell other than Bash, you may need to use different
-commands here.
-
-You can check whether all of this worked with:
+Check whether all of this worked with:
 
 ```bash
 sudo borgmatic --version
@@ -51,30 +38,11 @@ sudo borgmatic --version
 
 If borgmatic is properly installed, that should output your borgmatic version.
 
-As an alternative to adding the path to `~/.bashrc` file, if you're using sudo
-to run borgmatic, you can configure [sudo's
-`secure_path` option](https://man.archlinux.org/man/sudoers.5) to include
-borgmatic's path.
-
-
-### Global install option
-
-If you try the user site installation above and have problems making borgmatic
-commands runnable on your system `PATH`, an alternate approach is to install
-borgmatic globally.
-
-The following uninstalls borgmatic and then reinstalls it such that borgmatic
-commands are on the default system `PATH`:
-
-```bash
-sudo pip3 uninstall borgmatic
-sudo pip3 install --upgrade borgmatic
-```
-
-The main downside of a global install is that borgmatic is less cleanly
-separated from the rest of your Python software, and there's the theoretical
-possibility of library conflicts. But if you're okay with that, for instance
-on a relatively dedicated system, then a global install can work out fine.
+Many users need to backup system files that require privileged access, so
+these instructions install and run borgmatic as the root user. But if you
+don't need to backup such files, you're welcome to install and run borgmatic
+as a non-root user. To do that, run the `pipx` and `borgmatic` commands
+above without `sudo`.
 
 
 ### Other ways to install
