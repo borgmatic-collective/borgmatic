@@ -88,8 +88,8 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
 @pytest.mark.parametrize(
     'match_archives,archive_name_format,feature_available,expected_result',
     (
-        (None, None, True, ()),
-        (None, '', True, ()),
+        (None, None, True, ('--match-archives', 'sh:{hostname}-*')),  # noqa: FS003
+        (None, '', True, ('--match-archives', 'sh:{hostname}-*')),  # noqa: FS003
         (
             're:foo-.*',
             '{hostname}-{now}',  # noqa: FS003
@@ -145,7 +145,12 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
             True,
             (),
         ),
-        (None, '{utcnow}-docs-{user}', False, ('--glob-archives', '*-docs-{user}')),  # noqa: FS003
+        (
+            None,
+            '{utcnow}-docs-{user}',  # noqa: FS003
+            False,
+            ('--glob-archives', '*-docs-{user}'),  # noqa: FS003
+        ),
     ),
 )
 def test_make_match_archives_flags_makes_flags_with_globs(

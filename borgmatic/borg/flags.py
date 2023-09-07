@@ -59,12 +59,15 @@ def make_repository_archive_flags(repository_path, archive, local_borg_version):
     )
 
 
+DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
+
+
 def make_match_archives_flags(match_archives, archive_name_format, local_borg_version):
     '''
     Return match archives flags based on the given match archives value, if any. If it isn't set,
-    return match archives flags to match archives created with the given archive name format, if
-    any. This is done by replacing certain archive name format placeholders for ephemeral data (like
-    "{now}") with globs.
+    return match archives flags to match archives created with the given (or default) archive name
+    format. This is done by replacing certain archive name format placeholders for ephemeral data
+    (like "{now}") with globs.
     '''
     if match_archives:
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
@@ -72,10 +75,9 @@ def make_match_archives_flags(match_archives, archive_name_format, local_borg_ve
         else:
             return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
 
-    if not archive_name_format:
-        return ()
-
-    derived_match_archives = re.sub(r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format)
+    derived_match_archives = re.sub(
+        r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format or DEFAULT_ARCHIVE_NAME_FORMAT
+    )
 
     if derived_match_archives == '*':
         return ()
