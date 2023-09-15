@@ -564,7 +564,7 @@ forget to specify the section (like `location:` or `storage:`) that any option
 is in.
 
 In this example, when borgmatic runs, all instances of `{user}` get replaced
-with `foo` and all instances of `{archive-prefix}` get replaced with `bar-`.
+with `foo` and all instances of `{archive_prefix}` get replaced with `bar-`.
 (And in this particular example, `{now}` doesn't get replaced with anything,
 but gets passed directly to Borg.) After substitution, the logical result
 looks something like this:
