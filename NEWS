@@ -4,6 +4,8 @@
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
  * #753: When "archive_name_format" is not set, filter archives using the default archive name
    format.
+ * #754: Fix error handling to log command output as one record per line instead of truncating
+   too-long output and swallowing the end of some Borg error messages.
  * Update documentation to recommend installing/upgrading borgmatic with pipx instead of pip. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation

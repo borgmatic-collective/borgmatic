@@ -555,9 +555,6 @@ def log_record(suppress_log=False, **kwargs):
     return record
 
 
-MAX_CAPTURED_OUTPUT_LENGTH = 1000
-
-
 def log_error_records(
     message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
 ):
@@ -579,20 +576,24 @@ def log_error_records(
         raise error
     except CalledProcessError as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=message)
+
         if error.output:
             try:
                 output = error.output.decode('utf-8')
             except (UnicodeDecodeError, AttributeError):
                 output = error.output
 
-            # Suppress these logs for now and save full error output for the log summary at the end.
-            yield log_record(
-                levelno=levelno,
-                levelname=level_name,
-                msg=output[:MAX_CAPTURED_OUTPUT_LENGTH]
-                + ' ...' * (len(output) > MAX_CAPTURED_OUTPUT_LENGTH),
-                suppress_log=True,
-            )
+            # Suppress these logs for now and save the error output for the log summary at the end.
+            # Log a separate record per line, as some errors can be really verbose and overflow the
+            # per-record size limits imposed by some logging backends.
+            for output_line in output.splitlines():
+                yield log_record(
+                    levelno=levelno,
+                    levelname=level_name,
+                    msg=output_line,
+                    suppress_log=True,
+                )
+
         yield log_record(levelno=levelno, levelname=level_name, msg=error)
     except (ValueError, OSError) as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=message)

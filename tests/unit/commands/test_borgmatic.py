@@ -849,7 +849,7 @@ def test_log_record_with_suppress_does_not_raise():
 
 
 def test_log_error_records_generates_output_logs_for_message_only():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').replace_with(dict).once()
 
     logs = tuple(module.log_error_records('Error'))
 
@@ -857,7 +857,7 @@ def test_log_error_records_generates_output_logs_for_message_only():
 
 
 def test_log_error_records_generates_output_logs_for_called_process_error_with_bytes_ouput():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').replace_with(dict).times(3)
     flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
 
     logs = tuple(
@@ -869,7 +869,7 @@ def test_log_error_records_generates_output_logs_for_called_process_error_with_b
 
 
 def test_log_error_records_generates_output_logs_for_called_process_error_with_string_ouput():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').replace_with(dict).times(3)
     flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
 
     logs = tuple(
@@ -880,8 +880,22 @@ def test_log_error_records_generates_output_logs_for_called_process_error_with_s
     assert any(log for log in logs if 'error output' in str(log))
 
 
+def test_log_error_records_splits_called_process_error_with_multiline_ouput_into_multiple_logs():
+    flexmock(module).should_receive('log_record').replace_with(dict).times(4)
+    flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
+
+    logs = tuple(
+        module.log_error_records(
+            'Error', subprocess.CalledProcessError(1, 'ls', 'error output\nanother line')
+        )
+    )
+
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
+    assert any(log for log in logs if 'error output' in str(log))
+
+
 def test_log_error_records_generates_logs_for_value_error():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').replace_with(dict).twice()
 
     logs = tuple(module.log_error_records('Error', ValueError()))
 
@@ -889,7 +903,7 @@ def test_log_error_records_generates_logs_for_value_error():
 
 
 def test_log_error_records_generates_logs_for_os_error():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').replace_with(dict).twice()
 
     logs = tuple(module.log_error_records('Error', OSError()))
 
@@ -897,7 +911,7 @@ def test_log_error_records_generates_logs_for_os_error():
 
 
 def test_log_error_records_generates_nothing_for_other_error():
-    flexmock(module).should_receive('log_record').replace_with(dict)
+    flexmock(module).should_receive('log_record').never()
 
     logs = tuple(module.log_error_records('Error', KeyError()))
 
