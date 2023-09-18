@@ -31,6 +31,7 @@ changes work:
 
 ```bash
 cd borgmatic
+pipx ensurepath
 pipx install --editable .
 ```
 

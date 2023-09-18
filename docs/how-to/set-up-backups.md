@@ -7,6 +7,8 @@ eleventyNavigation:
 ---
 ## Installation
 
+### Prerequisites
+
 First, [install
 Borg](https://borgbackup.readthedocs.io/en/stable/installation.html), at least
 version 1.1. borgmatic does not install Borg automatically so as to avoid
@@ -18,31 +20,56 @@ Python applications on your system. If you have trouble installing pipx with
 pip, then you can install a system package instead. E.g. on Ubuntu or Debian,
 run:
 
-```
+```bash
 sudo apt update
 sudo apt install pipx
-sudo pipx ensurepath
 ```
 
-Finally, install borgmatic with pipx by running the following command:
+### Root install
+
+If you want to run borgmatic on a schedule with privileged access to your
+files, then you should install borgmatic as the root user by running the
+following commands:
 
 ```bash
+sudo pipx ensurepath
 sudo pipx install borgmatic
 ```
 
-Check whether all of this worked with:
+Check whether this worked with:
 
 ```bash
-sudo borgmatic --version
+sudo su -
+borgmatic --version
 ```
 
 If borgmatic is properly installed, that should output your borgmatic version.
+And if you'd also like `sudo borgmatic` to work, keep reading!
 
-Many users need to backup system files that require privileged access, so
-these instructions install and run borgmatic as the root user. But if you
-don't need to backup such files, you're welcome to install and run borgmatic
-as a non-root user. To do that, run the `pipx` and `borgmatic` commands
-above without `sudo`.
+
+### Non-root install
+
+If you only want to run borgmatic as a non-root user (without privileged file
+access) *or* you want to make `sudo borgmatic` work so borgmatic runs as root,
+then install borgmatic as a non-root user by running the following commands as
+that user:
+
+```bash
+pipx ensurepath
+pipx install borgmatic
+```
+
+This should work even if you've also installed borgmatic as the root user.
+
+Check whether this worked with:
+
+```bash
+borgmatic --version
+```
+
+If borgmatic is properly installed, that should output your borgmatic version.
+You can also try `sudo borgmatic --version` if you intend to run borgmatic
+with `sudo`.
 
 
 ### Other ways to install
