@@ -16,7 +16,9 @@ is to run the following:
 sudo pipx upgrade borgmatic
 ```
 
-(Or without `sudo` if you installed borgmatic as a non-root user.)
+Omit `sudo` if you installed borgmatic as a non-root user. And if you
+installed borgmatic *both* as root and as a non-root user, you'll need to
+upgrade each installation indepedently.
 
 If you originally installed borgmatic with `sudo pip3 install --user`, you can
 uninstall it first with `sudo pip3 uninstall borgmatic` and then [install it

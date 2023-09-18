@@ -134,6 +134,7 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
                 still_running = True
 
             command = process.args.split(' ') if isinstance(process.args, str) else process.args
+
             # If any process errors, then raise accordingly.
             if exit_code_indicates_error(command, exit_code, borg_local_path):
                 # If an error occurs, include its output in the raised exception so that we don't
