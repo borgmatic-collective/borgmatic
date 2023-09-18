@@ -6,7 +6,7 @@
    format.
  * #754: Fix error handling to log command output as one record per line instead of truncating
    too-long output and swallowing the end of some Borg error messages.
- * #757: Updated documentation so "sudo borgmatic" works for pipx borgmatic installations.
+ * #757: Update documentation so "sudo borgmatic" works for pipx borgmatic installations.
  * Update documentation to recommend installing/upgrading borgmatic with pipx instead of pip. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation
