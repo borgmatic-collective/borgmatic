@@ -32,7 +32,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             'title': f'A borgmatic {state.name} event happened',
             'body': f'A borgmatic {state.name} event happened',
             'notification_type': default_notify_type(state.name.lower()),
-            # 'tag': ['borgmatic'],
         },
     )
 

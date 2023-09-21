@@ -1308,7 +1308,7 @@ properties:
                     - finish
     apprise:
         type: object
-        required: ['service_urls'] # TODO
+        required: ['service_urls']
         additionalProperties: false
         properties:
             service_urls:
@@ -1344,12 +1344,6 @@ properties:
                             - warning
                         example:
                             - failure
-                    # tags:
-                    #     type: array
-                    #     items:
-                    #         type: string
-                    #     description: |
-                    #         One or more tags to filter which services to notify.
             finish:
                 type: object
                 properties:
@@ -1374,12 +1368,6 @@ properties:
                             - warning
                         example:
                             - failure
-                    # tags:
-                    #     type: array
-                    #     items:
-                    #         type: string
-                    #     description: |
-                    #         One or more tags to filter which services to notify.
             fail:
                 type: object
                 properties:
@@ -1404,12 +1392,6 @@ properties:
                             - warning
                         example:
                             - failure
-                    # tags:
-                    #     type: array
-                    #     items:
-                    #         type: string
-                    #     description: |
-                    #         One or more tags to filter which services to notify.
             states:
                 type: array
                 items:
