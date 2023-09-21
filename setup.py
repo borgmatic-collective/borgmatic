@@ -35,6 +35,7 @@ setup(
         'requests',
         'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools',
+        'apprise'
     ),
     include_package_data=True,
     python_requires='>=3.7',

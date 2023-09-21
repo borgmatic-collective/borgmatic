@@ -1306,6 +1306,127 @@ properties:
                 example:
                     - start
                     - finish
+    apprise:
+        type: object
+        required: ['service_urls'] # TODO
+        additionalProperties: false
+        properties:
+            service_urls:
+                type: array
+                items:
+                    type: string
+                description: |
+                    List of Apprise service URLs to publish to.
+                example:
+                    - "mastodon://accesskey/host/?visibility=direct"
+                    - "pagerduty://A1BRTD4JD@TIiajkdnlazkcOXrIdevi7F/node01.local/drive_sda/"
+            start:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            Specify the message title.
+                        example: Ping!
+                    body:
+                        type: string
+                        description: |
+                            Specify the message body.
+                        exampe: Your backups have failed.
+                    notification_type:
+                        type: string
+                        description: |
+                            The Apprise message type.
+                        enum:
+                            - info
+                            - success
+                            - failure
+                            - warning
+                        example:
+                            - failure
+                    # tags:
+                    #     type: array
+                    #     items:
+                    #         type: string
+                    #     description: |
+                    #         One or more tags to filter which services to notify.
+            finish:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            Specify the message title.
+                        example: Ping!
+                    body:
+                        type: string
+                        description: |
+                            Specify the message body.
+                        exampe: Your backups have failed.
+                    notification_type:
+                        type: string
+                        description: |
+                            The Apprise message type.
+                        enum:
+                            - info
+                            - success
+                            - failure
+                            - warning
+                        example:
+                            - failure
+                    # tags:
+                    #     type: array
+                    #     items:
+                    #         type: string
+                    #     description: |
+                    #         One or more tags to filter which services to notify.
+            fail:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: |
+                            Specify the message title.
+                        example: Ping!
+                    body:
+                        type: string
+                        description: |
+                            Specify the message body.
+                        exampe: Your backups have failed.
+                    notification_type:
+                        type: string
+                        description: |
+                            The Apprise message type.
+                        enum:
+                            - info
+                            - success
+                            - failure
+                            - warning
+                        example:
+                            - failure
+                    # tags:
+                    #     type: array
+                    #     items:
+                    #         type: string
+                    #     description: |
+                    #         One or more tags to filter which services to notify.
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", and/or "fail". Defaults to pinging for failure
+                    only.
+                example:
+                    - start
+                    - finish
+
     healthchecks:
         type: object
         required: ['ping_url']
