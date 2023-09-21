@@ -31,7 +31,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         {
             'title': f'A borgmatic {state.name} event happened',
             'body': f'A borgmatic {state.name} event happened',
-            'notification_type': 'success',  # TODO: default per state.name
+            'notification_type': default_notify_type(state.name.lower()),
             # 'tag': ['borgmatic'],
         },
     )
@@ -72,6 +72,17 @@ def get_notify_type(s):
         return NotifyType.WARNING
     if s == 'failure':
         return NotifyType.FAILURE
+
+
+def default_notify_type(state):
+    if state == 'start':
+        return NotifyType.INFO
+    if state == 'finish':
+        return NotifyType.SUCCESS
+    if state == 'fail':
+        return NotifyType.FAILURE
+    if state == 'log':
+        return NotifyType.INFO
 
 
 def destroy_monitor(
