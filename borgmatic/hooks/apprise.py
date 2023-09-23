@@ -53,7 +53,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     notify_type = state_to_notify_type[state.name.lower()]
 
     apprise_object = apprise.Apprise()
-    apprise_object.add(map(lambda service: service['url'], hook_config.get('services')))
+    apprise_object.add(list(map(lambda service: service['url'], hook_config.get('services'))))
 
     if dry_run:
         return

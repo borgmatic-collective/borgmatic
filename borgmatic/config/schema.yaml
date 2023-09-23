@@ -1308,21 +1308,23 @@ properties:
                     - finish
     apprise:
         type: object
-        required: ['service_urls']
+        required: ['services']
         additionalProperties: false
         properties:
             services:
-                type: object
-                required:
-                    - url
-                    - label
-                properties:
-                    url:
-                        type: string
-                        example: "mastodon://accesskey/host/?visibility=direct"
-                    label:
-                        type: string
-                        example: mastodon
+                type: array
+                items:
+                    type: object
+                    required:
+                        - url
+                        - label
+                    properties:
+                        url:
+                            type: string
+                            example: "mastodon://accesskey/host/?visibility=direct"
+                        label:
+                            type: string
+                            example: mastodon
                 description: |
                     A list of Apprise services to publish to with URLs and labels.
                     The labels are used for logging.
