@@ -1311,15 +1311,28 @@ properties:
         required: ['service_urls']
         additionalProperties: false
         properties:
-            service_urls:
-                type: array
-                items:
-                    type: string
+            services:
+                type: object
+                required:
+                    - url
+                    - label
+                properties:
+                    url:
+                        type: string
+                        example: "mastodon://accesskey/host/?visibility=direct"
+                    label:
+                        type: string
+                        example: mastodon
                 description: |
-                    List of Apprise service URLs to publish to.
+                    A list of Apprise services to publish to with URLs and labels.
+                    The labels are used for logging.
+                    A full list of services and their configuration can be found at
+                    https://github.com/caronc/apprise/wiki.
                 example:
-                    - "mastodon://accesskey/host/?visibility=direct"
-                    - "pagerduty://A1BRTD4JD@TIiajkdnlazkcOXrIdevi7F/node01.local/drive_sda/"
+                    - url: "slack://xoxb-1234-1234-4ddbaae6f3523ada2d/#backups"
+                      label: slackbackups
+                    - url: "matrixs://nuxref:abc123@matrix.example.com/#general/#backups"
+                      label: matrix
             start:
                 type: object
                 properties:
@@ -1332,18 +1345,7 @@ properties:
                         type: string
                         description: |
                             Specify the message body.
-                        exampe: Your backups have failed.
-                    notification_type:
-                        type: string
-                        description: |
-                            The Apprise message type.
-                        enum:
-                            - info
-                            - success
-                            - failure
-                            - warning
-                        example:
-                            - failure
+                        example: Starting backup process.
             finish:
                 type: object
                 properties:
@@ -1356,18 +1358,7 @@ properties:
                         type: string
                         description: |
                             Specify the message body.
-                        exampe: Your backups have failed.
-                    notification_type:
-                        type: string
-                        description: |
-                            The Apprise message type.
-                        enum:
-                            - info
-                            - success
-                            - failure
-                            - warning
-                        example:
-                            - failure
+                        example: Backups successfully made.
             fail:
                 type: object
                 properties:
@@ -1380,18 +1371,7 @@ properties:
                         type: string
                         description: |
                             Specify the message body.
-                        exampe: Your backups have failed.
-                    notification_type:
-                        type: string
-                        description: |
-                            The Apprise message type.
-                        enum:
-                            - info
-                            - success
-                            - failure
-                            - warning
-                        example:
-                            - failure
+                        example: Your backups have failed.
             states:
                 type: array
                 items:

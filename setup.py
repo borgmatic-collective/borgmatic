@@ -37,6 +37,9 @@ setup(
         'setuptools',
         'apprise'
     ),
+    extra_require={
+        "Apprise": ["apprise"]
+    },
     include_package_data=True,
     python_requires='>=3.7',
 )

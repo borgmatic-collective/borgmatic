@@ -5,6 +5,13 @@ from apprise import NotifyType, NotifyFormat
 
 logger = logging.getLogger(__name__)
 
+state_to_notify_type = {
+    'start': NotifyType.INFO,
+    'finish': NotifyType.SUCCESS,
+    'fail': NotifyType.FAILURE,
+    'log': NotifyType.INFO
+}
+
 
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
@@ -17,9 +24,8 @@ def initialize_monitor(
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Ping the configured Apprise service URLs.
-    Use the given configuration filename in any log entries.
-    If this is a dry run, then don't actually ping anything.
+    Ping the configured Apprise service URLs. Use the given configuration filename in any log
+    entries. If this is a dry run, then don't actually ping anything.
     '''
     run_states = hook_config.get('states', ['fail'])
 
@@ -30,58 +36,36 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         state.name.lower(),
         {
             'title': f'A borgmatic {state.name} event happened',
-            'body': f'A borgmatic {state.name} event happened',
-            'notification_type': default_notify_type(state.name.lower()),
+            'body': f'A borgmatic {state.name} event happened'
         },
     )
 
-    # TODO: Currently not very meaningful message.
-    # However, the Apprise service URLs can contain sensitive info.
-    dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
-    logger.info(f'{config_filename}: Pinging Apprise {dry_run_label}')
-    logger.debug(f'{config_filename}: Using Apprise ping')
+    if not hook_config.get('services'):
+        logger.info(f'{config_filename}: No Apprise services to ping')
+        return
+
+    dry_run_string = ' (dry run; not actually pinging)' if dry_run else ''
+    labels_string = ', '.join(map(lambda service: service['label'], hook_config.get('services')))
+    logger.info(f'{config_filename}: Pinging Apprise services: {labels_string}{dry_run_string}')
 
     title = state_config.get('title', '')
     body = state_config.get('body')
-    notify_type = state_config.get('notification_type', 'success')
+    notify_type = state_to_notify_type[state.name.lower()]
 
-    apobj = apprise.Apprise()
-    apobj.add(hook_config.get('service_urls'))
+    apprise_object = apprise.Apprise()
+    apprise_object.add(map(lambda service: service['url'], hook_config.get('services')))
 
     if dry_run:
         return
 
-    result = apobj.notify(
+    result = apprise_object.notify(
         title=title,
         body=body,
         body_format=NotifyFormat.TEXT,
-        notify_type=get_notify_type(notify_type)
-    )
+        notify_type=notify_type)
 
     if result is False:
         logger.warning(f'{config_filename}: error sending some apprise notifications')
-
-
-def get_notify_type(s):
-    if s == 'info':
-        return NotifyType.INFO
-    if s == 'success':
-        return NotifyType.SUCCESS
-    if s == 'warning':
-        return NotifyType.WARNING
-    if s == 'failure':
-        return NotifyType.FAILURE
-
-
-def default_notify_type(state):
-    if state == 'start':
-        return NotifyType.INFO
-    if state == 'finish':
-        return NotifyType.SUCCESS
-    if state == 'fail':
-        return NotifyType.FAILURE
-    if state == 'log':
-        return NotifyType.INFO
 
 
 def destroy_monitor(
