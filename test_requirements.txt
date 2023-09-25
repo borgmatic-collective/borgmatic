@@ -31,3 +31,6 @@ toml==0.10.2; python_version >= '3.8'
 typed-ast; python_version >= '3.8'
 typing-extensions==4.5.0; python_version < '3.8'
 zipp==3.15.0; python_version < '3.8'
+certifi==2022.9.24
+PyYAML==6.0
+Markdown==3.4.1
