@@ -1,16 +1,6 @@
 import logging
 
-import apprise
-from apprise import NotifyType, NotifyFormat
-
 logger = logging.getLogger(__name__)
-
-state_to_notify_type = {
-    'start': NotifyType.INFO,
-    'finish': NotifyType.SUCCESS,
-    'fail': NotifyType.FAILURE,
-    'log': NotifyType.INFO
-}
 
 
 def initialize_monitor(
@@ -27,6 +17,20 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     Ping the configured Apprise service URLs. Use the given configuration filename in any log
     entries. If this is a dry run, then don't actually ping anything.
     '''
+    try:
+        import apprise
+        from apprise import NotifyType, NotifyFormat
+    except ImportError:
+        logger.warning('Unable to import Apprise in monitoring hook')
+        return
+
+    state_to_notify_type = {
+        'start': NotifyType.INFO,
+        'finish': NotifyType.SUCCESS,
+        'fail': NotifyType.FAILURE,
+        'log': NotifyType.INFO
+    }
+
     run_states = hook_config.get('states', ['fail'])
 
     if state.name.lower() not in run_states:

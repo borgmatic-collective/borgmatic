@@ -36,7 +36,7 @@ setup(
         'ruamel.yaml>0.15.0,<0.18.0',
         'setuptools'
     ),
-    extra_require={
+    extras_require={
         "Apprise": ["apprise"]
     },
     include_package_data=True,
