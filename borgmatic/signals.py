@@ -23,12 +23,20 @@ def handle_signal(signal_number, frame):
     if signal_number == signal.SIGTERM:
         logger.critical('Exiting due to TERM signal')
         sys.exit(EXIT_CODE_FROM_SIGNAL + signal.SIGTERM)
+    elif signal_number == signal.SIGINT:
+        raise KeyboardInterrupt()
 
 
 def configure_signals():
     '''
     Configure borgmatic's signal handlers to pass relevant signals through to any child processes
-    like Borg. Note that SIGINT gets passed through even without these changes.
+    like Borg.
     '''
-    for signal_number in (signal.SIGHUP, signal.SIGTERM, signal.SIGUSR1, signal.SIGUSR2):
+    for signal_number in (
+        signal.SIGHUP,
+        signal.SIGINT,
+        signal.SIGTERM,
+        signal.SIGUSR1,
+        signal.SIGUSR2,
+    ):
         signal.signal(signal_number, handle_signal)

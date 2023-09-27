@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic import signals as module
@@ -32,6 +33,17 @@ def test_handle_signal_exits_on_sigterm():
     ).once()
 
     module.handle_signal(signal_number, frame)
+
+
+def test_handle_signal_raises_on_sigint():
+    signal_number = module.signal.SIGINT
+    frame = flexmock(f_back=flexmock(f_code=flexmock(co_name='something')))
+    flexmock(module.os).should_receive('getpgrp').and_return(flexmock)
+    flexmock(module.os).should_receive('killpg')
+    flexmock(module.sys).should_receive('exit').never()
+
+    with pytest.raises(KeyboardInterrupt):
+        module.handle_signal(signal_number, frame)
 
 
 def test_configure_signals_installs_signal_handlers():
