@@ -259,28 +259,28 @@ def make_parsers():
         type=int,
         choices=range(-2, 3),
         default=0,
-        help='Display verbose progress to the console (disabled, errors only, default, some, or lots: -2, -1, 0, 1, or 2)',
+        help='Display verbose progress to the console: -2 (disabled), -1 (errors only), 0 (responses to actions, the default), 1 (info about steps borgmatic is taking), or 2 (debug)',
     )
     global_group.add_argument(
         '--syslog-verbosity',
         type=int,
         choices=range(-2, 3),
-        default=0,
-        help='Log verbose progress to syslog (disabled, errors only, default, some, or lots: -2, -1, 0, 1, or 2). Ignored when console is interactive or --log-file is given',
+        default=-2,
+        help='Log verbose progress to syslog: -2 (disabled, the default), -1 (errors only), 0 (responses to actions), 1 (info about steps borgmatic is taking), or 2 (debug)',
     )
     global_group.add_argument(
         '--log-file-verbosity',
         type=int,
         choices=range(-2, 3),
-        default=0,
-        help='Log verbose progress to log file (disabled, errors only, default, some, or lots: -2, -1, 0, 1, or 2). Only used when --log-file is given',
+        default=1,
+        help='When --log-file is given, log verbose progress to file: -2 (disabled), -1 (errors only), 0 (responses to actions), 1 (info about steps borgmatic is taking, the default), or 2 (debug)',
     )
     global_group.add_argument(
         '--monitoring-verbosity',
         type=int,
         choices=range(-2, 3),
-        default=0,
-        help='Log verbose progress to monitoring integrations that support logging (from disabled, errors only, default, some, or lots: -2, -1, 0, 1, or 2)',
+        default=1,
+        help='When a monitoring integration supporting logging is configured, log verbose progress to it: -2 (disabled), -1 (errors only), responses to actions (0), 1 (info about steps borgmatic is taking, the default), or 2 (debug)',
     )
     global_group.add_argument(
         '--log-file',

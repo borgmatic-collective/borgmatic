@@ -13,8 +13,9 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
     assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == 0
-    assert global_arguments.log_file_verbosity == 0
+    assert global_arguments.syslog_verbosity == -2
+    assert global_arguments.log_file_verbosity == 1
+    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_multiple_config_flags_parses_as_list():
@@ -25,8 +26,9 @@ def test_parse_arguments_with_multiple_config_flags_parses_as_list():
     global_arguments = arguments['global']
     assert global_arguments.config_paths == ['myconfig', 'otherconfig']
     assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == 0
-    assert global_arguments.log_file_verbosity == 0
+    assert global_arguments.syslog_verbosity == -2
+    assert global_arguments.log_file_verbosity == 1
+    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_action_after_config_path_omits_action():
@@ -71,8 +73,9 @@ def test_parse_arguments_with_verbosity_overrides_default():
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
     assert global_arguments.verbosity == 1
-    assert global_arguments.syslog_verbosity == 0
-    assert global_arguments.log_file_verbosity == 0
+    assert global_arguments.syslog_verbosity == -2
+    assert global_arguments.log_file_verbosity == 1
+    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_syslog_verbosity_overrides_default():
@@ -85,6 +88,8 @@ def test_parse_arguments_with_syslog_verbosity_overrides_default():
     assert global_arguments.config_paths == config_paths
     assert global_arguments.verbosity == 0
     assert global_arguments.syslog_verbosity == 2
+    assert global_arguments.log_file_verbosity == 1
+    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_log_file_verbosity_overrides_default():
@@ -96,8 +101,9 @@ def test_parse_arguments_with_log_file_verbosity_overrides_default():
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
     assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == 0
+    assert global_arguments.syslog_verbosity == -2
     assert global_arguments.log_file_verbosity == -1
+    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_single_override_parses():

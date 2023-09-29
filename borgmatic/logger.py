@@ -167,7 +167,7 @@ def configure_logging(
     Raise FileNotFoundError or PermissionError if the log file could not be opened for writing.
     '''
     if syslog_log_level is None:
-        syslog_log_level = console_log_level
+        syslog_log_level = logging.DISABLED
     if log_file_log_level is None:
         log_file_log_level = console_log_level
     if monitoring_log_level is None:
@@ -194,8 +194,11 @@ def configure_logging(
     console_handler.setFormatter(Console_color_formatter())
     console_handler.setLevel(console_log_level)
 
-    syslog_path = None
-    if log_file is None and syslog_log_level != logging.DISABLED:
+    handlers = [console_handler]
+
+    if syslog_log_level != logging.DISABLED:
+        syslog_path = None
+
         if os.path.exists('/dev/log'):
             syslog_path = '/dev/log'
         elif os.path.exists('/var/run/syslog'):
@@ -203,14 +206,15 @@ def configure_logging(
         elif os.path.exists('/var/run/log'):
             syslog_path = '/var/run/log'
 
-    if syslog_path and not interactive_console():
-        syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
-        syslog_handler.setFormatter(
-            logging.Formatter('borgmatic: {levelname} {message}', style='{')  # noqa: FS003
-        )
-        syslog_handler.setLevel(syslog_log_level)
-        handlers = (console_handler, syslog_handler)
-    elif log_file and log_file_log_level != logging.DISABLED:
+        if syslog_path:
+            syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
+            syslog_handler.setFormatter(
+                logging.Formatter('borgmatic: {levelname} {message}', style='{')  # noqa: FS003
+            )
+            syslog_handler.setLevel(syslog_log_level)
+            handlers.append(syslog_handler)
+
+    if log_file and log_file_log_level != logging.DISABLED:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
             logging.Formatter(
@@ -218,11 +222,9 @@ def configure_logging(
             )
         )
         file_handler.setLevel(log_file_log_level)
-        handlers = (console_handler, file_handler)
-    else:
-        handlers = (console_handler,)
+        handlers.append(file_handler)
 
     logging.basicConfig(
-        level=min(console_log_level, syslog_log_level, log_file_log_level, monitoring_log_level),
+        level=min(handler.level for handler in handlers),
         handlers=handlers,
     )
