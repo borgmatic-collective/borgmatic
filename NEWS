@@ -1,4 +1,4 @@
-1.8.3.dev0
+1.8.3
  * #665: BREAKING: Simplify logging logic as follows: Syslog verbosity is now disabled by
    default, but setting the "--syslog-verbosity" flag enables it regardless of whether you're at an
    interactive console. Additionally, "--log-file-verbosity" and "--monitoring-verbosity" now
