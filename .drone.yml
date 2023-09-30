@@ -93,5 +93,3 @@ trigger:
     - borgmatic-collective/borgmatic
   branch:
     - main
-  event:
-    - push
