@@ -1321,27 +1321,29 @@ properties:
                     properties:
                         url:
                             type: string
-                            example: "mastodon://accesskey/host/?visibility=direct"
+                            example: "gotify://hostname/token"
                         label:
                             type: string
                             example: mastodon
                 description: |
-                    A list of Apprise services to publish to with URLs and labels.
-                    The labels are used for logging.
-                    A full list of services and their configuration can be found at
-                    https://github.com/caronc/apprise/wiki.
+                    A list of Apprise services to publish to with URLs
+                    and labels. The labels are used for logging.
+                    A full list of services and their configuration can be found
+                    at https://github.com/caronc/apprise/wiki.
                 example:
-                    - url: "slack://xoxb-1234-1234-4ddbaae6f3523ada2d/#backups"
-                      label: slackbackups
-                    - url: "matrixs://nuxref:abc123@matrix.example.com/#general/#backups"
-                      label: matrix
+                    - url: "kodi://user@hostname"
+                      label: kodi
+                    - url: "line://Token@User"
+                      label: line
             start:
                 type: object
+                required: ['body']
                 properties:
                     title:
                         type: string
                         description: |
-                            Specify the message title.
+                            Specify the message title. If left unspecified, no
+                            title is sent.
                         example: Ping!
                     body:
                         type: string
@@ -1350,11 +1352,13 @@ properties:
                         example: Starting backup process.
             finish:
                 type: object
+                required: ['body']
                 properties:
                     title:
                         type: string
                         description: |
-                            Specify the message title.
+                            Specify the message title. If left unspecified, no
+                            title is sent.
                         example: Ping!
                     body:
                         type: string
@@ -1363,11 +1367,13 @@ properties:
                         example: Backups successfully made.
             fail:
                 type: object
+                required: ['body']
                 properties:
                     title:
                         type: string
                         description: |
-                            Specify the message title.
+                            Specify the message title. If left unspecified, no
+                            title is sent.
                         example: Ping!
                     body:
                         type: string
@@ -1386,7 +1392,9 @@ properties:
                 description: |
                     List of one or more monitoring states to ping for: "start",
                     "finish", and/or "fail". Defaults to pinging for failure
-                    only.
+                    only. For each selected state, corresponding configuration
+                    for the message title and body should be given. If any is
+                    left unspecified, a generic message is emitted instead.
                 example:
                     - start
                     - finish

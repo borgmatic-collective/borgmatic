@@ -34,11 +34,9 @@ setup(
         'packaging',
         'requests',
         'ruamel.yaml>0.15.0,<0.18.0',
-        'setuptools'
+        'setuptools',
     ),
-    extras_require={
-        "Apprise": ["apprise"]
-    },
+    extras_require={"Apprise": ["apprise"]},
     include_package_data=True,
     python_requires='>=3.7',
 )
