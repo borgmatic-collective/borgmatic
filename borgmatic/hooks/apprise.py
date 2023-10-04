@@ -21,7 +21,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     try:
         import apprise
         from apprise import NotifyFormat, NotifyType
-    except ImportError:
+    except ImportError:  # pragma: no cover
         logger.warning('Unable to import Apprise in monitoring hook')
         return
 
