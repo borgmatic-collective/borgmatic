@@ -385,8 +385,10 @@ pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
 run the following to install Apprise so borgmatic can use it:
 
 ```bash
-pipx install --editable --force borgmatic[Apprise]
+sudo pipx install --editable --force borgmatic[Apprise]
 ```
+
+Omit `sudo` if borgmatic is installed as a non-root user.
 
 Once Apprise is installed, configure borgmatic to notify one or more [Apprise
 services](https://github.com/caronc/apprise/wiki). For example:
