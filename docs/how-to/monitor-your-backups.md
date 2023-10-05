@@ -374,7 +374,7 @@ loki:
 ## Apprise hook
 
 <span class="minilink minilink-addedin">New in version 1.8.4</span>
-[Apprise](https://github.com/caronc/apprise) is a local notification library
+[Apprise](https://github.com/caronc/apprise/wiki) is a local notification library
 that "allows you to send a notification to almost all of the most popular
 [notification services](https://github.com/caronc/apprise/wiki) available to
 us today such as: Telegram, Discord, Slack, Amazon SNS, Gotify, etc."
