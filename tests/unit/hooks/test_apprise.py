@@ -195,7 +195,7 @@ def test_ping_monitor_pings_multiple_services():
     )
 
 
-def test_ping_monitor_warning_for_no_services():
+def test_ping_monitor_logs_info_for_no_services():
     flexmock(module.logger).should_receive('info').once()
 
     module.ping_monitor(
@@ -206,3 +206,18 @@ def test_ping_monitor_warning_for_no_services():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_ping_monitor_logs_warning_when_notify_fails():
+    mock_apprise().should_receive('notify').and_return(False)
+    flexmock(module.logger).should_receive('warning').once()
+
+    for state in borgmatic.hooks.monitor.State:
+        module.ping_monitor(
+            {'services': [{'url': f'ntfys://{TOPIC}', 'label': 'ntfys'}]},
+            {},
+            'config.yaml',
+            state,
+            monitoring_log_level=1,
+            dry_run=False,
+        )

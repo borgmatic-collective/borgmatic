@@ -36,28 +36,24 @@ below for how to configure this.
 
 ### Third-party monitoring services
 
-borgmatic integrates with monitoring services like
-[Healthchecks](https://healthchecks.io/), [Cronitor](https://cronitor.io),
-[Cronhub](https://cronhub.io), [PagerDuty](https://www.pagerduty.com/),
-[ntfy](https://ntfy.sh/), and [Grafana Loki](https://grafana.com/oss/loki/)
-and pings these services whenever borgmatic runs. That way, you'll receive an
-alert when something goes wrong or (for certain hooks) the service doesn't
-hear from borgmatic for a configured interval. See [Healthchecks
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook),
-[Cronitor
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook),
-[Cronhub
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook),
-[PagerDuty
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook),
-[ntfy
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook),
-and [Loki
-hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook),
-below for how to configure this.
+borgmatic integrates with these monitoring services and libraries, pinging
+them as backups happen:
 
-While these services offer different features, you probably only need to use
-one of them at most.
+ * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
+ * [Cronitor](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
+ * [Cronhub](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
+ * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+ * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
+ * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
+ * [Apprise](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook)
+
+The idea is that you'll receive an alert when something goes wrong or when the
+service doesn't hear from borgmatic for a configured interval (if supported).
+See the documentation links above for configuration information.
+
+While these services and libraries offer different features, you probably only
+need to use one of them at most.
+
 
 ### Third-party monitoring software
 
@@ -146,7 +142,7 @@ healthchecks:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `hooks:` section of your configuration.
 
-With this hook in place, borgmatic pings your Healthchecks project when a
+With this configuration, borgmatic pings your Healthchecks project when a
 backup begins, ends, or errors, but only when any of the `create`, `prune`,
 `compact`, or `check` actions are run.
 
@@ -190,7 +186,7 @@ cronitor:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `hooks:` section of your configuration.
 
-With this hook in place, borgmatic pings your Cronitor monitor when a backup
+With this configuration, borgmatic pings your Cronitor monitor when a backup
 begins, ends, or errors, but only when any of the `prune`, `compact`,
 `create`, or `check` actions are run. Then, if the actions complete
 successfully or errors, borgmatic notifies Cronitor accordingly.
@@ -217,7 +213,7 @@ cronhub:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `hooks:` section of your configuration.
 
-With this hook in place, borgmatic pings your Cronhub monitor when a backup
+With this configuration, borgmatic pings your Cronhub monitor when a backup
 begins, ends, or errors, but only when any of the `prune`, `compact`,
 `create`, or `check` actions are run. Then, if the actions complete
 successfully or errors, borgmatic notifies Cronhub accordingly.
@@ -258,7 +254,7 @@ pagerduty:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `hooks:` section of your configuration.
 
-With this hook in place, borgmatic creates a PagerDuty event for your service
+With this configuration, borgmatic creates a PagerDuty event for your service
 whenever backups fail, but only when any of the `create`, `prune`, `compact`,
 or `check` actions are run. Note that borgmatic does not contact PagerDuty
 when a backup starts or when it ends without error.
@@ -340,7 +336,7 @@ loki:
     url: http://localhost:3100/loki/api/v1/push
 ```
 
-With this hook in place, borgmatic sends its logs to your Loki instance as any
+With this configuration, borgmatic sends its logs to your Loki instance as any
 of the `prune`, `compact`, `create`, or `check` actions are run. Then, after
 the actions complete, borgmatic notifies Loki of success or failure.
 
@@ -373,6 +369,67 @@ loki:
         config: __config
         hostname: __hostname
 ```
+
+
+## Apprise hook
+
+<span class="minilink minilink-addedin">New in version 1.8.4</span>
+[Apprise](https://github.com/caronc/apprise) is a local notification library
+that "allows you to send a notification to almost all of the most popular
+[notification services](https://github.com/caronc/apprise/wiki) available to
+us today such as: Telegram, Discord, Slack, Amazon SNS, Gotify, etc."
+
+Depending on how you installed borgmatic, it may not have come with Apprise.
+For instance, if you originally [installed borgmatic with
+pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
+run the following to install Apprise so borgmatic can use it:
+
+```bash
+pipx install --editable --force borgmatic[Apprise]
+```
+
+Once Apprise is installed, configure borgmatic to notify one or more [Apprise
+services](https://github.com/caronc/apprise/wiki). For example:
+
+```yaml
+apprise:
+    services:
+        - url: gotify://hostname/token
+          label: gotify
+        - url: mastodons://access_key@hostname/@user
+          label: mastodon
+```
+
+With this configuration, borgmatic pings each of the configured Apprise
+services when a backup begins, ends, or errors, but only when any of the
+`prune`, `compact`, `create`, or `check` actions are run.
+
+You can optionally customize the contents of the default messages sent to
+these services:
+
+```yaml
+apprise:
+    services:
+        - url: gotify://hostname/token
+          label: gotify
+    start:
+        title: Ping!
+        body: Starting backup process.
+    finish:
+        title: Ping!
+        body: Backups successfully made.
+    fail:
+        title: Ping!
+        body: Your backups have failed.
+    states:
+        - start
+        - finish
+        - fail
+```
+
+See the [configuration
+reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
+details.
 
 
 ## Scripting borgmatic

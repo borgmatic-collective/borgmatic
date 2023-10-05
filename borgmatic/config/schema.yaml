@@ -1324,12 +1324,12 @@ properties:
                             example: "gotify://hostname/token"
                         label:
                             type: string
-                            example: mastodon
+                            example: gotify
                 description: |
-                    A list of Apprise services to publish to with URLs
-                    and labels. The labels are used for logging.
-                    A full list of services and their configuration can be found
-                    at https://github.com/caronc/apprise/wiki.
+                    A list of Apprise services to publish to with URLs and
+                    labels. The labels are used for logging. A full list of
+                    services and their configuration can be found at
+                    https://github.com/caronc/apprise/wiki.
                 example:
                     - url: "kodi://user@hostname"
                       label: kodi

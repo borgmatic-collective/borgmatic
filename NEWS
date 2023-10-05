@@ -1,10 +1,15 @@
+1.8.4.dev0
+ * Add a monitoring hook for sending backup status to a variety of monitoring services via the
+   Apprise library. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
+
 1.8.3
  * #665: BREAKING: Simplify logging logic as follows: Syslog verbosity is now disabled by
    default, but setting the "--syslog-verbosity" flag enables it regardless of whether you're at an
    interactive console. Additionally, "--log-file-verbosity" and "--monitoring-verbosity" now
    default to 1 (info about steps borgmatic is taking) instead of 0. And both syslog logging and
    file logging can be enabled simultaneously.
- * #743: Add a monitoring hook for sending backup status and logs to to Grafana Loki. See the
+ * #743: Add a monitoring hook for sending backup status and logs to Grafana Loki. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
  * #753: When "archive_name_format" is not set, filter archives using the default archive name
