@@ -1,7 +1,8 @@
 1.8.4.dev0
- * Add a monitoring hook for sending backup status to a variety of monitoring services via the
+ * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
    Apprise library. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
+ * #768: Fix a traceback when an invalid command-line flag or action is used.
 
 1.8.3
  * #665: BREAKING: Simplify logging logic as follows: Syslog verbosity is now disabled by

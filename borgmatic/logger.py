@@ -166,14 +166,14 @@ def configure_logging(
 
     Raise FileNotFoundError or PermissionError if the log file could not be opened for writing.
     '''
+    add_custom_log_levels()
+
     if syslog_log_level is None:
         syslog_log_level = logging.DISABLED
     if log_file_log_level is None:
         log_file_log_level = console_log_level
     if monitoring_log_level is None:
         monitoring_log_level = console_log_level
-
-    add_custom_log_levels()
 
     # Log certain log levels to console stderr and others to stdout. This supports use cases like
     # grepping (non-error) output.
