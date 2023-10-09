@@ -69,7 +69,8 @@ borgmatic --version
 
 If borgmatic is properly installed, that should output your borgmatic version.
 You can also try `sudo borgmatic --version` if you intend to run borgmatic
-with `sudo`.
+with `sudo`. If that doesn't work, you may need to update your [sudoers
+`secure_path` option](https://wiki.archlinux.org/title/Sudo).
 
 
 ### Other ways to install
