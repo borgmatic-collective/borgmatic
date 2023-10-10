@@ -90,3 +90,9 @@ Additionally, borgmatic action hooks support their own [variable
 interpolation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation),
 although in that case it's for particular borgmatic runtime values rather than
 (only) environment variables.
+
+Lastly, if you do want to specify your passhprase directly within borgmatic
+configuration, but you'd like to keep it in a separate file from your main
+configuration, you can [use a configuration include or a merge
+include](https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-includes)
+to pull in an external password.
