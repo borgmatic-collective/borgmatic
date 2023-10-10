@@ -9,9 +9,15 @@ eleventyNavigation:
 
 If you want to use a Borg repository passphrase or database passwords with
 borgmatic, you can set them directly in your borgmatic configuration file,
-treating those secrets like any other option value. But if you'd rather store
-them outside of borgmatic, whether for convenience or security reasons, read
-on.
+treating those secrets like any other option value. For instance, you can
+specify your Borg passhprase with:
+
+```yaml
+encryption_passphrase: yourpassphrase
+```
+
+But if you'd rather store them outside of borgmatic, whether for convenience
+or security reasons, read on.
 
 <span class="minilink minilink-addedin">New in version 1.6.4</span> borgmatic
 supports interpolating arbitrary environment variables directly into option
@@ -20,14 +26,14 @@ pull your repository passphrase, your database passwords, or any other option
 values from environment variables. For instance:
 
 ```yaml
-encryption_passphrase: ${MY_PASSPHRASE}
+encryption_passphrase: ${YOUR_PASSPHRASE}
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `storage:` section of your configuration.
 
-This uses the `MY_PASSPHRASE` environment variable as your encryption
-passphrase. Note that the `{` `}` brackets are required. `$MY_PASSPHRASE` by
+This uses the `YOUR_PASSPHRASE` environment variable as your encryption
+passphrase. Note that the `{` `}` brackets are required. `$YOUR_PASSPHRASE` by
 itself will not work.
 
 In the case of `encryption_passphrase` in particular, an alternate approach
@@ -42,25 +48,26 @@ the same approach applies. For example:
 ```yaml
 postgresql_databases:
     - name: users
-      password: ${MY_DATABASE_PASSWORD}
+      password: ${YOUR_DATABASE_PASSWORD}
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 this option in the `hooks:` section of your configuration.
 
-This uses the `MY_DATABASE_PASSWORD` environment variable as your database
+This uses the `YOUR_DATABASE_PASSWORD` environment variable as your database
 password.
 
 
 ### Interpolation defaults
 
-If you'd like to set a default for your environment variables, you can do so with the following syntax:
+If you'd like to set a default for your environment variables, you can do so
+with the following syntax:
 
 ```yaml
-encryption_passphrase: ${MY_PASSPHRASE:-defaultpass}
+encryption_passphrase: ${YOUR_PASSPHRASE:-defaultpass}
 ```
 
-Here, "`defaultpass`" is the default passphrase if the `MY_PASSPHRASE`
+Here, "`defaultpass`" is the default passphrase if the `YOUR_PASSPHRASE`
 environment variable is not set. Without a default, if the environment
 variable doesn't exist, borgmatic will error.
 
