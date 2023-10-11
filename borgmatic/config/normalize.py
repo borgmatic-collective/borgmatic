@@ -90,7 +90,7 @@ def normalize(config_filename, config):
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: The healthchecks hook now expects a mapping value. String values for this option are deprecated and support will be removed from a future release.',
+                    msg=f'{config_filename}: The healthchecks hook now expects a key/value pair with "ping_url" as a key. String values for this option are deprecated and support will be removed from a future release.',
                 )
             )
         )
