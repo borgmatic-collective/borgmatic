@@ -48,7 +48,8 @@ postgresql_databases:
     - name: users
 
 # Third-party services to notify you if backups aren't happening.
-healthchecks: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
+healthchecks:
+    ping_url: https://hc-ping.com/be067061-cf96-4412-8eae-62b0c50d6a8c
 ```
 
 borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
