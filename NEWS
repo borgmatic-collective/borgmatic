@@ -3,6 +3,8 @@
    Apprise library. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
  * #768: Fix a traceback when an invalid command-line flag or action is used.
+ * #771: Fix normalization of deprecated sections ("location:", "storage:", "hooks:", etc.) to
+   support empty sections without erroring.
 
 1.8.3
  * #665: BREAKING: Simplify logging logic as follows: Syslog verbosity is now disabled by

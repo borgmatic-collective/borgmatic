@@ -78,6 +78,11 @@ from borgmatic.config import normalize as module
             True,
         ),
         (
+            {'location': {}, 'consistency': {'prefix': 'foo'}},
+            {'prefix': 'foo'},
+            True,
+        ),
+        (
             {},
             {},
             False,

@@ -39,7 +39,7 @@ def normalize_sections(config_filename, config):
     for section_name in ('location', 'storage', 'retention', 'consistency', 'output', 'hooks'):
         section_config = config.get(section_name)
 
-        if section_config:
+        if section_config is not None:
             any_section_upgraded = True
             del config[section_name]
             config.update(section_config)
