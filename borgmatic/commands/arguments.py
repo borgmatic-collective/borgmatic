@@ -1328,4 +1328,7 @@ def parse_arguments(*unparsed_arguments):
             'With the info action, only one of --archive, --prefix, or --match-archives flags can be used.'
         )
 
+    if 'borg' in arguments and arguments['global'].dry_run:
+        raise ValueError('With the borg action, --dry-run is not supported.')
+
     return arguments

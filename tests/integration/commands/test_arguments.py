@@ -622,3 +622,16 @@ def test_parse_arguments_config_with_subaction_and_explicit_config_file_does_not
     module.parse_arguments(
         'config', 'bootstrap', '--repository', 'repo.borg', '--config', 'test.yaml'
     )
+
+
+def test_parse_arguments_with_borg_action_and_dry_run_raises():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    with pytest.raises(ValueError):
+        module.parse_arguments('--dry-run', 'borg', 'list')
+
+
+def test_parse_arguments_with_borg_action_and_no_dry_run_does_not_raise():
+    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
+
+    module.parse_arguments('borg', 'list')
