@@ -1,4 +1,4 @@
-1.8.4.dev0
+1.8.4
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
    Apprise library. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
