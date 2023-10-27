@@ -121,7 +121,7 @@ main h1:first-child,
 main .elv-toc + h1 {
 	border-bottom: 2px dotted #666;
 }
-@media (min-width: 64em) { /* 1024px */
+@media (min-width: 80em) {
 	main .elv-toc + h1,
 	main .elv-toc + h2 {
 		margin-top: 0;
@@ -243,10 +243,10 @@ footer.elv-layout {
 .elv-layout-full {
 	max-width: none;
 }
-@media (min-width: 64em) { /* 1024px */
+@media (min-width: 80em) {
 	.elv-layout-toc {
 		padding-left: 15rem;
-		max-width: 60rem;
+		max-width: 76rem;
 		margin-right: 1rem;
 		position: relative;
 	}
