@@ -32,6 +32,9 @@ def assert_command_does_not_duplicate_flags(command, *args, **kwargs):
         flag_name: 1 for flag_name in flag_counts
     }, f"Duplicate flags found in: {' '.join(command)}"
 
+    if '--json' in command:
+        return '{}'
+
 
 def fuzz_argument(arguments, argument_name):
     '''

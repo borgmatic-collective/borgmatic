@@ -1,7 +1,11 @@
 import itertools
+import json
+import logging
 import re
 
 from borgmatic.borg import feature
+
+logger = logging.getLogger(__name__)
 
 
 def make_flags(name, value):
@@ -86,3 +90,26 @@ def make_match_archives_flags(match_archives, archive_name_format, local_borg_ve
         return ('--match-archives', f'sh:{derived_match_archives}')
     else:
         return ('--glob-archives', f'{derived_match_archives}')
+
+
+def warn_for_aggressive_archive_flags(json_command, json_output):
+    '''
+    Given a JSON archives command and the resulting JSON string output from running it, parse the
+    JSON and warn if the command used an archive flag but the output indicates zero archives were
+    found.
+    '''
+    archive_flags_used = {'--glob-archives', '--match-archives'}.intersection(set(json_command))
+
+    if not archive_flags_used:
+        return
+
+    try:
+        if len(json.loads(json_output)['archives']) == 0:
+            logger.warning('An archive filter was applied, but no matching archives were found.')
+            logger.warning(
+                'Try adding --match-archives "*" or adjusting archive_name_format/match_archives in configuration.'
+            )
+    except json.JSONDecodeError as error:
+        logger.debug(f'Cannot parse JSON output from archive command: {error}')
+    except (TypeError, KeyError):
+        logger.debug('Cannot parse JSON output from archive command: No "archives" key found')

@@ -1,3 +1,4 @@
+import argparse
 import logging
 
 import borgmatic.logger
@@ -137,15 +138,28 @@ def list_repository(
         local_path,
         remote_path,
     )
+    json_command = make_rlist_command(
+        repository_path,
+        config,
+        local_borg_version,
+        argparse.Namespace(**dict(rlist_arguments.__dict__, json=True)),
+        global_arguments,
+        local_path,
+        remote_path,
+    )
+
+    json_listing = execute_command_and_capture_output(
+        json_command, extra_environment=borg_environment, borg_local_path=local_path
+    )
 
     if rlist_arguments.json:
-        return execute_command_and_capture_output(
-            main_command, extra_environment=borg_environment, borg_local_path=local_path
-        )
-    else:
-        execute_command(
-            main_command,
-            output_log_level=logging.ANSWER,
-            borg_local_path=local_path,
-            extra_environment=borg_environment,
-        )
+        return json_listing
+
+    flags.warn_for_aggressive_archive_flags(json_command, json_listing)
+
+    execute_command(
+        main_command,
+        output_log_level=logging.ANSWER,
+        borg_local_path=local_path,
+        extra_environment=borg_environment,
+    )

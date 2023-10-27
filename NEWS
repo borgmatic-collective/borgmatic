@@ -2,6 +2,8 @@
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
    Apprise library. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
+ * #748: When an archive filter causes no matching archives for the "rlist" or "info"
+   actions, warn the user and suggest how to remove the filter.
  * #768: Fix a traceback when an invalid command-line flag or action is used.
  * #771: Fix normalization of deprecated sections ("location:", "storage:", "hooks:", etc.) to
    support empty sections without erroring.
