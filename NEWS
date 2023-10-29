@@ -1,3 +1,7 @@
+1.8.5.dev0
+ * #779: Add a "--match-archives" flag to the "check" action for selecting the archives to check,
+   overriding the existing "archive_name_format" and "match_archives" options in configuration.
+
 1.8.4
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
    Apprise library. See the documentation for more information:
@@ -9,8 +13,6 @@
    support empty sections without erroring.
  * #774: Disallow the "--dry-run" flag with the "borg" action, as borgmatic can't guarantee the Borg
    command won't have side effects.
- * #779: Add a "--match-archives" flag to the "check" action for selecting the archives to check,
-   overriding the existing "archive_name_format" and "match_archives" options in configuration.
 
 1.8.3
  * #665: BREAKING: Simplify logging logic as follows: Syslog verbosity is now disabled by
