@@ -39,13 +39,10 @@ def run_check(
         repository['path'],
         config,
         local_borg_version,
+        check_arguments,
         global_arguments,
         local_path=local_path,
         remote_path=remote_path,
-        progress=check_arguments.progress,
-        repair=check_arguments.repair,
-        only_checks=check_arguments.only,
-        force=check_arguments.force,
     )
     borgmatic.hooks.command.execute_hook(
         config.get('after_check'),

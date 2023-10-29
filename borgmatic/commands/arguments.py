@@ -605,10 +605,17 @@ def make_parsers():
         help='Attempt to repair any inconsistencies found (for interactive use)',
     )
     check_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='Only check archives with names matching this pattern',
+    )
+    check_group.add_argument(
         '--only',
         metavar='CHECK',
         choices=('repository', 'archives', 'data', 'extract'),
-        dest='only',
+        dest='only_checks',
         action='append',
         help='Run a particular consistency check (repository, archives, data, or extract) instead of configured checks (subject to configured frequency, can specify flag multiple times)',
     )
