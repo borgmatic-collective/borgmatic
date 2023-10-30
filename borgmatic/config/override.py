@@ -22,13 +22,19 @@ def set_values(config, keys, value):
     set_values(config[first_key], keys[1:], value)
 
 
-def convert_value_type(value):
+def convert_value_type(value, option_type):
     '''
-    Given a string value, determine its logical type (string, boolean, integer, etc.), and return it
-    converted to that type.
+    Given a string value and its schema type as a string, determine its logical type (string,
+    boolean, integer, etc.), and return it converted to that type.
+
+    If the option type is a string, leave the value as a string so that special characters in it
+    don't get interpreted as YAML during conversion.
 
     Raise ruamel.yaml.error.YAMLError if there's a parse issue with the YAML.
     '''
+    if option_type == 'string':
+        return value
+
     return ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
 
 
@@ -46,11 +52,32 @@ def strip_section_names(parsed_override_key):
     return parsed_override_key
 
 
-def parse_overrides(raw_overrides):
+def type_for_option(schema, option_keys):
     '''
-    Given a sequence of configuration file override strings in the form of "option.suboption=value",
-    parse and return a sequence of tuples (keys, values), where keys is a sequence of strings. For
-    instance, given the following raw overrides:
+    Given a configuration schema and a sequence of keys identifying an option, e.g.
+    ('extra_borg_options', 'init'), return the schema type of that option as a string.
+
+    Return None if the option or its type cannot be found in the schema.
+    '''
+    option_schema = schema
+
+    for key in option_keys:
+        try:
+            option_schema = option_schema['properties'][key]
+        except KeyError:
+            return None
+
+    try:
+        return option_schema['type']
+    except KeyError:
+        return None
+
+
+def parse_overrides(raw_overrides, schema):
+    '''
+    Given a sequence of configuration file override strings in the form of "option.suboption=value"
+    and a configuration schema dict, parse and return a sequence of tuples (keys, values), where
+    keys is a sequence of strings. For instance, given the following raw overrides:
 
         ['my_option.suboption=value1', 'other_option=value2']
 
@@ -71,10 +98,13 @@ def parse_overrides(raw_overrides):
     for raw_override in raw_overrides:
         try:
             raw_keys, value = raw_override.split('=', 1)
+            keys = strip_section_names(tuple(raw_keys.split('.')))
+            option_type = type_for_option(schema, keys)
+
             parsed_overrides.append(
                 (
-                    strip_section_names(tuple(raw_keys.split('.'))),
-                    convert_value_type(value),
+                    keys,
+                    convert_value_type(value, option_type),
                 )
             )
         except ValueError:
@@ -87,12 +117,13 @@ def parse_overrides(raw_overrides):
     return tuple(parsed_overrides)
 
 
-def apply_overrides(config, raw_overrides):
+def apply_overrides(config, schema, raw_overrides):
     '''
-    Given a configuration dict and a sequence of configuration file override strings in the form of
-    "option.suboption=value", parse each override and set it the configuration dict.
+    Given a configuration dict, a corresponding configuration schema dict, and a sequence of
+    configuration file override strings in the form of "option.suboption=value", parse each override
+    and set it into the configuration dict.
     '''
-    overrides = parse_overrides(raw_overrides)
+    overrides = parse_overrides(raw_overrides, schema)
 
     for keys, value in overrides:
         set_values(config, keys, value)

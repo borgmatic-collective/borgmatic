@@ -45,6 +45,24 @@ def test_set_values_with_multiple_keys_updates_hierarchy():
 
 
 @pytest.mark.parametrize(
+    'schema,option_keys,expected_type',
+    (
+        ({'properties': {'foo': {'type': 'array'}}}, ('foo',), 'array'),
+        (
+            {'properties': {'foo': {'properties': {'bar': {'type': 'array'}}}}},
+            ('foo', 'bar'),
+            'array',
+        ),
+        ({'properties': {'foo': {'type': 'array'}}}, ('other',), None),
+        ({'properties': {'foo': {'description': 'stuff'}}}, ('foo',), None),
+        ({}, ('foo',), None),
+    ),
+)
+def test_type_for_option_grabs_type_if_found_in_schema(schema, option_keys, expected_type):
+    assert module.type_for_option(schema, option_keys) == expected_type
+
+
+@pytest.mark.parametrize(
     'key,expected_key',
     (
         (('foo', 'bar'), ('foo', 'bar')),
@@ -63,51 +81,64 @@ def test_strip_section_names_passes_through_key_without_section_name(key, expect
 
 def test_parse_overrides_splits_keys_and_values():
     flexmock(module).should_receive('strip_section_names').replace_with(lambda value: value)
-    flexmock(module).should_receive('convert_value_type').replace_with(lambda value: value)
+    flexmock(module).should_receive('type_for_option').and_return('string')
+    flexmock(module).should_receive('convert_value_type').replace_with(
+        lambda value, option_type: value
+    )
     raw_overrides = ['option.my_option=value1', 'other_option=value2']
     expected_result = (
         (('option', 'my_option'), 'value1'),
         (('other_option'), 'value2'),
     )
 
-    module.parse_overrides(raw_overrides) == expected_result
+    module.parse_overrides(raw_overrides, schema={}) == expected_result
 
 
 def test_parse_overrides_allows_value_with_equal_sign():
     flexmock(module).should_receive('strip_section_names').replace_with(lambda value: value)
-    flexmock(module).should_receive('convert_value_type').replace_with(lambda value: value)
+    flexmock(module).should_receive('type_for_option').and_return('string')
+    flexmock(module).should_receive('convert_value_type').replace_with(
+        lambda value, option_type: value
+    )
     raw_overrides = ['option=this===value']
     expected_result = ((('option',), 'this===value'),)
 
-    module.parse_overrides(raw_overrides) == expected_result
+    module.parse_overrides(raw_overrides, schema={}) == expected_result
 
 
 def test_parse_overrides_raises_on_missing_equal_sign():
     flexmock(module).should_receive('strip_section_names').replace_with(lambda value: value)
-    flexmock(module).should_receive('convert_value_type').replace_with(lambda value: value)
+    flexmock(module).should_receive('type_for_option').and_return('string')
+    flexmock(module).should_receive('convert_value_type').replace_with(
+        lambda value, option_type: value
+    )
     raw_overrides = ['option']
 
     with pytest.raises(ValueError):
-        module.parse_overrides(raw_overrides)
+        module.parse_overrides(raw_overrides, schema={})
 
 
 def test_parse_overrides_raises_on_invalid_override_value():
     flexmock(module).should_receive('strip_section_names').replace_with(lambda value: value)
+    flexmock(module).should_receive('type_for_option').and_return('string')
     flexmock(module).should_receive('convert_value_type').and_raise(ruamel.yaml.parser.ParserError)
     raw_overrides = ['option=[in valid]']
 
     with pytest.raises(ValueError):
-        module.parse_overrides(raw_overrides)
+        module.parse_overrides(raw_overrides, schema={})
 
 
 def test_parse_overrides_allows_value_with_single_key():
     flexmock(module).should_receive('strip_section_names').replace_with(lambda value: value)
-    flexmock(module).should_receive('convert_value_type').replace_with(lambda value: value)
+    flexmock(module).should_receive('type_for_option').and_return('string')
+    flexmock(module).should_receive('convert_value_type').replace_with(
+        lambda value, option_type: value
+    )
     raw_overrides = ['option=value']
     expected_result = ((('option',), 'value'),)
 
-    module.parse_overrides(raw_overrides) == expected_result
+    module.parse_overrides(raw_overrides, schema={}) == expected_result
 
 
 def test_parse_overrides_handles_empty_overrides():
-    module.parse_overrides(raw_overrides=None) == ()
+    module.parse_overrides(raw_overrides=None, schema={}) == ()
