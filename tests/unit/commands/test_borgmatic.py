@@ -23,6 +23,16 @@ def test_run_configuration_runs_actions_for_each_repository():
     assert results == expected_results
 
 
+def test_run_configuration_with_skip_actions_does_not_raise():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
+    flexmock(module).should_receive('run_actions').and_return(flexmock()).and_return(flexmock())
+    config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}], 'skip_actions': ['compact']}
+    arguments = {'global': flexmock(monitoring_verbosity=1)}
+
+    list(module.run_configuration('test.yaml', config, arguments))
+
+
 def test_run_configuration_with_invalid_borg_version_errors():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
@@ -504,6 +514,24 @@ def test_run_actions_runs_create():
     assert result == (expected,)
 
 
+def test_run_actions_with_skip_actions_skips_create():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.create).should_receive('run_create').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['create']},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
@@ -522,6 +550,24 @@ def test_run_actions_runs_prune():
     )
 
 
+def test_run_actions_with_skip_actions_skips_prune():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.prune).should_receive('run_prune').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'prune': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['prune']},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.command).should_receive('execute_hook')
@@ -532,6 +578,24 @@ def test_run_actions_runs_compact():
             arguments={'global': flexmock(dry_run=False, log_file='foo'), 'compact': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
+def test_run_actions_with_skip_actions_skips_compact():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(borgmatic.actions.compact).should_receive('run_compact').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'compact': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['compact']},
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),
@@ -570,6 +634,25 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
             arguments={'global': flexmock(dry_run=False, log_file='foo'), 'check': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
+def test_run_actions_with_skip_actions_skips_check():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
+    flexmock(borgmatic.actions.check).should_receive('run_check').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'check': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['check']},
             local_path=flexmock(),
             remote_path=flexmock(),
             local_borg_version=flexmock(),

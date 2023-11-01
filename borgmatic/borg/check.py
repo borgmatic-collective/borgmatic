@@ -39,7 +39,11 @@ def parse_checks(config, only_checks=None):
         check_config['name'] for check_config in (config.get('checks', None) or DEFAULT_CHECKS)
     )
     checks = tuple(check.lower() for check in checks)
+
     if 'disabled' in checks:
+        logger.warning(
+            'The "disabled" value for the "checks" option is deprecated and will be removed from a future release; use "skip_actions" instead'
+        )
         if len(checks) > 1:
             logger.warning(
                 'Multiple checks are configured, but one of them is "disabled"; not running any checks'
@@ -119,6 +123,9 @@ def filter_checks_on_frequency(
 
     Raise ValueError if a frequency cannot be parsed.
     '''
+    if not checks:
+        return checks
+
     filtered_checks = list(checks)
 
     if force:

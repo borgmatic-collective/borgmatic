@@ -423,7 +423,9 @@ properties:
             command-line invocation.
     keep_within:
         type: string
-        description: Keep all archives within this time interval.
+        description: |
+            Keep all archives within this time interval. See "skip_actions" for
+            disabling pruning altogether.
         example: 3H
     keep_secondly:
         type: integer
@@ -479,13 +481,13 @@ properties:
                         - disabled
                     description: |
                         Name of consistency check to run: "repository",
-                        "archives", "data", and/or "extract". Set to "disabled"
-                        to disable all consistency checks. "repository" checks
-                        the consistency of the repository, "archives" checks all
-                        of the archives, "data" verifies the integrity of the
-                        data within the archives, and "extract" does an
-                        extraction dry-run of the most recent archive. Note that
-                        "data" implies "archives".
+                        "archives", "data", and/or "extract". "repository"
+                        checks the consistency of the repository, "archives"
+                        checks all of the archives, "data" verifies the
+                        integrity of the data within the archives, and "extract"
+                        does an extraction dry-run of the most recent archive.
+                        Note that "data" implies "archives". See "skip_actions"
+                        for disabling checks altogether.
                     example: repository
                 frequency:
                     type: string
@@ -525,6 +527,18 @@ properties:
             Apply color to console output. Can be overridden with --no-color
             command-line flag. Defaults to true.
         example: false
+    skip_actions:
+        type: array
+        items:
+            type: string
+        description: |
+            List of one or more actions to skip running for this configuration
+            file, even if specified on the command-line (explicitly or
+            implicitly). This is handy for append-only configurations where you
+            never want to run "compact" or checkless configuration where you
+            want to skip "check". Defaults to not skipping any actions.
+        example:
+          - compact
     before_actions:
         type: array
         items:

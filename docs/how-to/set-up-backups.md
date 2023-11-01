@@ -282,6 +282,21 @@ due to things like file damage. For instance:
 sudo borgmatic --verbosity 1 --list --stats
 ```
 
+### Skipping actions
+
+<span class="minilink minilink-addedin">New in version 1.8.5</span> You can
+configure borgmatic to skip running certain actions (default or otherwise).
+For instance, to always skip the `compact` action when using [Borg's
+append-only
+mode](https://borgbackup.readthedocs.io/en/stable/usage/notes.html#append-only-mode-forbid-compaction),
+set the `skip_actions` option:
+
+```
+skip_actions:
+    - compact
+```
+
+
 ## Autopilot
 
 Running backups manually is good for validating your configuration, but I'm

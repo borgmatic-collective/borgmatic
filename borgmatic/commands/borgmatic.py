@@ -70,6 +70,12 @@ def run_configuration(config_filename, config, arguments):
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
     monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
+    skip_actions = config.get('skip_actions')
+
+    if skip_actions:
+        logger.debug(
+            f"{config_filename}: Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
+        )
 
     try:
         local_borg_version = borg_version.local_borg_version(config, local_path)
@@ -274,6 +280,7 @@ def run_actions(
         'repositories': ','.join([repo['path'] for repo in config['repositories']]),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
     }
+    skip_actions = set(config.get('skip_actions', {}))
 
     command.execute_hook(
         config.get('before_actions'),
@@ -285,7 +292,7 @@ def run_actions(
     )
 
     for action_name, action_arguments in arguments.items():
-        if action_name == 'rcreate':
+        if action_name == 'rcreate' and action_name not in skip_actions:
             borgmatic.actions.rcreate.run_rcreate(
                 repository,
                 config,
@@ -295,7 +302,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'transfer':
+        elif action_name == 'transfer' and action_name not in skip_actions:
             borgmatic.actions.transfer.run_transfer(
                 repository,
                 config,
@@ -305,7 +312,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'create':
+        elif action_name == 'create' and action_name not in skip_actions:
             yield from borgmatic.actions.create.run_create(
                 config_filename,
                 repository,
@@ -318,7 +325,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'prune':
+        elif action_name == 'prune' and action_name not in skip_actions:
             borgmatic.actions.prune.run_prune(
                 config_filename,
                 repository,
@@ -331,7 +338,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'compact':
+        elif action_name == 'compact' and action_name not in skip_actions:
             borgmatic.actions.compact.run_compact(
                 config_filename,
                 repository,
@@ -344,7 +351,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'check':
+        elif action_name == 'check' and action_name not in skip_actions:
             if checks.repository_enabled_for_checks(repository, config):
                 borgmatic.actions.check.run_check(
                     config_filename,
@@ -357,7 +364,7 @@ def run_actions(
                     local_path,
                     remote_path,
                 )
-        elif action_name == 'extract':
+        elif action_name == 'extract' and action_name not in skip_actions:
             borgmatic.actions.extract.run_extract(
                 config_filename,
                 repository,
@@ -369,7 +376,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'export-tar':
+        elif action_name == 'export-tar' and action_name not in skip_actions:
             borgmatic.actions.export_tar.run_export_tar(
                 repository,
                 config,
@@ -379,7 +386,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'mount':
+        elif action_name == 'mount' and action_name not in skip_actions:
             borgmatic.actions.mount.run_mount(
                 repository,
                 config,
@@ -389,7 +396,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'restore':
+        elif action_name == 'restore' and action_name not in skip_actions:
             borgmatic.actions.restore.run_restore(
                 repository,
                 config,
@@ -399,7 +406,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'rlist':
+        elif action_name == 'rlist' and action_name not in skip_actions:
             yield from borgmatic.actions.rlist.run_rlist(
                 repository,
                 config,
@@ -409,7 +416,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'list':
+        elif action_name == 'list' and action_name not in skip_actions:
             yield from borgmatic.actions.list.run_list(
                 repository,
                 config,
@@ -419,7 +426,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'rinfo':
+        elif action_name == 'rinfo' and action_name not in skip_actions:
             yield from borgmatic.actions.rinfo.run_rinfo(
                 repository,
                 config,
@@ -429,7 +436,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'info':
+        elif action_name == 'info' and action_name not in skip_actions:
             yield from borgmatic.actions.info.run_info(
                 repository,
                 config,
@@ -439,7 +446,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'break-lock':
+        elif action_name == 'break-lock' and action_name not in skip_actions:
             borgmatic.actions.break_lock.run_break_lock(
                 repository,
                 config,
@@ -449,7 +456,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'export':
+        elif action_name == 'export' and action_name not in skip_actions:
             borgmatic.actions.export_key.run_export_key(
                 repository,
                 config,
@@ -459,7 +466,7 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'borg':
+        elif action_name == 'borg' and action_name not in skip_actions:
             borgmatic.actions.borg.run_borg(
                 repository,
                 config,

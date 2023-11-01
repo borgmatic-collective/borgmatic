@@ -1,9 +1,9 @@
-def repository_enabled_for_checks(repository, consistency):
+def repository_enabled_for_checks(repository, config):
     '''
-    Given a repository name and a consistency configuration dict, return whether the repository
-    is enabled to have consistency checks run.
+    Given a repository name and a configuration dict, return whether the
+    repository is enabled to have consistency checks run.
     '''
-    if not consistency.get('check_repositories'):
+    if not config.get('check_repositories'):
         return True
 
-    return repository in consistency['check_repositories']
+    return repository in config['check_repositories']

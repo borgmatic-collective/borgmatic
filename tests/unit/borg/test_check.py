@@ -193,6 +193,19 @@ def test_filter_checks_on_frequency_restains_check_with_unelapsed_frequency_and_
     ) == ('archives',)
 
 
+def test_filter_checks_on_frequency_passes_through_empty_checks():
+    assert (
+        module.filter_checks_on_frequency(
+            config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
+            borg_repository_id='repo',
+            checks=(),
+            force=False,
+            archives_check_id='1234',
+        )
+        == ()
+    )
+
+
 def test_make_archive_filter_flags_with_default_checks_and_prefix_returns_default_flags():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())

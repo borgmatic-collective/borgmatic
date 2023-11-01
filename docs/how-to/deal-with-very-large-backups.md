@@ -162,7 +162,16 @@ location:
 If that's still too slow, you can disable consistency checks entirely,
 either for a single repository or for all repositories.
 
-Disabling all consistency checks looks like this:
+<span class="minilink minilink-addedin">New in version 1.8.5</span> Disabling
+all consistency checks looks like this:
+
+```yaml
+skip_actions:
+    - check
+```
+
+<span class="minilink minilink-addedin">Prior to version 1.8.5</span> Use this
+configuration instead:
 
 ```yaml
 checks:
@@ -170,10 +179,10 @@ checks:
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `consistency:` section of your configuration.
+`checks:` in the `consistency:` section of your configuration.
 
-<span class="minilink minilink-addedin">Prior to version 1.6.2</span> `checks`
-was a plain list of strings without the `name:` part. For instance:
+<span class="minilink minilink-addedin">Prior to version 1.6.2</span>
+`checks:` was a plain list of strings without the `name:` part. For instance:
 
 ```yaml
 checks:
