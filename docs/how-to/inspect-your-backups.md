@@ -197,5 +197,5 @@ See the [Python logging
 documentation](https://docs.python.org/3/library/logging.html#logrecord-attributes)
 for additional placeholders.
 
-Note that this `--log-file-format` flg only applies to the specified
+Note that this `--log-file-format` flag only applies to the specified
 `--log-file` and not to syslog or other logging.
