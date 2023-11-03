@@ -151,7 +151,7 @@ in newer versions of borgmatic.
 ## Configuration includes
 
 Once you have multiple different configuration files, you might want to share
-common configuration options across these files with having to copy and paste
+common configuration options across these files without having to copy and paste
 them. To achieve this, you can put fragments of common configuration options
 into a file and then include or inline that file into one or more borgmatic
 configuration files.

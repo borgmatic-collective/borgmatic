@@ -165,7 +165,7 @@ Note that if you use the `--log-file` flag, you are responsible for rotating
 the log file so it doesn't grow too large, for example with
 [logrotate](https://wiki.archlinux.org/index.php/Logrotate).
 
-You can the `--log-file-verbosity` flag to customize the log file's log level:
+You can use the `--log-file-verbosity` flag to customize the log file's log level:
 
 ```bash
 borgmatic --log-file /path/to/file.log --log-file-verbosity 2
@@ -197,5 +197,5 @@ See the [Python logging
 documentation](https://docs.python.org/3/library/logging.html#logrecord-attributes)
 for additional placeholders.
 
-Note that this `--log-file-format` flg only applies to the specified
+Note that this `--log-file-format` flag only applies to the specified
 `--log-file` and not to syslog or other logging.
