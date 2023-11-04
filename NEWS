@@ -8,6 +8,7 @@
    overriding the existing "archive_name_format" and "match_archives" options in configuration.
  * #779: Only parse "--override" values as complex data types when they're for options of those
    types.
+ * #782: Fix environment variable interpolation within configured repository paths.
 
 1.8.4
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the

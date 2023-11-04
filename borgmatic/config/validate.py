@@ -110,9 +110,11 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         raise Validation_error(config_filename, (str(error),))
 
     override.apply_overrides(config, schema, overrides)
-    logs = normalize.normalize(config_filename, config)
+
     if resolve_env:
         environment.resolve_env_variables(config)
+
+    logs = normalize.normalize(config_filename, config)
 
     try:
         validator = jsonschema.Draft7Validator(schema)

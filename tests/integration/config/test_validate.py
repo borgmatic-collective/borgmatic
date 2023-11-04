@@ -1,4 +1,5 @@
 import io
+import os
 import string
 import sys
 
@@ -244,7 +245,7 @@ def test_parse_configuration_applies_overrides():
     assert logs == []
 
 
-def test_parse_configuration_applies_normalization():
+def test_parse_configuration_applies_normalization_after_environment_variable_interpolation():
     mock_config_and_schema(
         '''
         location:
@@ -252,17 +253,18 @@ def test_parse_configuration_applies_normalization():
                 - /home
 
             repositories:
-                - path: hostname.borg
+                - ${NO_EXIST:-user@hostname:repo}
 
             exclude_if_present: .nobackup
         '''
     )
+    flexmock(os).should_receive('getenv').replace_with(lambda variable_name, default: default)
 
     config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': ['/home'],
-        'repositories': [{'path': 'hostname.borg'}],
+        'repositories': [{'path': 'ssh://user@hostname/./repo'}],
         'exclude_if_present': ['.nobackup'],
     }
     assert logs
