@@ -1507,7 +1507,7 @@ properties:
                     ends, or errors.
                 example: https://cronhub.io/ping/1f5e3410-254c-5587
         description: |
-            Configuration for a monitoring integration with Crunhub. Create an
+            Configuration for a monitoring integration with Cronhub. Create an
             account at https://cronhub.io if you'd like to use this service. See
             borgmatic monitoring documentation for details.
     loki:
