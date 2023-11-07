@@ -38,5 +38,5 @@ setup(
     ),
     extras_require={"Apprise": ["apprise"]},
     include_package_data=True,
-    python_requires='>=3.7',
+    python_requires='>=3.8',
 )

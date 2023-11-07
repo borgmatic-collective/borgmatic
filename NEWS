@@ -10,6 +10,7 @@
    types.
  * #782: Fix environment variable interpolation within configured repository paths.
  * #783: Upgrade ruamel.yaml dependency to support version 0.18.x.
+ * #784: Drop support for Python 3.7, which has been end-of-lifed.
 
 1.8.4
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
