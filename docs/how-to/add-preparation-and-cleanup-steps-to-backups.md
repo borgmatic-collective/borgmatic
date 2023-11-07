@@ -126,7 +126,7 @@ for more information.
 ## Hook output
 
 Any output produced by your hooks shows up both at the console and in syslog
-(when run in a non-interactive console). For more information, read about <a
+(when enabled). For more information, read about <a
 href="https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/">inspecting
 your backups</a>.
 

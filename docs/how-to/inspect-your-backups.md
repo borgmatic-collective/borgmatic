@@ -116,26 +116,29 @@ archive, complete with file sizes.
 
 ## Logging
 
-By default, borgmatic logs to a local syslog-compatible daemon if one is
-present and borgmatic is running in a non-interactive console. Where those
-logs show up depends on your particular system. If you're using systemd, try
-running `journalctl -xe`. Otherwise, try viewing `/var/log/syslog` or
-similar.
-
-You can customize the log level used for syslog logging with the
-`--syslog-verbosity` flag, and this is independent from the console logging
-`--verbosity` flag described above. For instance, to get additional
-information about the progress of the backup as it proceeds:
+By default, borgmatic logs to the console. You can enable simultaneous syslog
+logging and customize its log level with the `--syslog-verbosity` flag, which
+is independent from the console logging `--verbosity` flag described above.
+For instance, to enable syslog logging, run:
 
 ```bash
 borgmatic --syslog-verbosity 1
 ```
 
-Or to increase syslog logging to include debug spew:
+To increase syslog logging further to include debugging information, run:
 
 ```bash
 borgmatic --syslog-verbosity 2
 ```
+
+See above for further details about the verbosity levels.
+
+Where these logs show up depends on your particular system. If you're using
+systemd, try running `journalctl -xe`. Otherwise, try viewing
+`/var/log/syslog` or similar.
+
+<span class="minilink minilink-addedin">Prior to version 1.8.3</span>borgmatic
+logged to syslog by default whenever run at a non-interactive console.
 
 ### Rate limiting
 
