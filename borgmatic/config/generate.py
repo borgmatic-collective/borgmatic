@@ -236,7 +236,9 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     for field_name, source_value in source_config.items():
         # Since this key/value is from the source configuration, leave it uncommented and remove any
         # sentinel that would cause it to get commented out.
-        remove_commented_out_sentinel(ruamel.yaml.comments.CommentedMap(destination_config), field_name)
+        remove_commented_out_sentinel(
+            ruamel.yaml.comments.CommentedMap(destination_config), field_name
+        )
 
         # This is a mapping. Recurse for this key/value.
         if isinstance(source_value, collections.abc.Mapping):
