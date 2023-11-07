@@ -30,7 +30,7 @@ pytest-cov==4.0.0
 PyYAML>5.0.0
 regex; python_version >= '3.8'
 requests==2.31.0
-ruamel.yaml>0.15.0,<0.18.0
+ruamel.yaml>0.15.0
 toml==0.10.2; python_version >= '3.8'
 typed-ast; python_version >= '3.8'
 typing-extensions==4.5.0; python_version < '3.8'

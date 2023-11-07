@@ -3,7 +3,7 @@ import io
 import os
 import re
 
-from ruamel import yaml
+import ruamel.yaml
 
 from borgmatic.config import load, normalize
 
@@ -17,7 +17,7 @@ def insert_newline_before_comment(config, field_name):
     field and its comments.
     '''
     config.ca.items[field_name][1].insert(
-        0, yaml.tokens.CommentToken('\n', yaml.error.CommentMark(0), None)
+        0, ruamel.yaml.tokens.CommentToken('\n', ruamel.yaml.error.CommentMark(0), None)
     )
 
 
@@ -32,12 +32,12 @@ def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
         return example
 
     if schema_type == 'array':
-        config = yaml.comments.CommentedSeq(
+        config = ruamel.yaml.comments.CommentedSeq(
             [schema_to_sample_configuration(schema['items'], level, parent_is_sequence=True)]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif schema_type == 'object':
-        config = yaml.comments.CommentedMap(
+        config = ruamel.yaml.comments.CommentedMap(
             [
                 (field_name, schema_to_sample_configuration(sub_schema, level + 1))
                 for field_name, sub_schema in schema['properties'].items()
@@ -101,7 +101,7 @@ def render_configuration(config):
     '''
     Given a config data structure of nested OrderedDicts, render the config as YAML and return it.
     '''
-    dumper = yaml.YAML()
+    dumper = ruamel.yaml.YAML(typ='rt')
     dumper.indent(mapping=INDENT, sequence=INDENT + SEQUENCE_INDENT, offset=INDENT)
     rendered = io.StringIO()
     dumper.dump(config, rendered)
@@ -236,7 +236,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     for field_name, source_value in source_config.items():
         # Since this key/value is from the source configuration, leave it uncommented and remove any
         # sentinel that would cause it to get commented out.
-        remove_commented_out_sentinel(destination_config, field_name)
+        remove_commented_out_sentinel(ruamel.yaml.comments.CommentedMap(destination_config), field_name)
 
         # This is a mapping. Recurse for this key/value.
         if isinstance(source_value, collections.abc.Mapping):
@@ -248,7 +248,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
         # This is a sequence. Recurse for each item in it.
         if isinstance(source_value, collections.abc.Sequence) and not isinstance(source_value, str):
             destination_value = destination_config[field_name]
-            destination_config[field_name] = yaml.comments.CommentedSeq(
+            destination_config[field_name] = ruamel.yaml.comments.CommentedSeq(
                 [
                     merge_source_configuration_into_destination(
                         destination_value[index] if index < len(destination_value) else None,
@@ -275,7 +275,7 @@ def generate_sample_configuration(
     schema. If a source filename is provided, merge the parsed contents of that configuration into
     the generated configuration.
     '''
-    schema = yaml.round_trip_load(open(schema_filename))
+    schema = ruamel.yaml.YAML(typ='safe').load(open(schema_filename))
     source_config = None
 
     if source_filename:

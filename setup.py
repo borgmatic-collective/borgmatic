@@ -33,7 +33,7 @@ setup(
         'jsonschema',
         'packaging',
         'requests',
-        'ruamel.yaml>0.15.0,<0.18.0',
+        'ruamel.yaml>0.15.0',
         'setuptools',
     ),
     extras_require={"Apprise": ["apprise"]},

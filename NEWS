@@ -9,6 +9,7 @@
  * #779: Only parse "--override" values as complex data types when they're for options of those
    types.
  * #782: Fix environment variable interpolation within configured repository paths.
+ * #783: Upgrade ruamel.yaml dependency to support version 0.18.x.
 
 1.8.4
  * #715: Add a monitoring hook for sending backup status to a variety of monitoring services via the
