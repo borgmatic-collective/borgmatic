@@ -151,7 +151,7 @@ def test_create_borgmatic_manifest_creates_manifest_file():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
-    flexmock(module.importlib_metadata).should_receive('version').and_return('1.0.0')
+    flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
         '/home/user/.borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(
@@ -172,7 +172,7 @@ def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_s
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
-    flexmock(module.importlib_metadata).should_receive('version').and_return('1.0.0')
+    flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
         '/borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(

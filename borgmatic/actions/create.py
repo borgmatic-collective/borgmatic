@@ -1,11 +1,7 @@
+import importlib.metadata
 import json
 import logging
 import os
-
-try:
-    import importlib_metadata
-except ModuleNotFoundError:  # pragma: nocover
-    import importlib.metadata as importlib_metadata
 
 import borgmatic.borg.create
 import borgmatic.borg.state
@@ -39,7 +35,7 @@ def create_borgmatic_manifest(config, config_paths, dry_run):
     with open(borgmatic_manifest_path, 'w') as config_list_file:
         json.dump(
             {
-                'borgmatic_version': importlib_metadata.version('borgmatic'),
+                'borgmatic_version': importlib.metadata.version('borgmatic'),
                 'config_paths': config_paths,
             },
             config_list_file,

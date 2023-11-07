@@ -14,13 +14,12 @@ flake8-use-fstring==1.4
 flake8-variables-names==0.0.5
 flexmock==0.11.3
 idna==3.4
-importlib_metadata==6.3.0; python_version < '3.8'
 isort==5.12.0
 jsonschema==4.17.3
 Markdown==3.4.1
 mccabe==0.7.0
 packaging==23.1
-pathspec==0.11.1; python_version >= '3.8'
+pathspec==0.11.1
 pluggy==1.0.0
 py==1.11.0
 pycodestyle==2.10.0
@@ -28,10 +27,8 @@ pyflakes==3.0.1
 pytest==7.3.0
 pytest-cov==4.0.0
 PyYAML>5.0.0
-regex; python_version >= '3.8'
+regex
 requests==2.31.0
 ruamel.yaml>0.15.0
-toml==0.10.2; python_version >= '3.8'
-typed-ast; python_version >= '3.8'
-typing-extensions==4.5.0; python_version < '3.8'
-zipp==3.15.0; python_version < '3.8'
+toml==0.10.2
+typed-ast

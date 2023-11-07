@@ -1,4 +1,5 @@
 import collections
+import importlib.metadata
 import json
 import logging
 import os
@@ -8,11 +9,6 @@ from queue import Queue
 from subprocess import CalledProcessError
 
 import colorama
-
-try:
-    import importlib_metadata
-except ModuleNotFoundError:  # pragma: nocover
-    import importlib.metadata as importlib_metadata
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
@@ -834,7 +830,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
 
     global_arguments = arguments['global']
     if global_arguments.version:
-        print(importlib_metadata.version('borgmatic'))
+        print(importlib.metadata.version('borgmatic'))
         sys.exit(0)
     if global_arguments.bash_completion:
         print(borgmatic.commands.completion.bash.bash_completion())
