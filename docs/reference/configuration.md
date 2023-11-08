@@ -21,5 +21,3 @@ version](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#configuration
 ```yaml
 {% include borgmatic/config.yaml %}
 ```
-
-Note that you can also [download this configuration
