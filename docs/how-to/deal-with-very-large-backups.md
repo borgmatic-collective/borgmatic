@@ -51,6 +51,11 @@ cron job), while only running expensive consistency checks with `check` on a
 much less frequent basis (e.g. with `borgmatic check` called from a separate
 cron job).
 
+<span class="minilink minilink-addedin">New in version 1.8.5</span> Instead of
+(or in addition to) specifying actions on the command-line, you can configure
+borgmatic to [skip particular
+actions](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#skipping-actions).
+
 
 ### Consistency check configuration
 
