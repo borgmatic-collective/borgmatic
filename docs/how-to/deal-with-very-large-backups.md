@@ -117,7 +117,16 @@ this option in the `consistency:` section of your configuration.
 This tells borgmatic to run the `repository` consistency check at most once
 every two weeks for a given repository and the `archives` check at most once a
 month. The `frequency` value is a number followed by a unit of time, e.g. "3
-days", "1 week", "2 months", etc.
+days", "1 week", "2 months", etc. The set of possible time units is as
+follows (singular or plural):
+
+ * `second`
+ * `minute`
+ * `hour`
+ * `day`
+ * `week` (7 days)
+ * `month` (30 days)
+ * `year` (365 days)
 
 The `frequency` defaults to `always` for a check configured without a
 `frequency`, which means run this check every time checks run. But if you omit
