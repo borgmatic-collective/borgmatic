@@ -149,9 +149,10 @@ borgmatic umount --mount-point /mnt
 
 <span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
 automatically stores all the configuration files used to create an archive
-inside the archive itself. This is useful in cases where you've lost a
-configuration file or you want to see what configurations were used to create a
-particular archive.
+inside the archive itself. They are stored in the archive using their full
+paths from the machine being backed up. This is useful in cases where you've
+lost a configuration file or you want to see what configurations were used to
+create a particular archive.
 
 To extract the configuration files from an archive, use the `config bootstrap`
 action. For example:

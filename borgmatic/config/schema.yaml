@@ -216,7 +216,7 @@ properties:
             Store configuration files used to create a backup in the backup
             itself. Defaults to true. Changing this to false prevents "borgmatic
             bootstrap" from extracting configuration files from the backup.
-        example: true
+        example: false
     source_directories_must_exist:
         type: boolean
         description: |
@@ -287,14 +287,17 @@ properties:
     retry_wait:
         type: integer
         description: |
-            Wait time between retries (in seconds) to allow transient issues to
-            pass. Increases after each retry as a form of backoff. Defaults to 0
-            (no wait).
+            Wait time between retries (in seconds) to allow transient issues
+            to pass. Increases after each retry by that same wait time as a
+            form of backoff. Defaults to 0 (no wait).
         example: 10
     temporary_directory:
         type: string
         description: |
-            Directory where temporary files are stored. Defaults to $TMPDIR.
+            Directory where temporary Borg files are stored. Defaults to
+            $TMPDIR. See "Resource Usage" at
+            https://borgbackup.readthedocs.io/en/stable/usage/general.html for
+            details.
         example: /path/to/tmpdir
     ssh_command:
         type: string
