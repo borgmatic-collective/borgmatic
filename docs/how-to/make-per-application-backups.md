@@ -540,8 +540,7 @@ tool is borgmatic's support for defining custom constants. This is similar to
 the [variable interpolation
 feature](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)
 for command hooks, but the constants feature lets you substitute your own
-custom values into anywhere in the entire configuration file. (Constants don't
-work across includes or separate configuration files though.)
+custom values into anywhere in the entire configuration file.
 
 Here's an example usage:
 
@@ -578,6 +577,10 @@ source_directories:
 
 archive_name_format: 'bar-{now}'
 ```
+
+<span class="minilink minilink-addedin">New in version 1.8.5</span> Constants
+work across includes, meaning you can define a constant and then include a
+separate configuration file that uses that constant.
 
 An alternate to constants is passing in your values via [environment
 variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
