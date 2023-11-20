@@ -4,11 +4,15 @@
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#skipping-actions
  * #701: Deprecate the "disabled" value for the "checks" option in favor of the new "skip_actions"
    option.
+ * #745: Constants now apply to included configuration, not just the file doing the includes. As a
+   side effect of this change, constants no longer apply to option names and only substitute into
+   configuration values.
  * #779: Add a "--match-archives" flag to the "check" action for selecting the archives to check,
    overriding the existing "archive_name_format" and "match_archives" options in configuration.
  * #779: Only parse "--override" values as complex data types when they're for options of those
    types.
  * #782: Fix environment variable interpolation within configured repository paths.
+ * #782: Add configuration constant overriding via the existing "--override" flag.
  * #783: Upgrade ruamel.yaml dependency to support version 0.18.x.
  * #784: Drop support for Python 3.7, which has been end-of-lifed.
 

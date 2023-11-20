@@ -1,6 +1,5 @@
 import functools
 import itertools
-import json
 import logging
 import operator
 import os
@@ -159,8 +158,7 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
 def load_configuration(filename):
     '''
     Load the given configuration file and return its contents as a data structure of nested dicts
-    and lists. Also, replace any "{constant}" strings with the value of the "constant" key in the
-    "constants" option of the configuration file.
+    and lists.
 
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
@@ -179,23 +177,7 @@ def load_configuration(filename):
     yaml.Constructor = Include_constructor_with_include_directory
 
     with open(filename) as file:
-        file_contents = file.read()
-        config = yaml.load(file_contents)
-
-        try:
-            has_constants = bool(config and 'constants' in config)
-        except TypeError:
-            has_constants = False
-
-        if has_constants:
-            for key, value in config['constants'].items():
-                value = json.dumps(value)
-                file_contents = file_contents.replace(f'{{{key}}}', value.strip('"'))
-
-            config = yaml.load(file_contents)
-            del config['constants']
-
-        return config
+        return yaml.load(file.read())
 
 
 def filter_omitted_nodes(nodes, values):

@@ -4,7 +4,7 @@ import jsonschema
 import ruamel.yaml
 
 import borgmatic.config
-from borgmatic.config import environment, load, normalize, override
+from borgmatic.config import constants, environment, load, normalize, override
 
 
 def schema_filename():
@@ -110,6 +110,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         raise Validation_error(config_filename, (str(error),))
 
     override.apply_overrides(config, schema, overrides)
+    constants.apply_constants(config, config.get('constants') if config else {})
 
     if resolve_env:
         environment.resolve_env_variables(config)
