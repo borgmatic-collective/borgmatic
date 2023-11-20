@@ -1,4 +1,4 @@
-1.8.5.dev0
+1.8.5
  * #701: Add a "skip_actions" option to skip running particular actions, handy for append-only or
    checkless configurations. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#skipping-actions
