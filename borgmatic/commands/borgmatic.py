@@ -75,7 +75,7 @@ def run_configuration(config_filename, config, arguments):
 
     try:
         local_borg_version = borg_version.local_borg_version(config, local_path)
-        logger.debug(f'{config_filename}: borg {local_borg_version}')
+        logger.debug(f'{config_filename}: Borg {local_borg_version}')
     except (OSError, CalledProcessError, ValueError) as error:
         yield from log_error_records(f'{config_filename}: Error getting local Borg version', error)
         return
