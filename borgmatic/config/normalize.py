@@ -192,7 +192,7 @@ def normalize(config_filename, config):
     # Upgrade remote repositories to ssh:// syntax, required in Borg 2.
     repositories = config.get('repositories')
     if repositories:
-        if isinstance(repositories[0], str):
+        if any(isinstance(repository, str) for repository in repositories):
             logs.append(
                 logging.makeLogRecord(
                     dict(
@@ -202,7 +202,10 @@ def normalize(config_filename, config):
                     )
                 )
             )
-            config['repositories'] = [{'path': repository} for repository in repositories]
+            config['repositories'] = [
+                {'path': repository} if isinstance(repository, str) else repository
+                for repository in repositories
+            ]
             repositories = config['repositories']
 
         config['repositories'] = []

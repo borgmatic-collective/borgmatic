@@ -217,6 +217,11 @@ def test_normalize_sections_with_only_scalar_raises():
             True,
         ),
         (
+            {'repositories': [{'path': 'first'}, 'file:///repo']},
+            {'repositories': [{'path': 'first'}, {'path': '/repo'}]},
+            True,
+        ),
+        (
             {'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}]},
             {'repositories': [{'path': 'ssh://foo@bar/repo', 'label': 'foo'}]},
             True,
@@ -251,15 +256,3 @@ def test_normalize_applies_hard_coded_normalization_to_config(
         assert logs
     else:
         assert logs == []
-
-
-def test_normalize_raises_error_if_repository_data_is_not_consistent():
-    flexmock(module).should_receive('normalize_sections').and_return([])
-
-    with pytest.raises(TypeError):
-        module.normalize(
-            'test.yaml',
-            {
-                'repositories': [{'path': 'foo@bar:/repo', 'label': 'foo'}, 'file:///repo'],
-            },
-        )
