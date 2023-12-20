@@ -1,7 +1,7 @@
-import json
 import logging
 
 import borgmatic.actions.arguments
+import borgmatic.actions.json
 import borgmatic.borg.info
 import borgmatic.borg.rlist
 import borgmatic.config.validate
@@ -26,7 +26,7 @@ def run_info(
     if info_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, info_arguments.repository
     ):
-        if not info_arguments.json:  # pragma: nocover
+        if not info_arguments.json:
             logger.answer(
                 f'{repository.get("label", repository["path"])}: Displaying archive summary information'
             )
@@ -48,5 +48,5 @@ def run_info(
             local_path,
             remote_path,
         )
-        if json_output:  # pragma: nocover
-            yield json.loads(json_output)
+        if json_output:
+            yield borgmatic.actions.json.parse_json(json_output, repository.get('label'))

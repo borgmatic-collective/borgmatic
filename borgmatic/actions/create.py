@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+import borgmatic.actions.json
 import borgmatic.borg.create
 import borgmatic.borg.state
 import borgmatic.config.validate
@@ -107,8 +108,8 @@ def run_create(
         list_files=create_arguments.list_files,
         stream_processes=stream_processes,
     )
-    if json_output:  # pragma: nocover
-        yield json.loads(json_output)
+    if json_output:
+        yield borgmatic.actions.json.parse_json(json_output, repository.get('label'))
 
     borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
         'remove_data_source_dumps',

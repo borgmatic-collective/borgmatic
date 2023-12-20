@@ -1,5 +1,6 @@
 1.8.6.dev0
  * #794: Fix a traceback when the "repositories" option contains both strings and key/value pairs.
+ * #800: Add configured repository labels to the JSON output for all actions.
 
 1.8.5
  * #701: Add a "skip_actions" option to skip running particular actions, handy for append-only or
