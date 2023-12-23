@@ -578,6 +578,21 @@ source_directories:
 archive_name_format: 'bar-{now}'
 ```
 
+Note that if you'd like to interpolate a constant into the beginning of a
+value, you'll need to quote it. For instance, this won't work:
+
+```yaml
+source_directories:
+    - {my_home_directory}/.config   # This will error!
+```
+
+Instead, do this:
+
+```yaml
+source_directories:
+    - "{my_home_directory}/.config"
+```
+
 <span class="minilink minilink-addedin">New in version 1.8.5</span> Constants
 work across includes, meaning you can define a constant and then include a
 separate configuration file that uses that constant.
