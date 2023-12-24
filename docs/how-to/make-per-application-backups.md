@@ -301,7 +301,7 @@ options via an include and then overrides one of them locally:
 <<: !include /etc/borgmatic/common.yaml
 
 constants:
-    hostname: myhostname
+    base_directory: /opt
 
 repositories:
     - path: repo.borg
@@ -311,13 +311,13 @@ This is what `common.yaml` might look like:
 
 ```yaml
 constants:
-    prefix: myprefix
-    hostname: otherhost
+    app_name: myapp
+    base_directory: /var/lib
 ```
 
-Once this include gets merged in, the resulting configuration would have a
-`prefix` value of `myprefix` and an overridden `hostname` value of
-`myhostname`.
+Once this include gets merged in, the resulting configuration would have an
+`app_name` value of `myapp` and an overridden `base_directory` value of
+`/opt`.
 
 When there's an option collision between the local file and the merged
 include, the local file's option takes precedence.
@@ -540,7 +540,7 @@ tool is borgmatic's support for defining custom constants. This is similar to
 the [variable interpolation
 feature](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)
 for command hooks, but the constants feature lets you substitute your own
-custom values into anywhere in the entire configuration file.
+custom values into any option values in the entire configuration file.
 
 Here's an example usage:
 
@@ -563,10 +563,15 @@ forget to specify the section (like `location:` or `storage:`) that any option
 is in.
 
 In this example, when borgmatic runs, all instances of `{user}` get replaced
-with `foo` and all instances of `{archive_prefix}` get replaced with `bar-`.
-(And in this particular example, `{now}` doesn't get replaced with anything,
-but gets passed directly to Borg.) After substitution, the logical result
-looks something like this:
+with `foo` and all instances of `{archive_prefix}` get replaced with `bar`.
+And `{now}` doesn't get replaced with anything, but gets passed directly to
+Borg, which has its own
+[placeholders](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-placeholders)
+using the same syntax as borgmatic constants. So borgmatic options like
+`archive_name_format` that get passed directly to Borg can use either Borg
+placeholders or borgmatic constants or both!
+
+After substitution, the logical result looks something like this:
 
 ```yaml
 source_directories:
