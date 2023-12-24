@@ -1,6 +1,12 @@
 1.8.6.dev0
+ * #767: Add an "--ssh-command" flag to the "config bootstrap" action for setting a custom SSH
+   command, as no configuration is available (including the "ssh_command" option) until
+   bootstrapping completes.
  * #794: Fix a traceback when the "repositories" option contains both strings and key/value pairs.
  * #800: Add configured repository labels to the JSON output for all actions.
+ * When logging commands that borgmatic executes, log the environment variables that
+   borgmatic sets for those commands. (But don't log their values, since they often contain
+   passwords.)
 
 1.8.5
  * #701: Add a "skip_actions" option to skip running particular actions, handy for append-only or

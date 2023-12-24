@@ -172,19 +172,19 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path):
         }
 
 
-def log_command(full_command, input_file=None, output_file=None):
+def log_command(full_command, input_file=None, output_file=None, environment=None):
     '''
     Log the given command (a sequence of command/argument strings), along with its input/output file
-    paths.
+    paths and extra environment variables (with omitted values in case they contain passwords).
     '''
     logger.debug(
-        ' '.join(full_command)
+        ' '.join(tuple(f'{key}=***' for key in (environment or {}).keys()) + tuple(full_command))
         + (f" < {getattr(input_file, 'name', '')}" if input_file else '')
         + (f" > {getattr(output_file, 'name', '')}" if output_file else '')
     )
 
 
-# An sentinel passed as an output file to execute_command() to indicate that the command's output
+# A sentinel passed as an output file to execute_command() to indicate that the command's output
 # should be allowed to flow through to stdout without being captured for logging. Useful for
 # commands with interactive prompts or those that mess directly with the console.
 DO_NOT_CAPTURE = object()
@@ -214,7 +214,7 @@ def execute_command(
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    log_command(full_command, input_file, output_file)
+    log_command(full_command, input_file, output_file, extra_environment)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command
@@ -255,7 +255,7 @@ def execute_command_and_capture_output(
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    log_command(full_command)
+    log_command(full_command, environment=extra_environment)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     command = ' '.join(full_command) if shell else full_command
 
@@ -304,7 +304,7 @@ def execute_command_with_processes(
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
     '''
-    log_command(full_command, input_file, output_file)
+    log_command(full_command, input_file, output_file, extra_environment)
     environment = {**os.environ, **extra_environment} if extra_environment else None
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command

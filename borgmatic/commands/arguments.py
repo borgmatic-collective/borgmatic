@@ -732,6 +732,11 @@ def make_parsers():
         help='Display progress for each file as it is extracted',
     )
     config_bootstrap_group.add_argument(
+        '--ssh-command',
+        metavar='COMMAND',
+        help='Command to use instead of "ssh"',
+    )
+    config_bootstrap_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

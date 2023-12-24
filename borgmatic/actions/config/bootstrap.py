@@ -31,18 +31,19 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     borgmatic_manifest_path = os.path.expanduser(
         os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
     )
+    config = {'ssh_command': bootstrap_arguments.ssh_command}
     extract_process = borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
         borgmatic.borg.rlist.resolve_archive_name(
             bootstrap_arguments.repository,
             bootstrap_arguments.archive,
-            {},
+            config,
             local_borg_version,
             global_arguments,
         ),
         [borgmatic_manifest_path],
-        {},
+        config,
         local_borg_version,
         global_arguments,
         extract_to_stdout=True,
@@ -79,6 +80,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     manifest_config_paths = get_config_paths(
         bootstrap_arguments, global_arguments, local_borg_version
     )
+    config = {'ssh_command': bootstrap_arguments.ssh_command}
 
     logger.info(f"Bootstrapping config paths: {', '.join(manifest_config_paths)}")
 
@@ -88,12 +90,12 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         borgmatic.borg.rlist.resolve_archive_name(
             bootstrap_arguments.repository,
             bootstrap_arguments.archive,
-            {},
+            config,
             local_borg_version,
             global_arguments,
         ),
         [config_path.lstrip(os.path.sep) for config_path in manifest_config_paths],
-        {},
+        config,
         local_borg_version,
         global_arguments,
         extract_to_stdout=False,

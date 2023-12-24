@@ -167,8 +167,8 @@ configuration file used to create this archive was located at
 `/etc/borgmatic/config.yaml` when the archive was created.
 
 Note that to run the `config bootstrap` action, you don't need to have a
-borgmatic configuration file. You only need to specify the repository to use via
-the `--repository` flag; borgmatic will figure out the rest.
+borgmatic configuration file. You only need to specify the repository to use
+via the `--repository` flag; borgmatic will figure out the rest.
 
 If a destination directory is not specified, the configuration files will be
 extracted to their original locations, silently *overwriting* any configuration
@@ -182,6 +182,9 @@ If you want to extract the configuration file from a specific archive, use the
 ```bash
 borgmatic config bootstrap --repository repo.borg --archive host-2023-01-02T04:06:07.080910 --destination /tmp
 ```
+
+See the output of `config bootstrap --help` for additional flags you may need
+for bootstrapping.
 
 <span class="minilink minilink-addedin">New in version 1.8.1</span> Set the
 `store_config_files` option to `false` to disable the automatic backup of

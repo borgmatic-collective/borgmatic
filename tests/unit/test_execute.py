@@ -100,8 +100,39 @@ def test_append_last_lines_with_output_log_level_none_appends_captured_output():
     assert captured_output == ['captured', 'line']
 
 
+@pytest.mark.parametrize(
+    'full_command,input_file,output_file,environment,expected_result',
+    (
+        (('foo', 'bar'), None, None, None, 'foo bar'),
+        (('foo', 'bar'), flexmock(name='input'), None, None, 'foo bar < input'),
+        (('foo', 'bar'), None, flexmock(name='output'), None, 'foo bar > output'),
+        (
+            ('foo', 'bar'),
+            flexmock(name='input'),
+            flexmock(name='output'),
+            None,
+            'foo bar < input > output',
+        ),
+        (
+            ('foo', 'bar'),
+            None,
+            None,
+            {'DBPASS': 'secret', 'OTHER': 'thing'},
+            'DBPASS=*** OTHER=*** foo bar',
+        ),
+    ),
+)
+def test_log_command_logs_command_constructed_from_arguments(
+    full_command, input_file, output_file, environment, expected_result
+):
+    flexmock(module.logger).should_receive('debug').with_args(expected_result).once()
+
+    module.log_command(full_command, input_file, output_file, environment)
+
+
 def test_execute_command_calls_full_command():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -122,6 +153,7 @@ def test_execute_command_calls_full_command():
 def test_execute_command_calls_full_command_with_output_file():
     full_command = ['foo', 'bar']
     output_file = flexmock(name='test')
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -141,6 +173,7 @@ def test_execute_command_calls_full_command_with_output_file():
 
 def test_execute_command_calls_full_command_without_capturing_output():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command, stdin=None, stdout=None, stderr=None, shell=False, env=None, cwd=None
@@ -156,6 +189,7 @@ def test_execute_command_calls_full_command_without_capturing_output():
 def test_execute_command_calls_full_command_with_input_file():
     full_command = ['foo', 'bar']
     input_file = flexmock(name='test')
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -175,6 +209,7 @@ def test_execute_command_calls_full_command_with_input_file():
 
 def test_execute_command_calls_full_command_with_shell():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         ' '.join(full_command),
@@ -194,6 +229,7 @@ def test_execute_command_calls_full_command_with_shell():
 
 def test_execute_command_calls_full_command_with_extra_environment():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -213,6 +249,7 @@ def test_execute_command_calls_full_command_with_extra_environment():
 
 def test_execute_command_calls_full_command_with_working_directory():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -233,6 +270,7 @@ def test_execute_command_calls_full_command_with_working_directory():
 def test_execute_command_without_run_to_completion_returns_process():
     full_command = ['foo', 'bar']
     process = flexmock()
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -251,6 +289,7 @@ def test_execute_command_without_run_to_completion_returns_process():
 def test_execute_command_and_capture_output_returns_stdout():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd=None
@@ -264,6 +303,7 @@ def test_execute_command_and_capture_output_returns_stdout():
 def test_execute_command_and_capture_output_with_capture_stderr_returns_stderr():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=module.subprocess.STDOUT, shell=False, env=None, cwd=None
@@ -278,6 +318,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
     full_command = ['foo', 'bar']
     expected_output = '[]'
     err_output = b'[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd=None
@@ -292,6 +333,7 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
 def test_execute_command_and_capture_output_raises_when_command_errors():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd=None
@@ -305,6 +347,7 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
 def test_execute_command_and_capture_output_returns_output_with_shell():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         'foo bar', stderr=None, shell=True, env=None, cwd=None
@@ -318,6 +361,7 @@ def test_execute_command_and_capture_output_returns_output_with_shell():
 def test_execute_command_and_capture_output_returns_output_with_extra_environment():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command,
@@ -337,6 +381,7 @@ def test_execute_command_and_capture_output_returns_output_with_extra_environmen
 def test_execute_command_and_capture_output_returns_output_with_working_directory():
     full_command = ['foo', 'bar']
     expected_output = '[]'
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd='/working'
@@ -352,6 +397,7 @@ def test_execute_command_and_capture_output_returns_output_with_working_director
 def test_execute_command_with_processes_calls_full_command():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -372,6 +418,7 @@ def test_execute_command_with_processes_calls_full_command():
 def test_execute_command_with_processes_returns_output_with_output_log_level_none():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     process = flexmock(stdout=None)
     flexmock(module.subprocess).should_receive('Popen').with_args(
@@ -394,6 +441,7 @@ def test_execute_command_with_processes_calls_full_command_with_output_file():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
     output_file = flexmock(name='test')
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -414,6 +462,7 @@ def test_execute_command_with_processes_calls_full_command_with_output_file():
 def test_execute_command_with_processes_calls_full_command_without_capturing_output():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command, stdin=None, stdout=None, stderr=None, shell=False, env=None, cwd=None
@@ -432,6 +481,7 @@ def test_execute_command_with_processes_calls_full_command_with_input_file():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
     input_file = flexmock(name='test')
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -452,6 +502,7 @@ def test_execute_command_with_processes_calls_full_command_with_input_file():
 def test_execute_command_with_processes_calls_full_command_with_shell():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         ' '.join(full_command),
@@ -472,6 +523,7 @@ def test_execute_command_with_processes_calls_full_command_with_shell():
 def test_execute_command_with_processes_calls_full_command_with_extra_environment():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -494,6 +546,7 @@ def test_execute_command_with_processes_calls_full_command_with_extra_environmen
 def test_execute_command_with_processes_calls_full_command_with_working_directory():
     full_command = ['foo', 'bar']
     processes = (flexmock(),)
+    flexmock(module).should_receive('log_command')
     flexmock(module.os, environ={'a': 'b'})
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command,
@@ -515,6 +568,7 @@ def test_execute_command_with_processes_calls_full_command_with_working_director
 
 def test_execute_command_with_processes_kills_processes_on_error():
     full_command = ['foo', 'bar']
+    flexmock(module).should_receive('log_command')
     process = flexmock(stdout=flexmock(read=lambda count: None))
     process.should_receive('poll')
     process.should_receive('kill').once()
