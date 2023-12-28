@@ -2,14 +2,34 @@ import logging
 import subprocess
 import time
 
+import pytest
 from flexmock import flexmock
 
 import borgmatic.hooks.command
 from borgmatic.commands import borgmatic as module
 
 
+@pytest.mark.parametrize(
+    'config,arguments,expected_actions',
+    (
+        ({}, {}, []),
+        ({'skip_actions': []}, {}, []),
+        ({'skip_actions': ['prune', 'check']}, {}, ['prune', 'check']),
+        (
+            {'skip_actions': ['prune', 'check']},
+            {'check': flexmock(force=False)},
+            ['prune', 'check'],
+        ),
+        ({'skip_actions': ['prune', 'check']}, {'check': flexmock(force=True)}, ['prune']),
+    ),
+)
+def test_get_skip_actions_uses_config_and_arguments(config, arguments, expected_actions):
+    assert module.get_skip_actions(config, arguments) == expected_actions
+
+
 def test_run_configuration_runs_actions_for_each_repository():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('run_actions').and_return(expected_results[:1]).and_return(
@@ -25,6 +45,7 @@ def test_run_configuration_runs_actions_for_each_repository():
 
 def test_run_configuration_with_skip_actions_does_not_raise():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_return(flexmock()).and_return(flexmock())
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}], 'skip_actions': ['compact']}
@@ -35,6 +56,7 @@ def test_run_configuration_with_skip_actions_does_not_raise():
 
 def test_run_configuration_with_invalid_borg_version_errors():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
     flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module.dispatch).should_receive('call_hooks').never()
@@ -47,6 +69,7 @@ def test_run_configuration_with_invalid_borg_version_errors():
 
 def test_run_configuration_logs_monitor_start_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_raise(OSError).and_return(
         None
@@ -64,6 +87,7 @@ def test_run_configuration_logs_monitor_start_error():
 
 def test_run_configuration_bails_for_monitor_start_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.dispatch).should_receive('call_hooks').and_raise(error)
@@ -79,6 +103,7 @@ def test_run_configuration_bails_for_monitor_start_soft_failure():
 
 def test_run_configuration_logs_actions_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module.dispatch).should_receive('call_hooks')
@@ -95,6 +120,7 @@ def test_run_configuration_logs_actions_error():
 
 def test_run_configuration_bails_for_actions_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks')
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
@@ -111,6 +137,7 @@ def test_run_configuration_bails_for_actions_soft_failure():
 
 def test_run_configuration_logs_monitor_log_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
         None
@@ -128,6 +155,7 @@ def test_run_configuration_logs_monitor_log_error():
 
 def test_run_configuration_bails_for_monitor_log_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
@@ -146,6 +174,7 @@ def test_run_configuration_bails_for_monitor_log_soft_failure():
 
 def test_run_configuration_logs_monitor_finish_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
         None
@@ -163,6 +192,7 @@ def test_run_configuration_logs_monitor_finish_error():
 
 def test_run_configuration_bails_for_monitor_finish_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
@@ -181,6 +211,7 @@ def test_run_configuration_bails_for_monitor_finish_soft_failure():
 
 def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_are_disabled():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(module.DISABLED)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
 
     flexmock(module.dispatch).should_receive('call_hooks').never()
@@ -194,6 +225,7 @@ def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_ar
 
 def test_run_configuration_logs_on_error_hook_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook').and_raise(OSError)
     expected_results = [flexmock(), flexmock()]
@@ -211,6 +243,7 @@ def test_run_configuration_logs_on_error_hook_error():
 
 def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('execute_hook').and_raise(error)
@@ -228,6 +261,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
 def test_run_configuration_retries_soft_error():
     # Run action first fails, second passes
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_return([])
@@ -241,6 +275,7 @@ def test_run_configuration_retries_soft_error():
 def test_run_configuration_retries_hard_error():
     # Run action fails twice
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
@@ -263,6 +298,7 @@ def test_run_configuration_retries_hard_error():
 
 def test_run_configuration_repos_ordered():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
@@ -281,6 +317,7 @@ def test_run_configuration_repos_ordered():
 
 def test_run_configuration_retries_round_robin():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
@@ -315,6 +352,7 @@ def test_run_configuration_retries_round_robin():
 
 def test_run_configuration_retries_one_passes():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
@@ -347,6 +385,7 @@ def test_run_configuration_retries_one_passes():
 
 def test_run_configuration_retry_wait():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
@@ -390,6 +429,7 @@ def test_run_configuration_retry_wait():
 
 def test_run_configuration_retries_timeout_multiple_repos():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
@@ -429,6 +469,7 @@ def test_run_configuration_retries_timeout_multiple_repos():
 
 def test_run_actions_runs_rcreate():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.rcreate).should_receive('run_rcreate').once()
 
@@ -447,6 +488,7 @@ def test_run_actions_runs_rcreate():
 
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
@@ -478,6 +520,7 @@ def test_run_actions_adds_log_file_to_hook_context():
 
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.transfer).should_receive('run_transfer').once()
 
@@ -496,6 +539,7 @@ def test_run_actions_runs_transfer():
 
 def test_run_actions_runs_create():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
@@ -516,6 +560,7 @@ def test_run_actions_runs_create():
 
 def test_run_actions_with_skip_actions_skips_create():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['create'])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.create).should_receive('run_create').never()
 
@@ -534,6 +579,7 @@ def test_run_actions_with_skip_actions_skips_create():
 
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.prune).should_receive('run_prune').once()
 
@@ -552,6 +598,7 @@ def test_run_actions_runs_prune():
 
 def test_run_actions_with_skip_actions_skips_prune():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['prune'])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.prune).should_receive('run_prune').never()
 
@@ -570,6 +617,7 @@ def test_run_actions_with_skip_actions_skips_prune():
 
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.compact).should_receive('run_compact').once()
 
@@ -588,6 +636,7 @@ def test_run_actions_runs_compact():
 
 def test_run_actions_with_skip_actions_skips_compact():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.compact).should_receive('run_compact').never()
 
@@ -606,6 +655,7 @@ def test_run_actions_with_skip_actions_skips_compact():
 
 def test_run_actions_runs_check_when_repository_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').once()
@@ -625,6 +675,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
 
 def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(False)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
@@ -644,6 +695,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
 
 def test_run_actions_with_skip_actions_skips_check():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['check'])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
@@ -663,6 +715,7 @@ def test_run_actions_with_skip_actions_skips_check():
 
 def test_run_actions_runs_extract():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.extract).should_receive('run_extract').once()
 
@@ -681,6 +734,7 @@ def test_run_actions_runs_extract():
 
 def test_run_actions_runs_export_tar():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.export_tar).should_receive('run_export_tar').once()
 
@@ -699,6 +753,7 @@ def test_run_actions_runs_export_tar():
 
 def test_run_actions_runs_mount():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.mount).should_receive('run_mount').once()
 
@@ -717,6 +772,7 @@ def test_run_actions_runs_mount():
 
 def test_run_actions_runs_restore():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once()
 
@@ -735,6 +791,7 @@ def test_run_actions_runs_restore():
 
 def test_run_actions_runs_rlist():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.rlist).should_receive('run_rlist').and_yield(expected).once()
@@ -755,6 +812,7 @@ def test_run_actions_runs_rlist():
 
 def test_run_actions_runs_list():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.list).should_receive('run_list').and_yield(expected).once()
@@ -775,6 +833,7 @@ def test_run_actions_runs_list():
 
 def test_run_actions_runs_rinfo():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.rinfo).should_receive('run_rinfo').and_yield(expected).once()
@@ -795,6 +854,7 @@ def test_run_actions_runs_rinfo():
 
 def test_run_actions_runs_info():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
     flexmock(borgmatic.actions.info).should_receive('run_info').and_yield(expected).once()
@@ -815,6 +875,7 @@ def test_run_actions_runs_info():
 
 def test_run_actions_runs_break_lock():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.break_lock).should_receive('run_break_lock').once()
 
@@ -833,6 +894,7 @@ def test_run_actions_runs_break_lock():
 
 def test_run_actions_runs_export_key():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.export_key).should_receive('run_export_key').once()
 
@@ -851,6 +913,7 @@ def test_run_actions_runs_export_key():
 
 def test_run_actions_runs_borg():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once()
 
@@ -869,6 +932,7 @@ def test_run_actions_runs_borg():
 
 def test_run_actions_runs_multiple_actions_in_argument_order():
     flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once().ordered()
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once().ordered()

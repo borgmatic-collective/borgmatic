@@ -44,6 +44,20 @@ from borgmatic.verbosity import verbosity_to_log_level
 logger = logging.getLogger(__name__)
 
 
+def get_skip_actions(config, arguments):
+    '''
+    Given a configuration dict and command-line arguments as an argparse.Namespace, return a list of
+    the configured action names to skip. Omit "check" from this list though if "check --force" is
+    part of the command-like arguments.
+    '''
+    skip_actions = config.get('skip_actions', [])
+
+    if 'check' in arguments and arguments['check'].force:
+        return [action for action in skip_actions if action != 'check']
+
+    return skip_actions
+
+
 def run_configuration(config_filename, config, arguments):
     '''
     Given a config filename, the corresponding parsed config dict, and command-line arguments as a
@@ -66,7 +80,7 @@ def run_configuration(config_filename, config, arguments):
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
     monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
-    skip_actions = config.get('skip_actions')
+    skip_actions = get_skip_actions(config, arguments)
 
     if skip_actions:
         logger.debug(
@@ -277,7 +291,7 @@ def run_actions(
         'repositories': ','.join([repo['path'] for repo in config['repositories']]),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
     }
-    skip_actions = set(config.get('skip_actions', {}))
+    skip_actions = set(get_skip_actions(config, arguments))
 
     command.execute_hook(
         config.get('before_actions'),

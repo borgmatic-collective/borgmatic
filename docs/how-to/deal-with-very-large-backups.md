@@ -153,6 +153,10 @@ though—or the most frequently configured check will apply.
 If you want to temporarily ignore your configured frequencies, you can invoke
 `borgmatic check --force` to run checks unconditionally.
 
+<span class="minilink minilink-addedin">New in version 1.8.6</span> `borgmatic
+check --force` runs `check` even if it's specified in the `skip_actions`
+option.
+
 
 ### Running only checks
 

@@ -4,6 +4,7 @@
    bootstrapping completes.
  * #794: Fix a traceback when the "repositories" option contains both strings and key/value pairs.
  * #800: Add configured repository labels to the JSON output for all actions.
+ * #802: The "check --force" flag now runs checks even if "check" is in "skip_actions".
  * When logging commands that borgmatic executes, log the environment variables that
    borgmatic sets for those commands. (But don't log their values, since they often contain
    passwords.)
