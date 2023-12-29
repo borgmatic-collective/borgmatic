@@ -535,6 +535,26 @@ properties:
         type: array
         items:
             type: string
+            enum:
+                - rcreate
+                - transfer
+                - prune
+                - compact
+                - create
+                - check
+                - extract
+                - config
+                - export-tar
+                - mount
+                - umount
+                - restore
+                - rlist
+                - list
+                - rinfo
+                - info
+                - break-lock
+                - key
+                - borg
         description: |
             List of one or more actions to skip running for this configuration
             file, even if specified on the command-line (explicitly or
