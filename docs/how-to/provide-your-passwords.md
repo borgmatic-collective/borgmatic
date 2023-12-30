@@ -19,7 +19,7 @@ encryption_passphrase: yourpassphrase
 But if you'd rather store them outside of borgmatic, whether for convenience
 or security reasons, read on.
 
-### Delegating to a another application
+### Delegating to another application
 
 borgmatic supports calling another application such as a password manager to 
 obtain the Borg passphrase to a repository.
