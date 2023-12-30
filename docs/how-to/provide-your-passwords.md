@@ -5,7 +5,7 @@ eleventyNavigation:
   parent: How-to guides
   order: 2
 ---
-## Environment variable interpolation
+## Providing passwords and secrets to borgmatic
 
 If you want to use a Borg repository passphrase or database passwords with
 borgmatic, you can set them directly in your borgmatic configuration file,
@@ -18,6 +18,18 @@ encryption_passphrase: yourpassphrase
 
 But if you'd rather store them outside of borgmatic, whether for convenience
 or security reasons, read on.
+
+### Delegating to a another application
+
+borgmatic supports calling another application such as a password manager to 
+obtain the Borg passphrase to a repository.
+
+For example, to ask the *Pass* password manager to provide the passphrase:
+```yaml
+encryption_passcommand: pass path/to/borg-repokey
+```
+
+### Environment variable interpolation
 
 <span class="minilink minilink-addedin">New in version 1.6.4</span> borgmatic
 supports interpolating arbitrary environment variables directly into option
@@ -58,7 +70,7 @@ This uses the `YOUR_DATABASE_PASSWORD` environment variable as your database
 password.
 
 
-### Interpolation defaults
+#### Interpolation defaults
 
 If you'd like to set a default for your environment variables, you can do so
 with the following syntax:
@@ -72,7 +84,7 @@ environment variable is not set. Without a default, if the environment
 variable doesn't exist, borgmatic will error.
 
 
-### Disabling interpolation
+#### Disabling interpolation
 
 To disable this environment variable interpolation feature entirely, you can
 pass the `--no-environment-interpolation` flag on the command-line.
@@ -85,7 +97,7 @@ can escape it with a backslash. For instance, if your password is literally
 encryption_passphrase: \${A}@!
 ```
 
-### Related features
+## Related features
 
 Another way to override particular options within a borgmatic configuration
 file is to use a [configuration
