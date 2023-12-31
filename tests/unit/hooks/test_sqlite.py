@@ -13,7 +13,7 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
         '/path/to/dump/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == []
@@ -31,7 +31,7 @@ def test_dump_data_sources_dumps_each_database():
         '/path/to/dump/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0]).and_return(
         processes[1]
     )
@@ -39,7 +39,7 @@ def test_dump_data_sources_dumps_each_database():
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
-def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
+def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},
     ]
@@ -51,13 +51,13 @@ def test_dumping_database_with_non_existent_path_warns_and_dumps_database():
         '/path/to/dump/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
-def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
+def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
     databases = [
         {'path': '/path/to/database1', 'name': 'all'},
     ]
@@ -71,7 +71,7 @@ def test_dumping_database_with_name_all_warns_and_dumps_all_databases():
         '/path/to/dump/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump')
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
@@ -85,7 +85,7 @@ def test_dump_data_sources_does_not_dump_if_dry_run():
         '/path/to/dump/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.dump).should_receive('create_parent_directory_for_dump').never()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=True) == []

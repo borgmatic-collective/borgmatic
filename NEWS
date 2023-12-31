@@ -6,6 +6,7 @@
  * #800: Add configured repository labels to the JSON output for all actions.
  * #802: The "check --force" flag now runs checks even if "check" is in "skip_actions".
  * #804: Validate the configured action names in the "skip_actions" option.
+ * #807: Stream SQLite databases directly to Borg instead of dumping to an intermediate file.
  * When logging commands that borgmatic executes, log the environment variables that
    borgmatic sets for those commands. (But don't log their values, since they often contain
    passwords.)

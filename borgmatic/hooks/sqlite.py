@@ -18,10 +18,12 @@ def make_dump_path(config):  # pragma: no cover
 
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
-    Dump the given SQLite3 databases to a file. The databases are supplied as a sequence of
+    Dump the given SQLite3 databases to a named pipe. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given configuration dict to
-    construct the destination path and the given log prefix in any log entries. If this is a dry
-    run, then don't actually dump anything.
+    construct the destination path and the given log prefix in any log entries.
+
+    Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
+    pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -40,6 +42,7 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
 
         dump_path = make_dump_path(config)
         dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
+
         if os.path.exists(dump_filename):
             logger.warning(
                 f'{log_prefix}: Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
@@ -59,7 +62,7 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
         if dry_run:
             continue
 
-        dump.create_parent_directory_for_dump(dump_filename)
+        dump.create_named_pipe_for_dump(dump_filename)
         processes.append(execute_command(command, shell=True, run_to_completion=False))
 
     return processes
