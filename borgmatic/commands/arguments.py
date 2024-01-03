@@ -467,8 +467,8 @@ def make_parsers():
     prune_parser = action_parsers.add_parser(
         'prune',
         aliases=ACTION_ALIASES['prune'],
-        help='Prune archives according to the retention policy (with Borg 1.2+, run compact afterwards to actually free space)',
-        description='Prune archives according to the retention policy (with Borg 1.2+, run compact afterwards to actually free space)',
+        help='Prune archives according to the retention policy (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        description='Prune archives according to the retention policy (with Borg 1.2+, you must run compact afterwards to actually free space)',
         add_help=False,
     )
     prune_group = prune_parser.add_argument_group('prune arguments')
