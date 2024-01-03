@@ -1,4 +1,4 @@
-1.8.6.dev0
+1.8.6
  * #767: Add an "--ssh-command" flag to the "config bootstrap" action for setting a custom SSH
    command, as no configuration is available (including the "ssh_command" option) until
    bootstrapping completes.
