@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import shlex
 
 from borgmatic import execute
 
@@ -16,7 +17,7 @@ def interpolate_context(config_filename, hook_description, command, context):
     names/values, interpolate the values by "{name}" into the command and return the result.
     '''
     for name, value in context.items():
-        command = command.replace(f'{{{name}}}', str(value))
+        command = command.replace(f'{{{name}}}', shlex.quote(str(value)))
 
     for unsupported_variable in re.findall(r'{\w+}', command):
         logger.warning(

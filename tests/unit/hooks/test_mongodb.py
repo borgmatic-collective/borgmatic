@@ -164,6 +164,14 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
 
 
+def test_build_dump_command_with_username_injection_attack_gets_escaped():
+    database = {'name': 'test', 'username': 'bob; naughty-command'}
+
+    command = module.build_dump_command(database, dump_filename='test', dump_format='archive')
+
+    assert "'bob; naughty-command'" in command
+
+
 def test_restore_data_source_dump_runs_mongorestore():
     hook_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())

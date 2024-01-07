@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks import dump
@@ -62,19 +63,23 @@ def build_dump_command(database, dump_filename, dump_format):
 
     return (
         ('mongodump',)
-        + (('--out', dump_filename) if dump_format == 'directory' else ())
-        + (('--host', database['hostname']) if 'hostname' in database else ())
-        + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--username', database['username']) if 'username' in database else ())
-        + (('--password', database['password']) if 'password' in database else ())
+        + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
+        + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+        + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
+        + (('--username', shlex.quote(database['username'])) if 'username' in database else ())
+        + (('--password', shlex.quote(database['password'])) if 'password' in database else ())
         + (
-            ('--authenticationDatabase', database['authentication_database'])
+            ('--authenticationDatabase', shlex.quote(database['authentication_database']))
             if 'authentication_database' in database
             else ()
         )
-        + (('--db', database['name']) if not all_databases else ())
-        + (tuple(database['options'].split(' ')) if 'options' in database else ())
-        + (('--archive', '>', dump_filename) if dump_format != 'directory' else ())
+        + (('--db', shlex.quote(database['name'])) if not all_databases else ())
+        + (
+            tuple(shlex.quote(option) for option in database['options'].split(' '))
+            if 'options' in database
+            else ()
+        )
+        + (('--archive', '>', shlex.quote(dump_filename)) if dump_format != 'directory' else ())
     )
 
 

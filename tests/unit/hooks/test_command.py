@@ -25,6 +25,16 @@ def test_interpolate_context_interpolates_variables():
     )
 
 
+def test_interpolate_context_escapes_interpolated_variables():
+    command = 'ls {foo} {inject}'  # noqa: FS003
+    context = {'foo': 'bar', 'inject': 'hi; naughty-command'}
+
+    assert (
+        module.interpolate_context('test.yaml', 'pre-backup', command, context)
+        == "ls bar 'hi; naughty-command'"
+    )
+
+
 def test_execute_hook_invokes_each_command():
     flexmock(module).should_receive('interpolate_context').replace_with(
         lambda config_file, hook_description, command, context: command

@@ -1,3 +1,7 @@
+1.8.7.dev0
+ * #810: SECURITY: Prevent shell injection attacks within the PostgreSQL hook, the MongoDB hook, the
+   SQLite hook, the "borgmatic borg" action, and command hook variable/constant interpolation.
+
 1.8.6
  * #767: Add an "--ssh-command" flag to the "config bootstrap" action for setting a custom SSH
    command, as no configuration is available (including the "ssh_command" option) until

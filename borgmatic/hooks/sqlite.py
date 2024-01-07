@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks import dump
@@ -51,10 +52,10 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
 
         command = (
             'sqlite3',
-            database_path,
+            shlex.quote(database_path),
             '.dump',
             '>',
-            dump_filename,
+            shlex.quote(dump_filename),
         )
         logger.debug(
             f'{log_prefix}: Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'

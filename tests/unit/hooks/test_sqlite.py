@@ -39,6 +39,33 @@ def test_dump_data_sources_dumps_each_database():
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
 
 
+def test_dump_data_sources_with_path_injection_attack_gets_escaped():
+    databases = [
+        {'path': '/path/to/database1; naughty-command', 'name': 'database1'},
+    ]
+    processes = [flexmock()]
+
+    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        '/path/to/dump/database'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'sqlite3',
+            "'/path/to/database1; naughty-command'",
+            '.dump',
+            '>',
+            '/path/to/dump/database',
+        ),
+        shell=True,
+        run_to_completion=False,
+    ).and_return(processes[0])
+
+    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+
+
 def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},

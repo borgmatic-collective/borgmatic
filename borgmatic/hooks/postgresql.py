@@ -137,23 +137,31 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
 
             command = (
                 (
-                    dump_command,
+                    shlex.quote(dump_command),
                     '--no-password',
                     '--clean',
                     '--if-exists',
                 )
-                + (('--host', database['hostname']) if 'hostname' in database else ())
-                + (('--port', str(database['port'])) if 'port' in database else ())
-                + (('--username', database['username']) if 'username' in database else ())
+                + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+                + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
+                + (
+                    ('--username', shlex.quote(database['username']))
+                    if 'username' in database
+                    else ()
+                )
                 + (('--no-owner',) if database.get('no_owner', False) else ())
-                + (('--format', dump_format) if dump_format else ())
-                + (('--file', dump_filename) if dump_format == 'directory' else ())
-                + (tuple(database['options'].split(' ')) if 'options' in database else ())
-                + (() if database_name == 'all' else (database_name,))
+                + (('--format', shlex.quote(dump_format)) if dump_format else ())
+                + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
+                + (
+                    tuple(shlex.quote(option) for option in database['options'].split(' '))
+                    if 'options' in database
+                    else ()
+                )
+                + (() if database_name == 'all' else (shlex.quote(database_name),))
                 # Use shell redirection rather than the --file flag to sidestep synchronization issues
                 # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
                 # format in a particular, a named destination is required, and redirection doesn't work.
-                + (('>', dump_filename) if dump_format != 'directory' else ())
+                + (('>', shlex.quote(dump_filename)) if dump_format != 'directory' else ())
             )
 
             logger.debug(

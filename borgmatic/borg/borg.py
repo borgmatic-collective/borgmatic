@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.commands.arguments
 import borgmatic.logger
@@ -56,7 +57,7 @@ def run_arbitrary_borg(
     )
 
     return execute_command(
-        full_command,
+        tuple(shlex.quote(part) for part in full_command),
         output_file=DO_NOT_CAPTURE,
         borg_local_path=local_path,
         shell=True,

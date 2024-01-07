@@ -345,6 +345,42 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
     assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
 
 
+def test_dump_data_sources_with_username_injection_attack_gets_escaped():
+    databases = [{'name': 'foo', 'username': 'postgres; naughty-command', 'password': 'trustsome1'}]
+    process = flexmock()
+    flexmock(module).should_receive('make_extra_environment').and_return(
+        {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
+    )
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/foo'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'pg_dump',
+            '--no-password',
+            '--clean',
+            '--if-exists',
+            '--username',
+            "'postgres; naughty-command'",
+            '--format',
+            'custom',
+            'foo',
+            '>',
+            'databases/localhost/foo',
+        ),
+        shell=True,
+        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+
+
 def test_dump_data_sources_runs_pg_dump_with_directory_format():
     databases = [{'name': 'foo', 'format': 'directory'}]
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})

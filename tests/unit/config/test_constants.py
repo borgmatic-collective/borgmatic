@@ -46,6 +46,10 @@ def test_apply_constants_with_empty_constants_passes_through_value():
         (['{foo}', '{baz}'], ['bar', 'quux']),
         ({'key': 'value'}, {'key': 'value'}),
         ({'key': '{foo}'}, {'key': 'bar'}),
+        ({'key': '{inject}'}, {'key': 'echo hi; naughty-command'}),
+        ({'before_backup': '{inject}'}, {'before_backup': "'echo hi; naughty-command'"}),
+        ({'after_backup': '{inject}'}, {'after_backup': "'echo hi; naughty-command'"}),
+        ({'on_error': '{inject}'}, {'on_error': "'echo hi; naughty-command'"}),
         (3, 3),
         (True, True),
         (False, False),
@@ -53,6 +57,12 @@ def test_apply_constants_with_empty_constants_passes_through_value():
 )
 def test_apply_constants_makes_string_substitutions(value, expected_value):
     flexmock(module).should_receive('coerce_scalar').replace_with(lambda value: value)
-    constants = {'foo': 'bar', 'baz': 'quux', 'int': 3, 'bool': True}
+    constants = {
+        'foo': 'bar',
+        'baz': 'quux',
+        'int': 3,
+        'bool': True,
+        'inject': 'echo hi; naughty-command',
+    }
 
     assert module.apply_constants(value, constants) == expected_value
