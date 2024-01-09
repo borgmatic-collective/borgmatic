@@ -323,6 +323,7 @@ def create_archive(
     dry_run,
     repository_path,
     config,
+    config_paths,
     local_borg_version,
     global_arguments,
     local_path='borg',
@@ -334,8 +335,9 @@ def create_archive(
     stream_processes=None,
 ):
     '''
-    Given vebosity/dry-run flags, a local or remote repository path, and a configuration dict,
-    create a Borg archive and return Borg's JSON output (if any).
+    Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
+    sequence of loaded configuration paths, the local Borg version, and global arguments as an
+    argparse.Namespace instance, create a Borg archive and return Borg's JSON output (if any).
 
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
@@ -351,11 +353,7 @@ def create_archive(
             expand_directories(
                 tuple(config.get('source_directories', ()))
                 + borgmatic_source_directories
-                + tuple(
-                    global_arguments.used_config_paths
-                    if config.get('store_config_files', True)
-                    else ()
-                )
+                + tuple(config_paths if config.get('store_config_files', True) else ())
             )
         ),
         additional_directory_devices=map_directories_to_devices(

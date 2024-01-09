@@ -225,8 +225,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     favoring values from the source when there are collisions.
 
     The purpose of this is to upgrade configuration files from old versions of borgmatic by adding
-    new
-    configuration keys and comments.
+    new configuration keys and comments.
     '''
     if not source_config:
         return destination_config

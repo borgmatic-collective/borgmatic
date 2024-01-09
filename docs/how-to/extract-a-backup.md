@@ -191,3 +191,8 @@ for bootstrapping.
 borgmatic configuration files, for instance if they contain sensitive
 information you don't want to store even inside your encrypted backups. If you
 do this though, the `config bootstrap` action will no longer work.
+
+<span class="minilink minilink-addedin">New in version 1.8.7</span> Included
+configuration files are stored in each backup archive. This means that the
+`config bootstrap` action not only extracts the top-level configuration files
+but also the includes they depend upon.

@@ -12,7 +12,10 @@ def test_load_configuration_parses_contents():
     config_file = io.StringIO('key: value')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
-    assert module.load_configuration('config.yaml') == {'key': 'value'}
+    config_paths = {'other.yaml'}
+
+    assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
+    assert config_paths == {'config.yaml', 'other.yaml'}
 
 
 def test_load_configuration_with_only_integer_value_does_not_raise():
@@ -20,7 +23,10 @@ def test_load_configuration_with_only_integer_value_does_not_raise():
     config_file = io.StringIO('33')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
-    assert module.load_configuration('config.yaml') == 33
+    config_paths = {'other.yaml'}
+
+    assert module.load_configuration('config.yaml', config_paths) == 33
+    assert config_paths == {'config.yaml', 'other.yaml'}
 
 
 def test_load_configuration_inlines_include_relative_to_current_directory():
@@ -34,8 +40,10 @@ def test_load_configuration_inlines_include_relative_to_current_directory():
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'key': 'value'}
+    assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
+    assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_inlines_include_relative_to_config_parent_directory():
@@ -56,8 +64,10 @@ def test_load_configuration_inlines_include_relative_to_config_parent_directory(
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = '/etc/config.yaml'
     builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('/etc/config.yaml') == {'key': 'value'}
+    assert module.load_configuration('/etc/config.yaml', config_paths) == {'key': 'value'}
+    assert config_paths == {'/etc/config.yaml', '/etc/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_raises_if_relative_include_does_not_exist():
@@ -70,9 +80,10 @@ def test_load_configuration_raises_if_relative_include_does_not_exist():
     config_file = io.StringIO('key: !include include.yaml')
     config_file.name = '/etc/config.yaml'
     builtins.should_receive('open').with_args('/etc/config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(FileNotFoundError):
-        module.load_configuration('/etc/config.yaml')
+        module.load_configuration('/etc/config.yaml', config_paths)
 
 
 def test_load_configuration_inlines_absolute_include():
@@ -86,8 +97,10 @@ def test_load_configuration_inlines_absolute_include():
     config_file = io.StringIO('key: !include /root/include.yaml')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'key': 'value'}
+    assert module.load_configuration('config.yaml', config_paths) == {'key': 'value'}
+    assert config_paths == {'config.yaml', '/root/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_raises_if_absolute_include_does_not_exist():
@@ -98,9 +111,10 @@ def test_load_configuration_raises_if_absolute_include_does_not_exist():
     config_file = io.StringIO('key: !include /root/include.yaml')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(FileNotFoundError):
-        assert module.load_configuration('config.yaml')
+        assert module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_inlines_multiple_file_include_as_list():
@@ -117,8 +131,15 @@ def test_load_configuration_inlines_multiple_file_include_as_list():
     config_file = io.StringIO('key: !include [/root/include1.yaml, /root/include2.yaml]')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'key': ['value2', 'value1']}
+    assert module.load_configuration('config.yaml', config_paths) == {'key': ['value2', 'value1']}
+    assert config_paths == {
+        'config.yaml',
+        '/root/include1.yaml',
+        '/root/include2.yaml',
+        'other.yaml',
+    }
 
 
 def test_load_configuration_include_with_unsupported_filename_type_raises():
@@ -129,9 +150,10 @@ def test_load_configuration_include_with_unsupported_filename_type_raises():
     config_file = io.StringIO('key: !include {path: /root/include.yaml}')
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_merges_include():
@@ -155,8 +177,13 @@ def test_load_configuration_merges_include():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'foo': 'override', 'baz': 'quux'}
+    assert module.load_configuration('config.yaml', config_paths) == {
+        'foo': 'override',
+        'baz': 'quux',
+    }
+    assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_merges_multiple_file_include():
@@ -188,12 +215,14 @@ def test_load_configuration_merges_multiple_file_include():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {
+    assert module.load_configuration('config.yaml', config_paths) == {
         'foo': 'override',
         'baz': 'second',
         'original': 'yes',
     }
+    assert config_paths == {'config.yaml', '/tmp/include1.yaml', '/tmp/include2.yaml', 'other.yaml'}
 
 
 def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_values():
@@ -226,11 +255,13 @@ def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_value
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {
+    assert module.load_configuration('config.yaml', config_paths) == {
         'stuff': {'foo': 'override'},
         'other': {'a': 'override', 'c': 'd'},
     }
+    assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_with_retain_tag_but_without_merge_include_raises():
@@ -256,9 +287,10 @@ def test_load_configuration_with_retain_tag_but_without_merge_include_raises():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_with_retain_tag_on_scalar_raises():
@@ -284,9 +316,10 @@ def test_load_configuration_with_retain_tag_on_scalar_raises():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_with_omit_tag_merges_include_and_omits_requested_values():
@@ -315,8 +348,10 @@ def test_load_configuration_with_omit_tag_merges_include_and_omits_requested_val
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'stuff': ['a', 'c', 'x', 'y']}
+    assert module.load_configuration('config.yaml', config_paths) == {'stuff': ['a', 'c', 'x', 'y']}
+    assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_with_omit_tag_on_unknown_value_merges_include_and_does_not_raise():
@@ -345,8 +380,12 @@ def test_load_configuration_with_omit_tag_on_unknown_value_merges_include_and_do
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = {'other.yaml'}
 
-    assert module.load_configuration('config.yaml') == {'stuff': ['a', 'b', 'c', 'x', 'y']}
+    assert module.load_configuration('config.yaml', config_paths) == {
+        'stuff': ['a', 'b', 'c', 'x', 'y']
+    }
+    assert config_paths == {'config.yaml', '/tmp/include.yaml', 'other.yaml'}
 
 
 def test_load_configuration_with_omit_tag_on_non_list_item_raises():
@@ -374,9 +413,10 @@ def test_load_configuration_with_omit_tag_on_non_list_item_raises():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_with_omit_tag_on_non_scalar_list_item_raises():
@@ -403,9 +443,10 @@ def test_load_configuration_with_omit_tag_on_non_scalar_list_item_raises():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_with_omit_tag_but_without_merge_raises():
@@ -433,9 +474,10 @@ def test_load_configuration_with_omit_tag_but_without_merge_raises():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(ValueError):
-        module.load_configuration('config.yaml')
+        module.load_configuration('config.yaml', config_paths)
 
 
 def test_load_configuration_does_not_merge_include_list():
@@ -460,9 +502,10 @@ def test_load_configuration_does_not_merge_include_list():
     )
     config_file.name = 'config.yaml'
     builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
+    config_paths = set()
 
     with pytest.raises(module.ruamel.yaml.error.YAMLError):
-        assert module.load_configuration('config.yaml')
+        assert module.load_configuration('config.yaml', config_paths)
 
 
 @pytest.mark.parametrize(

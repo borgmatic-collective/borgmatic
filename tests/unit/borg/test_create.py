@@ -506,8 +506,9 @@ def test_create_archive_calls_borg_with_parameters():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -549,8 +550,9 @@ def test_create_archive_calls_borg_with_environment():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -594,23 +596,24 @@ def test_create_archive_with_patterns_calls_borg_with_patterns_including_convert
             'repositories': ['repo'],
             'patterns': ['pattern'],
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
-def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sources_and_config_paths():
+def test_create_archive_with_sources_and_config_paths_calls_borg_with_sources_and_config_paths():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('deduplicate_directories').and_return(
-        ('foo', 'bar', '/etc/borgmatic/config.yaml')
+        ('foo', 'bar', '/tmp/test.yaml')
     )
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('expand_directories').with_args(
-        ('foo', 'bar', '/etc/borgmatic/config.yaml')
-    ).and_return(('foo', 'bar', '/etc/borgmatic/config.yaml'))
+        ('foo', 'bar', '/tmp/test.yaml')
+    ).and_return(('foo', 'bar', '/tmp/test.yaml'))
     flexmock(module).should_receive('expand_directories').with_args([]).and_return(())
     flexmock(module).should_receive('pattern_root_directories').and_return([])
     flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
@@ -627,7 +630,7 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
     environment = {'BORG_THINGY': 'YUP'}
     flexmock(module.environment).should_receive('make_environment').and_return(environment)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('/etc/borgmatic/config.yaml',),
+        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS + ('/tmp/test.yaml',),
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -642,12 +645,13 @@ def test_create_archive_with_sources_and_used_config_paths_calls_borg_with_sourc
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
+        global_arguments=flexmock(log_json=False),
     )
 
 
-def test_create_archive_with_sources_and_used_config_paths_with_store_config_files_false_calls_borg_with_sources_and_no_config_paths():
+def test_create_archive_with_sources_and_config_paths_with_store_config_files_false_calls_borg_with_sources_and_no_config_paths():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
@@ -689,8 +693,9 @@ def test_create_archive_with_sources_and_used_config_paths_with_store_config_fil
             'repositories': ['repo'],
             'store_config_files': False,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=['/etc/borgmatic/config.yaml']),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -734,8 +739,9 @@ def test_create_archive_with_exclude_patterns_calls_borg_with_excludes():
             'repositories': ['repo'],
             'exclude_patterns': ['exclude'],
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -777,8 +783,9 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -818,8 +825,9 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -862,8 +870,9 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -903,8 +912,9 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -946,8 +956,9 @@ def test_create_archive_with_dry_run_calls_borg_with_dry_run_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -991,8 +1002,9 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats_paramete
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stats=True,
     )
 
@@ -1035,8 +1047,9 @@ def test_create_archive_with_checkpoint_interval_calls_borg_with_checkpoint_inte
             'exclude_patterns': None,
             'checkpoint_interval': 600,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1078,8 +1091,9 @@ def test_create_archive_with_checkpoint_volume_calls_borg_with_checkpoint_volume
             'exclude_patterns': None,
             'checkpoint_volume': 1024,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1121,8 +1135,9 @@ def test_create_archive_with_chunker_params_calls_borg_with_chunker_params_param
             'exclude_patterns': None,
             'chunker_params': '1,2,3,4',
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1164,8 +1179,9 @@ def test_create_archive_with_compression_calls_borg_with_compression_parameters(
             'exclude_patterns': None,
             'compression': 'rle',
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1213,8 +1229,9 @@ def test_create_archive_with_upload_rate_limit_calls_borg_with_upload_ratelimit_
             'exclude_patterns': None,
             'upload_rate_limit': 100,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1258,8 +1275,9 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
             'working_directory': '/working/dir',
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1301,8 +1319,9 @@ def test_create_archive_with_one_file_system_calls_borg_with_one_file_system_par
             'one_file_system': True,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1350,8 +1369,9 @@ def test_create_archive_with_numeric_ids_calls_borg_with_numeric_ids_parameter(
             'numeric_ids': True,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1403,8 +1423,9 @@ def test_create_archive_with_read_special_calls_borg_with_read_special_parameter
             'read_special': True,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1458,8 +1479,9 @@ def test_create_archive_with_basic_option_calls_borg_with_corresponding_paramete
             option_name: option_value,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1512,8 +1534,9 @@ def test_create_archive_with_atime_option_calls_borg_with_corresponding_paramete
             'atime': option_value,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1566,8 +1589,9 @@ def test_create_archive_with_flags_option_calls_borg_with_corresponding_paramete
             'flags': option_value,
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1609,8 +1633,9 @@ def test_create_archive_with_files_cache_calls_borg_with_files_cache_parameters(
             'files_cache': 'ctime,size',
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1651,8 +1676,9 @@ def test_create_archive_with_local_path_calls_borg_via_local_path():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         local_path='borg1',
     )
 
@@ -1694,8 +1720,9 @@ def test_create_archive_with_remote_path_calls_borg_with_remote_path_parameters(
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         remote_path='borg1',
     )
 
@@ -1738,8 +1765,9 @@ def test_create_archive_with_umask_calls_borg_with_umask_parameters():
             'exclude_patterns': None,
             'umask': 740,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1780,8 +1808,9 @@ def test_create_archive_with_log_json_calls_borg_with_log_json_parameters():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=True, used_config_paths=[]),
+        global_arguments=flexmock(log_json=True),
     )
 
 
@@ -1823,8 +1852,9 @@ def test_create_archive_with_lock_wait_calls_borg_with_lock_wait_parameters():
             'exclude_patterns': None,
             'lock_wait': 5,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -1865,8 +1895,9 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stats=True,
     )
 
@@ -1908,8 +1939,9 @@ def test_create_archive_with_files_calls_borg_with_list_parameter_and_answer_out
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         list_files=True,
     )
 
@@ -1952,8 +1984,9 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         progress=True,
     )
 
@@ -1995,8 +2028,9 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         progress=True,
     )
 
@@ -2057,8 +2091,9 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         progress=True,
         stream_processes=processes,
     )
@@ -2121,8 +2156,9 @@ def test_create_archive_with_stream_processes_ignores_read_special_false_and_log
             'exclude_patterns': None,
             'read_special': False,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2188,8 +2224,9 @@ def test_create_archive_with_stream_processes_adds_special_files_to_excludes():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2252,8 +2289,9 @@ def test_create_archive_with_stream_processes_and_read_special_does_not_add_spec
             'exclude_patterns': None,
             'read_special': True,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2293,8 +2331,9 @@ def test_create_archive_with_json_calls_borg_with_json_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         json=True,
     )
 
@@ -2336,8 +2375,9 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_parameter()
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         json=True,
         stats=True,
     )
@@ -2383,8 +2423,9 @@ def test_create_archive_with_source_directories_glob_expands():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2426,8 +2467,9 @@ def test_create_archive_with_non_matching_source_directories_glob_passes_through
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2468,8 +2510,9 @@ def test_create_archive_with_glob_calls_borg_with_expanded_directories():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2511,8 +2554,9 @@ def test_create_archive_with_archive_name_format_calls_borg_with_archive_name():
             'exclude_patterns': None,
             'archive_name_format': 'ARCHIVE_NAME',
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2555,8 +2599,9 @@ def test_create_archive_with_archive_name_format_accepts_borg_placeholders():
             'exclude_patterns': None,
             'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2599,8 +2644,9 @@ def test_create_archive_with_repository_accepts_borg_placeholders():
             'exclude_patterns': None,
             'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2642,8 +2688,9 @@ def test_create_archive_with_extra_borg_options_calls_borg_with_extra_options():
             'exclude_patterns': None,
             'extra_borg_options': {'create': '--extra --options'},
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
     )
 
 
@@ -2702,8 +2749,9 @@ def test_create_archive_with_stream_processes_calls_borg_with_processes_and_read
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
+        config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False, used_config_paths=[]),
+        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 
@@ -2727,8 +2775,9 @@ def test_create_archive_with_non_existent_directory_and_source_directories_must_
                 'exclude_patterns': None,
                 'source_directories_must_exist': True,
             },
+            config_paths=['/tmp/test.yaml'],
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False, used_config_paths=[]),
+            global_arguments=flexmock(log_json=False),
         )
 
 

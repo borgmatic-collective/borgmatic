@@ -97,14 +97,16 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
             'checks': ['repository', 'archives'],
         }
 
-    Also return a sequence of logging.LogRecord instances containing any warnings about the
-    configuration.
+    Also return a set of loaded configuration paths and a sequence of logging.LogRecord instances
+    containing any warnings about the configuration.
 
     Raise FileNotFoundError if the file does not exist, PermissionError if the user does not
     have permissions to read the file, or Validation_error if the config does not match the schema.
     '''
+    config_paths = set()
+
     try:
-        config = load.load_configuration(config_filename)
+        config = load.load_configuration(config_filename, config_paths)
         schema = load.load_configuration(schema_filename)
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
@@ -130,7 +132,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
 
     apply_logical_validation(config_filename, config)
 
-    return config, logs
+    return config, config_paths, logs
 
 
 def normalize_repository_path(repository):

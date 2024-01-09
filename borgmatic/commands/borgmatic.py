@@ -58,11 +58,11 @@ def get_skip_actions(config, arguments):
     return skip_actions
 
 
-def run_configuration(config_filename, config, arguments):
+def run_configuration(config_filename, config, config_paths, arguments):
     '''
-    Given a config filename, the corresponding parsed config dict, and command-line arguments as a
-    dict from subparser name to a namespace of parsed arguments, execute the defined create, prune,
-    compact, check, and/or other actions.
+    Given a config filename, the corresponding parsed config dict, a sequence of loaded
+    configuration paths, and command-line arguments as a dict from subparser name to a namespace of
+    parsed arguments, execute the defined create, prune, compact, check, and/or other actions.
 
     Yield a combination of:
 
@@ -144,6 +144,7 @@ def run_configuration(config_filename, config, arguments):
                     arguments=arguments,
                     config_filename=config_filename,
                     config=config,
+                    config_paths=config_paths,
                     local_path=local_path,
                     remote_path=remote_path,
                     local_borg_version=local_borg_version,
@@ -264,6 +265,7 @@ def run_actions(
     arguments,
     config_filename,
     config,
+    config_paths,
     local_path,
     remote_path,
     local_borg_version,
@@ -271,9 +273,9 @@ def run_actions(
 ):
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
-    filename, several different configuration dicts, local and remote paths to Borg, a local Borg
-    version string, and a repository name, run all actions from the command-line arguments on the
-    given repository.
+    filename, a configuration dict, a sequence of loaded configuration paths, local and remote paths
+    to Borg, a local Borg version string, and a repository name, run all actions from the
+    command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
 
@@ -328,6 +330,7 @@ def run_actions(
                 config_filename,
                 repository,
                 config,
+                config_paths,
                 hook_context,
                 local_borg_version,
                 action_arguments,
@@ -502,13 +505,15 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
     '''
     Given a sequence of configuration filenames, load and validate each configuration file. Return
     the results as a tuple of: dict of configuration filename to corresponding parsed configuration,
-    and sequence of logging.LogRecord instances containing any parse errors.
+    a sequence of paths for all loaded configuration files (including includes), and a sequence of
+    logging.LogRecord instances containing any parse errors.
 
     Log records are returned here instead of being logged directly because logging isn't yet
     initialized at this point!
     '''
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
+    config_paths = set()
     logs = []
 
     # Parse and load each configuration file.
@@ -525,9 +530,10 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
             ]
         )
         try:
-            configs[config_filename], parse_logs = validate.parse_configuration(
+            configs[config_filename], paths, parse_logs = validate.parse_configuration(
                 config_filename, validate.schema_filename(), overrides, resolve_env
             )
+            config_paths.update(paths)
             logs.extend(parse_logs)
         except PermissionError:
             logs.extend(
@@ -557,7 +563,7 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
                 ]
             )
 
-    return (configs, logs)
+    return (configs, sorted(config_paths), logs)
 
 
 def log_record(suppress_log=False, **kwargs):
@@ -724,12 +730,12 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
         return
 
 
-def collect_configuration_run_summary_logs(configs, arguments):
+def collect_configuration_run_summary_logs(configs, config_paths, arguments):
     '''
-    Given a dict of configuration filename to corresponding parsed configuration and parsed
-    command-line arguments as a dict from subparser name to a parsed namespace of arguments, run
-    each configuration file and yield a series of logging.LogRecord instances containing summary
-    information about each run.
+    Given a dict of configuration filename to corresponding parsed configuration, a sequence of
+    loaded configuration paths, and parsed command-line arguments as a dict from subparser name to a
+    parsed namespace of arguments, run each configuration file and yield a series of
+    logging.LogRecord instances containing summary information about each run.
 
     As a side effect of running through these configuration files, output their JSON results, if
     any, to stdout.
@@ -774,7 +780,7 @@ def collect_configuration_run_summary_logs(configs, arguments):
     # Execute the actions corresponding to each configuration file.
     json_results = []
     for config_filename, config in configs.items():
-        results = list(run_configuration(config_filename, config, arguments))
+        results = list(run_configuration(config_filename, config, config_paths, arguments))
         error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
         if error_logs:
@@ -855,8 +861,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         sys.exit(0)
 
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
-    global_arguments.used_config_paths = list(config_filenames)
-    configs, parse_logs = load_configurations(
+    configs, config_paths, parse_logs = load_configurations(
         config_filenames, global_arguments.overrides, global_arguments.resolve_env
     )
     configuration_parse_errors = (
@@ -893,7 +898,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
                     configs, arguments, configuration_parse_errors
                 )
             )
-            or list(collect_configuration_run_summary_logs(configs, arguments))
+            or list(collect_configuration_run_summary_logs(configs, config_paths, arguments))
         )
     )
     summary_logs_max_level = max(log.levelno for log in summary_logs)

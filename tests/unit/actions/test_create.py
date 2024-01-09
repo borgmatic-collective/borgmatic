@@ -22,13 +22,14 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
         json=False,
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     list(
         module.run_create(
             config_filename='test.yaml',
             repository={'path': 'repo'},
             config={},
+            config_paths=['/tmp/test.yaml'],
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
@@ -57,13 +58,14 @@ def test_run_create_with_store_config_files_false_does_not_create_borgmatic_mani
         json=False,
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     list(
         module.run_create(
             config_filename='test.yaml',
             repository={'path': 'repo'},
             config={'store_config_files': False},
+            config_paths=['/tmp/test.yaml'],
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
@@ -94,13 +96,14 @@ def test_run_create_runs_with_selected_repository():
         json=False,
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     list(
         module.run_create(
             config_filename='test.yaml',
             repository={'path': 'repo'},
             config={},
+            config_paths=['/tmp/test.yaml'],
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
@@ -126,13 +129,14 @@ def test_run_create_bails_if_repository_does_not_match():
         json=False,
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     list(
         module.run_create(
             config_filename='test.yaml',
             repository='repo',
             config={},
+            config_paths=['/tmp/test.yaml'],
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
@@ -167,13 +171,14 @@ def test_run_create_produces_json():
         json=True,
         list_files=flexmock(),
     )
-    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False, used_config_paths=[])
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     assert list(
         module.run_create(
             config_filename='test.yaml',
             repository={'path': 'repo'},
             config={},
+            config_paths=['/tmp/test.yaml'],
             hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,

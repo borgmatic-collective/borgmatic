@@ -9,18 +9,18 @@ import ruamel.yaml
 logger = logging.getLogger(__name__)
 
 
-def probe_and_include_file(filename, include_directories):
+def probe_and_include_file(filename, include_directories, config_paths):
     '''
-    Given a filename to include and a list of include directories to search for matching files,
-    probe for the file, load it, and return the loaded configuration as a data structure of nested
-    dicts, lists, etc.
+    Given a filename to include, a list of include directories to search for matching files, and a
+    set of configuration paths, probe for the file, load it, and return the loaded configuration as
+    a data structure of nested dicts, lists, etc. Add the filename to the given configuration paths.
 
     Raise FileNotFoundError if the included file was not found.
     '''
     expanded_filename = os.path.expanduser(filename)
 
     if os.path.isabs(expanded_filename):
-        return load_configuration(expanded_filename)
+        return load_configuration(expanded_filename, config_paths)
 
     candidate_filenames = {
         os.path.join(directory, expanded_filename) for directory in include_directories
@@ -28,32 +28,33 @@ def probe_and_include_file(filename, include_directories):
 
     for candidate_filename in candidate_filenames:
         if os.path.exists(candidate_filename):
-            return load_configuration(candidate_filename)
+            return load_configuration(candidate_filename, config_paths)
 
     raise FileNotFoundError(
         f'Could not find include {filename} at {" or ".join(candidate_filenames)}'
     )
 
 
-def include_configuration(loader, filename_node, include_directory):
+def include_configuration(loader, filename_node, include_directory, config_paths):
     '''
     Given a ruamel.yaml.loader.Loader, a ruamel.yaml.nodes.ScalarNode containing the included
-    filename (or a list containing multiple such filenames), and an include directory path to search
-    for matching files, load the given YAML filenames (ignoring the given loader so we can use our
-    own) and return their contents as data structure of nested dicts, lists, etc. If the given
+    filename (or a list containing multiple such filenames), an include directory path to search for
+    matching files, and a set of configuration paths, load the given YAML filenames (ignoring the
+    given loader so we can use our own) and return their contents as data structure of nested dicts,
+    lists, etc. Add the names of included files to the given configuration paths. If the given
     filename node's value is a scalar string, then the return value will be a single value. But if
     the given node value is a list, then the return value will be a list of values, one per loaded
     configuration file.
 
-    If a filename is relative, probe for it within 1. the current working directory and 2. the given
-    include directory.
+    If a filename is relative, probe for it within: 1. the current working directory and 2. the
+    given include directory.
 
     Raise FileNotFoundError if an included file was not found.
     '''
     include_directories = [os.getcwd(), os.path.abspath(include_directory)]
 
     if isinstance(filename_node.value, str):
-        return probe_and_include_file(filename_node.value, include_directories)
+        return probe_and_include_file(filename_node.value, include_directories, config_paths)
 
     if (
         isinstance(filename_node.value, list)
@@ -63,7 +64,7 @@ def include_configuration(loader, filename_node, include_directory):
         # Reversing the values ensures the correct ordering if these includes are subsequently
         # merged together.
         return [
-            probe_and_include_file(node.value, include_directories)
+            probe_and_include_file(node.value, include_directories, config_paths)
             for node in reversed(filename_node.value)
         ]
 
@@ -109,11 +110,17 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
     separate YAML configuration files. Example syntax: `option: !include common.yaml`
     '''
 
-    def __init__(self, preserve_quotes=None, loader=None, include_directory=None):
+    def __init__(
+        self, preserve_quotes=None, loader=None, include_directory=None, config_paths=None
+    ):
         super(Include_constructor, self).__init__(preserve_quotes, loader)
         self.add_constructor(
             '!include',
-            functools.partial(include_configuration, include_directory=include_directory),
+            functools.partial(
+                include_configuration,
+                include_directory=include_directory,
+                config_paths=config_paths,
+            ),
         )
 
         # These are catch-all error handlers for tags that don't get applied and removed by
@@ -155,26 +162,33 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
         node.value = deep_merge_nodes(node.value)
 
 
-def load_configuration(filename):
+def load_configuration(filename, config_paths=None):
     '''
     Load the given configuration file and return its contents as a data structure of nested dicts
-    and lists.
+    and lists. Add the filename to the given configuration paths set, and also add any included
+    configuration filenames.
 
     Raise ruamel.yaml.error.YAMLError if something goes wrong parsing the YAML, or RecursionError
     if there are too many recursive includes.
     '''
+    if config_paths is None:
+        config_paths = set()
 
-    # Use an embedded derived class for the include constructor so as to capture the filename
-    # value. (functools.partial doesn't work for this use case because yaml.Constructor has to be
-    # an actual class.)
-    class Include_constructor_with_include_directory(Include_constructor):
+    # Use an embedded derived class for the include constructor so as to capture the include
+    # directory and configuration paths values. (functools.partial doesn't work for this use case
+    # because yaml.Constructor has to be an actual class.)
+    class Include_constructor_with_extras(Include_constructor):
         def __init__(self, preserve_quotes=None, loader=None):
-            super(Include_constructor_with_include_directory, self).__init__(
-                preserve_quotes, loader, include_directory=os.path.dirname(filename)
+            super(Include_constructor_with_extras, self).__init__(
+                preserve_quotes,
+                loader,
+                include_directory=os.path.dirname(filename),
+                config_paths=config_paths,
             )
 
     yaml = ruamel.yaml.YAML(typ='safe')
-    yaml.Constructor = Include_constructor_with_include_directory
+    yaml.Constructor = Include_constructor_with_extras
+    config_paths.add(filename)
 
     with open(filename) as file:
         return yaml.load(file.read())

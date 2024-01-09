@@ -58,7 +58,7 @@ def test_parse_configuration_transforms_file_into_mapping():
         '''
     )
 
-    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': ['/home', '/etc'],
@@ -68,6 +68,7 @@ def test_parse_configuration_transforms_file_into_mapping():
         'keep_minutely': 60,
         'checks': [{'name': 'repository'}, {'name': 'archives'}],
     }
+    assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
 
 
@@ -84,12 +85,13 @@ def test_parse_configuration_passes_through_quoted_punctuation():
         '''
     )
 
-    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': [f'/home/{string.punctuation}'],
         'repositories': [{'path': 'test.borg'}],
     }
+    assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
 
 
@@ -141,7 +143,7 @@ def test_parse_configuration_inlines_include_inside_deprecated_section():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': ['/home'],
@@ -149,6 +151,7 @@ def test_parse_configuration_inlines_include_inside_deprecated_section():
         'keep_daily': 7,
         'keep_hourly': 24,
     }
+    assert config_paths == {'/tmp/include.yaml', '/tmp/config.yaml'}
     assert len(logs) == 1
 
 
@@ -175,7 +178,7 @@ def test_parse_configuration_merges_include():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': ['/home'],
@@ -183,6 +186,7 @@ def test_parse_configuration_merges_include():
         'keep_daily': 1,
         'keep_hourly': 24,
     }
+    assert config_paths == {'/tmp/include.yaml', '/tmp/config.yaml'}
     assert logs == []
 
 
@@ -194,6 +198,9 @@ def test_parse_configuration_raises_for_missing_config_file():
 def test_parse_configuration_raises_for_missing_schema_file():
     mock_config_and_schema('')
     builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('/tmp/config.yaml').and_return(
+        io.StringIO('foo: bar')
+    )
     builtins.should_receive('open').with_args('/tmp/schema.yaml').and_raise(FileNotFoundError)
 
     with pytest.raises(FileNotFoundError):
@@ -233,7 +240,7 @@ def test_parse_configuration_applies_overrides():
         '''
     )
 
-    config, logs = module.parse_configuration(
+    config, config_paths, logs = module.parse_configuration(
         '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['location.local_path=borg2']
     )
 
@@ -242,6 +249,7 @@ def test_parse_configuration_applies_overrides():
         'repositories': [{'path': 'hostname.borg'}],
         'local_path': 'borg2',
     }
+    assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
 
 
@@ -260,11 +268,12 @@ def test_parse_configuration_applies_normalization_after_environment_variable_in
     )
     flexmock(os).should_receive('getenv').replace_with(lambda variable_name, default: default)
 
-    config, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
 
     assert config == {
         'source_directories': ['/home'],
         'repositories': [{'path': 'ssh://user@hostname/./repo'}],
         'exclude_if_present': ['.nobackup'],
     }
+    assert config_paths == {'/tmp/config.yaml'}
     assert logs

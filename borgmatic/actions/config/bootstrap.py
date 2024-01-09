@@ -13,14 +13,11 @@ logger = logging.getLogger(__name__)
 
 def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     '''
-    Given:
-    The bootstrap arguments, which include the repository and archive name, borgmatic source directory,
-    destination directory, and whether to strip components.
-    The global arguments, which include the dry run flag
-    and the local borg version,
-    Return:
-    The config paths from the manifest.json file in the borgmatic source directory after extracting it from the
-    repository.
+    Given the bootstrap arguments as an argparse.Namespace (containing the repository and archive
+    name, borgmatic source directory, destination directory, and whether to strip components), the
+    global arguments as an argparse.Namespace (containing the dry run flag and the local borg
+    version), return the config paths from the manifest.json file in the borgmatic source directory
+    after extracting it from the repository.
 
     Raise ValueError if the manifest JSON is missing, can't be decoded, or doesn't contain the
     expected configuration path data.
@@ -32,6 +29,7 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
         os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
     )
     config = {'ssh_command': bootstrap_arguments.ssh_command}
+
     extract_process = borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
@@ -48,8 +46,8 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
         global_arguments,
         extract_to_stdout=True,
     )
-
     manifest_json = extract_process.stdout.read()
+
     if not manifest_json:
         raise ValueError(
             'Cannot read configuration paths from archive due to missing bootstrap manifest'

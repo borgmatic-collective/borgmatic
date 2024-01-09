@@ -47,6 +47,7 @@ def run_create(
     config_filename,
     repository,
     config,
+    config_paths,
     hook_context,
     local_borg_version,
     create_arguments,
@@ -90,7 +91,9 @@ def run_create(
     )
     if config.get('store_config_files', True):
         create_borgmatic_manifest(
-            config, global_arguments.used_config_paths, global_arguments.dry_run
+            config,
+            config_paths,
+            global_arguments.dry_run,
         )
     stream_processes = [process for processes in active_dumps.values() for process in processes]
 
@@ -98,6 +101,7 @@ def run_create(
         global_arguments.dry_run,
         repository['path'],
         config,
+        config_paths,
         local_borg_version,
         global_arguments,
         local_path=local_path,

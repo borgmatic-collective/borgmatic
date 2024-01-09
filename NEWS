@@ -1,4 +1,6 @@
 1.8.7.dev0
+ * #736: Store included configuration files within each backup archive in support of the "config
+   bootstrap" action. Previously, only top-level configuration files were stored.
  * #810: SECURITY: Prevent shell injection attacks within the PostgreSQL hook, the MongoDB hook, the
    SQLite hook, the "borgmatic borg" action, and command hook variable/constant interpolation.
 
