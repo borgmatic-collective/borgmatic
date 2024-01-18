@@ -3,6 +3,7 @@
    bootstrap" action. Previously, only top-level configuration files were stored.
  * #810: SECURITY: Prevent shell injection attacks within the PostgreSQL hook, the MongoDB hook, the
    SQLite hook, the "borgmatic borg" action, and command hook variable/constant interpolation.
+ * #814: Fix a traceback when providing an invalid "--override" value for a list option.
 
 1.8.6
  * #767: Add an "--ssh-command" flag to the "config bootstrap" action for setting a custom SSH

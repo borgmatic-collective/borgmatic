@@ -44,6 +44,13 @@ def test_set_values_with_multiple_keys_updates_hierarchy():
     assert config == {'option': {'key': 'value', 'other': 'other_value'}}
 
 
+def test_set_values_with_key_when_list_index_expected_errors():
+    config = {'option': ['foo', 'bar', 'baz']}
+
+    with pytest.raises(ValueError):
+        module.set_values(config, keys=('option', 'key'), value='value')
+
+
 @pytest.mark.parametrize(
     'schema,option_keys,expected_type',
     (

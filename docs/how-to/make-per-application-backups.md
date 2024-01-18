@@ -495,21 +495,29 @@ borgmatic create --override parent_option.option1=value1 --override parent_optio
 forget to specify the section that an option is in. That looks like a prefix
 on the option name, e.g. `location.repositories`.
 
-Note that each value is parsed as an actual YAML string, so you can even set
-list values by using brackets. For instance:
+Note that each value is parsed as an actual YAML string, so you can set list
+values by using brackets. For instance:
 
 ```bash
 borgmatic create --override repositories=[test1.borg,test2.borg]
 ```
 
-Or even a single list element:
+Or a single list element:
 
 ```bash
 borgmatic create --override repositories=[/root/test.borg]
 ```
 
-If your override value contains special YAML characters like colons, then
-you'll need quotes for it to parse correctly:
+Or a single list element that is a key/value pair:
+
+```bash
+borgmatic create --override repositories="[{path: test.borg, label: test}]"
+```
+
+If your override value contains characters like colons or spaces, then you'll
+need to use quotes for it to parse correctly.
+
+Another example:
 
 ```bash
 borgmatic create --override repositories="['user@server:test.borg']"
@@ -518,15 +526,11 @@ borgmatic create --override repositories="['user@server:test.borg']"
 There is not currently a way to override a single element of a list without
 replacing the whole list.
 
-Note that if you override an option of the list type (like
-`location.repositories`), you do need to use the `[ ]` list syntax. See the
-[configuration
+Using the `[ ]` list syntax is required when overriding an option of the list
+type (like `location.repositories`). See the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
 which options are list types. (YAML list values look like `- this` with an
 indentation and a leading dash.)
-
-Be sure to quote your overrides if they contain spaces or other characters
-that your shell may interpret.
 
 An alternate to command-line overrides is passing in your values via
 [environment

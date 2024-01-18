@@ -13,6 +13,11 @@ def set_values(config, keys, value):
 
     first_key = keys[0]
     if len(keys) == 1:
+        if isinstance(config, list):
+            raise ValueError(
+                'When overriding a list option, the value must use list syntax (e.g., "[foo, bar]" or "[{key: value}]" as appropriate)'
+            )
+
         config[first_key] = value
         return
 
