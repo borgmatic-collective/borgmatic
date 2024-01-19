@@ -302,7 +302,7 @@ def make_parsers():
         metavar='OPTION.SUBOPTION=VALUE',
         dest='overrides',
         action='append',
-        help='Configuration file option to override with specified value, can specify flag multiple times',
+        help='Configuration file option to override with specified value, see documentation for overriding list or key/value options, can specify flag multiple times',
     )
     global_group.add_argument(
         '--no-environment-interpolation',
