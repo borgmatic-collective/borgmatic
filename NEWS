@@ -1,4 +1,4 @@
-1.8.7.dev0
+1.8.7
  * #736: Store included configuration files within each backup archive in support of the "config
    bootstrap" action. Previously, only top-level configuration files were stored.
  * #798: Elevate specific Borg warnings to errors or squash errors to warnings.

@@ -40,6 +40,9 @@ borg_exit_codes:
 Be careful with this example though, because it prevents borgmatic from
 erroring when Borg errors, which may not be desirable.
 
+
+### More granular configuration
+
 <span class="minilink minilink-addedin">New in Borg version 1.4</span> Borg
 support for [more granular exit
 codes](https://borgbackup.readthedocs.io/en/1.4-maint/usage/general.html#return-codes)
