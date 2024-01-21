@@ -82,5 +82,5 @@ a backup file is not found:
 terminating with warning status, rc 107
 ```
 
-The exit status to use in that case would be `107` if you want to configure
-borgmatic to treat it as an error.
+So if you want to configure borgmatic to treat this as an error instead of a
+warning, the exit status to use is `107`.
