@@ -22,6 +22,7 @@ def local_borg_version(config, local_path='borg'):
         full_command,
         extra_environment=environment.make_environment(config),
         borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )
 
     try:

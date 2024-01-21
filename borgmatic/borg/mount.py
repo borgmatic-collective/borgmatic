@@ -65,9 +65,15 @@ def mount_archive(
         execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
-            borg_local_path=local_path,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
         )
         return
 
-    execute_command(full_command, borg_local_path=local_path, extra_environment=borg_environment)
+    execute_command(
+        full_command,
+        extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
+    )

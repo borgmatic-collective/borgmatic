@@ -57,7 +57,11 @@ def extract_last_archive_dry_run(
     )
 
     execute_command(
-        full_extract_command, working_directory=None, extra_environment=borg_environment
+        full_extract_command,
+        working_directory=None,
+        extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )
 
 
@@ -127,6 +131,7 @@ def extract_archive(
     )
 
     borg_environment = environment.make_environment(config)
+    borg_exit_codes = config.get('borg_exit_codes')
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
@@ -136,6 +141,8 @@ def extract_archive(
             output_file=DO_NOT_CAPTURE,
             working_directory=destination_path,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
         return None
 
@@ -146,10 +153,16 @@ def extract_archive(
             working_directory=destination_path,
             run_to_completion=False,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
 
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
     execute_command(
-        full_command, working_directory=destination_path, extra_environment=borg_environment
+        full_command,
+        working_directory=destination_path,
+        extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
     )

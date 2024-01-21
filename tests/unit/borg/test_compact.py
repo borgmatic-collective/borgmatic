@@ -7,12 +7,13 @@ from borgmatic.borg import compact as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(compact_command, output_log_level):
+def insert_execute_command_mock(compact_command, output_log_level, borg_exit_codes=None):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         compact_command,
         output_log_level=output_log_level,
         borg_local_path=compact_command[0],
+        borg_exit_codes=borg_exit_codes,
         extra_environment=None,
     ).once()
 
@@ -84,6 +85,22 @@ def test_compact_segments_with_local_path_calls_borg_via_local_path():
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         local_path='borg1',
+    )
+
+
+def test_compact_segments_with_exit_codes_calls_borg_using_them():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    borg_exit_codes = flexmock()
+    insert_execute_command_mock(
+        COMPACT_COMMAND + ('repo',), logging.INFO, borg_exit_codes=borg_exit_codes
+    )
+
+    module.compact_segments(
+        dry_run=False,
+        repository_path='repo',
+        config={'borg_exit_codes': borg_exit_codes},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
     )
 
 

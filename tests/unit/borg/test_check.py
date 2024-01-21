@@ -8,10 +8,13 @@ from borgmatic.borg import check as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(command):
+def insert_execute_command_mock(command, borg_exit_codes=None):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
-        command, extra_environment=None
+        command,
+        extra_environment=None,
+        borg_local_path=command[0],
+        borg_exit_codes=borg_exit_codes,
     ).once()
 
 
@@ -689,6 +692,8 @@ def test_check_archives_with_progress_passes_through_to_borg():
         ('borg', 'check', '--progress', 'repo'),
         output_file=module.DO_NOT_CAPTURE,
         extra_environment=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
     ).once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
@@ -723,6 +728,8 @@ def test_check_archives_with_repair_passes_through_to_borg():
         ('borg', 'check', '--repair', 'repo'),
         output_file=module.DO_NOT_CAPTURE,
         extra_environment=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
     ).once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
@@ -963,6 +970,36 @@ def test_check_archives_with_local_path_calls_borg_via_local_path():
     )
 
 
+def test_check_archives_with_exit_codes_calls_borg_using_them():
+    checks = ('repository',)
+    check_last = flexmock()
+    borg_exit_codes = flexmock()
+    config = {'check_last': check_last, 'borg_exit_codes': borg_exit_codes}
+    flexmock(module.rinfo).should_receive('display_repository_info').and_return(
+        '{"repository": {"id": "repo"}}'
+    )
+    flexmock(module).should_receive('upgrade_check_times')
+    flexmock(module).should_receive('parse_checks')
+    flexmock(module).should_receive('make_archive_filter_flags').and_return(())
+    flexmock(module).should_receive('make_archives_check_id').and_return(None)
+    flexmock(module).should_receive('filter_checks_on_frequency').and_return(checks)
+    flexmock(module).should_receive('make_check_flags').with_args(checks, ()).and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(('borg', 'check', 'repo'), borg_exit_codes=borg_exit_codes)
+    flexmock(module).should_receive('make_check_time_path')
+    flexmock(module).should_receive('write_check_time')
+
+    module.check_archives(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        check_arguments=flexmock(
+            progress=None, repair=None, only_checks=None, force=None, match_archives=None
+        ),
+        global_arguments=flexmock(log_json=False),
+    )
+
+
 def test_check_archives_with_remote_path_passes_through_to_borg():
     checks = ('repository',)
     check_last = flexmock()
@@ -1128,6 +1165,8 @@ def test_check_archives_with_match_archives_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--match-archives', 'foo-*', 'repo'),
         extra_environment=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
     ).once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')

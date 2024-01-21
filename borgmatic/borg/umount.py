@@ -5,7 +5,7 @@ from borgmatic.execute import execute_command
 logger = logging.getLogger(__name__)
 
 
-def unmount_archive(mount_point, local_path='borg'):
+def unmount_archive(config, mount_point, local_path='borg'):
     '''
     Given a mounted filesystem mount point, and an optional local Borg paths, umount the filesystem
     from the mount point.
@@ -17,4 +17,6 @@ def unmount_archive(mount_point, local_path='borg'):
         + (mount_point,)
     )
 
-    execute_command(full_command)
+    execute_command(
+        full_command, borg_local_path=local_path, borg_exit_codes=config.get('borg_exit_codes')
+    )

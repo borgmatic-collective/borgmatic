@@ -38,6 +38,7 @@ def test_resolve_archive_name_calls_borg_with_flags():
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -59,6 +60,7 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_flag():
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.INFO)
 
@@ -81,6 +83,7 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_flag():
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
     insert_logging_mock(logging.DEBUG)
 
@@ -103,6 +106,7 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
         ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg1',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -118,6 +122,29 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     )
 
 
+def test_resolve_archive_name_with_exit_codes_calls_borg_using_them():
+    expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
+    borg_exit_codes = flexmock()
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
+        borg_local_path='borg',
+        borg_exit_codes=borg_exit_codes,
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name(
+            'repo',
+            'latest',
+            config={'borg_exit_codes': borg_exit_codes},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
+        )
+        == expected_archive
+    )
+
+
 def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
@@ -125,6 +152,7 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags
         ('borg', 'list', '--remote-path', 'borg1') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -146,6 +174,7 @@ def test_resolve_archive_name_without_archives_raises():
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return('')
 
     with pytest.raises(ValueError):
@@ -166,6 +195,7 @@ def test_resolve_archive_name_with_log_json_calls_borg_with_log_json_flags():
         ('borg', 'list', '--log-json') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -188,6 +218,7 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_flags():
         ('borg', 'list', '--lock-wait', 'okay') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
         borg_local_path='borg',
+        borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
 
     assert (

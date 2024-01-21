@@ -341,6 +341,37 @@ properties:
             Path for Borg encryption key files. Defaults to
             $borg_base_directory/.config/borg/keys
         example: /path/to/base/config/keys
+    borg_exit_codes:
+        type: array
+        items:
+            type: object
+            required: ['code', 'treat_as']
+            additionalProperties: false
+            properties:
+                code:
+                    type: integer
+                    not: {enum: [0]}
+                    description: |
+                        The exit code for an existing Borg warning or error.
+                    example: 100
+                treat_as:
+                    type: string
+                    enum: ['error', 'warning']
+                    description: |
+                        Whether to consider the exit code as an error or as a
+                        warning in borgmatic.
+                    example: error
+        description: |
+            A list of Borg exit codes that should be elevated to errors or
+            squashed to warnings as indicated. By default, Borg error exit codes
+            (2 to 99) are treated as errors while warning exit codes (1 and
+            100+) are treated as warnings. Exit codes other than 1 and 2 are
+            only present in Borg 1.4.0+.
+        example:
+            - code: 13
+              treat_as: warning
+            - code: 100
+              treat_as: error
     umask:
         type: integer
         description: |

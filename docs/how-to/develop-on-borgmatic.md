@@ -3,7 +3,7 @@ title: How to develop on borgmatic
 eleventyNavigation:
   key: 🏗️ Develop on borgmatic
   parent: How-to guides
-  order: 13
+  order: 14
 ---
 ## Source code
 

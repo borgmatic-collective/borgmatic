@@ -49,17 +49,20 @@ def display_repository_info(
     )
 
     extra_environment = environment.make_environment(config)
+    borg_exit_codes = config.get('borg_exit_codes')
 
     if rinfo_arguments.json:
         return execute_command_and_capture_output(
             full_command,
             extra_environment=extra_environment,
             borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
     else:
         execute_command(
             full_command,
             output_log_level=logging.ANSWER,
-            borg_local_path=local_path,
             extra_environment=extra_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )

@@ -7,12 +7,13 @@ from borgmatic.borg import prune as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(prune_command, output_log_level):
+def insert_execute_command_mock(prune_command, output_log_level, borg_exit_codes=None):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         prune_command,
         output_log_level=output_log_level,
         borg_local_path=prune_command[0],
+        borg_exit_codes=borg_exit_codes,
         extra_environment=None,
     ).once()
 
@@ -227,6 +228,27 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
     )
 
 
+def test_prune_archives_with_exit_codes_calls_borg_using_them():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_prune_flags').and_return(BASE_PRUNE_FLAGS)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    borg_exit_codes = flexmock()
+    insert_execute_command_mock(
+        ('borg',) + PRUNE_COMMAND[1:] + ('repo',), logging.INFO, borg_exit_codes
+    )
+
+    prune_arguments = flexmock(stats=False, list_archives=False)
+    module.prune_archives(
+        dry_run=False,
+        repository_path='repo',
+        config={'borg_exit_codes': borg_exit_codes},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        prune_arguments=prune_arguments,
+    )
+
+
 def test_prune_archives_with_remote_path_calls_borg_with_remote_path_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
@@ -403,6 +425,7 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
         ),
         output_log_level=logging.INFO,
         borg_local_path='borg',
+        borg_exit_codes=None,
         extra_environment=None,
     )
 

@@ -22,12 +22,13 @@ def insert_rinfo_command_not_found_mock():
     )
 
 
-def insert_rcreate_command_mock(rcreate_command, **kwargs):
+def insert_rcreate_command_mock(rcreate_command, borg_exit_codes=None, **kwargs):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         rcreate_command,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path=rcreate_command[0],
+        borg_exit_codes=borg_exit_codes,
         extra_environment=None,
     ).once()
 
@@ -350,6 +351,30 @@ def test_create_repository_with_local_path_calls_borg_via_local_path():
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
         local_path='borg1',
+    )
+
+
+def test_create_repository_with_exit_codes_calls_borg_using_them():
+    borg_exit_codes = flexmock()
+    insert_rinfo_command_not_found_mock()
+    insert_rcreate_command_mock(
+        ('borg',) + RCREATE_COMMAND[1:] + ('--repo', 'repo'), borg_exit_codes=borg_exit_codes
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={'borg_exit_codes': borg_exit_codes},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
+        encryption_mode='repokey',
     )
 
 

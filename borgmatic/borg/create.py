@@ -272,7 +272,7 @@ def any_parent_directories(path, candidate_parents):
 
 
 def collect_special_file_paths(
-    create_command, local_path, working_directory, borg_environment, skip_directories
+    create_command, config, local_path, working_directory, borg_environment, skip_directories
 ):
     '''
     Given a Borg create command as a tuple, a local Borg path, a working directory, a dict of
@@ -290,6 +290,7 @@ def collect_special_file_paths(
         working_directory=working_directory,
         extra_environment=borg_environment,
         borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )
 
     paths = tuple(
@@ -469,6 +470,7 @@ def create_archive(
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_flags + create_positional_arguments,
+            config,
             local_path,
             working_directory,
             borg_environment,
@@ -494,6 +496,7 @@ def create_archive(
         + (('--progress',) if progress else ())
         + (('--json',) if json else ())
     )
+    borg_exit_codes = config.get('borg_exit_codes')
 
     if stream_processes:
         return execute_command_with_processes(
@@ -501,9 +504,10 @@ def create_archive(
             stream_processes,
             output_log_level,
             output_file,
-            borg_local_path=local_path,
             working_directory=working_directory,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
     elif output_log_level is None:
         return execute_command_and_capture_output(
@@ -511,13 +515,15 @@ def create_archive(
             working_directory=working_directory,
             extra_environment=borg_environment,
             borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
     else:
         execute_command(
             create_flags + create_positional_arguments,
             output_log_level,
             output_file,
-            borg_local_path=local_path,
             working_directory=working_directory,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )

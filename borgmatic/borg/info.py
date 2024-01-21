@@ -95,11 +95,13 @@ def display_archives_info(
         local_path,
         remote_path,
     )
+    borg_exit_codes = config.get('borg_exit_codes')
 
     json_info = execute_command_and_capture_output(
         json_command,
         extra_environment=environment.make_environment(config),
         borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
     )
 
     if info_arguments.json:
@@ -110,6 +112,7 @@ def display_archives_info(
     execute_command(
         main_command,
         output_log_level=logging.ANSWER,
-        borg_local_path=local_path,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
     )

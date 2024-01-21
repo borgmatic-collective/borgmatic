@@ -59,7 +59,6 @@ def run_arbitrary_borg(
     return execute_command(
         tuple(shlex.quote(part) for part in full_command),
         output_file=DO_NOT_CAPTURE,
-        borg_local_path=local_path,
         shell=True,
         extra_environment=dict(
             (environment.make_environment(config) or {}),
@@ -68,4 +67,6 @@ def run_arbitrary_borg(
                 'ARCHIVE': archive if archive else '',
             },
         ),
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )

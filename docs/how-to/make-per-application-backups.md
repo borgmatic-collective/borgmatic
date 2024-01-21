@@ -139,8 +139,8 @@ Some borgmatic command-line actions also have a `--match-archives` flag that
 overrides both the auto-matching behavior and the `match_archives`
 configuration option.
 
-<span class="minilink minilink-addedin">Prior to 1.7.11</span> The way to
-limit the archives used for the `prune` action was a `prefix` option in the
+<span class="minilink minilink-addedin">Prior to version 1.7.11</span> The way
+to limit the archives used for the `prune` action was a `prefix` option in the
 `retention` section for matching against the start of archive names. And the
 option for limiting the archives used for the `check` action was a separate
 `prefix` in the `consistency` section. Both of these options are deprecated in

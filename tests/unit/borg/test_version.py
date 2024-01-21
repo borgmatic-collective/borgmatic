@@ -11,13 +11,14 @@ VERSION = '1.2.3'
 
 
 def insert_execute_command_and_capture_output_mock(
-    command, borg_local_path='borg', version_output=f'borg {VERSION}'
+    command, borg_local_path='borg', borg_exit_codes=None, version_output=f'borg {VERSION}'
 ):
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         command,
         extra_environment=None,
         borg_local_path=borg_local_path,
+        borg_exit_codes=borg_exit_codes,
     ).once().and_return(version_output)
 
 
@@ -49,6 +50,16 @@ def test_local_borg_version_with_local_borg_path_calls_borg_with_it():
     flexmock(module.environment).should_receive('make_environment')
 
     assert module.local_borg_version({}, 'borg1') == VERSION
+
+
+def test_local_borg_version_with_borg_exit_codes_calls_using_with_them():
+    borg_exit_codes = flexmock()
+    insert_execute_command_and_capture_output_mock(
+        ('borg', '--version'), borg_exit_codes=borg_exit_codes
+    )
+    flexmock(module.environment).should_receive('make_environment')
+
+    assert module.local_borg_version({'borg_exit_codes': borg_exit_codes}) == VERSION
 
 
 def test_local_borg_version_with_invalid_version_raises():

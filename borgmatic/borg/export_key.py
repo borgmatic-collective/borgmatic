@@ -65,6 +65,7 @@ def export_key(
         full_command,
         output_file=output_file,
         output_log_level=logging.ANSWER,
-        borg_local_path=local_path,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )

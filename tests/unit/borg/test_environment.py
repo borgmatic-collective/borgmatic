@@ -22,7 +22,8 @@ def test_make_environment_with_ssh_command_should_set_environment():
 def test_make_environment_without_configuration_should_not_set_environment():
     environment = module.make_environment({})
 
-    assert environment == {}
+    # borgmatic always sets this Borg environment variable.
+    assert environment == {'BORG_EXIT_CODES': 'modern'}
 
 
 def test_make_environment_with_relocated_repo_access_true_should_set_environment_yes():

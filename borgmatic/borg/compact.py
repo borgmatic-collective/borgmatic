@@ -48,6 +48,7 @@ def compact_segments(
     execute_command(
         full_command,
         output_log_level=logging.INFO,
-        borg_local_path=local_path,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )

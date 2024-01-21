@@ -56,5 +56,6 @@ def transfer_archives(
         output_log_level=logging.ANSWER,
         output_file=DO_NOT_CAPTURE if transfer_arguments.progress else None,
         borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
         extra_environment=environment.make_environment(config),
     )

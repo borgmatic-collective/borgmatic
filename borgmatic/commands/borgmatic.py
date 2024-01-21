@@ -801,6 +801,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
         try:
             borg_umount.unmount_archive(
+                config,
                 mount_point=arguments['umount'].mount_point,
                 local_path=get_local_path(configs),
             )

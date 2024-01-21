@@ -50,4 +50,8 @@ def make_environment(config):
         if value is not None:
             environment[environment_variable_name] = 'YES' if value else 'NO'
 
+    # On Borg 1.4.0a1+, take advantage of more specific exit codes. No effect on
+    # older versions of Borg.
+    environment['BORG_EXIT_CODES'] = 'modern'
+
     return environment

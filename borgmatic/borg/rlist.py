@@ -45,6 +45,7 @@ def resolve_archive_name(
         full_command,
         extra_environment=environment.make_environment(config),
         borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )
     try:
         latest_archive = output.strip().splitlines()[-1]
@@ -147,9 +148,13 @@ def list_repository(
         local_path,
         remote_path,
     )
+    borg_exit_codes = config.get('borg_exit_codes')
 
     json_listing = execute_command_and_capture_output(
-        json_command, extra_environment=borg_environment, borg_local_path=local_path
+        json_command,
+        extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
     )
 
     if rlist_arguments.json:
@@ -160,6 +165,7 @@ def list_repository(
     execute_command(
         main_command,
         output_log_level=logging.ANSWER,
-        borg_local_path=local_path,
         extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=borg_exit_codes,
     )

@@ -69,6 +69,7 @@ def export_tar_archive(
         full_command,
         output_file=DO_NOT_CAPTURE if destination_path == '-' else None,
         output_log_level=output_log_level,
-        borg_local_path=local_path,
         extra_environment=environment.make_environment(config),
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
     )

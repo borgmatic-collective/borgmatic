@@ -9,7 +9,7 @@ from borgmatic.borg import export_key as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(command, output_file=module.DO_NOT_CAPTURE):
+def insert_execute_command_mock(command, output_file=module.DO_NOT_CAPTURE, borg_exit_codes=None):
     borgmatic.logger.add_custom_log_levels()
 
     flexmock(module.environment).should_receive('make_environment')
@@ -17,7 +17,8 @@ def insert_execute_command_mock(command, output_file=module.DO_NOT_CAPTURE):
         command,
         output_file=output_file,
         output_log_level=module.logging.ANSWER,
-        borg_local_path='borg',
+        borg_local_path=command[0],
+        borg_exit_codes=borg_exit_codes,
         extra_environment=None,
     ).once()
 
@@ -30,6 +31,36 @@ def test_export_key_calls_borg_with_required_flags():
     module.export_key(
         repository_path='repo',
         config={},
+        local_borg_version='1.2.3',
+        export_arguments=flexmock(paper=False, qr_html=False, path=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+    )
+
+
+def test_export_key_calls_borg_with_local_path():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    insert_execute_command_mock(('borg1', 'key', 'export', 'repo'))
+
+    module.export_key(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.2.3',
+        export_arguments=flexmock(paper=False, qr_html=False, path=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg1',
+    )
+
+
+def test_export_key_calls_borg_using_exit_codes():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    borg_exit_codes = flexmock()
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'), borg_exit_codes=borg_exit_codes)
+
+    module.export_key(
+        repository_path='repo',
+        config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='1.2.3',
         export_arguments=flexmock(paper=False, qr_html=False, path=None),
         global_arguments=flexmock(dry_run=False, log_json=False),

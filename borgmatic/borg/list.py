@@ -124,6 +124,7 @@ def capture_archive_listing(
             ),
             extra_environment=borg_environment,
             borg_local_path=local_path,
+            borg_exit_codes=config.get('borg_exit_codes'),
         )
         .strip('\n')
         .split('\n')
@@ -189,6 +190,7 @@ def list_archive(
         )
 
     borg_environment = environment.make_environment(config)
+    borg_exit_codes = config.get('borg_exit_codes')
 
     # If there are any paths to find (and there's not a single archive already selected), start by
     # getting a list of archives to search.
@@ -219,6 +221,7 @@ def list_archive(
                 ),
                 extra_environment=borg_environment,
                 borg_local_path=local_path,
+                borg_exit_codes=borg_exit_codes,
             )
             .strip('\n')
             .split('\n')
@@ -251,6 +254,7 @@ def list_archive(
         execute_command(
             main_command,
             output_log_level=logging.ANSWER,
-            borg_local_path=local_path,
             extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )

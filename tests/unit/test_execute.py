@@ -7,32 +7,49 @@ from borgmatic import execute as module
 
 
 @pytest.mark.parametrize(
-    'command,exit_code,borg_local_path,expected_result',
+    'command,exit_code,borg_local_path,borg_exit_codes,expected_result',
     (
-        (['grep'], 2, None, True),
-        (['grep'], 2, 'borg', True),
-        (['borg'], 2, 'borg', True),
-        (['borg1'], 2, 'borg1', True),
-        (['grep'], 1, None, True),
-        (['grep'], 1, 'borg', True),
-        (['borg'], 1, 'borg', False),
-        (['borg1'], 1, 'borg1', False),
-        (['grep'], 0, None, False),
-        (['grep'], 0, 'borg', False),
-        (['borg'], 0, 'borg', False),
-        (['borg1'], 0, 'borg1', False),
+        (['grep'], 2, None, None, module.Exit_status.ERROR),
+        (['grep'], 2, 'borg', None, module.Exit_status.ERROR),
+        (['borg'], 2, 'borg', None, module.Exit_status.ERROR),
+        (['borg1'], 2, 'borg1', None, module.Exit_status.ERROR),
+        (['grep'], 1, None, None, module.Exit_status.ERROR),
+        (['grep'], 1, 'borg', None, module.Exit_status.ERROR),
+        (['borg'], 1, 'borg', None, module.Exit_status.WARNING),
+        (['borg1'], 1, 'borg1', None, module.Exit_status.WARNING),
+        (['grep'], 100, None, None, module.Exit_status.ERROR),
+        (['grep'], 100, 'borg', None, module.Exit_status.ERROR),
+        (['borg'], 100, 'borg', None, module.Exit_status.WARNING),
+        (['borg1'], 100, 'borg1', None, module.Exit_status.WARNING),
+        (['grep'], 0, None, None, module.Exit_status.SUCCESS),
+        (['grep'], 0, 'borg', None, module.Exit_status.SUCCESS),
+        (['borg'], 0, 'borg', None, module.Exit_status.SUCCESS),
+        (['borg1'], 0, 'borg1', None, module.Exit_status.SUCCESS),
         # -9 exit code occurs when child process get SIGKILLed.
-        (['grep'], -9, None, True),
-        (['grep'], -9, 'borg', True),
-        (['borg'], -9, 'borg', True),
-        (['borg1'], -9, 'borg1', True),
-        (['borg'], None, None, False),
+        (['grep'], -9, None, None, module.Exit_status.ERROR),
+        (['grep'], -9, 'borg', None, module.Exit_status.ERROR),
+        (['borg'], -9, 'borg', None, module.Exit_status.ERROR),
+        (['borg1'], -9, 'borg1', None, module.Exit_status.ERROR),
+        (['borg'], None, None, None, module.Exit_status.STILL_RUNNING),
+        (['borg'], 1, 'borg', [], module.Exit_status.WARNING),
+        (['borg'], 1, 'borg', [{}], module.Exit_status.WARNING),
+        (['borg'], 1, 'borg', [{'code': 1}], module.Exit_status.WARNING),
+        (['grep'], 1, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (['borg'], 1, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.WARNING),
+        (['borg'], 1, 'borg', [{'code': 1, 'treat_as': 'error'}], module.Exit_status.ERROR),
+        (['borg'], 2, 'borg', [{'code': 99, 'treat_as': 'warning'}], module.Exit_status.ERROR),
+        (['borg'], 2, 'borg', [{'code': 2, 'treat_as': 'warning'}], module.Exit_status.WARNING),
+        (['borg'], 100, 'borg', [{'code': 1, 'treat_as': 'error'}], module.Exit_status.WARNING),
+        (['borg'], 100, 'borg', [{'code': 100, 'treat_as': 'error'}], module.Exit_status.ERROR),
     ),
 )
-def test_exit_code_indicates_error_respects_exit_code_and_borg_local_path(
-    command, exit_code, borg_local_path, expected_result
+def test_interpret_exit_code_respects_exit_code_and_borg_local_path(
+    command, exit_code, borg_local_path, borg_exit_codes, expected_result
 ):
-    assert module.exit_code_indicates_error(command, exit_code, borg_local_path) is expected_result
+    assert (
+        module.interpret_exit_code(command, exit_code, borg_local_path, borg_exit_codes)
+        is expected_result
+    )
 
 
 def test_command_for_process_converts_sequence_command_to_string():
@@ -178,7 +195,7 @@ def test_execute_command_calls_full_command_without_capturing_output():
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command, stdin=None, stdout=None, stderr=None, shell=False, env=None, cwd=None
     ).and_return(flexmock(wait=lambda: 0)).once()
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, output_file=module.DO_NOT_CAPTURE)
@@ -323,7 +340,9 @@ def test_execute_command_and_capture_output_returns_output_when_process_error_is
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd=None
     ).and_raise(subprocess.CalledProcessError(1, full_command, err_output)).once()
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(False).once()
+    flexmock(module).should_receive('interpret_exit_code').and_return(
+        module.Exit_status.SUCCESS
+    ).once()
 
     output = module.execute_command_and_capture_output(full_command)
 
@@ -338,7 +357,9 @@ def test_execute_command_and_capture_output_raises_when_command_errors():
     flexmock(module.subprocess).should_receive('check_output').with_args(
         full_command, stderr=None, shell=False, env=None, cwd=None
     ).and_raise(subprocess.CalledProcessError(2, full_command, expected_output)).once()
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(True).once()
+    flexmock(module).should_receive('interpret_exit_code').and_return(
+        module.Exit_status.ERROR
+    ).once()
 
     with pytest.raises(subprocess.CalledProcessError):
         module.execute_command_and_capture_output(full_command)
@@ -467,7 +488,7 @@ def test_execute_command_with_processes_calls_full_command_without_capturing_out
     flexmock(module.subprocess).should_receive('Popen').with_args(
         full_command, stdin=None, stdout=None, stderr=None, shell=False, env=None, cwd=None
     ).and_return(flexmock(wait=lambda: 0)).once()
-    flexmock(module).should_receive('exit_code_indicates_error').and_return(False)
+    flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
