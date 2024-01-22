@@ -1,3 +1,6 @@
+1.8.8.dev0
+ * #818: Allow the "--repository" flag to match across multiple configuration files.
+
 1.8.7
  * #736: Store included configuration files within each backup archive in support of the "config
    bootstrap" action. Previously, only top-level configuration files were stored.

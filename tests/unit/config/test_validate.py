@@ -184,21 +184,6 @@ def test_guard_configuration_contains_repository_errors_when_repository_missing_
         )
 
 
-def test_guard_configuration_contains_repository_errors_when_repository_matches_config_twice():
-    flexmock(module).should_receive('repositories_match').replace_with(
-        lambda first, second: first == second
-    )
-
-    with pytest.raises(ValueError):
-        module.guard_configuration_contains_repository(
-            repository='repo',
-            configurations={
-                'config.yaml': {'repositories': ['repo', 'repo2']},
-                'other.yaml': {'repositories': ['repo']},
-            },
-        )
-
-
 def test_guard_single_repository_selected_raises_when_multiple_repositories_configured_and_none_selected():
     with pytest.raises(ValueError):
         module.guard_single_repository_selected(

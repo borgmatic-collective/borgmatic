@@ -167,11 +167,10 @@ def repositories_match(first, second):
 def guard_configuration_contains_repository(repository, configurations):
     '''
     Given a repository path and a dict mapping from config filename to corresponding parsed config
-    dict, ensure that the repository is declared exactly once in all of the configurations. If no
+    dict, ensure that the repository is declared at least once in all of the configurations. If no
     repository is given, skip this check.
 
-    Raise ValueError if the repository is not found in a configuration, or is declared multiple
-    times.
+    Raise ValueError if the repository is not found in any configurations.
     '''
     if not repository:
         return
@@ -186,9 +185,7 @@ def guard_configuration_contains_repository(repository, configurations):
     )
 
     if count == 0:
-        raise ValueError(f'Repository {repository} not found in configuration files')
-    if count > 1:
-        raise ValueError(f'Repository {repository} found in multiple configuration files')
+        raise ValueError(f'Repository "{repository}" not found in configuration files')
 
 
 def guard_single_repository_selected(repository, configurations):
