@@ -8,7 +8,7 @@ from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 logger = logging.getLogger(__name__)
 
 
-RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE = 2
+RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES = {2, 13}
 
 
 def create_repository(
@@ -45,7 +45,7 @@ def create_repository(
         logger.info(f'{repository_path}: Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:
-        if error.returncode != RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE:
+        if error.returncode not in RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES:
             raise
 
     lock_wait = config.get('lock_wait')

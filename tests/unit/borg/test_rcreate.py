@@ -18,7 +18,7 @@ def insert_rinfo_command_found_mock():
 
 def insert_rinfo_command_not_found_mock():
     flexmock(module.rinfo).should_receive('display_repository_info').and_raise(
-        subprocess.CalledProcessError(module.RINFO_REPOSITORY_NOT_FOUND_EXIT_CODE, [])
+        subprocess.CalledProcessError(sorted(module.RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES)[0], [])
     )
 
 
