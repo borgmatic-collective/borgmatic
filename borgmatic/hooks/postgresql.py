@@ -25,8 +25,8 @@ def make_dump_path(config):  # pragma: no cover
 
 def make_extra_environment(database, restore_connection_params=None):
     '''
-    Make the extra_environment dict from the given database configuration.
-    If restore connection params are given, this is for a restore operation.
+    Make the extra_environment dict from the given database configuration. If restore connection
+    params are given, this is for a restore operation.
     '''
     extra = dict()
 
@@ -40,7 +40,8 @@ def make_extra_environment(database, restore_connection_params=None):
     except (AttributeError, KeyError):
         pass
 
-    extra['PGSSLMODE'] = database.get('ssl_mode', 'disable')
+    if 'ssl_mode' in database:
+        extra['PGSSLMODE'] = database['ssl_mode']
     if 'ssl_cert' in database:
         extra['PGSSLCERT'] = database['ssl_cert']
     if 'ssl_key' in database:
@@ -49,6 +50,7 @@ def make_extra_environment(database, restore_connection_params=None):
         extra['PGSSLROOTCERT'] = database['ssl_root_cert']
     if 'ssl_crl' in database:
         extra['PGSSLCRL'] = database['ssl_crl']
+
     return extra
 
 

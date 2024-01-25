@@ -50,6 +50,14 @@ def test_make_extra_environment_without_cli_password_or_configured_password_does
     assert 'PGPASSWORD' not in extra
 
 
+def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
+    database = {'name': 'foo'}
+
+    extra = module.make_extra_environment(database)
+
+    assert 'PGSSLMODE' not in extra
+
+
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 

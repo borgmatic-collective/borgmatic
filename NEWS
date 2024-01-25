@@ -1,4 +1,6 @@
 1.8.8.dev0
+ * #370: For the PostgreSQL hook, pass the "PGSSLMODE" environment variable through to Borg when the
+   database's configuration omits the "ssl_mode" option.
  * #818: Allow the "--repository" flag to match across multiple configuration files.
  * #820: Fix broken repository detection in the "rcreate" action with Borg 1.4. The issue did not
    occur with other versions of Borg.
