@@ -172,11 +172,17 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
 
 
 def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
-    database = {'name': 'all', 'format': 'custom', 'psql_command': 'docker exec mycontainer psql'}
+    database = {
+        'name': 'all',
+        'format': 'custom',
+        'psql_command': 'docker exec --workdir * mycontainer psql',
+    }
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'docker',
             'exec',
+            '--workdir',
+            "'*'",  # Should get shell escaped to prevent injection attacks.
             'mycontainer',
             'psql',
             '--list',
@@ -476,7 +482,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
 
 
 def test_dump_data_sources_runs_non_default_pg_dump():
-    databases = [{'name': 'foo', 'pg_dump_command': 'special_pg_dump'}]
+    databases = [{'name': 'foo', 'pg_dump_command': 'special_pg_dump --compress *'}]
     process = flexmock()
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -490,6 +496,8 @@ def test_dump_data_sources_runs_non_default_pg_dump():
     flexmock(module).should_receive('execute_command').with_args(
         (
             'special_pg_dump',
+            '--compress',
+            "'*'",  # Should get shell escaped to prevent injection attacks.
             '--no-password',
             '--clean',
             '--if-exists',
@@ -987,8 +995,8 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
     hook_config = [
         {
             'name': 'foo',
-            'pg_restore_command': 'docker exec mycontainer pg_restore',
-            'psql_command': 'docker exec mycontainer psql',
+            'pg_restore_command': 'docker exec --workdir * mycontainer pg_restore',
+            'psql_command': 'docker exec --workdir * mycontainer psql',
             'schemas': None,
         }
     ]
@@ -1001,6 +1009,8 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
         (
             'docker',
             'exec',
+            '--workdir',
+            "'*'",  # Should get shell escaped to prevent injection attacks.
             'mycontainer',
             'pg_restore',
             '--no-password',
@@ -1019,6 +1029,8 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
         (
             'docker',
             'exec',
+            '--workdir',
+            "'*'",  # Should get shell escaped to prevent injection attacks.
             'mycontainer',
             'psql',
             '--no-password',

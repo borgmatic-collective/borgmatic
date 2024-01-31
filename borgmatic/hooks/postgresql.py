@@ -73,9 +73,11 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
-    psql_command = shlex.split(database.get('psql_command') or 'psql')
+    psql_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('psql_command') or 'psql')
+    )
     list_command = (
-        tuple(psql_command)
+        psql_command
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -127,7 +129,10 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
         for database_name in dump_database_names:
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
             default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
-            dump_command = database.get('pg_dump_command') or default_dump_command
+            dump_command = tuple(
+                shlex.quote(part)
+                for part in shlex.split(database.get('pg_dump_command') or default_dump_command)
+            )
             dump_filename = dump.make_data_source_dump_filename(
                 dump_path, database_name, database.get('hostname')
             )
@@ -138,8 +143,8 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
                 continue
 
             command = (
-                (
-                    shlex.quote(dump_command),
+                dump_command
+                + (
                     '--no-password',
                     '--clean',
                     '--if-exists',
@@ -242,9 +247,11 @@ def restore_data_source_dump(
     dump_filename = dump.make_data_source_dump_filename(
         make_dump_path(config), data_source['name'], data_source.get('hostname')
     )
-    psql_command = shlex.split(data_source.get('psql_command') or 'psql')
+    psql_command = tuple(
+        shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')
+    )
     analyze_command = (
-        tuple(psql_command)
+        psql_command
         + ('--no-password', '--no-psqlrc', '--quiet')
         + (('--host', hostname) if hostname else ())
         + (('--port', port) if port else ())
@@ -258,9 +265,12 @@ def restore_data_source_dump(
         + ('--command', 'ANALYZE')
     )
     use_psql_command = all_databases or data_source.get('format') == 'plain'
-    pg_restore_command = shlex.split(data_source.get('pg_restore_command') or 'pg_restore')
+    pg_restore_command = tuple(
+        shlex.quote(part)
+        for part in shlex.split(data_source.get('pg_restore_command') or 'pg_restore')
+    )
     restore_command = (
-        tuple(psql_command if use_psql_command else pg_restore_command)
+        (psql_command if use_psql_command else pg_restore_command)
         + ('--no-password',)
         + (('--no-psqlrc',) if use_psql_command else ('--if-exists', '--exit-on-error', '--clean'))
         + (('--dbname', data_source['name']) if not all_databases else ())

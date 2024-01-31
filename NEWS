@@ -1,9 +1,11 @@
-1.8.8.dev0
+1.8.8
  * #370: For the PostgreSQL hook, pass the "PGSSLMODE" environment variable through to Borg when the
    database's configuration omits the "ssl_mode" option.
  * #818: Allow the "--repository" flag to match across multiple configuration files.
  * #820: Fix broken repository detection in the "rcreate" action with Borg 1.4. The issue did not
    occur with other versions of Borg.
+ * #822: Fix broken escaping logic in the PostgreSQL hook's "pg_dump_command" option.
+ * SECURITY: Prevent additional shell injection attacks within the PostgreSQL hook.
 
 1.8.7
  * #736: Store included configuration files within each backup archive in support of the "config
