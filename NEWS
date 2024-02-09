@@ -1,3 +1,7 @@
+1.8.9.dev0
+ * Clarify documentation about restoring a database: borgmatic does not create the database upon
+   restore.
+
 1.8.8
  * #370: For the PostgreSQL hook, pass the "PGSSLMODE" environment variable through to Borg when the
    database's configuration omits the "ssl_mode" option.

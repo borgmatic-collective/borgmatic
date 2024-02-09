@@ -262,6 +262,10 @@ systems that you'd like supported.
 
 ## Database restoration
 
+When you want to replace an existing database with its backed-up contents, you
+can restore it with borgmatic. Note that the database must already exist;
+borgmatic does not currently create a database upon restore.
+
 To restore a database dump from an archive, use the `borgmatic restore`
 action. But the first step is to figure out which archive to restore from. A
 good way to do that is to use the `rlist` action:
