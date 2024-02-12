@@ -872,10 +872,8 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     any_json_flags = any(
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
-    colorama.init(
-        autoreset=True,
-        strip=not should_do_markup(global_arguments.no_color or any_json_flags, configs),
-    )
+    color_enabled = should_do_markup(global_arguments.no_color or any_json_flags, configs)
+    colorama.init(autoreset=color_enabled, strip=not color_enabled)
     try:
         configure_logging(
             verbosity_to_log_level(global_arguments.verbosity),
@@ -884,6 +882,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
             verbosity_to_log_level(global_arguments.monitoring_verbosity),
             global_arguments.log_file,
             global_arguments.log_file_format,
+            color_enabled=color_enabled,
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)

@@ -1,4 +1,6 @@
 1.8.9.dev0
+ * #827: When the "--json" flag is given, suppress console escape codes so as not to
+   interfere with JSON output.
  * Clarify documentation about restoring a database: borgmatic does not create the database upon
    restore.
 

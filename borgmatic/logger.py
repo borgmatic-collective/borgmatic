@@ -159,10 +159,11 @@ def configure_logging(
     monitoring_log_level=None,
     log_file=None,
     log_file_format=None,
+    color_enabled=True,
 ):
     '''
     Configure logging to go to both the console and (syslog or log file). Use the given log levels,
-    respectively.
+    respectively. If color is enabled, set up log formatting accordingly.
 
     Raise FileNotFoundError or PermissionError if the log file could not be opened for writing.
     '''
@@ -191,7 +192,10 @@ def configure_logging(
             logging.DEBUG: console_standard_handler,
         }
     )
-    console_handler.setFormatter(Console_color_formatter())
+
+    if color_enabled:
+        console_handler.setFormatter(Console_color_formatter())
+
     console_handler.setLevel(console_log_level)
 
     handlers = [console_handler]
