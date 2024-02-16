@@ -241,7 +241,7 @@ def test_parse_configuration_applies_overrides():
     )
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['location.local_path=borg2']
+        '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['local_path=borg2']
     )
 
     assert config == {

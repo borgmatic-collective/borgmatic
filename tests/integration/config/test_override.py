@@ -29,6 +29,7 @@ def test_apply_overrides_updates_config():
         'section.key=value1',
         'other_section.thing=value2',
         'section.nested.key=value3',
+        'location.no_longer_in_location=value4',
         'new.foo=bar',
         'new.mylist=[baz]',
         'new.nonlist=[quux]',
@@ -36,6 +37,7 @@ def test_apply_overrides_updates_config():
     config = {
         'section': {'key': 'value', 'other': 'other_value'},
         'other_section': {'thing': 'thing_value'},
+        'no_longer_in_location': 'because_location_is_deprecated',
     }
     schema = {
         'properties': {
@@ -49,4 +51,6 @@ def test_apply_overrides_updates_config():
         'section': {'key': 'value1', 'other': 'other_value', 'nested': {'key': 'value3'}},
         'other_section': {'thing': 'value2'},
         'new': {'foo': 'bar', 'mylist': ['baz'], 'nonlist': '[quux]'},
+        'location': {'no_longer_in_location': 'value4'},
+        'no_longer_in_location': 'value4',
     }

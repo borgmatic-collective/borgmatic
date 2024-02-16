@@ -103,7 +103,7 @@ def parse_overrides(raw_overrides, schema):
     for raw_override in raw_overrides:
         try:
             raw_keys, value = raw_override.split('=', 1)
-            keys = strip_section_names(tuple(raw_keys.split('.')))
+            keys = tuple(raw_keys.split('.'))
             option_type = type_for_option(schema, keys)
 
             parsed_overrides.append(
@@ -127,8 +127,13 @@ def apply_overrides(config, schema, raw_overrides):
     Given a configuration dict, a corresponding configuration schema dict, and a sequence of
     configuration file override strings in the form of "option.suboption=value", parse each override
     and set it into the configuration dict.
+
+    Set the overrides into the configuration both with and without deprecated section names (if
+    used), so that the overrides work regardless of whether the configuration is also using
+    deprecated section names.
     '''
     overrides = parse_overrides(raw_overrides, schema)
 
     for keys, value in overrides:
         set_values(config, keys, value)
+        set_values(config, strip_section_names(keys), value)

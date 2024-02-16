@@ -1,6 +1,8 @@
 1.8.9.dev0
  * #827: When the "--json" flag is given, suppress console escape codes so as not to
    interfere with JSON output.
+ * #829: Fix "--override" values containing deprecated section headers not actually overriding
+   configuration options under deprecated section headers.
  * Clarify documentation about restoring a database: borgmatic does not create the database upon
    restore.
 
