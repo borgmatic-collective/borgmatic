@@ -79,8 +79,9 @@ def execute_dump_command(
         )
         return None
 
+    mysql_dump_command = database.get('mysql_dump_command') or 'mysqldump'
     dump_command = (
-        ('mysqldump',)
+        (mysql_dump_command,)
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -206,9 +207,9 @@ def restore_data_source_dump(
     password = connection_params['password'] or data_source.get(
         'restore_password', data_source.get('password')
     )
-
+    mysql_restore_command = data_source.get('mysql_command') or 'mysql'
     restore_command = (
-        ('mysql', '--batch')
+        (mysql_restore_command, '--batch')
         + (
             tuple(data_source['restore_options'].split(' '))
             if 'restore_options' in data_source
