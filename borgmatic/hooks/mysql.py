@@ -35,7 +35,7 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
         return (database['name'],)
     if dry_run:
         return ()
-    
+
     mysql_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
     )
@@ -82,7 +82,7 @@ def execute_dump_command(
             f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
         )
         return None
-    
+
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )

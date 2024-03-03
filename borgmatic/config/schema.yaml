@@ -971,6 +971,22 @@ properties:
                         a password will only work if MariaDB is configured to
                         trust the configured username without a password.
                     example: trustsome1
+                mariadb_dump_command:
+                    type: string
+                    description: |
+                        Command to use instead of "mariadb-dump". This can 
+                        be used to run a specific mariadb_dump version 
+                        (e.g., one inside a running container). 
+                        Defaults to "mariadb-dump".
+                    example: docker exec mariadb_container mariadb-dump
+                mariadb_command:
+                    type: string
+                    description: |
+                        Command to run instead of "mariadb". This
+                        can be used to run a specific mariadb
+                        version (e.g., one inside a running container). 
+                        Defaults to "mariadb".
+                    example: docker exec mariadb_container mariadb           
                 restore_password:
                     type: string
                     description: |

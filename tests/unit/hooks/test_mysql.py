@@ -157,7 +157,7 @@ def test_database_names_to_dump_runs_non_default_mysql_with_list_options():
             '--batch',
             '--execute',
             'show schemas',
-        )
+        ),
     ).and_return(('foo\nbar')).once()
 
     assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
