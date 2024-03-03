@@ -1092,15 +1092,15 @@ properties:
                     description: |
                         Command to use instead of "mysqldump". This can be used
                         to run a specific mysql_dump version (e.g., one inside 
-                        a running docker container). Defaults to "mysqldump".
+                        a running container). Defaults to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
                     description: |
                         Command to run instead of "mysql". This
                         can be used to run a specific mysql
-                        version (e.g., one inside a running docker
-                        container). Defaults to "mysql".
+                        version (e.g., one inside a running container). 
+                        Defaults to "mysql".
                     example: docker exec mysql_container mysql
                 format:
                     type: string

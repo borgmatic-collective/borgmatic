@@ -142,6 +142,27 @@ def test_database_names_to_dump_runs_mysql_with_list_options():
     assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
 
 
+def test_database_names_to_dump_runs_non_default_mysql_with_list_options():
+    database = {
+        'name': 'all',
+        'list_options': '--defaults-extra-file=my.cnf',
+        'mysql_command': 'custom_mysql',
+    }
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        extra_environment=None,
+        full_command=(
+            'custom_mysql',  # Custom MySQL command
+            '--defaults-extra-file=my.cnf',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        )
+    ).and_return(('foo\nbar')).once()
+
+    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+
+
 def test_execute_dump_command_runs_mysqldump():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')

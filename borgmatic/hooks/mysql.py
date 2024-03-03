@@ -35,8 +35,9 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
+    mysql_show_command = database.get('mysql_command') or 'mysql'
     show_command = (
-        ('mysql',)
+        (mysql_show_command,)
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
