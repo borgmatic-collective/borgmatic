@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import shlex
 
 from borgmatic.execute import (
     execute_command,
@@ -34,10 +35,12 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
         return (database['name'],)
     if dry_run:
         return ()
-
-    mysql_show_command = database.get('mysql_command') or 'mysql'
+    
+    mysql_show_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
+    )
     show_command = (
-        (mysql_show_command,)
+        mysql_show_command
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -79,10 +82,12 @@ def execute_dump_command(
             f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
         )
         return None
-
-    mysql_dump_command = database.get('mysql_dump_command') or 'mysqldump'
+    
+    mysql_dump_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
+    )
     dump_command = (
-        (mysql_dump_command,)
+        mysql_dump_command
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -208,9 +213,13 @@ def restore_data_source_dump(
     password = connection_params['password'] or data_source.get(
         'restore_password', data_source.get('password')
     )
-    mysql_restore_command = data_source.get('mysql_command') or 'mysql'
+
+    mysql_restore_command = tuple(
+        shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
+    )
     restore_command = (
-        (mysql_restore_command, '--batch')
+        mysql_restore_command
+        + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
             if 'restore_options' in data_source
