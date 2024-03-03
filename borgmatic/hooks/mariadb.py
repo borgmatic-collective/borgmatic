@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import shlex
 
 from borgmatic.execute import (
     execute_command,
@@ -35,8 +36,11 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
+    mariadb_show_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mariadb_command') or 'mariadb')
+    )
     show_command = (
-        ('mariadb',)
+        mariadb_show_command
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -79,8 +83,12 @@ def execute_dump_command(
         )
         return None
 
+    mariadb_dump_command = tuple(
+        shlex.quote(part)
+        for part in shlex.split(database.get('mariadb_dump_command') or 'mariadb-dump')
+    )
     dump_command = (
-        ('mariadb-dump',)
+        mariadb_dump_command
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -208,8 +216,12 @@ def restore_data_source_dump(
         'restore_password', data_source.get('password')
     )
 
+    mariadb_restore_command = tuple(
+        shlex.quote(part) for part in shlex.split(data_source.get('mariadb_command') or 'mariadb')
+    )
     restore_command = (
-        ('mariadb', '--batch')
+        mariadb_restore_command
+        + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
             if 'restore_options' in data_source

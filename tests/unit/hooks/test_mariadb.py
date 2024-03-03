@@ -142,6 +142,27 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
     assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
 
 
+def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
+    database = {
+        'name': 'all',
+        'list_options': '--defaults-extra-file=mariadb.cnf',
+        'mariadb_command': 'custom_mariadb',
+    }
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        extra_environment=None,
+        full_command=(
+            'custom_mariadb',  # Custom MariaDB command
+            '--defaults-extra-file=mariadb.cnf',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+    ).and_return(('foo\nbar')).once()
+
+    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+
+
 def test_execute_dump_command_runs_mariadb_dump():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
@@ -315,6 +336,44 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
     )
 
 
+def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'custom_mariadb_dump',  # Custom MariaDB dump command
+            '--stuff=such',
+            '--add-drop-database',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
+        extra_environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={
+                'name': 'foo',
+                'mariadb_dump_command': 'custom_mariadb_dump',
+                'options': '--stuff=such',
+            },  # Custom MariaDB dump command specified
+            log_prefix='log',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            extra_environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
 def test_execute_dump_command_with_duplicate_dump_skips_mariadb_dump():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -413,6 +472,36 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
 
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--harder'),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        extra_environment=None,
+    ).once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        'test.yaml',
+        data_source=hook_config[0],
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+    )
+
+
+def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
+    hook_config = [
+        {'name': 'foo', 'restore_options': '--harder', 'mariadb_command': 'custom_mariadb'}
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('custom_mariadb', '--batch', '--harder'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,

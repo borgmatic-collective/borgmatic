@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import shlex
 
 from borgmatic.execute import (
     execute_command,
@@ -35,8 +36,11 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     if dry_run:
         return ()
 
+    mysql_show_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
+    )
     show_command = (
-        ('mysql',)
+        mysql_show_command
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -79,8 +83,11 @@ def execute_dump_command(
         )
         return None
 
+    mysql_dump_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
+    )
     dump_command = (
-        ('mysqldump',)
+        mysql_dump_command
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -207,8 +214,12 @@ def restore_data_source_dump(
         'restore_password', data_source.get('password')
     )
 
+    mysql_restore_command = tuple(
+        shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
+    )
     restore_command = (
-        ('mysql', '--batch')
+        mysql_restore_command
+        + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
             if 'restore_options' in data_source
