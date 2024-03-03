@@ -1,4 +1,5 @@
 1.8.9.dev0
+ * #311: Add custom dump/restore command options for MySQL and MariaDB.
  * #827: When the "--json" flag is given, suppress console escape codes so as not to
    interfere with JSON output.
  * #829: Fix "--override" values containing deprecated section headers not actually overriding
