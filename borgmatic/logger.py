@@ -42,7 +42,7 @@ def should_do_markup(no_color, configs):
         return False
 
     no_color_env = os.environ.get('NO_COLOR', None)
-    if no_color_env is not None and to_bool(no_color_env):
+    if no_color_env is not None:
         return False
 
     py_colors = os.environ.get('PY_COLORS', None)
