@@ -9,4 +9,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/run-end-to-end-tests
-      - run: find . -name borgmatic-1.8.9.dev0
