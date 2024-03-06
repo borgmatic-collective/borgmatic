@@ -17,4 +17,5 @@ if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
 fi
 
 docker-compose --file tests/end-to-end/docker-compose.yaml up --force-recreate \
-    --renew-anon-volumes --abort-on-container-exit
+    --renew-anon-volumes --detach
+docker-compose --file tests/end-to-end/docker-compose.yaml wait --down-project
