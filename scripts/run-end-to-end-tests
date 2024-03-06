@@ -17,5 +17,5 @@ if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
 fi
 
 docker-compose --file tests/end-to-end/docker-compose.yaml up --force-recreate \
-    --renew-anon-volumes --abort-on-container-exit --exit-code-from tests
+    --renew-anon-volumes --abort-on-container-exit --exit-code-from tests --progress plain
 find . -name borgmatic-1.8.9.dev0
