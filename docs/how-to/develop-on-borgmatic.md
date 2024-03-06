@@ -99,7 +99,7 @@ see below) and [Docker Compose](https://docs.docker.com/compose/install/).
 Then run:
 
 ```bash
-scripts/run-end-to-end-dev-tests
+scripts/run-end-to-end-tests
 ```
 
 This script assumes you have permission to run `docker`. If you don't, then

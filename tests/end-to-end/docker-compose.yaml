@@ -56,7 +56,6 @@ services:
     tty: true
     working_dir: /app
     entrypoint: /app/scripts/run-full-tests
-    command: --end-to-end-only
     depends_on:
       - postgresql
       - postgresql2

@@ -1,0 +1,11 @@
+name: test
+run-name: ${{ gitea.actor }} is running tests
+on: [push]
+
+jobs:
+  test:
+    runs-on: host
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/run-end-to-end-tests
