@@ -20,3 +20,4 @@ docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet up -
     --renew-anon-volumes --detach
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet attach tests
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet down
+find /app -name borgmatic-1.8.9.dev0
