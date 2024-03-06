@@ -18,4 +18,4 @@ fi
 
 docker-compose --file tests/end-to-end/docker-compose.yaml up --force-recreate \
     --renew-anon-volumes --detach
-docker-compose --file tests/end-to-end/docker-compose.yaml wait --down-project
+docker-compose --file tests/end-to-end/docker-compose.yaml wait --down-project tests
