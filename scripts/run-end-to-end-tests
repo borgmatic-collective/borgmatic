@@ -19,4 +19,4 @@ fi
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet up --force-recreate \
     --renew-anon-volumes --detach
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet attach tests
-find . -name borgmatic-1.8.9.dev0
+docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet down
