@@ -7,4 +7,5 @@ jobs:
     runs-on: host
 
     steps:
+      - run: ls
       - run: scripts/run-end-to-end-tests
