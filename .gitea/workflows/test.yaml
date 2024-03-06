@@ -7,5 +7,5 @@ jobs:
     runs-on: host
 
     steps:
-      - run: ls
+      - uses: actions/checkout@v4
       - run: scripts/run-end-to-end-tests
