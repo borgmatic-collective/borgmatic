@@ -150,10 +150,12 @@ See the Black, Flake8, and isort documentation for more information.
 
 ## Continuous integration
 
-Each pull request triggers a continuous integration build which runs the test
-suite. You can view these builds on
-[build.torsion.org](https://build.torsion.org/borgmatic-collective/borgmatic),
-and they're also linked from the commits list on each pull request.
+Each commit to main triggers [a continuous integration
+build](https://projects.torsion.org/borgmatic-collective/borgmatic/actions)
+which runs the test suite and updates
+[documentation](https://torsion.org/borgmatic/). These builds are also linked
+from the [commits for the main
+branch](https://projects.torsion.org/borgmatic-collective/borgmatic/commits/branch/main).
 
 ## Documentation development
 
