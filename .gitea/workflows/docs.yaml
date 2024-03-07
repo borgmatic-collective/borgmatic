@@ -1,0 +1,19 @@
+name: docs
+run-name: ${{ gitea.actor }} is building documentation
+on:
+  workflow_run:
+    workflows: [test]
+    types:
+      - completed
+env:
+  IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
+
+jobs:
+  build:
+    runs-on: host
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: podman login --username "${{ secrets.REGISTRY_USERNAME }}" --password "${{ secrets.REGISTRY_PASSWORD }}" projects.torsion.org
+      - run: podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --storage-opt "overlay.mount_program=/usr/bin/fuse-overlayfs" .
+      - run: podman push "$IMAGE_NAME"

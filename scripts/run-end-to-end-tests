@@ -20,4 +20,3 @@ docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet up -
     --renew-anon-volumes --detach
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet attach tests
 docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet down
-ls -R
