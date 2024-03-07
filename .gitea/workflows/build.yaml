@@ -1,4 +1,4 @@
-name: test
+name: build
 run-name: ${{ gitea.actor }} is building
 on:
   push:
