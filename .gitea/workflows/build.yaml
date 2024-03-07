@@ -2,7 +2,7 @@ name: build
 run-name: ${{ gitea.actor }} is building
 on:
   push:
-    branchs: [main]
+    branches: [main]
 
 jobs:
   test:
