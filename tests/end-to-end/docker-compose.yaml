@@ -49,7 +49,6 @@ services:
     environment:
       TEST_CONTAINER: true
     volumes:
-#      - "../..:/app:ro"
       - "../..:/app"
     tmpfs:
       - "/app/borgmatic.egg-info"
