@@ -1,16 +1,22 @@
-name: docs
-run-name: ${{ gitea.actor }} is building documentation
+name: test
+run-name: ${{ gitea.actor }} is building
 on:
-  workflow_run:
-    workflows: [test]
-    types:
-      - completed
-env:
-  IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
+  push:
+    branchs: [main]
 
 jobs:
-  build:
+  test:
     runs-on: host
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/run-end-to-end-tests
+
+  docs:
+    needs: [test]
+    runs-on: host
+    env:
+      IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
 
     steps:
       - uses: actions/checkout@v4
