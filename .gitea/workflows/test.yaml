@@ -1,6 +1,8 @@
 name: test
 run-name: ${{ gitea.actor }} is running tests
-on: [push]
+on:
+  push:
+    branchs: [main]
 
 jobs:
   test:
