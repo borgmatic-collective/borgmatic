@@ -1,6 +1,8 @@
 name: build
 run-name: ${{ gitea.actor }} is building
-on: [push]
+on:
+  push:
+    branches: [main]
 
 jobs:
   test:
@@ -18,6 +20,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: podman login --username "${{ secrets.REGISTRY_USERNAME }}" --password "${{ secrets.REGISTRY_PASSWORD }}" projects.torsion.org
+      - run: podman login --username "$USERNAME" --password "$PASSWORD" projects.torsion.org
+        env:
+          USERNAME: "${{ secrets.REGISTRY_USERNAME }}"
+          PASSWORD: "${{ secrets.REGISTRY_PASSWORD }}"
       - run: podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --storage-opt "overlay.mount_program=/usr/bin/fuse-overlayfs" .
       - run: podman push "$IMAGE_NAME"
