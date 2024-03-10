@@ -7,9 +7,12 @@
  * #835: Add support for the NO_COLOR environment variable. See the documentation for more
    information:
    https://torsion.org/borgmatic/docs/how-to/set-up-backups/#colored-output
+ * #839: Add log sending for the Apprise logging hook, enabled by default. See the documentation for
+   more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
  * Switch from Drone to Gitea Actions for continuous integration.
  * Rename scripts/run-end-to-end-dev-tests to scripts/run-end-to-end-tests and use it in both dev
-   and CI for increased dev-CI parity.
+   and CI for better dev-CI parity.
  * Clarify documentation about restoring a database: borgmatic does not create the database upon
    restore.
 

@@ -2,6 +2,7 @@ import logging
 
 import requests
 
+import borgmatic.hooks.logs
 from borgmatic.hooks import monitor
 
 logger = logging.getLogger(__name__)
@@ -13,61 +14,8 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
     monitor.State.LOG: 'log',
 }
 
-PAYLOAD_TRUNCATION_INDICATOR = '...\n'
-DEFAULT_PING_BODY_LIMIT_BYTES = 100000
-
-
-class Forgetful_buffering_handler(logging.Handler):
-    '''
-    A buffering log handler that stores log messages in memory, and throws away messages (oldest
-    first) once a particular capacity in bytes is reached. But if the given byte capacity is zero,
-    don't throw away any messages.
-    '''
-
-    def __init__(self, byte_capacity, log_level):
-        super().__init__()
-
-        self.byte_capacity = byte_capacity
-        self.byte_count = 0
-        self.buffer = []
-        self.forgot = False
-        self.setLevel(log_level)
-
-    def emit(self, record):
-        message = record.getMessage() + '\n'
-        self.byte_count += len(message)
-        self.buffer.append(message)
-
-        if not self.byte_capacity:
-            return
-
-        while self.byte_count > self.byte_capacity and self.buffer:
-            self.byte_count -= len(self.buffer[0])
-            self.buffer.pop(0)
-            self.forgot = True
-
-
-def format_buffered_logs_for_payload():
-    '''
-    Get the handler previously added to the root logger, and slurp buffered logs out of it to
-    send to Healthchecks.
-    '''
-    try:
-        buffering_handler = next(
-            handler
-            for handler in logging.getLogger().handlers
-            if isinstance(handler, Forgetful_buffering_handler)
-        )
-    except StopIteration:
-        # No handler means no payload.
-        return ''
-
-    payload = ''.join(message for message in buffering_handler.buffer)
-
-    if buffering_handler.forgot:
-        return PAYLOAD_TRUNCATION_INDICATOR + payload
-
-    return payload
+DEFAULT_PING_BODY_LIMIT_BYTES = 1500
+HANDLER_IDENTIFIER = 'healthchecks'
 
 
 def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
@@ -81,12 +29,14 @@ def initialize_monitor(hook_config, config, config_filename, monitoring_log_leve
 
     ping_body_limit = max(
         hook_config.get('ping_body_limit', DEFAULT_PING_BODY_LIMIT_BYTES)
-        - len(PAYLOAD_TRUNCATION_INDICATOR),
+        - len(borgmatic.hooks.logs.PAYLOAD_TRUNCATION_INDICATOR),
         0,
     )
 
-    logging.getLogger().addHandler(
-        Forgetful_buffering_handler(ping_body_limit, monitoring_log_level)
+    borgmatic.hooks.logs.add_handler(
+        borgmatic.hooks.logs.Forgetful_buffering_handler(
+            HANDLER_IDENTIFIER, ping_body_limit, monitoring_log_level
+        )
     )
 
 
@@ -117,7 +67,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logger.debug(f'{config_filename}: Using Healthchecks ping URL {ping_url}')
 
     if state in (monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG):
-        payload = format_buffered_logs_for_payload()
+        payload = borgmatic.hooks.logs.format_buffered_logs_for_payload(HANDLER_IDENTIFIER)
     else:
         payload = ''
 
@@ -138,8 +88,4 @@ def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, 
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.
     '''
-    logger = logging.getLogger()
-
-    for handler in tuple(logger.handlers):
-        if isinstance(handler, Forgetful_buffering_handler):
-            logger.removeHandler(handler)
+    borgmatic.hooks.logs.remove_handler(HANDLER_IDENTIFIER)

@@ -149,7 +149,7 @@ backup begins, ends, or errors, but only when any of the `create`, `prune`,
 Then, if the actions complete successfully, borgmatic notifies Healthchecks of
 the success and includes borgmatic logs in the payload data sent to
 Healthchecks. This means that borgmatic logs show up in the Healthchecks UI,
-although be aware that Healthchecks currently has a 10-kilobyte limit for the
+although be aware that Healthchecks currently has a 100-kilobyte limit for the
 logs in each ping.
 
 If an error occurs during any action or hook, borgmatic notifies Healthchecks,
@@ -385,7 +385,7 @@ pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
 run the following to install Apprise so borgmatic can use it:
 
 ```bash
-sudo pipx install --editable --force borgmatic[Apprise]
+sudo pipx install --force borgmatic[Apprise]
 ```
 
 Omit `sudo` if borgmatic is installed as a non-root user.
@@ -428,6 +428,37 @@ apprise:
         - finish
         - fail
 ```
+
+<span class="minilink minilink-addedin">New in version 1.8.9</span> borgmatic
+logs are automatically included in the body data sent to your Apprise services
+when a backup finishes or fails.
+
+You can customize the verbosity of the logs that are sent with borgmatic's
+`--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
+use. See `borgmatic create --help` for more information.
+
+If you don't want any logs sent, you can disable this feature by setting
+`send_logs` to `false`:
+
+```yaml
+apprise:
+    services:
+        - url: gotify://hostname/token
+          label: gotify
+    send_logs: false
+```
+
+Or to limit the size of logs sent to Apprise services:
+
+```yaml
+apprise:
+    services:
+        - url: gotify://hostname/token
+          label: gotify
+    logs_size_limit: 500
+```
+
+This may be necessary for some services that reject large requests.
 
 See the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/) for

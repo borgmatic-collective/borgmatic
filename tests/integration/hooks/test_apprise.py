@@ -2,10 +2,10 @@ import logging
 
 from flexmock import flexmock
 
-from borgmatic.hooks import healthchecks as module
+from borgmatic.hooks import apprise as module
 
 
-def test_destroy_monitor_removes_healthchecks_handler():
+def test_destroy_monitor_removes_apprise_handler():
     logger = logging.getLogger()
     original_handlers = list(logger.handlers)
     module.borgmatic.hooks.logs.add_handler(
@@ -19,7 +19,7 @@ def test_destroy_monitor_removes_healthchecks_handler():
     assert logger.handlers == original_handlers
 
 
-def test_destroy_monitor_without_healthchecks_handler_does_not_raise():
+def test_destroy_monitor_without_apprise_handler_does_not_raise():
     logger = logging.getLogger()
     original_handlers = list(logger.handlers)
 

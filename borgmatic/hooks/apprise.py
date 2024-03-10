@@ -1,16 +1,36 @@
 import logging
 import operator
 
+import borgmatic.hooks.logs
+import borgmatic.hooks.monitor
+
 logger = logging.getLogger(__name__)
 
 
-def initialize_monitor(
-    ping_url, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+DEFAULT_LOGS_SIZE_LIMIT_BYTES = 100000
+HANDLER_IDENTIFIER = 'apprise'
+
+
+def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
     '''
-    No initialization is necessary for this monitor.
+    Add a handler to the root logger that stores in memory the most recent logs emitted. That way,
+    we can send them all to an Apprise notification service upon a finish or failure state. But skip
+    this if the "send_logs" option is false.
     '''
-    pass
+    if hook_config.get('send_logs') is False:
+        return
+
+    logs_size_limit = max(
+        hook_config.get('logs_size_limit', DEFAULT_LOGS_SIZE_LIMIT_BYTES)
+        - len(borgmatic.hooks.logs.PAYLOAD_TRUNCATION_INDICATOR),
+        0,
+    )
+
+    borgmatic.hooks.logs.add_handler(
+        borgmatic.hooks.logs.Forgetful_buffering_handler(
+            HANDLER_IDENTIFIER, logs_size_limit, monitoring_log_level
+        )
+    )
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -59,9 +79,20 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if dry_run:
         return
 
+    body = state_config.get('body')
+
+    if state in (
+        borgmatic.hooks.monitor.State.FINISH,
+        borgmatic.hooks.monitor.State.FAIL,
+        borgmatic.hooks.monitor.State.LOG,
+    ):
+        formatted_logs = borgmatic.hooks.logs.format_buffered_logs_for_payload(HANDLER_IDENTIFIER)
+        if formatted_logs:
+            body += f'\n\n{formatted_logs}'
+
     result = apprise_object.notify(
         title=state_config.get('title', ''),
-        body=state_config.get('body'),
+        body=body,
         body_format=NotifyFormat.TEXT,
         notify_type=state_to_notify_type[state.name.lower()],
     )
@@ -70,10 +101,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning(f'{config_filename}: Error sending some Apprise notifications')
 
 
-def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
     '''
-    No destruction is necessary for this monitor.
+    Remove the monitor handler that was added to the root logger. This prevents the handler from
+    getting reused by other instances of this monitor.
     '''
-    pass
+    borgmatic.hooks.logs.remove_handler(HANDLER_IDENTIFIER)

@@ -35,6 +35,14 @@ pipx ensurepath
 pipx install --editable .
 ```
 
+Or to work on the [Apprise
+hook](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook),
+change that last line to:
+
+```bash
+pipx install --editable .[Apprise]
+```
+
 To get oriented with the borgmatic source code, have a look at the [source
 code reference](https://torsion.org/borgmatic/docs/reference/source-code/).
 
@@ -141,6 +149,9 @@ the following deviations from it:
    separate from their contents.
  * Within multiline constructs, use standard four-space indentation. Don't align
    indentation with an opening delimiter.
+ * In general, spell out words in variable names instead of shortening them.
+   So, think `index` instead of `idx`. There are some notable exceptions to
+   this though (like `config`).
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
@@ -148,9 +159,12 @@ the [isort](https://github.com/timothycrosley/isort) import orderer, so
 certain code style requirements will be enforced when running automated tests.
 See the Black, Flake8, and isort documentation for more information.
 
+
 ## Continuous integration
 
-Each commit to main triggers [a continuous integration
+Each commit to
+[main](https://projects.torsion.org/borgmatic-collective/borgmatic/branches)
+triggers [a continuous integration
 build](https://projects.torsion.org/borgmatic-collective/borgmatic/actions)
 which runs the test suite and updates
 [documentation](https://torsion.org/borgmatic/). These builds are also linked

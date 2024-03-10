@@ -180,7 +180,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
 
     try:
         if monitoring_hooks_are_activated:
-            # send logs irrespective of error
+            # Send logs irrespective of error.
             dispatch.call_hooks(
                 'ping_monitor',
                 config,
