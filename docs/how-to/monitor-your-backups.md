@@ -101,7 +101,7 @@ script to handle the alerting:
 
 ```yaml
 on_error:
-    - send-text-message.sh "{configuration_filename}" "{repository}"
+    - send-text-message.sh {configuration_filename} {repository}
 ```
 
 In this example, when the error occurs, borgmatic interpolates runtime values
@@ -123,6 +123,27 @@ actions. borgmatic does not run `on_error` hooks if an error occurs within a
 [borgmatic hooks
 documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
 especially the security information.
+
+<span class="minilink minilink-addedin">New in version 1.8.7</span> borgmatic
+automatically escapes these interpolated values to prevent shell injection
+attacks. One implication of this change is that you shouldn't wrap the
+interpolated values in your own quotes, as that will interfere with the
+quoting performed by borgmatic and result in your command receiving incorrect
+arguments. For instance, this won't work:
+
+
+```yaml
+on_error:
+    # Don't do this! It won't work, as the {error} value is already quoted.
+    - send-text-message.sh "Uh oh: {error}"
+```
+
+Do this instead:
+
+```yaml
+on_error:
+    - send-text-message.sh {error}
+```
 
 
 ## Healthchecks hook

@@ -10,6 +10,8 @@
  * #839: Add log sending for the Apprise logging hook, enabled by default. See the documentation for
    more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
+ * #839: Document a potentially breaking shell quoting edge case within error hooks:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks
  * Switch from Drone to Gitea Actions for continuous integration.
  * Rename scripts/run-end-to-end-dev-tests to scripts/run-end-to-end-tests and use it in both dev
    and CI for better dev-CI parity.
