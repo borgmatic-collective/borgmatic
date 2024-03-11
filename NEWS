@@ -1,4 +1,4 @@
-1.8.9.dev0
+1.8.9
  * #311: Add custom dump/restore command options for MySQL and MariaDB.
  * #811: Add an "access_token" option to the ntfy monitoring hook for authenticating
    without username/password.
