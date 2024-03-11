@@ -50,9 +50,16 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
         username = hook_config.get('username')
         password = hook_config.get('password')
-
+        access_token = hook_config.get('access_token')
         auth = None
-        if (username and password) is not None:
+
+        if access_token is not None:
+            if username or password:
+                logger.warning(
+                    f'{config_filename}: ntfy access_token is set but so is username/password, only using access_token'
+                )
+            auth = requests.auth.HTTPBasicAuth('', access_token)
+        elif (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)
             logger.info(f'{config_filename}: Using basic auth with user {username} for ntfy')
         elif username is not None:

@@ -52,7 +52,52 @@ def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
     )
 
 
-def test_ping_monitor_with_auth_hits_hosted_ntfy_on_fail():
+def test_ping_monitor_with_access_token_hits_hosted_ntfy_on_fail():
+    hook_config = {
+        'topic': topic,
+        'access_token': 'abc123',
+    }
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{default_base_url}/{topic}',
+        headers=return_default_message_headers(borgmatic.hooks.monitor.State.FAIL),
+        auth=module.requests.auth.HTTPBasicAuth('', 'abc123'),
+    ).and_return(flexmock(ok=True)).once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_with_username_password_and_access_token_ignores_username_password():
+    hook_config = {
+        'topic': topic,
+        'username': 'testuser',
+        'password': 'fakepassword',
+        'access_token': 'abc123',
+    }
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{default_base_url}/{topic}',
+        headers=return_default_message_headers(borgmatic.hooks.monitor.State.FAIL),
+        auth=module.requests.auth.HTTPBasicAuth('', 'abc123'),
+    ).and_return(flexmock(ok=True)).once()
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
     hook_config = {
         'topic': topic,
         'username': 'testuser',
@@ -74,7 +119,7 @@ def test_ping_monitor_with_auth_hits_hosted_ntfy_on_fail():
     )
 
 
-def test_ping_monitor_auth_with_no_username_warning():
+def test_ping_monitor_with_password_but_no_username_warns():
     hook_config = {'topic': topic, 'password': 'fakepassword'}
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}',
@@ -93,7 +138,7 @@ def test_ping_monitor_auth_with_no_username_warning():
     )
 
 
-def test_ping_monitor_auth_with_no_password_warning():
+def test_ping_monitor_with_username_but_no_password_warns():
     hook_config = {'topic': topic, 'username': 'testuser'}
     flexmock(module.requests).should_receive('post').with_args(
         f'{default_base_url}/{topic}',

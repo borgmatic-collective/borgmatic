@@ -1318,6 +1318,12 @@ properties:
                 description: |
                     The password used for authentication.
                 example: fakepassword
+            access_token:
+                type: string
+                description: |
+                    An ntfy access token to authenticate with instead of
+                    username/password.
+                example: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
             start:
                 type: object
                 properties:

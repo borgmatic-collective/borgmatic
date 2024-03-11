@@ -298,22 +298,22 @@ platforms including [web](https://ntfy.sh/stats),
 [iOS](https://apps.apple.com/us/app/ntfy/id1625396347).
 
 Since push notifications for regular events might soon become quite annoying,
-this hook only fires on any errors by default in order to instantly alert you to issues.
-The `states` list can override this.
+this hook only fires on any errors by default in order to instantly alert you
+to issues. The `states` list can override this. Each state can have its own
+custom messages, priorities and tags or, if none are provided, will use the
+default.
 
-As ntfy is unauthenticated, it isn't a suitable channel for any private information
-so the default messages are intentionally generic. These can be overridden, depending
-on your risk assessment. Each `state` can have its own custom messages, priorities and tags
-or, if none are provided, will use the default.
-
-An example configuration is shown here, with all the available options, including
-[priorities](https://ntfy.sh/docs/publish/#message-priority) and
+An example configuration is shown here with all the available options,
+including [priorities](https://ntfy.sh/docs/publish/#message-priority) and
 [tags](https://ntfy.sh/docs/publish/#tags-emojis):
 
 ```yaml
 ntfy:
     topic: my-unique-topic
     server: https://ntfy.my-domain.com
+    username: myuser
+    password: secret
+
     start:
         title: A borgmatic backup started
         message: Watch this space...
@@ -338,6 +338,16 @@ ntfy:
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 the `ntfy:` option in the `hooks:` section of your configuration.
 
+<span class="minilink minilink-addedin">New in version 1.8.9</span> Instead of
+`username`/`password`, you can specify an [ntfy access
+token](https://docs.ntfy.sh/config/#access-tokens):
+
+```yaml
+ntfy:
+    topic: my-unique-topic
+    server: https://ntfy.my-domain.com
+    access_token: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
+````
 
 ## Loki hook
 
