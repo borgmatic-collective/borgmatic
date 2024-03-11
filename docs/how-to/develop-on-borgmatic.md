@@ -100,7 +100,7 @@ with Borg and supported databases for a few representative scenarios. These
 tests don't run by default when running `tox`, because they're relatively slow
 and depend on containers for runtime dependencies. These tests do run on the
 continuous integration (CI) server, and running them on your developer machine
-is the closest thing to CI-test parity.
+is the closest thing to dev-CI parity.
 
 If you would like to run the full test suite, first install Docker (or Podman;
 see below) and [Docker Compose](https://docs.docker.com/compose/install/).
