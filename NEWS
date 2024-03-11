@@ -12,6 +12,8 @@
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook
  * #839: Document a potentially breaking shell quoting edge case within error hooks:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks
+ * #840: When running the "rcreate" action and the repository already exists but with a different
+   encryption mode than requested, error.
  * Switch from Drone to Gitea Actions for continuous integration.
  * Rename scripts/run-end-to-end-dev-tests to scripts/run-end-to-end-tests and use it in both dev
    and CI for better dev-CI parity.

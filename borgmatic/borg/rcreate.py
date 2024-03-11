@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 import subprocess
 
@@ -31,17 +32,30 @@ def create_repository(
     version, a Borg encryption mode, the path to another repo whose key material should be reused,
     whether the repository should be append-only, and the storage quota to use, create the
     repository. If the repository already exists, then log and skip creation.
+
+    Raise ValueError if the requested encryption mode does not match that of the repository.
+    Raise json.decoder.JSONDecodeError if the "borg info" JSON outputcannot be decoded.
+    Raise subprocess.CalledProcessError if "borg info" returns an error exit code.
     '''
     try:
-        rinfo.display_repository_info(
-            repository_path,
-            config,
-            local_borg_version,
-            argparse.Namespace(json=True),
-            global_arguments,
-            local_path,
-            remote_path,
+        info_data = json.loads(
+            rinfo.display_repository_info(
+                repository_path,
+                config,
+                local_borg_version,
+                argparse.Namespace(json=True),
+                global_arguments,
+                local_path,
+                remote_path,
+            )
         )
+        repository_encryption_mode = info_data.get('encryption', {}).get('mode')
+
+        if repository_encryption_mode != encryption_mode:
+            raise ValueError(
+                f'Requested encryption mode "{encryption_mode}" does not match existing repository encryption mode "{repository_encryption_mode}"'
+            )
+
         logger.info(f'{repository_path}: Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:

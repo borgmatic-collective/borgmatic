@@ -13,7 +13,9 @@ RCREATE_COMMAND = ('borg', 'rcreate', '--encryption', 'repokey')
 
 
 def insert_rinfo_command_found_mock():
-    flexmock(module.rinfo).should_receive('display_repository_info')
+    flexmock(module.rinfo).should_receive('display_repository_info').and_return(
+        '{"encryption": {"mode": "repokey"}}'
+    )
 
 
 def insert_rinfo_command_not_found_mock():
@@ -118,6 +120,27 @@ def test_create_repository_skips_creation_when_repository_already_exists():
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
     )
+
+
+def test_create_repository_errors_when_repository_with_differing_encryption_mode_already_exists():
+    insert_rinfo_command_found_mock()
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    with pytest.raises(ValueError):
+        module.create_repository(
+            dry_run=False,
+            repository_path='repo',
+            config={},
+            local_borg_version='2.3.4',
+            global_arguments=flexmock(log_json=False),
+            encryption_mode='repokey-blake2',
+        )
 
 
 def test_create_repository_raises_for_unknown_rinfo_command_error():
