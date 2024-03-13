@@ -1,3 +1,6 @@
+1.8.10.dev0
+ * Fix handling of the NO_COLOR environment variable to ignore an empty value.
+
 1.8.9
  * #311: Add custom dump/restore command options for MySQL and MariaDB.
  * #811: Add an "access_token" option to the ntfy monitoring hook for authenticating

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-VERSION = '1.8.9'
+VERSION = '1.8.10.dev0'
 
 
 setup(

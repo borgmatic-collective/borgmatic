@@ -116,7 +116,7 @@ def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
     )
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return(None)
     flexmock(module).should_receive('to_bool').and_return(True)
-    flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('interactive_console').never()
 
     assert module.should_do_markup(no_color=False, configs={}) is True
 
@@ -124,7 +124,6 @@ def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
 def test_should_do_markup_prefers_NO_COLOR_to_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(None)
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return('True')
-    flexmock(module).should_receive('interactive_console').and_return(False)
 
     assert module.should_do_markup(no_color=False, configs={}) is False
 
@@ -134,6 +133,14 @@ def test_should_do_markup_respects_NO_COLOR_environment_variable():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(None)
 
     assert module.should_do_markup(no_color=False, configs={}) is False
+
+
+def test_should_do_markup_ignores_empty_NO_COLOR_environment_variable():
+    flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return('')
+    flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(None)
+    flexmock(module).should_receive('interactive_console').and_return(True)
+
+    assert module.should_do_markup(no_color=False, configs={}) is True
 
 
 def test_should_do_markup_prefers_NO_COLOR_to_PY_COLORS():
