@@ -206,6 +206,36 @@ hooks:
 
 Alter the ports in these examples to suit your particular database system.
 
+Normally, borgmatic dumps a database by running a database dump command (e.g.
+`pg_dump`) on the host or wherever borgmatic is running, and this command
+connects to your containerized database via the given `hostname` and `port`.
+But if you don't have any database dump commands installed on your host and
+you'd rather use the commands inside your database container itself, borgmatic
+supports that too. Just configure borgmatic to `exec` into your container to
+run the dump command.
+
+For instance, if using Docker and PostgreSQL, something like this might work:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: 127.0.0.1
+          port: 5433
+          username: postgres
+          password: trustsome1
+          pg_dump_command: docker exec my_pg_container pg_dump
+```
+
+... where `my_pg_container` is the name of your database container. In this
+example, you'd also need to set the `pg_restore_command` and `psql_command`
+options.
+
+Similar command override options are available for (some of) the other
+supported database types as well. See the [configuration
+reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
+details.
+
 
 ### No source directories
 

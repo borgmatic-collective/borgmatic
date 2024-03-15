@@ -1,5 +1,8 @@
 1.8.10.dev0
  * Fix handling of the NO_COLOR environment variable to ignore an empty value.
+ * Add documentation about backing up containerized databases by configuring borgmatic to exec into
+   a container to run a dump command:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
 
 1.8.9
  * #311: Add custom dump/restore command options for MySQL and MariaDB.
