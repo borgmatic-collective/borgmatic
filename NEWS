@@ -1,4 +1,6 @@
 1.8.10.dev0
+ * #842: When a command hook exits with a soft failure, ping the log and finish states for any
+   configured monitoring hooks.
  * Fix handling of the NO_COLOR environment variable to ignore an empty value.
  * Add documentation about backing up containerized databases by configuring borgmatic to exec into
    a container to run a dump command:

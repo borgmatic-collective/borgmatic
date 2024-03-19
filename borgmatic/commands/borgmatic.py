@@ -169,7 +169,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     continue
 
                 if command.considered_soft_failure(config_filename, error):
-                    return
+                    break
 
                 yield from log_error_records(
                     f'{repository.get("label", repository["path"])}: Error running actions for repository',
@@ -191,11 +191,9 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 global_arguments.dry_run,
             )
     except (OSError, CalledProcessError) as error:
-        if command.considered_soft_failure(config_filename, error):
-            return
-
-        encountered_error = error
-        yield from log_error_records(f'{repository["path"]}: Error pinging monitor', error)
+        if not command.considered_soft_failure(config_filename, error):
+            encountered_error = error
+            yield from log_error_records(f'{repository["path"]}: Error pinging monitor', error)
 
     if not encountered_error:
         try:

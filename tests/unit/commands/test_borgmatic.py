@@ -61,7 +61,7 @@ def test_run_configuration_with_invalid_borg_version_errors():
     flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('run_actions').never()
-    config = {'repositories': ['foo']}
+    config = {'repositories': [{'path': 'foo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'prune': flexmock()}
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
@@ -77,7 +77,7 @@ def test_run_configuration_logs_monitor_start_error():
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('run_actions').never()
-    config = {'repositories': ['foo']}
+    config = {'repositories': [{'path': 'foo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
@@ -93,7 +93,7 @@ def test_run_configuration_bails_for_monitor_start_soft_failure():
     flexmock(module.dispatch).should_receive('call_hooks').and_raise(error)
     flexmock(module).should_receive('log_error_records').never()
     flexmock(module).should_receive('run_actions').never()
-    config = {'repositories': ['foo']}
+    config = {'repositories': [{'path': 'foo'}]}
     arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
@@ -118,11 +118,11 @@ def test_run_configuration_logs_actions_error():
     assert results == expected_results
 
 
-def test_run_configuration_bails_for_actions_soft_failure():
+def test_run_configuration_skips_remaining_actions_for_actions_soft_failure_but_still_pings_monitor():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.dispatch).should_receive('call_hooks')
+    flexmock(module.dispatch).should_receive('call_hooks').times(5)
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module).should_receive('run_actions').and_raise(error)
     flexmock(module).should_receive('log_error_records').never()
@@ -153,14 +153,14 @@ def test_run_configuration_logs_monitor_log_error():
     assert results == expected_results
 
 
-def test_run_configuration_bails_for_monitor_log_soft_failure():
+def test_run_configuration_still_pings_monitor_for_monitor_log_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
         None
-    ).and_raise(error)
+    ).and_raise(error).and_return(None).and_return(None).times(5)
     flexmock(module).should_receive('log_error_records').never()
     flexmock(module).should_receive('run_actions').and_return([])
     flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
@@ -259,7 +259,7 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
 
 
 def test_run_configuration_retries_soft_error():
-    # Run action first fails, second passes
+    # Run action first fails, second passes.
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
@@ -273,7 +273,7 @@ def test_run_configuration_retries_soft_error():
 
 
 def test_run_configuration_retries_hard_error():
-    # Run action fails twice
+    # Run action fails twice.
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
