@@ -68,9 +68,9 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
             if not dry_run:
                 execute.execute_command(
                     [command],
-                    output_log_level=logging.ERROR
-                    if description == 'on-error'
-                    else logging.WARNING,
+                    output_log_level=(
+                        logging.ERROR if description == 'on-error' else logging.WARNING
+                    ),
                     shell=True,
                 )
     finally:

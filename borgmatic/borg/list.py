@@ -79,9 +79,11 @@ def make_find_paths(find_paths):
         return ()
 
     return tuple(
-        find_path
-        if re.compile(r'([-!+RrPp] )|(\w\w:)').match(find_path)
-        else f'sh:**/*{find_path}*/**'
+        (
+            find_path
+            if re.compile(r'([-!+RrPp] )|(\w\w:)').match(find_path)
+            else f'sh:**/*{find_path}*/**'
+        )
         for find_path in find_paths
     )
 
