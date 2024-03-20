@@ -6,9 +6,48 @@ from flexmock import flexmock
 from borgmatic.config import generate as module
 
 
+def test_get_properties_with_simple_object():
+    schema = {
+        'type': 'object',
+        'properties': OrderedDict(
+            [
+                ('field1', {'example': 'Example'}),
+            ]
+        ),
+    }
+
+    assert module.get_properties(schema) == schema['properties']
+
+
+def test_get_properties_merges_one_of_list_properties():
+    schema = {
+        'type': 'object',
+        'oneOf': [
+            {
+                'properties': OrderedDict(
+                    [
+                        ('field1', {'example': 'Example 1'}),
+                        ('field2', {'example': 'Example 2'}),
+                    ]
+                ),
+            },
+            {
+                'properties': OrderedDict(
+                    [
+                        ('field2', {'example': 'Example 2'}),
+                        ('field3', {'example': 'Example 3'}),
+                    ]
+                ),
+            },
+        ],
+    }
+
+    assert module.get_properties(schema) == dict(
+        schema['oneOf'][0]['properties'], **schema['oneOf'][1]['properties']
+    )
+
+
 def test_schema_to_sample_configuration_generates_config_map_with_examples():
-    flexmock(module.ruamel.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
-    flexmock(module).should_receive('add_comments_to_configuration_object')
     schema = {
         'type': 'object',
         'properties': OrderedDict(
@@ -19,6 +58,9 @@ def test_schema_to_sample_configuration_generates_config_map_with_examples():
             ]
         ),
     }
+    flexmock(module).should_receive('get_properties').and_return(schema['properties'])
+    flexmock(module.ruamel.yaml.comments).should_receive('CommentedMap').replace_with(OrderedDict)
+    flexmock(module).should_receive('add_comments_to_configuration_object')
 
     config = module.schema_to_sample_configuration(schema)
 
@@ -42,9 +84,6 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_strings_wit
 
 
 def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_examples():
-    flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
-    flexmock(module).should_receive('add_comments_to_configuration_sequence')
-    flexmock(module).should_receive('add_comments_to_configuration_object')
     schema = {
         'type': 'array',
         'items': {
@@ -54,6 +93,10 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_e
             ),
         },
     }
+    flexmock(module).should_receive('get_properties').and_return(schema['items']['properties'])
+    flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
+    flexmock(module).should_receive('add_comments_to_configuration_sequence')
+    flexmock(module).should_receive('add_comments_to_configuration_object')
 
     config = module.schema_to_sample_configuration(schema)
 

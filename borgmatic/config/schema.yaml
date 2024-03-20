@@ -503,37 +503,99 @@ properties:
         type: array
         items:
             type: object
-            required: ['name']
-            additionalProperties: false
-            properties:
-                name:
-                    type: string
-                    enum:
-                        - repository
-                        - archives
-                        - data
-                        - extract
-                        - disabled
-                    description: |
-                        Name of consistency check to run: "repository",
-                        "archives", "data", and/or "extract". "repository"
-                        checks the consistency of the repository, "archives"
-                        checks all of the archives, "data" verifies the
-                        integrity of the data within the archives, and "extract"
-                        does an extraction dry-run of the most recent archive.
-                        Note that "data" implies "archives". See "skip_actions"
-                        for disabling checks altogether.
-                    example: repository
-                frequency:
-                    type: string
-                    description: |
-                        How frequently to run this type of consistency check (as
-                        a best effort). The value is a number followed by a unit
-                        of time. E.g., "2 weeks" to run this consistency check
-                        no more than every two weeks for a given repository or
-                        "1 month" to run it no more than monthly. Defaults to
-                        "always": running this check every time checks are run.
-                    example: 2 weeks
+            oneOf:
+                - required: [name]
+                  additionalProperties: false
+                  properties:
+                      name:
+                          type: string
+                          enum:
+                              - repository
+                              - archives
+                              - data
+                              - extract
+                              - disabled
+                          description: |
+                              Name of consistency check to run: "repository",
+                              "archives", "data", "spot", and/or "extract".
+                              "repository" checks the consistency of the
+                              repository, "archives" checks all of the
+                              archives, "data" verifies the integrity of the
+                              data within the archives, "spot" checks that
+                              some percentage of source files are found in the
+                              most recent archive (with identical contents),
+                              and "extract" does an extraction dry-run of the
+                              most recent archive. Note that "data" implies
+                              "archives". See "skip_actions" for disabling
+                              checks altogether.
+                          example: spot
+                      frequency:
+                          type: string
+                          description: |
+                              How frequently to run this type of consistency
+                              check (as a best effort). The value is a number
+                              followed by a unit of time. E.g., "2 weeks" to
+                              run this consistency check no more than every
+                              two weeks for a given repository or "1 month" to
+                              run it no more than monthly. Defaults to
+                              "always": running this check every time checks
+                              are run.
+                          example: 2 weeks
+                - required:
+                    - name
+                    - sample_percentage
+                    - tolerance_percentage
+                  additionalProperties: false
+                  properties:
+                      name:
+                          type: string
+                          enum:
+                              - spot
+                          description: |
+                              Name of consistency check to run: "repository",
+                              "archives", "data", "spot", and/or "extract".
+                              "repository" checks the consistency of the
+                              repository, "archives" checks all of the
+                              archives, "data" verifies the integrity of the
+                              data within the archives, "spot" checks that
+                              some percentage of source files are found in the
+                              most recent archive (with identical contents),
+                              and "extract" does an extraction dry-run of the
+                              most recent archive. Note that "data" implies
+                              "archives". See "skip_actions" for disabling
+                              checks altogether.
+                          example: repository
+                      frequency:
+                          type: string
+                          description: |
+                              How frequently to run this type of consistency
+                              check (as a best effort). The value is a number
+                              followed by a unit of time. E.g., "2 weeks" to
+                              run this consistency check no more than every
+                              two weeks for a given repository or "1 month" to
+                              run it no more than monthly. Defaults to
+                              "always": running this check every time checks
+                              are run.
+                          example: 2 weeks
+                      sample_percentage:
+                          type: number
+                          description: |
+                              The percentage of total files in the source
+                              directories to randomly sample and compare to
+                              their corresponding files in the most recent
+                              backup archive. Only applies to the "spot"
+                              check.
+                          example: 5
+                      tolerance_percentage:
+                          type: number
+                          description: |
+                              The percentage of total files in the source
+                              directories that can fail a spot check
+                              comparison without failing the entire
+                              consistency check. Should be lower than or
+                              equal to the "sample_percentage". Only applies
+                              to the "spot" check.
+                          example: 0.5
         description: |
             List of one or more consistency checks to run on a periodic basis
             (if "frequency" is set) or every time borgmatic runs checks (if

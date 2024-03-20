@@ -21,6 +21,19 @@ def insert_newline_before_comment(config, field_name):
     )
 
 
+def get_properties(schema):
+    '''
+    Given a schema dict, return its properties. But if it's got sub-schemas with multiple different
+    potential properties, returned their merged properties instead.
+    '''
+    if 'oneOf' in schema:
+        return dict(
+            collections.ChainMap(*[sub_schema['properties'] for sub_schema in schema['oneOf']])
+        )
+
+    return schema['properties']
+
+
 def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema, generate and return sample config for it. Include comments
@@ -40,7 +53,7 @@ def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
         config = ruamel.yaml.comments.CommentedMap(
             [
                 (field_name, schema_to_sample_configuration(sub_schema, level + 1))
-                for field_name, sub_schema in schema['properties'].items()
+                for field_name, sub_schema in get_properties(schema).items()
             ]
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
@@ -151,7 +164,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         return
 
     for field_name in config[0].keys():
-        field_schema = schema['items']['properties'].get(field_name, {})
+        field_schema = get_properties(schema['items']).get(field_name, {})
         description = field_schema.get('description')
 
         # No description to use? Skip it.
@@ -178,7 +191,7 @@ def add_comments_to_configuration_object(config, schema, indent=0, skip_first=Fa
         if skip_first and index == 0:
             continue
 
-        field_schema = schema['properties'].get(field_name, {})
+        field_schema = get_properties(schema).get(field_name, {})
         description = field_schema.get('description', '').strip()
 
         # If this is an optional key, add an indicator to the comment flagging it to be commented

@@ -1,172 +1,28 @@
 import argparse
-import datetime
-import hashlib
-import itertools
 import json
 import logging
 import os
-import pathlib
 
-from borgmatic.borg import environment, extract, feature, flags, rinfo, state
+from borgmatic.borg import environment, feature, flags, rinfo
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
-
-DEFAULT_CHECKS = (
-    {'name': 'repository', 'frequency': '1 month'},
-    {'name': 'archives', 'frequency': '1 month'},
-)
 
 
 logger = logging.getLogger(__name__)
 
 
-def parse_checks(config, only_checks=None):
+def make_archive_filter_flags(local_borg_version, config, checks, check_arguments):
     '''
-    Given a configuration dict with a "checks" sequence of dicts and an optional list of override
-    checks, return a tuple of named checks to run.
+    Given the local Borg version, a configuration dict, a parsed sequence of checks, and check
+    arguments as an argparse.Namespace instance, transform the checks into tuple of command-line
+    flags for filtering archives in a check command.
 
-    For example, given a config of:
-
-        {'checks': ({'name': 'repository'}, {'name': 'archives'})}
-
-    This will be returned as:
-
-        ('repository', 'archives')
-
-    If no "checks" option is present in the config, return the DEFAULT_CHECKS. If a checks value
-    has a name of "disabled", return an empty tuple, meaning that no checks should be run.
+    If "check_last" is set in the configuration and "archives" is in checks, then include a "--last"
+    flag. And if "prefix" is set in configuration and "archives" is in checks, then include a
+    "--match-archives" flag.
     '''
-    checks = only_checks or tuple(
-        check_config['name'] for check_config in (config.get('checks', None) or DEFAULT_CHECKS)
-    )
-    checks = tuple(check.lower() for check in checks)
+    check_last = config.get('check_last', None)
+    prefix = config.get('prefix')
 
-    if 'disabled' in checks:
-        logger.warning(
-            'The "disabled" value for the "checks" option is deprecated and will be removed from a future release; use "skip_actions" instead'
-        )
-        if len(checks) > 1:
-            logger.warning(
-                'Multiple checks are configured, but one of them is "disabled"; not running any checks'
-            )
-        return ()
-
-    return checks
-
-
-def parse_frequency(frequency):
-    '''
-    Given a frequency string with a number and a unit of time, return a corresponding
-    datetime.timedelta instance or None if the frequency is None or "always".
-
-    For instance, given "3 weeks", return datetime.timedelta(weeks=3)
-
-    Raise ValueError if the given frequency cannot be parsed.
-    '''
-    if not frequency:
-        return None
-
-    frequency = frequency.strip().lower()
-
-    if frequency == 'always':
-        return None
-
-    try:
-        number, time_unit = frequency.split(' ')
-        number = int(number)
-    except ValueError:
-        raise ValueError(f"Could not parse consistency check frequency '{frequency}'")
-
-    if not time_unit.endswith('s'):
-        time_unit += 's'
-
-    if time_unit == 'months':
-        number *= 30
-        time_unit = 'days'
-    elif time_unit == 'years':
-        number *= 365
-        time_unit = 'days'
-
-    try:
-        return datetime.timedelta(**{time_unit: number})
-    except TypeError:
-        raise ValueError(f"Could not parse consistency check frequency '{frequency}'")
-
-
-def filter_checks_on_frequency(
-    config,
-    borg_repository_id,
-    checks,
-    force,
-    archives_check_id=None,
-):
-    '''
-    Given a configuration dict with a "checks" sequence of dicts, a Borg repository ID, a sequence
-    of checks, whether to force checks to run, and an ID for the archives check potentially being
-    run (if any), filter down those checks based on the configured "frequency" for each check as
-    compared to its check time file.
-
-    In other words, a check whose check time file's timestamp is too new (based on the configured
-    frequency) will get cut from the returned sequence of checks. Example:
-
-    config = {
-        'checks': [
-            {
-                'name': 'archives',
-                'frequency': '2 weeks',
-            },
-        ]
-    }
-
-    When this function is called with that config and "archives" in checks, "archives" will get
-    filtered out of the returned result if its check time file is newer than 2 weeks old, indicating
-    that it's not yet time to run that check again.
-
-    Raise ValueError if a frequency cannot be parsed.
-    '''
-    if not checks:
-        return checks
-
-    filtered_checks = list(checks)
-
-    if force:
-        return tuple(filtered_checks)
-
-    for check_config in config.get('checks', DEFAULT_CHECKS):
-        check = check_config['name']
-        if checks and check not in checks:
-            continue
-
-        frequency_delta = parse_frequency(check_config.get('frequency'))
-        if not frequency_delta:
-            continue
-
-        check_time = probe_for_check_time(config, borg_repository_id, check, archives_check_id)
-        if not check_time:
-            continue
-
-        # If we've not yet reached the time when the frequency dictates we're ready for another
-        # check, skip this check.
-        if datetime.datetime.now() < check_time + frequency_delta:
-            remaining = check_time + frequency_delta - datetime.datetime.now()
-            logger.info(
-                f'Skipping {check} check due to configured frequency; {remaining} until next check (use --force to check anyway)'
-            )
-            filtered_checks.remove(check)
-
-    return tuple(filtered_checks)
-
-
-def make_archive_filter_flags(
-    local_borg_version, config, checks, check_arguments, check_last=None, prefix=None
-):
-    '''
-    Given the local Borg version, a configuration dict, a parsed sequence of checks, check arguments
-    as an argparse.Namespace instance, the check last value, and a consistency check prefix,
-    transform the checks into tuple of command-line flags for filtering archives in a check command.
-
-    If a check_last value is given and "archives" is in checks, then include a "--last" flag. And if
-    a prefix value is given and "archives" is in checks, then include a "--match-archives" flag.
-    '''
     if 'archives' in checks or 'data' in checks:
         return (('--last', str(check_last)) if check_last else ()) + (
             (
@@ -194,17 +50,6 @@ def make_archive_filter_flags(
         )
 
     return ()
-
-
-def make_archives_check_id(archive_filter_flags):
-    '''
-    Given a sequence of flags to filter archives, return a unique hash corresponding to those
-    particular flags. If there are no flags, return None.
-    '''
-    if not archive_filter_flags:
-        return None
-
-    return hashlib.sha256(' '.join(archive_filter_flags).encode()).hexdigest()
 
 
 def make_check_flags(checks, archive_filter_flags):
@@ -240,144 +85,15 @@ def make_check_flags(checks, archive_filter_flags):
     )
 
 
-def make_check_time_path(config, borg_repository_id, check_type, archives_check_id=None):
+def get_repository_id(repository_path, config, local_borg_version, global_arguments, local_path, remote_path):
     '''
-    Given a configuration dict, a Borg repository ID, the name of a check type ("repository",
-    "archives", etc.), and a unique hash of the archives filter flags, return a path for recording
-    that check's time (the time of that check last occurring).
-    '''
-    borgmatic_source_directory = os.path.expanduser(
-        config.get('borgmatic_source_directory', state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY)
-    )
+    Given a local or remote repository path, a configuration dict, the local Borg version, global
+    arguments, and local/remote commands to run, return the corresponding Borg repository ID.
 
-    if check_type in ('archives', 'data'):
-        return os.path.join(
-            borgmatic_source_directory,
-            'checks',
-            borg_repository_id,
-            check_type,
-            archives_check_id if archives_check_id else 'all',
-        )
-
-    return os.path.join(
-        borgmatic_source_directory,
-        'checks',
-        borg_repository_id,
-        check_type,
-    )
-
-
-def write_check_time(path):  # pragma: no cover
-    '''
-    Record a check time of now as the modification time of the given path.
-    '''
-    logger.debug(f'Writing check time at {path}')
-
-    os.makedirs(os.path.dirname(path), mode=0o700, exist_ok=True)
-    pathlib.Path(path, mode=0o600).touch()
-
-
-def read_check_time(path):
-    '''
-    Return the check time based on the modification time of the given path. Return None if the path
-    doesn't exist.
-    '''
-    logger.debug(f'Reading check time from {path}')
-
-    try:
-        return datetime.datetime.fromtimestamp(os.stat(path).st_mtime)
-    except FileNotFoundError:
-        return None
-
-
-def probe_for_check_time(config, borg_repository_id, check, archives_check_id):
-    '''
-    Given a configuration dict, a Borg repository ID, the name of a check type ("repository",
-    "archives", etc.), and a unique hash of the archives filter flags, return a the corresponding
-    check time or None if such a check time does not exist.
-
-    When the check type is "archives" or "data", this function probes two different paths to find
-    the check time, e.g.:
-
-      ~/.borgmatic/checks/1234567890/archives/9876543210
-      ~/.borgmatic/checks/1234567890/archives/all
-
-    ... and returns the maximum modification time of the files found (if any). The first path
-    represents a more specific archives check time (a check on a subset of archives), and the second
-    is a fallback to the last "all" archives check.
-
-    For other check types, this function reads from a single check time path, e.g.:
-
-      ~/.borgmatic/checks/1234567890/repository
-    '''
-    check_times = (
-        read_check_time(group[0])
-        for group in itertools.groupby(
-            (
-                make_check_time_path(config, borg_repository_id, check, archives_check_id),
-                make_check_time_path(config, borg_repository_id, check),
-            )
-        )
-    )
-
-    try:
-        return max(check_time for check_time in check_times if check_time)
-    except ValueError:
-        return None
-
-
-def upgrade_check_times(config, borg_repository_id):
-    '''
-    Given a configuration dict and a Borg repository ID, upgrade any corresponding check times on
-    disk from old-style paths to new-style paths.
-
-    Currently, the only upgrade performed is renaming an archive or data check path that looks like:
-
-      ~/.borgmatic/checks/1234567890/archives
-
-    to:
-
-      ~/.borgmatic/checks/1234567890/archives/all
-    '''
-    for check_type in ('archives', 'data'):
-        new_path = make_check_time_path(config, borg_repository_id, check_type, 'all')
-        old_path = os.path.dirname(new_path)
-        temporary_path = f'{old_path}.temp'
-
-        if not os.path.isfile(old_path) and not os.path.isfile(temporary_path):
-            continue
-
-        logger.debug(f'Upgrading archives check time from {old_path} to {new_path}')
-
-        try:
-            os.rename(old_path, temporary_path)
-        except FileNotFoundError:
-            pass
-
-        os.mkdir(old_path)
-        os.rename(temporary_path, new_path)
-
-
-def check_archives(
-    repository_path,
-    config,
-    local_borg_version,
-    check_arguments,
-    global_arguments,
-    local_path='borg',
-    remote_path=None,
-):
-    '''
-    Given a local or remote repository path, a configuration dict, the local Borg version, check
-    arguments as an argparse.Namespace instance, global arguments, and local/remote commands to run,
-    check the contained Borg archives for consistency.
-
-    If there are no consistency checks to run, skip running them.
-
-    Raises ValueError if the Borg repository ID cannot be determined.
+    Raise ValueError if the Borg repository ID cannot be determined.
     '''
     try:
-        borg_repository_id = json.loads(
+        return json.loads(
             rinfo.display_repository_info(
                 repository_path,
                 config,
@@ -391,82 +107,63 @@ def check_archives(
     except (json.JSONDecodeError, KeyError):
         raise ValueError(f'Cannot determine Borg repository ID for {repository_path}')
 
-    upgrade_check_times(config, borg_repository_id)
 
-    check_last = config.get('check_last', None)
-    prefix = config.get('prefix')
-    configured_checks = parse_checks(config, check_arguments.only_checks)
-    lock_wait = None
+def check_archives(
+    repository_path,
+    config,
+    local_borg_version,
+    check_arguments,
+    global_arguments,
+    checks,
+    archive_filter_flags,
+    local_path='borg',
+    remote_path=None,
+):
+    '''
+    Given a local or remote repository path, a configuration dict, the local Borg version, check
+    arguments as an argparse.Namespace instance, global arguments, a set of named Borg checks to run
+    (some combination "repository", "archives", and/or "data"), archive filter flags, and
+    local/remote commands to run, check the contained Borg archives for consistency.
+    '''
+    lock_wait = config.get('lock_wait')
     extra_borg_options = config.get('extra_borg_options', {}).get('check', '')
-    archive_filter_flags = make_archive_filter_flags(
-        local_borg_version, config, configured_checks, check_arguments, check_last, prefix
+
+    verbosity_flags = ()
+    if logger.isEnabledFor(logging.INFO):
+        verbosity_flags = ('--info',)
+    if logger.isEnabledFor(logging.DEBUG):
+        verbosity_flags = ('--debug', '--show-rc')
+
+    full_command = (
+        (local_path, 'check')
+        + (('--repair',) if check_arguments.repair else ())
+        + make_check_flags(checks, archive_filter_flags)
+        + (('--remote-path', remote_path) if remote_path else ())
+        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + verbosity_flags
+        + (('--progress',) if check_arguments.progress else ())
+        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+        + flags.make_repository_flags(repository_path, local_borg_version)
     )
-    archives_check_id = make_archives_check_id(archive_filter_flags)
 
-    checks = filter_checks_on_frequency(
-        config,
-        borg_repository_id,
-        configured_checks,
-        check_arguments.force,
-        archives_check_id,
-    )
+    borg_environment = environment.make_environment(config)
+    borg_exit_codes = config.get('borg_exit_codes')
 
-    if set(checks).intersection({'repository', 'archives', 'data'}):
-        lock_wait = config.get('lock_wait')
-
-        verbosity_flags = ()
-        if logger.isEnabledFor(logging.INFO):
-            verbosity_flags = ('--info',)
-        if logger.isEnabledFor(logging.DEBUG):
-            verbosity_flags = ('--debug', '--show-rc')
-
-        full_command = (
-            (local_path, 'check')
-            + (('--repair',) if check_arguments.repair else ())
-            + make_check_flags(checks, archive_filter_flags)
-            + (('--remote-path', remote_path) if remote_path else ())
-            + (('--log-json',) if global_arguments.log_json else ())
-            + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-            + verbosity_flags
-            + (('--progress',) if check_arguments.progress else ())
-            + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-            + flags.make_repository_flags(repository_path, local_borg_version)
+    # The Borg repair option triggers an interactive prompt, which won't work when output is
+    # captured. And progress messes with the terminal directly.
+    if check_arguments.repair or check_arguments.progress:
+        execute_command(
+            full_command,
+            output_file=DO_NOT_CAPTURE,
+            extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
-
-        borg_environment = environment.make_environment(config)
-        borg_exit_codes = config.get('borg_exit_codes')
-
-        # The Borg repair option triggers an interactive prompt, which won't work when output is
-        # captured. And progress messes with the terminal directly.
-        if check_arguments.repair or check_arguments.progress:
-            execute_command(
-                full_command,
-                output_file=DO_NOT_CAPTURE,
-                extra_environment=borg_environment,
-                borg_local_path=local_path,
-                borg_exit_codes=borg_exit_codes,
-            )
-        else:
-            execute_command(
-                full_command,
-                extra_environment=borg_environment,
-                borg_local_path=local_path,
-                borg_exit_codes=borg_exit_codes,
-            )
-
-        for check in checks:
-            write_check_time(
-                make_check_time_path(config, borg_repository_id, check, archives_check_id)
-            )
-
-    if 'extract' in checks:
-        extract.extract_last_archive_dry_run(
-            config,
-            local_borg_version,
-            global_arguments,
-            repository_path,
-            lock_wait,
-            local_path,
-            remote_path,
+    else:
+        execute_command(
+            full_command,
+            extra_environment=borg_environment,
+            borg_local_path=local_path,
+            borg_exit_codes=borg_exit_codes,
         )
-        write_check_time(make_check_time_path(config, borg_repository_id, 'extract'))
