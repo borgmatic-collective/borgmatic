@@ -401,6 +401,10 @@ loki:
         hostname: __hostname
 ```
 
+Also check out this [Loki dashboard for
+borgmatic](https://grafana.com/grafana/dashboards/20736-borgmatic-logs/) if
+you'd like to see your backup logs and statistics in one place.
+
 
 ## Apprise hook
 
