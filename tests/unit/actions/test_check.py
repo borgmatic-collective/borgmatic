@@ -1,5 +1,5 @@
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.actions import check as module
 
@@ -417,7 +417,9 @@ def test_run_check_checks_archives_for_configured_repository():
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module).should_receive('filter_checks_on_frequency').and_return({'repository', 'archives'})
+    flexmock(module).should_receive('filter_checks_on_frequency').and_return(
+        {'repository', 'archives'}
+    )
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
@@ -527,7 +529,9 @@ def test_run_check_checks_archives_in_selected_repository():
     flexmock(module).should_receive('parse_checks')
     flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
-    flexmock(module).should_receive('filter_checks_on_frequency').and_return({'repository', 'archives'})
+    flexmock(module).should_receive('filter_checks_on_frequency').and_return(
+        {'repository', 'archives'}
+    )
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')

@@ -69,7 +69,10 @@ def test_make_archive_filter_flags_with_archives_check_and_last_includes_last_fl
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'check_last': 3}, ('archives',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'check_last': 3},
+        ('archives',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ('--last', '3')
@@ -80,7 +83,10 @@ def test_make_archive_filter_flags_with_data_check_and_last_includes_last_flag()
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'check_last': 3}, ('data',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'check_last': 3},
+        ('data',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ('--last', '3')
@@ -91,7 +97,10 @@ def test_make_archive_filter_flags_with_repository_check_and_last_omits_last_fla
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'check_last': 3}, ('repository',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'check_last': 3},
+        ('repository',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ()
@@ -116,7 +125,10 @@ def test_make_archive_filter_flags_with_archives_check_and_prefix_includes_match
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'prefix': 'foo-'}, ('archives',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'prefix': 'foo-'},
+        ('archives',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ('--match-archives', 'sh:foo-*')
@@ -127,7 +139,10 @@ def test_make_archive_filter_flags_with_data_check_and_prefix_includes_match_arc
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'prefix': 'foo-'}, ('data',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'prefix': 'foo-'},
+        ('data',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ('--match-archives', 'sh:foo-*')
@@ -170,7 +185,10 @@ def test_make_archive_filter_flags_with_archives_check_and_none_prefix_omits_mat
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {}, ('archives',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {},
+        ('archives',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ()
@@ -181,7 +199,10 @@ def test_make_archive_filter_flags_with_repository_check_and_prefix_omits_match_
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
     flags = module.make_archive_filter_flags(
-        '1.2.3', {'prefix': 'foo-'}, ('repository',), check_arguments=flexmock(match_archives=None),
+        '1.2.3',
+        {'prefix': 'foo-'},
+        ('repository',),
+        check_arguments=flexmock(match_archives=None),
     )
 
     assert flags == ()

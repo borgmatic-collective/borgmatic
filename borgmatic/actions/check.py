@@ -2,15 +2,14 @@ import datetime
 import hashlib
 import itertools
 import logging
-import pathlib
 import os
+import pathlib
 
-import borgmatic.borg.extract
 import borgmatic.borg.check
+import borgmatic.borg.extract
 import borgmatic.borg.state
 import borgmatic.config.validate
 import borgmatic.hooks.command
-
 
 DEFAULT_CHECKS = (
     {'name': 'repository', 'frequency': '1 month'},
@@ -176,7 +175,9 @@ def make_check_time_path(config, borg_repository_id, check_type, archives_check_
     that check's time (the time of that check last occurring).
     '''
     borgmatic_source_directory = os.path.expanduser(
-        config.get('borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY)
+        config.get(
+            'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+        )
     )
 
     if check_type in ('archives', 'data'):
@@ -354,9 +355,7 @@ def run_check(
             remote_path=remote_path,
         )
         for check in borg_specific_checks:
-            write_check_time(
-                make_check_time_path(config, repository_id, check, archives_check_id)
-            )
+            write_check_time(make_check_time_path(config, repository_id, check, archives_check_id))
 
     if 'extract' in checks:
         borgmatic.borg.extract.extract_last_archive_dry_run(
@@ -370,14 +369,14 @@ def run_check(
         )
         write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
-    #if 'spot' in checks:
-        # TODO:
-        # count the number of files in source directories
-        # in a loop until the sample percentage (of the total source files) is met:
-            # pick a random file from source directories and calculate its sha256 sum
-            # extract the file from the latest archive (to stdout) and calculate its sha256 sum
-            # if the two checksums are equal, increment the matching files count
-        # if the percentage of matching files (of the total source files) < tolerance percentage, error
+    # if 'spot' in checks:
+    # TODO:
+    # count the number of files in source directories, but need to take patterns and stuff into account...
+    # in a loop until the sample percentage (of the total source files) is met:
+    # pick a random file from source directories and calculate its sha256 sum
+    # extract the file from the latest archive (to stdout) and calculate its sha256 sum
+    # if the two checksums are equal, increment the matching files count
+    # if the percentage of matching files (of the total source files) < tolerance percentage, error
 
     borgmatic.hooks.command.execute_hook(
         config.get('after_check'),

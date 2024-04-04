@@ -1,11 +1,9 @@
 import argparse
 import json
 import logging
-import os
 
 from borgmatic.borg import environment, feature, flags, rinfo
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
-
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +83,9 @@ def make_check_flags(checks, archive_filter_flags):
     )
 
 
-def get_repository_id(repository_path, config, local_borg_version, global_arguments, local_path, remote_path):
+def get_repository_id(
+    repository_path, config, local_borg_version, global_arguments, local_path, remote_path
+):
     '''
     Given a local or remote repository path, a configuration dict, the local Borg version, global
     arguments, and local/remote commands to run, return the corresponding Borg repository ID.
