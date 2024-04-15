@@ -275,11 +275,11 @@ def collect_special_file_paths(
     create_command, config, local_path, working_directory, borg_environment, skip_directories
 ):
     '''
-    Given a Borg create command as a tuple, a local Borg path, a working directory, a dict of
-    environment variables to pass to Borg, and a sequence of parent directories to skip, collect the
-    paths for any special files (character devices, block devices, and named pipes / FIFOs) that
-    Borg would encounter during a create. These are all paths that could cause Borg to hang if its
-    --read-special flag is used.
+    Given a Borg create command as a tuple, a configuration dict, a local Borg path, a working
+    directory, a dict of environment variables to pass to Borg, and a sequence of parent directories
+    to skip, collect the paths for any special files (character devices, block devices, and named
+    pipes / FIFOs) that Borg would encounter during a create. These are all paths that could cause
+    Borg to hang if its --read-special flag is used.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created.
@@ -402,11 +402,6 @@ def make_base_create_command(
             ('--remote-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
 
-    if stream_processes and config.get('read_special') is False:
-        logger.warning(
-            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
-        )
-
     create_flags = (
         tuple(local_path.split(' '))
         + ('create',)
@@ -441,6 +436,41 @@ def make_base_create_command(
     create_positional_arguments = flags.make_repository_archive_flags(
         repository_path, archive_name_format, local_borg_version
     ) + (sources if not pattern_file else ())
+
+    # If database hooks are enabled (as indicated by streaming processes), exclude files that might
+    # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
+    if stream_processes and not config.get('read_special'):
+        logger.warning(
+            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+        )
+        try:
+            working_directory = os.path.expanduser(config.get('working_directory'))
+        except TypeError:
+            working_directory = None
+
+        borg_environment = environment.make_environment(config)
+
+        logger.debug(f'{repository_path}: Collecting special file paths')
+        special_file_paths = collect_special_file_paths(
+            create_flags + create_positional_arguments,
+            config,
+            local_path,
+            working_directory,
+            borg_environment,
+            skip_directories=borgmatic_source_directories,
+        )
+
+        if special_file_paths:
+            logger.warning(
+                f'{repository_path}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
+            )
+            exclude_file = write_pattern_file(
+                expand_home_directories(
+                    tuple(config.get('exclude_patterns') or ()) + special_file_paths
+                ),
+                pattern_file=exclude_file,
+            )
+            create_flags += make_exclude_flags(config, exclude_file.name)
 
     return (create_flags, create_positional_arguments, pattern_file, exclude_file)
 
@@ -508,31 +538,6 @@ def create_archive(
         working_directory = None
 
     borg_environment = environment.make_environment(config)
-
-    # If database hooks are enabled (as indicated by streaming processes), exclude files that might
-    # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
-    if stream_processes and not config.get('read_special'):
-        logger.debug(f'{repository_path}: Collecting special file paths')
-        special_file_paths = collect_special_file_paths(
-            create_flags + create_positional_arguments,
-            config,
-            local_path,
-            working_directory,
-            borg_environment,
-            skip_directories=borgmatic_source_directories,
-        )
-
-        if special_file_paths:
-            logger.warning(
-                f'{repository_path}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
-            )
-            exclude_file = write_pattern_file(
-                expand_home_directories(
-                    tuple(config.get('exclude_patterns') or ()) + special_file_paths
-                ),
-                pattern_file=exclude_file,
-            )
-            create_flags += make_exclude_flags(config, exclude_file.name)
 
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())

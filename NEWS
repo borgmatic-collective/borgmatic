@@ -1,4 +1,9 @@
 1.8.10.dev0
+ * #656: Add a "spot" consistency check that compares file counts and contents between your source
+   files and the latest archive, ensuring they fall within configured tolerances. This can catch
+   problems like incorrect excludes, inadvertent deletes, files changed by malware, etc. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#spot-check
  * #842: When a command hook exits with a soft failure, ping the log and finish states for any
    configured monitoring hooks.
  * #843: Add documentation link to Loki dashboard for borgmatic:

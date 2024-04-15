@@ -409,6 +409,444 @@ def test_upgrade_check_times_renames_stale_temporary_check_path():
     module.upgrade_check_times(flexmock(), flexmock())
 
 
+def test_collect_spot_check_source_paths_parses_borg_output():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'hook1': False, 'hook2': True}
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
+        dry_run=True,
+        repository_path='repo',
+        config=object,
+        config_paths=(),
+        local_borg_version=object,
+        global_arguments=object,
+        borgmatic_source_directories=(),
+        local_path=object,
+        remote_path=object,
+        list_files=True,
+        stream_processes=True,
+    ).and_return((('borg', 'create'), ('repo::archive',), flexmock(), flexmock()))
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        'warning: stuff\n- /etc/path\n+ /etc/other\n? /nope',
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(True)
+
+    assert module.collect_spot_check_source_paths(
+        repository={'path': 'repo'},
+        config={'working_directory': '/'},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path', '/etc/other')
+
+
+def test_collect_spot_check_source_paths_passes_through_stream_processes_false():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'hook1': False, 'hook2': False}
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
+        dry_run=True,
+        repository_path='repo',
+        config=object,
+        config_paths=(),
+        local_borg_version=object,
+        global_arguments=object,
+        borgmatic_source_directories=(),
+        local_path=object,
+        remote_path=object,
+        list_files=True,
+        stream_processes=False,
+    ).and_return((('borg', 'create'), ('repo::archive',), flexmock(), flexmock()))
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        'warning: stuff\n- /etc/path\n+ /etc/other\n? /nope',
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(True)
+
+    assert module.collect_spot_check_source_paths(
+        repository={'path': 'repo'},
+        config={'working_directory': '/'},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path', '/etc/other')
+
+
+def test_collect_spot_check_source_paths_without_working_directory_parses_borg_output():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'hook1': False, 'hook2': True}
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
+        dry_run=True,
+        repository_path='repo',
+        config=object,
+        config_paths=(),
+        local_borg_version=object,
+        global_arguments=object,
+        borgmatic_source_directories=(),
+        local_path=object,
+        remote_path=object,
+        list_files=True,
+        stream_processes=True,
+    ).and_return((('borg', 'create'), ('repo::archive',), flexmock(), flexmock()))
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        'warning: stuff\n- /etc/path\n+ /etc/other\n? /nope',
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(True)
+
+    assert module.collect_spot_check_source_paths(
+        repository={'path': 'repo'},
+        config={},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path', '/etc/other')
+
+
+def test_collect_spot_check_source_paths_includes_symlinks_but_skips_directories():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'hook1': False, 'hook2': True}
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
+        dry_run=True,
+        repository_path='repo',
+        config=object,
+        config_paths=(),
+        local_borg_version=object,
+        global_arguments=object,
+        borgmatic_source_directories=(),
+        local_path=object,
+        remote_path=object,
+        list_files=True,
+        stream_processes=True,
+    ).and_return((('borg', 'create'), ('repo::archive',), flexmock(), flexmock()))
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        'warning: stuff\n- /etc/path\n+ /etc/dir\n? /nope',
+    )
+    flexmock(module.os.path).should_receive('isfile').with_args('/etc/path').and_return(False)
+    flexmock(module.os.path).should_receive('islink').with_args('/etc/path').and_return(True)
+    flexmock(module.os.path).should_receive('isfile').with_args('/etc/dir').and_return(False)
+    flexmock(module.os.path).should_receive('islink').with_args('/etc/dir').and_return(False)
+
+    assert module.collect_spot_check_source_paths(
+        repository={'path': 'repo'},
+        config={'working_directory': '/'},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path',)
+
+
+def test_collect_spot_check_archive_paths_excludes_directories():
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        (
+            'f /etc/path',
+            'f /etc/other',
+            'd /etc/dir',
+        )
+    )
+
+    assert module.collect_spot_check_archive_paths(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path', '/etc/other')
+
+
+def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_directory():
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        (
+            'f /etc/path',
+            'f /root/.borgmatic/some/thing',
+        )
+    )
+
+    assert module.collect_spot_check_archive_paths(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={'borgmatic_source_directory': '/root/.borgmatic'},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path',)
+
+
+def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo', '/bar')).and_return('hash1  /foo\nhash2  /bar')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 /foo', 'nothash2 /bar']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
+def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('/usr/local/bin/xxh64sum', '/foo', '/bar')).and_return('hash1  /foo\nhash2  /bar')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 /foo', 'nothash2 /bar']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                    'xxh64sum_command': '/usr/local/bin/xxh64sum',
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
+def test_compare_spot_check_hashes_consider_path_missing_from_archive_as_not_matching():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo', '/bar')).and_return('hash1  /foo\nhash2  /bar')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 /foo']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
+def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').with_args('/foo').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/bar').and_return(False)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo')).and_return('hash1  /foo')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 /foo', 'hash2 /bar']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
+def test_spot_check_data_tolerance_percenatge_greater_than_data_sample_percentage_errors():
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={
+                'checks': [
+                    {
+                        'name': 'spot',
+                        'data_tolerance_percentage': 7,
+                        'data_sample_percentage': 5,
+                    },
+                ]
+            },
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+
+
+def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_errors():
+    flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
+        ('/foo', '/bar', '/baz', '/quux')
+    )
+    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+        'archive'
+    )
+    flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(
+        ('/foo', '/bar')
+    ).once()
+
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={
+                'checks': [
+                    {
+                        'name': 'spot',
+                        'count_tolerance_percentage': 1,
+                        'data_tolerance_percentage': 4,
+                        'data_sample_percentage': 5,
+                    },
+                ]
+            },
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+
+
+def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percentage_errors():
+    flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
+        ('/foo', '/bar', '/baz', '/quux')
+    )
+    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+        'archive'
+    )
+    flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))
+    flexmock(module).should_receive('compare_spot_check_hashes').and_return(
+        ('/bar', '/baz', '/quux')
+    ).once()
+
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={
+                'checks': [
+                    {
+                        'name': 'spot',
+                        'count_tolerance_percentage': 55,
+                        'data_tolerance_percentage': 4,
+                        'data_sample_percentage': 5,
+                    },
+                ]
+            },
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+
+
+def test_spot_check_with_high_enough_tolerances_does_not_raise():
+    flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
+        ('/foo', '/bar', '/baz', '/quux')
+    )
+    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+        'archive'
+    )
+    flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))
+    flexmock(module).should_receive('compare_spot_check_hashes').and_return(
+        ('/bar', '/baz', '/quux')
+    ).once()
+
+    module.spot_check(
+        repository={'path': 'repo'},
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'count_tolerance_percentage': 55,
+                    'data_tolerance_percentage': 80,
+                    'data_sample_percentage': 80,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    )
+
+
 def test_run_check_checks_archives_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
@@ -458,6 +896,42 @@ def test_run_check_runs_configured_extract_check():
     flexmock(module).should_receive('filter_checks_on_frequency').and_return({'extract'})
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
     flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').once()
+    flexmock(module).should_receive('make_check_time_path')
+    flexmock(module).should_receive('write_check_time')
+    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
+    check_arguments = flexmock(
+        repository=None,
+        progress=flexmock(),
+        repair=flexmock(),
+        only_checks=flexmock(),
+        force=flexmock(),
+    )
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    module.run_check(
+        config_filename='test.yaml',
+        repository={'path': 'repo'},
+        config={'repositories': ['repo']},
+        hook_context={},
+        local_borg_version=None,
+        check_arguments=check_arguments,
+        global_arguments=global_arguments,
+        local_path=None,
+        remote_path=None,
+    )
+
+
+def test_run_check_runs_configured_spot_check():
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.borg.check).should_receive('get_repository_id').and_return(flexmock())
+    flexmock(module).should_receive('upgrade_check_times')
+    flexmock(module).should_receive('parse_checks')
+    flexmock(module.borgmatic.borg.check).should_receive('make_archive_filter_flags').and_return(())
+    flexmock(module).should_receive('make_archives_check_id').and_return(None)
+    flexmock(module).should_receive('filter_checks_on_frequency').and_return({'spot'})
+    flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
+    flexmock(module.borgmatic.actions.check).should_receive('spot_check').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)

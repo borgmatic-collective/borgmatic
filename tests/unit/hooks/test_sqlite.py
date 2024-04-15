@@ -5,6 +5,16 @@ from flexmock import flexmock
 from borgmatic.hooks import sqlite as module
 
 
+def test_use_streaming_true_for_any_databases():
+    assert module.use_streaming(
+        databases=[flexmock(), flexmock()], config=flexmock(), log_prefix=flexmock()
+    )
+
+
+def test_use_streaming_false_for_no_databases():
+    assert not module.use_streaming(databases=[], config=flexmock(), log_prefix=flexmock())
+
+
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 

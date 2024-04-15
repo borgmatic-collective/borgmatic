@@ -115,6 +115,14 @@ def execute_dump_command(
     )
 
 
+def use_streaming(databases, config, log_prefix):
+    '''
+    Given a sequence of MariaDB database configuration dicts, a configuration dict (ignored), and a
+    log prefix (ignored), return whether streaming will be using during dumps.
+    '''
+    return any(databases)
+
+
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
     Dump the given MariaDB databases to a named pipe. The databases are supplied as a sequence of

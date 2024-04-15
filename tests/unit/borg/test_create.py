@@ -948,7 +948,7 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
     assert not exclude_file
 
 
-def test_make_base_create_command_with_stream_processes_ignores_read_special_false_and_logs_warning():
+def test_make_base_create_command_with_stream_processes_ignores_read_special_false_and_excludes_special_files():
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
     flexmock(module).should_receive('expand_directories').and_return(())
@@ -959,12 +959,17 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module.logger).should_receive('warning').once()
     flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
+    flexmock(module.logger).should_receive('warning').twice()
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module).should_receive('collect_special_file_paths').and_return(('/dev/null',)).once()
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(flexmock(name='patterns'))
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
 
     (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
         module.make_base_create_command(
@@ -974,6 +979,48 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
                 'source_directories': ['foo', 'bar'],
                 'repositories': ['repo'],
                 'read_special': False,
+            },
+            config_paths=['/tmp/test.yaml'],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
+            borgmatic_source_directories=(),
+            stream_processes=flexmock(),
+        )
+    )
+
+    assert create_flags == ('borg', 'create', '--one-file-system', '--read-special')
+    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert not pattern_file
+    assert exclude_file
+
+
+def test_make_base_create_command_with_stream_processes_and_read_special_true_skip_special_files_excludes():
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').and_return(())
+    flexmock(module).should_receive('pattern_root_directories').and_return([])
+    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module).should_receive('ensure_files_readable')
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
+    flexmock(module.logger).should_receive('warning').never()
+    flexmock(module).should_receive('collect_special_file_paths').never()
+
+    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+        module.make_base_create_command(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+                'read_special': True,
             },
             config_paths=['/tmp/test.yaml'],
             local_borg_version='1.2.3',
@@ -1709,7 +1756,6 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         )
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').and_return(())
     create_command = (
         'borg',
         'create',
@@ -1750,127 +1796,6 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         progress=True,
-        stream_processes=processes,
-    )
-
-
-def test_create_archive_with_stream_processes_ands_read_special_false_excludes_special_files():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    processes = flexmock()
-    flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('make_base_create_command').and_return(
-        (
-            ('borg', 'create', '--one-file-system', '--read-special'),
-            REPO_ARCHIVE_WITH_PATHS,
-            flexmock(),
-            flexmock(),
-        )
-    )
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').and_return(('/dev/null',))
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(flexmock(name='patterns'))
-    flexmock(module).should_receive('make_exclude_flags').and_return(())
-    create_command = (
-        'borg',
-        'create',
-        '--one-file-system',
-        '--read-special',
-    ) + REPO_ARCHIVE_WITH_PATHS
-    flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command + ('--dry-run', '--list'),
-        processes=processes,
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-        working_directory=None,
-        extra_environment=None,
-    )
-    flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command,
-        processes=processes,
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-        working_directory=None,
-        extra_environment=None,
-    )
-
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'read_special': False,
-        },
-        config_paths=['/tmp/test.yaml'],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
-        stream_processes=processes,
-    )
-
-
-def test_create_archive_with_stream_processes_and_read_special_true_skips_special_files_excludes():
-    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
-    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
-    processes = flexmock()
-    flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
-    flexmock(module).should_receive('make_base_create_command').and_return(
-        (
-            ('borg', 'create', '--one-file-system', '--read-special'),
-            REPO_ARCHIVE_WITH_PATHS,
-            flexmock(),
-            flexmock(),
-        )
-    )
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module).should_receive('collect_special_file_paths').never()
-    create_command = (
-        'borg',
-        'create',
-        '--one-file-system',
-        '--read-special',
-    ) + REPO_ARCHIVE_WITH_PATHS
-    flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command + ('--dry-run', '--list'),
-        processes=processes,
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-        working_directory=None,
-        extra_environment=None,
-    )
-    flexmock(module).should_receive('execute_command_with_processes').with_args(
-        create_command,
-        processes=processes,
-        output_log_level=logging.INFO,
-        output_file=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-        working_directory=None,
-        extra_environment=None,
-    )
-
-    module.create_archive(
-        dry_run=False,
-        repository_path='repo',
-        config={
-            'source_directories': ['foo', 'bar'],
-            'repositories': ['repo'],
-            'exclude_patterns': None,
-            'read_special': True,
-        },
-        config_paths=['/tmp/test.yaml'],
-        local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
         stream_processes=processes,
     )
 

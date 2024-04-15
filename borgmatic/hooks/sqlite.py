@@ -17,9 +17,17 @@ def make_dump_path(config):  # pragma: no cover
     )
 
 
+def use_streaming(databases, config, log_prefix):
+    '''
+    Given a sequence of SQLite database configuration dicts, a configuration dict (ignored), and a
+    log prefix (ignored), return whether streaming will be using during dumps.
+    '''
+    return any(databases)
+
+
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
-    Dump the given SQLite3 databases to a named pipe. The databases are supplied as a sequence of
+    Dump the given SQLite databases to a named pipe. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given configuration dict to
     construct the destination path and the given log prefix in any log entries.
 
@@ -71,7 +79,7 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
 
 def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
     '''
-    Remove the given SQLite3 database dumps from the filesystem. The databases are supplied as a
+    Remove the given SQLite database dumps from the filesystem. The databases are supplied as a
     sequence of configuration dicts, as per the configuration schema. Use the given configuration
     dict to construct the destination path and the given log prefix in any log entries. If this is a
     dry run, then don't actually remove anything.
@@ -81,8 +89,8 @@ def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma:
 
 def make_data_source_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
-    Make a pattern that matches the given SQLite3 databases. The databases are supplied as a
-    sequence of configuration dicts, as per the configuration schema.
+    Make a pattern that matches the given SQLite databases. The databases are supplied as a sequence
+    of configuration dicts, as per the configuration schema.
     '''
     return dump.make_data_source_dump_filename(make_dump_path(config), name)
 

@@ -4,11 +4,17 @@ import itertools
 import logging
 import os
 import pathlib
+import random
 
 import borgmatic.borg.check
+import borgmatic.borg.create
+import borgmatic.borg.environment
 import borgmatic.borg.extract
+import borgmatic.borg.list
+import borgmatic.borg.rlist
 import borgmatic.borg.state
 import borgmatic.config.validate
+import borgmatic.execute
 import borgmatic.hooks.command
 
 DEFAULT_CHECKS = (
@@ -288,6 +294,276 @@ def upgrade_check_times(config, borg_repository_id):
         os.rename(temporary_path, new_path)
 
 
+def collect_spot_check_source_paths(
+    repository, config, local_borg_version, global_arguments, local_path, remote_path
+):
+    '''
+    Given a repository configuration dict, a configuration dict, the local Borg version, global
+    arguments as an argparse.Namespace instance, the local Borg path, and the remote Borg path,
+    collect the source paths that Borg would use in an actual create (but only include files and
+    symlinks).
+    '''
+    stream_processes = any(
+        borgmatic.hooks.dispatch.call_hooks(
+            'use_streaming',
+            config,
+            repository['path'],
+            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+        ).values()
+    )
+
+    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+        borgmatic.borg.create.make_base_create_command(
+            dry_run=True,
+            repository_path=repository['path'],
+            config=config,
+            config_paths=(),
+            local_borg_version=local_borg_version,
+            global_arguments=global_arguments,
+            borgmatic_source_directories=(),
+            local_path=local_path,
+            remote_path=remote_path,
+            list_files=True,
+            stream_processes=stream_processes,
+        )
+    )
+    borg_environment = borgmatic.borg.environment.make_environment(config)
+
+    try:
+        working_directory = os.path.expanduser(config.get('working_directory'))
+    except TypeError:
+        working_directory = None
+
+    paths_output = borgmatic.execute.execute_command_and_capture_output(
+        create_flags + create_positional_arguments,
+        capture_stderr=True,
+        working_directory=working_directory,
+        extra_environment=borg_environment,
+        borg_local_path=local_path,
+        borg_exit_codes=config.get('borg_exit_codes'),
+    )
+
+    paths = tuple(
+        path_line.split(' ', 1)[1]
+        for path_line in paths_output.split('\n')
+        if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
+    )
+
+    return tuple(path for path in paths if os.path.isfile(path) or os.path.islink(path))
+
+
+BORG_DIRECTORY_FILE_TYPE = 'd'
+
+
+def collect_spot_check_archive_paths(
+    repository, archive, config, local_borg_version, global_arguments, local_path, remote_path
+):
+    '''
+    Given a repository configuration dict, the name of the latest archive, a configuration dict, the
+    local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, and
+    the remote Borg path, collect the paths from the given archive (but only include files and
+    symlinks).
+    '''
+    borgmatic_source_directory = os.path.expanduser(
+        config.get(
+            'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
+        )
+    )
+
+    return tuple(
+        path
+        for line in borgmatic.borg.list.capture_archive_listing(
+            repository['path'],
+            archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            path_format='{type} /{path}{NL}',  # noqa: FS003
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+        for (file_type, path) in (line.split(' ', 1),)
+        if file_type != BORG_DIRECTORY_FILE_TYPE
+        if pathlib.Path(borgmatic_source_directory) not in pathlib.Path(path).parents
+    )
+
+
+def compare_spot_check_hashes(
+    repository,
+    archive,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    log_label,
+    source_paths,
+):
+    '''
+    Given a repository configuration dict, the name of the latest archive, a configuration dict, the
+    local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
+    remote Borg path, a log label, and spot check source paths, compare the hashes for a sampling of
+    the source paths with hashes from corresponding paths in the given archive. Return a sequence of
+    the paths that fail that hash comparison.
+    '''
+    # Based on the configured sample percentage, come up with a list of random sample files from the
+    # source directories.
+    spot_check_config = next(check for check in config['checks'] if check['name'] == 'spot')
+    sample_count = max(
+        int(len(source_paths) * (spot_check_config['data_sample_percentage'] / 100)), 1
+    )
+    source_sample_paths = tuple(random.sample(source_paths, sample_count))
+    existing_source_sample_paths = {
+        source_path for source_path in source_sample_paths if os.path.exists(source_path)
+    }
+    logger.debug(
+        f'{log_label}: Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check'
+    )
+
+    # Hash each file in the sample paths (if it exists).
+    hash_output = borgmatic.execute.execute_command_and_capture_output(
+        (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
+        + tuple(path for path in source_sample_paths if path in existing_source_sample_paths)
+    )
+
+    source_hashes = dict(
+        (reversed(line.split('  ', 1)) for line in hash_output.splitlines()),
+        **{path: '' for path in source_sample_paths if path not in existing_source_sample_paths},
+    )
+
+    archive_hashes = dict(
+        reversed(line.split(' ', 1))
+        for line in borgmatic.borg.list.capture_archive_listing(
+            repository['path'],
+            archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            list_paths=source_sample_paths,
+            path_format='{xxh64} /{path}{NL}',  # noqa: FS003
+            local_path=local_path,
+            remote_path=remote_path,
+        )
+        if line
+    )
+
+    # Compare the source hashes with the archive hashes to see how many match.
+    failing_paths = []
+
+    for path, source_hash in source_hashes.items():
+        archive_hash = archive_hashes.get(path)
+
+        if archive_hash is not None and archive_hash == source_hash:
+            continue
+
+        failing_paths.append(path)
+
+    return tuple(failing_paths)
+
+
+def spot_check(
+    repository,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+):
+    '''
+    Given a repository dict, a loaded configuration dict, the local Borg version, global arguments
+    as an argparse.Namespace instance, the local Borg path, and the remote Borg path, perform a spot
+    check for the latest archive in the given repository.
+
+    A spot check compares file counts and also the hashes for a random sampling of source files on
+    disk to those stored in the latest archive. If any differences are beyond configured tolerances,
+    then the check fails.
+    '''
+    log_label = f'{repository.get("label", repository["path"])}'
+    logger.debug(f'{log_label}: Running spot check')
+    spot_check_config = next(check for check in config['checks'] if check['name'] == 'spot')
+
+    if spot_check_config['data_tolerance_percentage'] > spot_check_config['data_sample_percentage']:
+        raise ValueError(
+            'The data_tolerance_percentage must be less than or equal to the data_sample_percentage'
+        )
+
+    source_paths = collect_spot_check_source_paths(
+        repository,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+    )
+    logger.debug(f'{log_label}: {len(source_paths)} total source paths for spot check')
+
+    archive = borgmatic.borg.rlist.resolve_archive_name(
+        repository['path'],
+        'latest',
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+    )
+    logger.debug(f'{log_label}: Using archive {archive} for spot check')
+
+    archive_paths = collect_spot_check_archive_paths(
+        repository,
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+    )
+    logger.debug(f'{log_label}: {len(archive_paths)} total archive paths for spot check')
+
+    # Calculate the percentage delta between the source paths count and the archive paths count, and
+    # compare that delta to the configured count tolerance percentage.
+    count_delta_percentage = abs(len(source_paths) - len(archive_paths)) / len(source_paths) * 100
+
+    if count_delta_percentage > spot_check_config['count_tolerance_percentage']:
+        logger.debug(
+            f'{log_label}: Paths in source paths but not latest archive: {", ".join(set(source_paths) - set(archive_paths)) or "none"}'
+        )
+        logger.debug(
+            f'{log_label}: Paths in latest archive but not source paths: {", ".join(set(archive_paths) - set(source_paths)) or "none"}'
+        )
+        raise ValueError(
+            f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)'
+        )
+
+    failing_paths = compare_spot_check_hashes(
+        repository,
+        archive,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path,
+        remote_path,
+        log_label,
+        source_paths,
+    )
+
+    # Error if the percentage of failing hashes exceeds the configured tolerance percentage.
+    logger.debug(f'{log_label}: {len(failing_paths)} non-matching spot check hashes')
+    data_tolerance_percentage = spot_check_config['data_tolerance_percentage']
+    failing_percentage = (len(failing_paths) / len(source_paths)) * 100
+
+    if failing_percentage > data_tolerance_percentage:
+        logger.debug(
+            f'{log_label}: Source paths with data not matching the latest archive: {", ".join(failing_paths)}'
+        )
+        raise ValueError(
+            f'Spot check failed: {failing_percentage:.2f}% of source paths with data not matching the latest archive (tolerance is {data_tolerance_percentage}%)'
+        )
+
+    logger.info(
+        f'{log_label}: Spot check passed with a {count_delta_percentage:.2f}% file count delta and a {failing_percentage:.2f}% file data delta'
+    )
+
+
 def run_check(
     config_filename,
     repository,
@@ -369,14 +645,16 @@ def run_check(
         )
         write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
-    # if 'spot' in checks:
-    # TODO:
-    # count the number of files in source directories, but need to take patterns and stuff into account...
-    # in a loop until the sample percentage (of the total source files) is met:
-    # pick a random file from source directories and calculate its sha256 sum
-    # extract the file from the latest archive (to stdout) and calculate its sha256 sum
-    # if the two checksums are equal, increment the matching files count
-    # if the percentage of matching files (of the total source files) < tolerance percentage, error
+    if 'spot' in checks:
+        spot_check(
+            repository,
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
+        )
+        write_check_time(make_check_time_path(config, repository_id, 'spot'))
 
     borgmatic.hooks.command.execute_hook(
         config.get('after_check'),

@@ -543,8 +543,9 @@ properties:
                           example: 2 weeks
                 - required:
                     - name
-                    - sample_percentage
-                    - tolerance_percentage
+                    - data_sample_percentage
+                    - data_tolerance_percentage
+                    - count_tolerance_percentage
                   additionalProperties: false
                   properties:
                       name:
@@ -577,25 +578,45 @@ properties:
                               "always": running this check every time checks
                               are run.
                           example: 2 weeks
-                      sample_percentage:
+                      count_tolerance_percentage:
+                          type: number
+                          description: |
+                              The percentage delta between the source
+                              directories file count and the most recent backup
+                              archive file count that is allowed before the
+                              entire consistency check fails. This can catch
+                              problems like incorrect excludes, inadvertent
+                              deletes, etc. Only applies to the "spot" check.
+                          example: 10
+                      data_sample_percentage:
                           type: number
                           description: |
                               The percentage of total files in the source
                               directories to randomly sample and compare to
                               their corresponding files in the most recent
-                              backup archive. Only applies to the "spot"
-                              check.
-                          example: 5
-                      tolerance_percentage:
+                              backup archive. Only applies to the "spot" check.
+                          example: 1
+                      data_tolerance_percentage:
                           type: number
                           description: |
                               The percentage of total files in the source
-                              directories that can fail a spot check
-                              comparison without failing the entire
-                              consistency check. Should be lower than or
-                              equal to the "sample_percentage". Only applies
-                              to the "spot" check.
+                              directories that can fail a spot check comparison
+                              without failing the entire consistency check. This
+                              can catch problems like source files that have
+                              been bulk-changed by malware, backups that have
+                              been tampered with, etc. The value must be lower
+                              than or equal to the "contents_sample_percentage".
+                              Only applies to the "spot" check.
                           example: 0.5
+                      xxh64sum_command:
+                          type: string
+                          description: |
+                              Command to use instead of "xxh64sum" to hash
+                              source files, usually found in an OS package named
+                              "xxhash". Do not substitute with a different hash
+                              type (SHA, MD5, etc.) or the check will never
+                              succeed. Only applies to the "spot" check.
+                          example: /usr/local/bin/xxh64sum
         description: |
             List of one or more consistency checks to run on a periodic basis
             (if "frequency" is set) or every time borgmatic runs checks (if

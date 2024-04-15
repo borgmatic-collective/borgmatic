@@ -614,10 +614,10 @@ def make_parsers():
     check_group.add_argument(
         '--only',
         metavar='CHECK',
-        choices=('repository', 'archives', 'data', 'extract'),
+        choices=('repository', 'archives', 'data', 'extract', 'spot'),
         dest='only_checks',
         action='append',
-        help='Run a particular consistency check (repository, archives, data, or extract) instead of configured checks (subject to configured frequency, can specify flag multiple times)',
+        help='Run a particular consistency check (repository, archives, data, extract, or spot) instead of configured checks (subject to configured frequency, can specify flag multiple times)',
     )
     check_group.add_argument(
         '--force',

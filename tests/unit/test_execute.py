@@ -124,6 +124,13 @@ def test_append_last_lines_with_output_log_level_none_appends_captured_output():
         (('foo', 'bar'), flexmock(name='input'), None, None, 'foo bar < input'),
         (('foo', 'bar'), None, flexmock(name='output'), None, 'foo bar > output'),
         (
+            ('A',) * module.MAX_LOGGED_COMMAND_LENGTH,
+            None,
+            None,
+            None,
+            'A ' * (module.MAX_LOGGED_COMMAND_LENGTH // 2 - 2) + '...',
+        ),
+        (
             ('foo', 'bar'),
             flexmock(name='input'),
             flexmock(name='output'),
