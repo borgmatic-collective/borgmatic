@@ -410,7 +410,7 @@ def compare_spot_check_hashes(
     # source directories.
     spot_check_config = next(check for check in config['checks'] if check['name'] == 'spot')
     sample_count = max(
-        int(len(source_paths) * (spot_check_config['data_sample_percentage'] / 100)), 1
+        int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)), 1
     )
     source_sample_paths = tuple(random.sample(source_paths, sample_count))
     existing_source_sample_paths = {

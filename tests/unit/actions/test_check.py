@@ -635,6 +635,42 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
     ) == ('/bar',)
 
 
+def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo', '/bar')).and_return('hash1  /foo\nhash2  /bar')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['nothash1 /foo', 'nothash2 /bar']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 1000,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar'),
+    ) == ('/foo', '/bar')
+
+
 def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
