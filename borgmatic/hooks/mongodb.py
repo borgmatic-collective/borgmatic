@@ -16,6 +16,14 @@ def make_dump_path(config):  # pragma: no cover
     )
 
 
+def use_streaming(databases, config, log_prefix):
+    '''
+    Given a sequence of MongoDB database configuration dicts, a configuration dict (ignored), and a
+    log prefix (ignored), return whether streaming will be using during dumps.
+    '''
+    return any(database.get('format') != 'directory' for database in databases)
+
+
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
     Dump the given MongoDB databases to a named pipe. The databases are supplied as a sequence of

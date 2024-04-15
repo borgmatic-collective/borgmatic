@@ -44,6 +44,16 @@ def test_database_names_to_dump_queries_mysql_for_database_names():
     assert names == ('foo', 'bar')
 
 
+def test_use_streaming_true_for_any_databases():
+    assert module.use_streaming(
+        databases=[flexmock(), flexmock()], config=flexmock(), log_prefix=flexmock()
+    )
+
+
+def test_use_streaming_false_for_no_databases():
+    assert not module.use_streaming(databases=[], config=flexmock(), log_prefix=flexmock())
+
+
 def test_dump_data_sources_dumps_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]

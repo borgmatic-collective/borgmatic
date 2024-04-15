@@ -275,11 +275,11 @@ def collect_special_file_paths(
     create_command, config, local_path, working_directory, borg_environment, skip_directories
 ):
     '''
-    Given a Borg create command as a tuple, a local Borg path, a working directory, a dict of
-    environment variables to pass to Borg, and a sequence of parent directories to skip, collect the
-    paths for any special files (character devices, block devices, and named pipes / FIFOs) that
-    Borg would encounter during a create. These are all paths that could cause Borg to hang if its
-    --read-special flag is used.
+    Given a Borg create command as a tuple, a configuration dict, a local Borg path, a working
+    directory, a dict of environment variables to pass to Borg, and a sequence of parent directories
+    to skip, collect the paths for any special files (character devices, block devices, and named
+    pipes / FIFOs) that Borg would encounter during a create. These are all paths that could cause
+    Borg to hang if its --read-special flag is used.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created.
@@ -320,35 +320,31 @@ def check_all_source_directories_exist(source_directories):
         raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
 
 
-def create_archive(
+def make_base_create_command(
     dry_run,
     repository_path,
     config,
     config_paths,
     local_borg_version,
     global_arguments,
+    borgmatic_source_directories,
     local_path='borg',
     remote_path=None,
     progress=False,
-    stats=False,
     json=False,
     list_files=False,
     stream_processes=None,
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
-    sequence of loaded configuration paths, the local Borg version, and global arguments as an
-    argparse.Namespace instance, create a Borg archive and return Borg's JSON output (if any).
-
-    If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
-    create command while also triggering the given processes to produce output.
+    sequence of loaded configuration paths, the local Borg version, global arguments as an
+    argparse.Namespace instance, and a sequence of borgmatic source directories, return a tuple of
+    (base Borg create command flags, Borg create command positional arguments, open pattern file
+    handle, open exclude file handle).
     '''
-    borgmatic.logger.add_custom_log_levels()
-    borgmatic_source_directories = expand_directories(
-        collect_borgmatic_source_directories(config.get('borgmatic_source_directory'))
-    )
     if config.get('source_directories_must_exist', False):
         check_all_source_directories_exist(config.get('source_directories'))
+
     sources = deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
@@ -363,11 +359,6 @@ def create_archive(
     )
 
     ensure_files_readable(config.get('patterns_from'), config.get('exclude_from'))
-
-    try:
-        working_directory = os.path.expanduser(config.get('working_directory'))
-    except TypeError:
-        working_directory = None
 
     pattern_file = (
         write_pattern_file(config.get('patterns'), sources)
@@ -411,11 +402,6 @@ def create_archive(
             ('--remote-ratelimit', str(upload_rate_limit)) if upload_rate_limit else ()
         )
 
-    if stream_processes and config.get('read_special') is False:
-        logger.warning(
-            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
-        )
-
     create_flags = (
         tuple(local_path.split(' '))
         + ('create',)
@@ -451,22 +437,19 @@ def create_archive(
         repository_path, archive_name_format, local_borg_version
     ) + (sources if not pattern_file else ())
 
-    if json:
-        output_log_level = None
-    elif list_files or (stats and not dry_run):
-        output_log_level = logging.ANSWER
-    else:
-        output_log_level = logging.INFO
-
-    # The progress output isn't compatible with captured and logged output, as progress messes with
-    # the terminal directly.
-    output_file = DO_NOT_CAPTURE if progress else None
-
-    borg_environment = environment.make_environment(config)
-
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not config.get('read_special'):
+        logger.warning(
+            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+        )
+        try:
+            working_directory = os.path.expanduser(config.get('working_directory'))
+        except TypeError:
+            working_directory = None
+
+        borg_environment = environment.make_environment(config)
+
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             create_flags + create_positional_arguments,
@@ -488,6 +471,73 @@ def create_archive(
                 pattern_file=exclude_file,
             )
             create_flags += make_exclude_flags(config, exclude_file.name)
+
+    return (create_flags, create_positional_arguments, pattern_file, exclude_file)
+
+
+def create_archive(
+    dry_run,
+    repository_path,
+    config,
+    config_paths,
+    local_borg_version,
+    global_arguments,
+    local_path='borg',
+    remote_path=None,
+    progress=False,
+    stats=False,
+    json=False,
+    list_files=False,
+    stream_processes=None,
+):
+    '''
+    Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
+    sequence of loaded configuration paths, the local Borg version, and global arguments as an
+    argparse.Namespace instance, create a Borg archive and return Borg's JSON output (if any).
+
+    If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
+    create command while also triggering the given processes to produce output.
+    '''
+    borgmatic.logger.add_custom_log_levels()
+    borgmatic_source_directories = expand_directories(
+        collect_borgmatic_source_directories(config.get('borgmatic_source_directory'))
+    )
+
+    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+        make_base_create_command(
+            dry_run,
+            repository_path,
+            config,
+            config_paths,
+            local_borg_version,
+            global_arguments,
+            borgmatic_source_directories,
+            local_path,
+            remote_path,
+            progress,
+            json,
+            list_files,
+            stream_processes,
+        )
+    )
+
+    if json:
+        output_log_level = None
+    elif list_files or (stats and not dry_run):
+        output_log_level = logging.ANSWER
+    else:
+        output_log_level = logging.INFO
+
+    # The progress output isn't compatible with captured and logged output, as progress messes with
+    # the terminal directly.
+    output_file = DO_NOT_CAPTURE if progress else None
+
+    try:
+        working_directory = os.path.expanduser(config.get('working_directory'))
+    except TypeError:
+        working_directory = None
+
+    borg_environment = environment.make_environment(config)
 
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())

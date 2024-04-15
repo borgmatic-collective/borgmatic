@@ -4,6 +4,7 @@ import logging
 import os
 import select
 import subprocess
+import textwrap
 
 logger = logging.getLogger(__name__)
 
@@ -219,13 +220,22 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
         }
 
 
+MAX_LOGGED_COMMAND_LENGTH = 1000
+
+
 def log_command(full_command, input_file=None, output_file=None, environment=None):
     '''
     Log the given command (a sequence of command/argument strings), along with its input/output file
     paths and extra environment variables (with omitted values in case they contain passwords).
     '''
     logger.debug(
-        ' '.join(tuple(f'{key}=***' for key in (environment or {}).keys()) + tuple(full_command))
+        textwrap.shorten(
+            ' '.join(
+                tuple(f'{key}=***' for key in (environment or {}).keys()) + tuple(full_command)
+            ),
+            width=MAX_LOGGED_COMMAND_LENGTH,
+            placeholder=' ...',
+        )
         + (f" < {getattr(input_file, 'name', '')}" if input_file else '')
         + (f" > {getattr(output_file, 'name', '')}" if output_file else '')
     )
