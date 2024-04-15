@@ -91,8 +91,9 @@ Here are the available checks from fastest to slowest:
 
  * `repository`: Checks the consistency of the repository itself.
  * `archives`: Checks all of the archives in the repository.
- * `extract`: Performs an extraction dry-run of the most recent archive.
+ * `extract`: Performs an extraction dry-run of the latest archive.
  * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data.
+ * `spot`: Compares file counts and contents between your source files and the latest archive.
 
 Note that the `data` check is a more thorough version of the `archives` check,
 so enabling the `data` check implicitly enables the `archives` check as well.
@@ -100,6 +101,80 @@ so enabling the `data` check implicitly enables the `archives` check as well.
 See [Borg's check
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/check.html)
 for more information.
+
+
+### Spot check
+
+The various consistency checks all have trade-offs around speed and
+thoroughness, but most of them don't even look at your original source
+files—arguably one important way to ensure your backups contain the files
+you'll ultimately want to restore in the case of catastrophe (or just an
+accidentally deleted file). Because if something goes wrong with your source
+files, most consistency checks will still pass with flying colors and you
+won't discover there's a problem until you go to restore.
+
+<span class="minilink minilink-addedin">New in version 1.8.10</span> <span
+class="minilink minilink-addedin">Beta feature</span> That's where the spot
+check comes in. This check actually compares your source files counts and data
+against those in the latest archive, potentially catching problems like
+incorrect excludes, inadvertent deletes, files changed by malware, etc.
+
+However, because an exhaustive comparison of all source files against the
+latest archive might be too slow, the spot check supports sampling a
+percentage of your source files for the comparison, ensuring it falls within
+configured tolerances.
+
+Here's how to use it. Start by installing the `xxhash` OS package if you don't
+already have it, so the spot check can run the `xxh64sum` command and
+efficiently hash files for comparison. Then add something like the following
+to your borgmatic configuration:
+
+```yaml
+checks:
+    - name: spot
+      count_tolerance_percentage: 10
+      data_sample_percentage: 1
+      data_tolerance_percentage: 0.5
+```
+
+The `count_tolerance_percentage` is the percentage delta between the source
+directories file count and the latest backup archive file count that is
+allowed before the entire consistency check fails. For instance, if the spot
+check runs and finds 100 source files and 105 files in the latest archive,
+that would be within a 10% count tolerance and the check would succeed. But if
+there were 100 source files and 200 archive files, the check would fail. (100
+source files and only 50 archive files would also fail.)
+
+The `data_sample_percentage` is the percentage of total files in the source
+directories to randomly sample and compare to their corresponding files in the
+latest backup archive. The comparison is performed by hashing the selected
+files in each of the source paths and the backup archive and counting hashes
+that don't match. For instance, if you have 1,000 source files and your sample
+percentage is 1%, then only 10 source files will be compared against the
+latest archive. These sampled files are selected randomly each time, so in
+effect the spot check is a probabilistic check.
+
+The `data_tolerance_percentage` is the percentage of total files in the source
+directories that can fail a spot check data comparison without failing the
+entire consistency check. The value must be lower than or equal to the
+`contents_sample_percentage`.
+
+All three options are required when using the spot check. And because the spot
+check relies on these configured tolerances, it may not be a
+set-it-and-forget-it type of consistency check, at least until you get the
+tolerances dialed in so there are minimal false positives or negatives. For
+certain workloads where your source files experience wild swings of changed
+data or file counts, the spot check may not suitable at all.
+
+What if you change or add or delete a bunch of your source files and you don't
+want the spot check to fail the next time it's run? Run `borgmatic create` to
+create a new backup, thereby allowing the spot check to run against an archive
+that contains your source file changes.
+
+While the spot check feature is currently in beta, it may be subject to
+breaking changes. But feel free to use it in production if you're okay with
+that caveat, and please [provide any
+feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 
 ### Check frequency

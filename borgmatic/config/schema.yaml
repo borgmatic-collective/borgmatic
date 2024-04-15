@@ -543,9 +543,9 @@ properties:
                           example: 2 weeks
                 - required:
                     - name
+                    - count_tolerance_percentage
                     - data_sample_percentage
                     - data_tolerance_percentage
-                    - count_tolerance_percentage
                   additionalProperties: false
                   properties:
                       name:
