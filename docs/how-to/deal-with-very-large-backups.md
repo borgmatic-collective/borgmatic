@@ -121,7 +121,7 @@ incorrect excludes, inadvertent deletes, files changed by malware, etc.
 
 However, because an exhaustive comparison of all source files against the
 latest archive might be too slow, the spot check supports *sampling* a
-percentage of your source files for the comparison, ensuring it falls within
+percentage of your source files for the comparison, ensuring they fall within
 configured tolerances.
 
 Here's how it works. Start by installing the `xxhash` OS package if you don't
