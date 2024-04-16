@@ -174,6 +174,11 @@ want the spot check to fail the next time it's run? Run `borgmatic create` to
 create a new backup, thereby allowing the next spot check to run against an
 archive that contains your recent changes.
 
+Because the spot check only looks at the most recent archive, you may not want
+to run it immediately after a `create` action (borgmatic's default behavior).
+Instead, it may make more sense to run the spot check on a separate schedule
+from `create`.
+
 As long as the spot check feature is in beta, it may be subject to breaking
 changes. But feel free to use it in production if you're okay with that
 caveat, and please [provide any
