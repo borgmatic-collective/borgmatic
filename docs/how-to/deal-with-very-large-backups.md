@@ -149,12 +149,11 @@ fail.)
 The `data_sample_percentage` is the percentage of total files in the source
 directories to randomly sample and compare to their corresponding files in the
 latest backup archive. A higher value allows a more accurate check—and a
-slower one. The comparison is performed by hashing the selected files in each
-of the source paths and counting hashes that don't match the latest archive.
-For instance, if you have 1,000 source files and your sample percentage is 1%,
-then only 10 source files will be compared against the latest archive. These
-sampled files are selected randomly each time, so in effect the spot check is
-probabilistic.
+slower one. The comparison is performed by hashing the selected source files
+and counting hashes that don't match the latest archive. For instance, if you
+have 1,000 source files and your sample percentage is 1%, then only 10 source
+files will be compared against the latest archive. These sampled files are
+selected randomly each time, so in effect the spot check is probabilistic.
 
 The `data_tolerance_percentage` is the percentage of total files in the source
 directories that can fail a spot check data comparison without failing the
