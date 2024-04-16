@@ -1,4 +1,4 @@
-1.8.10.dev0
+1.8.10
  * #656 (beta): Add a "spot" consistency check that compares file counts and contents between your
    source files and the latest archive, ensuring they fall within configured tolerances. This can
    catch problems like incorrect excludes, inadvertent deletes, files changed by malware, etc. See
@@ -16,7 +16,6 @@
  * Add documentation about backing up containerized databases by configuring borgmatic to exec into
    a container to run a dump command:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
- *
 
 1.8.9
  * #311: Add custom dump/restore command options for MySQL and MariaDB.
