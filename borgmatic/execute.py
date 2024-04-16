@@ -220,6 +220,24 @@ def log_outputs(processes, exclude_stdouts, output_log_level, borg_local_path, b
         }
 
 
+SECRET_COMMAND_FLAG_NAMES = {'--password'}
+
+
+def mask_command_secrets(full_command):
+    '''
+    Given a command as a sequence, mask secret values for flags like "--password" in preparation for
+    logging.
+    '''
+    masked_command = []
+    previous_piece = None
+
+    for piece in full_command:
+        masked_command.append('***' if previous_piece in SECRET_COMMAND_FLAG_NAMES else piece)
+        previous_piece = piece
+
+    return tuple(masked_command)
+
+
 MAX_LOGGED_COMMAND_LENGTH = 1000
 
 
@@ -231,7 +249,8 @@ def log_command(full_command, input_file=None, output_file=None, environment=Non
     logger.debug(
         textwrap.shorten(
             ' '.join(
-                tuple(f'{key}=***' for key in (environment or {}).keys()) + tuple(full_command)
+                tuple(f'{key}=***' for key in (environment or {}).keys())
+                + mask_command_secrets(full_command)
             ),
             width=MAX_LOGGED_COMMAND_LENGTH,
             placeholder=' ...',

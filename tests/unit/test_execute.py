@@ -117,6 +117,24 @@ def test_append_last_lines_with_output_log_level_none_appends_captured_output():
     assert captured_output == ['captured', 'line']
 
 
+def test_mask_command_secrets_masks_password_flag_value():
+    assert module.mask_command_secrets(('cooldb', '--username', 'bob', '--password', 'pass')) == (
+        'cooldb',
+        '--username',
+        'bob',
+        '--password',
+        '***',
+    )
+
+
+def test_mask_command_secrets_passes_through_other_commands():
+    assert module.mask_command_secrets(('cooldb', '--username', 'bob')) == (
+        'cooldb',
+        '--username',
+        'bob',
+    )
+
+
 @pytest.mark.parametrize(
     'full_command,input_file,output_file,environment,expected_result',
     (
@@ -149,6 +167,7 @@ def test_append_last_lines_with_output_log_level_none_appends_captured_output():
 def test_log_command_logs_command_constructed_from_arguments(
     full_command, input_file, output_file, environment, expected_result
 ):
+    flexmock(module).should_receive('mask_command_secrets').replace_with(lambda command: command)
     flexmock(module.logger).should_receive('debug').with_args(expected_result).once()
 
     module.log_command(full_command, input_file, output_file, environment)

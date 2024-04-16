@@ -9,6 +9,7 @@
  * #843: Add documentation link to Loki dashboard for borgmatic:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook
  * #847: Fix "--json" error when Borg includes non-JSON warnings in JSON output.
+ * #848: SECURITY: Mask the password when logging a MongoDB dump or restore command.
  * Fix handling of the NO_COLOR environment variable to ignore an empty value.
  * Add documentation about backing up containerized databases by configuring borgmatic to exec into
    a container to run a dump command:
