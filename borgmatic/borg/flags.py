@@ -74,6 +74,9 @@ def make_match_archives_flags(match_archives, archive_name_format, local_borg_ve
     (like "{now}") with globs.
     '''
     if match_archives:
+        if match_archives in {'*', 're:.*', 'sh:*'}:
+            return ()
+
         if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version):
             return ('--match-archives', match_archives)
         else:

@@ -151,6 +151,30 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
             False,
             ('--glob-archives', '*-docs-{user}'),  # noqa: FS003
         ),
+        (
+            '*',
+            '{now}',  # noqa: FS003
+            True,
+            (),
+        ),
+        (
+            '*',
+            '{now}',  # noqa: FS003
+            False,
+            (),
+        ),
+        (
+            're:.*',
+            '{now}',  # noqa: FS003
+            True,
+            (),
+        ),
+        (
+            'sh:*',
+            '{now}',  # noqa: FS003
+            True,
+            (),
+        ),
     ),
 )
 def test_make_match_archives_flags_makes_flags_with_globs(
