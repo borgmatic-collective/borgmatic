@@ -507,6 +507,39 @@ def test_extract_archive_calls_borg_with_strip_components_calculated_from_all():
     )
 
 
+def test_extract_archive_calls_borg_with_strip_components_calculated_from_all_with_leading_slash():
+    flexmock(module.os.path).should_receive('abspath').and_return('repo')
+    insert_execute_command_mock(
+        (
+            'borg',
+            'extract',
+            '--strip-components',
+            '2',
+            'repo::archive',
+            '/foo/bar/baz.txt',
+            '/foo/bar.txt',
+        )
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::archive',)
+    )
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'normalize_repository_path'
+    ).and_return('repo')
+
+    module.extract_archive(
+        dry_run=False,
+        repository='repo',
+        archive='archive',
+        paths=['/foo/bar/baz.txt', '/foo/bar.txt'],
+        config={},
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        strip_components='all',
+    )
+
+
 def test_extract_archive_with_strip_components_all_and_no_paths_raises():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module.feature).should_receive('available').and_return(True)

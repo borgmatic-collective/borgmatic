@@ -1,3 +1,7 @@
+1.8.11.dev0
+ * #851: Fix lack of file extraction when using "extract --strip-components all" on a path with a
+   leading slash.
+
 1.8.10
  * #656 (beta): Add a "spot" consistency check that compares file counts and contents between your
    source files and the latest archive, ensuring they fall within configured tolerances. This can

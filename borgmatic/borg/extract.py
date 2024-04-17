@@ -104,8 +104,13 @@ def extract_archive(
         if not paths:
             raise ValueError('The --strip-components flag with "all" requires at least one --path')
 
-        # Calculate the maximum number of leading path components of the given paths.
-        strip_components = max(0, *(len(path.split(os.path.sep)) - 1 for path in paths))
+        # Calculate the maximum number of leading path components of the given paths. "if piece"
+        # ignores empty path components, e.g. those resulting from a leading slash. And the "- 1"
+        # is so this doesn't count the final path component, e.g. the filename itself.
+        strip_components = max(
+            0,
+            *(len(tuple(piece for piece in path.split(os.path.sep) if piece)) - 1 for path in paths)
+        )
 
     full_command = (
         (local_path, 'extract')
