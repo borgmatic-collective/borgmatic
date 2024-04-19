@@ -1662,6 +1662,13 @@ properties:
                     states.
                 example:
                     - finish
+            create_slug:
+                type: boolean
+                description: |
+                    Create the check if it does not exist. Only works with
+                    the slug URL scheme (https://hc-ping.com/<ping-key>/<slug>
+                    as opposed to https://hc-ping.com/<uuid>). Defaults to false.
+                example: true
         description: |
             Configuration for a monitoring integration with Healthchecks. Create
             an account at https://healthchecks.io (or self-host Healthchecks) if

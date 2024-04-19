@@ -1,4 +1,5 @@
 import logging
+import re
 
 import requests
 
@@ -59,9 +60,14 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         )
         return
 
+    ping_url_is_uuid = re.match(r'(\w{4}-?){4}$', hook_config['ping_url'])
+
     healthchecks_state = MONITOR_STATE_TO_HEALTHCHECKS.get(state)
     if healthchecks_state:
         ping_url = f'{ping_url}/{healthchecks_state}'
+
+    if hook_config.get('create_slug') and not ping_url_is_uuid:
+        ping_url = f'{ping_url}?create=1'
 
     logger.info(f'{config_filename}: Pinging Healthchecks {state.name.lower()}{dry_run_label}')
     logger.debug(f'{config_filename}: Using Healthchecks ping URL {ping_url}')
