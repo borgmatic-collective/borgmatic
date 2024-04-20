@@ -435,11 +435,16 @@ apprise:
           label: gotify
         - url: mastodons://access_key@hostname/@user
           label: mastodon
+    states:
+        - start
+        - finish
+        - fail
 ```
 
 With this configuration, borgmatic pings each of the configured Apprise
 services when a backup begins, ends, or errors, but only when any of the
-`prune`, `compact`, `create`, or `check` actions are run.
+`prune`, `compact`, `create`, or `check` actions are run. (By default, if
+`states` is not specified, Apprise services are only pinged on error.)
 
 You can optionally customize the contents of the default messages sent to
 these services:
