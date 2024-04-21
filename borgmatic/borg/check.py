@@ -52,8 +52,8 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
 
 def make_check_flags(checks, archive_filter_flags):
     '''
-    Given a parsed sequence of checks and a sequence of flags to filter archives, transform the
-    checks into tuple of command-line check flags.
+    Given a parsed checks set and a sequence of flags to filter archives,
+    transform the checks into tuple of command-line check flags.
 
     For example, given parsed checks of:
 
@@ -68,13 +68,13 @@ def make_check_flags(checks, archive_filter_flags):
     '''
     if 'data' in checks:
         data_flags = ('--verify-data',)
-        checks += ('archives',)
+        checks.update({'archives'})
     else:
         data_flags = ()
 
     common_flags = (archive_filter_flags if 'archives' in checks else ()) + data_flags
 
-    if {'repository', 'archives'}.issubset(set(checks)):
+    if {'repository', 'archives'}.issubset(checks):
         return common_flags
 
     return (
