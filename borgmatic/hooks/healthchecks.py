@@ -66,8 +66,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if healthchecks_state:
         ping_url = f'{ping_url}/{healthchecks_state}'
 
-    if hook_config.get('create_slug') and not ping_url_is_uuid:
-        ping_url = f'{ping_url}?create=1'
+    if hook_config.get('create_slug'):
+        if ping_url_is_uuid:
+            logger.warning(
+                f'{config_filename}: Healthchecks UUIDs do not support auto provisionning; ignoring'
+            )
+        else:
+            ping_url = f'{ping_url}?create=1'
 
     logger.info(f'{config_filename}: Pinging Healthchecks {state.name.lower()}{dry_run_label}')
     logger.debug(f'{config_filename}: Using Healthchecks ping URL {ping_url}')
