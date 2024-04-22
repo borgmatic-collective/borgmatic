@@ -299,7 +299,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_create_slug_false
 
 
 def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid():
-    hook_config = {'ping_url': 'abcd-efgh-ijkl-mnop', 'create_slug': True}
+    hook_config = {'ping_url': 'b3611b24-df9c-4d36-9203-fa292820bf2a', 'create_slug': True}
     flexmock(module.requests).should_receive('post').with_args(
         f"https://hc-ping.com/{hook_config['ping_url']}",
         data=''.encode('utf-8'),

@@ -60,7 +60,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         )
         return
 
-    ping_url_is_uuid = re.match(r'(\w{4}-?){4}$', hook_config['ping_url'])
+    ping_url_is_uuid = re.search(r'\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', ping_url)
 
     healthchecks_state = MONITOR_STATE_TO_HEALTHCHECKS.get(state)
     if healthchecks_state:
