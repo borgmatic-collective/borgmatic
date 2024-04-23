@@ -264,6 +264,72 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
     )
 
 
+def test_ping_monitor_adds_create_query_parameter_when_create_slug_true():
+    flexmock(module.borgmatic.hooks.logs).should_receive('Forgetful_buffering_handler').never()
+    hook_config = {'ping_url': 'https://example.com', 'create_slug': True}
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/start?create=1', data=''.encode('utf-8'), verify=True
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_does_not_add_create_query_parameter_when_create_slug_false():
+    flexmock(module.borgmatic.hooks.logs).should_receive('Forgetful_buffering_handler').never()
+    hook_config = {'ping_url': 'https://example.com', 'create_slug': False}
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://example.com/start', data=''.encode('utf-8'), verify=True
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        state=module.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid():
+    hook_config = {'ping_url': 'b3611b24-df9c-4d36-9203-fa292820bf2a', 'create_slug': True}
+    flexmock(module.requests).should_receive('post').with_args(
+        f"https://hc-ping.com/{hook_config['ping_url']}",
+        data=''.encode('utf-8'),
+        verify=True,
+    ).and_return(flexmock(ok=True))
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        state=module.monitor.State.FINISH,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
+def test_ping_monitor_issues_warning_when_ping_url_is_uuid_and_create_slug_true():
+    hook_config = {'ping_url': 'b3611b24-df9c-4d36-9203-fa292820bf2a', 'create_slug': True}
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        state=module.monitor.State.FINISH,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
 def test_ping_monitor_with_connection_error_logs_warning():
     flexmock(module.borgmatic.hooks.logs).should_receive('Forgetful_buffering_handler').never()
     hook_config = {'ping_url': 'https://example.com'}
