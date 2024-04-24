@@ -769,6 +769,36 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     ) == ('/bar',)
 
 
+def test_spot_check_without_spot_configuration_errors():
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={
+                'checks': [
+                    {
+                        'name': 'archives',
+                    },
+                ]
+            },
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+
+
+def test_spot_check_without_any_configuration_errors():
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={},
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+
+
 def test_spot_check_data_tolerance_percenatge_greater_than_data_sample_percentage_errors():
     with pytest.raises(ValueError):
         module.spot_check(

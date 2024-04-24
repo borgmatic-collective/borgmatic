@@ -3,6 +3,7 @@
  * #851: Fix lack of file extraction when using "extract --strip-components all" on a path with a
    leading slash.
  * #854: Fix a traceback when the "data" consistency check is used.
+ # #857: Fix a traceback with "check --only spot" when the "spot" check is unconfigured.
 
 1.8.10
  * #656 (beta): Add a "spot" consistency check that compares file counts and contents between your

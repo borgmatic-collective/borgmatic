@@ -480,7 +480,13 @@ def spot_check(
     '''
     log_label = f'{repository.get("label", repository["path"])}'
     logger.debug(f'{log_label}: Running spot check')
-    spot_check_config = next(check for check in config['checks'] if check['name'] == 'spot')
+
+    try:
+        spot_check_config = next(
+            check for check in config.get('checks', ()) if check.get('name') == 'spot'
+        )
+    except StopIteration:
+        raise ValueError('Cannot run spot check because it is unconfigured')
 
     if spot_check_config['data_tolerance_percentage'] > spot_check_config['data_sample_percentage']:
         raise ValueError(
