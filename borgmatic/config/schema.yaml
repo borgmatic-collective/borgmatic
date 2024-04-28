@@ -269,7 +269,8 @@ properties:
     compression:
         type: string
         description: |
-            Type of compression to use when creating archives. See
+            Type of compression to use when creating archives. (Compression
+            level can be added separated with a comma, like "zstd,7".) See
             http://borgbackup.readthedocs.io/en/stable/usage/create.html for
             details. Defaults to "lz4".
         example: lz4
