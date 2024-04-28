@@ -437,20 +437,21 @@ borgmatic's own configuration file. So include your configuration file in
 backups to avoid getting caught without a way to restore a database.
 3. borgmatic does not currently support backing up or restoring multiple
 databases that share the exact same name on different hosts.
-4. Because database hooks implicitly enable the `read_special` option, any
-special files are excluded from backups (named pipes, block devices,
-character devices, and sockets) to prevent hanging. Try a command like
-`find /your/source/path -type b -or -type c -or -type p -or -type s` to
-find such files. Common directories to exclude are `/dev` and `/run`, but
-that may not be exhaustive. <span class="minilink minilink-addedin">New in
-version 1.7.3</span> When database hooks are enabled, borgmatic
-automatically excludes special files (and symlinks to special files) that
-may cause Borg to hang, so generally you no longer need to manually exclude
-them. There are potential edge cases though in which applications on your
-system create new special files *after* borgmatic constructs its exclude
-list, resulting in Borg hangs. If that occurs, you can resort to the manual
-excludes described above. And to opt out of the auto-exclude feature
-entirely, explicitly set `read_special` to true.
+4. When database hooks are enabled, borgmatic instructs Borg to consume
+special files (via `--read-special`) to support database dump
+streaming—regardless of the value of your `read_special` configuration option.
+And because this can cause Borg to hang, borgmatic also automatically excludes
+special files (and symlinks to them) that Borg may get stuck on. Even so,
+there are still potential edge cases in which applications on your system
+create new special files *after* borgmatic constructs its exclude list,
+resulting in Borg hangs. If that occurs, you can resort to manually excluding
+those files. And if you explicitly set the `read-special` option to `true`,
+borgmatic will opt you out of the auto-exclude feature entirely, but will
+still instruct Borg to consume special files—you will just be on your own to
+exclude them. <span class="minilink minilink-addedin">Prior to version
+1.7.3</span>Special files were not auto-excluded, and you were responsible for
+excluding them yourself. Common directories to exclude are `/dev` and `/run`,
+but that may not be exhaustive.
 5. Database hooks also implicitly enable the `one_file_system` option, which
 means Borg won't cross filesystem boundaries when looking for files to backup.
 This is especially important when running borgmatic in a container, as
