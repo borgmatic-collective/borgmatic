@@ -1,4 +1,4 @@
-1.8.11.dev0
+1.8.11
  * #815: Add optional Healthchecks auto-provisioning via "create_slug" option.
  * #851: Fix lack of file extraction when using "extract --strip-components all" on a path with a
    leading slash.
