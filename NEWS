@@ -1,3 +1,6 @@
+1.8.12.dev0
+ * #860: Fix interaction between environment variable interpolation in constants and shell escaping.
+
 1.8.11
  * #815: Add optional Healthchecks auto-provisioning via "create_slug" option.
  * #851: Fix lack of file extraction when using "extract --strip-components all" on a path with a

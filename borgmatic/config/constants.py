@@ -50,12 +50,15 @@ def apply_constants(value, constants, shell_escape=False):
             value[index] = apply_constants(list_value, constants, shell_escape)
     elif isinstance(value, dict):
         for option_name, option_value in value.items():
-            shell_escape = (
-                shell_escape
-                or option_name.startswith('before_')
-                or option_name.startswith('after_')
-                or option_name == 'on_error'
+            value[option_name] = apply_constants(
+                option_value,
+                constants,
+                shell_escape=(
+                    shell_escape
+                    or option_name.startswith('before_')
+                    or option_name.startswith('after_')
+                    or option_name == 'on_error'
+                ),
             )
-            value[option_name] = apply_constants(option_value, constants, shell_escape)
 
     return value
