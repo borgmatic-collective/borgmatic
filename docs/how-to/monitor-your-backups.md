@@ -420,7 +420,8 @@ pipx](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation),
 run the following to install Apprise so borgmatic can use it:
 
 ```bash
-sudo pipx install --force borgmatic[Apprise]
+sudo pipx uninstall borgmatic
+sudo pipx install borgmatic[Apprise]
 ```
 
 Omit `sudo` if borgmatic is installed as a non-root user.
