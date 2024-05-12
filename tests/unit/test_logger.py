@@ -217,10 +217,11 @@ def test_add_logging_level_skips_global_setting_if_already_set():
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
-    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
@@ -237,10 +238,11 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
-    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
@@ -258,10 +260,11 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebsd():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
-    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module).should_receive('interactive_console').and_return(False)
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
@@ -280,10 +283,11 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebs
 def test_configure_logging_without_syslog_log_level_skips_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
-    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -296,10 +300,11 @@ def test_configure_logging_without_syslog_log_level_skips_syslog():
 def test_configure_logging_skips_syslog_if_not_found():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
-    flexmock(module).should_receive('Console_color_formatter')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -312,8 +317,10 @@ def test_configure_logging_skips_syslog_if_not_found():
 def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).DISABLED = module.DISABLED
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -331,8 +338,10 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
 def test_configure_logging_to_log_file_instead_of_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -356,8 +365,10 @@ def test_configure_logging_to_log_file_instead_of_syslog():
 def test_configure_logging_to_both_log_file_and_syslog():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -387,8 +398,10 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module.logging).should_receive('Formatter').with_args(
         '{message}', style='{'  # noqa: FS003
     ).once()
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module).should_receive('interactive_console').and_return(False)
@@ -413,8 +426,10 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
 def test_configure_logging_skips_log_file_if_argument_is_none():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').once()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module.logging).should_receive('basicConfig').with_args(
@@ -426,11 +441,14 @@ def test_configure_logging_skips_log_file_if_argument_is_none():
     module.configure_logging(console_log_level=logging.INFO, log_file=None)
 
 
-def test_configure_logging_skips_console_color_formatter_if_color_disabled():
+def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    fake_formatter = flexmock()
+    flexmock(module).should_receive('Console_color_formatter').never()
+    flexmock(module).should_receive('Console_no_color_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
-    multi_stream_handler.should_receive('setFormatter').never()
+    multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module.logging).should_receive('basicConfig').with_args(

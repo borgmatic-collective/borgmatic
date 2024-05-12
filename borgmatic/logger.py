@@ -88,6 +88,11 @@ class Multi_stream_handler(logging.Handler):
             handler.setLevel(level)
 
 
+class Console_no_color_formatter(logging.Formatter):
+    def format(self, record):
+        return record.msg
+
+
 class Console_color_formatter(logging.Formatter):
     def format(self, record):
         add_custom_log_levels()
@@ -198,6 +203,8 @@ def configure_logging(
 
     if color_enabled:
         console_handler.setFormatter(Console_color_formatter())
+    else:
+        console_handler.setFormatter(Console_no_color_formatter())
 
     console_handler.setLevel(console_log_level)
 
