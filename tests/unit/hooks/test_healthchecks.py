@@ -318,6 +318,9 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid(
 
 def test_ping_monitor_issues_warning_when_ping_url_is_uuid_and_create_slug_true():
     hook_config = {'ping_url': 'b3611b24-df9c-4d36-9203-fa292820bf2a', 'create_slug': True}
+
+    flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True))
+
     flexmock(module.logger).should_receive('warning').once()
 
     module.ping_monitor(
