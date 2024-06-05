@@ -487,6 +487,40 @@ def test_run_actions_runs_rcreate():
     )
 
 
+def test_run_actions_adds_label_file_to_hook_context():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.command).should_receive('execute_hook')
+    expected = flexmock()
+    flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
+        config_filename=object,
+        repository={'path': 'repo', 'label': 'my repo'},
+        config={'repositories': []},
+        config_paths=[],
+        hook_context={'label': 'my repo', 'log_file': '', 'repositories': '', 'repository': 'repo'},
+        local_borg_version=object,
+        create_arguments=object,
+        global_arguments=object,
+        dry_run_label='',
+        local_path=object,
+        remote_path=object,
+    ).once().and_return(expected)
+
+    result = tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file=None), 'create': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo', 'label': 'my repo'},
+        )
+    )
+    assert result == (expected,)
+
+
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
@@ -497,7 +531,7 @@ def test_run_actions_adds_log_file_to_hook_context():
         repository={'path': 'repo'},
         config={'repositories': []},
         config_paths=[],
-        hook_context={'repository': 'repo', 'repositories': '', 'log_file': 'foo'},
+        hook_context={'label': '', 'log_file': 'foo', 'repositories': '', 'repository': 'repo'},
         local_borg_version=object,
         create_arguments=object,
         global_arguments=object,

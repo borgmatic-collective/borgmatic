@@ -2,6 +2,8 @@
  * #860: Fix interaction between environment variable interpolation in constants and shell escaping.
  * #863: When color output is disabled (explicitly or implicitly), don't prefix each log line with
    the log level.
+ * #874: Add configured repository "label" to the interpolated variables passed to before/after
+   command hooks.
 
 1.8.11
  * #815: Add optional Healthchecks auto-provisioning via "create_slug" option.
