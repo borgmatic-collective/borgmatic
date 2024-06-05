@@ -79,13 +79,13 @@ variables you can use here:
 
  * `configuration_filename`: borgmatic configuration filename in which the
    hook was defined
- * `repository_label` <span class="minilink minilink-addedin">New in version
-   1.8.12</span>: label of the current repository as configured in the current
-   borgmatic configuration file
  * `log_file`
    <span class="minilink minilink-addedin">New in version 1.7.12</span>:
    path of the borgmatic log file, only set when the `--log-file` flag is used
  * `repository`: path of the current repository as configured in the current
+   borgmatic configuration file
+ * `repository_label` <span class="minilink minilink-addedin">New in version
+   1.8.12</span>: label of the current repository as configured in the current
    borgmatic configuration file
 
 Note that you can also interpolate in [arbitrary environment
