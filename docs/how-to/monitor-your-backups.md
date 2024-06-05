@@ -208,8 +208,8 @@ cronitor:
 this option in the `hooks:` section of your configuration.
 
 With this configuration, borgmatic pings your Cronitor monitor when a backup
-begins, ends, or errors, but only when any of the `prune`, `compact`,
-`create`, or `check` actions are run. Then, if the actions complete
+begins, ends, or errors, but only when any of the `create`, `prune`,
+`compact`, or `check` actions are run. Then, if the actions complete
 successfully or errors, borgmatic notifies Cronitor accordingly.
 
 You can configure Cronitor to notify you by a [variety of
@@ -235,8 +235,8 @@ cronhub:
 this option in the `hooks:` section of your configuration.
 
 With this configuration, borgmatic pings your Cronhub monitor when a backup
-begins, ends, or errors, but only when any of the `prune`, `compact`,
-`create`, or `check` actions are run. Then, if the actions complete
+begins, ends, or errors, but only when any of the `create`, `prune`,
+`compact`, or `check` actions are run. Then, if the actions complete
 successfully or errors, borgmatic notifies Cronhub accordingly.
 
 Note that even though you configure borgmatic with the "start" variant of the
@@ -368,7 +368,7 @@ loki:
 ```
 
 With this configuration, borgmatic sends its logs to your Loki instance as any
-of the `prune`, `compact`, `create`, or `check` actions are run. Then, after
+of the `create`, `prune`, `compact`, or `check` actions are run. Then, after
 the actions complete, borgmatic notifies Loki of success or failure.
 
 This hook supports sending arbitrary labels to Loki. For instance:
@@ -444,7 +444,7 @@ apprise:
 
 With this configuration, borgmatic pings each of the configured Apprise
 services when a backup begins, ends, or errors, but only when any of the
-`prune`, `compact`, `create`, or `check` actions are run. (By default, if
+`create`, `prune`, `compact`, or `check` actions are run. (By default, if
 `states` is not specified, Apprise services are only pinged on error.)
 
 You can optionally customize the contents of the default messages sent to

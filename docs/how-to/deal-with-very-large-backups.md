@@ -20,7 +20,7 @@ default action ordering was `prune`, `compact`, `create`, and `check`.
 ### A la carte actions
 
 If you find yourself wanting to customize the actions, you have some options.
-First, you can run borgmatic's `prune`, `compact`, `create`, or `check`
+First, you can run borgmatic's `create`, `prune`, `compact`, or `check`
 actions separately. For instance, the following optional actions are
 available (among others):
 
