@@ -286,7 +286,7 @@ def run_actions(
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
     hook_context = {
-        'label': repository.get('label', ''),
+        'repository_label': repository.get('label', ''),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
         'repositories': ','.join([repo['path'] for repo in config['repositories']]),
