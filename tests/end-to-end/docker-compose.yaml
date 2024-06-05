@@ -1,4 +1,3 @@
-version: '3'
 services:
   postgresql:
     image: docker.io/postgres:13.1-alpine
