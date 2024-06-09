@@ -4,6 +4,7 @@
    the log level.
  * #874: Add the configured repository label as "repository_label" to the interpolated variables
    passed to before/after command hooks.
+ * In the "spot" check, don't try to hash symlinked directories.
 
 1.8.11
  * #815: Add optional Healthchecks auto-provisioning via "create_slug" option.

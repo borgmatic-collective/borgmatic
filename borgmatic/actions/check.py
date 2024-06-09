@@ -300,8 +300,7 @@ def collect_spot_check_source_paths(
     '''
     Given a repository configuration dict, a configuration dict, the local Borg version, global
     arguments as an argparse.Namespace instance, the local Borg path, and the remote Borg path,
-    collect the source paths that Borg would use in an actual create (but only include files and
-    symlinks).
+    collect the source paths that Borg would use in an actual create (but only include files).
     '''
     stream_processes = any(
         borgmatic.hooks.dispatch.call_hooks(
@@ -349,7 +348,7 @@ def collect_spot_check_source_paths(
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
 
-    return tuple(path for path in paths if os.path.isfile(path) or os.path.islink(path))
+    return tuple(path for path in paths if os.path.isfile(path))
 
 
 BORG_DIRECTORY_FILE_TYPE = 'd'

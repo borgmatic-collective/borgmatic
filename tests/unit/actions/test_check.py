@@ -520,7 +520,7 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
     ) == ('/etc/path', '/etc/other')
 
 
-def test_collect_spot_check_source_paths_includes_symlinks_but_skips_directories():
+def test_collect_spot_check_source_paths_skips_directories():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': True}
     )
@@ -546,18 +546,19 @@ def test_collect_spot_check_source_paths_includes_symlinks_but_skips_directories
         'warning: stuff\n- /etc/path\n+ /etc/dir\n? /nope',
     )
     flexmock(module.os.path).should_receive('isfile').with_args('/etc/path').and_return(False)
-    flexmock(module.os.path).should_receive('islink').with_args('/etc/path').and_return(True)
     flexmock(module.os.path).should_receive('isfile').with_args('/etc/dir').and_return(False)
-    flexmock(module.os.path).should_receive('islink').with_args('/etc/dir').and_return(False)
 
-    assert module.collect_spot_check_source_paths(
-        repository={'path': 'repo'},
-        config={'working_directory': '/'},
-        local_borg_version=flexmock(),
-        global_arguments=flexmock(),
-        local_path=flexmock(),
-        remote_path=flexmock(),
-    ) == ('/etc/path',)
+    assert (
+        module.collect_spot_check_source_paths(
+            repository={'path': 'repo'},
+            config={'working_directory': '/'},
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+        )
+        == ()
+    )
 
 
 def test_collect_spot_check_archive_paths_excludes_directories():
