@@ -158,7 +158,8 @@ selected randomly each time, so in effect the spot check is probabilistic.
 The `data_tolerance_percentage` is the percentage of total files in the source
 directories that can fail a spot check data comparison without failing the
 entire consistency check. The value must be lower than or equal to the
-`contents_sample_percentage`.
+`data_sample_percentage`, because `data_tolerance_percentage` only looks at
+at the sampled files as determined by `data_sample_percentage`.
 
 All three options are required when using the spot check. And because the
 check relies on these configured tolerances, it may not be a
