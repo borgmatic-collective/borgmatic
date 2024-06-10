@@ -2,6 +2,8 @@
  * #860: Fix interaction between environment variable interpolation in constants and shell escaping.
  * #863: When color output is disabled (explicitly or implicitly), don't prefix each log line with
    the log level.
+ * #866: Fix "Argument list too long" error in the "spot" check when checking hundreds of thousands
+   of files at once.
  * #874: Add the configured repository label as "repository_label" to the interpolated variables
    passed to before/after command hooks.
  * In the "spot" check, don't try to hash symlinked directories.

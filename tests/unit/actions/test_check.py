@@ -770,6 +770,46 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     ) == ('/bar',)
 
 
+def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in_chunks():
+    flexmock(module).SAMPLE_PATHS_SUBSET_COUNT = 2
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo', '/bar')).and_return('hash1  /foo\nhash2  /bar')
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/baz', '/quux')).and_return('hash3  /baz\nhash4  /quux')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 /foo', 'hash2 /bar']
+    ).and_return(['hash3 /baz', 'nothash4 /quux'])
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 100,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_label='repo',
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/quux',)
+
+
 def test_spot_check_without_spot_configuration_errors():
     with pytest.raises(ValueError):
         module.spot_check(

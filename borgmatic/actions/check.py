@@ -387,6 +387,9 @@ def collect_spot_check_archive_paths(
     )
 
 
+SAMPLE_PATHS_SUBSET_COUNT = 10000
+
+
 def compare_spot_check_hashes(
     repository,
     archive,
@@ -419,32 +422,57 @@ def compare_spot_check_hashes(
         f'{log_label}: Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check'
     )
 
-    # Hash each file in the sample paths (if it exists).
-    hash_output = borgmatic.execute.execute_command_and_capture_output(
-        (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
-        + tuple(path for path in source_sample_paths if path in existing_source_sample_paths)
-    )
+    source_sample_paths_iterator = iter(source_sample_paths)
+    source_hashes = {}
+    archive_hashes = {}
 
-    source_hashes = dict(
-        (reversed(line.split('  ', 1)) for line in hash_output.splitlines()),
-        **{path: '' for path in source_sample_paths if path not in existing_source_sample_paths},
-    )
-
-    archive_hashes = dict(
-        reversed(line.split(' ', 1))
-        for line in borgmatic.borg.list.capture_archive_listing(
-            repository['path'],
-            archive,
-            config,
-            local_borg_version,
-            global_arguments,
-            list_paths=source_sample_paths,
-            path_format='{xxh64} /{path}{NL}',  # noqa: FS003
-            local_path=local_path,
-            remote_path=remote_path,
+    # Only hash a few thousand files at a time (a subset of the total paths) to avoid an "Argument
+    # list too long" shell error.
+    while True:
+        # Hash each file in the sample paths (if it exists).
+        source_sample_paths_subset = tuple(
+            itertools.islice(source_sample_paths_iterator, SAMPLE_PATHS_SUBSET_COUNT)
         )
-        if line
-    )
+        if not source_sample_paths_subset:
+            break
+
+        hash_output = borgmatic.execute.execute_command_and_capture_output(
+            (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
+            + tuple(
+                path for path in source_sample_paths_subset if path in existing_source_sample_paths
+            )
+        )
+
+        source_hashes.update(
+            **dict(
+                (reversed(line.split('  ', 1)) for line in hash_output.splitlines()),
+                # Represent non-existent files as having empty hashes so the comparison below still works.
+                **{
+                    path: ''
+                    for path in source_sample_paths_subset
+                    if path not in existing_source_sample_paths
+                },
+            )
+        )
+
+        # Get the hash for each file in the archive.
+        archive_hashes.update(
+            **dict(
+                reversed(line.split(' ', 1))
+                for line in borgmatic.borg.list.capture_archive_listing(
+                    repository['path'],
+                    archive,
+                    config,
+                    local_borg_version,
+                    global_arguments,
+                    list_paths=source_sample_paths_subset,
+                    path_format='{xxh64} /{path}{NL}',  # noqa: FS003
+                    local_path=local_path,
+                    remote_path=remote_path,
+                )
+                if line
+            )
+        )
 
     # Compare the source hashes with the archive hashes to see how many match.
     failing_paths = []
