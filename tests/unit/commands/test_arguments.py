@@ -131,35 +131,174 @@ def test_parse_and_record_action_arguments_with_borg_action_consumes_arguments_a
 
 
 @pytest.mark.parametrize(
+    'argument, expected',
+    [
+        ('--foo', True),
+        ('foo', False),
+        (33, False),
+    ],
+)
+def test_argument_is_flag_only_for_string_starting_with_double_dash(argument, expected):
+    assert module.argument_is_flag(argument) == expected
+
+
+@pytest.mark.parametrize(
     'arguments, expected',
     [
-        # A global flag remaining from each parsed action.
+        # Ending with a valueless flag.
         (
+            ('--foo', '--bar', 33, '--baz'),
             (
-                ('--latest', 'archive', 'prune', 'extract', 'list', '--test-flag'),
-                ('--latest', 'archive', 'check', 'extract', 'list', '--test-flag'),
-                ('prune', 'check', 'list', '--test-flag'),
-                ('prune', 'check', 'extract', '--test-flag'),
+                ('--foo',),
+                ('--bar', 33),
+                ('--baz',),
             ),
-            ('--test-flag',),
         ),
-        # No global flags remaining.
+        # Ending with a flag and its corresponding value.
+        (
+            ('--foo', '--bar', 33, '--baz', '--quux', 'thing'),
+            (('--foo',), ('--bar', 33), ('--baz',), ('--quux', 'thing')),
+        ),
+        # Starting with an action name.
+        (
+            ('check', '--foo', '--bar', 33, '--baz'),
+            (
+                ('check',),
+                ('--foo',),
+                ('--bar', 33),
+                ('--baz',),
+            ),
+        ),
+        # Action name that one could mistake for a flag value.
+        (('--progress', 'list'), (('--progress',), ('list',))),
+        # No arguments.
+        ((), ()),
+    ],
+)
+def test_group_arguments_with_values_returns_flags_with_corresponding_values(arguments, expected):
+    flexmock(module).should_receive('argument_is_flag').with_args('--foo').and_return(True)
+    flexmock(module).should_receive('argument_is_flag').with_args('--bar').and_return(True)
+    flexmock(module).should_receive('argument_is_flag').with_args('--baz').and_return(True)
+    flexmock(module).should_receive('argument_is_flag').with_args('--quux').and_return(True)
+    flexmock(module).should_receive('argument_is_flag').with_args('--progress').and_return(True)
+    flexmock(module).should_receive('argument_is_flag').with_args(33).and_return(False)
+    flexmock(module).should_receive('argument_is_flag').with_args('thing').and_return(False)
+    flexmock(module).should_receive('argument_is_flag').with_args('check').and_return(False)
+    flexmock(module).should_receive('argument_is_flag').with_args('list').and_return(False)
+
+    assert module.group_arguments_with_values(arguments) == expected
+
+
+@pytest.mark.parametrize(
+    'arguments, grouped_arguments, expected',
+    [
+        # An unparsable flag remaining from each parsed action.
         (
             (
-                ('--latest', 'archive', 'prune', 'extract', 'list'),
-                ('--latest', 'archive', 'check', 'extract', 'list'),
+                ('--latest', 'archive', 'prune', 'extract', 'list', '--flag'),
+                ('--latest', 'archive', 'check', 'extract', 'list', '--flag'),
+                ('prune', 'check', 'list', '--flag'),
+                ('prune', 'check', 'extract', '--flag'),
+            ),
+            (
+                (
+                    ('--latest',),
+                    ('archive',),
+                    ('prune',),
+                    ('extract',),
+                    ('list',),
+                    ('--flag',),
+                ),
+                (
+                    ('--latest',),
+                    ('archive',),
+                    ('check',),
+                    ('extract',),
+                    ('list',),
+                    ('--flag',),
+                ),
+                (('prune',), ('check',), ('list',), ('--flag',)),
+                (('prune',), ('check',), ('extract',), ('--flag',)),
+            ),
+            ('--flag',),
+        ),
+        # No unparsable flags remaining.
+        (
+            (
+                ('--archive', 'archive', 'prune', 'extract', 'list'),
+                ('--archive', 'archive', 'check', 'extract', 'list'),
                 ('prune', 'check', 'list'),
                 ('prune', 'check', 'extract'),
+            ),
+            (
+                (
+                    (
+                        '--archive',
+                        'archive',
+                    ),
+                    ('prune',),
+                    ('extract',),
+                    ('list',),
+                ),
+                (
+                    (
+                        '--archive',
+                        'archive',
+                    ),
+                    ('check',),
+                    ('extract',),
+                    ('list',),
+                ),
+                (('prune',), ('check',), ('list',)),
+                (('prune',), ('check',), ('extract',)),
+            ),
+            (),
+        ),
+        # No unparsable flags remaining, but some values in common.
+        (
+            (
+                ('--verbosity', '5', 'archive', 'prune', 'extract', 'list'),
+                ('--last', '5', 'archive', 'check', 'extract', 'list'),
+                ('prune', 'check', 'list', '--last', '5'),
+                ('prune', 'check', '--verbosity', '5', 'extract'),
+            ),
+            (
+                (('--verbosity', '5'), ('archive',), ('prune',), ('extract',), ('list',)),
+                (
+                    (
+                        '--last',
+                        '5',
+                    ),
+                    ('archive',),
+                    ('check',),
+                    ('extract',),
+                    ('list',),
+                ),
+                (('prune',), ('check',), ('list',), ('--last', '5')),
+                (
+                    ('prune',),
+                    ('check',),
+                    (
+                        '--verbosity',
+                        '5',
+                    ),
+                    ('extract',),
+                ),
             ),
             (),
         ),
         # No flags.
-        ((), ()),
+        ((), (), ()),
     ],
 )
 def test_get_unparsable_arguments_returns_remaining_arguments_that_no_action_can_parse(
-    arguments, expected
+    arguments, grouped_arguments, expected
 ):
+    for action_arguments, grouped_action_arguments in zip(arguments, grouped_arguments):
+        flexmock(module).should_receive('group_arguments_with_values').with_args(
+            action_arguments
+        ).and_return(grouped_action_arguments)
+
     assert module.get_unparsable_arguments(arguments) == expected
 
 

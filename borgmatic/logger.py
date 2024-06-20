@@ -89,7 +89,7 @@ class Multi_stream_handler(logging.Handler):
 
 
 class Console_no_color_formatter(logging.Formatter):
-    def format(self, record):
+    def format(self, record):  # pragma: no cover
         return record.msg
 
 

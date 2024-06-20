@@ -113,6 +113,54 @@ def parse_and_record_action_arguments(
     return tuple(argument for argument in remaining if argument != action_name)
 
 
+def argument_is_flag(argument):
+    '''
+    Return True if the given argument looks like a flag, e.g. '--some-flag', as opposed to a
+    non-flag value.
+    '''
+    return isinstance(argument, str) and argument.startswith('--')
+
+
+def group_arguments_with_values(arguments):
+    '''
+    Given a sequence of arguments, return a sequence of tuples where each one contains either a
+    single argument (such as for a stand-alone flag) or a flag argument and its corresponding value.
+
+    For instance, given the following arguments sequence as input:
+
+      ('--foo', '--bar', '33', '--baz')
+
+    ... return the following output:
+
+      (('--foo',), ('--bar', '33'), ('--baz',))
+    '''
+    grouped_arguments = []
+    index = 0
+
+    while index < len(arguments):
+        this_argument = arguments[index]
+
+        try:
+            next_argument = arguments[index + 1]
+        except IndexError:
+            grouped_arguments.append((this_argument,))
+            break
+
+        if (
+            argument_is_flag(this_argument)
+            and not argument_is_flag(next_argument)
+            and next_argument not in ACTION_ALIASES
+        ):
+            grouped_arguments.append((this_argument, next_argument))
+            index += 2
+            continue
+
+        grouped_arguments.append((this_argument,))
+        index += 1
+
+    return tuple(grouped_arguments)
+
+
 def get_unparsable_arguments(remaining_action_arguments):
     '''
     Given a sequence of argument tuples (one per action parser that parsed arguments), determine the
@@ -121,12 +169,21 @@ def get_unparsable_arguments(remaining_action_arguments):
     if not remaining_action_arguments:
         return ()
 
+    grouped_action_arguments = tuple(
+        group_arguments_with_values(action_arguments)
+        for action_arguments in remaining_action_arguments
+    )
+
     return tuple(
-        argument
-        for argument in dict.fromkeys(
-            itertools.chain.from_iterable(remaining_action_arguments)
-        ).keys()
-        if all(argument in action_arguments for action_arguments in remaining_action_arguments)
+        itertools.chain.from_iterable(
+            argument_group
+            for argument_group in dict.fromkeys(
+                itertools.chain.from_iterable(grouped_action_arguments)
+            ).keys()
+            if all(
+                argument_group in action_arguments for action_arguments in grouped_action_arguments
+            )
+        )
     )
 
 

@@ -6,6 +6,7 @@
    of files at once.
  * #874: Add the configured repository label as "repository_label" to the interpolated variables
    passed to before/after command hooks.
+ * #881: Fix "Unrecognized argument" error when the same value is with different command-line flags.
  * In the "spot" check, don't try to hash symlinked directories.
 
 1.8.11
