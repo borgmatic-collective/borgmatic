@@ -1678,10 +1678,10 @@ properties:
             documentation for details.
     uptimekuma:
         type: object
-        required: ['ping_url', 'push_code']
+        required: ['server', 'push_code']
         additionalProperties: false
         properties:
-            ping_url:
+            server:
                 type: string
                 description: |
                     Uptime Kuma base URL or UUID to notify when a backup
@@ -1691,9 +1691,10 @@ properties:
                 type: string
                 description: |
                     Uptime Kuma "Push Code" from the push URL you have been given. 
-                    For example, the push code for: 
-                    'https://uptime.kuma/api/push/0evpM0MIdE?status=up&msg=OK&ping='
-                    would be '0evpM0MIdE'
+                    For example, the push code for 
+                    https://uptime.kuma/api/push/12345678?status=up&msg=OK&ping=
+                    would be 12345678
+                example: 12345678
             states:
                 type: array
                 items:
@@ -1708,10 +1709,12 @@ properties:
                     "finish", and/or "fail". Defaults to pinging for all
                     states.
                 example:
-                    - start, finish, fail
+                    - start
+                    - finish
+                    - fail
         description: |
             Configuration for a monitoring integration with Uptime Kuma using
-            the 'Push' monitor type.
+            the Push monitor type.
             See more information here: https://uptime.kuma.pet
     cronitor:
         type: object

@@ -13,6 +13,7 @@ from borgmatic.hooks import (
     pagerduty,
     postgresql,
     sqlite,
+    uptimekuma
 )
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ HOOK_NAME_TO_MODULE = {
     'postgresql_databases': postgresql,
     'sqlite_databases': sqlite,
     'loki': loki,
+    'uptimekuma': uptimekuma,
 }
 
 
