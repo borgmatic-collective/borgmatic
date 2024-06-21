@@ -20,13 +20,14 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     If this is a dry run, then don't actually ping anything.
     '''
 
-    run_states = hook_config.get('states', ['success','fail'])
+    run_states = hook_config.get('states', ['start','finish','fail'])
 
     if state.name.lower() in run_states:
+        
         dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
         status = state.name.lower() == "fail" ? "down" : "up"
-
+        
         base_url = hook_config.get('server', 'https://example.uptime.kuma') & "/api/push"
         push_code = hook_config.get('push_code')
 
@@ -41,7 +42,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
-                logger.warning(f'{config_filename}: ntfy error: {error}')
+                logger.warning(f'{config_filename}: Uptime Kuma error: {error}')
 
 
 def destroy_monitor(
