@@ -1690,9 +1690,9 @@ properties:
             push_code:
                 type: string
                 description: |
-                    Uptime Kuma "Push Code" from the push URL you have been given. 
-                    For example, the push code for 
-                    https://uptime.kuma/api/push/12345678?status=up&msg=OK&ping=
+                    Uptime Kuma "Push Code" from the push URL you have been 
+                    given. For example, the push code for 
+                    https://base.url/api/push/12345678?status=up&msg=OK&ping=
                     would be 12345678
                 example: 12345678
             states:
