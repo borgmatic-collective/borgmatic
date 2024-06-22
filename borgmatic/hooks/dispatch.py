@@ -13,7 +13,7 @@ from borgmatic.hooks import (
     pagerduty,
     postgresql,
     sqlite,
-    uptimekuma
+    uptimekuma,
 )
 
 logger = logging.getLogger(__name__)
