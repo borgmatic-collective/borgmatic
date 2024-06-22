@@ -662,6 +662,11 @@ def make_parsers():
         help='Attempt to repair any inconsistencies found (for interactive use)',
     )
     check_group.add_argument(
+        '--max-duration',
+        metavar='SECONDS',
+        help='How long to check the repository before interrupting the check, defaults to no interruption',
+    )
+    check_group.add_argument(
         '-a',
         '--match-archives',
         '--glob-archives',

@@ -511,7 +511,6 @@ properties:
                       name:
                           type: string
                           enum:
-                              - repository
                               - archives
                               - data
                               - extract
@@ -542,6 +541,50 @@ properties:
                               "always": running this check every time checks
                               are run.
                           example: 2 weeks
+                - required: [name]
+                  additionalProperties: false
+                  properties:
+                      name:
+                          type: string
+                          enum:
+                              - repository
+                          description: |
+                              Name of consistency check to run: "repository",
+                              "archives", "data", "spot", and/or "extract".
+                              "repository" checks the consistency of the
+                              repository, "archives" checks all of the
+                              archives, "data" verifies the integrity of the
+                              data within the archives, "spot" checks that
+                              some percentage of source files are found in the
+                              most recent archive (with identical contents),
+                              and "extract" does an extraction dry-run of the
+                              most recent archive. Note that "data" implies
+                              "archives". See "skip_actions" for disabling
+                              checks altogether.
+                          example: spot
+                      frequency:
+                          type: string
+                          description: |
+                              How frequently to run this type of consistency
+                              check (as a best effort). The value is a number
+                              followed by a unit of time. E.g., "2 weeks" to
+                              run this consistency check no more than every
+                              two weeks for a given repository or "1 month" to
+                              run it no more than monthly. Defaults to
+                              "always": running this check every time checks
+                              are run.
+                          example: 2 weeks
+                      max_duration:
+                          type: integer
+                          description: |
+                              How many seconds to check the repository before
+                              interrupting the check. Useful for splitting a
+                              long-running repository check into multiple
+                              partial checks. Defaults to no interruption. Only
+                              applies to the "repository" check, does not check
+                              the repository index, and is not compatible with a
+                              simultaneous "archives" check or "--repair" flag.
+                          example: 3600
                 - required:
                     - name
                     - count_tolerance_percentage
