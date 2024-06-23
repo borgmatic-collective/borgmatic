@@ -280,6 +280,11 @@ properties:
             Remote network upload rate limit in kiBytes/second. Defaults to
             unlimited.
         example: 100
+    upload_buffer_size:
+        type: integer
+        description: |
+            Size of network upload buffer in MiB. Defaults to no buffer.
+        example: 160
     retries:
         type: integer
         description: |

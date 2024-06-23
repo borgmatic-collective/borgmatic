@@ -693,6 +693,7 @@ def test_make_base_create_command_includes_exclude_patterns_in_borg_command():
         ('one_file_system', True, True, ('--one-file-system',)),
         ('upload_rate_limit', 100, True, ('--upload-ratelimit', '100')),
         ('upload_rate_limit', 100, False, ('--remote-ratelimit', '100')),
+        ('upload_buffer_size', 160, True, ('--upload-buffer', '160')),
         ('numeric_ids', True, True, ('--numeric-ids',)),
         ('numeric_ids', True, False, ('--numeric-owner',)),
         ('read_special', True, True, ('--read-special',)),
