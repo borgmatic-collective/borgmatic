@@ -538,7 +538,7 @@ and when the backup started (was there a `start` beat?).
 A reasonable base-level configuration for Uptime Kuma Monitor configuration 
 for a backup is below:
 
-```sh
+```ini
 # These are to be entered into Uptime Kuma and not into your
 # borgmatic configuration.
 
