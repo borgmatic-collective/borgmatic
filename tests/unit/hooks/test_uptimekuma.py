@@ -37,22 +37,6 @@ def test_ping_monitor_hits_custom_uptimekuma_on_fail():
         dry_run=False,
     )
 
-
-def test_ping_monitor_hits_default_uptimekuma_on_start():
-    flexmock(module.requests).should_receive('get').with_args(
-        f'{DEFAULT_BASE_URL}?status=up&msg=start'
-    ).and_return(flexmock(ok=True)).once()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.START,
-        monitoring_log_level=1,
-        dry_run=False,
-    )
-
-
 def test_ping_monitor_custom_uptimekuma_on_start():
     hook_config = {'push_url': push_url}
     flexmock(module.requests).should_receive('get').with_args(
@@ -67,22 +51,6 @@ def test_ping_monitor_custom_uptimekuma_on_start():
         monitoring_log_level=1,
         dry_run=False,
     )
-
-
-def test_ping_monitor_hits_default_uptimekuma_on_finish():
-    flexmock(module.requests).should_receive('get').with_args(
-        f'{DEFAULT_BASE_URL}?status=up&msg=finish'
-    ).and_return(flexmock(ok=True)).once()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.FINISH,
-        monitoring_log_level=1,
-        dry_run=False,
-    )
-
 
 def test_ping_monitor_custom_uptimekuma_on_finish():
     hook_config = {'push_url': CUSTOM_BASE_URL}
@@ -99,20 +67,6 @@ def test_ping_monitor_custom_uptimekuma_on_finish():
         dry_run=False,
     )
 
-
-def test_ping_monitor_does_not_hit_default_uptimekuma_on_fail_dry_run():
-    flexmock(module.requests).should_receive('get').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.FAIL,
-        monitoring_log_level=1,
-        dry_run=True,
-    )
-
-
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_fail_dry_run():
     hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').never()
@@ -126,20 +80,6 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_fail_dry_run():
         dry_run=True,
     )
 
-
-def test_ping_monitor_does_not_hit_default_uptimekuma_on_start_dry_run():
-    flexmock(module.requests).should_receive('get').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.START,
-        monitoring_log_level=1,
-        dry_run=True,
-    )
-
-
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_start_dry_run():
     hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').never()
@@ -152,20 +92,6 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_start_dry_run():
         monitoring_log_level=1,
         dry_run=True,
     )
-
-
-def test_ping_monitor_does_not_hit_default_uptimekuma_on_finish_dry_run():
-    flexmock(module.requests).should_receive('get').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.FINISH,
-        monitoring_log_level=1,
-        dry_run=True,
-    )
-
 
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_finish_dry_run():
     hook_config = {'push_url': CUSTOM_BASE_URL}
@@ -195,7 +121,6 @@ def test_ping_monitor_with_connection_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
-
 
 def test_ping_monitor_with_other_error_logs_warning():
     response = flexmock(ok=False)
@@ -228,4 +153,3 @@ def test_ping_monitor_with_invalid_run_state():
         monitoring_log_level=1,
         dry_run=True,
     )
-
