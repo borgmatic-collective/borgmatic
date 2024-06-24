@@ -1745,8 +1745,8 @@ properties:
                         - fail
                     uniqueItems: true
                 description: |
-                    List of one or more monitoring states to ping for: "start",
-                    "finish", and/or "fail". Defaults to pinging for all
+                    List of one or more monitoring states to push for: "start",
+                    "finish", and/or "fail". Defaults to pushing for all
                     states.
                 example:
                     - start
