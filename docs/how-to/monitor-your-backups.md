@@ -547,14 +547,14 @@ Monitor Type = Push
 # instead of Uptime Kuma contacting the client.
 # This is perfect for backup monitoring.
 
-Heartbeat Interval = 90000 # = 25 hours = 1 day + 1 hour
+Heartbeat Interval = 90000     # = 25 hours = 1 day + 1 hour
 
 # Wait 6 times the Heartbeat Retry (below) before logging a heartbeat missed
 Retries = 6
 
 # Multiplied by Retries this gives a grace period within which 
 # the monitor goes into the "Pending" state
-Heartbeat Retry = 360 # = 10 minutes
+Heartbeat Retry = 360          # = 10 minutes
 
 # For each Heartbeat Interval if the backup fails repeatedly, 
 # a notification is sent each time.
