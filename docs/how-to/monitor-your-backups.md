@@ -46,6 +46,7 @@ them as backups happen:
  * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
  * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
  * [Apprise](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook)
+ * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptimekuma-hook)
 
 The idea is that you'll receive an alert when something goes wrong or when the
 service doesn't hear from borgmatic for a configured interval (if supported).
@@ -505,6 +506,59 @@ See the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
 details.
 
+## Uptime Kuma hook
+
+[Uptime Kuma](https://uptime.kuma.pet) is an easy-to-use self-hosted 
+monitoring tool and can provide a Push monitor type to accept 
+HTTP `GET` requests from a service instead of contacting it
+directly.
+
+Uptime Kuma allows you to see a history of monitor states and 
+can in turn alert via Ntfy, Gotify, Matrix, Apprise, Email, and many more.
+
+An example configuration is shown here with all the available options,
+
+```yaml
+uptimekuma:
+    push_url: https://kuma.my-domain.com/api/push/abcd1234
+    states:
+        - start
+        - finish
+        - fail
+```
+The `push_url` is provided to your from your Uptime Kuma service and 
+includes a query string, the text including and after the question mark ('?').
+Please do not include the query string in the `push_url` configuration, 
+borgmatic will add this automatically depending on the state of your backup. 
+
+Using `start`, `finish` and `fail` states means you will get two 'up beats' in 
+Uptime Kuma for successful backups and the ability to see on failures if 
+and when the backup started (was there a `start` beat?).
+
+A reasonable base-level configuration for Uptime Kuma Monitor configuration 
+for a backup is below:
+
+``` 
+# These are to be entered into Uptime Kuma and not into your
+# borgmatic configuration.
+
+Monitor Type = Push
+# Push monitors wait for the client to contact instead of the reverse
+# which is perfect for backup monitoring.
+
+Heartbeat Interval = 90000 # = 25 hours = 1 day + 1 hour
+
+# Wait 6 times the heartbeat retry before heartbeat missed
+Retries = 6
+
+# Multiplied by the "Retries", gives a grace period within which 
+# the monitor goes into the "Pending" state
+Heartbeat Retry = 360 # = 10 minutes
+
+# For each Heartbeat Interval the backup fails, a notification is sent
+# if configured.
+Resend Notification every X times = 1
+```
 
 ## Scripting borgmatic
 
