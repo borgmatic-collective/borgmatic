@@ -102,9 +102,9 @@ and depend on containers for runtime dependencies. These tests do run on the
 continuous integration (CI) server, and running them on your developer machine
 is the closest thing to dev-CI parity.
 
-If you would like to run the full test suite, first install Docker (or Podman;
-see below) and [Docker Compose](https://docs.docker.com/compose/install/).
-Then run:
+If you would like to run the end-to-end tests, first install Docker (or
+Podman; see below) and [Docker
+Compose](https://docs.docker.com/compose/install/). Then run:
 
 ```bash
 scripts/run-end-to-end-tests
@@ -152,12 +152,14 @@ the following deviations from it:
  * In general, spell out words in variable names instead of shortening them.
    So, think `index` instead of `idx`. There are some notable exceptions to
    this though (like `config`).
+ * Favor blank lines around `if` statements, `return`s, logical code groupings,
+   etc. Readability is more important than packing the code tightly.
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
 the [isort](https://github.com/timothycrosley/isort) import orderer, so
-certain code style requirements will be enforced when running automated tests.
-See the Black, Flake8, and isort documentation for more information.
+certain code style requirements are enforced when running automated tests. See
+the Black, Flake8, and isort documentation for more information.
 
 
 ## Continuous integration
