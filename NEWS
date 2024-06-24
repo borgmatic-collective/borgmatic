@@ -1,7 +1,15 @@
-1.8.12.dev0
+1.8.13.dev0
+ * #886: Fix PagerDuty hook traceback with Python < 3.10.
+
+1.8.12
+ * #817: Add a "--max-duration" flag to the "check" action and a "max_duration" option to the
+   repository check configuration. This tells Borg to interrupt a repository check after a certain
+   duration.
  * #860: Fix interaction between environment variable interpolation in constants and shell escaping.
  * #863: When color output is disabled (explicitly or implicitly), don't prefix each log line with
    the log level.
+ * #865: Add an "upload_buffer_size" option to set the size of the upload buffer used in "create"
+   action.
  * #866: Fix "Argument list too long" error in the "spot" check when checking hundreds of thousands
    of files at once.
  * #874: Add the configured repository label as "repository_label" to the interpolated variables

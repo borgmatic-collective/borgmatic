@@ -50,10 +50,10 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
     return ()
 
 
-def make_check_flags(checks, archive_filter_flags):
+def make_check_name_flags(checks, archive_filter_flags):
     '''
-    Given a parsed checks set and a sequence of flags to filter archives,
-    transform the checks into tuple of command-line check flags.
+    Given parsed checks set and a sequence of flags to filter archives, transform the checks into
+    tuple of command-line check flags.
 
     For example, given parsed checks of:
 
@@ -134,10 +134,30 @@ def check_archives(
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
 
+    try:
+        repository_check_config = next(
+            check for check in config.get('checks', ()) if check.get('name') == 'repository'
+        )
+    except StopIteration:
+        repository_check_config = {}
+
+    if check_arguments.max_duration and 'archives' in checks:
+        raise ValueError('The archives check cannot run when the --max-duration flag is used')
+    if repository_check_config.get('max_duration') and 'archives' in checks:
+        raise ValueError(
+            'The archives check cannot run when the repository check has the max_duration option set'
+        )
+
+    max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
+
+    borg_environment = environment.make_environment(config)
+    borg_exit_codes = config.get('borg_exit_codes')
+
     full_command = (
         (local_path, 'check')
         + (('--repair',) if check_arguments.repair else ())
-        + make_check_flags(checks, archive_filter_flags)
+        + (('--max-duration', str(max_duration)) if max_duration else ())
+        + make_check_name_flags(checks, archive_filter_flags)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
@@ -146,9 +166,6 @@ def check_archives(
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
-
-    borg_environment = environment.make_environment(config)
-    borg_exit_codes = config.get('borg_exit_codes')
 
     # The Borg repair option triggers an interactive prompt, which won't work when output is
     # captured. And progress messes with the terminal directly.

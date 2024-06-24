@@ -371,6 +371,7 @@ def make_base_create_command(
     chunker_params = config.get('chunker_params', None)
     compression = config.get('compression', None)
     upload_rate_limit = config.get('upload_rate_limit', None)
+    upload_buffer_size = config.get('upload_buffer_size', None)
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
     list_filter_flags = make_list_filter_flags(local_borg_version, dry_run)
@@ -412,6 +413,7 @@ def make_base_create_command(
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (('--compression', compression) if compression else ())
         + upload_ratelimit_flags
+        + (('--upload-buffer', str(upload_buffer_size)) if upload_buffer_size else ())
         + (('--one-file-system',) if config.get('one_file_system') or stream_processes else ())
         + numeric_ids_flags
         + atime_flags
