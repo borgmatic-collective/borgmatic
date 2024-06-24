@@ -535,7 +535,7 @@ Using `start`, `finish` and `fail` states means you will get two 'up beats' in
 Uptime Kuma for successful backups and the ability to see on failures if 
 and when the backup started (was there a `start` beat?).
 
-A reasonable base-level configuration for Uptime Kuma Monitor configuration 
+A reasonable base-level configuration for an Uptime Kuma Monitor 
 for a backup is below:
 
 ```ini
