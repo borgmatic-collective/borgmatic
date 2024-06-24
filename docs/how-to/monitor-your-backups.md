@@ -516,7 +516,7 @@ directly.
 Uptime Kuma allows you to see a history of monitor states and 
 can in turn alert via Ntfy, Gotify, Matrix, Apprise, Email, and many more.
 
-An example configuration is shown here with all the available options,
+An example configuration is shown here with all the available options:
 
 ```yaml
 uptimekuma:
@@ -527,7 +527,7 @@ uptimekuma:
         - fail
 ```
 The `push_url` is provided to your from your Uptime Kuma service and 
-includes a query string, the text including and after the question mark ('?').
+includes a query string; the text including and after the question mark ('?').
 Please do not include the query string in the `push_url` configuration, 
 borgmatic will add this automatically depending on the state of your backup. 
 
@@ -548,15 +548,15 @@ Monitor Type = Push
 
 Heartbeat Interval = 90000 # = 25 hours = 1 day + 1 hour
 
-# Wait 6 times the heartbeat retry before heartbeat missed
+# Wait 6 times the Heartbeat Retry (below) before logging a heartbeat missed
 Retries = 6
 
-# Multiplied by the "Retries", gives a grace period within which 
+# Multiplied by Retries this gives a grace period within which 
 # the monitor goes into the "Pending" state
 Heartbeat Retry = 360 # = 10 minutes
 
-# For each Heartbeat Interval the backup fails, a notification is sent
-# if configured.
+# For each Heartbeat Interval if the backup fails repeatedly, 
+# a notification is sent each time.
 Resend Notification every X times = 1
 ```
 
