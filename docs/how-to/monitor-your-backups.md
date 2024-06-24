@@ -538,13 +538,14 @@ and when the backup started (was there a `start` beat?).
 A reasonable base-level configuration for Uptime Kuma Monitor configuration 
 for a backup is below:
 
-``` 
+```sh
 # These are to be entered into Uptime Kuma and not into your
 # borgmatic configuration.
 
 Monitor Type = Push
-# Push monitors wait for the client to contact instead of the reverse
-# which is perfect for backup monitoring.
+# Push monitors wait for the client to contact Uptime Kuma
+# instead of Uptime Kuma contacting the client.
+# This is perfect for backup monitoring.
 
 Heartbeat Interval = 90000 # = 25 hours = 1 day + 1 hour
 
