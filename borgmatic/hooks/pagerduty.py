@@ -40,7 +40,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         return
 
     hostname = platform.node()
-    local_timestamp = datetime.datetime.now(datetime.UTC).astimezone().isoformat()
+    local_timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()
     payload = json.dumps(
         {
             'routing_key': hook_config['integration_key'],

@@ -1,3 +1,6 @@
+1.8.13.dev0
+ * #886: Fix PagerDuty hook traceback with Python < 3.10.
+
 1.8.12
  * #817: Add a "--max-duration" flag to the "check" action and a "max_duration" option to the
    repository check configuration. This tells Borg to interrupt a repository check after a certain
