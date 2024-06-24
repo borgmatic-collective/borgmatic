@@ -27,21 +27,20 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     status = 'down' if state.name.lower() == 'fail' else 'up'
     push_url = hook_config.get('push_url', 'https://example.uptime.kuma/api/push/abcd1234')
     query = f'status={status}&msg={state.name.lower()}'
-    logger.info(f'{config_filename}: Pinging Uptime Kuma push_url {push_url}?{query} {dry_run_label}')
-    logger.debug(
-        f'{config_filename}: Full Uptime Kuma state URL {push_url}?{query}'
+    logger.info(
+        f'{config_filename}: Pinging Uptime Kuma push_url {push_url}?{query} {dry_run_label}'
     )
+    logger.debug(f'{config_filename}: Full Uptime Kuma state URL {push_url}?{query}')
     if dry_run:
         return
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
-        response = requests.get(
-            f'{push_url}?{query}'
-        )
+        response = requests.get(f'{push_url}?{query}')
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:
         logger.warning(f'{config_filename}: Uptime Kuma error: {error}')
+
 
 def destroy_monitor(
     ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
