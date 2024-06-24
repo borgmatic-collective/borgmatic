@@ -1,4 +1,4 @@
-1.8.12.dev0
+1.8.12
  * #817: Add a "--max-duration" flag to the "check" action and a "max_duration" option to the
    repository check configuration. This tells Borg to interrupt a repository check after a certain
    duration.
