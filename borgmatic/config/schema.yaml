@@ -1678,23 +1678,15 @@ properties:
             documentation for details.
     uptimekuma:
         type: object
-        required: ['server', 'push_code']
+        required: ['push_url']
         additionalProperties: false
         properties:
-            server:
+            push_url:
                 type: string
                 description: |
-                    Uptime Kuma base URL or UUID to notify when a backup
-                    begins, ends, or errors
-                example: https://example.uptime.kuma
-            push_code:
-                type: string
-                description: |
-                    Uptime Kuma "Push Code" from the push URL you have been 
-                    given. For example, the push code for 
-                    https://base.url/api/push/12345678?status=up&msg=OK&ping=
-                    would be 12345678
-                example: 12345678
+                  Uptime Kuma push URL without query string (do not include the
+                  question mark or anything after it).
+                example: https://example.uptime.kuma/api/push/abcd1234
             states:
                 type: array
                 items:

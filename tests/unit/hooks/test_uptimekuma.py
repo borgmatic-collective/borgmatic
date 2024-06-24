@@ -3,15 +3,13 @@ from flexmock import flexmock
 import borgmatic.hooks.monitor
 from borgmatic.hooks import uptimekuma as module
 
-default_base_url = 'https://example.uptime.kuma'
-custom_base_url = 'https://uptime.example.com'
-push_code = 'abcd1234'
+DEFAULT_BASE_URL = 'https://example.uptime.kuma/api/push/abcd1234'
+CUSTOM_BASE_URL = 'https://uptime.example.com/api/push/efgh5678'
 
 
 def test_ping_monitor_hits_default_uptimekuma_on_fail():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{default_base_url}/api/push/{push_code}?status=down&msg=fail&ping='
+        f'{DEFAULT_BASE_URL}?status=down&msg=fail'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -25,9 +23,9 @@ def test_ping_monitor_hits_default_uptimekuma_on_fail():
 
 
 def test_ping_monitor_hits_custom_uptimekuma_on_fail():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': push_url}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{custom_base_url}/api/push/{push_code}?status=down&msg=fail&ping='
+        f'{CUSTOM_BASE_URL}?status=down&msg=fail'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -41,9 +39,8 @@ def test_ping_monitor_hits_custom_uptimekuma_on_fail():
 
 
 def test_ping_monitor_hits_default_uptimekuma_on_start():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{default_base_url}/api/push/{push_code}?status=up&msg=start&ping='
+        f'{DEFAULT_BASE_URL}?status=up&msg=start'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -57,9 +54,9 @@ def test_ping_monitor_hits_default_uptimekuma_on_start():
 
 
 def test_ping_monitor_custom_uptimekuma_on_start():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': push_url}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{custom_base_url}/api/push/{push_code}?status=up&msg=start&ping='
+        f'{CUSTOM_BASE_URL}?status=up&msg=start'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -73,9 +70,8 @@ def test_ping_monitor_custom_uptimekuma_on_start():
 
 
 def test_ping_monitor_hits_default_uptimekuma_on_finish():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{default_base_url}/api/push/{push_code}?status=up&msg=finish&ping='
+        f'{DEFAULT_BASE_URL}?status=up&msg=finish'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -89,9 +85,9 @@ def test_ping_monitor_hits_default_uptimekuma_on_finish():
 
 
 def test_ping_monitor_custom_uptimekuma_on_finish():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{custom_base_url}/api/push/{push_code}?status=up&msg=finish&ping='
+        f'{CUSTOM_BASE_URL}?status=up&msg=finish'
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -105,7 +101,6 @@ def test_ping_monitor_custom_uptimekuma_on_finish():
 
 
 def test_ping_monitor_does_not_hit_default_uptimekuma_on_fail_dry_run():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -119,7 +114,7 @@ def test_ping_monitor_does_not_hit_default_uptimekuma_on_fail_dry_run():
 
 
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_fail_dry_run():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -133,7 +128,6 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_fail_dry_run():
 
 
 def test_ping_monitor_does_not_hit_default_uptimekuma_on_start_dry_run():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -147,7 +141,7 @@ def test_ping_monitor_does_not_hit_default_uptimekuma_on_start_dry_run():
 
 
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_start_dry_run():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -161,7 +155,6 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_start_dry_run():
 
 
 def test_ping_monitor_does_not_hit_default_uptimekuma_on_finish_dry_run():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -175,7 +168,7 @@ def test_ping_monitor_does_not_hit_default_uptimekuma_on_finish_dry_run():
 
 
 def test_ping_monitor_does_not_hit_custom_uptimekuma_on_finish_dry_run():
-    hook_config = {'server': custom_base_url, 'push_code': push_code}
+    hook_config = {'push_url': CUSTOM_BASE_URL}
     flexmock(module.requests).should_receive('get').never()
 
     module.ping_monitor(
@@ -189,9 +182,8 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_finish_dry_run():
 
 
 def test_ping_monitor_with_connection_error_logs_warning():
-    hook_config = {'push_code': push_code}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{default_base_url}/api/push/{push_code}?status=down&msg=fail&ping='
+        f'{DEFAULT_BASE_URL}?status=down&msg=fail'
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -206,13 +198,12 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
 
 def test_ping_monitor_with_other_error_logs_warning():
-    hook_config = {'push_code': push_code}
     response = flexmock(ok=False)
     response.should_receive('raise_for_status').and_raise(
         module.requests.exceptions.RequestException
     )
     flexmock(module.requests).should_receive('post').with_args(
-        f'{default_base_url}/api/push/{push_code}?status=down&msg=fail&ping='
+        f'{DEFAULT_BASE_URL}?status=down&msg=fail'
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -224,3 +215,17 @@ def test_ping_monitor_with_other_error_logs_warning():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+def test_ping_monitor_with_invalid_run_state():
+    hook_config = {'push_url': CUSTOM_BASE_URL}
+    flexmock(module.requests).should_receive('get').never()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.LOG,
+        monitoring_log_level=1,
+        dry_run=True,
+    )
+
