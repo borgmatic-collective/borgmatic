@@ -1,5 +1,6 @@
 1.8.13.dev0
- * #886: Fix PagerDuty hook traceback with Python < 3.10.
+ * #886: Fix a PagerDuty hook traceback with Python < 3.10.
+ * #889: Fix the Healthchecks ping body size limit, restoring it to the documented 100,000 bytes.
 
 1.8.12
  * #817: Add a "--max-duration" flag to the "check" action and a "max_duration" option to the
