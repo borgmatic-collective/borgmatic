@@ -16,13 +16,14 @@ def initialize_monitor(
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Make a get request to the configured Uptime Kuma push_url.
-    Use the given configuration filename in any log entries.
-    If this is a dry run, then don't actually push anything.
+    Make a get request to the configured Uptime Kuma push_url. Use the given configuration filename
+    in any log entries. If this is a dry run, then don't actually push anything.
     '''
     run_states = hook_config.get('states', ['start', 'finish', 'fail'])
+
     if state.name.lower() not in run_states:
         return
+
     dry_run_label = ' (dry run; not actually pushing)' if dry_run else ''
     status = 'down' if state.name.lower() == 'fail' else 'up'
     push_url = hook_config.get('push_url', 'https://example.uptime.kuma/api/push/abcd1234')
@@ -31,9 +32,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         f'{config_filename}: Pushing Uptime Kuma push_url {push_url}?{query} {dry_run_label}'
     )
     logger.debug(f'{config_filename}: Full Uptime Kuma state URL {push_url}?{query}')
+
     if dry_run:
         return
+
     logging.getLogger('urllib3').setLevel(logging.ERROR)
+
     try:
         response = requests.get(f'{push_url}?{query}')
         if not response.ok:

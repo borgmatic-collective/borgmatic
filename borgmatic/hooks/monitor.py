@@ -2,12 +2,12 @@ from enum import Enum
 
 MONITOR_HOOK_NAMES = (
     'apprise',
-    'healthchecks',
-    'cronitor',
     'cronhub',
-    'pagerduty',
-    'ntfy',
+    'cronitor',
+    'healthchecks',
     'loki',
+    'ntfy',
+    'pagerduty',
     'uptimekuma',
 )
 

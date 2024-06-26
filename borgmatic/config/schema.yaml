@@ -1766,7 +1766,7 @@ properties:
             an account at https://healthchecks.io (or self-host Healthchecks) if
             you'd like to use this service. See borgmatic monitoring
             documentation for details.
-    uptimekuma:
+    uptime_kuma:
         type: object
         required: ['push_url']
         additionalProperties: false

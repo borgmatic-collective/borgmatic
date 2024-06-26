@@ -39,14 +39,14 @@ below for how to configure this.
 borgmatic integrates with these monitoring services and libraries, pinging
 them as backups happen:
 
- * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
- * [Cronitor](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
- * [Cronhub](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
- * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
- * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
- * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
  * [Apprise](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook)
- * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptimekuma-hook)
+ * [Cronhub](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
+ * [Cronitor](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
+ * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
+ * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
+ * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
+ * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+ * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
 
 The idea is that you'll receive an alert when something goes wrong or when the
 service doesn't hear from borgmatic for a configured interval (if supported).
@@ -508,58 +508,59 @@ details.
 
 ## Uptime Kuma hook
 
-[Uptime Kuma](https://uptime.kuma.pet) is an easy-to-use self-hosted 
-monitoring tool and can provide a Push monitor type to accept 
-HTTP `GET` requests from a service instead of contacting it
-directly.
+[Uptime Kuma](https://uptime.kuma.pet) is an easy-to-use, self-hosted
+monitoring tool and can provide a Push monitor type to accept HTTP `GET`
+requests from a service instead of contacting it directly.
 
-Uptime Kuma allows you to see a history of monitor states and 
-can in turn alert via Ntfy, Gotify, Matrix, Apprise, Email, and many more.
+Uptime Kuma allows you to see a history of monitor states and can in turn
+alert via ntfy, Gotify, Matrix, Apprise, Email, and many more.
 
 An example configuration is shown here with all the available options:
 
 ```yaml
-uptimekuma:
+uptime_kuma:
     push_url: https://kuma.my-domain.com/api/push/abcd1234
     states:
         - start
         - finish
         - fail
 ```
-The `push_url` is provided to your from your Uptime Kuma service and 
-includes a query string; the text including and after the question mark ('?').
-Please do not include the query string in the `push_url` configuration, 
-borgmatic will add this automatically depending on the state of your backup. 
 
-Using `start`, `finish` and `fail` states means you will get two 'up beats' in 
-Uptime Kuma for successful backups and the ability to see on failures if 
-and when the backup started (was there a `start` beat?).
+The `push_url` is provided to your from your Uptime Kuma service and
+originally includes a query string—the text including and after the question
+mark (`?`). But please do not include the query string in the `push_url`
+configuration; borgmatic will add this automatically depending on the state of
+your backup. 
 
-A reasonable base-level configuration for an Uptime Kuma Monitor 
-for a backup is below:
+Using `start`, `finish` and `fail` states means you will get two "up beats" in
+Uptime Kuma for successful backups and the ability to see failures if and when
+the backup started (was there a `start` beat?).
+
+A reasonable base-level configuration for an Uptime Kuma Monitor for a backup
+is below:
 
 ```ini
-# These are to be entered into Uptime Kuma and not into your
-# borgmatic configuration.
+# These are to be entered into Uptime Kuma and not into your borgmatic
+# configuration.
 
+# Push monitors wait for the client to contact Uptime Kuma instead of Uptime
+# Kuma contacting the client. This is perfect for backup monitoring.
 Monitor Type = Push
-# Push monitors wait for the client to contact Uptime Kuma
-# instead of Uptime Kuma contacting the client.
-# This is perfect for backup monitoring.
 
 Heartbeat Interval = 90000     # = 25 hours = 1 day + 1 hour
 
-# Wait 6 times the Heartbeat Retry (below) before logging a heartbeat missed
+# Wait 6 times the Heartbeat Retry (below) before logging a heartbeat missed.
 Retries = 6
 
-# Multiplied by Retries this gives a grace period within which 
-# the monitor goes into the "Pending" state
+# Multiplied by Retries this gives a grace period within which the monitor
+# goes into the "Pending" state.
 Heartbeat Retry = 360          # = 10 minutes
 
-# For each Heartbeat Interval if the backup fails repeatedly, 
-# a notification is sent each time.
+# For each Heartbeat Interval if the backup fails repeatedly, a notification
+# is sent each time.
 Resend Notification every X times = 1
 ```
+
 
 ## Scripting borgmatic
 
