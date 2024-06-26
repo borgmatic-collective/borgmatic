@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import hashlib
 import itertools
@@ -99,12 +100,17 @@ def parse_frequency(frequency):
         raise ValueError(f"Could not parse consistency check frequency '{frequency}'")
 
 
+WEEKDAY_DAYS = calendar.day_name[0:5]
+WEEKEND_DAYS = calendar.day_name[5:7]
+
+
 def filter_checks_on_frequency(
     config,
     borg_repository_id,
     checks,
     force,
     archives_check_id=None,
+    datetime_now=datetime.datetime.now,
 ):
     '''
     Given a configuration dict with a "checks" sequence of dicts, a Borg repository ID, a sequence
@@ -143,6 +149,29 @@ def filter_checks_on_frequency(
         if checks and check not in checks:
             continue
 
+        only_run_on = check_config.get('only_run_on')
+        if only_run_on:
+            # Use a dict instead of a set to preserve ordering.
+            days = dict.fromkeys(only_run_on)
+
+            if 'weekday' in days:
+                days = {
+                    **dict.fromkeys(day for day in days if day != 'weekday'),
+                    **dict.fromkeys(WEEKDAY_DAYS),
+                }
+            if 'weekend' in days:
+                days = {
+                    **dict.fromkeys(day for day in days if day != 'weekend'),
+                    **dict.fromkeys(WEEKEND_DAYS),
+                }
+
+            if calendar.day_name[datetime_now().weekday()] not in days:
+                logger.info(
+                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(days)} (use --force to check anyway)"
+                )
+                filtered_checks.remove(check)
+                continue
+
         frequency_delta = parse_frequency(check_config.get('frequency'))
         if not frequency_delta:
             continue
@@ -153,8 +182,8 @@ def filter_checks_on_frequency(
 
         # If we've not yet reached the time when the frequency dictates we're ready for another
         # check, skip this check.
-        if datetime.datetime.now() < check_time + frequency_delta:
-            remaining = check_time + frequency_delta - datetime.datetime.now()
+        if datetime_now() < check_time + frequency_delta:
+            remaining = check_time + frequency_delta - datetime_now()
             logger.info(
                 f'Skipping {check} check due to configured frequency; {remaining} until next check (use --force to check anyway)'
             )

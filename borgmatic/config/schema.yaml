@@ -546,6 +546,20 @@ properties:
                               "always": running this check every time checks
                               are run.
                           example: 2 weeks
+                      only_run_on:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              After the "frequency" duration has elapsed, only
+                              run this check if the current day of the week
+                              matches one of these values (the name of a day of
+                              the week in the current locale). "weekday" and
+                              "weekend" are also accepted. Defaults to running
+                              the check on any day of the week.
+                          example:
+                              - Saturday
+                              - Sunday
                 - required: [name]
                   additionalProperties: false
                   properties:
@@ -579,6 +593,20 @@ properties:
                               "always": running this check every time checks
                               are run.
                           example: 2 weeks
+                      only_run_on:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              After the "frequency" duration has elapsed, only
+                              run this check if the current day of the week
+                              matches one of these values (the name of a day of
+                              the week in the current locale). "weekday" and
+                              "weekend" are also accepted. Defaults to running
+                              the check on any day of the week.
+                          example:
+                              - Saturday
+                              - Sunday
                       max_duration:
                           type: integer
                           description: |
@@ -627,6 +655,20 @@ properties:
                               "always": running this check every time checks
                               are run.
                           example: 2 weeks
+                      only_run_on:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              After the "frequency" duration has elapsed, only
+                              run this check if the current day of the week
+                              matches one of these values (the name of a day of
+                              the week in the current locale). "weekday" and
+                              "weekend" are also accepted. Defaults to running
+                              the check on any day of the week.
+                          example:
+                              - Saturday
+                              - Sunday
                       count_tolerance_percentage:
                           type: number
                           description: |

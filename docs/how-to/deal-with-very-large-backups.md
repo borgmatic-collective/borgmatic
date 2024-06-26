@@ -242,6 +242,57 @@ check --force` runs `check` even if it's specified in the `skip_actions`
 option.
 
 
+### Check days
+
+<span class="minilink minilink-addedin">New in version 1.8.13</span> You can
+optionally configure checks to only run on particular days of the week. For
+instance:
+
+```yaml
+checks:
+    - name: repository
+      only_run_on:
+         - Saturday
+         - Sunday
+    - name: archives
+      only_run_on:
+         - weekday
+    - name: spot
+      only_run_on:
+         - Friday
+         - weekend
+```
+
+Each day of the week is specified in the current locale (system
+language/country settings). `weekend` and `weekday` are also accepted.
+
+Just like with `frequency`, borgmatic only makes a best effort to run checks
+on the given day of the week. For instance, if you run `borgmatic check`
+daily, then every day borgmatic will have an opportunity to determine whether
+your checks are configured to run on that day. If they are, then the checks
+run. If not, they are skipped.
+
+For instance, with the above configuration, if borgmatic is run on a Saturday,
+the `repository` check will run. But on a Monday? The repository check will
+get skipped. And if borgmatic is never run on a Saturday or a Sunday, that
+check will never get a chance to run.
+
+Also, the day of the week configuration applies *after* any configured
+`frequency` for a check. So for instance, imagine the following configuration:
+
+```yaml
+checks:
+    - name: repository
+      frequency: 2 weeks
+      only_run_on:
+         - Monday
+```
+
+If you run borgmatic daily with that configuration, then borgmatic will first
+wait two weeks after the previous check before running the check again—on the
+first Monday after the `frequency` duration elapses.
+
+
 ### Running only checks
 
 <span class="minilink minilink-addedin">New in version 1.7.1</span> If you

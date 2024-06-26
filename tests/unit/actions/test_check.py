@@ -113,6 +113,74 @@ def test_filter_checks_on_frequency_retains_check_without_frequency():
     ) == ('archives',)
 
 
+def test_filter_checks_on_frequency_retains_check_with_empty_only_run_on():
+    flexmock(module).should_receive('parse_frequency').and_return(None)
+
+    assert module.filter_checks_on_frequency(
+        config={'checks': [{'name': 'archives', 'only_run_on': []}]},
+        borg_repository_id='repo',
+        checks=('archives',),
+        force=False,
+        archives_check_id='1234',
+        datetime_now=flexmock(weekday=lambda: 0),
+    ) == ('archives',)
+
+
+def test_filter_checks_on_frequency_retains_check_with_only_run_on_matching_today():
+    flexmock(module).should_receive('parse_frequency').and_return(None)
+
+    assert module.filter_checks_on_frequency(
+        config={'checks': [{'name': 'archives', 'only_run_on': [module.calendar.day_name[0]]}]},
+        borg_repository_id='repo',
+        checks=('archives',),
+        force=False,
+        archives_check_id='1234',
+        datetime_now=flexmock(weekday=lambda: 0),
+    ) == ('archives',)
+
+
+def test_filter_checks_on_frequency_retains_check_with_only_run_on_matching_today_via_weekday_value():
+    flexmock(module).should_receive('parse_frequency').and_return(None)
+
+    assert module.filter_checks_on_frequency(
+        config={'checks': [{'name': 'archives', 'only_run_on': ['weekday']}]},
+        borg_repository_id='repo',
+        checks=('archives',),
+        force=False,
+        archives_check_id='1234',
+        datetime_now=flexmock(weekday=lambda: 0),
+    ) == ('archives',)
+
+
+def test_filter_checks_on_frequency_retains_check_with_only_run_on_matching_today_via_weekend_value():
+    flexmock(module).should_receive('parse_frequency').and_return(None)
+
+    assert module.filter_checks_on_frequency(
+        config={'checks': [{'name': 'archives', 'only_run_on': ['weekend']}]},
+        borg_repository_id='repo',
+        checks=('archives',),
+        force=False,
+        archives_check_id='1234',
+        datetime_now=flexmock(weekday=lambda: 6),
+    ) == ('archives',)
+
+
+def test_filter_checks_on_frequency_skips_check_with_only_run_on_not_matching_today():
+    flexmock(module).should_receive('parse_frequency').and_return(None)
+
+    assert (
+        module.filter_checks_on_frequency(
+            config={'checks': [{'name': 'archives', 'only_run_on': [module.calendar.day_name[5]]}]},
+            borg_repository_id='repo',
+            checks=('archives',),
+            force=False,
+            archives_check_id='1234',
+            datetime_now=flexmock(weekday=lambda: 0),
+        )
+        == ()
+    )
+
+
 def test_filter_checks_on_frequency_retains_check_with_elapsed_frequency():
     flexmock(module).should_receive('parse_frequency').and_return(
         module.datetime.timedelta(hours=1)
@@ -168,7 +236,7 @@ def test_filter_checks_on_frequency_skips_check_with_unelapsed_frequency():
     )
 
 
-def test_filter_checks_on_frequency_restains_check_with_unelapsed_frequency_and_force():
+def test_filter_checks_on_frequency_retains_check_with_unelapsed_frequency_and_force():
     assert module.filter_checks_on_frequency(
         config={'checks': [{'name': 'archives', 'frequency': '1 hour'}]},
         borg_repository_id='repo',
