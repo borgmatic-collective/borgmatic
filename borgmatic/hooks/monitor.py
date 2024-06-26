@@ -1,6 +1,15 @@
 from enum import Enum
 
-MONITOR_HOOK_NAMES = ('apprise', 'healthchecks', 'cronitor', 'cronhub', 'pagerduty', 'ntfy', 'loki')
+MONITOR_HOOK_NAMES = (
+    'apprise',
+    'healthchecks',
+    'cronitor',
+    'cronhub',
+    'pagerduty',
+    'ntfy',
+    'loki',
+    'uptimekuma',
+)
 
 
 class State(Enum):

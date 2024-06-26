@@ -13,6 +13,7 @@ from borgmatic.hooks import (
     pagerduty,
     postgresql,
     sqlite,
+    uptimekuma,
 )
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ HOOK_NAME_TO_MODULE = {
     'cronhub': cronhub,
     'cronitor': cronitor,
     'healthchecks': healthchecks,
+    'loki': loki,
     'mariadb_databases': mariadb,
     'mongodb_databases': mongodb,
     'mysql_databases': mysql,
@@ -29,7 +31,7 @@ HOOK_NAME_TO_MODULE = {
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
     'sqlite_databases': sqlite,
-    'loki': loki,
+    'uptimekuma': uptimekuma,
 }
 
 

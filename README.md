@@ -62,6 +62,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://www.mongodb.com/"><img src="docs/static/mongodb.png" alt="MongoDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sqlite.org/"><img src="docs/static/sqlite.png" alt="SQLite" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://healthchecks.io/"><img src="docs/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://uptime.kuma.pet/"><img src="docs/static/uptimekuma.png" alt="Uptime Kuma" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://cronitor.io/"><img src="docs/static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://cronhub.io/"><img src="docs/static/cronhub.png" alt="Cronhub" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.pagerduty.com/"><img src="docs/static/pagerduty.png" alt="PagerDuty" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>

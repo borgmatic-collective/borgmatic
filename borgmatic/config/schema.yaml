@@ -1766,6 +1766,38 @@ properties:
             an account at https://healthchecks.io (or self-host Healthchecks) if
             you'd like to use this service. See borgmatic monitoring
             documentation for details.
+    uptimekuma:
+        type: object
+        required: ['push_url']
+        additionalProperties: false
+        properties:
+            push_url:
+                type: string
+                description: |
+                  Uptime Kuma push URL without query string (do not include the
+                  question mark or anything after it).
+                example: https://example.uptime.kuma/api/push/abcd1234
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to push for: "start",
+                    "finish", and/or "fail". Defaults to pushing for all
+                    states.
+                example:
+                    - start
+                    - finish
+                    - fail
+        description: |
+            Configuration for a monitoring integration with Uptime Kuma using
+            the Push monitor type.
+            See more information here: https://uptime.kuma.pet
     cronitor:
         type: object
         required: ['ping_url']
