@@ -14,7 +14,7 @@ def initialize_monitor(
     pass
 
 
-def push_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
+def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
     Make a get request to the configured Uptime Kuma push_url.
     Use the given configuration filename in any log entries.
