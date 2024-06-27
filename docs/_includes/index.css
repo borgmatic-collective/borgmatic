@@ -167,12 +167,11 @@ li {
 	padding: .25em 0;
 }
 li ul {
-	margin: .5em 0;
-	padding-left: 1em;
+        list-style-type: disc;
+        padding-left: 2em;
 }
-li li {
-	padding-top: .1em;
-	padding-bottom: .1em;
+li li:last-child {
+	padding-bottom: 0em;
 }
 
 /* Syntax highlighting and Code blocks */
