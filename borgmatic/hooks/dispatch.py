@@ -31,7 +31,7 @@ HOOK_NAME_TO_MODULE = {
     'pagerduty': pagerduty,
     'postgresql_databases': postgresql,
     'sqlite_databases': sqlite,
-    'uptimekuma': uptimekuma,
+    'uptime_kuma': uptimekuma,
 }
 
 
