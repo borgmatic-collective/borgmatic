@@ -8,7 +8,7 @@ MONITOR_HOOK_NAMES = (
     'loki',
     'ntfy',
     'pagerduty',
-    'uptimekuma',
+    'uptime_kuma',
 )
 
 
