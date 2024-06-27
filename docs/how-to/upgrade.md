@@ -151,7 +151,7 @@ borgmatic rcreate --verbosity 1 --encryption repokey-aes-ocb \
 ```
 
 Read about [Borg encryption
-modes](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/rcreate.html#encryption-mode-tldr)
+modes](https://borgbackup.readthedocs.io/en/2.0.0b8/usage/rcreate.html#encryption-mode-tldr)
 for more details.
 
 To transfer data from your original Borg 1 repository to your newly created
@@ -174,7 +174,7 @@ confirmation of success—or tells you if something hasn't been transferred yet.
 Note that by omitting the `--upgrader` flag, you can also do archive transfers
 between related Borg 2 repositories without upgrading, even down to individual
 archives. For more on that functionality, see the [Borg transfer
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b5/usage/transfer.html).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b8/usage/transfer.html).
 
 That's it! Now you can use your new Borg 2 repository as normal with
 borgmatic. If you've got multiple repositories, repeat the above process for
