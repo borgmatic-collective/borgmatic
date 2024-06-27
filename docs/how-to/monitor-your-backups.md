@@ -508,9 +508,10 @@ details.
 
 ## Uptime Kuma hook
 
-[Uptime Kuma](https://uptime.kuma.pet) is an easy-to-use, self-hosted
-monitoring tool and can provide a Push monitor type to accept HTTP `GET`
-requests from a service instead of contacting it directly.
+<span class="minilink minilink-addedin">New in version 1.8.13</span> [Uptime
+Kuma](https://uptime.kuma.pet) is an easy-to-use, self-hosted monitoring tool
+and can provide a Push monitor type to accept HTTP `GET` requests from a
+service instead of contacting it directly.
 
 Uptime Kuma allows you to see a history of monitor states and can in turn
 alert via ntfy, Gotify, Matrix, Apprise, Email, and many more.
