@@ -152,8 +152,11 @@ the following deviations from it:
  * In general, spell out words in variable names instead of shortening them.
    So, think `index` instead of `idx`. There are some notable exceptions to
    this though (like `config`).
- * Favor blank lines around `if` statements, `return`s, logical code groupings,
-   etc. Readability is more important than packing the code tightly.
+ * Favor blank lines around logical code groupings, `if` statements,
+   `return`s, etc. Readability is more important than packing code tightly.
+ * Import fully qualified Python modules instead of importing individual
+   functions, classes, or constants (e.g., do `import os.path` instead of
+   `from os import path`).
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
