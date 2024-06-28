@@ -1,4 +1,5 @@
 1.8.13.dev0
+ * #298: Add "delete" and "rdelete" actions to delete archives or entire repositories.
  * #785: Add an "only_run_on" option to consistency checks so you can limit a check to running on
    particular days of the week. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#check-days

@@ -190,6 +190,20 @@ def test_make_match_archives_flags_makes_flags_with_globs(
     )
 
 
+def test_make_match_archives_flags_accepts_default_archive_name_format():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert (
+        module.make_match_archives_flags(
+            match_archives=None,
+            archive_name_format=None,
+            local_borg_version=flexmock(),
+            default_archive_name_format='*',
+        )
+        == ()
+    )
+
+
 def test_warn_for_aggressive_archive_flags_without_archive_flags_bails():
     flexmock(module.logger).should_receive('warning').never()
 
