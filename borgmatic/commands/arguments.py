@@ -736,7 +736,7 @@ def make_parsers():
     delete_group.add_argument(
         '--save-space',
         action='store_true',
-        help='Work slower, but using less space',
+        help='Work slower, but using less space [Not supported in Borg 2.x+]',
     )
     delete_group.add_argument(
         '--checkpoint-interval',
