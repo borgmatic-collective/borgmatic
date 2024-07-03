@@ -155,8 +155,8 @@ the following deviations from it:
  * Favor blank lines around logical code groupings, `if` statements,
    `return`s, etc. Readability is more important than packing code tightly.
  * Import fully qualified Python modules instead of importing individual
-   functions, classes, or constants (e.g., do `import os.path` instead of
-   `from os import path`).
+   functions, classes, or constants. E.g., do `import os.path` instead of
+   `from os import path`. (Some exceptions to this are made in tests.)
 
 borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and

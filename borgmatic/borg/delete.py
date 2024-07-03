@@ -84,7 +84,8 @@ def delete_archives(
     borgmatic.logger.add_custom_log_levels()
 
     if not any(
-        getattr(delete_arguments, argument_name) for argument_name in ARCHIVE_RELATED_ARGUMENT_NAMES
+        getattr(delete_arguments, argument_name, None)
+        for argument_name in ARCHIVE_RELATED_ARGUMENT_NAMES
     ):
         if borgmatic.borg.feature.available(
             borgmatic.borg.feature.Feature.RDELETE, local_borg_version
@@ -100,7 +101,7 @@ def delete_archives(
             cache_only=delete_arguments.cache_only,
             keep_security_info=delete_arguments.keep_security_info,
         )
-        return borgmatic.borg.rdelete.delete_repository(
+        borgmatic.borg.rdelete.delete_repository(
             repository,
             config,
             local_borg_version,
@@ -109,6 +110,8 @@ def delete_archives(
             local_path,
             remote_path,
         )
+
+        return
 
     command = make_delete_command(
         repository,

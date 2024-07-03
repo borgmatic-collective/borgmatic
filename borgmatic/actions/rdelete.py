@@ -20,7 +20,10 @@ def run_rdelete(
     if rdelete_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, rdelete_arguments.repository
     ):
-        logger.answer(f'{repository.get("label", repository["path"])}: Deleting repository' + (' cache' if rdelete_arguments.cache_only else ''))
+        logger.answer(
+            f'{repository.get("label", repository["path"])}: Deleting repository'
+            + (' cache' if rdelete_arguments.cache_only else '')
+        )
 
         borgmatic.borg.rdelete.delete_repository(
             repository,
