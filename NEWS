@@ -3,7 +3,7 @@
  * #785: Add an "only_run_on" option to consistency checks so you can limit a check to running on
    particular days of the week. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#check-days
- * #885: Add Uptime Kuma monitoring hook. See the documentation for more information:
+ * #885: Add an Uptime Kuma monitoring hook. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook
  * #886: Fix a PagerDuty hook traceback with Python < 3.10.
  * #889: Fix the Healthchecks ping body size limit, restoring it to the documented 100,000 bytes.
