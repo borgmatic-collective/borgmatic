@@ -747,11 +747,13 @@ properties:
                 - compact
                 - create
                 - check
+                - delete
                 - extract
                 - config
                 - export-tar
                 - mount
                 - umount
+                - rdelete
                 - restore
                 - rlist
                 - list

@@ -136,7 +136,7 @@ def test_ping_monitor_with_other_error_logs_warning():
     response.should_receive('raise_for_status').and_raise(
         module.requests.exceptions.RequestException
     )
-    flexmock(module.requests).should_receive('post').with_args(
+    flexmock(module.requests).should_receive('get').with_args(
         f'{CUSTOM_PUSH_URL}?status=down&msg=fail'
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()

@@ -66,7 +66,12 @@ def make_repository_archive_flags(repository_path, archive, local_borg_version):
 DEFAULT_ARCHIVE_NAME_FORMAT = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
 
 
-def make_match_archives_flags(match_archives, archive_name_format, local_borg_version):
+def make_match_archives_flags(
+    match_archives,
+    archive_name_format,
+    local_borg_version,
+    default_archive_name_format=DEFAULT_ARCHIVE_NAME_FORMAT,
+):
     '''
     Return match archives flags based on the given match archives value, if any. If it isn't set,
     return match archives flags to match archives created with the given (or default) archive name
@@ -83,7 +88,7 @@ def make_match_archives_flags(match_archives, archive_name_format, local_borg_ve
             return ('--glob-archives', re.sub(r'^sh:', '', match_archives))
 
     derived_match_archives = re.sub(
-        r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format or DEFAULT_ARCHIVE_NAME_FORMAT
+        r'\{(now|utcnow|pid)([:%\w\.-]*)\}', '*', archive_name_format or default_archive_name_format
     )
 
     if derived_match_archives == '*':

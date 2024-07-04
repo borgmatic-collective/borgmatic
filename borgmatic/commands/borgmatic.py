@@ -18,6 +18,7 @@ import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
+import borgmatic.actions.delete
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
 import borgmatic.actions.extract
@@ -26,6 +27,7 @@ import borgmatic.actions.list
 import borgmatic.actions.mount
 import borgmatic.actions.prune
 import borgmatic.actions.rcreate
+import borgmatic.actions.rdelete
 import borgmatic.actions.restore
 import borgmatic.actions.rinfo
 import borgmatic.actions.rlist
@@ -471,6 +473,26 @@ def run_actions(
             )
         elif action_name == 'export' and action_name not in skip_actions:
             borgmatic.actions.export_key.run_export_key(
+                repository,
+                config,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'delete' and action_name not in skip_actions:
+            borgmatic.actions.delete.run_delete(
+                repository,
+                config,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'rdelete' and action_name not in skip_actions:
+            borgmatic.actions.rdelete.run_rdelete(
                 repository,
                 config,
                 local_borg_version,

@@ -12,11 +12,13 @@ ACTION_ALIASES = {
     'create': ['-C'],
     'check': ['-k'],
     'config': [],
+    'delete': [],
     'extract': ['-x'],
     'export-tar': [],
     'mount': ['-m'],
     'umount': ['-u'],
     'restore': ['-r'],
+    'rdelete': [],
     'rlist': [],
     'list': ['-l'],
     'rinfo': [],
@@ -538,7 +540,7 @@ def make_parsers():
         dest='stats',
         default=False,
         action='store_true',
-        help='Display statistics of archive',
+        help='Display statistics of the pruned archive',
     )
     prune_group.add_argument(
         '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
@@ -688,6 +690,97 @@ def make_parsers():
         help='Ignore configured check frequencies and run checks unconditionally',
     )
     check_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    delete_parser = action_parsers.add_parser(
+        'delete',
+        aliases=ACTION_ALIASES['delete'],
+        help='Delete an archive from a repository or delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        description='Delete an archive from a repository or delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        add_help=False,
+    )
+    delete_group = delete_parser.add_argument_group('delete arguments')
+    delete_group.add_argument(
+        '--repository',
+        help='Path of repository to delete or delete archives from, defaults to the configured repository if there is only one',
+    )
+    delete_group.add_argument(
+        '--archive',
+        help='Archive to delete',
+    )
+    delete_group.add_argument(
+        '--list',
+        dest='list_archives',
+        action='store_true',
+        help='Show details for the deleted archives',
+    )
+    delete_group.add_argument(
+        '--stats',
+        action='store_true',
+        help='Display statistics for the deleted archives',
+    )
+    delete_group.add_argument(
+        '--cache-only',
+        action='store_true',
+        help='Delete only the local cache for the given repository',
+    )
+    delete_group.add_argument(
+        '--force',
+        action='count',
+        help='Force deletion of corrupted archives, can be given twice if once does not work',
+    )
+    delete_group.add_argument(
+        '--keep-security-info',
+        action='store_true',
+        help='Do not delete the local security info when deleting a repository',
+    )
+    delete_group.add_argument(
+        '--save-space',
+        action='store_true',
+        help='Work slower, but using less space [Not supported in Borg 2.x+]',
+    )
+    delete_group.add_argument(
+        '--checkpoint-interval',
+        type=int,
+        metavar='SECONDS',
+        help='Write a checkpoint at the given interval, defaults to 1800 seconds (30 minutes)',
+    )
+    delete_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='Only delete archives matching this pattern',
+    )
+    delete_group.add_argument(
+        '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
+    )
+    delete_group.add_argument(
+        '--first', metavar='N', help='Delete first N archives after other filters are applied'
+    )
+    delete_group.add_argument(
+        '--last', metavar='N', help='Delete last N archives after other filters are applied'
+    )
+    delete_group.add_argument(
+        '--oldest',
+        metavar='TIMESPAN',
+        help='Delete archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]',
+    )
+    delete_group.add_argument(
+        '--newest',
+        metavar='TIMESPAN',
+        help='Delete archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]',
+    )
+    delete_group.add_argument(
+        '--older',
+        metavar='TIMESPAN',
+        help='Delete archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
+    )
+    delete_group.add_argument(
+        '--newer',
+        metavar='TIMESPAN',
+        help='Delete archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
+    )
+    delete_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     extract_parser = action_parsers.add_parser(
         'extract',
@@ -976,6 +1069,43 @@ def make_parsers():
         required=True,
     )
     umount_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    rdelete_parser = action_parsers.add_parser(
+        'rdelete',
+        aliases=ACTION_ALIASES['rdelete'],
+        help='Delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        description='Delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        add_help=False,
+    )
+    rdelete_group = rdelete_parser.add_argument_group('delete arguments')
+    rdelete_group.add_argument(
+        '--repository',
+        help='Path of repository to delete, defaults to the configured repository if there is only one',
+    )
+    rdelete_group.add_argument(
+        '--list',
+        dest='list_archives',
+        action='store_true',
+        help='Show details for the archives in the given repository',
+    )
+    rdelete_group.add_argument(
+        '--force',
+        action='count',
+        help='Force deletion of corrupted archives, can be given twice if once does not work',
+    )
+    rdelete_group.add_argument(
+        '--cache-only',
+        action='store_true',
+        help='Delete only the local cache for the given repository',
+    )
+    rdelete_group.add_argument(
+        '--keep-security-info',
+        action='store_true',
+        help='Do not delete the local security info when deleting a repository',
+    )
+    rdelete_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     restore_parser = action_parsers.add_parser(
         'restore',

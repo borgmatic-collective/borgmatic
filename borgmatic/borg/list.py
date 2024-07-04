@@ -144,12 +144,12 @@ def list_archive(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, a configuration dict, the local Borg version, global
-    arguments as an argparse.Namespace, the arguments to the list action as an argparse.Namespace,
-    and local and remote Borg paths, display the output of listing the files of a Borg archive (or
-    return JSON output). If list_arguments.find_paths are given, list the files by searching across
-    multiple archives. If neither find_paths nor archive name are given, instead list the archives
-    in the given repository.
+    Given a local or remote repository path, a configuration dict, the local Borg version, the
+    arguments to the list action as an argparse.Namespace, global arguments as an
+    argparse.Namespace, and local and remote Borg paths, display the output of listing the files of
+    a Borg archive (or return JSON output). If list_arguments.find_paths are given, list the files
+    by searching across multiple archives. If neither find_paths nor archive name are given, instead
+    list the archives in the given repository.
     '''
     borgmatic.logger.add_custom_log_levels()
 
