@@ -48,7 +48,7 @@ support for [more granular exit
 codes](https://borgbackup.readthedocs.io/en/1.4-maint/usage/general.html#return-codes)
 means that you can configure borgmatic to respond to specific Borg conditions.
 See the full list of [Borg 1.4 error and warning exit
-codes](https://borgbackup.readthedocs.io/en/1.4.0b2/internals/frontends.html#message-ids).
+codes](https://borgbackup.readthedocs.io/en/stable/internals/frontends.html#message-ids).
 The `rc:` numeric value there tells you the exit code for each.
 
 For instance, this borgmatic configuration elevates all Borg backup file
