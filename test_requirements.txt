@@ -2,7 +2,7 @@ appdirs==1.4.4
 apprise==1.8.0
 attrs==23.2.0
 black==24.4.2
-certifi==2024.2.2
+certifi==2024.7.4
 chardet==5.2.0
 click==8.1.7
 codespell==2.2.6
