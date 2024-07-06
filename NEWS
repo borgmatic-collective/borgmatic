@@ -1,3 +1,7 @@
+1.8.14.dev0
+ * Add a recent contributors section to the documentation, because credit where credit's due! See:
+   https://torsion.org/borgmatic/#recent-contributors
+
 1.8.13
  * #298: Add "delete" and "rdelete" actions to delete archives or entire repositories.
  * #785: Add an "only_run_on" option to consistency checks so you can limit a check to running on

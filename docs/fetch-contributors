@@ -1,0 +1,68 @@
+#!/usr/bin/python
+
+'''
+A script to fetch recent contributors to borgmatic, used during documentation generation.
+'''
+
+import datetime
+import itertools
+import operator
+import subprocess
+
+import requests
+
+
+def list_merged_pulls(url):
+    '''
+    Given a Gitea or GitHub API endpoint URL for pull requests, fetch and return the corresponding
+    JSON for all such merged pull requests.
+    '''
+    response = requests.get(f'{url}?state=closed', headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+
+    if not response.ok:
+        response.raise_for_status()
+
+    return tuple(pull for pull in response.json() if pull.get('merged_at'))
+
+
+API_ENDPOINT_URLS = (
+    'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/pulls',
+    'https://api.github.com/repos/borgmatic-collective/borgmatic/pulls',
+)
+RECENT_CONTRIBUTORS_CUTOFF_DAYS = 365
+
+
+def print_contributors():
+    '''
+    Display the recent contributors as a row of avatars in an HTML fragment.
+    '''
+    pulls = tuple(itertools.chain.from_iterable(list_merged_pulls(url) for url in API_ENDPOINT_URLS))
+    seen_user_ids = set()
+
+    print('<p>')
+
+    for pull in sorted(pulls, key=operator.itemgetter('merged_at'), reverse=True):
+        merged_at = pull.get('merged_at')
+        user = pull.get('user')
+
+        if not merged_at or not user:
+            continue
+
+        user_id = user.get('id')
+
+        if not user_id or user_id in seen_user_ids:
+            continue
+
+        if datetime.datetime.fromisoformat(merged_at) < datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=RECENT_CONTRIBUTORS_CUTOFF_DAYS):
+            continue
+
+        seen_user_ids.add(user_id)
+        print(
+            f'''<a href="{user.get('html_url')}?tab=activity"><img src="{user.get('avatar_url')}" width="50" height="50" title="{user.get('full_name') or user.get('login')}" /></a>'''
+        )
+
+    print('</p>')
+
+
+if __name__ == '__main__':
+    print_contributors()

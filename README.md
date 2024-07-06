@@ -155,3 +155,7 @@ general, contributions are very welcome. We don't bite!
 Also, please check out the [borgmatic development
 how-to](https://torsion.org/borgmatic/docs/how-to/develop-on-borgmatic/) for
 info on cloning source code, running tests, etc.
+
+### Recent contributors
+
+{% include borgmatic/contributors.html %}
