@@ -157,8 +157,12 @@ the following deviations from it:
  * Import fully qualified Python modules instead of importing individual
    functions, classes, or constants. E.g., do `import os.path` instead of
    `from os import path`. (Some exceptions to this are made in tests.)
+ * Only use classes and OOP as a last resort, such as when integrating with
+   Python libraries that require it.
+ * Prefer functional code where it makes sense, e.g. when constructing a
+   command (to subsequently execute imperatively).
 
-borgmatic code uses the [Black](https://black.readthedocs.io/en/stable/) code
+borgmatic uses the [Black](https://black.readthedocs.io/en/stable/) code
 formatter, the [Flake8](http://flake8.pycqa.org/en/latest/) code checker, and
 the [isort](https://github.com/timothycrosley/isort) import orderer, so
 certain code style requirements are enforced when running automated tests. See
