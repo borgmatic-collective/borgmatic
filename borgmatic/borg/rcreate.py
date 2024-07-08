@@ -9,7 +9,7 @@ from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 logger = logging.getLogger(__name__)
 
 
-RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES = {2, 13}
+RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES = {2, 13, 15}
 
 
 def create_repository(

@@ -1,4 +1,5 @@
 1.8.14.dev0
+ * #896: Fix error in borgmatic rcreate/init on empty repository directory with Borg 1.4.
  * Add a recent contributors section to the documentation, because credit where credit's due! See:
    https://torsion.org/borgmatic/#recent-contributors
 
