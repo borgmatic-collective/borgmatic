@@ -579,7 +579,7 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
                         )
                     ),
                     logging.makeLogRecord(
-                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=error)
+                        dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg=str(error))
                     ),
                 ]
             )
