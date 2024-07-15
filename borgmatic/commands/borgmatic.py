@@ -614,13 +614,13 @@ def log_error_records(
     level_name = logging._levelToName[levelno]
 
     if not error:
-        yield log_record(levelno=levelno, levelname=level_name, msg=message)
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
         return
 
     try:
         raise error
     except CalledProcessError as error:
-        yield log_record(levelno=levelno, levelname=level_name, msg=message)
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
 
         if error.output:
             try:
@@ -639,10 +639,10 @@ def log_error_records(
                     suppress_log=True,
                 )
 
-        yield log_record(levelno=levelno, levelname=level_name, msg=error)
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
     except (ValueError, OSError) as error:
-        yield log_record(levelno=levelno, levelname=level_name, msg=message)
-        yield log_record(levelno=levelno, levelname=level_name, msg=error)
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
+        yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
     except:  # noqa: E722
         # Raising above only as a means of determining the error type. Swallow the exception here
         # because we don't want the exception to propagate out of this function.
