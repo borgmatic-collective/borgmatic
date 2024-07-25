@@ -147,7 +147,8 @@ def collect_archive_data_source_names(
         local_borg_version,
         global_arguments,
         list_paths=[
-            os.path.expanduser(
+            'sh:'
+            + os.path.expanduser(
                 borgmatic.hooks.dump.make_data_source_dump_path(borgmatic_source_directory, pattern)
             )
             for pattern in ('*_databases/*/*',)

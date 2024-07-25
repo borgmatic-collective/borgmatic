@@ -100,10 +100,11 @@ def capture_archive_listing(
     remote_path=None,
 ):
     '''
-    Given a local or remote repository path, an archive name, a configuration dict, the local Borg
-    version, global arguments as an argparse.Namespace, the archive paths in which to list files,
-    the Borg path format to use for the output, and local and remote Borg paths, capture the output
-    of listing that archive and return it as a list of file paths.
+    Given a local or remote repository path, an archive name, a configuration
+    dict, the local Borg version, global arguments as an argparse.Namespace,
+    the archive paths (or Borg patterns) in which to list files, the Borg path
+    format to use for the output, and local and remote Borg paths, capture the
+    output of listing that archive and return it as a list of file paths.
     '''
     borg_environment = environment.make_environment(config)
 
@@ -116,7 +117,7 @@ def capture_archive_listing(
                 argparse.Namespace(
                     repository=repository_path,
                     archive=archive,
-                    paths=[f'sh:{path}' for path in list_paths] if list_paths else None,
+                    paths=[path for path in list_paths] if list_paths else None,
                     find_paths=None,
                     json=None,
                     format=path_format or '{path}{NL}',  # noqa: FS003
