@@ -86,6 +86,10 @@ def execute_dump_command(
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
+
+    dump_format = database.get('format')
+    is_directory_format = dump_format == 'directory'
+
     dump_command = (
         mysql_dump_command
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
@@ -96,7 +100,7 @@ def execute_dump_command(
         + (('--user', database['username']) if 'username' in database else ())
         + ('--databases',)
         + database_names
-        + ('--result-file', dump_filename)
+        + (('--tab', dump_filename) if is_directory_format else ('--result-file', dump_filename))
     )
 
     logger.debug(
@@ -105,13 +109,20 @@ def execute_dump_command(
     if dry_run:
         return None
 
-    dump.create_named_pipe_for_dump(dump_filename)
-
-    return execute_command(
-        dump_command,
-        extra_environment=extra_environment,
-        run_to_completion=False,
-    )
+    if is_directory_format:
+        dump.create_parent_directory_for_dump(dump_filename)
+        execute_command(
+            dump_command,
+            extra_environment=extra_environment,
+        )
+        return None
+    else:
+        dump.create_named_pipe_for_dump(dump_filename)
+        return execute_command(
+            dump_command,
+            extra_environment=extra_environment,
+            run_to_completion=False,
+        )
 
 
 def use_streaming(databases, config, log_prefix):
@@ -153,31 +164,31 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
             for dump_name in dump_database_names:
                 renamed_database = copy.copy(database)
                 renamed_database['name'] = dump_name
-                processes.append(
-                    execute_dump_command(
-                        renamed_database,
-                        log_prefix,
-                        dump_path,
-                        (dump_name,),
-                        extra_environment,
-                        dry_run,
-                        dry_run_label,
-                    )
-                )
-        else:
-            processes.append(
-                execute_dump_command(
-                    database,
+                result = execute_dump_command(
+                    renamed_database,
                     log_prefix,
                     dump_path,
-                    dump_database_names,
+                    (dump_name,),
                     extra_environment,
                     dry_run,
                     dry_run_label,
                 )
+                if result:
+                    processes.append(result)
+        else:
+            result = execute_dump_command(
+                database,
+                log_prefix,
+                dump_path,
+                dump_database_names,
+                extra_environment,
+                dry_run,
+                dry_run_label,
             )
+            if result:
+                processes.append(result)
 
-    return [process for process in processes if process]
+    return processes
 
 
 def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
@@ -225,31 +236,69 @@ def restore_data_source_dump(
     mysql_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
-    restore_command = (
-        mysql_restore_command
-        + ('--batch',)
-        + (
-            tuple(data_source['restore_options'].split(' '))
-            if 'restore_options' in data_source
-            else ()
+
+    dump_format = data_source.get('format')
+    is_directory_format = dump_format == 'directory'
+
+    if is_directory_format:
+        mysql_restore_command = tuple(
+            shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
         )
-        + (('--host', hostname) if hostname else ())
-        + (('--port', str(port)) if port else ())
-        + (('--protocol', 'tcp') if hostname or port else ())
-        + (('--user', username) if username else ())
-    )
+        restore_command = (
+            mysql_restore_command
+            + ('--batch',)
+            + (
+                tuple(data_source['restore_options'].split(' '))
+                if 'restore_options' in data_source
+                else ()
+            )
+            + (('--host', hostname) if hostname else ())
+            + (('--port', str(port)) if port else ())
+            + (('--protocol', 'tcp') if hostname or port else ())
+            + (('--user', username) if username else ())
+        )
+    else:
+        restore_command = (
+            mysql_restore_command
+            + ('--batch',)
+            + (
+                tuple(data_source['restore_options'].split(' '))
+                if 'restore_options' in data_source
+                else ()
+            )
+            + (('--host', hostname) if hostname else ())
+            + (('--port', str(port)) if port else ())
+            + (('--protocol', 'tcp') if hostname or port else ())
+            + (('--user', username) if username else ())
+        )
+
     extra_environment = {'MYSQL_PWD': password} if password else None
 
     logger.debug(f"{log_prefix}: Restoring MySQL database {data_source['name']}{dry_run_label}")
     if dry_run:
         return
 
-    # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
-    # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout,
-        extra_environment=extra_environment,
-    )
+    if is_directory_format:
+        dump_path = make_dump_path(config)
+        dump_directory = dump.make_data_source_dump_filename(
+            dump_path, data_source['name'], data_source.get('hostname')
+        )
+        for file in os.listdir(dump_directory):
+            file_path = os.path.join(dump_directory, file)
+            if file.endswith('.sql'):
+                with open(file_path, 'r') as sql_file:
+                    execute_command_with_processes(
+                        restore_command,
+                        [],
+                        output_log_level=logging.DEBUG,
+                        input_file=sql_file,
+                        extra_environment=extra_environment,
+                    )
+    else:
+        execute_command_with_processes(
+            restore_command,
+            [extract_process],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout,
+            extra_environment=extra_environment,
+        )
