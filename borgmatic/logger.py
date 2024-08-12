@@ -38,7 +38,7 @@ def should_do_markup(no_color, configs):
     if no_color:
         return False
 
-    if any(config.get('output', {}).get('color') is False for config in configs.values()):
+    if any(config.get('color', True) is False for config in configs.values()):
         return False
 
     if os.environ.get('NO_COLOR', None):
