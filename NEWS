@@ -2,6 +2,7 @@
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.
  * #899: Fix for a "bad character" Borg error in which the "spot" check fed Borg an invalid pattern.
  * #900: Fix for a potential traceback (TypeError) during the handling of another error.
+ * Fix a regression in which the "color" option had to effect.
  * Add a recent contributors section to the documentation, because credit where credit's due! See:
    https://torsion.org/borgmatic/#recent-contributors
 
