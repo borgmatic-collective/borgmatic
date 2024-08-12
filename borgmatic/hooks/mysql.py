@@ -283,9 +283,9 @@ def restore_data_source_dump(
         dump_directory = dump.make_data_source_dump_filename(
             dump_path, data_source['name'], data_source.get('hostname')
         )
-        for file in os.listdir(dump_directory):
-            file_path = os.path.join(dump_directory, file)
-            if file.endswith('.sql'):
+        for filename in os.listdir(dump_directory):
+            file_path = os.path.join(dump_directory, filename)
+            if filename.endswith('.sql'):
                 with open(file_path, 'r') as sql_file:
                     execute_command_with_processes(
                         restore_command,
