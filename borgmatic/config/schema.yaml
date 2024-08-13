@@ -522,24 +522,18 @@ properties:
                               - disabled
                           description: |
                               Name of the consistency check to run:
-
-                              "repository" checks the consistency of the
+                               * "repository" checks the consistency of the
                               repository.
-
-                              "archives" checks all of the archives.
-
-                              "data" verifies the integrity of the data within
-                              the archives and implies the "archives" check as
-                              well.
-
-                              "spot" checks that some percentage of source
+                               * "archives" checks all of the archives.
+                               * "data" verifies the integrity of the data
+                              within the archives and implies the "archives"
+                              check as well.
+                               * "spot" checks that some percentage of source
                               files are found in the most recent archive (with
                               identical contents).
-
-                              "extract" does an extraction dry-run of the most
-                              recent archive.
-
-                              See "skip_actions" for disabling checks
+                               * "extract" does an extraction dry-run of the
+                              most recent archive.
+                               * See "skip_actions" for disabling checks
                               altogether.
                           example: spot
                       frequency:
@@ -577,24 +571,18 @@ properties:
                               - repository
                           description: |
                               Name of the consistency check to run:
-
-                              "repository" checks the consistency of the
+                               * "repository" checks the consistency of the
                               repository.
-
-                              "archives" checks all of the archives.
-
-                              "data" verifies the integrity of the data within
-                              the archives and implies the "archives" check as
-                              well.
-
-                              "spot" checks that some percentage of source
+                               * "archives" checks all of the archives.
+                               * "data" verifies the integrity of the data
+                              within the archives and implies the "archives"
+                              check as well.
+                               * "spot" checks that some percentage of source
                               files are found in the most recent archive (with
                               identical contents).
-
-                              "extract" does an extraction dry-run of the most
-                              recent archive.
-
-                              See "skip_actions" for disabling checks
+                               * "extract" does an extraction dry-run of the
+                              most recent archive.
+                               * See "skip_actions" for disabling checks
                               altogether.
                           example: spot
                       frequency:
@@ -647,24 +635,18 @@ properties:
                               - spot
                           description: |
                               Name of the consistency check to run:
-
-                              "repository" checks the consistency of the
+                               * "repository" checks the consistency of the
                               repository.
-
-                              "archives" checks all of the archives.
-
-                              "data" verifies the integrity of the data within
-                              the archives and implies the "archives" check as
-                              well.
-
-                              "spot" checks that some percentage of source
+                               * "archives" checks all of the archives.
+                               * "data" verifies the integrity of the data
+                              within the archives and implies the "archives"
+                              check as well.
+                               * "spot" checks that some percentage of source
                               files are found in the most recent archive (with
                               identical contents).
-
-                              "extract" does an extraction dry-run of the most
-                              recent archive.
-
-                              See "skip_actions" for disabling checks
+                               * "extract" does an extraction dry-run of the
+                              most recent archive.
+                               * See "skip_actions" for disabling checks
                               altogether.
                           example: repository
                       frequency:

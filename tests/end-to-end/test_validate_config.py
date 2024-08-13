@@ -9,7 +9,7 @@ def test_validate_config_command_with_valid_configuration_succeeds():
         config_path = os.path.join(temporary_directory, 'test.yaml')
 
         subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
-        exit_code = subprocess.call(f'validate-borgmatic-config --config {config_path}'.split(' '))
+        exit_code = subprocess.call(f'borgmatic config validate --config {config_path}'.split(' '))
 
         assert exit_code == 0
 
@@ -24,7 +24,7 @@ def test_validate_config_command_with_invalid_configuration_fails():
         config_file.write(config)
         config_file.close()
 
-        exit_code = subprocess.call(f'validate-borgmatic-config --config {config_path}'.split(' '))
+        exit_code = subprocess.call(f'borgmatic config validate --config {config_path}'.split(' '))
 
         assert exit_code == 1
 
@@ -35,7 +35,7 @@ def test_validate_config_command_with_show_flag_displays_configuration():
 
         subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
         output = subprocess.check_output(
-            f'validate-borgmatic-config --config {config_path} --show'.split(' ')
+            f'borgmatic config validate --config {config_path} --show'.split(' ')
         ).decode(sys.stdout.encoding)
 
         assert 'repositories:' in output
