@@ -521,18 +521,26 @@ properties:
                               - extract
                               - disabled
                           description: |
-                              Name of consistency check to run: "repository",
-                              "archives", "data", "spot", and/or "extract".
+                              Name of the consistency check to run:
+
                               "repository" checks the consistency of the
-                              repository, "archives" checks all of the
-                              archives, "data" verifies the integrity of the
-                              data within the archives, "spot" checks that
-                              some percentage of source files are found in the
-                              most recent archive (with identical contents),
-                              and "extract" does an extraction dry-run of the
-                              most recent archive. Note that "data" implies
-                              "archives". See "skip_actions" for disabling
-                              checks altogether.
+                              repository.
+
+                              "archives" checks all of the archives.
+
+                              "data" verifies the integrity of the data within
+                              the archives and implies the "archives" check as
+                              well.
+
+                              "spot" checks that some percentage of source
+                              files are found in the most recent archive (with
+                              identical contents).
+
+                              "extract" does an extraction dry-run of the most
+                              recent archive.
+
+                              See "skip_actions" for disabling checks
+                              altogether.
                           example: spot
                       frequency:
                           type: string
@@ -568,18 +576,26 @@ properties:
                           enum:
                               - repository
                           description: |
-                              Name of consistency check to run: "repository",
-                              "archives", "data", "spot", and/or "extract".
+                              Name of the consistency check to run:
+
                               "repository" checks the consistency of the
-                              repository, "archives" checks all of the
-                              archives, "data" verifies the integrity of the
-                              data within the archives, "spot" checks that
-                              some percentage of source files are found in the
-                              most recent archive (with identical contents),
-                              and "extract" does an extraction dry-run of the
-                              most recent archive. Note that "data" implies
-                              "archives". See "skip_actions" for disabling
-                              checks altogether.
+                              repository.
+
+                              "archives" checks all of the archives.
+
+                              "data" verifies the integrity of the data within
+                              the archives and implies the "archives" check as
+                              well.
+
+                              "spot" checks that some percentage of source
+                              files are found in the most recent archive (with
+                              identical contents).
+
+                              "extract" does an extraction dry-run of the most
+                              recent archive.
+
+                              See "skip_actions" for disabling checks
+                              altogether.
                           example: spot
                       frequency:
                           type: string
@@ -630,18 +646,26 @@ properties:
                           enum:
                               - spot
                           description: |
-                              Name of consistency check to run: "repository",
-                              "archives", "data", "spot", and/or "extract".
+                              Name of the consistency check to run:
+
                               "repository" checks the consistency of the
-                              repository, "archives" checks all of the
-                              archives, "data" verifies the integrity of the
-                              data within the archives, "spot" checks that
-                              some percentage of source files are found in the
-                              most recent archive (with identical contents),
-                              and "extract" does an extraction dry-run of the
-                              most recent archive. Note that "data" implies
-                              "archives". See "skip_actions" for disabling
-                              checks altogether.
+                              repository.
+
+                              "archives" checks all of the archives.
+
+                              "data" verifies the integrity of the data within
+                              the archives and implies the "archives" check as
+                              well.
+
+                              "spot" checks that some percentage of source
+                              files are found in the most recent archive (with
+                              identical contents).
+
+                              "extract" does an extraction dry-run of the most
+                              recent archive.
+
+                              See "skip_actions" for disabling checks
+                              altogether.
                           example: repository
                       frequency:
                           type: string
@@ -677,7 +701,8 @@ properties:
                               archive file count that is allowed before the
                               entire consistency check fails. This can catch
                               problems like incorrect excludes, inadvertent
-                              deletes, etc. Only applies to the "spot" check.
+                              deletes, etc. Required (and only valid) for the
+                              "spot" check.
                           example: 10
                       data_sample_percentage:
                           type: number
@@ -685,7 +710,8 @@ properties:
                               The percentage of total files in the source
                               directories to randomly sample and compare to
                               their corresponding files in the most recent
-                              backup archive. Only applies to the "spot" check.
+                              backup archive. Required (and only valid) for the
+                              "spot" check.
                           example: 1
                       data_tolerance_percentage:
                           type: number
@@ -697,7 +723,7 @@ properties:
                               been bulk-changed by malware, backups that have
                               been tampered with, etc. The value must be lower
                               than or equal to the "contents_sample_percentage".
-                              Only applies to the "spot" check.
+                              Required (and only valid) for the "spot" check.
                           example: 0.5
                       xxh64sum_command:
                           type: string
@@ -706,7 +732,7 @@ properties:
                               source files, usually found in an OS package named
                               "xxhash". Do not substitute with a different hash
                               type (SHA, MD5, etc.) or the check will never
-                              succeed. Only applies to the "spot" check.
+                              succeed. Only valid for the "spot" check.
                           example: /usr/local/bin/xxh64sum
         description: |
             List of one or more consistency checks to run on a periodic basis
