@@ -229,7 +229,20 @@ hooks:
 
 ... where `my_pg_container` is the name of your database container. In this
 example, you'd also need to set the `pg_restore_command` and `psql_command`
-options.
+options. If you choose to use the `pg_dump` within the container though,
+note that it tries to output the backup to a file inside the container.
+So you'll have to mount the `.borgmatic` folder inside your home folder
+with the same directory structure inside the container.
+
+See the following Docker compose file an as example:
+
+```yaml
+services:
+  db:
+    image: postgres
+    volume:
+      - /home/USERNAME/.borgmatic:/home/USERNAME/.borgmatic
+```
 
 Similar command override options are available for (some of) the other
 supported database types as well. See the [configuration
