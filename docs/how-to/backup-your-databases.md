@@ -240,7 +240,7 @@ See the following Docker compose file an as example:
 services:
   db:
     image: postgres
-    volume:
+    volumes:
       - /home/USERNAME/.borgmatic:/home/USERNAME/.borgmatic
 ```
 
