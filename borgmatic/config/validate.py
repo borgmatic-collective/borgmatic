@@ -1,3 +1,4 @@
+import fnmatch
 import os
 
 import jsonschema
@@ -149,18 +150,30 @@ def normalize_repository_path(repository):
         return repository
 
 
+def glob_match(first, second):
+    '''
+    Given two strings, return whether the first matches the second. Globs are
+    supported.
+    '''
+    if first is None or second is None:
+        return False
+
+    return fnmatch.fnmatch(first, second) or fnmatch.fnmatch(second, first)
+
+
 def repositories_match(first, second):
     '''
-    Given two repository dicts with keys 'path' (relative and/or absolute),
-    and 'label', or two repository paths, return whether they match.
+    Given two repository dicts with keys "path" (relative and/or absolute),
+    and "label", two repository paths as strings, or a mix of the two formats,
+    return whether they match. Globs are supported.
     '''
     if isinstance(first, str):
         first = {'path': first, 'label': first}
     if isinstance(second, str):
         second = {'path': second, 'label': second}
-    return (first.get('label') == second.get('label')) or (
-        normalize_repository_path(first.get('path'))
-        == normalize_repository_path(second.get('path'))
+
+    return glob_match(first.get('label'), second.get('label')) or glob_match(
+        normalize_repository_path(first.get('path')), normalize_repository_path(second.get('path'))
     )
 
 

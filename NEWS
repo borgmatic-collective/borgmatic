@@ -1,5 +1,7 @@
 1.8.14.dev0
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.
+ * #898: Add glob ("*") support to the "--repository" flag. Just quote any values containing
+   globs so your shell doesn't interpret them.
  * #899: Fix for a "bad character" Borg error in which the "spot" check fed Borg an invalid pattern.
  * #900: Fix for a potential traceback (TypeError) during the handling of another error.
  * #904: Clarify the configuration reference about the "spot" check options:

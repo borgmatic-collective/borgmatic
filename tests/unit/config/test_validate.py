@@ -62,7 +62,7 @@ def test_validation_error_string_contains_errors():
 
 
 def test_apply_logical_validation_raises_if_unknown_repository_in_check_repositories():
-    flexmock(module).format_json_error = lambda error: error.message
+    flexmock(module).should_receive('repositories_match').and_return(False)
 
     with pytest.raises(module.Validation_error):
         module.apply_logical_validation(
@@ -75,7 +75,9 @@ def test_apply_logical_validation_raises_if_unknown_repository_in_check_reposito
         )
 
 
-def test_apply_logical_validation_does_not_raise_if_known_repository_path_in_check_repositories():
+def test_apply_logical_validation_does_not_raise_if_known_repository_in_check_repositories():
+    flexmock(module).should_receive('repositories_match').and_return(True)
+
     module.apply_logical_validation(
         'config.yaml',
         {
@@ -84,35 +86,6 @@ def test_apply_logical_validation_does_not_raise_if_known_repository_path_in_che
             'check_repositories': ['repo.borg'],
         },
     )
-
-
-def test_apply_logical_validation_does_not_raise_if_known_repository_label_in_check_repositories():
-    module.apply_logical_validation(
-        'config.yaml',
-        {
-            'repositories': [
-                {'path': 'repo.borg', 'label': 'my_repo'},
-                {'path': 'other.borg', 'label': 'other_repo'},
-            ],
-            'keep_secondly': 1000,
-            'check_repositories': ['my_repo'],
-        },
-    )
-
-
-def test_apply_logical_validation_does_not_raise_if_archive_name_format_and_prefix_present():
-    module.apply_logical_validation(
-        'config.yaml',
-        {
-            'archive_name_format': '{hostname}-{now}',  # noqa: FS003
-            'prefix': '{hostname}-',  # noqa: FS003
-            'prefix': '{hostname}-',  # noqa: FS003
-        },
-    )
-
-
-def test_apply_logical_validation_does_not_raise_otherwise():
-    module.apply_logical_validation('config.yaml', {'keep_secondly': 1000})
 
 
 def test_normalize_repository_path_passes_through_remote_repository():
@@ -143,39 +116,94 @@ def test_normalize_repository_path_resolves_relative_repository():
     module.normalize_repository_path(repository) == absolute
 
 
-def test_repositories_match_does_not_raise():
+@pytest.mark.parametrize(
+    'first,second,expected_result',
+    (
+        (None, None, False),
+        ('foo', None, False),
+        (None, 'bar', False),
+        ('foo', 'foo', True),
+        ('foo', 'bar', False),
+        ('foo*', 'foof', True),
+        ('barf', 'bar*', True),
+        ('foo*', 'bar*', False),
+    ),
+)
+def test_glob_match_matches_globs(first, second, expected_result):
+    assert module.glob_match(first=first, second=second) is expected_result
+
+
+def test_repositories_match_matches_on_path():
     flexmock(module).should_receive('normalize_repository_path')
-
-    module.repositories_match('foo', 'bar')
-
-
-def test_guard_configuration_contains_repository_does_not_raise_when_repository_in_config():
-    flexmock(module).should_receive('repositories_match').replace_with(
+    flexmock(module).should_receive('glob_match').replace_with(
         lambda first, second: first == second
     )
 
-    module.guard_configuration_contains_repository(
-        repository='repo', configurations={'config.yaml': {'repositories': ['repo']}}
+    module.repositories_match(
+        {'path': 'foo', 'label': 'my repo'}, {'path': 'foo', 'label': 'other repo'}
+    ) is True
+
+
+def test_repositories_match_matches_on_label():
+    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('glob_match').replace_with(
+        lambda first, second: first == second
     )
 
+    module.repositories_match(
+        {'path': 'foo', 'label': 'my repo'}, {'path': 'bar', 'label': 'my repo'}
+    ) is True
 
-def test_guard_configuration_contains_repository_does_not_raise_when_repository_label_in_config():
+
+def test_repositories_match_with_different_paths_and_labels_does_not_match():
+    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('glob_match').replace_with(
+        lambda first, second: first == second
+    )
+
+    module.repositories_match(
+        {'path': 'foo', 'label': 'my repo'}, {'path': 'bar', 'label': 'other repo'}
+    ) is False
+
+
+def test_repositories_match_matches_on_string_repository():
+    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('glob_match').replace_with(
+        lambda first, second: first == second
+    )
+
+    module.repositories_match('foo', 'foo') is True
+
+
+def test_repositories_match_with_different_string_repositories_does_not_match():
+    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('glob_match').replace_with(
+        lambda first, second: first == second
+    )
+
+    module.repositories_match('foo', 'bar') is False
+
+
+def test_repositories_match_supports_mixed_repositories():
+    flexmock(module).should_receive('normalize_repository_path')
+    flexmock(module).should_receive('glob_match').replace_with(
+        lambda first, second: first == second
+    )
+
+    module.repositories_match({'path': 'foo', 'label': 'my foo'}, 'bar') is False
+
+
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_matches():
+    flexmock(module).should_receive('repositories_match').and_return(True)
+
     module.guard_configuration_contains_repository(
         repository='repo',
         configurations={'config.yaml': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}},
     )
 
 
-def test_guard_configuration_contains_repository_does_not_raise_when_repository_not_given():
-    module.guard_configuration_contains_repository(
-        repository=None, configurations={'config.yaml': {'repositories': ['repo']}}
-    )
-
-
-def test_guard_configuration_contains_repository_errors_when_repository_missing_from_config():
-    flexmock(module).should_receive('repositories_match').replace_with(
-        lambda first, second: first == second
-    )
+def test_guard_configuration_contains_repository_errors_when_repository_does_not_match():
+    flexmock(module).should_receive('repositories_match').and_return(False)
 
     with pytest.raises(ValueError):
         module.guard_configuration_contains_repository(

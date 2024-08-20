@@ -425,7 +425,7 @@ def make_parsers():
     )
     rcreate_group.add_argument(
         '--repository',
-        help='Path of the new repository to create (must be already specified in a borgmatic configuration file), defaults to the configured repository if there is only one',
+        help='Path of the new repository to create (must be already specified in a borgmatic configuration file), defaults to the configured repository if there is only one, quoted globs supported',
     )
     rcreate_group.add_argument(
         '--copy-crypt-key',
@@ -460,7 +460,7 @@ def make_parsers():
     transfer_group = transfer_parser.add_argument_group('transfer arguments')
     transfer_group.add_argument(
         '--repository',
-        help='Path of existing destination repository to transfer archives to, defaults to the configured repository if there is only one',
+        help='Path of existing destination repository to transfer archives to, defaults to the configured repository if there is only one, quoted globs supported',
     )
     transfer_group.add_argument(
         '--source-repository',
@@ -533,7 +533,7 @@ def make_parsers():
     prune_group = prune_parser.add_argument_group('prune arguments')
     prune_group.add_argument(
         '--repository',
-        help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file)',
+        help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file), quoted globs supported',
     )
     prune_group.add_argument(
         '--stats',
@@ -577,7 +577,7 @@ def make_parsers():
     compact_group = compact_parser.add_argument_group('compact arguments')
     compact_group.add_argument(
         '--repository',
-        help='Path of specific existing repository to compact (must be already specified in a borgmatic configuration file)',
+        help='Path of specific existing repository to compact (must be already specified in a borgmatic configuration file), quoted globs supported',
     )
     compact_group.add_argument(
         '--progress',
@@ -613,7 +613,7 @@ def make_parsers():
     create_group = create_parser.add_argument_group('create arguments')
     create_group.add_argument(
         '--repository',
-        help='Path of specific existing repository to backup to (must be already specified in a borgmatic configuration file)',
+        help='Path of specific existing repository to backup to (must be already specified in a borgmatic configuration file), quoted globs supported',
     )
     create_group.add_argument(
         '--progress',
@@ -647,7 +647,7 @@ def make_parsers():
     check_group = check_parser.add_argument_group('check arguments')
     check_group.add_argument(
         '--repository',
-        help='Path of specific existing repository to check (must be already specified in a borgmatic configuration file)',
+        help='Path of specific existing repository to check (must be already specified in a borgmatic configuration file), quoted globs supported',
     )
     check_group.add_argument(
         '--progress',
@@ -701,7 +701,7 @@ def make_parsers():
     delete_group = delete_parser.add_argument_group('delete arguments')
     delete_group.add_argument(
         '--repository',
-        help='Path of repository to delete or delete archives from, defaults to the configured repository if there is only one',
+        help='Path of repository to delete or delete archives from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     delete_group.add_argument(
         '--archive',
@@ -792,7 +792,7 @@ def make_parsers():
     extract_group = extract_parser.add_argument_group('extract arguments')
     extract_group.add_argument(
         '--repository',
-        help='Path of repository to extract, defaults to the configured repository if there is only one',
+        help='Path of repository to extract, defaults to the configured repository if there is only one, quoted globs supported',
     )
     extract_group.add_argument(
         '--archive', help='Name of archive to extract (or "latest")', required=True
@@ -854,7 +854,7 @@ def make_parsers():
     )
     config_bootstrap_group.add_argument(
         '--repository',
-        help='Path of repository to extract config files from',
+        help='Path of repository to extract config files from, quoted globs supported',
         required=True,
     )
     config_bootstrap_group.add_argument(
@@ -952,7 +952,7 @@ def make_parsers():
     export_tar_group = export_tar_parser.add_argument_group('export-tar arguments')
     export_tar_group.add_argument(
         '--repository',
-        help='Path of repository to export from, defaults to the configured repository if there is only one',
+        help='Path of repository to export from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     export_tar_group.add_argument(
         '--archive', help='Name of archive to export (or "latest")', required=True
@@ -998,7 +998,7 @@ def make_parsers():
     mount_group = mount_parser.add_argument_group('mount arguments')
     mount_group.add_argument(
         '--repository',
-        help='Path of repository to use, defaults to the configured repository if there is only one',
+        help='Path of repository to use, defaults to the configured repository if there is only one, quoted globs supported',
     )
     mount_group.add_argument('--archive', help='Name of archive to mount (or "latest")')
     mount_group.add_argument(
@@ -1080,7 +1080,7 @@ def make_parsers():
     rdelete_group = rdelete_parser.add_argument_group('delete arguments')
     rdelete_group.add_argument(
         '--repository',
-        help='Path of repository to delete, defaults to the configured repository if there is only one',
+        help='Path of repository to delete, defaults to the configured repository if there is only one, quoted globs supported',
     )
     rdelete_group.add_argument(
         '--list',
@@ -1117,7 +1117,7 @@ def make_parsers():
     restore_group = restore_parser.add_argument_group('restore arguments')
     restore_group.add_argument(
         '--repository',
-        help='Path of repository to restore from, defaults to the configured repository if there is only one',
+        help='Path of repository to restore from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     restore_group.add_argument(
         '--archive', help='Name of archive to restore from (or "latest")', required=True
@@ -1171,7 +1171,7 @@ def make_parsers():
     rlist_group = rlist_parser.add_argument_group('rlist arguments')
     rlist_group.add_argument(
         '--repository',
-        help='Path of repository to list, defaults to the configured repositories',
+        help='Path of repository to list, defaults to the configured repositories, quoted globs supported',
     )
     rlist_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive names'
@@ -1231,7 +1231,7 @@ def make_parsers():
     list_group = list_parser.add_argument_group('list arguments')
     list_group.add_argument(
         '--repository',
-        help='Path of repository containing archive to list, defaults to the configured repositories',
+        help='Path of repository containing archive to list, defaults to the configured repositories, quoted globs supported',
     )
     list_group.add_argument('--archive', help='Name of the archive to list (or "latest")')
     list_group.add_argument(
@@ -1298,7 +1298,7 @@ def make_parsers():
     rinfo_group = rinfo_parser.add_argument_group('rinfo arguments')
     rinfo_group.add_argument(
         '--repository',
-        help='Path of repository to show info for, defaults to the configured repository if there is only one',
+        help='Path of repository to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     rinfo_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
@@ -1315,7 +1315,7 @@ def make_parsers():
     info_group = info_parser.add_argument_group('info arguments')
     info_group.add_argument(
         '--repository',
-        help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one',
+        help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     info_group.add_argument('--archive', help='Name of archive to show info for (or "latest")')
     info_group.add_argument(
@@ -1376,7 +1376,7 @@ def make_parsers():
     break_lock_group = break_lock_parser.add_argument_group('break-lock arguments')
     break_lock_group.add_argument(
         '--repository',
-        help='Path of repository to break the lock for, defaults to the configured repository if there is only one',
+        help='Path of repository to break the lock for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     break_lock_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
@@ -1416,7 +1416,7 @@ def make_parsers():
     )
     key_export_group.add_argument(
         '--repository',
-        help='Path of repository to export the key for, defaults to the configured repository if there is only one',
+        help='Path of repository to export the key for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     key_export_group.add_argument(
         '--path',
@@ -1437,7 +1437,7 @@ def make_parsers():
     borg_group = borg_parser.add_argument_group('borg arguments')
     borg_group.add_argument(
         '--repository',
-        help='Path of repository to pass to Borg, defaults to the configured repositories',
+        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
     )
     borg_group.add_argument('--archive', help='Name of archive to pass to Borg (or "latest")')
     borg_group.add_argument(
