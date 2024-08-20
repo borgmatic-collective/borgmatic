@@ -1891,3 +1891,18 @@ def test_check_all_source_directories_exist_with_non_existent_directory_raises()
 
     with pytest.raises(ValueError):
         module.check_all_source_directories_exist(['foo'])
+
+
+def test_check_all_source_directories_exist_with_working_directory_applies_to_relative_source_directories():
+    flexmock(module).should_receive('expand_directory').with_args('/tmp/foo*').and_return(
+        ('/tmp/foo', '/tmp/food')
+    )
+    flexmock(module).should_receive('expand_directory').with_args('/root/bar').and_return(
+        ('/root/bar',)
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/tmp/foo').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/tmp/food').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/root/bar').and_return(True)
+
+    module.check_all_source_directories_exist(['foo*', '/root/bar'], working_directory='/tmp')

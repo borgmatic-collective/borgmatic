@@ -6,6 +6,8 @@
  * #900: Fix for a potential traceback (TypeError) during the handling of another error.
  * #904: Clarify the configuration reference about the "spot" check options:
    https://torsion.org/borgmatic/docs/reference/configuration/
+ * #905: Fix the "source_directories_must_exist" option to work with relative "source_directories"
+   paths when a "working_directory" is set.
  * Fix a regression in which the "color" option had no effect.
  * Add a recent contributors section to the documentation, because credit where credit's due! See:
    https://torsion.org/borgmatic/#recent-contributors
