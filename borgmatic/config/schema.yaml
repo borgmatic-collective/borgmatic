@@ -1044,9 +1044,12 @@ properties:
                     description: |
                         Command to use instead of "pg_dump" or "pg_dumpall".
                         This can be used to run a specific pg_dump version
-                        (e.g., one inside a running container). Defaults to
-                        "pg_dump" for single database dump or "pg_dumpall" to
-                        dump all databases.
+                        (e.g., one inside a running container).
+                        If you run it from within a container, make sure to
+                        mount your host ".borgmatic" folder inside
+                        the container with the same directory structure.
+                        Defaults to "pg_dump" for single database dump
+                        or "pg_dumpall" to dump all databases.
                     example: docker exec my_pg_container pg_dump
                 pg_restore_command:
                     type: string
@@ -1160,7 +1163,11 @@ properties:
                     description: |
                         Command to use instead of "mariadb-dump". This can be
                         used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). Defaults to "mariadb-dump".
+                        inside a running container).
+                        If you run it from within a container, make sure to
+                        mount your host ".borgmatic" folder inside
+                        the container with the same directory structure.
+                        Defaults to "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
@@ -1290,7 +1297,11 @@ properties:
                     description: |
                         Command to use instead of "mysqldump". This can be used
                         to run a specific mysql_dump version (e.g., one inside a
-                        running container). Defaults to "mysqldump".
+                        running container).
+                        If you run it from within a container, make sure to
+                        mount your host ".borgmatic" folder inside
+                        the container with the same directory structure.
+                        Defaults to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
