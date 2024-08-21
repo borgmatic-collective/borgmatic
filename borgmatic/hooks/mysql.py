@@ -61,34 +61,43 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     )
 
 
+def ensure_directory_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 def execute_dump_command(
     database, log_prefix, dump_path, database_names, extra_environment, dry_run, dry_run_label
 ):
     '''
     Kick off a dump for the given MySQL/MariaDB database (provided as a configuration dict) to a
-    named pipe constructed from the given dump path and database name. Use the given log prefix in
-    any log entries.
+    directory if --tab is used, or to a file if not. Use the given log prefix in any log entries.
 
-    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
-    this is a dry run, then don't actually dump anything and return None.
+    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe or directory.
     '''
     database_name = database['name']
-    dump_filename = dump.make_data_source_dump_filename(
-        dump_path, database['name'], database.get('hostname')
-    )
 
-    if os.path.exists(dump_filename):
-        logger.warning(
-            f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
+    use_tab = '--tab' in (database.get('options') or '')
+
+    if use_tab:
+        ensure_directory_exists(dump_path)
+        dump_dir = os.path.join(dump_path, database_name)
+        ensure_directory_exists(dump_dir)
+        result_file_option = ('--tab', dump_dir)
+    else:
+        dump_filename = dump.make_data_source_dump_filename(
+            dump_path, database['name'], database.get('hostname')
         )
-        return None
+        if os.path.exists(dump_filename):
+            logger.warning(
+                f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
+            )
+            return None
+        result_file_option = ('--result-file', dump_filename)
 
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
-
-    is_directory_format = database.get('format') == 'directory'
-
     dump_command = (
         mysql_dump_command
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
@@ -99,23 +108,18 @@ def execute_dump_command(
         + (('--user', database['username']) if 'username' in database else ())
         + ('--databases',)
         + database_names
-        + (('--tab', dump_filename) if is_directory_format else ('--result-file', dump_filename))
+        + result_file_option
     )
 
     logger.debug(
-        f'{log_prefix}: Dumping MySQL database "{database_name}" to {dump_filename}{dry_run_label}'
+        f'{log_prefix}: Dumping MySQL database "{database_name}" to {dump_path if use_tab else dump_filename}{dry_run_label}'
     )
     if dry_run:
         return None
 
-    if is_directory_format:
-        dump.create_parent_directory_for_dump(dump_filename)
-        execute_command(
-            dump_command,
-            extra_environment=extra_environment,
-        )
-        return None
-    dump.create_named_pipe_for_dump(dump_filename)
+    if not use_tab:
+        dump.create_named_pipe_for_dump(result_file_option[1])
+
     return execute_command(
         dump_command,
         extra_environment=extra_environment,
@@ -125,20 +129,19 @@ def execute_dump_command(
 
 def use_streaming(databases, config, log_prefix):
     '''
-    Given a sequence of MySQL database configuration dicts, a configuration dict (ignored), and a
-    log prefix (ignored), return whether streaming will be using during dumps.
+    Given a sequence of MySQL database configuration dicts, return whether streaming will be used during dumps.
+    Streaming is not used when using --tab.
     '''
-    return any(databases)
+    return not any('--tab' in (db.get('options') or '') for db in databases)
 
 
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
-    Dump the given MySQL/MariaDB databases to a named pipe. The databases are supplied as a sequence
-    of dicts, one dict describing each database as per the configuration schema. Use the given
-    configuration dict to construct the destination path and the given log prefix in any log entries.
+    Dump the given MySQL/MariaDB databases to a named pipe or directory based on configuration.
+    The databases are supplied as a sequence of dicts, one dict describing each database as per the configuration schema.
+    Use the given configuration dict to construct the destination path and the given log prefix in any log entries.
 
-    Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
-    pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
+    Return a sequence of subprocess.Popen instances for the dump processes.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -162,31 +165,31 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
             for dump_name in dump_database_names:
                 renamed_database = copy.copy(database)
                 renamed_database['name'] = dump_name
-                result = execute_dump_command(
-                    renamed_database,
+                processes.append(
+                    execute_dump_command(
+                        renamed_database,
+                        log_prefix,
+                        dump_path,
+                        (dump_name,),
+                        extra_environment,
+                        dry_run,
+                        dry_run_label,
+                    )
+                )
+        else:
+            processes.append(
+                execute_dump_command(
+                    database,
                     log_prefix,
                     dump_path,
-                    (dump_name,),
+                    dump_database_names,
                     extra_environment,
                     dry_run,
                     dry_run_label,
                 )
-                if result:
-                    processes.append(result)
-        else:
-            result = execute_dump_command(
-                database,
-                log_prefix,
-                dump_path,
-                dump_database_names,
-                extra_environment,
-                dry_run,
-                dry_run_label,
             )
-            if result:
-                processes.append(result)
 
-    return processes
+    return [process for process in processes if process]
 
 
 def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
