@@ -87,8 +87,7 @@ def execute_dump_command(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
 
-    dump_format = database.get('format')
-    is_directory_format = dump_format == 'directory'
+    is_directory_format = database.get('format') == 'directory'
 
     dump_command = (
         mysql_dump_command
@@ -116,13 +115,12 @@ def execute_dump_command(
             extra_environment=extra_environment,
         )
         return None
-    else:
-        dump.create_named_pipe_for_dump(dump_filename)
-        return execute_command(
-            dump_command,
-            extra_environment=extra_environment,
-            run_to_completion=False,
-        )
+    dump.create_named_pipe_for_dump(dump_filename)
+    return execute_command(
+        dump_command,
+        extra_environment=extra_environment,
+        run_to_completion=False,
+    )
 
 
 def use_streaming(databases, config, log_prefix):
@@ -237,44 +235,25 @@ def restore_data_source_dump(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
 
-    dump_format = data_source.get('format')
-    is_directory_format = dump_format == 'directory'
+    is_directory_format = data_source.get('format') == 'directory'
 
-    if is_directory_format:
-        mysql_restore_command = tuple(
-            shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
+    restore_command = (
+        mysql_restore_command
+        + (
+            tuple(data_source['restore_options'].split(' '))
+            if 'restore_options' in data_source
+            else ()
         )
-        restore_command = (
-            mysql_restore_command
-            + ('--batch',)
-            + (
-                tuple(data_source['restore_options'].split(' '))
-                if 'restore_options' in data_source
-                else ()
-            )
-            + (('--host', hostname) if hostname else ())
-            + (('--port', str(port)) if port else ())
-            + (('--protocol', 'tcp') if hostname or port else ())
-            + (('--user', username) if username else ())
-        )
-    else:
-        restore_command = (
-            mysql_restore_command
-            + ('--batch',)
-            + (
-                tuple(data_source['restore_options'].split(' '))
-                if 'restore_options' in data_source
-                else ()
-            )
-            + (('--host', hostname) if hostname else ())
-            + (('--port', str(port)) if port else ())
-            + (('--protocol', 'tcp') if hostname or port else ())
-            + (('--user', username) if username else ())
-        )
+        + (('--host', hostname) if hostname else ())
+        + (('--port', str(port)) if port else ())
+        + (('--protocol', 'tcp') if hostname or port else ())
+        + (('--user', username) if username else ())
+    )
 
     extra_environment = {'MYSQL_PWD': password} if password else None
 
     logger.debug(f"{log_prefix}: Restoring MySQL database {data_source['name']}{dry_run_label}")
+
     if dry_run:
         return
 
@@ -283,9 +262,15 @@ def restore_data_source_dump(
         dump_directory = dump.make_data_source_dump_filename(
             dump_path, data_source['name'], data_source.get('hostname')
         )
+
+        if not os.path.exists(dump_directory):
+            logger.warning(f"{log_prefix}: Dump directory {dump_directory} does not exist.")
+            return
+
         for filename in os.listdir(dump_directory):
-            file_path = os.path.join(dump_directory, filename)
             if filename.endswith('.sql'):
+                file_path = os.path.join(dump_directory, filename)
+                logger.debug(f"{log_prefix}: Restoring from {file_path}")
                 with open(file_path, 'r') as sql_file:
                     execute_command_with_processes(
                         restore_command,
