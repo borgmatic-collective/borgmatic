@@ -1427,6 +1427,23 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    key_change_passphrase_parser = key_parsers.add_parser(
+        'change-passphrase',
+        help='Change the passphrase protecting the repository key',
+        description='Change the passphrase protecting the repository key',
+        add_help=False,
+    )
+    key_change_passphrase_group = key_change_passphrase_parser.add_argument_group(
+        'key change-passphrase arguments'
+    )
+    key_change_passphrase_group.add_argument(
+        '--repository',
+        help='Path of repository to change the passphrase for, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    key_change_passphrase_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
     borg_parser = action_parsers.add_parser(
         'borg',
         aliases=ACTION_ALIASES['borg'],

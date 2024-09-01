@@ -12,6 +12,7 @@ import colorama
 
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
+import borgmatic.actions.change_passphrase
 import borgmatic.actions.check
 import borgmatic.actions.compact
 import borgmatic.actions.config.bootstrap
@@ -473,6 +474,16 @@ def run_actions(
             )
         elif action_name == 'export' and action_name not in skip_actions:
             borgmatic.actions.export_key.run_export_key(
+                repository,
+                config,
+                local_borg_version,
+                action_arguments,
+                global_arguments,
+                local_path,
+                remote_path,
+            )
+        elif action_name == 'change-passphrase' and action_name not in skip_actions:
+            borgmatic.actions.change_passphrase.run_change_passphrase(
                 repository,
                 config,
                 local_borg_version,

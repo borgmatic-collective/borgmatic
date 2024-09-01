@@ -239,7 +239,7 @@ def test_export_key_with_stdout_path_calls_borg_without_path_argument():
     )
 
 
-def test_export_key_with_dry_run_skip_borg_call():
+def test_export_key_with_dry_run_skips_borg_call():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module).should_receive('execute_command').never()
