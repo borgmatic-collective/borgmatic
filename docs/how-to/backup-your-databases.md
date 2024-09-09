@@ -311,13 +311,14 @@ borgmatic does not currently create a database upon restore.
 
 To restore a database dump from an archive, use the `borgmatic restore`
 action. But the first step is to figure out which archive to restore from. A
-good way to do that is to use the `rlist` action:
+good way to do that is to use the `repo-list` action:
 
 ```bash
-borgmatic rlist
+borgmatic repo-list
 ```
 
-(No borgmatic `rlist` action? Try `list` instead or upgrade borgmatic!)
+(No borgmatic `repo-list` action? Try `rlist` or `list` instead or upgrade
+borgmatic!)
 
 That should yield output looking something like:
 

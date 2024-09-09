@@ -23,7 +23,7 @@ def test_get_config_paths_returns_list_of_config_paths():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
     assert module.get_config_paths(bootstrap_arguments, global_arguments, local_borg_version) == [
@@ -57,7 +57,7 @@ def test_get_config_paths_translates_ssh_command_argument_to_config():
         object,
         extract_to_stdout=True,
     ).and_return(extract_process)
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').with_args(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').with_args(
         'repo', 'archive', {'ssh_command': 'ssh -i key'}, object, object
     ).and_return('archive')
     assert module.get_config_paths(bootstrap_arguments, global_arguments, local_borg_version) == [
@@ -80,7 +80,7 @@ def test_get_config_paths_with_missing_manifest_raises_value_error():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
 
@@ -105,7 +105,7 @@ def test_get_config_paths_with_broken_json_raises_value_error():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
 
@@ -130,7 +130,7 @@ def test_get_config_paths_with_json_missing_key_raises_value_error():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
 
@@ -161,7 +161,7 @@ def test_run_bootstrap_does_not_raise():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
         extract_process
     ).once()
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
 
@@ -201,7 +201,7 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         strip_components=1,
         progress=False,
     ).and_return(extract_process).once()
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').with_args(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').with_args(
         'repo', 'archive', {'ssh_command': 'ssh -i key'}, object, object
     ).and_return('archive')
 

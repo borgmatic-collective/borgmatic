@@ -566,8 +566,8 @@ Resend Notification every X times = 1
 ## Scripting borgmatic
 
 To consume the output of borgmatic in other software, you can include an
-optional `--json` flag with `create`, `rlist`, `rinfo`, or `info` to get the
-output formatted as JSON.
+optional `--json` flag with `create`, `repo-list`, `repo-info`, or `info` to
+get the output formatted as JSON.
 
 Note that when you specify the `--json` flag, Borg's other non-JSON output is
 suppressed so as not to interfere with the captured JSON. Also note that JSON
@@ -578,7 +578,7 @@ output only shows up at the console and not in syslog.
 
 All borgmatic actions that accept an `--archive` flag allow you to specify an
 archive name of `latest`. This lets you get the latest archive without having
-to first run `borgmatic rlist` manually, which can be handy in automated
+to first run `borgmatic repo-list` manually, which can be handy in automated
 scripts. Here's an example:
 
 ```bash

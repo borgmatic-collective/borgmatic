@@ -45,10 +45,14 @@ be preferred though for most uses.)
 You can also specify Borg options for relevant commands. For instance:
 
 ```bash
-borgmatic borg rlist --short
+borgmatic borg repo-list --short
 ```
 
-This runs Borg's `rlist` command once on each configured borgmatic repository.
+(No borgmatic `repo-list` action? Try `rlist` or `list` instead or upgrade
+borgmatic!)
+
+This runs Borg's `repo-list` command once on each configured borgmatic
+repository.
 
 What if you only want to run Borg on a single configured borgmatic repository
 when you've got several configured? Not a problem. The `--repository` argument

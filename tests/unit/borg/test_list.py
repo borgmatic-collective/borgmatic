@@ -474,7 +474,9 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     )
 
     flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.rlist).should_receive('make_rlist_command').and_return(('borg', 'list', 'repo'))
+    flexmock(module.repo_list).should_receive('make_repo_list_command').and_return(
+        ('borg', 'list', 'repo')
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', 'repo'),
         extra_environment=None,
@@ -574,7 +576,7 @@ def test_list_archive_without_archive_delegates_to_list_repository():
     )
 
     flexmock(module.feature).should_receive('available').and_return(False)
-    flexmock(module.rlist).should_receive('list_repository')
+    flexmock(module.repo_list).should_receive('list_repository')
     flexmock(module.environment).should_receive('make_environment').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -605,7 +607,7 @@ def test_list_archive_with_borg_features_without_archive_delegates_to_list_repos
     )
 
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.rlist).should_receive('list_repository')
+    flexmock(module.repo_list).should_receive('list_repository')
     flexmock(module.environment).should_receive('make_environment').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -645,7 +647,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
     altered_filter_flags = {**default_filter_flags, **{archive_filter_flag: 'foo'}}
 
     flexmock(module.feature).should_receive('available').with_args(
-        module.feature.Feature.RLIST, '1.2.3'
+        module.feature.Feature.REPO_LIST, '1.2.3'
     ).and_return(False)
     flexmock(module).should_receive('make_list_command').with_args(
         repository_path='repo',
@@ -689,7 +691,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
         'last',
     ),
 )
-def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_rlist(
+def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes_it_to_repo_list(
     archive_filter_flag,
 ):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
@@ -707,20 +709,20 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     global_arguments = flexmock(log_json=False)
     flexmock(module.feature).should_receive('available').and_return(True)
 
-    flexmock(module.rlist).should_receive('make_rlist_command').with_args(
+    flexmock(module.repo_list).should_receive('make_repo_list_command').with_args(
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        rlist_arguments=argparse.Namespace(
+        repo_list_arguments=argparse.Namespace(
             repository='repo', short=True, format=None, json=None, **altered_filter_flags
         ),
         global_arguments=global_arguments,
         local_path='borg',
         remote_path=None,
-    ).and_return(('borg', 'rlist', '--repo', 'repo'))
+    ).and_return(('borg', 'repo-list', '--repo', 'repo'))
 
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'rlist', '--repo', 'repo'),
+        ('borg', 'repo-list', '--repo', 'repo'),
         extra_environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,

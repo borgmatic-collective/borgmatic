@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from borgmatic.config import collect
 
 ACTION_ALIASES = {
-    'rcreate': ['init', '-I'],
+    'repo-create': ['rcreate', 'init', '-I'],
     'prune': ['-p'],
     'compact': [],
     'create': ['-C'],
@@ -18,10 +18,10 @@ ACTION_ALIASES = {
     'mount': ['-m'],
     'umount': ['-u'],
     'restore': ['-r'],
-    'rdelete': [],
-    'rlist': [],
+    'repo-delete': ['rdelete'],
+    'repo-list': ['rlist'],
     'list': ['-l'],
-    'rinfo': [],
+    'repo-info': ['rinfo'],
     'info': ['-i'],
     'transfer': [],
     'break-lock': [],
@@ -402,51 +402,51 @@ def make_parsers():
         metavar='',
         help='Specify zero or more actions. Defaults to create, prune, compact, and check. Use --help with action for details:',
     )
-    rcreate_parser = action_parsers.add_parser(
-        'rcreate',
-        aliases=ACTION_ALIASES['rcreate'],
+    repo_create_parser = action_parsers.add_parser(
+        'repo-create',
+        aliases=ACTION_ALIASES['repo-create'],
         help='Create a new, empty Borg repository',
         description='Create a new, empty Borg repository',
         add_help=False,
     )
-    rcreate_group = rcreate_parser.add_argument_group('rcreate arguments')
-    rcreate_group.add_argument(
+    repo_create_group = repo_create_parser.add_argument_group('repo-create arguments')
+    repo_create_group.add_argument(
         '-e',
         '--encryption',
         dest='encryption_mode',
         help='Borg repository encryption mode',
         required=True,
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--source-repository',
         '--other-repo',
         metavar='KEY_REPOSITORY',
         help='Path to an existing Borg repository whose key material should be reused [Borg 2.x+ only]',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--repository',
         help='Path of the new repository to create (must be already specified in a borgmatic configuration file), defaults to the configured repository if there is only one, quoted globs supported',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--copy-crypt-key',
         action='store_true',
         help='Copy the crypt key used for authenticated encryption from the source repository, defaults to a new random key [Borg 2.x+ only]',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--append-only',
         action='store_true',
         help='Create an append-only repository',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--storage-quota',
         help='Create a repository with a fixed storage quota',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '--make-parent-dirs',
         action='store_true',
         help='Create any missing parent directories of the repository directory',
     )
-    rcreate_group.add_argument(
+    repo_create_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -1070,40 +1070,40 @@ def make_parsers():
     )
     umount_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    rdelete_parser = action_parsers.add_parser(
-        'rdelete',
-        aliases=ACTION_ALIASES['rdelete'],
+    repo_delete_parser = action_parsers.add_parser(
+        'repo-delete',
+        aliases=ACTION_ALIASES['repo-delete'],
         help='Delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
         description='Delete an entire repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
         add_help=False,
     )
-    rdelete_group = rdelete_parser.add_argument_group('delete arguments')
-    rdelete_group.add_argument(
+    repo_delete_group = repo_delete_parser.add_argument_group('delete arguments')
+    repo_delete_group.add_argument(
         '--repository',
         help='Path of repository to delete, defaults to the configured repository if there is only one, quoted globs supported',
     )
-    rdelete_group.add_argument(
+    repo_delete_group.add_argument(
         '--list',
         dest='list_archives',
         action='store_true',
         help='Show details for the archives in the given repository',
     )
-    rdelete_group.add_argument(
+    repo_delete_group.add_argument(
         '--force',
         action='count',
         help='Force deletion of corrupted archives, can be given twice if once does not work',
     )
-    rdelete_group.add_argument(
+    repo_delete_group.add_argument(
         '--cache-only',
         action='store_true',
         help='Delete only the local cache for the given repository',
     )
-    rdelete_group.add_argument(
+    repo_delete_group.add_argument(
         '--keep-security-info',
         action='store_true',
         help='Do not delete the local security info when deleting a repository',
     )
-    rdelete_group.add_argument(
+    repo_delete_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -1161,65 +1161,67 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
-    rlist_parser = action_parsers.add_parser(
-        'rlist',
-        aliases=ACTION_ALIASES['rlist'],
+    repo_list_parser = action_parsers.add_parser(
+        'repo-list',
+        aliases=ACTION_ALIASES['repo-list'],
         help='List repository',
         description='List the archives in a repository',
         add_help=False,
     )
-    rlist_group = rlist_parser.add_argument_group('rlist arguments')
-    rlist_group.add_argument(
+    repo_list_group = repo_list_parser.add_argument_group('repo-list arguments')
+    repo_list_group.add_argument(
         '--repository',
         help='Path of repository to list, defaults to the configured repositories, quoted globs supported',
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--short', default=False, action='store_true', help='Output only archive names'
     )
-    rlist_group.add_argument('--format', help='Format for archive listing')
-    rlist_group.add_argument(
+    repo_list_group.add_argument('--format', help='Format for archive listing')
+    repo_list_group.add_argument(
         '--json', default=False, action='store_true', help='Output results as JSON'
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '-P', '--prefix', help='Deprecated. Only list archive names starting with this prefix'
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '-a',
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
         help='Only list archive names matching this pattern',
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--first', metavar='N', help='List first N archives after other filters are applied'
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--last', metavar='N', help='List last N archives after other filters are applied'
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--oldest',
         metavar='TIMESPAN',
         help='List archives within a specified time range starting from the timestamp of the oldest archive (e.g. 7d or 12m) [Borg 2.x+ only]',
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--newest',
         metavar='TIMESPAN',
         help='List archives within a time range that ends at timestamp of the newest archive and starts a specified time range ago (e.g. 7d or 12m) [Borg 2.x+ only]',
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--older',
         metavar='TIMESPAN',
         help='List archives that are older than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
     )
-    rlist_group.add_argument(
+    repo_list_group.add_argument(
         '--newer',
         metavar='TIMESPAN',
         help='List archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
     )
-    rlist_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    repo_list_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     list_parser = action_parsers.add_parser(
         'list',
@@ -1288,22 +1290,24 @@ def make_parsers():
     )
     list_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
-    rinfo_parser = action_parsers.add_parser(
-        'rinfo',
-        aliases=ACTION_ALIASES['rinfo'],
+    repo_info_parser = action_parsers.add_parser(
+        'repo-info',
+        aliases=ACTION_ALIASES['repo-info'],
         help='Show repository summary information such as disk space used',
         description='Show repository summary information such as disk space used',
         add_help=False,
     )
-    rinfo_group = rinfo_parser.add_argument_group('rinfo arguments')
-    rinfo_group.add_argument(
+    repo_info_group = repo_info_parser.add_argument_group('repo-info arguments')
+    repo_info_group.add_argument(
         '--repository',
         help='Path of repository to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
-    rinfo_group.add_argument(
+    repo_info_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
-    rinfo_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+    repo_info_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     info_parser = action_parsers.add_parser(
         'info',
@@ -1515,9 +1519,9 @@ def parse_arguments(*unparsed_arguments):
         )
 
     if (
-        ('list' in arguments and 'rinfo' in arguments and arguments['list'].json)
+        ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
-        or ('rinfo' in arguments and 'info' in arguments and arguments['rinfo'].json)
+        or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
         raise ValueError('With the --json flag, multiple actions cannot be used together.')
 
@@ -1535,9 +1539,11 @@ def parse_arguments(*unparsed_arguments):
             'With the list action, only one of --prefix or --match-archives flags can be used.'
         )
 
-    if 'rlist' in arguments and (arguments['rlist'].prefix and arguments['rlist'].match_archives):
+    if 'repo-list' in arguments and (
+        arguments['repo-list'].prefix and arguments['repo-list'].match_archives
+    ):
         raise ValueError(
-            'With the rlist action, only one of --prefix or --match-archives flags can be used.'
+            'With the repo-list action, only one of --prefix or --match-archives flags can be used.'
         )
 
     if 'info' in arguments and (

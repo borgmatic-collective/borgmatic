@@ -2,7 +2,7 @@ import argparse
 import json
 import logging
 
-from borgmatic.borg import environment, feature, flags, rinfo
+from borgmatic.borg import environment, feature, flags, repo_info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ def get_repository_id(
     '''
     try:
         return json.loads(
-            rinfo.display_repository_info(
+            repo_info.display_repository_info(
                 repository_path,
                 config,
                 local_borg_version,

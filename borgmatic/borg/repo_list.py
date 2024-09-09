@@ -31,7 +31,11 @@ def resolve_archive_name(
     full_command = (
         (
             local_path,
-            'rlist' if feature.available(feature.Feature.RLIST, local_borg_version) else 'list',
+            (
+                'repo-list'
+                if feature.available(feature.Feature.REPO_LIST, local_borg_version)
+                else 'list'
+            ),
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('log-json', global_arguments.log_json)
@@ -60,33 +64,37 @@ def resolve_archive_name(
 MAKE_FLAGS_EXCLUDES = ('repository', 'prefix', 'match_archives')
 
 
-def make_rlist_command(
+def make_repo_list_command(
     repository_path,
     config,
     local_borg_version,
-    rlist_arguments,
+    repo_list_arguments,
     global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a local or remote repository path, a configuration dict, the local Borg version, the
-    arguments to the rlist action, global arguments as an argparse.Namespace instance, and local and
+    arguments to the repo_list action, global arguments as an argparse.Namespace instance, and local and
     remote Borg paths, return a command as a tuple to list archives with a repository.
     '''
     return (
         (
             local_path,
-            'rlist' if feature.available(feature.Feature.RLIST, local_borg_version) else 'list',
+            (
+                'repo-list'
+                if feature.available(feature.Feature.REPO_LIST, local_borg_version)
+                else 'list'
+            ),
         )
         + (
             ('--info',)
-            if logger.getEffectiveLevel() == logging.INFO and not rlist_arguments.json
+            if logger.getEffectiveLevel() == logging.INFO and not repo_list_arguments.json
             else ()
         )
         + (
             ('--debug', '--show-rc')
-            if logger.isEnabledFor(logging.DEBUG) and not rlist_arguments.json
+            if logger.isEnabledFor(logging.DEBUG) and not repo_list_arguments.json
             else ()
         )
         + flags.make_flags('remote-path', remote_path)
@@ -94,20 +102,20 @@ def make_rlist_command(
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + (
             (
-                flags.make_flags('match-archives', f'sh:{rlist_arguments.prefix}*')
+                flags.make_flags('match-archives', f'sh:{repo_list_arguments.prefix}*')
                 if feature.available(feature.Feature.MATCH_ARCHIVES, local_borg_version)
-                else flags.make_flags('glob-archives', f'{rlist_arguments.prefix}*')
+                else flags.make_flags('glob-archives', f'{repo_list_arguments.prefix}*')
             )
-            if rlist_arguments.prefix
+            if repo_list_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    rlist_arguments.match_archives or config.get('match_archives'),
+                    repo_list_arguments.match_archives or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )
             )
         )
-        + flags.make_flags_from_arguments(rlist_arguments, excludes=MAKE_FLAGS_EXCLUDES)
+        + flags.make_flags_from_arguments(repo_list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
@@ -116,7 +124,7 @@ def list_repository(
     repository_path,
     config,
     local_borg_version,
-    rlist_arguments,
+    repo_list_arguments,
     global_arguments,
     local_path='borg',
     remote_path=None,
@@ -130,20 +138,20 @@ def list_repository(
     borgmatic.logger.add_custom_log_levels()
     borg_environment = environment.make_environment(config)
 
-    main_command = make_rlist_command(
+    main_command = make_repo_list_command(
         repository_path,
         config,
         local_borg_version,
-        rlist_arguments,
+        repo_list_arguments,
         global_arguments,
         local_path,
         remote_path,
     )
-    json_command = make_rlist_command(
+    json_command = make_repo_list_command(
         repository_path,
         config,
         local_borg_version,
-        argparse.Namespace(**dict(rlist_arguments.__dict__, json=True)),
+        argparse.Namespace(**dict(repo_list_arguments.__dict__, json=True)),
         global_arguments,
         local_path,
         remote_path,
@@ -157,7 +165,7 @@ def list_repository(
         borg_exit_codes=borg_exit_codes,
     )
 
-    if rlist_arguments.json:
+    if repo_list_arguments.json:
         return json_listing
 
     flags.warn_for_aggressive_archive_flags(json_command, json_listing)

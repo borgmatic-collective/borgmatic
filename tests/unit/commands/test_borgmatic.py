@@ -467,15 +467,18 @@ def test_run_configuration_retries_timeout_multiple_repos():
     assert results == error_logs
 
 
-def test_run_actions_runs_rcreate():
+def test_run_actions_runs_repo_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
-    flexmock(borgmatic.actions.rcreate).should_receive('run_rcreate').once()
+    flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rcreate': flexmock()},
+            arguments={
+                'global': flexmock(dry_run=False, log_file='foo'),
+                'repo-create': flexmock(),
+            },
             config_filename=flexmock(),
             config={'repositories': []},
             config_paths=[],
@@ -850,16 +853,16 @@ def test_run_actions_runs_restore():
     )
 
 
-def test_run_actions_runs_rlist():
+def test_run_actions_runs_repo_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
-    flexmock(borgmatic.actions.rlist).should_receive('run_rlist').and_yield(expected).once()
+    flexmock(borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rlist': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'repo-list': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
             config_paths=[],
@@ -894,16 +897,16 @@ def test_run_actions_runs_list():
     assert result == (expected,)
 
 
-def test_run_actions_runs_rinfo():
+def test_run_actions_runs_repo_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
     expected = flexmock()
-    flexmock(borgmatic.actions.rinfo).should_receive('run_rinfo').and_yield(expected).once()
+    flexmock(borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
 
     result = tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rinfo': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'repo-info': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
             config_paths=[],
@@ -998,15 +1001,18 @@ def test_run_actions_runs_delete():
     )
 
 
-def test_run_actions_runs_rdelete():
+def test_run_actions_runs_repo_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
     flexmock(module.command).should_receive('execute_hook')
-    flexmock(borgmatic.actions.rdelete).should_receive('run_rdelete').once()
+    flexmock(borgmatic.actions.repo_delete).should_receive('run_repo_delete').once()
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'rdelete': flexmock()},
+            arguments={
+                'global': flexmock(dry_run=False, log_file='foo'),
+                'repo-delete': flexmock(),
+            },
             config_filename=flexmock(),
             config={'repositories': []},
             config_paths=[],

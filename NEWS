@@ -1,5 +1,7 @@
 1.8.15.dev0
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
+ * #915: Rename repository actions like "rcreate" to more explicit names like "repo-create" for
+   compatibility with recent Borg 2 changes.
 
 1.8.14
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.

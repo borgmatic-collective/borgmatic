@@ -49,8 +49,8 @@ def test_parse_arguments_with_action_after_config_path_omits_aliased_action():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == ['myconfig']
-    assert 'rcreate' in arguments
-    assert arguments['rcreate'].encryption_mode == 'repokey'
+    assert 'repo-create' in arguments
+    assert arguments['repo-create'].encryption_mode == 'repokey'
 
 
 def test_parse_arguments_with_action_and_positional_arguments_after_config_path_omits_action_and_arguments():
@@ -438,7 +438,7 @@ def test_parse_arguments_with_list_flag_but_no_relevant_action_raises_value_erro
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(SystemExit):
-        module.parse_arguments('--list', 'rcreate')
+        module.parse_arguments('--list', 'repo-create')
 
 
 def test_parse_arguments_disallows_list_with_progress_for_create_action():
@@ -469,18 +469,18 @@ def test_parse_arguments_disallows_json_with_both_list_and_info():
         module.parse_arguments('list', 'info', '--json')
 
 
-def test_parse_arguments_disallows_json_with_both_list_and_rinfo():
+def test_parse_arguments_disallows_json_with_both_list_and_repo_info():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('list', 'rinfo', '--json')
+        module.parse_arguments('list', 'repo-info', '--json')
 
 
-def test_parse_arguments_disallows_json_with_both_rinfo_and_info():
+def test_parse_arguments_disallows_json_with_both_repo_info_and_info():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('rinfo', 'info', '--json')
+        module.parse_arguments('repo-info', 'info', '--json')
 
 
 def test_parse_arguments_disallows_transfer_with_both_archive_and_match_archives():
@@ -505,11 +505,11 @@ def test_parse_arguments_disallows_list_with_both_prefix_and_match_archives():
         module.parse_arguments('list', '--prefix', 'foo', '--match-archives', 'sh:*bar')
 
 
-def test_parse_arguments_disallows_rlist_with_both_prefix_and_match_archives():
+def test_parse_arguments_disallows_repo_list_with_both_prefix_and_match_archives():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     with pytest.raises(ValueError):
-        module.parse_arguments('rlist', '--prefix', 'foo', '--match-archives', 'sh:*bar')
+        module.parse_arguments('repo-list', '--prefix', 'foo', '--match-archives', 'sh:*bar')
 
 
 def test_parse_arguments_disallows_info_with_both_archive_and_match_archives():

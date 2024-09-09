@@ -5,7 +5,7 @@ import os
 import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.mount
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.borg.state
 import borgmatic.config.validate
 import borgmatic.hooks.dispatch
@@ -285,7 +285,7 @@ def run_restore(
         global_arguments.dry_run,
     )
 
-    archive_name = borgmatic.borg.rlist.resolve_archive_name(
+    archive_name = borgmatic.borg.repo_list.resolve_archive_name(
         repository['path'],
         restore_arguments.archive,
         config,

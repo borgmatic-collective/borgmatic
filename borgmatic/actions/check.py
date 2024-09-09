@@ -12,7 +12,7 @@ import borgmatic.borg.create
 import borgmatic.borg.environment
 import borgmatic.borg.extract
 import borgmatic.borg.list
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.borg.state
 import borgmatic.config.validate
 import borgmatic.execute
@@ -559,7 +559,7 @@ def spot_check(
     )
     logger.debug(f'{log_label}: {len(source_paths)} total source paths for spot check')
 
-    archive = borgmatic.borg.rlist.resolve_archive_name(
+    archive = borgmatic.borg.repo_list.resolve_archive_name(
         repository['path'],
         'latest',
         config,

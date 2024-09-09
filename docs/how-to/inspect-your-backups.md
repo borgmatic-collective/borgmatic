@@ -62,13 +62,13 @@ for available values.
 
 (No borgmatic `list` or `info` actions? Upgrade borgmatic!)
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
-There are also `rlist` and `rinfo` actions for displaying repository
+<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
+There are also `repo-list` and `repo-info` actions for displaying repository
 information with Borg 2.x:
 
 ```bash
-borgmatic rlist
-borgmatic rinfo
+borgmatic repo-list
+borgmatic repo-info
 ```
 
 See the [borgmatic command-line

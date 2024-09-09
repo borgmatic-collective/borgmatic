@@ -4,7 +4,7 @@ import logging
 import borgmatic.borg.environment
 import borgmatic.borg.feature
 import borgmatic.borg.flags
-import borgmatic.borg.rdelete
+import borgmatic.borg.repo_delete
 import borgmatic.execute
 
 logger = logging.getLogger(__name__)
@@ -88,24 +88,24 @@ def delete_archives(
         for argument_name in ARCHIVE_RELATED_ARGUMENT_NAMES
     ):
         if borgmatic.borg.feature.available(
-            borgmatic.borg.feature.Feature.RDELETE, local_borg_version
+            borgmatic.borg.feature.Feature.REPO_DELETE, local_borg_version
         ):
             logger.warning(
-                'Deleting an entire repository with the delete action is deprecated when using Borg 2.x+. Use the rdelete action instead.'
+                'Deleting an entire repository with the delete action is deprecated when using Borg 2.x+. Use the repo-delete action instead.'
             )
 
-        rdelete_arguments = argparse.Namespace(
+        repo_delete_arguments = argparse.Namespace(
             repository=repository['path'],
             list_archives=delete_arguments.list_archives,
             force=delete_arguments.force,
             cache_only=delete_arguments.cache_only,
             keep_security_info=delete_arguments.keep_security_info,
         )
-        borgmatic.borg.rdelete.delete_repository(
+        borgmatic.borg.repo_delete.delete_repository(
             repository,
             config,
             local_borg_version,
-            rdelete_arguments,
+            repo_delete_arguments,
             global_arguments,
             local_path,
             remote_path,

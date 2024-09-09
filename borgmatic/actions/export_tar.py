@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.borg.export_tar
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def run_export_tar(
         borgmatic.borg.export_tar.export_tar_archive(
             global_arguments.dry_run,
             repository['path'],
-            borgmatic.borg.rlist.resolve_archive_name(
+            borgmatic.borg.repo_list.resolve_archive_name(
                 repository['path'],
                 export_tar_arguments.archive,
                 config,

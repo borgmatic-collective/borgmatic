@@ -932,7 +932,7 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux')
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
     flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(
@@ -963,7 +963,7 @@ def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percenta
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux')
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
     flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))
@@ -995,7 +995,7 @@ def test_spot_check_with_high_enough_tolerances_does_not_raise():
     flexmock(module).should_receive('collect_spot_check_source_paths').and_return(
         ('/foo', '/bar', '/baz', '/quux')
     )
-    flexmock(module.borgmatic.borg.rlist).should_receive('resolve_archive_name').and_return(
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         'archive'
     )
     flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))

@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.borg.mount
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def run_mount(
 
         borgmatic.borg.mount.mount_archive(
             repository['path'],
-            borgmatic.borg.rlist.resolve_archive_name(
+            borgmatic.borg.repo_list.resolve_archive_name(
                 repository['path'],
                 mount_arguments.archive,
                 config,

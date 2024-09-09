@@ -93,7 +93,7 @@ Borg releases require additional steps that borgmatic can help with.
 
 ### Borg 1.2 to 2.0
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
+<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
 Upgrading Borg from 1.2 to 2.0 requires manually upgrading your existing Borg
 1 repositories before use with Borg or borgmatic. Here's how you can
 accomplish that.
@@ -125,11 +125,11 @@ option was found in the `location:` section of your configuration.
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.
 
-Then, run the `rcreate` action (formerly `init`) to create that new Borg 2
+Then, run the `repo-create` action (formerly `init`) to create that new Borg 2
 repository:
 
 ```bash
-borgmatic rcreate --verbosity 1 --encryption repokey-blake2-aes-ocb \
+borgmatic repo-create --verbosity 1 --encryption repokey-blake2-aes-ocb \
     --source-repository original.borg --repository upgraded.borg
 ```
 
@@ -146,12 +146,12 @@ means the encryption value you specified doesn't correspond to your source
 repository's chunk ID algorithm. In that case, try not using `blake2`:
 
 ```bash
-borgmatic rcreate --verbosity 1 --encryption repokey-aes-ocb \
+borgmatic repo-create --verbosity 1 --encryption repokey-aes-ocb \
     --source-repository original.borg --repository upgraded.borg
 ```
 
 Read about [Borg encryption
-modes](https://borgbackup.readthedocs.io/en/2.0.0b8/usage/rcreate.html#encryption-mode-tldr)
+modes](https://borgbackup.readthedocs.io/en/latest/usage/repo-create.html)
 for more details.
 
 To transfer data from your original Borg 1 repository to your newly created

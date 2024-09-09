@@ -3,7 +3,7 @@ import logging
 import os
 
 import borgmatic.borg.extract
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 import borgmatic.hooks.command
 from borgmatic.borg.state import DEFAULT_BORGMATIC_SOURCE_DIRECTORY
@@ -33,7 +33,7 @@ def get_config_paths(bootstrap_arguments, global_arguments, local_borg_version):
     extract_process = borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
-        borgmatic.borg.rlist.resolve_archive_name(
+        borgmatic.borg.repo_list.resolve_archive_name(
             bootstrap_arguments.repository,
             bootstrap_arguments.archive,
             config,
@@ -85,7 +85,7 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
     borgmatic.borg.extract.extract_archive(
         global_arguments.dry_run,
         bootstrap_arguments.repository,
-        borgmatic.borg.rlist.resolve_archive_name(
+        borgmatic.borg.repo_list.resolve_archive_name(
             bootstrap_arguments.repository,
             bootstrap_arguments.archive,
             config,

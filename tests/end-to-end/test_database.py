@@ -363,7 +363,16 @@ def test_database_dump_and_restore():
         select_test_tables(config)
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ]
         )
 
         # Run borgmatic to generate a backup archive including database dumps.
@@ -410,7 +419,16 @@ def test_database_dump_and_restore_with_restore_cli_flags():
         select_test_tables(config)
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ]
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -480,7 +498,16 @@ def test_database_dump_and_restore_with_restore_configuration_options():
         select_test_tables(config)
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ]
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -533,7 +560,16 @@ def test_database_dump_and_restore_with_directory_format():
         select_test_tables(config)
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ]
         )
 
         # Run borgmatic to generate a backup archive including a database dump.
@@ -568,7 +604,16 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
         )
 
         subprocess.check_call(
-            ['borgmatic', '-v', '2', '--config', config_path, 'rcreate', '--encryption', 'repokey']
+            [
+                'borgmatic',
+                '-v',
+                '2',
+                '--config',
+                config_path,
+                'repo-create',
+                '--encryption',
+                'repokey',
+            ]
         )
 
         # Run borgmatic with a config override such that the database dump fails.

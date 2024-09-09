@@ -4,19 +4,19 @@ import logging
 import re
 
 import borgmatic.logger
-from borgmatic.borg import environment, feature, flags, rlist
+from borgmatic.borg import environment, feature, flags, repo_list
 from borgmatic.execute import execute_command, execute_command_and_capture_output
 
 logger = logging.getLogger(__name__)
 
 
-ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST = ('prefix', 'match_archives', 'sort_by', 'first', 'last')
+ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST = ('prefix', 'match_archives', 'sort_by', 'first', 'last')
 MAKE_FLAGS_EXCLUDES = (
     'repository',
     'archive',
     'paths',
     'find_paths',
-) + ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST
+) + ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST
 
 
 def make_list_command(
@@ -155,12 +155,12 @@ def list_archive(
     borgmatic.logger.add_custom_log_levels()
 
     if not list_arguments.archive and not list_arguments.find_paths:
-        if feature.available(feature.Feature.RLIST, local_borg_version):
+        if feature.available(feature.Feature.REPO_LIST, local_borg_version):
             logger.warning(
-                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x+. Use the rlist action instead.'
+                'Omitting the --archive flag on the list action is deprecated when using Borg 2.x+. Use the repo-list action instead.'
             )
 
-        rlist_arguments = argparse.Namespace(
+        repo_list_arguments = argparse.Namespace(
             repository=repository_path,
             short=list_arguments.short,
             format=list_arguments.format,
@@ -171,18 +171,18 @@ def list_archive(
             first=list_arguments.first,
             last=list_arguments.last,
         )
-        return rlist.list_repository(
+        return repo_list.list_repository(
             repository_path,
             config,
             local_borg_version,
-            rlist_arguments,
+            repo_list_arguments,
             global_arguments,
             local_path,
             remote_path,
         )
 
     if list_arguments.archive:
-        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST:
+        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST:
             if getattr(list_arguments, name, None):
                 logger.warning(
                     f"The --{name.replace('_', '-')} flag on the list action is ignored when using the --archive flag."
@@ -199,7 +199,7 @@ def list_archive(
     # If there are any paths to find (and there's not a single archive already selected), start by
     # getting a list of archives to search.
     if list_arguments.find_paths and not list_arguments.archive:
-        rlist_arguments = argparse.Namespace(
+        repo_list_arguments = argparse.Namespace(
             repository=repository_path,
             short=True,
             format=None,
@@ -214,11 +214,11 @@ def list_archive(
         # Ask Borg to list archives. Capture its output for use below.
         archive_lines = tuple(
             execute_command_and_capture_output(
-                rlist.make_rlist_command(
+                repo_list.make_repo_list_command(
                     repository_path,
                     config,
                     local_borg_version,
-                    rlist_arguments,
+                    repo_list_arguments,
                     global_arguments,
                     local_path,
                     remote_path,
@@ -242,7 +242,7 @@ def list_archive(
 
         # This list call is to show the files in a single archive, not list multiple archives. So
         # blank out any archive filtering flags. They'll break anyway in Borg 2.
-        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_RLIST:
+        for name in ARCHIVE_FILTER_FLAGS_MOVED_TO_REPO_LIST:
             setattr(archive_arguments, name, None)
 
         main_command = make_list_command(

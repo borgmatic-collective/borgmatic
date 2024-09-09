@@ -92,10 +92,10 @@ timestamp in a particular format.
 <span class="minilink minilink-addedin">New in version 1.7.11</span> borgmatic
 uses the `archive_name_format` option to automatically limit which archives
 get used for actions operating on multiple archives. This prevents, for
-instance, duplicate archives from showing up in `rlist` or `info` results—even
-if the same repository appears in multiple borgmatic configuration files. To
-take advantage of this feature, use a different `archive_name_format` in each
-configuration file.
+instance, duplicate archives from showing up in `repo-list` or `info`
+results—even if the same repository appears in multiple borgmatic
+configuration files. To take advantage of this feature, use a different
+`archive_name_format` in each configuration file.
 
 Under the hood, borgmatic accomplishes this by substituting globs for certain
 ephemeral data placeholders in your `archive_name_format`—and using the result
@@ -113,7 +113,7 @@ this option in the `storage:` section of your configuration.
 borgmatic considers `{now}` an emphemeral data placeholder that will probably
 change per archive, while `{hostname}` won't. So it turns the example value
 into `{hostname}-user-data-*` and applies it to filter down the set of
-archives used for actions like `rlist`, `info`, `prune`, `check`, etc.
+archives used for actions like `repo-list`, `info`, `prune`, `check`, etc.
 
 The end result is that when borgmatic runs the actions for a particular
 application-specific configuration file, it only operates on the archives

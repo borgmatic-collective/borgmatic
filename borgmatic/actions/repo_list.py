@@ -1,37 +1,37 @@
 import logging
 
 import borgmatic.actions.json
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
 
 
-def run_rlist(
+def run_repo_list(
     repository,
     config,
     local_borg_version,
-    rlist_arguments,
+    repo_list_arguments,
     global_arguments,
     local_path,
     remote_path,
 ):
     '''
-    Run the "rlist" action for the given repository.
+    Run the "repo-list" action for the given repository.
 
-    If rlist_arguments.json is True, yield the JSON output from listing the repository.
+    If repo_list_arguments.json is True, yield the JSON output from listing the repository.
     '''
-    if rlist_arguments.repository is None or borgmatic.config.validate.repositories_match(
-        repository, rlist_arguments.repository
+    if repo_list_arguments.repository is None or borgmatic.config.validate.repositories_match(
+        repository, repo_list_arguments.repository
     ):
-        if not rlist_arguments.json:
+        if not repo_list_arguments.json:
             logger.answer(f'{repository.get("label", repository["path"])}: Listing repository')
 
-        json_output = borgmatic.borg.rlist.list_repository(
+        json_output = borgmatic.borg.repo_list.list_repository(
             repository['path'],
             config,
             local_borg_version,
-            rlist_arguments=rlist_arguments,
+            repo_list_arguments=repo_list_arguments,
             global_arguments=global_arguments,
             local_path=local_path,
             remote_path=remote_path,

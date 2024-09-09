@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.borg.borg
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def run_borg(
         logger.info(
             f'{repository.get("label", repository["path"])}: Running arbitrary Borg command'
         )
-        archive_name = borgmatic.borg.rlist.resolve_archive_name(
+        archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],
             borg_arguments.archive,
             config,

@@ -3,7 +3,7 @@ import os
 import subprocess
 
 import borgmatic.config.validate
-from borgmatic.borg import environment, feature, flags, rlist
+from borgmatic.borg import environment, feature, flags, repo_list
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ def extract_last_archive_dry_run(
         verbosity_flags = ('--info',)
 
     try:
-        last_archive_name = rlist.resolve_archive_name(
+        last_archive_name = repo_list.resolve_archive_name(
             repository_path,
             'latest',
             config,

@@ -3,7 +3,7 @@ import logging
 import borgmatic.actions.arguments
 import borgmatic.actions.json
 import borgmatic.borg.info
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def run_info(
             logger.answer(
                 f'{repository.get("label", repository["path"])}: Displaying archive summary information'
             )
-        archive_name = borgmatic.borg.rlist.resolve_archive_name(
+        archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],
             info_arguments.archive,
             config,

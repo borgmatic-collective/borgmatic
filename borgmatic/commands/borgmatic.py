@@ -27,11 +27,11 @@ import borgmatic.actions.info
 import borgmatic.actions.list
 import borgmatic.actions.mount
 import borgmatic.actions.prune
-import borgmatic.actions.rcreate
-import borgmatic.actions.rdelete
+import borgmatic.actions.repo_create
+import borgmatic.actions.repo_delete
+import borgmatic.actions.repo_info
+import borgmatic.actions.repo_list
 import borgmatic.actions.restore
-import borgmatic.actions.rinfo
-import borgmatic.actions.rlist
 import borgmatic.actions.transfer
 import borgmatic.commands.completion.bash
 import borgmatic.commands.completion.fish
@@ -307,8 +307,8 @@ def run_actions(
     )
 
     for action_name, action_arguments in arguments.items():
-        if action_name == 'rcreate' and action_name not in skip_actions:
-            borgmatic.actions.rcreate.run_rcreate(
+        if action_name == 'repo-create' and action_name not in skip_actions:
+            borgmatic.actions.repo_create.run_repo_create(
                 repository,
                 config,
                 local_borg_version,
@@ -422,8 +422,8 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'rlist' and action_name not in skip_actions:
-            yield from borgmatic.actions.rlist.run_rlist(
+        elif action_name == 'repo-list' and action_name not in skip_actions:
+            yield from borgmatic.actions.repo_list.run_repo_list(
                 repository,
                 config,
                 local_borg_version,
@@ -442,8 +442,8 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'rinfo' and action_name not in skip_actions:
-            yield from borgmatic.actions.rinfo.run_rinfo(
+        elif action_name == 'repo-info' and action_name not in skip_actions:
+            yield from borgmatic.actions.repo_info.run_repo_info(
                 repository,
                 config,
                 local_borg_version,
@@ -502,8 +502,8 @@ def run_actions(
                 local_path,
                 remote_path,
             )
-        elif action_name == 'rdelete' and action_name not in skip_actions:
-            borgmatic.actions.rdelete.run_rdelete(
+        elif action_name == 'repo-delete' and action_name not in skip_actions:
+            borgmatic.actions.repo_delete.run_repo_delete(
                 repository,
                 config,
                 local_borg_version,

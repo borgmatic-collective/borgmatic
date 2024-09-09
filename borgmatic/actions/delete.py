@@ -2,8 +2,8 @@ import logging
 
 import borgmatic.actions.arguments
 import borgmatic.borg.delete
-import borgmatic.borg.rdelete
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_delete
+import borgmatic.borg.repo_list
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def run_delete(
         logger.answer(f'{repository.get("label", repository["path"])}: Deleting archives')
 
         archive_name = (
-            borgmatic.borg.rlist.resolve_archive_name(
+            borgmatic.borg.repo_list.resolve_archive_name(
                 repository['path'],
                 delete_arguments.archive,
                 config,

@@ -31,7 +31,7 @@ def run_list(
             elif not list_arguments.archive:  # pragma: no cover
                 logger.answer(f'{repository.get("label", repository["path"])}: Listing archives')
 
-        archive_name = borgmatic.borg.rlist.resolve_archive_name(
+        archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],
             list_arguments.archive,
             config,

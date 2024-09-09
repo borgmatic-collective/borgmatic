@@ -11,14 +11,14 @@ def display_repository_info(
     repository_path,
     config,
     local_borg_version,
-    rinfo_arguments,
+    repo_info_arguments,
     global_arguments,
     local_path='borg',
     remote_path=None,
 ):
     '''
     Given a local or remote repository path, a configuration dict, the local Borg version, the
-    arguments to the rinfo action, and global arguments as an argparse.Namespace, display summary
+    arguments to the repo_info action, and global arguments as an argparse.Namespace, display summary
     information for the Borg repository or return JSON summary information.
     '''
     borgmatic.logger.add_custom_log_levels()
@@ -27,31 +27,31 @@ def display_repository_info(
     full_command = (
         (local_path,)
         + (
-            ('rinfo',)
-            if feature.available(feature.Feature.RINFO, local_borg_version)
+            ('repo-info',)
+            if feature.available(feature.Feature.REPO_INFO, local_borg_version)
             else ('info',)
         )
         + (
             ('--info',)
-            if logger.getEffectiveLevel() == logging.INFO and not rinfo_arguments.json
+            if logger.getEffectiveLevel() == logging.INFO and not repo_info_arguments.json
             else ()
         )
         + (
             ('--debug', '--show-rc')
-            if logger.isEnabledFor(logging.DEBUG) and not rinfo_arguments.json
+            if logger.isEnabledFor(logging.DEBUG) and not repo_info_arguments.json
             else ()
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('log-json', global_arguments.log_json)
         + flags.make_flags('lock-wait', lock_wait)
-        + (('--json',) if rinfo_arguments.json else ())
+        + (('--json',) if repo_info_arguments.json else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
     extra_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
-    if rinfo_arguments.json:
+    if repo_info_arguments.json:
         return execute_command_and_capture_output(
             full_command,
             extra_environment=extra_environment,

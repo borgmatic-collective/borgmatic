@@ -284,7 +284,7 @@ def test_make_check_name_flags_with_repository_and_data_checks_does_not_return_r
 
 def test_get_repository_id_with_valid_json_does_not_raise():
     config = {}
-    flexmock(module.rinfo).should_receive('display_repository_info').and_return(
+    flexmock(module.repo_info).should_receive('display_repository_info').and_return(
         '{"repository": {"id": "repo"}}'
     )
 
@@ -300,7 +300,7 @@ def test_get_repository_id_with_valid_json_does_not_raise():
 
 def test_get_repository_id_with_json_error_raises():
     config = {}
-    flexmock(module.rinfo).should_receive('display_repository_info').and_return(
+    flexmock(module.repo_info).should_receive('display_repository_info').and_return(
         '{"unexpected": {"id": "repo"}}'
     )
 
@@ -317,7 +317,7 @@ def test_get_repository_id_with_json_error_raises():
 
 def test_get_repository_id_with_missing_json_keys_raises():
     config = {}
-    flexmock(module.rinfo).should_receive('display_repository_info').and_return('{invalid JSON')
+    flexmock(module.repo_info).should_receive('display_repository_info').and_return('{invalid JSON')
 
     with pytest.raises(ValueError):
         module.get_repository_id(

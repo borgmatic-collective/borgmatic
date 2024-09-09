@@ -3,13 +3,13 @@ import json
 import logging
 import subprocess
 
-from borgmatic.borg import environment, feature, flags, rinfo
+from borgmatic.borg import environment, feature, flags, repo_info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
 logger = logging.getLogger(__name__)
 
 
-RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES = {2, 13, 15}
+REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES = {2, 13, 15}
 
 
 def create_repository(
@@ -39,7 +39,7 @@ def create_repository(
     '''
     try:
         info_data = json.loads(
-            rinfo.display_repository_info(
+            repo_info.display_repository_info(
                 repository_path,
                 config,
                 local_borg_version,
@@ -59,17 +59,17 @@ def create_repository(
         logger.info(f'{repository_path}: Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:
-        if error.returncode not in RINFO_REPOSITORY_NOT_FOUND_EXIT_CODES:
+        if error.returncode not in REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES:
             raise
 
     lock_wait = config.get('lock_wait')
-    extra_borg_options = config.get('extra_borg_options', {}).get('rcreate', '')
+    extra_borg_options = config.get('extra_borg_options', {}).get('repo-create', '')
 
-    rcreate_command = (
+    repo_create_command = (
         (local_path,)
         + (
-            ('rcreate',)
-            if feature.available(feature.Feature.RCREATE, local_borg_version)
+            ('repo-create',)
+            if feature.available(feature.Feature.REPO_CREATE, local_borg_version)
             else ('init',)
         )
         + (('--encryption', encryption_mode) if encryption_mode else ())
@@ -93,7 +93,7 @@ def create_repository(
 
     # Do not capture output here, so as to support interactive prompts.
     execute_command(
-        rcreate_command,
+        repo_create_command,
         output_file=DO_NOT_CAPTURE,
         extra_environment=environment.make_environment(config),
         borg_local_path=local_path,

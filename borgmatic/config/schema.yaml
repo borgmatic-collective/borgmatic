@@ -396,8 +396,8 @@ properties:
             Name of the archive. Borg placeholders can be used. See the output
             of "borg help placeholders" for details. Defaults to
             "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". When running actions like
-            rlist, info, or check, borgmatic automatically tries to match only
-            archives created with this name format.
+            repo-list, info, or check, borgmatic automatically tries to match
+            only archives created with this name format.
         example: "{hostname}-documents-{now}"
     match_archives:
         type: string
@@ -749,7 +749,7 @@ properties:
         items:
             type: string
             enum:
-                - rcreate
+                - repo-create
                 - transfer
                 - prune
                 - compact
@@ -761,11 +761,11 @@ properties:
                 - export-tar
                 - mount
                 - umount
-                - rdelete
+                - repo-delete
                 - restore
-                - rlist
+                - repo-list
                 - list
-                - rinfo
+                - repo-info
                 - info
                 - break-lock
                 - key

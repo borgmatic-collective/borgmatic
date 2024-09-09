@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.borg.extract
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 import borgmatic.hooks.command
 
@@ -39,7 +39,7 @@ def run_extract(
         borgmatic.borg.extract.extract_archive(
             global_arguments.dry_run,
             repository['path'],
-            borgmatic.borg.rlist.resolve_archive_name(
+            borgmatic.borg.repo_list.resolve_archive_name(
                 repository['path'],
                 extract_arguments.archive,
                 config,

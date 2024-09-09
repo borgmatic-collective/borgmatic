@@ -214,11 +214,11 @@ command like the following with Borg 1.x:
 sudo borgmatic init --encryption repokey
 ```
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.7.0</span>
+<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
 Or, with Borg 2.x:
 
 ```bash
-sudo borgmatic rcreate --encryption repokey-aes-ocb
+sudo borgmatic repo-create --encryption repokey-aes-ocb
 ```
 
 (Note that `repokey-chacha20-poly1305` may be faster than `repokey-aes-ocb` on

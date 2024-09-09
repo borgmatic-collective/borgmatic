@@ -7,7 +7,7 @@ import borgmatic.borg.info
 import borgmatic.borg.list
 import borgmatic.borg.mount
 import borgmatic.borg.prune
-import borgmatic.borg.rlist
+import borgmatic.borg.repo_list
 import borgmatic.borg.transfer
 import borgmatic.commands.arguments
 
@@ -133,14 +133,14 @@ def test_make_list_command_does_not_duplicate_flags_or_raise():
         assert_command_does_not_duplicate_flags(command)
 
 
-def test_make_rlist_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('rlist')['rlist']
+def test_make_repo_list_command_does_not_duplicate_flags_or_raise():
+    arguments = borgmatic.commands.arguments.parse_arguments('repo-list')['repo-list']
 
     for argument_name in dir(arguments):
         if argument_name.startswith('_'):
             continue
 
-        command = borgmatic.borg.rlist.make_rlist_command(
+        command = borgmatic.borg.repo_list.make_repo_list_command(
             'repo',
             {},
             '2.3.4',
