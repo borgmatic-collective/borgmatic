@@ -5,6 +5,7 @@ import os
 import pathlib
 import stat
 import tempfile
+import textwrap
 
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, state
@@ -330,6 +331,9 @@ def check_all_source_directories_exist(source_directories, working_directory=Non
         raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
 
 
+MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
+
+
 def make_base_create_command(
     dry_run,
     repository_path,
@@ -431,7 +435,7 @@ def make_base_create_command(
         + (('--compression', compression) if compression else ())
         + upload_ratelimit_flags
         + (('--upload-buffer', str(upload_buffer_size)) if upload_buffer_size else ())
-        + (('--one-file-system',) if config.get('one_file_system') or stream_processes else ())
+        + (('--one-file-system',) if config.get('one_file_system') else ())
         + numeric_ids_flags
         + atime_flags
         + (('--noctime',) if config.get('ctime') is False else ())
@@ -475,8 +479,13 @@ def make_base_create_command(
         )
 
         if special_file_paths:
+            truncated_special_file_paths = textwrap.shorten(
+                ', '.join(special_file_paths),
+                width=MAX_SPECIAL_FILE_PATHS_LENGTH,
+                placeholder=' ...',
+            )
             logger.warning(
-                f'{repository_path}: Excluding special files to prevent Borg from hanging: {", ".join(special_file_paths)}'
+                f'{repository_path}: Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
             )
             exclude_file = write_pattern_file(
                 expand_home_directories(
