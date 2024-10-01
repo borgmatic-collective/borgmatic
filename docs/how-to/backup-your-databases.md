@@ -466,14 +466,13 @@ exclude them. <span class="minilink minilink-addedin">Prior to version
 1.7.3</span>Special files were not auto-excluded, and you were responsible for
 excluding them yourself. Common directories to exclude are `/dev` and `/run`,
 but that may not be exhaustive.
-5. <span class="minilink minilink-addedin">Prior to version 1.8.15</span>
-Database hooks also implicitly enabled the `one_file_system` option, which
-meant Borg wouldn't cross filesystem boundaries when looking for files to
-backup. When borgmatic was running in a container, this often required a
-work-around to explicitly add each mounted backup volume to
+5. Database hooks also implicitly enable the `one_file_system` option, which
+means Borg won't cross filesystem boundaries when looking for files to backup.
+This is especially important when running borgmatic in a container, as
+container volumes are mounted as separate filesystems. One work-around is to
+explicitly add each mounted volume you'd like to backup to
 `source_directories` instead of relying on Borg to include them implicitly via
-a parent directory. However, as of borgmatic 1.8.15, `one_file_system` is no
-longer auto-enabled and such work-arounds aren't necessary.
+a parent directory.
 
 
 ### Manual restoration

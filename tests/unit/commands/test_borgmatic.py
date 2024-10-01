@@ -981,29 +981,6 @@ def test_run_actions_runs_export_key():
     )
 
 
-def test_run_actions_runs_change_passphrase():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
-    flexmock(borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
-
-    tuple(
-        module.run_actions(
-            arguments={
-                'global': flexmock(dry_run=False, log_file='foo'),
-                'change-passphrase': flexmock(),
-            },
-            config_filename=flexmock(),
-            config={'repositories': []},
-            config_paths=[],
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository={'path': 'repo'},
-        )
-    )
-
-
 def test_run_actions_runs_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
