@@ -15,7 +15,7 @@ version 1.1. borgmatic does not install Borg automatically so as to avoid
 conflicts with existing Borg installations.
 
 Then, [install pipx](https://pypa.github.io/pipx/installation/) as the root
-user (with `sudo`) to make installing borgmatic easy without impacting other
+user (with `sudo`) to make installing borgmatic easier without impacting other
 Python applications on your system. If you have trouble installing pipx with
 pip, then you can install a system package instead. E.g. on Ubuntu or Debian,
 run:

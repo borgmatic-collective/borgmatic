@@ -211,8 +211,8 @@ Normally, borgmatic dumps a database by running a database dump command (e.g.
 connects to your containerized database via the given `hostname` and `port`.
 But if you don't have any database dump commands installed on your host and
 you'd rather use the commands inside your database container itself, borgmatic
-supports that too. Just configure borgmatic to `exec` into your container to
-run the dump command.
+supports that too. For that, configure borgmatic to `exec` into your container
+to run the dump command.
 
 For instance, if using Docker and PostgreSQL, something like this might work:
 
@@ -459,9 +459,9 @@ special files (and symlinks to them) that Borg may get stuck on. Even so,
 there are still potential edge cases in which applications on your system
 create new special files *after* borgmatic constructs its exclude list,
 resulting in Borg hangs. If that occurs, you can resort to manually excluding
-those files. And if you explicitly set the `read-special` option to `true`,
+those files. And if you explicitly set the `read_special` option to `true`,
 borgmatic will opt you out of the auto-exclude feature entirely, but will
-still instruct Borg to consume special files—you will just be on your own to
+still instruct Borg to consume special files—and you will be on your own to
 exclude them. <span class="minilink minilink-addedin">Prior to version
 1.7.3</span>Special files were not auto-excluded, and you were responsible for
 excluding them yourself. Common directories to exclude are `/dev` and `/run`,
@@ -472,8 +472,8 @@ meant Borg wouldn't cross filesystem boundaries when looking for files to
 backup. When borgmatic was running in a container, this often required a
 work-around to explicitly add each mounted backup volume to
 `source_directories` instead of relying on Borg to include them implicitly via
-a parent directory. However, as of borgmatic 1.8.15, `one_file_system` is no
-longer auto-enabled and such work-arounds aren't necessary.
+a parent directory. But as of borgmatic 1.8.15, `one_file_system` is no longer
+auto-enabled and such work-arounds aren't necessary.
 
 
 ### Manual restoration
@@ -513,9 +513,9 @@ With PostgreSQL, MariaDB, and MySQL, if you're getting authentication errors
 when borgmatic tries to connect to your database, a natural reaction is to
 increase your borgmatic verbosity with `--verbosity 2` and go looking in the
 logs. You'll notice though that your database password does not show up in the
-logs. This is likely not the cause of the authentication problem unless you
-mistyped your password, however; borgmatic passes your password to the
-database via an environment variable that does not appear in the logs.
+logs. But this is likely not the cause of the authentication problem unless
+you mistyped your password; borgmatic passes your password to the database via
+an environment variable that does not appear in the logs.
 
 The cause of an authentication error is often on the database side—in the
 configuration of which users are allowed to connect and how they are

@@ -9,7 +9,7 @@ eleventyNavigation:
 
 To get set up to develop on borgmatic, first [`install
 pipx`](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#installation)
-to make managing your borgmatic environment easy without impacting other
+to make managing your borgmatic environment easier without impacting other
 Python applications on your system.
 
 Then, clone borgmatic via HTTPS or SSH:

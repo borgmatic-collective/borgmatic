@@ -1881,8 +1881,8 @@ properties:
                     Allows setting custom labels for the logging stream. At
                     least one label is required. "__hostname" gets replaced by
                     the machine hostname automatically. "__config" gets replaced
-                    by just the name of the configuration file. "__config_path"
-                    gets replaced by the full path of the configuration file.
+                    by the name of the configuration file. "__config_path" gets
+                    replaced by the full path of the configuration file.
                 example:
                     app: "borgmatic"
                     config: "__config"

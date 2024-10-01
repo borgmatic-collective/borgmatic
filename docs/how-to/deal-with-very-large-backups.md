@@ -108,8 +108,8 @@ for more information.
 The various consistency checks all have trade-offs around speed and
 thoroughness, but most of them don't even look at your original source
 files—arguably one important way to ensure your backups contain the files
-you'll want to restore in the case of catastrophe (or just an accidentally
-deleted file). Because if something goes wrong with your source files, most
+you'll want to restore in the case of catastrophe (or an accidentally deleted
+file). Because if something goes wrong with your source files, most
 consistency checks will still pass with flying colors and you won't discover
 there's a problem until you go to restore.
 
@@ -119,10 +119,10 @@ check comes in. This check actually compares your source file counts and data
 against those in the latest archive, potentially catching problems like
 incorrect excludes, inadvertent deletes, files changed by malware, etc.
 
-However, because an exhaustive comparison of all source files against the
-latest archive might be too slow, the spot check supports *sampling* a
-percentage of your source files for the comparison, ensuring they fall within
-configured tolerances.
+But because an exhaustive comparison of all source files against the latest
+archive might be too slow, the spot check supports *sampling* a percentage of
+your source files for the comparison, ensuring they fall within configured
+tolerances.
 
 Here's how it works. Start by installing the `xxhash` OS package if you don't
 already have it, so the spot check can run the `xxh64sum` command and
@@ -266,11 +266,11 @@ checks:
 Each day of the week is specified in the current locale (system
 language/country settings). `weekend` and `weekday` are also accepted.
 
-Just like with `frequency`, borgmatic only makes a best effort to run checks
-on the given day of the week. For instance, if you run `borgmatic check`
-daily, then every day borgmatic will have an opportunity to determine whether
-your checks are configured to run on that day. If they are, then the checks
-run. If not, they are skipped.
+As with `frequency`, borgmatic only makes a best effort to run checks on the
+given day of the week. For instance, if you run `borgmatic check` daily, then
+every day borgmatic will have an opportunity to determine whether your checks
+are configured to run on that day. If they are, then the checks run. If not,
+they are skipped.
 
 For instance, with the above configuration, if borgmatic is run on a Saturday,
 the `repository` check will run. But on a Monday? The repository check will

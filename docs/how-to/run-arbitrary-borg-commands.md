@@ -92,7 +92,7 @@ string instead of trying to resolve it from borgmatic's shell where it's not
 yet set.
 
 Or if you don't need borgmatic to resolve an archive name like `latest`, you
-can just do:
+can do:
 
 ```bash
 borgmatic borg list ::your-actual-archive-name
