@@ -431,7 +431,7 @@ def make_base_create_command(
         + (('--compression', compression) if compression else ())
         + upload_ratelimit_flags
         + (('--upload-buffer', str(upload_buffer_size)) if upload_buffer_size else ())
-        + (('--one-file-system',) if config.get('one_file_system') or stream_processes else ())
+        + (('--one-file-system',) if config.get('one_file_system') else ())
         + numeric_ids_flags
         + atime_flags
         + (('--noctime',) if config.get('ctime') is False else ())

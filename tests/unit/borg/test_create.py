@@ -989,7 +989,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
         )
     )
 
-    assert create_flags == ('borg', 'create', '--one-file-system', '--read-special')
+    assert create_flags == ('borg', 'create', '--read-special')
     assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
     assert not pattern_file
     assert exclude_file
@@ -1031,7 +1031,7 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
         )
     )
 
-    assert create_flags == ('borg', 'create', '--one-file-system', '--read-special')
+    assert create_flags == ('borg', 'create', '--read-special')
     assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
     assert not pattern_file
     assert not exclude_file
@@ -1750,7 +1750,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (
-            ('borg', 'create', '--one-file-system', '--read-special'),
+            ('borg', 'create', '--read-special'),
             REPO_ARCHIVE_WITH_PATHS,
             flexmock(),
             flexmock(),
@@ -1760,7 +1760,6 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     create_command = (
         'borg',
         'create',
-        '--one-file-system',
         '--read-special',
         '--progress',
     ) + REPO_ARCHIVE_WITH_PATHS
