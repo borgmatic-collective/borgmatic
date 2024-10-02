@@ -300,7 +300,7 @@ def make_parsers():
         '--config',
         dest='config_paths',
         action='append',
-        help=f"Configuration filename or directory, can specify flag multiple times, defaults to: {' '.join(unexpanded_config_paths)}",
+        help=f"Configuration filename or directory, can specify flag multiple times, defaults to: -c {' -c '.join(unexpanded_config_paths)}",
     )
     global_group.add_argument(
         '-n',

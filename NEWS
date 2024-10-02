@@ -1,4 +1,5 @@
 1.8.15.dev0
+ * #919: Clarify the command-line help for the "--config" flag.
  * #918: BREAKING: When databases are configured, don't auto-enable the "one_file_system" option,
    as existing auto-excludes of special files should be sufficient to prevent Borg from hanging on
    them. But if this change causes problems for you, you can always enable "one_file_system"
