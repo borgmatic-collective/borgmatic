@@ -82,6 +82,25 @@ ticket](https://torsion.org/borgmatic/#issues) for help with upgrading any old
 INI-style configuration files you may have.
 
 
+### Versioning and breaking changes
+
+To avoid version number bloat, borgmatic doesn't follow traditional semantic
+versioning. But here's how borgmatic versioning generally works:
+
+ * Major version bumps (e.g., 1 to 2): Major breaking changes. Configuration
+   file formats might change, deprecated features may be removed entirely, etc.
+ * Minor version bumps (e.g., 1.8 to 1.9): Medium breaking changes. Depending
+   on the features you use, this may be a drop-in replacement. But read the
+   release notes to make sure.
+ * Patch version bumps (e.g., 1.8.14 to 1.8.15): Minor breaking changes. These
+   include, for instance, bug fixes that are technically breaking and may only
+   affects a small subset of users.
+
+Each breaking change is prefixed with "BREAKING:" in [borgmatic's release
+notes](https://projects.torsion.org/borgmatic-collective/borgmatic/releases),
+so there should hopefully be no surprises.
+
+
 ## Upgrading Borg
 
 To upgrade to a new version of Borg, you can generally install a new version
