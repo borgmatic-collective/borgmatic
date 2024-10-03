@@ -133,7 +133,7 @@ For Borg 1.x, use a shell pattern for the `match_archives` value and see the
 [Borg patterns
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns)
 for more information. For Borg 2.x, see the [match archives
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b8/usage/help.html#borg-help-match-archives).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b12/usage/help.html#borg-help-match-archives).
 
 Some borgmatic command-line actions also have a `--match-archives` flag that
 overrides both the auto-matching behavior and the `match_archives`
