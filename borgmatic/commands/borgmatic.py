@@ -611,6 +611,9 @@ def log_record(suppress_log=False, **kwargs):
     return record
 
 
+BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE = 62
+
+
 def log_error_records(
     message, error=None, levelno=logging.CRITICAL, log_command_error_output=False
 ):
@@ -651,6 +654,13 @@ def log_error_records(
                 )
 
         yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
+
+        if error.returncode == BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE:
+            yield log_record(
+                levelno=levelno,
+                levelname=level_name,
+                msg='\nTo work around this, set either the "relocated_repo_access_is_ok" or "unknown_unencrypted_repo_access_is_ok" option to "true", as appropriate.',
+            )
     except (ValueError, OSError) as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
         yield log_record(levelno=levelno, levelname=level_name, msg=str(error))

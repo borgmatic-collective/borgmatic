@@ -1,4 +1,6 @@
 1.8.15.dev0
+ * #914: Fix a confusing apparent hang when when the repository location changes, and instead
+   show a helpful error message.
  * #919: Clarify the command-line help for the "--config" flag.
  * #919: Document a policy for versioning and breaking changes:
    https://torsion.org/borgmatic/docs/how-to/upgrade/#versioning-and-breaking-changes

@@ -1168,6 +1168,24 @@ def test_log_error_records_generates_output_logs_for_called_process_error_with_s
     assert any(log for log in logs if 'error output' in str(log))
 
 
+def test_log_error_records_generates_work_around_output_logs_for_called_process_error_with_repository_access_aborted_exit_code():
+    flexmock(module).should_receive('log_record').replace_with(dict).times(4)
+    flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
+
+    logs = tuple(
+        module.log_error_records(
+            'Error',
+            subprocess.CalledProcessError(
+                module.BORG_REPOSITORY_ACCESS_ABORTED_EXIT_CODE, 'ls', 'error output'
+            ),
+        )
+    )
+
+    assert {log['levelno'] for log in logs} == {logging.CRITICAL}
+    assert any(log for log in logs if 'error output' in str(log))
+    assert any(log for log in logs if 'To work around this' in str(log))
+
+
 def test_log_error_records_splits_called_process_error_with_multiline_ouput_into_multiple_logs():
     flexmock(module).should_receive('log_record').replace_with(dict).times(4)
     flexmock(module.logger).should_receive('getEffectiveLevel').and_return(logging.WARNING)
