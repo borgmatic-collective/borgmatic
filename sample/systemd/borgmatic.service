@@ -9,6 +9,10 @@ ConditionACPower=true
 [Service]
 Type=oneshot
 
+# Load encrypted credentials.
+LoadCredentialEncrypted=borgmatic:/etc/credstore.encrypted/borgmatic/
+LoadCredentialEncrypted=borgmatic.pw
+
 # Security settings for systemd running as root, optional but recommended to improve security. You
 # can disable individual settings if they cause problems for your use case. For more details, see
 # the systemd manual: https://www.freedesktop.org/software/systemd/man/systemd.exec.html

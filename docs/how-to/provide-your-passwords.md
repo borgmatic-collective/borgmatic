@@ -29,6 +29,37 @@ For example, to ask the *Pass* password manager to provide the passphrase:
 encryption_passcommand: pass path/to/borg-repokey
 ```
 
+### Using systemd service credentials
+
+Borgmatic supports using encrypted [credentials](https://systemd.io/CREDENTIALS/).
+
+Save your password as an encrypted credential to `/etc/credstore.encrypted/borgmatic.pw`, e.g.,
+
+```
+# systemd-ask-password -n | systemd-creds encrypt - /etc/credstore.encrypted/borgmatic.pw
+```
+
+Note that the name `borgmatic.pw` is hardcoded in the systemd service file.
+
+If you use multiple different passwords, save them as encrypted credentials to `/etc/credstore.encrypted/borgmatic/`, e.g.,
+
+```
+# mkdir /etc/credstore.encrypted/borgmatic
+# systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_backupserver1 - /etc/credstore.encrypted/borgmatic/backupserver1
+# systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_pw2 - /etc/credstore.encrypted/borgmatic/pw2
+...
+```
+Ensure that the file names, (e.g. `backupserver1`) match the corresponding part of
+the `--name` option *after* the underscore (_). The `borgmatic` folder is hardcoded in the systemd service file.
+
+Then uncomment or use one of the following in your configuration file. Adjust `borgmatic_backupserver1`
+according to the name given to the credential.
+
+```yaml
+encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw"
+encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1"
+```
+
 ### Environment variable interpolation
 
 <span class="minilink minilink-addedin">New in version 1.6.4</span> borgmatic
