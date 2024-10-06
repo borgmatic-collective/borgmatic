@@ -92,7 +92,7 @@ versioning. But here's how borgmatic versioning generally works:
  * Minor version bumps (e.g., 1.8 to 1.9): Medium breaking changes. Depending
    on the features you use, this may be a drop-in replacement. But read the
    release notes to make sure.
- * Patch version bumps (e.g., 1.8.14 to 1.8.15): Minor breaking changes. These
+ * Patch version bumps (e.g., 1.8.13 to 1.8.14): Minor breaking changes. These
    include, for instance, bug fixes that are technically breaking and may only
    affects a small subset of users.
 
@@ -112,7 +112,7 @@ Borg releases require additional steps that borgmatic can help with.
 
 ### Borg 1.2 to 2.0
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
+<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
 Upgrading Borg from 1.2 to 2.0 requires manually upgrading your existing Borg
 1 repositories before use with Borg or borgmatic. Here's how you can
 accomplish that.

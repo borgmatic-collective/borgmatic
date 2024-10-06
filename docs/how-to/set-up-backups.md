@@ -214,7 +214,7 @@ command like the following with Borg 1.x:
 sudo borgmatic init --encryption repokey
 ```
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
+<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
 Or, with Borg 2.x:
 
 ```bash

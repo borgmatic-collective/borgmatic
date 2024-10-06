@@ -62,7 +62,7 @@ for available values.
 
 (No borgmatic `list` or `info` actions? Upgrade borgmatic!)
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.8.15</span>
+<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
 There are also `repo-list` and `repo-info` actions for displaying repository
 information with Borg 2.x:
 

@@ -1,4 +1,4 @@
-1.8.15.dev0
+1.9.0.dev0
  * #914: Fix a confusing apparent hang when when the repository location changes, and instead
    show a helpful error message.
  * #919: Clarify the command-line help for the "--config" flag.
@@ -9,8 +9,8 @@
    them. But if this change causes problems for you, you can always enable "one_file_system"
    explicitly.
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
- * #915: Rename repository actions like "rcreate" to more explicit names like "repo-create" for
-   compatibility with recent changes in Borg 2.0.0b10.
+ * #915: BREAKING: Rename repository actions like "rcreate" to more explicit names like
+   "repo-create" for compatibility with recent changes in Borg 2.0.0b10.
 
 1.8.14
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.
