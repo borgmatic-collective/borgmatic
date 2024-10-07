@@ -34,9 +34,14 @@ test in the form of a borgmatic hook to see if backups should proceed or not.
 
 The way the test works is that if any of your hook commands return a special
 exit status of 75, that indicates to borgmatic that it's a temporary failure,
-and borgmatic should skip all subsequent actions for that configuration file.
-If you return any other status, then it's a standard success or error. (Zero is
-success; anything else other than 75 is an error).
+and borgmatic should skip all subsequent actions for the current repository.
+
+<span class="minilink minilink-addedin">Prior to version 1.9.0</span> Soft
+failures skipped subsequent actions for *all* repositories in the
+configuration file, rather than just for the current repository.
+
+If you return any status besides 75, then it's a standard success or error.
+(Zero is success; anything else other than 75 is an error).
 
 So for instance, if you have an external drive that's only sometimes mounted,
 declare its repository in its own [separate configuration
@@ -71,9 +76,15 @@ option in the `hooks:` section of your configuration.
 
 What this does is check if the `findmnt` command errors when probing for a
 particular mount point. If it does error, then it returns exit code 75 to
-borgmatic. borgmatic logs the soft failure, skips all further actions in that
-configurable file, and proceeds onward to any other borgmatic configuration
-files you may have.
+borgmatic. borgmatic logs the soft failure, skips all further actions for the
+current repository, and proceeds onward to any other repositories and/or
+configuration files you may have.
+
+If you'd prefer not to use a separate configuration file, and you'd rather
+have multiple repositories in a single configuration file, you can make your
+`before_backup` soft failure test [vary by
+repository](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
+That might require calling out to a separate script though.
 
 Note that `before_backup` only runs on the `create` action. See below about
 optionally using `before_actions` instead.
@@ -121,13 +132,16 @@ There are some caveats you should be aware of with this feature.
    executing. So, like a standard error, it is an "early out". Unlike a standard
    error, borgmatic does not display it in angry red text or consider it a
    failure.
- * The soft failure only applies to the scope of a single borgmatic
-   configuration file. So put anything that you don't want soft-failed, like
-   always-online cloud backups, in separate configuration files from your
-   soft-failing repositories.
- * The soft failure doesn't have to apply to a repository. You can even perform
-   a test to make sure that individual source directories are mounted and
-   available. Use your imagination!
+ * Any given soft failure only applies to the a single borgmatic repository
+   (as of borgmatic 1.9.0). So if you have other repositories you don't want
+   soft-failed, then make your soft fail test [vary by
+   repository](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)—or
+   put anything that you don't want soft-failed (like always-online cloud
+   backups) in separate configuration files from your soft-failing
+   repositories.
+ * The soft failure doesn't have to test anything related to a repository. You
+   can even perform a test to make sure that individual source directories are
+   mounted and available. Use your imagination!
  * The soft failure feature also works for before/after hooks for other
    actions as well. But it is not implemented for `before_everything` or
    `after_everything`.

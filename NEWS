@@ -1,16 +1,18 @@
 1.9.0.dev0
  * #914: Fix a confusing apparent hang when when the repository location changes, and instead
    show a helpful error message.
- * #919: Clarify the command-line help for the "--config" flag.
- * #919: Document a policy for versioning and breaking changes:
-   https://torsion.org/borgmatic/docs/how-to/upgrade/#versioning-and-breaking-changes
+ * #915: BREAKING: Rename repository actions like "rcreate" to more explicit names like
+   "repo-create" for compatibility with recent changes in Borg 2.0.0b10.
  * #918: BREAKING: When databases are configured, don't auto-enable the "one_file_system" option,
    as existing auto-excludes of special files should be sufficient to prevent Borg from hanging on
    them. But if this change causes problems for you, you can always enable "one_file_system"
    explicitly.
+ * #919: Clarify the command-line help for the "--config" flag.
+ * #919: Document a policy for versioning and breaking changes:
+   https://torsion.org/borgmatic/docs/how-to/upgrade/#versioning-and-breaking-changes
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
- * #915: BREAKING: Rename repository actions like "rcreate" to more explicit names like
-   "repo-create" for compatibility with recent changes in Borg 2.0.0b10.
+ * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
+   all repositories in the configuration file.
 
 1.8.14
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.

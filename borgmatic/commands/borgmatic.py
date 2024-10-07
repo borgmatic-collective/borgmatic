@@ -172,7 +172,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     continue
 
                 if command.considered_soft_failure(config_filename, error):
-                    break
+                    continue
 
                 yield from log_error_records(
                     f'{repository.get("label", repository["path"])}: Error running actions for repository',

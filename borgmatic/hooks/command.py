@@ -90,7 +90,7 @@ def considered_soft_failure(config_filename, error):
 
     if exit_code == SOFT_FAIL_EXIT_CODE:
         logger.info(
-            f'{config_filename}: Command hook exited with soft failure exit code ({SOFT_FAIL_EXIT_CODE}); skipping remaining actions',
+            f'{config_filename}: Command hook exited with soft failure exit code ({SOFT_FAIL_EXIT_CODE}); skipping remaining repository actions',
         )
         return True
 
