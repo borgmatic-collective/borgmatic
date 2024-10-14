@@ -46,3 +46,7 @@ packages = ["borgmatic"]
 [tool.black]
 line-length = 100
 skip-string-normalization = true
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --ignore=tests/end-to-end"
