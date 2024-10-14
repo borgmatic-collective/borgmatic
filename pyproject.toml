@@ -50,3 +50,9 @@ skip-string-normalization = true
 [tool.pytest.ini_options]
 testpaths = "tests"
 addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --ignore=tests/end-to-end"
+
+[tool.isort]
+profile = "black"
+known_first_party = "borgmatic"
+line_length = 100
+skip = ".tox"
