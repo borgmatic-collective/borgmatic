@@ -1,3 +1,48 @@
+[project]
+name = "borgmatic"
+version = "1.9.0.dev0"
+authors = [
+  { name="Dan Helfman", email="witten@torsion.org" },
+]
+description = "Simple, configuration-driven backup software for servers and workstations"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python",
+    "Topic :: Security :: Cryptography",
+    "Topic :: System :: Archiving :: Backup",
+]
+dependencies = [
+  "colorama>=0.4.1,<0.5",
+  "jsonschema",
+  "packaging",
+  "requests",
+  "ruamel.yaml>0.15.0",
+]
+
+[project.scripts]
+borgmatic = "borgmatic.commands.borgmatic:main"
+generate-borgmatic-config = "borgmatic.commands.generate_config:main"
+validate-borgmatic-config = "borgmatic.commands.validate_config:main"
+
+[project.optional-dependencies]
+Apprise = ["apprise"]
+
+[project.urls]
+Homepage = "https://torsion.org/borgmatic"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+# allow looking for conf in setup.{cfg,py}
+#build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["borgmatic"]
+
 [tool.black]
 line-length = 100
 skip-string-normalization = true
