@@ -56,3 +56,6 @@ profile = "black"
 known_first_party = "borgmatic"
 line_length = 100
 skip = ".tox"
+
+[tool.codespell]
+skip = ".git,.tox,build"
