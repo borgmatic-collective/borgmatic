@@ -1602,6 +1602,88 @@ properties:
                 example:
                     - start
                     - finish
+    zabbix:
+        type: object
+        additionalProperties: false
+        properties:
+            itemid:
+                type: integer
+                description: |
+                    The itemid to publish to
+                    for details.
+                example: 55105
+            host:
+                type: string
+                description: |
+                    Host name where the item is stored.
+                    Required if 'itemid' is not set
+                example: borg-server
+            key:
+                type: string
+                description: |
+                    Key of the host where the item is stored.
+                    Required if 'itemid' is not set
+                example: borg.status
+            server:
+                type: string
+                description: |
+                    The address of your self-hosted zabbix instance.
+                example: https://zabbix.your-domain.com
+            username:
+                type: string
+                description: |
+                    The username used for authentication.
+                example: testuser
+            password:
+                type: string
+                description: |
+                    The password used for authentication.
+                example: fakepassword
+            api_key:
+                type: string
+                description: |
+                    The api_key used for authentication.
+                example: fakekey
+            start:
+                type: object
+                properties:
+                    value:
+                        type: string
+                        description: |
+                            The string to set the item value to on start.
+                        example: STARTED
+            finish:
+                type: object
+                properties:
+                    value:
+                        type: string
+                        description: |
+                            The string to set the item value to on finish.
+                        example: FINISH
+            fail:
+                type: object
+                properties:
+                    value:
+                        type: string
+                        description: |
+                            The string to set the item value to on fail.
+                        example: ERROR
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", and/or "fail". Defaults to pinging for failure
+                    only.
+                example:
+                    - start
+                    - finish
     apprise:
         type: object
         required: ['services']
