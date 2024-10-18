@@ -601,6 +601,9 @@ zabbix:
         - fail
 ```
 
+<span class="minilink minilink-addedin">Zabbix 7.0+</span>
+This hook requires the Zabbix server be running version 7.0+
+
 <span class="minilink minilink-addedin">Authentication Methods</span>
 Authentication can be accomplished via `api_key` or `username` and `password`. 
 If both are declared, `api_key` will be chosen.
