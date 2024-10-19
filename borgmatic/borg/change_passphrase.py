@@ -43,11 +43,19 @@ def change_passphrase(
         logger.info(f'{repository_path}: Skipping change password (dry run)')
         return
 
+    # If the original passphrase is set programmatically, then Borg won't prompt for a new one! So
+    # don't give Borg any passphrase, and it'll ask the user for both old and new ones.
+    config_without_passphrase = {
+        option_name: value
+        for (option_name, value) in config.items()
+        if option_name not in ('encryption_passphrase', 'encryption_passcommand')
+    }
+
     borgmatic.execute.execute_command(
         full_command,
         output_file=borgmatic.execute.DO_NOT_CAPTURE,
         output_log_level=logging.ANSWER,
-        extra_environment=environment.make_environment(config),
+        extra_environment=environment.make_environment(config_without_passphrase),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
