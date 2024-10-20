@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+import borgmatic.config.options
 import borgmatic.config.validate
 from borgmatic.borg import environment, feature, flags, repo_list
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -58,8 +59,8 @@ def extract_last_archive_dry_run(
 
     execute_command(
         full_extract_command,
-        working_directory=None,
         extra_environment=borg_environment,
+        working_directory=borgmatic.config.options.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
@@ -112,6 +113,8 @@ def extract_archive(
             *(len(tuple(piece for piece in path.split(os.path.sep) if piece)) - 1 for path in paths)
         )
 
+    working_directory = borgmatic.config.options.get_working_directory(config)
+
     full_command = (
         (local_path, 'extract')
         + (('--remote-path', remote_path) if remote_path else ())
@@ -126,9 +129,13 @@ def extract_archive(
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
-            # Make the repository path absolute so the working directory changes below don't
-            # prevent Borg from finding the repo.
-            borgmatic.config.validate.normalize_repository_path(repository),
+            # Make the repository path absolute so the destination directory
+            # used below via changing the working directory doesn't prevent
+            # Borg from finding the repo. But also apply the user's configured
+            # working directory (if any) to the repo path.
+            borgmatic.config.validate.normalize_repository_path(
+                os.path.join(working_directory or '', repository)
+            ),
             archive,
             local_borg_version,
         )
@@ -137,6 +144,9 @@ def extract_archive(
 
     borg_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
+    full_destination_path = (
+        os.path.join(working_directory or '', destination_path) if destination_path else None
+    )
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
@@ -144,8 +154,8 @@ def extract_archive(
         return execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
-            working_directory=destination_path,
             extra_environment=borg_environment,
+            working_directory=full_destination_path,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -155,9 +165,9 @@ def extract_archive(
         return execute_command(
             full_command,
             output_file=subprocess.PIPE,
-            working_directory=destination_path,
             run_to_completion=False,
             extra_environment=borg_environment,
+            working_directory=full_destination_path,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -166,8 +176,8 @@ def extract_archive(
     # if the restore paths don't exist in the archive.
     execute_command(
         full_command,
-        working_directory=destination_path,
         extra_environment=borg_environment,
+        working_directory=full_destination_path,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
     )

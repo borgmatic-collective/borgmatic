@@ -7,6 +7,7 @@ import stat
 import tempfile
 import textwrap
 
+import borgmatic.config.options
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, state
 from borgmatic.execute import (
@@ -19,26 +20,28 @@ from borgmatic.execute import (
 logger = logging.getLogger(__name__)
 
 
-def expand_directory(directory):
+def expand_directory(directory, working_directory):
     '''
     Given a directory path, expand any tilde (representing a user's home directory) and any globs
     therein. Return a list of one or more resulting paths.
     '''
-    expanded_directory = os.path.expanduser(directory)
+    expanded_directory = os.path.join(working_directory or '', os.path.expanduser(directory))
 
     return glob.glob(expanded_directory) or [expanded_directory]
 
 
-def expand_directories(directories):
+def expand_directories(directories, working_directory=None):
     '''
-    Given a sequence of directory paths, expand tildes and globs in each one. Return all the
-    resulting directories as a single flattened tuple.
+    Given a sequence of directory paths and an optional working directory, expand tildes and globs
+    in each one. Return all the resulting directories as a single flattened tuple.
     '''
     if directories is None:
         return ()
 
     return tuple(
-        itertools.chain.from_iterable(expand_directory(directory) for directory in directories)
+        itertools.chain.from_iterable(
+            expand_directory(directory, working_directory) for directory in directories
+        )
     )
 
 
@@ -53,17 +56,19 @@ def expand_home_directories(directories):
     return tuple(os.path.expanduser(directory) for directory in directories)
 
 
-def map_directories_to_devices(directories):
+def map_directories_to_devices(directories, working_directory=None):
     '''
-    Given a sequence of directories, return a map from directory to an identifier for the device on
-    which that directory resides or None if the path doesn't exist.
+    Given a sequence of directories and an optional working directory, return a map from directory
+    to an identifier for the device on which that directory resides or None if the path doesn't
+    exist.
 
     This is handy for determining whether two different directories are on the same filesystem (have
     the same device identifier).
     '''
     return {
-        directory: os.stat(directory).st_dev if os.path.exists(directory) else None
+        directory: os.stat(full_directory).st_dev if os.path.exists(full_directory) else None
         for directory in directories
+        for full_directory in (os.path.join(working_directory or '', directory),)
     }
 
 
@@ -318,12 +323,8 @@ def check_all_source_directories_exist(source_directories, working_directory=Non
         for source_directory in source_directories
         if not all(
             [
-                os.path.exists(directory)
-                for directory in expand_directory(
-                    os.path.join(working_directory, source_directory)
-                    if working_directory
-                    else source_directory
-                )
+                os.path.exists(os.path.join(working_directory or '', directory))
+                for directory in expand_directory(source_directory, working_directory)
             ]
         )
     ]
@@ -356,10 +357,7 @@ def make_base_create_command(
     (base Borg create command flags, Borg create command positional arguments, open pattern file
     handle, open exclude file handle).
     '''
-    try:
-        working_directory = os.path.expanduser(config.get('working_directory'))
-    except TypeError:
-        working_directory = None
+    working_directory = borgmatic.config.options.get_working_directory(config)
 
     if config.get('source_directories_must_exist', False):
         check_all_source_directories_exist(
@@ -371,11 +369,15 @@ def make_base_create_command(
             expand_directories(
                 tuple(config.get('source_directories', ()))
                 + borgmatic_source_directories
-                + tuple(config_paths if config.get('store_config_files', True) else ())
+                + tuple(config_paths if config.get('store_config_files', True) else ()),
+                working_directory=working_directory,
             )
         ),
         additional_directory_devices=map_directories_to_devices(
-            expand_directories(pattern_root_directories(config.get('patterns')))
+            expand_directories(
+                pattern_root_directories(config.get('patterns')),
+                working_directory=working_directory,
+            )
         ),
     )
 
@@ -522,8 +524,11 @@ def create_archive(
     create command while also triggering the given processes to produce output.
     '''
     borgmatic.logger.add_custom_log_levels()
+
+    working_directory = borgmatic.config.options.get_working_directory(config)
     borgmatic_source_directories = expand_directories(
-        collect_borgmatic_source_directories(config.get('borgmatic_source_directory'))
+        collect_borgmatic_source_directories(config.get('borgmatic_source_directory')),
+        working_directory=working_directory,
     )
 
     (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
@@ -554,11 +559,6 @@ def create_archive(
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
     output_file = DO_NOT_CAPTURE if progress else None
-
-    try:
-        working_directory = os.path.expanduser(config.get('working_directory'))
-    except TypeError:
-        working_directory = None
 
     borg_environment = environment.make_environment(config)
 

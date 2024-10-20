@@ -9,18 +9,26 @@ from ..test_verbosity import insert_logging_mock
 
 
 def insert_execute_command_mock(
-    command, config=None, output_file=module.borgmatic.execute.DO_NOT_CAPTURE, borg_exit_codes=None
+    command,
+    config=None,
+    output_file=module.borgmatic.execute.DO_NOT_CAPTURE,
+    working_directory=None,
+    borg_exit_codes=None,
 ):
     borgmatic.logger.add_custom_log_levels()
 
     flexmock(module.environment).should_receive('make_environment').with_args(config or {}).once()
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        working_directory,
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_file=output_file,
         output_log_level=module.logging.ANSWER,
+        extra_environment=None,
+        working_directory=working_directory,
         borg_local_path=command[0],
         borg_exit_codes=borg_exit_codes,
-        extra_environment=None,
     ).once()
 
 
@@ -161,6 +169,9 @@ def test_change_passphrase_with_log_debug_calls_borg_with_debug_flags():
 
 def test_change_passphrase_with_dry_run_skips_borg_call():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
     module.change_passphrase(
@@ -185,6 +196,24 @@ def test_change_passphrase_calls_borg_without_passphrase():
             'encryption_passcommand': 'getpass',
             'option': 'foo',
         },
+        local_borg_version='1.2.3',
+        change_passphrase_arguments=flexmock(),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+    )
+
+
+def test_change_passphrase_calls_borg_with_working_directory():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    config = {'working_directory': '/working/dir'}
+    insert_execute_command_mock(
+        ('borg', 'key', 'change-passphrase', 'repo'),
+        config=config,
+        working_directory='/working/dir',
+    )
+
+    module.change_passphrase(
+        repository_path='repo',
+        config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
         global_arguments=flexmock(dry_run=False, log_json=False),

@@ -26,14 +26,20 @@ def insert_repo_info_command_not_found_mock():
     )
 
 
-def insert_repo_create_command_mock(repo_create_command, borg_exit_codes=None, **kwargs):
+def insert_repo_create_command_mock(
+    repo_create_command, working_directory=None, borg_exit_codes=None, **kwargs
+):
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        working_directory,
+    )
     flexmock(module).should_receive('execute_command').with_args(
         repo_create_command,
         output_file=module.DO_NOT_CAPTURE,
+        extra_environment=None,
+        working_directory=working_directory,
         borg_local_path=repo_create_command[0],
         borg_exit_codes=borg_exit_codes,
-        extra_environment=None,
     ).once()
 
 
@@ -89,6 +95,9 @@ def test_create_repository_raises_for_borg_repo_create_error():
         )
     )
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command').and_raise(
         module.subprocess.CalledProcessError(2, 'borg repo_create')
     )
@@ -448,6 +457,29 @@ def test_create_repository_with_extra_borg_options_calls_borg_with_extra_options
         dry_run=False,
         repository_path='repo',
         config={'extra_borg_options': {'repo-create': '--extra --options'}},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
+        encryption_mode='repokey',
+    )
+
+
+def test_create_repository_calls_borg_with_working_directory():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(
+        REPO_CREATE_COMMAND + ('--repo', 'repo'), working_directory='/working/dir'
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={'working_directory': '/working/dir'},
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',

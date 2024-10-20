@@ -34,11 +34,15 @@ def test_resolve_archive_name_passes_through_non_latest_archive_name():
 def test_resolve_archive_name_calls_borg_with_flags():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
-        extra_environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
+        extra_environment=None,
+        working_directory=None,
     ).and_return(expected_archive + '\n')
 
     assert (
@@ -56,9 +60,13 @@ def test_resolve_archive_name_calls_borg_with_flags():
 def test_resolve_archive_name_with_log_info_calls_borg_without_info_flag():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -79,9 +87,13 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_flag():
 def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_flag():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -102,9 +114,13 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_flag():
 def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg1', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg1',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -125,10 +141,14 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
 def test_resolve_archive_name_with_exit_codes_calls_borg_using_them():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     borg_exit_codes = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
     ).and_return(expected_archive + '\n')
@@ -148,9 +168,13 @@ def test_resolve_archive_name_with_exit_codes_calls_borg_using_them():
 def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags():
     expected_archive = 'archive-name'
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--remote-path', 'borg1') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -170,9 +194,13 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags
 
 def test_resolve_archive_name_without_archives_raises():
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return('')
@@ -191,9 +219,13 @@ def test_resolve_archive_name_with_log_json_calls_borg_with_log_json_flags():
     expected_archive = 'archive-name'
 
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--log-json') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -214,9 +246,13 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_flags():
     expected_archive = 'archive-name'
 
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', '--lock-wait', 'okay') + BORG_LIST_LATEST_ARGUMENTS,
         extra_environment=None,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return(expected_archive + '\n')
@@ -226,6 +262,32 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_flags():
             'repo',
             'latest',
             config={'lock_wait': 'okay'},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
+        )
+        == expected_archive
+    )
+
+
+def test_resolve_archive_name_calls_borg_with_working_directory():
+    expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        '/working/dir',
+    )
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list') + BORG_LIST_LATEST_ARGUMENTS,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+        extra_environment=None,
+        working_directory='/working/dir',
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name(
+            'repo',
+            'latest',
+            config={'working_directory': '/working/dir'},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
         )
@@ -594,6 +656,9 @@ def test_list_repository_calls_two_commands():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module).should_receive('execute_command_and_capture_output').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').once()
@@ -611,6 +676,9 @@ def test_list_repository_with_json_calls_json_command_only():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('make_repo_list_command')
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     json_output = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(json_output)
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
@@ -668,4 +736,37 @@ def test_make_repo_list_command_with_date_based_matching_calls_borg_with_date_ba
         '--oldest',
         '1w',
         'repo',
+    )
+
+
+def test_list_repository_calls_borg_with_working_directory():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('make_repo_list_command')
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        '/working/dir',
+    )
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        full_command=object,
+        extra_environment=object,
+        working_directory='/working/dir',
+        borg_local_path=object,
+        borg_exit_codes=object,
+    ).once()
+    flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
+    flexmock(module).should_receive('execute_command').with_args(
+        full_command=object,
+        output_log_level=object,
+        extra_environment=object,
+        working_directory='/working/dir',
+        borg_local_path=object,
+        borg_exit_codes=object,
+    ).once()
+
+    module.list_repository(
+        repository_path='repo',
+        config={'working_directory': '/working/dir'},
+        local_borg_version='1.2.3',
+        repo_list_arguments=argparse.Namespace(json=False),
+        global_arguments=flexmock(),
     )

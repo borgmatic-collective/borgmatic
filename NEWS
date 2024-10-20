@@ -1,4 +1,8 @@
 1.9.0.dev0
+ * #609: Fix the glob expansion of "source_directories" values to respect the "working_directory"
+   option.
+ * #609: BREAKING: Apply the "working_directory" option to all actions, not just "create". This
+   includes repository paths, destination paths, mount points, etc.
  * #914: Fix a confusing apparent hang when when the repository location changes, and instead
    show a helpful error message.
  * #915: BREAKING: Rename repository actions like "rcreate" to more explicit names like

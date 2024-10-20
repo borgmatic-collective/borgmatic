@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.config.options
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command, execute_command_and_capture_output
@@ -49,12 +50,14 @@ def display_repository_info(
     )
 
     extra_environment = environment.make_environment(config)
+    working_directory = borgmatic.config.options.get_working_directory(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
     if repo_info_arguments.json:
         return execute_command_and_capture_output(
             full_command,
             extra_environment=extra_environment,
+            working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -63,6 +66,7 @@ def display_repository_info(
             full_command,
             output_log_level=logging.ANSWER,
             extra_environment=extra_environment,
+            working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )

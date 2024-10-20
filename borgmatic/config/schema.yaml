@@ -58,9 +58,10 @@ properties:
     working_directory:
         type: string
         description: |
-            Working directory for the "borg create" command. Tildes are
-            expanded. Useful for backing up using relative paths. See
-            http://borgbackup.readthedocs.io/en/stable/usage/create.html for
+            Working directory to use when running actions, useful for backing up
+            using relative source directory paths. Does not currently apply to
+            borgmatic configuration file paths or includes. Tildes are expanded.
+            See http://borgbackup.readthedocs.io/en/stable/usage/create.html for
             details. Defaults to not set.
         example: /path/to/working/directory
     one_file_system:

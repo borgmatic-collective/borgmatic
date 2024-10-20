@@ -271,6 +271,9 @@ def test_delete_archives_with_archive_calls_borg_delete():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
 
     module.delete_archives(
@@ -288,6 +291,9 @@ def test_delete_archives_with_match_archives_calls_borg_delete():
     flexmock(module).should_receive('make_delete_command').and_return(flexmock())
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
+    )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
     )
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
 
@@ -308,6 +314,9 @@ def test_delete_archives_with_archive_related_argument_calls_borg_delete(argumen
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').once()
 
     module.delete_archives(
@@ -325,6 +334,9 @@ def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').once()
     flexmock(module).should_receive('make_delete_command').never()
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').never()
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
     module.delete_archives(
@@ -334,5 +346,35 @@ def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete
         delete_arguments=flexmock(
             list_archives=True, force=False, cache_only=False, keep_security_info=False
         ),
+        global_arguments=flexmock(),
+    )
+
+
+def test_delete_archives_calls_borg_delete_with_working_directory():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
+    command = flexmock()
+    flexmock(module).should_receive('make_delete_command').and_return(command)
+    extra_environment = flexmock()
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        extra_environment
+    )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        '/working/dir'
+    )
+    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+        command,
+        output_log_level=logging.ANSWER,
+        extra_environment=extra_environment,
+        working_directory='/working/dir',
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).once()
+
+    module.delete_archives(
+        repository={'path': 'repo'},
+        config={'working_directory': '/working/dir'},
+        local_borg_version=flexmock(),
+        delete_arguments=flexmock(archive='archive'),
         global_arguments=flexmock(),
     )

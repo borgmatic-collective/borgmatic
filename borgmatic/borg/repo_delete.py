@@ -3,6 +3,7 @@ import logging
 import borgmatic.borg.environment
 import borgmatic.borg.feature
 import borgmatic.borg.flags
+import borgmatic.config.options
 import borgmatic.execute
 
 logger = logging.getLogger(__name__)
@@ -87,6 +88,7 @@ def delete_repository(
             else borgmatic.execute.DO_NOT_CAPTURE
         ),
         extra_environment=borgmatic.borg.environment.make_environment(config),
+        working_directory=borgmatic.config.options.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

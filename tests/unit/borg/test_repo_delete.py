@@ -262,11 +262,15 @@ def test_delete_repository_with_defaults_does_not_capture_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
         output_file=module.borgmatic.execute.DO_NOT_CAPTURE,
         extra_environment=object,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
@@ -289,11 +293,15 @@ def test_delete_repository_with_force_captures_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
         output_file=None,
         extra_environment=object,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
@@ -316,11 +324,15 @@ def test_delete_repository_with_cache_only_captures_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
         output_file=None,
         extra_environment=object,
+        working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).once()
@@ -330,6 +342,37 @@ def test_delete_repository_with_cache_only_captures_output():
         config={},
         local_borg_version=flexmock(),
         repo_delete_arguments=flexmock(force=False, cache_only=True),
+        global_arguments=flexmock(),
+        local_path='borg',
+        remote_path=None,
+    )
+
+
+def test_delete_repository_calls_borg_with_working_directory():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    command = flexmock()
+    flexmock(module).should_receive('make_repo_delete_command').and_return(command)
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        '/working/dir',
+    )
+    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+        command,
+        output_log_level=module.logging.ANSWER,
+        output_file=module.borgmatic.execute.DO_NOT_CAPTURE,
+        extra_environment=object,
+        working_directory='/working/dir',
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).once()
+
+    module.delete_repository(
+        repository={'path': 'repo'},
+        config={'working_directory': '/working/dir'},
+        local_borg_version=flexmock(),
+        repo_delete_arguments=flexmock(force=False, cache_only=False),
         global_arguments=flexmock(),
         local_path='borg',
         remote_path=None,

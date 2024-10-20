@@ -9,17 +9,23 @@ from borgmatic.borg import export_key as module
 from ..test_verbosity import insert_logging_mock
 
 
-def insert_execute_command_mock(command, output_file=module.DO_NOT_CAPTURE, borg_exit_codes=None):
+def insert_execute_command_mock(
+    command, output_file=module.DO_NOT_CAPTURE, working_directory=None, borg_exit_codes=None
+):
     borgmatic.logger.add_custom_log_levels()
 
     flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        working_directory,
+    )
     flexmock(module).should_receive('execute_command').with_args(
         command,
         output_file=output_file,
         output_log_level=module.logging.ANSWER,
+        extra_environment=None,
+        working_directory=working_directory,
         borg_local_path=command[0],
         borg_exit_codes=borg_exit_codes,
-        extra_environment=None,
     ).once()
 
 
@@ -198,7 +204,7 @@ def test_export_key_calls_borg_with_qr_html_flag():
 
 def test_export_key_calls_borg_with_path_argument():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('dest').and_return(False)
     insert_execute_command_mock(('borg', 'key', 'export', 'repo', 'dest'), output_file=None)
 
     module.export_key(
@@ -250,4 +256,38 @@ def test_export_key_with_dry_run_skips_borg_call():
         local_borg_version='1.2.3',
         export_arguments=flexmock(paper=False, qr_html=False, path=None),
         global_arguments=flexmock(dry_run=True, log_json=False),
+    )
+
+
+def test_export_key_calls_borg_with_working_directory():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').never()
+    insert_execute_command_mock(('borg', 'key', 'export', 'repo'), working_directory='/working/dir')
+
+    module.export_key(
+        repository_path='repo',
+        config={'working_directory': '/working/dir'},
+        local_borg_version='1.2.3',
+        export_arguments=flexmock(paper=False, qr_html=False, path=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+    )
+
+
+def test_export_key_calls_borg_with_path_argument_and_working_directory():
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.os.path).should_receive('exists').with_args('/working/dir/dest').and_return(
+        False
+    ).once()
+    insert_execute_command_mock(
+        ('borg', 'key', 'export', 'repo', 'dest'),
+        output_file=None,
+        working_directory='/working/dir',
+    )
+
+    module.export_key(
+        repository_path='repo',
+        config={'working_directory': '/working/dir'},
+        local_borg_version='1.2.3',
+        export_arguments=flexmock(paper=False, qr_html=False, path='dest'),
+        global_arguments=flexmock(dry_run=False, log_json=False),
     )

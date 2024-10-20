@@ -2,6 +2,7 @@ import logging
 import shlex
 
 import borgmatic.commands.arguments
+import borgmatic.config.options
 import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -67,6 +68,7 @@ def run_arbitrary_borg(
                 'ARCHIVE': archive if archive else '',
             },
         ),
+        working_directory=borgmatic.config.options.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

@@ -3,6 +3,7 @@ import copy
 import logging
 import re
 
+import borgmatic.config.options
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, repo_list
 from borgmatic.execute import execute_command, execute_command_and_capture_output
@@ -127,6 +128,7 @@ def capture_archive_listing(
                 remote_path,
             ),
             extra_environment=borg_environment,
+            working_directory=borgmatic.config.options.get_working_directory(config),
             borg_local_path=local_path,
             borg_exit_codes=config.get('borg_exit_codes'),
         )
@@ -224,6 +226,7 @@ def list_archive(
                     remote_path,
                 ),
                 extra_environment=borg_environment,
+                working_directory=borgmatic.config.options.get_working_directory(config),
                 borg_local_path=local_path,
                 borg_exit_codes=borg_exit_codes,
             )
@@ -259,6 +262,7 @@ def list_archive(
             main_command,
             output_log_level=logging.ANSWER,
             extra_environment=borg_environment,
+            working_directory=borgmatic.config.options.get_working_directory(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )

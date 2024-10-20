@@ -14,6 +14,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.borg.state
+import borgmatic.config.options
 import borgmatic.config.validate
 import borgmatic.execute
 import borgmatic.hooks.command
@@ -356,17 +357,13 @@ def collect_spot_check_source_paths(
         )
     )
     borg_environment = borgmatic.borg.environment.make_environment(config)
-
-    try:
-        working_directory = os.path.expanduser(config.get('working_directory'))
-    except TypeError:
-        working_directory = None
+    working_directory = borgmatic.config.options.get_working_directory(config)
 
     paths_output = borgmatic.execute.execute_command_and_capture_output(
         create_flags + create_positional_arguments,
         capture_stderr=True,
-        working_directory=working_directory,
         extra_environment=borg_environment,
+        working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
@@ -377,7 +374,9 @@ def collect_spot_check_source_paths(
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
 
-    return tuple(path for path in paths if os.path.isfile(path))
+    return tuple(
+        path for path in paths if os.path.isfile(os.path.join(working_directory or '', path))
+    )
 
 
 BORG_DIRECTORY_FILE_TYPE = 'd'
@@ -444,8 +443,11 @@ def compare_spot_check_hashes(
         int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)), 1
     )
     source_sample_paths = tuple(random.sample(source_paths, sample_count))
+    working_directory = borgmatic.config.options.get_working_directory(config)
     existing_source_sample_paths = {
-        source_path for source_path in source_sample_paths if os.path.exists(source_path)
+        source_path
+        for source_path in source_sample_paths
+        if os.path.exists(os.path.join(working_directory or '', source_path))
     }
     logger.debug(
         f'{log_label}: Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check'
@@ -469,7 +471,8 @@ def compare_spot_check_hashes(
             (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
             + tuple(
                 path for path in source_sample_paths_subset if path in existing_source_sample_paths
-            )
+            ),
+            working_directory=working_directory,
         )
 
         source_hashes.update(

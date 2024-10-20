@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.config.options
 from borgmatic.borg import environment, flags
 from borgmatic.execute import execute_command
 
@@ -37,6 +38,7 @@ def break_lock(
     execute_command(
         full_command,
         extra_environment=borg_environment,
+        working_directory=borgmatic.config.options.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

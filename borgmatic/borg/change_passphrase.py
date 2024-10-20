@@ -1,5 +1,6 @@
 import logging
 
+import borgmatic.config.options
 import borgmatic.execute
 import borgmatic.logger
 from borgmatic.borg import environment, flags
@@ -56,6 +57,7 @@ def change_passphrase(
         output_file=borgmatic.execute.DO_NOT_CAPTURE,
         output_log_level=logging.ANSWER,
         extra_environment=environment.make_environment(config_without_passphrase),
+        working_directory=borgmatic.config.options.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

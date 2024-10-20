@@ -1,6 +1,7 @@
 import logging
 import os
 
+import borgmatic.config.options
 import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -29,9 +30,10 @@ def export_key(
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    working_directory = borgmatic.config.options.get_working_directory(config)
 
     if export_arguments.path and export_arguments.path != '-':
-        if os.path.exists(export_arguments.path):
+        if os.path.exists(os.path.join(working_directory or '', export_arguments.path)):
             raise FileExistsError(
                 f'Destination path {export_arguments.path} already exists. Aborting.'
             )
@@ -66,6 +68,7 @@ def export_key(
         output_file=output_file,
         output_log_level=logging.ANSWER,
         extra_environment=environment.make_environment(config),
+        working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
