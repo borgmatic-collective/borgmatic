@@ -61,27 +61,39 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     )
 
 
+def ensure_directory_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 def execute_dump_command(
     database, log_prefix, dump_path, database_names, extra_environment, dry_run, dry_run_label
 ):
     '''
     Kick off a dump for the given MySQL/MariaDB database (provided as a configuration dict) to a
-    named pipe constructed from the given dump path and database name. Use the given log prefix in
-    any log entries.
+    directory if --tab is used, or to a file if not. Use the given log prefix in any log entries.
 
-    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
-    this is a dry run, then don't actually dump anything and return None.
+    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe or directory.
     '''
     database_name = database['name']
-    dump_filename = dump.make_data_source_dump_filename(
-        dump_path, database['name'], database.get('hostname')
-    )
 
-    if os.path.exists(dump_filename):
-        logger.warning(
-            f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
+    use_tab = '--tab' in (database.get('options') or '')
+
+    if use_tab:
+        ensure_directory_exists(dump_path)
+        dump_dir = os.path.join(dump_path, database_name)
+        ensure_directory_exists(dump_dir)
+        result_file_option = ('--tab', dump_dir)
+    else:
+        dump_filename = dump.make_data_source_dump_filename(
+            dump_path, database['name'], database.get('hostname')
         )
-        return None
+        if os.path.exists(dump_filename):
+            logger.warning(
+                f'{log_prefix}: Skipping duplicate dump of MySQL database "{database_name}" to {dump_filename}'
+            )
+            return None
+        result_file_option = ('--result-file', dump_filename)
 
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
@@ -96,16 +108,17 @@ def execute_dump_command(
         + (('--user', database['username']) if 'username' in database else ())
         + ('--databases',)
         + database_names
-        + ('--result-file', dump_filename)
+        + result_file_option
     )
 
     logger.debug(
-        f'{log_prefix}: Dumping MySQL database "{database_name}" to {dump_filename}{dry_run_label}'
+        f'{log_prefix}: Dumping MySQL database "{database_name}" to {dump_path if use_tab else dump_filename}{dry_run_label}'
     )
     if dry_run:
         return None
 
-    dump.create_named_pipe_for_dump(dump_filename)
+    if not use_tab:
+        dump.create_named_pipe_for_dump(result_file_option[1])
 
     return execute_command(
         dump_command,
@@ -116,20 +129,19 @@ def execute_dump_command(
 
 def use_streaming(databases, config, log_prefix):
     '''
-    Given a sequence of MySQL database configuration dicts, a configuration dict (ignored), and a
-    log prefix (ignored), return whether streaming will be using during dumps.
+    Given a sequence of MySQL database configuration dicts, return whether streaming will be used during dumps.
+    Streaming is not used when using --tab.
     '''
-    return any(databases)
+    return not any('--tab' in (db.get('options') or '') for db in databases)
 
 
 def dump_data_sources(databases, config, log_prefix, dry_run):
     '''
-    Dump the given MySQL/MariaDB databases to a named pipe. The databases are supplied as a sequence
-    of dicts, one dict describing each database as per the configuration schema. Use the given
-    configuration dict to construct the destination path and the given log prefix in any log entries.
+    Dump the given MySQL/MariaDB databases to a named pipe or directory based on configuration.
+    The databases are supplied as a sequence of dicts, one dict describing each database as per the configuration schema.
+    Use the given configuration dict to construct the destination path and the given log prefix in any log entries.
 
-    Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
-    pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
+    Return a sequence of subprocess.Popen instances for the dump processes.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -225,9 +237,11 @@ def restore_data_source_dump(
     mysql_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
+
+    is_directory_format = data_source.get('format') == 'directory'
+
     restore_command = (
         mysql_restore_command
-        + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
             if 'restore_options' in data_source
@@ -238,18 +252,41 @@ def restore_data_source_dump(
         + (('--protocol', 'tcp') if hostname or port else ())
         + (('--user', username) if username else ())
     )
+
     extra_environment = {'MYSQL_PWD': password} if password else None
 
     logger.debug(f"{log_prefix}: Restoring MySQL database {data_source['name']}{dry_run_label}")
+
     if dry_run:
         return
 
-    # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
-    # if the restore paths don't exist in the archive.
-    execute_command_with_processes(
-        restore_command,
-        [extract_process],
-        output_log_level=logging.DEBUG,
-        input_file=extract_process.stdout,
-        extra_environment=extra_environment,
-    )
+    if is_directory_format:
+        dump_path = make_dump_path(config)
+        dump_directory = dump.make_data_source_dump_filename(
+            dump_path, data_source['name'], data_source.get('hostname')
+        )
+
+        if not os.path.exists(dump_directory):
+            logger.warning(f"{log_prefix}: Dump directory {dump_directory} does not exist.")
+            return
+
+        for filename in os.listdir(dump_directory):
+            if filename.endswith('.sql'):
+                file_path = os.path.join(dump_directory, filename)
+                logger.debug(f"{log_prefix}: Restoring from {file_path}")
+                with open(file_path, 'r') as sql_file:
+                    execute_command_with_processes(
+                        restore_command,
+                        [],
+                        output_log_level=logging.DEBUG,
+                        input_file=sql_file,
+                        extra_environment=extra_environment,
+                    )
+    else:
+        execute_command_with_processes(
+            restore_command,
+            [extract_process],
+            output_log_level=logging.DEBUG,
+            input_file=extract_process.stdout,
+            extra_environment=extra_environment,
+        )
