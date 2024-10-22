@@ -232,7 +232,10 @@ properties:
             key. Only use on repositories that were initialized with
             passcommand/repokey/keyfile encryption. Note that if both
             encryption_passcommand and encryption_passphrase are set, then
-            encryption_passphrase takes precedence. Defaults to not set.
+            encryption_passphrase takes precedence. This can also be used to
+            access encrypted systemd service credentials (see "https://torsion\
+            .org/borgmatic/docs/how-to/provide-your-passwords/#using-systemd-\
+            service-credentials"). Defaults to not set.
         example: "secret-tool lookup borg-repository repo-name"
     encryption_passphrase:
         type: string
