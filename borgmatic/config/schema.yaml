@@ -1622,7 +1622,7 @@ properties:
                 type: string
                 description: |
                     Key of the host where the item is stored.
-                    Required if 'itemid' is not set
+                    Required if "itemid" is not set.
                 example: borg.status
             server:
                 type: string
