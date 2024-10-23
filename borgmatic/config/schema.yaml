@@ -1609,8 +1609,8 @@ properties:
             itemid:
                 type: integer
                 description: |
-                    The itemid to publish to
-                    for details.
+                    The ID of the Zabbix item used for collecting data.
+                    Unique across the entire Zabbix system.
                 example: 55105
             host:
                 type: string
