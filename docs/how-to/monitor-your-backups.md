@@ -572,7 +572,7 @@ This hook does not do any notifications on its own. Instead, it relies on
 your zabbix instance to notify and perform escalations based on the zabbix
 configuration. The `states` list will choose which states to trigger on. 
 Each state can have its own custom values configured. These values are 
-populated in the item data in zabbix. If none are provided, will use the
+populated in the item data in zabbix. If none are provided, it will use the
 default.
 
 An example configuration is shown here with all the available options.
