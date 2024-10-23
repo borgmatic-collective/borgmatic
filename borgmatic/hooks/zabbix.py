@@ -60,7 +60,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         return
 
     # Determine the authentication method: API key or username/password
-    auth = None
     if api_key is not None:
         logger.info(f'{config_filename}: Using API key auth for Zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
