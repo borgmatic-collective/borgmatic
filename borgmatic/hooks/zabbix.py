@@ -27,7 +27,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
-    state_config = hook_config.get(state.name.lower(),{'value': f'invalid',},)
+    state_config = hook_config.get(state.name.lower(), {'value': f'invalid',},)
 
     base_url = hook_config.get('server', 'https://cloud.zabbix.com/zabbix/api_jsonrpc.php')
     username = hook_config.get('username')
@@ -45,11 +45,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     # Determine the zabbix method used to store the value: itemid or host/key
     if itemid is not None:
         logger.info(f'{config_filename}: Updating {itemid} on Zabbix')
-        data = {"jsonrpc":"2.0","method":"history.push","params":{"itemid":itemid,"value":value},"id":1}
+        data = {"jsonrpc":"2.0", "method":"history.push", "params":{"itemid":itemid, "value":value}, "id":1}
     
     elif host and key is not None:
         logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
-        data = {"jsonrpc":"2.0","method":"history.push","params":{"host":host,"key":key,"value":value},"id":1}
+        data = {"jsonrpc":"2.0", "method":"history.push", "params":{"host":host, "key":key,"value":value}, "id":1}
 
     elif host is not None:
         logger.warning( f'{config_filename}: Key missing for Zabbix authentication' )
