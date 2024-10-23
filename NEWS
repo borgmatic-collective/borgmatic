@@ -19,6 +19,8 @@
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
    all repositories in the configuration file.
+ * Add support for Borg 2's "rclone://" repository URLs, so you can backup to 70+ cloud storage
+   services whether or not they support Borg explicitly.
 
 1.8.14
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.
