@@ -39,40 +39,40 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     value = state_config.get('value')
     headers = {'Content-Type': 'application/json-rpc'}
 
-    logger.info(f'{config_filename}: Updating zabbix {dry_run_label}')
-    logger.debug(f'{config_filename}: Using zabbix URL: {base_url}')
+    logger.info(f'{config_filename}: Updating Zabbix {dry_run_label}')
+    logger.debug(f'{config_filename}: Using Zabbix URL: {base_url}')
 
     # Determine the zabbix method used to store the value: itemid or host/key
     if itemid is not None:
-        logger.info(f'{config_filename}: Updating {itemid} on zabbix')
+        logger.info(f'{config_filename}: Updating {itemid} on Zabbix')
         data = {"jsonrpc":"2.0","method":"history.push","params":{"itemid":itemid,"value":value},"id":1}
     
     elif host and key is not None:
-        logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on zabbix')
+        logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
         data = {"jsonrpc":"2.0","method":"history.push","params":{"host":host,"key":key,"value":value},"id":1}
 
     elif host is not None:
-        logger.warning( f'{config_filename}: Key missing for zabbix authentication' )
+        logger.warning( f'{config_filename}: Key missing for Zabbix authentication' )
 
     elif key is not None:
-        logger.warning( f'{config_filename}: Host missing for zabbix authentication' )
+        logger.warning( f'{config_filename}: Host missing for Zabbix authentication' )
 
     # Determine the authentication method: API key or username/password
     auth = None
     if api_key is not None:
-        logger.info(f'{config_filename}: Using API key auth for zabbix')
+        logger.info(f'{config_filename}: Using API key auth for Zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
         
     elif username and password is not None:
-        logger.info(f'{config_filename}: Using user/pass auth with user {username} for zabbix')
+        logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
         response = requests.post(base_url, headers=headers, data='{"jsonrpc":"2.0","method":"user.login","params":{"username":"'+username+'","password":"'+password+'"},"id":1}')
         data['auth'] = response.json().get('result')
 
     elif username is not None:
-        logger.warning( f'{config_filename}: Password missing for zabbix authentication, defaulting to no auth' )
+        logger.warning( f'{config_filename}: Password missing for Zabbix authentication, defaulting to no auth' )
 
     elif password is not None:
-        logger.warning( f'{config_filename}: Username missing for zabbix authentication, defaulting to no auth' )
+        logger.warning( f'{config_filename}: Username missing for Zabbix authentication, defaulting to no auth' )
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
@@ -81,7 +81,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
-            logger.warning(f'{config_filename}: zabbix error: {error}')
+            logger.warning(f'{config_filename}: Zabbix error: {error}')
 
 
 def destroy_monitor(
