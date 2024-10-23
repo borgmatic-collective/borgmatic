@@ -22,66 +22,68 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     run_states = hook_config.get('states', ['fail'])
 
-    if state.name.lower() in run_states:
-        dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
+    if state.name.lower() not in run_states:
+        return
 
-        state_config = hook_config.get(state.name.lower(),{'value': f'invalid',},)
+    dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
-        base_url = hook_config.get('server', 'https://cloud.zabbix.com/zabbix/api_jsonrpc.php')
-        username = hook_config.get('username')
-        password = hook_config.get('password')
-        api_key = hook_config.get('api_key')
-        itemid = hook_config.get('itemid')
-        host = hook_config.get('host')
-        key = hook_config.get('key')
+    state_config = hook_config.get(state.name.lower(),{'value': f'invalid',},)
 
-        value = state_config.get('value')
+    base_url = hook_config.get('server', 'https://cloud.zabbix.com/zabbix/api_jsonrpc.php')
+    username = hook_config.get('username')
+    password = hook_config.get('password')
+    api_key = hook_config.get('api_key')
+    itemid = hook_config.get('itemid')
+    host = hook_config.get('host')
+    key = hook_config.get('key')
 
-        headers = {'Content-Type': 'application/json-rpc'}
+    value = state_config.get('value')
 
-        logger.info(f'{config_filename}: Updating zabbix {dry_run_label}')
-        logger.debug(f'{config_filename}: Using zabbix URL: {base_url}')
+    headers = {'Content-Type': 'application/json-rpc'}
 
-        # Determine the zabbix method used to store the value: itemid or host/key
-        if (itemid) is not None:
-            logger.info(f'{config_filename}: Updating {itemid} on zabbix')
-            data = {"jsonrpc":"2.0","method":"history.push","params":{"itemid":itemid,"value":value},"id":1}
+    logger.info(f'{config_filename}: Updating zabbix {dry_run_label}')
+    logger.debug(f'{config_filename}: Using zabbix URL: {base_url}')
+
+    # Determine the zabbix method used to store the value: itemid or host/key
+    if (itemid) is not None:
+        logger.info(f'{config_filename}: Updating {itemid} on zabbix')
+        data = {"jsonrpc":"2.0","method":"history.push","params":{"itemid":itemid,"value":value},"id":1}
+    
+    elif (host and key) is not None:
+        logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on zabbix')
+        data = {"jsonrpc":"2.0","method":"history.push","params":{"host":host,"key":key,"value":value},"id":1}
+
+    elif (host) is not None:
+        logger.warning( f'{config_filename}: Key missing for zabbix authentication' )
+
+    elif (key) is not None:
+        logger.warning( f'{config_filename}: Host missing for zabbix authentication' )
+
+    # Determine the authentication method: API key or username/password
+    auth = None
+    if (api_key) is not None:
+        logger.info(f'{config_filename}: Using API key auth for zabbix')
+        headers['Authorization'] = 'Bearer ' + api_key
         
-        elif (host and key) is not None:
-            logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on zabbix')
-            data = {"jsonrpc":"2.0","method":"history.push","params":{"host":host,"key":key,"value":value},"id":1}
+    elif (username and password) is not None:
+        logger.info(f'{config_filename}: Using user/pass auth with user {username} for zabbix')
+        response = requests.post(base_url, headers=headers, data='{"jsonrpc":"2.0","method":"user.login","params":{"username":"'+username+'","password":"'+password+'"},"id":1}')
+        data['auth'] = response.json().get('result')
 
-        elif (host) is not None:
-            logger.warning( f'{config_filename}: Key missing for zabbix authentication' )
+    elif username is not None:
+        logger.warning( f'{config_filename}: Password missing for zabbix authentication, defaulting to no auth' )
 
-        elif (key) is not None:
-            logger.warning( f'{config_filename}: Host missing for zabbix authentication' )
+    elif password is not None:
+        logger.warning( f'{config_filename}: Username missing for zabbix authentication, defaulting to no auth' )
 
-        # Determine the authentication method: API key or username/password
-        auth = None
-        if (api_key) is not None:
-            logger.info(f'{config_filename}: Using API key auth for zabbix')
-            headers['Authorization'] = 'Bearer ' + api_key
-            
-        elif (username and password) is not None:
-            logger.info(f'{config_filename}: Using user/pass auth with user {username} for zabbix')
-            response = requests.post(base_url, headers=headers, data='{"jsonrpc":"2.0","method":"user.login","params":{"username":"'+username+'","password":"'+password+'"},"id":1}')
-            data['auth'] = response.json().get('result')
-
-        elif username is not None:
-            logger.warning( f'{config_filename}: Password missing for zabbix authentication, defaulting to no auth' )
-
-        elif password is not None:
-            logger.warning( f'{config_filename}: Username missing for zabbix authentication, defaulting to no auth' )
-
-        if not dry_run:
-            logging.getLogger('urllib3').setLevel(logging.ERROR)
-            try:
-                response = requests.post(base_url, headers=headers, data=json.dumps(data))
-                if not response.ok:
-                    response.raise_for_status()
-            except requests.exceptions.RequestException as error:
-                logger.warning(f'{config_filename}: zabbix error: {error}')
+    if not dry_run:
+        logging.getLogger('urllib3').setLevel(logging.ERROR)
+        try:
+            response = requests.post(base_url, headers=headers, data=json.dumps(data))
+            if not response.ok:
+                response.raise_for_status()
+        except requests.exceptions.RequestException as error:
+            logger.warning(f'{config_filename}: zabbix error: {error}')
 
 
 def destroy_monitor(
