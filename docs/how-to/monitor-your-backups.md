@@ -612,8 +612,8 @@ If both are declared, `api_key` will be chosen.
 to be updated can be chosen by either declaring the `itemid` or 
 `host` and `key`. If both are declared, `itemid` will be chosen.
 
-Keep in mind that `host` the Host name on the host and not the 
-Visual name.
+Keep in mind that `host` is referring to the 'Host name' on the 
+Zabbix host and not the 'Visual name'.
 
 
 ## Scripting borgmatic
