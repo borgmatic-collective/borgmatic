@@ -1627,7 +1627,7 @@ properties:
             server:
                 type: string
                 description: |
-                    The address of your self-hosted zabbix instance.
+                    The address of your zabbix instance.
                     Not specifying a server will default to the Zabbix cloud.
                 example: https://zabbix.your-domain.com
             username:
