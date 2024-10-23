@@ -16,14 +16,14 @@ def initialize_monitor(
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
     '''
-    Ping the configured Zabbix topic. Use the given configuration filename in any log entries.
-    If this is a dry run, then don't actually ping anything.
+    Update the configured Zabbix item using either the itemid, or a host and key.
+    If this is a dry run, then don't actually update anything.
     '''
 
     run_states = hook_config.get('states', ['fail'])
 
     if state.name.lower() in run_states:
-        dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
+        dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
         state_config = hook_config.get(state.name.lower(),{'value': f'invalid',},)
 
@@ -39,8 +39,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
         headers = {'Content-Type': 'application/json-rpc'}
 
-        logger.info(f'{config_filename}: Pinging zabbix {dry_run_label}')
-        logger.debug(f'{config_filename}: Using zabbix ping URL {base_url}')
+        logger.info(f'{config_filename}: Updating zabbix {dry_run_label}')
+        logger.debug(f'{config_filename}: Using zabbix URL: {base_url}')
 
         # Determine the zabbix method used to store the value: itemid or host/key
         if (itemid) is not None:
