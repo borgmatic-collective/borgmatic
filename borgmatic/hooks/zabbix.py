@@ -45,27 +45,27 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logger.debug(f'{config_filename}: Using zabbix URL: {base_url}')
 
     # Determine the zabbix method used to store the value: itemid or host/key
-    if (itemid) is not None:
+    if itemid is not None:
         logger.info(f'{config_filename}: Updating {itemid} on zabbix')
         data = {"jsonrpc":"2.0","method":"history.push","params":{"itemid":itemid,"value":value},"id":1}
     
-    elif (host and key) is not None:
+    elif host and key is not None:
         logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on zabbix')
         data = {"jsonrpc":"2.0","method":"history.push","params":{"host":host,"key":key,"value":value},"id":1}
 
-    elif (host) is not None:
+    elif host is not None:
         logger.warning( f'{config_filename}: Key missing for zabbix authentication' )
 
-    elif (key) is not None:
+    elif key is not None:
         logger.warning( f'{config_filename}: Host missing for zabbix authentication' )
 
     # Determine the authentication method: API key or username/password
     auth = None
-    if (api_key) is not None:
+    if api_key is not None:
         logger.info(f'{config_filename}: Using API key auth for zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
         
-    elif (username and password) is not None:
+    elif username and password is not None:
         logger.info(f'{config_filename}: Using user/pass auth with user {username} for zabbix')
         response = requests.post(base_url, headers=headers, data='{"jsonrpc":"2.0","method":"user.login","params":{"username":"'+username+'","password":"'+password+'"},"id":1}')
         data['auth'] = response.json().get('result')
