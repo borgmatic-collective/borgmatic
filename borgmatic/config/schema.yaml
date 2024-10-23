@@ -1642,7 +1642,7 @@ properties:
             api_key:
                 type: string
                 description: |
-                    The api_key used for authentication.
+                    The API key used for authentication.
                 example: fakekey
             start:
                 type: object
