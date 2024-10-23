@@ -601,7 +601,7 @@ zabbix:
         - fail
 ```
 
-<span class="minilink minilink-addedin">Zabbix 7.0+</span>
+###  Zabbix 7.0+
 This hook requires the Zabbix server be running version 7.0+
 
 <span class="minilink minilink-addedin">Authentication Methods</span>
