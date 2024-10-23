@@ -563,7 +563,7 @@ Heartbeat Retry = 360          # = 10 minutes
 Resend Notification every X times = 1
 ```
 
-## zabbix hook
+## Zabbix hook
 
 <span class="minilink minilink-addedin">New in version 1.8.15</span>
 [zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for tracking and managing the performance and availability of networks, servers, and applications in real-time.
