@@ -53,9 +53,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     elif host is not None:
         logger.warning( f'{config_filename}: Key missing for Zabbix authentication' )
+        return
 
     elif key is not None:
         logger.warning( f'{config_filename}: Host missing for Zabbix authentication' )
+        return
 
     # Determine the authentication method: API key or username/password
     auth = None
@@ -69,10 +71,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         data['auth'] = response.json().get('result')
 
     elif username is not None:
-        logger.warning( f'{config_filename}: Password missing for Zabbix authentication, defaulting to no auth' )
+        logger.warning( f'{config_filename}: Password missing for Zabbix authentication' )
+        return
 
     elif password is not None:
-        logger.warning( f'{config_filename}: Username missing for Zabbix authentication, defaulting to no auth' )
+        logger.warning( f'{config_filename}: Username missing for Zabbix authentication' )
+        return
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
