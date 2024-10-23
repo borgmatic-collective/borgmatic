@@ -1616,7 +1616,7 @@ properties:
                 type: string
                 description: |
                     Host name where the item is stored.
-                    Required if 'itemid' is not set
+                    Required if "itemid" is not set.
                 example: borg-server
             key:
                 type: string
