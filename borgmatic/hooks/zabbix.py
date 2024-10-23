@@ -36,9 +36,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     itemid = hook_config.get('itemid')
     host = hook_config.get('host')
     key = hook_config.get('key')
-
     value = state_config.get('value')
-
     headers = {'Content-Type': 'application/json-rpc'}
 
     logger.info(f'{config_filename}: Updating zabbix {dry_run_label}')
