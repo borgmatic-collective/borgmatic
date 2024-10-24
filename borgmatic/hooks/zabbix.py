@@ -58,7 +58,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             "id": 1,
         }
 
-    elif host and key is not None:
+    elif (host and key) is not None:
         logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
         data = {
             "jsonrpc": "2.0",
@@ -80,7 +80,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.info(f'{config_filename}: Using API key auth for Zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
 
-    elif username and password is not None:
+    elif (username and password) is not None:
         logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
         if not dry_run:
             response = requests.post(
