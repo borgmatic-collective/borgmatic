@@ -27,7 +27,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
-    state_config = hook_config.get(state.name.lower(), {'value': f'invalid',},)
+    state_config = hook_config.get(
+        state.name.lower(),
+        {
+            'value': f'invalid',
+        },
+    )
 
     base_url = hook_config.get('server', 'https://cloud.zabbix.com/zabbix/api_jsonrpc.php')
     username = hook_config.get('username')
@@ -45,37 +50,51 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     # Determine the zabbix method used to store the value: itemid or host/key
     if itemid is not None:
         logger.info(f'{config_filename}: Updating {itemid} on Zabbix')
-        data = {"jsonrpc":"2.0", "method":"history.push", "params":{"itemid":itemid, "value":value}, "id":1}
-    
+        data = {
+            "jsonrpc": "2.0",
+            "method": "history.push",
+            "params": {"itemid": itemid, "value": value},
+            "id": 1,
+        }
+
     elif host and key is not None:
         logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
-        data = {"jsonrpc":"2.0", "method":"history.push", "params":{"host":host, "key":key,"value":value}, "id":1}
+        data = {
+            "jsonrpc": "2.0",
+            "method": "history.push",
+            "params": {"host": host, "key": key, "value": value},
+            "id": 1,
+        }
 
     elif host is not None:
-        logger.warning( f'{config_filename}: Key missing for Zabbix authentication' )
+        logger.warning(f'{config_filename}: Key missing for Zabbix authentication')
         return
 
     elif key is not None:
-        logger.warning( f'{config_filename}: Host missing for Zabbix authentication' )
+        logger.warning(f'{config_filename}: Host missing for Zabbix authentication')
         return
 
     # Determine the authentication method: API key or username/password
     if api_key is not None:
         logger.info(f'{config_filename}: Using API key auth for Zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
-        
+
     elif username and password is not None:
         logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
         if not dry_run:
-            response = requests.post(base_url, headers=headers, data=f'{{"jsonrpc":"2.0","method":"user.login","params":{{"username":"{username}","password":"{password}"}},"id":1}}')
+            response = requests.post(
+                base_url,
+                headers=headers,
+                data=f'{{"jsonrpc":"2.0","method":"user.login","params":{{"username":"{username}","password":"{password}"}},"id":1}}',
+            )
             data['auth'] = response.json().get('result')
 
     elif username is not None:
-        logger.warning( f'{config_filename}: Password missing for Zabbix authentication' )
+        logger.warning(f'{config_filename}: Password missing for Zabbix authentication')
         return
 
     elif password is not None:
-        logger.warning( f'{config_filename}: Username missing for Zabbix authentication' )
+        logger.warning(f'{config_filename}: Username missing for Zabbix authentication')
         return
 
     if not dry_run:
