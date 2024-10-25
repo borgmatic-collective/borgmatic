@@ -106,7 +106,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         try:
-            response = requests.post(base_url, headers=headers, data=json.dumps(data))
+            response = requests.post(base_url, headers=headers, json=data)
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
