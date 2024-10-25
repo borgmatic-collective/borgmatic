@@ -82,12 +82,17 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     elif (username and password) is not None:
         logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
+        auth_data = {
+            "jsonrpc": "2.0",
+            "method": "user.login",
+            "params": {
+                "username": username,
+                "password": password
+            },
+            "id": 1
+        }
         if not dry_run:
-            response = requests.post(
-                base_url,
-                headers=headers,
-                data=f'{{"jsonrpc":"2.0","method":"user.login","params":{{"username":"{username}","password":"{password}"}},"id":1}}',
-            )
+            response = requests.post(base_url, headers=headers, json=auth_data)
             data['auth'] = response.json().get('result')
 
     elif username is not None:
