@@ -11,7 +11,7 @@ services:
         ENVIRONMENT: development
   message:
     image: alpine
-    container_name: message
+    container_name: borgmatic-docs-message
     command:
       - sh
       - -c

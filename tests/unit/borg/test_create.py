@@ -581,6 +581,9 @@ def test_make_base_create_command_includes_patterns_file_in_borg_command():
         None
     )
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     pattern_flags = ('--patterns-from', mock_pattern_file.name)
@@ -631,6 +634,9 @@ def test_make_base_create_command_includes_sources_and_config_paths_in_borg_comm
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -676,6 +682,9 @@ def test_make_base_create_command_with_store_config_false_omits_config_files():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -719,6 +728,9 @@ def test_make_base_create_command_includes_exclude_patterns_in_borg_command():
     mock_exclude_file = flexmock(name='/tmp/excludes')
     flexmock(module).should_receive('write_pattern_file').and_return(mock_exclude_file)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -795,6 +807,9 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(feature_available)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -837,6 +852,9 @@ def test_make_base_create_command_includes_dry_run_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -879,6 +897,9 @@ def test_make_base_create_command_includes_local_path_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -921,6 +942,9 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -963,6 +987,9 @@ def test_make_base_create_command_includes_log_json_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1004,6 +1031,9 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1046,6 +1076,9 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1095,6 +1128,9 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1141,6 +1177,9 @@ def test_make_base_create_command_with_non_matching_source_directories_glob_pass
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1183,6 +1222,9 @@ def test_make_base_create_command_expands_glob_in_source_directories():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1225,6 +1267,9 @@ def test_make_base_create_command_includes_archive_name_format_in_borg_command()
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1255,7 +1300,52 @@ def test_make_base_create_command_includes_archive_name_format_in_borg_command()
     assert not exclude_file
 
 
-def test_base_create_command_includes_archive_name_format_with_placeholders_in_borg_command():
+def test_make_base_create_command_includes_default_archive_name_format_in_borg_command():
+    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+        None
+    )
+    flexmock(module).should_receive('collect_borgmatic_source_directories').and_return([])
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').and_return(())
+    flexmock(module).should_receive('pattern_root_directories').and_return([])
+    flexmock(module.os.path).should_receive('expanduser').and_raise(TypeError)
+    flexmock(module).should_receive('expand_home_directories').and_return(())
+    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module).should_receive('ensure_files_readable')
+    flexmock(module).should_receive('make_pattern_flags').and_return(())
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        ('repo::{hostname}',)
+    )
+
+    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+        module.make_base_create_command(
+            dry_run=False,
+            repository_path='repo',
+            config={
+                'source_directories': ['foo', 'bar'],
+                'repositories': ['repo'],
+            },
+            config_paths=['/tmp/test.yaml'],
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
+            borgmatic_source_directories=(),
+        )
+    )
+
+    assert create_flags == ('borg', 'create')
+    assert create_positional_arguments == ('repo::{hostname}', 'foo', 'bar')
+    assert not pattern_file
+    assert not exclude_file
+
+
+def test_make_base_create_command_includes_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = 'repo::Documents_{hostname}-{now}'  # noqa: FS003
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1265,6 +1355,9 @@ def test_base_create_command_includes_archive_name_format_with_placeholders_in_b
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1295,7 +1388,7 @@ def test_base_create_command_includes_archive_name_format_with_placeholders_in_b
     assert not exclude_file
 
 
-def test_base_create_command_includes_repository_and_archive_name_format_with_placeholders_in_borg_command():
+def test_make_base_create_command_includes_repository_and_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'  # noqa: FS003
     flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
     flexmock(module).should_receive('map_directories_to_devices').and_return({})
@@ -1305,6 +1398,9 @@ def test_base_create_command_includes_repository_and_archive_name_format_with_pl
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())
@@ -1347,6 +1443,9 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     flexmock(module).should_receive('expand_home_directories').and_return(())
     flexmock(module).should_receive('write_pattern_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module).should_receive('ensure_files_readable')
     flexmock(module).should_receive('make_pattern_flags').and_return(())

@@ -40,10 +40,10 @@ Or simplify this to:
 borgmatic extract --archive latest
 ```
 
-The `--archive` value is the name of the archive to extract. This extracts the
-entire contents of the archive to the current directory, so make sure you're
-in the right place before running the command—or see below about the
-`--destination` flag.
+The `--archive` value is the name of the archive or archive hash to extract.
+This extracts the entire contents of the archive to the current directory, so
+make sure you're in the right place before running the command—or see below
+about the `--destination` flag.
 
 ## Repository selection
 
@@ -129,6 +129,14 @@ Or use the "latest" value for the archive to mount the latest archive:
 
 ```bash
 borgmatic mount --archive latest --mount-point /mnt
+```
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span>You can
+provide a series name for the `--archive` value to mount multiple archives in
+that series:
+
+```bash
+borgmatic mount --archive seriesname --mount-point /mnt
 ```
 
 If you'd like to restrict the mounted filesystem to only particular paths from

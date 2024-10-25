@@ -469,7 +469,7 @@ def make_parsers():
     )
     transfer_group.add_argument(
         '--archive',
-        help='Name of single archive to transfer (or "latest"), defaults to transferring all archives',
+        help='Name or hash of a single archive to transfer (or "latest"), defaults to transferring all archives',
     )
     transfer_group.add_argument(
         '--upgrader',
@@ -486,7 +486,7 @@ def make_parsers():
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
-        help='Only transfer archives with names matching this pattern',
+        help='Only transfer archives with names, hashes, or series matching this pattern',
     )
     transfer_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -534,6 +534,13 @@ def make_parsers():
     prune_group.add_argument(
         '--repository',
         help='Path of specific existing repository to prune (must be already specified in a borgmatic configuration file), quoted globs supported',
+    )
+    prune_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='When pruning, only consider archives with names, hashes, or series matching this pattern',
     )
     prune_group.add_argument(
         '--stats',
@@ -673,7 +680,7 @@ def make_parsers():
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
-        help='Only check archives with names matching this pattern',
+        help='Only check archives with names, hashes, or series matching this pattern',
     )
     check_group.add_argument(
         '--only',
@@ -705,7 +712,7 @@ def make_parsers():
     )
     delete_group.add_argument(
         '--archive',
-        help='Archive to delete',
+        help='Archive name, hash, or series to delete',
     )
     delete_group.add_argument(
         '--list',
@@ -749,7 +756,7 @@ def make_parsers():
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
-        help='Only delete archives matching this pattern',
+        help='Only delete archives with names, hashes, or series matching this pattern',
     )
     delete_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -795,7 +802,7 @@ def make_parsers():
         help='Path of repository to extract, defaults to the configured repository if there is only one, quoted globs supported',
     )
     extract_group.add_argument(
-        '--archive', help='Name of archive to extract (or "latest")', required=True
+        '--archive', help='Name or hash of a single archive to extract (or "latest")', required=True
     )
     extract_group.add_argument(
         '--path',
@@ -863,7 +870,7 @@ def make_parsers():
     )
     config_bootstrap_group.add_argument(
         '--archive',
-        help='Name of archive to extract config files from, defaults to "latest"',
+        help='Name or hash of a single archive to extract config files from, defaults to "latest"',
         default='latest',
     )
     config_bootstrap_group.add_argument(
@@ -955,7 +962,7 @@ def make_parsers():
         help='Path of repository to export from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     export_tar_group.add_argument(
-        '--archive', help='Name of archive to export (or "latest")', required=True
+        '--archive', help='Name or hash of a single archive to export (or "latest")', required=True
     )
     export_tar_group.add_argument(
         '--path',
@@ -1000,7 +1007,9 @@ def make_parsers():
         '--repository',
         help='Path of repository to use, defaults to the configured repository if there is only one, quoted globs supported',
     )
-    mount_group.add_argument('--archive', help='Name of archive to mount (or "latest")')
+    mount_group.add_argument(
+        '--archive', help='Name or hash of a single archive to mount (or "latest")'
+    )
     mount_group.add_argument(
         '--mount-point',
         metavar='PATH',
@@ -1120,7 +1129,9 @@ def make_parsers():
         help='Path of repository to restore from, defaults to the configured repository if there is only one, quoted globs supported',
     )
     restore_group.add_argument(
-        '--archive', help='Name of archive to restore from (or "latest")', required=True
+        '--archive',
+        help='Name or hash of a single archive to restore from (or "latest")',
+        required=True,
     )
     restore_group.add_argument(
         '--data-source',
@@ -1188,7 +1199,7 @@ def make_parsers():
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
-        help='Only list archive names matching this pattern',
+        help='Only list archive names, hashes, or series matching this pattern',
     )
     repo_list_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -1235,7 +1246,9 @@ def make_parsers():
         '--repository',
         help='Path of repository containing archive to list, defaults to the configured repositories, quoted globs supported',
     )
-    list_group.add_argument('--archive', help='Name of the archive to list (or "latest")')
+    list_group.add_argument(
+        '--archive', help='Name or hash of a single archive to list (or "latest")'
+    )
     list_group.add_argument(
         '--path',
         metavar='PATH',
@@ -1321,7 +1334,9 @@ def make_parsers():
         '--repository',
         help='Path of repository containing archive to show info for, defaults to the configured repository if there is only one, quoted globs supported',
     )
-    info_group.add_argument('--archive', help='Name of archive to show info for (or "latest")')
+    info_group.add_argument(
+        '--archive', help='Archive name, hash, or series to show info for (or "latest")'
+    )
     info_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
@@ -1335,7 +1350,7 @@ def make_parsers():
         '--match-archives',
         '--glob-archives',
         metavar='PATTERN',
-        help='Only show info for archive names matching this pattern',
+        help='Only show info for archive names, hashes, or series matching this pattern',
     )
     info_group.add_argument(
         '--sort-by', metavar='KEYS', help='Comma-separated list of sorting keys'
@@ -1460,7 +1475,9 @@ def make_parsers():
         '--repository',
         help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
     )
-    borg_group.add_argument('--archive', help='Name of archive to pass to Borg (or "latest")')
+    borg_group.add_argument(
+        '--archive', help='Archive name, hash, or series to pass to Borg (or "latest")'
+    )
     borg_group.add_argument(
         '--',
         metavar='OPTION',

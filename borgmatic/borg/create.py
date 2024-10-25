@@ -399,7 +399,9 @@ def make_base_create_command(
     lock_wait = config.get('lock_wait', None)
     list_filter_flags = make_list_filter_flags(local_borg_version, dry_run)
     files_cache = config.get('files_cache')
-    archive_name_format = config.get('archive_name_format', flags.DEFAULT_ARCHIVE_NAME_FORMAT)
+    archive_name_format = config.get(
+        'archive_name_format', flags.get_default_archive_name_format(local_borg_version)
+    )
     extra_borg_options = config.get('extra_borg_options', {}).get('create', '')
 
     if feature.available(feature.Feature.ATIME, local_borg_version):

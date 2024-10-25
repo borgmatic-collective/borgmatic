@@ -336,15 +336,15 @@ borgmatic restore --archive host-2023-01-02T04:06:07.080910
 
 (No borgmatic `restore` action? Upgrade borgmatic!)
 
-With newer versions of borgmatic, you can simplify this to:
+Or you can simplify this to:
 
 ```bash
 borgmatic restore --archive latest
 ```
 
-The `--archive` value is the name of the archive to restore from. This
-restores all databases dumps that borgmatic originally backed up to that
-archive.
+The `--archive` value is the name of the archive or archive hash to restore
+from. This restores all databases dumps that borgmatic originally backed up to
+that archive.
 
 This is a destructive action! `borgmatic restore` replaces live databases by
 restoring dumps from the selected archive. So be very careful when and where

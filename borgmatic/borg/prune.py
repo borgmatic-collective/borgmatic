@@ -8,9 +8,10 @@ from borgmatic.execute import execute_command
 logger = logging.getLogger(__name__)
 
 
-def make_prune_flags(config, local_borg_version):
+def make_prune_flags(config, prune_arguments, local_borg_version):
     '''
-    Given a configuration dict mapping from option name to value, transform it into an sequence of
+    Given a configuration dict mapping from option name to value, prune arguments as an
+    argparse.Namespace instance, and the local Borg version, produce a corresponding sequence of
     command-line flags.
 
     For example, given a retention config of:
@@ -40,7 +41,7 @@ def make_prune_flags(config, local_borg_version):
         if prefix
         else (
             flags.make_match_archives_flags(
-                config.get('match_archives'),
+                prune_arguments.match_archives or config.get('match_archives'),
                 config.get('archive_name_format'),
                 local_borg_version,
             )
@@ -69,7 +70,7 @@ def prune_archives(
 
     full_command = (
         (local_path, 'prune')
-        + make_prune_flags(config, local_borg_version)
+        + make_prune_flags(config, prune_arguments, local_borg_version)
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
@@ -78,7 +79,7 @@ def prune_archives(
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + flags.make_flags_from_arguments(
             prune_arguments,
-            excludes=('repository', 'stats', 'list_archives'),
+            excludes=('repository', 'match_archives', 'stats', 'list_archives'),
         )
         + (('--list',) if prune_arguments.list_archives else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())

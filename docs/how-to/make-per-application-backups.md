@@ -82,9 +82,13 @@ this option in the `storage:` section of your configuration.
 
 This example means that when borgmatic creates an archive, its name will start
 with the string `home-directories-` and end with a timestamp for its creation
-time. If `archive_name_format` is unspecified, the default is
+time. If `archive_name_format` is unspecified, the default with Borg 1 is
 `{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
 timestamp in a particular format.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span>The default
+is just `{hostname}`, as Borg 2 does not require unique archive names; identical
+archive names form a common "series" that can be targeted together.
 
 
 ### Archive filtering
@@ -129,10 +133,13 @@ archive_name_format: {hostname}-user-data-{now}
 match_archives: sh:myhost-user-data-*        
 ```
 
-For Borg 1.x, use a shell pattern for the `match_archives` value and see the
-[Borg patterns
+<span class="minilink minilink-addedin">With Borg version 1.x</span>Use a shell
+pattern for the `match_archives` value and see the [Borg patterns
 documentation](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns)
-for more information. For Borg 2.x, see the [match archives
+for more information.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span>See the
+[match archives
 documentation](https://borgbackup.readthedocs.io/en/2.0.0b12/usage/help.html#borg-help-match-archives).
 
 Some borgmatic command-line actions also have a `--match-archives` flag that

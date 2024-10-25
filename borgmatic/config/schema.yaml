@@ -397,11 +397,14 @@ properties:
     archive_name_format:
         type: string
         description: |
-            Name of the archive. Borg placeholders can be used. See the output
-            of "borg help placeholders" for details. Defaults to
-            "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". When running actions like
-            repo-list, info, or check, borgmatic automatically tries to match
-            only archives created with this name format.
+            Name of the archive to create. Borg placeholders can be used. See
+            the output of "borg help placeholders" for details. Defaults to
+            "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}" with Borg 1 and
+            "{hostname}" with Borg 2, as Borg 2 does not require unique
+            archive names; identical archive names form a common "series" that
+            can be targeted together. When running actions like repo-list,
+            info, or check, borgmatic automatically tries to match only
+            archives created with this name format.
         example: "{hostname}-documents-{now}"
     match_archives:
         type: string

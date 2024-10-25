@@ -85,6 +85,24 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
     ) == ('repo::archive',)
 
 
+def test_get_default_archive_name_format_with_archive_series_feature_uses_series_archive_name_format():
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert (
+        module.get_default_archive_name_format(local_borg_version='1.2.3')
+        == module.DEFAULT_ARCHIVE_NAME_FORMAT_WITH_SERIES
+    )
+
+
+def test_get_default_archive_name_format_without_archive_series_feature_uses_non_series_archive_name_format():
+    flexmock(module.feature).should_receive('available').and_return(False)
+
+    assert (
+        module.get_default_archive_name_format(local_borg_version='1.2.3')
+        == module.DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES
+    )
+
+
 @pytest.mark.parametrize(
     'match_archives,archive_name_format,feature_available,expected_result',
     (
@@ -175,12 +193,27 @@ def test_make_repository_archive_flags_with_borg_features_joins_repository_and_a
             True,
             (),
         ),
+        (
+            'abcdefabcdef',
+            None,
+            True,
+            ('--match-archives', 'aid:abcdefabcdef'),
+        ),
+        (
+            'aid:abcdefabcdef',
+            None,
+            True,
+            ('--match-archives', 'aid:abcdefabcdef'),
+        ),
     ),
 )
 def test_make_match_archives_flags_makes_flags_with_globs(
     match_archives, archive_name_format, feature_available, expected_result
 ):
     flexmock(module.feature).should_receive('available').and_return(feature_available)
+    flexmock(module).should_receive('get_default_archive_name_format').and_return(
+        module.DEFAULT_ARCHIVE_NAME_FORMAT_WITHOUT_SERIES
+    )
 
     assert (
         module.make_match_archives_flags(

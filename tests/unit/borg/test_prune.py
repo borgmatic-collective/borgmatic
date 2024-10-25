@@ -36,7 +36,9 @@ def test_make_prune_flags_returns_flags_from_config():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     assert result == BASE_PRUNE_FLAGS
 
@@ -49,7 +51,9 @@ def test_make_prune_flags_accepts_prefix_with_placeholders():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     expected = (
         '--keep-daily',
@@ -69,7 +73,9 @@ def test_make_prune_flags_with_prefix_without_borg_features_uses_glob_archives()
     flexmock(module.feature).should_receive('available').and_return(False)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     expected = (
         '--keep-daily',
@@ -90,7 +96,9 @@ def test_make_prune_flags_prefers_prefix_to_archive_name_format():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').never()
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     expected = (
         '--keep-daily',
@@ -111,9 +119,63 @@ def test_make_prune_flags_without_prefix_uses_archive_name_format_instead():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None, 'bar-{now}', '1.2.3'  # noqa: FS003
-    ).and_return(('--match-archives', 'sh:bar-*'))
+    ).and_return(('--match-archives', 'sh:bar-*')).once()
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
+
+    expected = (
+        '--keep-daily',
+        '1',
+        '--match-archives',
+        'sh:bar-*',  # noqa: FS003
+    )
+
+    assert result == expected
+
+
+def test_make_prune_flags_without_prefix_uses_match_archives_flag_instead_of_option():
+    config = {
+        'archive_name_format': 'bar-{now}',  # noqa: FS003
+        'match_archives': 'foo*',
+        'keep_daily': 1,
+        'prefix': None,
+    }
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'baz*', 'bar-{now}', '1.2.3'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:bar-*')).once()
+
+    result = module.make_prune_flags(
+        config, flexmock(match_archives='baz*'), local_borg_version='1.2.3'
+    )
+
+    expected = (
+        '--keep-daily',
+        '1',
+        '--match-archives',
+        'sh:bar-*',  # noqa: FS003
+    )
+
+    assert result == expected
+
+
+def test_make_prune_flags_without_prefix_uses_match_archives_option():
+    config = {
+        'archive_name_format': 'bar-{now}',  # noqa: FS003
+        'match_archives': 'foo*',
+        'keep_daily': 1,
+        'prefix': None,
+    }
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        'foo*', 'bar-{now}', '1.2.3'  # noqa: FS003
+    ).and_return(('--match-archives', 'sh:bar-*')).once()
+
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     expected = (
         '--keep-daily',
@@ -133,7 +195,9 @@ def test_make_prune_flags_ignores_keep_exclude_tags_in_config():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
 
-    result = module.make_prune_flags(config, local_borg_version='1.2.3')
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
 
     assert result == ('--keep-daily', '1')
 
