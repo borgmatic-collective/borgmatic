@@ -569,11 +569,11 @@ Resend Notification every X times = 1
 [zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for tracking and managing the performance and availability of networks, servers, and applications in real-time.
 
 This hook does not do any notifications on its own. Instead, it relies on
-your zabbix instance to notify and perform escalations based on the zabbix
-configuration. The `states` list will choose which states to trigger on. 
-Each state can have its own custom values configured. These values are 
-populated in the item data in zabbix. If none are provided, it will use the
-default.
+your Zabbix instance to notify and perform escalations based on the Zabbix
+configuration. The `states` defined in the configuration will determine which states 
+will trigger the hook. The value defined in the configuration of each state is 
+used to populate the data of the configured Zabbix item. If none are provided, 
+it will use the default.
 
 An example configuration is shown here with all the available options.
 
