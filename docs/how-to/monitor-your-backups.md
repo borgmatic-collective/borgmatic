@@ -565,7 +565,7 @@ Resend Notification every X times = 1
 
 ## Zabbix hook
 
-<span class="minilink minilink-addedin">New in version 1.9</span>
+<span class="minilink minilink-addedin">New in version 1.9.0</span>
 [zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for tracking and managing the performance and availability of networks, servers, and applications in real-time.
 
 This hook does not do any notifications on its own. Instead, it relies on
