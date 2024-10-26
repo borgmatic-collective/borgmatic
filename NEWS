@@ -19,7 +19,7 @@
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
    all repositories in the configuration file.
- * Add support for Borg 2's "rclone://" repository URLs, so you can backup to 70+ cloud storage
+ * Add support for Borg 2's "rclone:" repository URLs, so you can backup to 70+ cloud storage
    services whether or not they support Borg explicitly.
  * When using Borg 2, default the "archive_name_format" option to just "{hostname}", as Borg 2 does
    not require unique archive names; identical archive names form a common "series" that can be

@@ -212,8 +212,8 @@ def test_normalize_sections_with_only_scalar_raises():
             True,
         ),
         (
-            {'repositories': ['rclone://host:/repo']},
-            {'repositories': [{'path': 'rclone://host:/repo'}]},
+            {'repositories': ['rclone:host:repo']},
+            {'repositories': [{'path': 'rclone:host:repo'}]},
             True,
         ),
         (
