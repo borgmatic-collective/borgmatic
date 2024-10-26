@@ -33,8 +33,7 @@ git push github $version
 
 # Build borgmatic and publish to pypi.
 rm -fr dist
-python3 setup.py bdist_wheel
-python3 setup.py sdist
+python3 -m build
 twine upload -r pypi --username __token__ dist/borgmatic-*.tar.gz
 twine upload -r pypi --username __token__ dist/borgmatic-*-py3-none-any.whl
 
