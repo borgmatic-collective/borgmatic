@@ -131,9 +131,9 @@ Or use the "latest" value for the archive to mount the latest archive:
 borgmatic mount --archive latest --mount-point /mnt
 ```
 
-<span class="minilink minilink-addedin">With Borg version 2.x</span>You can
-provide a series name for the `--archive` value to mount multiple archives in
-that series:
+<span class="minilink minilink-addedin">New in borgmatic version 1.9.0 with
+Borg version 2.x</span>You can provide a series name for the `--archive` value
+to mount multiple archives in that series:
 
 ```bash
 borgmatic mount --archive seriesname --mount-point /mnt

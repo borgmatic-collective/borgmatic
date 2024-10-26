@@ -86,9 +86,10 @@ time. If `archive_name_format` is unspecified, the default with Borg 1 is
 `{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}`, meaning your system hostname plus a
 timestamp in a particular format.
 
-<span class="minilink minilink-addedin">With Borg version 2.x</span>The default
-is just `{hostname}`, as Borg 2 does not require unique archive names; identical
-archive names form a common "series" that can be targeted together.
+<span class="minilink minilink-addedin">New in borgmatic version 1.9.0 with
+Borg version 2.x</span>The default is just `{hostname}`, as Borg 2 does not
+require unique archive names; identical archive names form a common "series"
+that can be targeted together.
 
 
 ### Archive filtering
