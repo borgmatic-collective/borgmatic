@@ -212,6 +212,11 @@ def test_normalize_sections_with_only_scalar_raises():
             True,
         ),
         (
+            {'repositories': ['sftp://foo@bar:1234/repo']},
+            {'repositories': [{'path': 'sftp://foo@bar:1234/repo'}]},
+            True,
+        ),
+        (
             {'repositories': ['rclone:host:repo']},
             {'repositories': [{'path': 'rclone:host:repo'}]},
             True,

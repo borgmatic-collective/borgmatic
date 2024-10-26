@@ -233,7 +233,11 @@ def normalize(config_filename, config):
                             path=updated_repository_path,
                         )
                     )
-                elif repository_path.startswith('ssh://') or repository_path.startswith('rclone:'):
+                elif (
+                    repository_path.startswith('ssh://')
+                    or repository_path.startswith('sftp://')
+                    or repository_path.startswith('rclone:')
+                ):
                     config['repositories'].append(repository_dict)
                 else:
                     rewritten_repository_path = f"ssh://{repository_path.replace(':~', '/~').replace(':/', '/').replace(':', '/./')}"

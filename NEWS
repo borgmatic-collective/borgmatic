@@ -19,16 +19,15 @@
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
    all repositories in the configuration file.
- * Add support for Borg 2's "rclone:" repository URLs, so you can backup to 70+ cloud storage
-   services whether or not they support Borg explicitly.
  * When using Borg 2, default the "archive_name_format" option to just "{hostname}", as Borg 2 does
    not require unique archive names; identical archive names form a common "series" that can be
    targeted together. See the Borg 2 documentation for more information:
    https://borgbackup.readthedocs.io/en/2.0.0b12/changes.html#borg-1-2-x-1-4-x-to-borg-2-0
- * Update the "--match-archives" flag in all actions (and the "--archive" flag in select actions) to
-   support a Borg 2 series name as its value.
- * Update the "--match-archives" and "--archive" flags in all actions to support a Borg 2 archive
-   hash as its value.
+ * Add support for Borg 2's "rclone:" repository URLs, so you can backup to 70+ cloud storage
+   services whether or not they support Borg explicitly.
+ * Add support for Borg 2's "sftp://" repository URLs.
+ * Update the "--match-archives" and "--archive" flags to support Borg 2 series names or archive
+   hashes.
  * Add a "--match-archives" flag to the "prune" action.
 
 1.8.14
