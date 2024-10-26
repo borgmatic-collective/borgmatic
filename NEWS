@@ -19,6 +19,7 @@
  * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
    all repositories in the configuration file.
+ * #922: Replace setup.py (Python packaging metadata) with the more modern pyproject.toml.
  * When using Borg 2, default the "archive_name_format" option to just "{hostname}", as Borg 2 does
    not require unique archive names; identical archive names form a common "series" that can be
    targeted together. See the Borg 2 documentation for more information:
