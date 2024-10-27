@@ -110,7 +110,10 @@ def extract_archive(
         # is so this doesn't count the final path component, e.g. the filename itself.
         strip_components = max(
             0,
-            *(len(tuple(piece for piece in path.split(os.path.sep) if piece)) - 1 for path in paths)
+            *(
+                len(tuple(piece for piece in path.split(os.path.sep) if piece)) - 1
+                for path in paths
+            ),
         )
 
     working_directory = borgmatic.config.options.get_working_directory(config)
