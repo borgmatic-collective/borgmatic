@@ -1,7 +1,7 @@
 services:
   docs:
     image: borgmatic-docs
-    container_name: docs
+    container_name: borgmatic-docs
     ports:
       - 8080:80
     build:
