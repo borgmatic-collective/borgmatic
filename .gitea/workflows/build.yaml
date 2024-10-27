@@ -26,11 +26,5 @@ jobs:
           PASSWORD: "${{ secrets.REGISTRY_PASSWORD }}"
       - run: podman build --tag "$IMAGE_NAME" --file docs/Dockerfile --storage-opt "overlay.mount_program=/usr/bin/fuse-overlayfs" .
       - run: podman push "$IMAGE_NAME"
-      - run: mkdir borgmatic-docs
-      - run: docs_container_id=$(podman create "$IMAGE_NAME")
-      - run: podman cp $docs_container_id:/usr/share/nginx/html - > borgmatic-docs-dump.tar
-      - run: tar xf borgmatic-docs-dump.tar
-      - run: mv html borgmatic-docs
-      - run: tar cfz borgmatic-docs.tar.gz borgmatic-docs
-      - run: podman rm --volumes $docs_container_id
+      - run: scripts/export-docs-from-image
       - run: curl --user "${{ secrets.REGISTRY_USERNAME }}:${{ secrets.REGISTRY_PASSWORD }}" --upload-file borgmatic-docs.tar.gz https://projects.torsion.org/api/packages/borgmatic-collective/generic/borgmatic-docs/$(head --lines=1 NEWS)/borgmatic-docs.tar.gz

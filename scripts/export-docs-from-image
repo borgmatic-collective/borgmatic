@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+docs_container_id=$(podman create "$IMAGE_NAME")
+podman cp $docs_container_id:/usr/share/nginx/html - > borgmatic-docs-dump.tar
+tar xf borgmatic-docs-dump.tar
+rm borgmatic-docs-dump.tar
+mv html borgmatic-docs
+tar cfz borgmatic-docs.tar.gz borgmatic-docs
+podman rm --volumes $docs_container_id
