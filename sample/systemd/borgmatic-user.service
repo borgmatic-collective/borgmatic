@@ -3,6 +3,7 @@ Description=borgmatic backup
 Wants=network-online.target
 After=network-online.target
 ConditionACPower=true
+Documentation=https://torsion.org/borgmatic/
 
 [Service]
 Type=oneshot
