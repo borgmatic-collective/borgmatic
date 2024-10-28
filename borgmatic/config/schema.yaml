@@ -1625,7 +1625,7 @@ properties:
             server:
                 type: string
                 description: |
-                    The address of your zabbix instance.
+                    The address of your Zabbix instance.
                 example: https://zabbix.your-domain.com
             username:
                 type: string
