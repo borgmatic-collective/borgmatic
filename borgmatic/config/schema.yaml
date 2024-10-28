@@ -1646,25 +1646,25 @@ properties:
                 type: object
                 properties:
                     value:
-                        type: string
+                        type: ["integer", "string"]
                         description: |
-                            The string to set the item value to on start.
+                            The value to set the item to on start.
                         example: STARTED
             finish:
                 type: object
                 properties:
                     value:
-                        type: string
+                        type: ["integer", "string"]
                         description: |
-                            The string to set the item value to on finish.
+                            The value to set the item to on finish.
                         example: FINISH
             fail:
                 type: object
                 properties:
                     value:
-                        type: string
+                        type: ["integer", "string"]
                         description: |
-                            The string to set the item value to on fail.
+                            The value to set the item to on fail.
                         example: ERROR
             states:
                 type: array
