@@ -573,7 +573,7 @@ your Zabbix instance to notify and perform escalations based on the Zabbix
 configuration. The `states` defined in the configuration will determine which states 
 will trigger the hook. The value defined in the configuration of each state is 
 used to populate the data of the configured Zabbix item. If none are provided, 
-it will use the default.
+it default to a lower-case string of the state.
 
 An example configuration is shown here with all the available options.
 
