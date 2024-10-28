@@ -1630,17 +1630,17 @@ properties:
             username:
                 type: string
                 description: |
-                    The username used for authentication.
+                    The username used for authentication. Not needed if using an API key.
                 example: testuser
             password:
                 type: string
                 description: |
-                    The password used for authentication.
+                    The password used for authentication. Not needed if using an API key.
                 example: fakepassword
             api_key:
                 type: string
                 description: |
-                    The API key used for authentication.
+                    The API key used for authentication. Not needed if using an username/password.
                 example: fakekey
             start:
                 type: object
