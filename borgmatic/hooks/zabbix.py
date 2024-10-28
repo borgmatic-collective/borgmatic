@@ -45,7 +45,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     value = state_config.get('value')
     headers = {'Content-Type': 'application/json-rpc'}
 
-    logger.info(f'{config_filename}: Updating Zabbix {dry_run_label}')
+    logger.info(f'{config_filename}: Updating Zabbix{dry_run_label}')
     logger.debug(f'{config_filename}: Using Zabbix URL: {server}')
 
     if server is None:
