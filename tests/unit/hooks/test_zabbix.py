@@ -5,48 +5,48 @@ from flexmock import flexmock
 import borgmatic.hooks.monitor
 from borgmatic.hooks import zabbix as module
 
-server = 'https://zabbix.com/zabbix/api_jsonrpc.php'
-itemid = 55105
-username = 'testuser'
-password = 'fakepassword'
-api_key = 'fakekey'
-host = 'borg-server'
-key = 'borg.status'
-value = 'fail'
+SERVER = 'https://zabbix.com/zabbix/api_jsonrpc.php'
+ITEMID = 55105
+USERNAME = 'testuser'
+PASSWORD = 'fakepassword'
+API_KEY = 'fakekey'
+HOST = 'borg-server'
+KEY = 'borg.status'
+VALUE = 'fail'
 
-data_host_key = {
+DATA_HOST_KEY = {
     "jsonrpc": "2.0",
     "method": "history.push",
-    "params": {"host": host, "key": key, "value": value},
+    "params": {"host": HOST, "key": KEY, "value": VALUE},
     "id": 1,
 }
 
-data_itemid = {
+DATA_ITEMID = {
     "jsonrpc": "2.0",
     "method": "history.push",
-    "params": {"itemid": itemid, "value": value},
+    "params": {"itemid": ITEMID, "value": VALUE},
     "id": 1,
 }
 
-data_user_login = {
+DATA_USER_LOGIN = {
     "jsonrpc": "2.0",
     "method": "user.login",
-    "params": {"username": username, "password": password},
+    "params": {"username": USERNAME, "password": PASSWORD},
     "id": 1,
 }
 
-auth_headers_api_key = {
+AUTH_HEADERS_API_KEY = {
     'Content-Type': 'application/json-rpc',
-    'Authorization': f'Bearer {api_key}'
+    'Authorization': f'Bearer {API_KEY}'
 }
 
-auth_headers_username_password = {
+AUTH_HEADERS_USERNAME_PASSWORD = {
     'Content-Type': 'application/json-rpc'
 }
 
 def test_ping_monitor_config_with_api_key_only():
     hook_config = {
-        'api_key': api_key
+        'api_key': API_KEY
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -61,7 +61,7 @@ def test_ping_monitor_config_with_api_key_only():
 
 def test_ping_monitor_config_with_host_only():
     hook_config = {
-        'host': host
+        'host': HOST
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -76,7 +76,7 @@ def test_ping_monitor_config_with_host_only():
 
 def test_ping_monitor_config_with_key_only():
     hook_config = {
-        'key': key
+        'key': KEY
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -91,7 +91,7 @@ def test_ping_monitor_config_with_key_only():
 
 def test_ping_monitor_config_with_server_only():
     hook_config = {
-        'server': server
+        'server': SERVER
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -106,9 +106,9 @@ def test_ping_monitor_config_with_server_only():
 
 def test_ping_monitor_config_user_password_no_zabbix_data():
     hook_config = {
-        'server': server,
-        'username': username,
-        'password': password
+        'server': SERVER,
+        'username': USERNAME,
+        'password': PASSWORD
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -123,8 +123,8 @@ def test_ping_monitor_config_user_password_no_zabbix_data():
 
 def test_ping_monitor_config_api_key_no_zabbix_data():
     hook_config = {
-        'server': server,
-        'api_key': api_key
+        'server': SERVER,
+        'api_key': API_KEY
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -139,8 +139,8 @@ def test_ping_monitor_config_api_key_no_zabbix_data():
 
 def test_ping_monitor_config_itemid_no_auth_data():
     hook_config = {
-        'server': server,
-        'itemid': itemid
+        'server': SERVER,
+        'itemid': ITEMID
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -155,9 +155,9 @@ def test_ping_monitor_config_itemid_no_auth_data():
 
 def test_ping_monitor_config_host_and_key_no_auth_data():
     hook_config = {
-        'server': server,
-        'host': host,
-        'key': key
+        'server': SERVER,
+        'host': HOST,
+        'key': KEY
     }
     flexmock(module.logger).should_receive('warning').once()
 
@@ -172,15 +172,15 @@ def test_ping_monitor_config_host_and_key_no_auth_data():
 
 def test_ping_monitor_config_host_and_key_with_api_key_auth_data():
     hook_config = {
-        'server': server,
-        'host': host,
-        'key': key,
-        'api_key': api_key
+        'server': SERVER,
+        'host': HOST,
+        'key': KEY,
+        'api_key': API_KEY
     }
     flexmock(module.requests).should_receive('post').with_args(
-        f'{server}',
-        headers=auth_headers_api_key,
-        json=data_host_key,
+        f'{SERVER}',
+        headers=AUTH_HEADERS_API_KEY,
+        json=DATA_HOST_KEY,
     ).and_return(flexmock(ok=True)).once()
     flexmock(module.logger).should_receive('warning').never()
 
