@@ -566,14 +566,16 @@ Resend Notification every X times = 1
 ## Zabbix hook
 
 <span class="minilink minilink-addedin">New in version 1.9.0</span>
-[zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for tracking and managing the performance and availability of networks, servers, and applications in real-time.
+[Zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for
+tracking and managing the performance and availability of networks, servers,
+and applications in real-time.
 
-This hook does not do any notifications on its own. Instead, it relies on
-your Zabbix instance to notify and perform escalations based on the Zabbix
-configuration. The `states` defined in the configuration will determine which states 
-will trigger the hook. The value defined in the configuration of each state is 
-used to populate the data of the configured Zabbix item. If none are provided, 
-it default to a lower-case string of the state.
+This hook does not do any notifications on its own. Instead, it relies on your
+Zabbix instance to notify and perform escalations based on the Zabbix
+configuration. The `states` defined in the configuration determine which
+states will trigger the hook. The value defined in the configuration of each
+state is used to populate the data of the configured Zabbix item. If none are
+provided, it defaults to a lower-case string of the state.
 
 An example configuration is shown here with all the available options.
 
@@ -601,19 +603,22 @@ zabbix:
         - fail
 ```
 
-###  Zabbix 7.0+
 This hook requires the Zabbix server be running version 7.0+
 
-<span class="minilink minilink-addedin">Authentication Methods</span>
-Authentication can be accomplished via `api_key` or `username` and `password`. 
-If both are declared, `api_key` will be chosen.
 
-<span class="minilink minilink-addedin">Items</span> The item 
-to be updated can be chosen by either declaring the `itemid` or 
-`host` and `key`. If both are declared, `itemid` will be chosen.
+### Authentication methods
 
-Keep in mind that `host` is referring to the 'Host name' on the 
-Zabbix host and not the 'Visual name'.
+Authentication can be accomplished via `api_key` or both `username` and
+`password`. If all three are declared, only `api_key` is used.
+
+
+### Items
+
+The item to be updated can be chosen by either declaring the `itemid` or both
+`host` and `key`. If all three are declared, only `itemid` is used.
+
+Keep in mind that `host` is referring to the "Host name" on the Zabbix server
+and not the "Visual name".
 
 
 ## Scripting borgmatic

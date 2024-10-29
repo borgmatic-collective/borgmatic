@@ -69,6 +69,7 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://ntfy.sh/"><img src="docs/static/ntfy.png" alt="ntfy" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://grafana.com/oss/loki/"><img src="docs/static/loki.png" alt="Loki" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://github.com/caronc/apprise/wiki"><img src="docs/static/apprise.png" alt="Apprise" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.zabbix.com/"><img src="docs/static/zabbix.png" alt="Zabbix" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 

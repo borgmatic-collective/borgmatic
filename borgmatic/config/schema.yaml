@@ -1622,12 +1622,14 @@ properties:
             host:
                 type: string
                 description: |
-                    Host name where the item is stored. Required if "itemid" is not set.
+                    Host name where the item is stored. Required if "itemid"
+                    is not set.
                 example: borg-server
             key:
                 type: string
                 description: |
-                    Key of the host where the item is stored. Required if "itemid" is not set.
+                    Key of the host where the item is stored. Required if
+                    "itemid" is not set.
                 example: borg.status
             server:
                 type: string
@@ -1637,17 +1639,20 @@ properties:
             username:
                 type: string
                 description: |
-                    The username used for authentication. Not needed if using an API key.
+                    The username used for authentication. Not needed if using
+                    an API key.
                 example: testuser
             password:
                 type: string
                 description: |
-                    The password used for authentication. Not needed if using an API key.
+                    The password used for authentication. Not needed if using
+                    an API key.
                 example: fakepassword
             api_key:
                 type: string
                 description: |
-                    The API key used for authentication. Not needed if using an username/password.
+                    The API key used for authentication. Not needed if using
+                    an username/password.
                 example: fakekey
             start:
                 type: object

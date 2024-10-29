@@ -30,6 +30,8 @@
  * Update the "--match-archives" and "--archive" flags to support Borg 2 series names or archive
    hashes.
  * Add a "--match-archives" flag to the "prune" action.
+ * Add a Zabbix monitoring hook. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook
 
 1.8.14
  * #896: Fix an error in borgmatic rcreate/init on an empty repository directory with Borg 1.4.

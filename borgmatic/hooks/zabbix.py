@@ -1,4 +1,3 @@
-import json
 import logging
 
 import requests
@@ -52,23 +51,23 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning(f'{config_filename}: Server missing for Zabbix')
         return
 
-    # Determine the zabbix method used to store the value: itemid or host/key
+    # Determine the Zabbix method used to store the value: itemid or host/key
     if itemid is not None:
         logger.info(f'{config_filename}: Updating {itemid} on Zabbix')
         data = {
-            "jsonrpc": "2.0",
-            "method": "history.push",
-            "params": {"itemid": itemid, "value": value},
-            "id": 1,
+            'jsonrpc': '2.0',
+            'method': 'history.push',
+            'params': {'itemid': itemid, 'value': value},
+            'id': 1,
         }
 
     elif (host and key) is not None:
         logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
         data = {
-            "jsonrpc": "2.0",
-            "method": "history.push",
-            "params": {"host": host, "key": key, "value": value},
-            "id": 1,
+            'jsonrpc': '2.0',
+            'method': 'history.push',
+            'params': {'host': host, 'key': key, 'value': value},
+            'id': 1,
         }
 
     elif host is not None:
@@ -90,13 +89,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     elif (username and password) is not None:
         logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
         auth_data = {
-            "jsonrpc": "2.0",
-            "method": "user.login",
-            "params": {
-                "username": username,
-                "password": password
-            },
-            "id": 1
+            'jsonrpc': '2.0',
+            'method': 'user.login',
+            'params': {'username': username, 'password': password},
+            'id': 1,
         }
         if not dry_run:
             logging.getLogger('urllib3').setLevel(logging.ERROR)
@@ -107,6 +103,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
                 logger.warning(f'{config_filename}: Zabbix error: {error}')
+                return
 
     elif username is not None:
         logger.warning(f'{config_filename}: Password missing for Zabbix authentication')
@@ -118,7 +115,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     else:
         logger.warning(f'{config_filename}: Authentication data missing for Zabbix')
         return
-    
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
