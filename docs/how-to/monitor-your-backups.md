@@ -47,6 +47,7 @@ them as backups happen:
  * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
  * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
  * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
+ * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
 
 The idea is that you'll receive an alert when something goes wrong or when the
 service doesn't hear from borgmatic for a configured interval (if supported).
@@ -561,6 +562,58 @@ Heartbeat Retry = 360          # = 10 minutes
 # is sent each time.
 Resend Notification every X times = 1
 ```
+
+## Zabbix hook
+
+<span class="minilink minilink-addedin">New in version 1.9.0</span>
+[zabbix](https://www.zabbix.com/) is an open-source monitoring tool used for tracking and managing the performance and availability of networks, servers, and applications in real-time.
+
+This hook does not do any notifications on its own. Instead, it relies on
+your Zabbix instance to notify and perform escalations based on the Zabbix
+configuration. The `states` defined in the configuration will determine which states 
+will trigger the hook. The value defined in the configuration of each state is 
+used to populate the data of the configured Zabbix item. If none are provided, 
+it default to a lower-case string of the state.
+
+An example configuration is shown here with all the available options.
+
+```yaml
+zabbix:
+    server: http://cloud.zabbix.com/zabbix/api_jsonrpc.php
+    
+    username: myuser
+    password: secret
+    api_key: b2ecba64d8beb47fc161ae48b164cfd7104a79e8e48e6074ef5b141d8a0aeeca
+
+    host: "borg-server"
+    key: borg.status
+    itemid: 55105
+
+    start:
+        value: "STARTED"
+    finish:
+        value: "OK"
+    fail:
+        value: "ERROR"
+    states:
+        - start
+        - finish
+        - fail
+```
+
+###  Zabbix 7.0+
+This hook requires the Zabbix server be running version 7.0+
+
+<span class="minilink minilink-addedin">Authentication Methods</span>
+Authentication can be accomplished via `api_key` or `username` and `password`. 
+If both are declared, `api_key` will be chosen.
+
+<span class="minilink minilink-addedin">Items</span> The item 
+to be updated can be chosen by either declaring the `itemid` or 
+`host` and `key`. If both are declared, `itemid` will be chosen.
+
+Keep in mind that `host` is referring to the 'Host name' on the 
+Zabbix host and not the 'Visual name'.
 
 
 ## Scripting borgmatic

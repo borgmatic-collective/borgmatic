@@ -9,6 +9,7 @@ MONITOR_HOOK_NAMES = (
     'ntfy',
     'pagerduty',
     'uptime_kuma',
+    'zabbix',
 )
 
 
