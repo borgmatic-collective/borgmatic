@@ -44,7 +44,9 @@ AUTH_HEADERS_USERNAME_PASSWORD = {
     'Content-Type': 'application/json-rpc'
 }
 
-def test_ping_monitor_config_with_api_key_only():
+def test_ping_monitor_config_with_api_key_only_exit_early():
+    # This test should exit early since only providing an API KEY is not enough 
+    # for the hook to work
     hook_config = {
         'api_key': API_KEY
     }
@@ -59,7 +61,9 @@ def test_ping_monitor_config_with_api_key_only():
         dry_run=False,
     )
 
-def test_ping_monitor_config_with_host_only():
+def test_ping_monitor_config_with_host_only_exit_early():
+    # This test should exit early since only providing a HOST is not enough 
+    # for the hook to work
     hook_config = {
         'host': HOST
     }
@@ -74,7 +78,9 @@ def test_ping_monitor_config_with_host_only():
         dry_run=False,
     )
 
-def test_ping_monitor_config_with_key_only():
+def test_ping_monitor_config_with_key_only_exit_early():
+    # This test should exit early since only providing a KEY is not enough 
+    # for the hook to work
     hook_config = {
         'key': KEY
     }
@@ -89,7 +95,9 @@ def test_ping_monitor_config_with_key_only():
         dry_run=False,
     )
 
-def test_ping_monitor_config_with_server_only():
+def test_ping_monitor_config_with_server_only_exit_early():
+    # This test should exit early since only providing a SERVER is not enough 
+    # for the hook to work
     hook_config = {
         'server': SERVER
     }
@@ -104,7 +112,8 @@ def test_ping_monitor_config_with_server_only():
         dry_run=False,
     )
 
-def test_ping_monitor_config_user_password_no_zabbix_data():
+def test_ping_monitor_config_user_password_no_zabbix_data_exit_early():
+    # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {
         'server': SERVER,
         'username': USERNAME,
@@ -121,7 +130,8 @@ def test_ping_monitor_config_user_password_no_zabbix_data():
         dry_run=False,
     )
 
-def test_ping_monitor_config_api_key_no_zabbix_data():
+def test_ping_monitor_config_api_key_no_zabbix_data_exit_early():
+    # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {
         'server': SERVER,
         'api_key': API_KEY
@@ -137,7 +147,9 @@ def test_ping_monitor_config_api_key_no_zabbix_data():
         dry_run=False,
     )
 
-def test_ping_monitor_config_itemid_no_auth_data():
+def test_ping_monitor_config_itemid_no_auth_data_exit_early():
+    # This test should exit early since there is no authentication provided 
+    # and Zabbix requires authentication to use it's API
     hook_config = {
         'server': SERVER,
         'itemid': ITEMID
@@ -153,7 +165,9 @@ def test_ping_monitor_config_itemid_no_auth_data():
         dry_run=False,
     )
 
-def test_ping_monitor_config_host_and_key_no_auth_data():
+def test_ping_monitor_config_host_and_key_no_auth_data_exit_early():
+    # This test should exit early since there is no authentication provided 
+    # and Zabbix requires authentication to use it's API
     hook_config = {
         'server': SERVER,
         'host': HOST,
@@ -170,7 +184,9 @@ def test_ping_monitor_config_host_and_key_no_auth_data():
         dry_run=False,
     )
 
-def test_ping_monitor_config_host_and_key_with_api_key_auth_data():
+def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
+    # This test should simulate a successful POST to a Zabbix server. This test uses API_KEY
+    # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {
         'server': SERVER,
         'host': HOST,
