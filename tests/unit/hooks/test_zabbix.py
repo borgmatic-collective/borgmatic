@@ -36,6 +36,14 @@ DATA_ITEMID = {
     "id": 1,
 }
 
+DATA_HOST_KEY_WITH_TOKEN = {
+    "jsonrpc": "2.0",
+    "method": "history.push",
+    "params": {"itemid": ITEMID, "value": VALUE},
+    "id": 1,
+    "auth": "3fe6ed01a69ebd79907a120bcd04e494"
+}
+
 DATA_USER_LOGIN = {
     "jsonrpc": "2.0",
     "method": "user.login",
@@ -253,3 +261,64 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
         monitoring_log_level=1,
         dry_run=False,
     )
+
+def test_ping_monitor_config_itemid_with_api_key_auth_data_successful():
+    # This test should simulate a successful POST to a Zabbix server. This test uses API_KEY
+    # to authenticate and HOST/KEY to know which item to populate in Zabbix.
+    hook_config = {
+        'server': SERVER,
+        'itemid': ITEMID,
+        'api_key': API_KEY
+    }
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{SERVER}',
+        headers=AUTH_HEADERS_API_KEY,
+        json=DATA_ITEMID,
+    ).and_return(flexmock(ok=True)).once()
+    flexmock(module.logger).should_receive('warning').never()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+def test_ping_monitor_config_itemid_with_username_password_auth_data_successful():
+    # This test should simulate a successful POST to a Zabbix server. This test uses USERNAME/PASSWORD
+    # to authenticate and HOST/KEY to know which item to populate in Zabbix.
+    hook_config = {
+        'server': SERVER,
+        'itemid': ITEMID,
+        'username': USERNAME,
+        'password': PASSWORD
+    }
+
+    auth_response = flexmock(ok=True)
+    auth_response.should_receive('json').and_return({"jsonrpc":"2.0","result":"3fe6ed01a69ebd79907a120bcd04e494","id":1})
+
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{SERVER}',
+        headers=AUTH_HEADERS_USERNAME_PASSWORD,
+        json=DATA_USER_LOGIN,
+    ).and_return(auth_response).once()
+
+    flexmock(module.logger).should_receive('warning').never()
+
+    flexmock(module.requests).should_receive('post').with_args(
+        f'{SERVER}',
+        headers=AUTH_HEADERS_USERNAME_PASSWORD,
+        json=DATA_HOST_KEY_WITH_TOKEN,
+    ).and_return(flexmock(ok=True)).once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+test_ping_monitor_config_itemid_with_username_password_auth_data_successful()
