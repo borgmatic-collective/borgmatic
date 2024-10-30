@@ -46,18 +46,25 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logger.warning(f'{config_filename}: User missing for Pushover')
         return
 
+    if 'priority' in state_config and state_config['priority'] == 2:
+        if 'expire' not in state_config:
+            logger.info(f'{config_filename}: Setting expire to default (10min).')
+            state_config['expire'] = 1200
+        if 'retry' not in state_config:
+            logger.info(f'{config_filename}: Setting retry to default (30sec).')
+            state_config['retry'] = 30
+    else:
+        state_config.pop('expire', None)
+        state_config.pop('retry', None)
+
     data = {
         'token': token,
         'user': user,
         'message': state.name.lower(),  # default to state name. Can be overwritten in state_config loop below.
     }
-
+    
     for key in state_config:
         data[key] = state_config[key]
-        if key == 'priority':
-            if data['priority'] == 2:
-                data['expire'] = 30
-                data['retry'] = 30
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)

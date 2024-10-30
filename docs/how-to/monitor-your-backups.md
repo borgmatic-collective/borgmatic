@@ -331,18 +331,26 @@ pushover:
     start:
         message: "Backup <b>Started</b>"
         priority: -2
-        device: "pixel8"
         title: "Backup Started"
         html: 1
-        sound: "bike"
-        ttl: 10
+        ttl: 10 # Message will be deleted after 10 seconds.
     fail:
-        message: "Backup <font color='#ed4337'>Failed</font>"
-        priority: -2
+        message: "Backup <font color='#ff6961'>Failed</font>"
+        priority: 2 # Requests acknowledgement for messages.
+        expire: 1200 # Used only for priority 2. Default is 1200 seconds.
+        retry: 30 # Used only for priority 2. Default is 30 seconds.
         device: "pixel8"
-        title: "Backup Started"
+        title: "Backup Failed"
         html: 1
         sound: "siren"
+        url: "https://ticketing-system.example.com/login"
+        url_title: "Login to ticketing system"
+    finish:
+        message: "Backup <font color='#77dd77'>Finished</font>"
+        priority: 0
+        title: "Backup Finished"
+        html: 1
+        ttl: 60
         url: "https://ticketing-system.example.com/login"
         url_title: "Login to ticketing system"
     states:
