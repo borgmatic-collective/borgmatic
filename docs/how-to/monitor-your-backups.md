@@ -46,6 +46,7 @@ them as backups happen:
  * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
  * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
  * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+ * [Pushover](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pushover-hook)
  * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
  * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
 
@@ -288,6 +289,67 @@ fail.
 
 If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
+
+
+## Pushover hook
+
+<span class="minilink minilink-addedin">New in version 1.9.0</span>
+[Pushover](https://pushover.net) makes it easy to get real-time notifications 
+on your Android, iPhone, iPad, and Desktop (Android Wear and Apple Watch, too!)
+
+First, create a Pushover account and login on your mobile device. Create an
+Application in your Pushover dashboard.
+
+Then, configure borgmatic with your user's unique "User Key" found in your 
+Pushover dashboard and the unique "API Token" from the created Application.
+
+Here's a basic example:
+
+
+```yaml
+pushover:
+    token: 7ms6TXHpTokTou2P6x4SodDeentHRa
+    user: hwRwoWsXMBWwgrSecfa9EfPey55WSN
+```
+
+
+With this configuration, borgmatic creates a Pushover event for your service
+whenever backups fail, but only when any of the `create`, `prune`, `compact`,
+or `check` actions are run. Note that borgmatic does not contact Pushover
+when a backup starts or when it ends without error.
+
+You can configure Pushover to have custom parameters declared for borgmatic's
+`start`, `fail` and `finish` hooks states.
+
+Here's a more advanced example:
+
+
+```yaml
+pushover:
+    token: 7ms6TXHpTokTou2P6x4SodDeentHRa
+    user: hwRwoWsXMBWwgrSecfa9EfPey55WSN
+    start:
+        message: "Backup <b>Started</b>"
+        priority: -2
+        device: "pixel8"
+        title: "Backup Started"
+        html: 1
+        sound: "bike"
+        ttl: 10
+    fail:
+        message: "Backup <font color='#ed4337'>Failed</font>"
+        priority: -2
+        device: "pixel8"
+        title: "Backup Started"
+        html: 1
+        sound: "siren"
+        url: "https://ticketing-system.example.com/login"
+        url_title: "Login to ticketing system"
+    states:
+        - start
+        - finish
+        - fail
+```
 
 
 ## ntfy hook

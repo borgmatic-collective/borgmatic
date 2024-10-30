@@ -1609,6 +1609,214 @@ properties:
                 example:
                     - start
                     - finish
+    pushover:
+        type: object
+        additionalProperties: false
+        properties:
+            token:
+                type: string
+                description: |
+                    Your application's API token.
+                example: 7ms6TXHpTokTou2P6x4SodDeentHRa
+            user:
+                type: string
+                description: |
+                    Your user/group key (or that of your target user), viewable 
+                    when logged into your dashboard: often referred to as 
+                    USER_KEY in Pushover documentation and code examples.
+                example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
+            start:
+                type: object
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: |
+                            Message to be sent to the user or group.
+                        example: A backup job has started.
+                    priority:
+                        type: integer
+                        description: |
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
+                        example: "0"
+                    device:
+                        type: string
+                        description: |
+                            The name of one of your devices to send just to that
+                            device instead of all devices.
+                        example: pixel8
+                    html:
+                        type: integer
+                        description: |
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
+                        example: 1
+                    sound:
+                        type: string
+                        description: |
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be
+                            found here: https://pushover.net/api#sounds
+                        example: bike
+                    title:
+                        type: string
+                        description: |
+                            Your message's title, otherwise your app's
+                            name is used.
+                        example: A backup job has started.
+                    ttl:
+                        type: integer
+                        description: |
+                            The number of seconds that the message will live,
+                            before being deleted automatically. The ttl
+                            parameter is ignored for messages with a priority
+                            value of 2.
+                        example: 3600
+                    url:
+                        type: string
+                        description: |
+                            A supplementary URL to show with your message.
+                        example: https://pushover.net/apps/xxxxx-borgbackup
+                    url_title:
+                        type: string
+                        description: |
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
+                        example: Pushover Link
+            finish:
+                type: object
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: |
+                            Message to be sent to the user or group.
+                        example: A backup job has started.
+                    priority:
+                        type: integer
+                        description: |
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
+                        example: "0"
+                    device:
+                        type: string
+                        description: |
+                            The name of one of your devices to send just to that
+                            device instead of all devices.
+                        example: pixel8
+                    html:
+                        type: integer
+                        description: |
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
+                        example: 1
+                    sound:
+                        type: string
+                        description: |
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be
+                            found here: https://pushover.net/api#sounds
+                        example: bike
+                    title:
+                        type: string
+                        description: |
+                            Your message's title, otherwise your app's
+                            name is used.
+                        example: A backup job has started.
+                    ttl:
+                        type: integer
+                        description: |
+                            The number of seconds that the message will live,
+                            before being deleted automatically. The ttl
+                            parameter is ignored for messages with a priority
+                            value of 2.
+                        example: 3600
+                    url:
+                        type: string
+                        description: |
+                            A supplementary URL to show with your message.
+                        example: https://pushover.net/apps/xxxxx-borgbackup
+                    url_title:
+                        type: string
+                        description: |
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
+                        example: Pushover Link
+            fail:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: |
+                            Message to be sent to the user or group.
+                        example: A backup job has started.
+                    priority:
+                        type: integer
+                        description: |
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
+                        example: "0"
+                    device:
+                        type: string
+                        description: |
+                            The name of one of your devices to send just to that
+                            device instead of all devices.
+                        example: pixel8
+                    html:
+                        type: integer
+                        description: |
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
+                        example: 1
+                    sound:
+                        type: string
+                        description: |
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be
+                            found here: https://pushover.net/api#sounds
+                        example: bike
+                    title:
+                        type: string
+                        description: |
+                            Your message's title, otherwise your app's
+                            name is used.
+                        example: A backup job has started.
+                    ttl:
+                        type: integer
+                        description: |
+                            The number of seconds that the message will live,
+                            before being deleted automatically. The ttl
+                            parameter is ignored for messages with a priority
+                            value of 2.
+                        example: 3600
+                    url:
+                        type: string
+                        description: |
+                            A supplementary URL to show with your message.
+                        example: https://pushover.net/apps/xxxxx-borgbackup
+                    url_title:
+                        type: string
+                        description: |
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
+                        example: Pushover Link
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", and/or "fail". Defaults to pinging for failure
+                    only.
+                example:
+                    - start
+                    - finish
     zabbix:
         type: object
         additionalProperties: false
