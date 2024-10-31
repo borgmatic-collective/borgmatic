@@ -7,7 +7,7 @@ import stat
 import tempfile
 import textwrap
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags, state
 from borgmatic.execute import (
@@ -357,7 +357,7 @@ def make_base_create_command(
     (base Borg create command flags, Borg create command positional arguments, open pattern file
     handle, open exclude file handle).
     '''
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if config.get('source_directories_must_exist', False):
         check_all_source_directories_exist(
@@ -527,7 +527,7 @@ def create_archive(
     '''
     borgmatic.logger.add_custom_log_levels()
 
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
     borgmatic_source_directories = expand_directories(
         collect_borgmatic_source_directories(config.get('borgmatic_source_directory')),
         working_directory=working_directory,

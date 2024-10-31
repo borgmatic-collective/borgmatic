@@ -1,6 +1,6 @@
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -60,7 +60,7 @@ def mount_archive(
     )
 
     borg_environment = environment.make_environment(config)
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     # Don't capture the output when foreground mode is used so that ctrl-C can work properly.
     if mount_arguments.foreground:

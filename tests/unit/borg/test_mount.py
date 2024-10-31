@@ -9,7 +9,7 @@ from ..test_verbosity import insert_logging_mock
 
 def insert_execute_command_mock(command, working_directory=None, borg_exit_codes=None):
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         working_directory,
     )
     flexmock(module).should_receive('execute_command').with_args(
@@ -258,9 +258,7 @@ def test_mount_archive_calls_borg_with_foreground_parameter():
         ('repo::archive',)
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'mount', '--foreground', 'repo::archive', '/mnt'),
         output_file=module.DO_NOT_CAPTURE,
@@ -320,9 +318,7 @@ def test_mount_archive_with_date_based_matching_calls_borg_with_date_based_flags
     )
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
         (
             'borg',

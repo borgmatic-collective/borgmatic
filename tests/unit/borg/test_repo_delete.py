@@ -262,9 +262,7 @@ def test_delete_repository_with_defaults_does_not_capture_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
@@ -293,9 +291,7 @@ def test_delete_repository_with_force_captures_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
@@ -324,9 +320,7 @@ def test_delete_repository_with_cache_only_captures_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=module.logging.ANSWER,
@@ -355,7 +349,7 @@ def test_delete_repository_calls_borg_with_working_directory():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',
     )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(

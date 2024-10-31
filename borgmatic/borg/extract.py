@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.config.validate
 from borgmatic.borg import environment, feature, flags, repo_list
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -60,7 +60,7 @@ def extract_last_archive_dry_run(
     execute_command(
         full_extract_command,
         extra_environment=borg_environment,
-        working_directory=borgmatic.config.options.get_working_directory(config),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
@@ -116,7 +116,7 @@ def extract_archive(
             ),
         )
 
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     full_command = (
         (local_path, 'extract')

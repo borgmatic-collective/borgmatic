@@ -16,7 +16,7 @@ def insert_execute_command_mock(
     capture=True,
 ):
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         working_directory,
     )
     flexmock(module).should_receive('execute_command').with_args(

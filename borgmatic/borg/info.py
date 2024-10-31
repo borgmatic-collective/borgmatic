@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command, execute_command_and_capture_output
@@ -97,7 +97,7 @@ def display_archives_info(
         remote_path,
     )
     borg_exit_codes = config.get('borg_exit_codes')
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     json_info = execute_command_and_capture_output(
         json_command,

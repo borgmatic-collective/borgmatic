@@ -1,7 +1,7 @@
 import logging
 import os
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -30,7 +30,7 @@ def export_key(
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if export_arguments.path and export_arguments.path != '-':
         if os.path.exists(os.path.join(working_directory or '', export_arguments.path)):

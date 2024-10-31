@@ -266,3 +266,13 @@ def test_normalize_applies_hard_coded_normalization_to_config(
         assert logs
     else:
         assert logs == []
+
+
+def test_normalize_config_with_borgmatic_source_directory_warns():
+    flexmock(module).should_receive('normalize_sections').and_return([])
+
+    logs = module.normalize('test.yaml', {'borgmatic_source_directory': '~/.borgmatic'})
+
+    assert len(logs) == 1
+    assert logs[0].levelno == module.logging.WARNING
+    assert 'borgmatic_source_directory' in logs[0].msg

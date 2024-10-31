@@ -2,7 +2,7 @@ import argparse
 import json
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags, repo_info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -168,7 +168,7 @@ def check_archives(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     # The Borg repair option triggers an interactive prompt, which won't work when output is
     # captured. And progress messes with the terminal directly.

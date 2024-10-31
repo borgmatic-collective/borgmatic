@@ -446,9 +446,7 @@ def test_display_archives_info_calls_two_commands():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').once()
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags')
     flexmock(module).should_receive('execute_command').once()
@@ -466,9 +464,7 @@ def test_display_archives_info_with_json_calls_json_command_only():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     json_output = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(json_output)
     flexmock(module.flags).should_receive('warn_for_aggressive_archive_flags').never()
@@ -490,7 +486,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('make_info_command')
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',
     )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(

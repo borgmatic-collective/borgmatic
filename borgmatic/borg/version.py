@@ -1,6 +1,6 @@
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 from borgmatic.borg import environment
 from borgmatic.execute import execute_command_and_capture_output
 
@@ -22,7 +22,7 @@ def local_borg_version(config, local_path='borg'):
     output = execute_command_and_capture_output(
         full_command,
         extra_environment=environment.make_environment(config),
-        working_directory=borgmatic.config.options.get_working_directory(config),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

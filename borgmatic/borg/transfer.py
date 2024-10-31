@@ -1,6 +1,6 @@
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, flags
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
@@ -57,7 +57,7 @@ def transfer_archives(
         output_log_level=logging.ANSWER,
         output_file=DO_NOT_CAPTURE if transfer_arguments.progress else None,
         extra_environment=environment.make_environment(config),
-        working_directory=borgmatic.config.options.get_working_directory(config),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

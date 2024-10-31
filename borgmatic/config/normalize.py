@@ -68,6 +68,17 @@ def normalize(config_filename, config):
     '''
     logs = normalize_sections(config_filename, config)
 
+    if config.get('borgmatic_source_directory'):
+        logs.append(
+            logging.makeLogRecord(
+                dict(
+                    levelno=logging.WARNING,
+                    levelname='WARNING',
+                    msg=f'{config_filename}: The borgmatic_source_directory option is deprecated and will be removed from a future release. Use borgmatic_runtime_directory and borgmatic_state_directory instead.',
+                )
+            )
+        )
+
     # Upgrade exclude_if_present from a string to a list.
     exclude_if_present = config.get('exclude_if_present')
     if isinstance(exclude_if_present, str):

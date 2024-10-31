@@ -3,7 +3,7 @@ import json
 import logging
 import subprocess
 
-import borgmatic.config.options
+import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags, repo_info
 from borgmatic.execute import DO_NOT_CAPTURE, execute_command
 
@@ -97,7 +97,7 @@ def create_repository(
         repo_create_command,
         output_file=DO_NOT_CAPTURE,
         extra_environment=environment.make_environment(config),
-        working_directory=borgmatic.config.options.get_working_directory(config),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

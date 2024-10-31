@@ -30,7 +30,7 @@ def insert_repo_create_command_mock(
     repo_create_command, working_directory=None, borg_exit_codes=None, **kwargs
 ):
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         working_directory,
     )
     flexmock(module).should_receive('execute_command').with_args(
@@ -95,9 +95,7 @@ def test_create_repository_raises_for_borg_repo_create_error():
         )
     )
     flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').and_raise(
         module.subprocess.CalledProcessError(2, 'borg repo_create')
     )

@@ -14,7 +14,7 @@ import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.repo_list
 import borgmatic.borg.state
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.config.validate
 import borgmatic.execute
 import borgmatic.hooks.command
@@ -210,15 +210,11 @@ def make_check_time_path(config, borg_repository_id, check_type, archives_check_
     "archives", etc.), and a unique hash of the archives filter flags, return a path for recording
     that check's time (the time of that check last occurring).
     '''
-    borgmatic_source_directory = os.path.expanduser(
-        config.get(
-            'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-        )
-    )
+    borgmatic_state_directory = borgmatic.config.paths.get_borgmatic_state_directory(config)
 
     if check_type in ('archives', 'data'):
         return os.path.join(
-            borgmatic_source_directory,
+            borgmatic_state_directory,
             'checks',
             borg_repository_id,
             check_type,
@@ -226,7 +222,7 @@ def make_check_time_path(config, borg_repository_id, check_type, archives_check_
         )
 
     return os.path.join(
-        borgmatic_source_directory,
+        borgmatic_state_directory,
         'checks',
         borg_repository_id,
         check_type,
@@ -259,7 +255,7 @@ def read_check_time(path):
 def probe_for_check_time(config, borg_repository_id, check, archives_check_id):
     '''
     Given a configuration dict, a Borg repository ID, the name of a check type ("repository",
-    "archives", etc.), and a unique hash of the archives filter flags, return a the corresponding
+    "archives", etc.), and a unique hash of the archives filter flags, return the corresponding
     check time or None if such a check time does not exist.
 
     When the check type is "archives" or "data", this function probes two different paths to find
@@ -297,14 +293,37 @@ def upgrade_check_times(config, borg_repository_id):
     Given a configuration dict and a Borg repository ID, upgrade any corresponding check times on
     disk from old-style paths to new-style paths.
 
-    Currently, the only upgrade performed is renaming an archive or data check path that looks like:
+    One upgrade performed is moving the checks directory from:
 
-      ~/.borgmatic/checks/1234567890/archives
+      {borgmatic_source_directory}/checks (e.g., ~/.borgmatic/checks)
 
     to:
 
-      ~/.borgmatic/checks/1234567890/archives/all
+      {borgmatic_state_directory}/checks (e.g. ~/.local/state/borgmatic)
+
+    Another upgrade is renaming an archive or data check path that looks like:
+
+      {borgmatic_state_directory}/checks/1234567890/archives
+
+    to:
+
+      {borgmatic_state_directory}/checks/1234567890/archives/all
     '''
+    borgmatic_source_checks_path = os.path.join(
+        borgmatic.config.paths.get_borgmatic_source_directory(config), 'checks'
+    )
+    borgmatic_state_path = borgmatic.config.paths.get_borgmatic_state_directory(config)
+    borgmatic_state_checks_path = os.path.join(borgmatic_state_path, 'checks')
+
+    if os.path.exists(borgmatic_source_checks_path) and not os.path.exists(
+        borgmatic_state_checks_path
+    ):
+        logger.debug(
+            f'Upgrading archives check times directory from {borgmatic_source_checks_path} to {borgmatic_state_checks_path}'
+        )
+        os.makedirs(borgmatic_state_path, mode=0o700, exist_ok=True)
+        os.rename(borgmatic_source_checks_path, borgmatic_state_checks_path)
+
     for check_type in ('archives', 'data'):
         new_path = make_check_time_path(config, borg_repository_id, check_type, 'all')
         old_path = os.path.dirname(new_path)
@@ -313,7 +332,7 @@ def upgrade_check_times(config, borg_repository_id):
         if not os.path.isfile(old_path) and not os.path.isfile(temporary_path):
             continue
 
-        logger.debug(f'Upgrading archives check time from {old_path} to {new_path}')
+        logger.debug(f'Upgrading archives check time file from {old_path} to {new_path}')
 
         try:
             os.rename(old_path, temporary_path)
@@ -357,7 +376,7 @@ def collect_spot_check_source_paths(
         )
     )
     borg_environment = borgmatic.borg.environment.make_environment(config)
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     paths_output = borgmatic.execute.execute_command_and_capture_output(
         create_flags + create_positional_arguments,
@@ -389,13 +408,10 @@ def collect_spot_check_archive_paths(
     Given a repository configuration dict, the name of the latest archive, a configuration dict, the
     local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, and
     the remote Borg path, collect the paths from the given archive (but only include files and
-    symlinks).
+    symlinks and exclude borgmatic runtime directories).
     '''
-    borgmatic_source_directory = os.path.expanduser(
-        config.get(
-            'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-        )
-    )
+    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
+    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
 
     return tuple(
         path
@@ -412,6 +428,7 @@ def collect_spot_check_archive_paths(
         for (file_type, path) in (line.split(' ', 1),)
         if file_type != BORG_DIRECTORY_FILE_TYPE
         if pathlib.Path(borgmatic_source_directory) not in pathlib.Path(path).parents
+        if pathlib.Path(borgmatic_runtime_directory) not in pathlib.Path(path).parents
     )
 
 
@@ -443,7 +460,7 @@ def compare_spot_check_hashes(
         int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)), 1
     )
     source_sample_paths = tuple(random.sample(source_paths, sample_count))
-    working_directory = borgmatic.config.options.get_working_directory(config)
+    working_directory = borgmatic.config.paths.get_working_directory(config)
     existing_source_sample_paths = {
         source_path
         for source_path in source_sample_paths

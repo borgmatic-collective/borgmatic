@@ -207,11 +207,25 @@ properties:
     borgmatic_source_directory:
         type: string
         description: |
-            Path for additional source files used for temporary internal state
-            like borgmatic database dumps. Note that changing this path prevents
-            "borgmatic restore" from finding any database dumps created before
-            the change. Defaults to ~/.borgmatic
+            Deprecated. Replaced by borgmatic_runtime_directory and
+            borgmatic_state_directory. Defaults to ~/.borgmatic
         example: /tmp/borgmatic
+    borgmatic_runtime_directory:
+        type: string
+        description: |
+            Path for storing temporary runtime data like streaming database
+            dumps and bootstrap metadata. Defaults to the
+            borgmatic_source_directory value (deprecated) or
+            $XDG_RUNTIME_DIR/borgmatic or /var/run/$UID/borgmatic.
+        example: /run/user/1001/borgmatic
+    borgmatic_state_directory:
+        type: string
+        description: |
+            Path for storing borgmatic state files like records of when checks
+            last ran. Defaults to the borgmatic_source_directory value
+            (deprecated) or $XDG_STATE_HOME/borgmatic or
+            ~/.local/state/borgmatic.
+        example: /var/lib/borgmatic
     store_config_files:
         type: boolean
         description: |

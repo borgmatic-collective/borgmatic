@@ -1,6 +1,6 @@
 import logging
 
-import borgmatic.config.options
+import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
@@ -97,7 +97,7 @@ def prune_archives(
         full_command,
         output_log_level=output_log_level,
         extra_environment=environment.make_environment(config),
-        working_directory=borgmatic.config.options.get_working_directory(config),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )

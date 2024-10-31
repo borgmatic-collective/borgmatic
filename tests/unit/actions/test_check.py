@@ -268,54 +268,45 @@ def test_make_archives_check_id_with_empty_flags_returns_none():
 
 
 def test_make_check_time_path_with_borgmatic_source_directory_includes_it():
-    flexmock(module.os.path).should_receive('expanduser').with_args('~/.borgmatic').and_return(
-        '/home/user/.borgmatic'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return(
+        '/home/user/.local/state/borgmatic',
     )
-
-    assert (
-        module.make_check_time_path(
-            {'borgmatic_source_directory': '~/.borgmatic'}, '1234', 'archives', '5678'
-        )
-        == '/home/user/.borgmatic/checks/1234/archives/5678'
-    )
-
-
-def test_make_check_time_path_without_borgmatic_source_directory_uses_default():
-    flexmock(module.os.path).should_receive('expanduser').with_args(
-        module.borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-    ).and_return('/home/user/.borgmatic')
 
     assert (
         module.make_check_time_path({}, '1234', 'archives', '5678')
-        == '/home/user/.borgmatic/checks/1234/archives/5678'
+        == '/home/user/.local/state/borgmatic/checks/1234/archives/5678'
     )
 
 
 def test_make_check_time_path_with_archives_check_and_no_archives_check_id_defaults_to_all():
-    flexmock(module.os.path).should_receive('expanduser').with_args('~/.borgmatic').and_return(
-        '/home/user/.borgmatic'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return(
+        '/home/user/.local/state/borgmatic',
     )
 
     assert (
         module.make_check_time_path(
-            {'borgmatic_source_directory': '~/.borgmatic'},
+            {},
             '1234',
             'archives',
         )
-        == '/home/user/.borgmatic/checks/1234/archives/all'
+        == '/home/user/.local/state/borgmatic/checks/1234/archives/all'
     )
 
 
 def test_make_check_time_path_with_repositories_check_ignores_archives_check_id():
-    flexmock(module.os.path).should_receive('expanduser').with_args('~/.borgmatic').and_return(
-        '/home/user/.borgmatic'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return(
+        '/home/user/.local/state/borgmatic',
     )
 
     assert (
-        module.make_check_time_path(
-            {'borgmatic_source_directory': '~/.borgmatic'}, '1234', 'repository', '5678'
-        )
-        == '/home/user/.borgmatic/checks/1234/repository'
+        module.make_check_time_path({}, '1234', 'repository', '5678')
+        == '/home/user/.local/state/borgmatic/checks/1234/repository'
     )
 
 
@@ -376,8 +367,69 @@ def test_probe_for_check_time_returns_none_when_no_check_time_found():
     assert module.probe_for_check_time(flexmock(), flexmock(), flexmock(), flexmock()) is None
 
 
+def test_upgrade_check_times_moves_checks_from_borgmatic_source_directory_to_state_directory():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').with_args(
+        '/home/user/.borgmatic/checks'
+    ).and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args(
+        '/home/user/.local/state/borgmatic/checks'
+    ).and_return(False)
+    flexmock(module.os).should_receive('makedirs')
+    flexmock(module.os).should_receive('rename').with_args(
+        '/home/user/.borgmatic/checks', '/home/user/.local/state/borgmatic/checks'
+    ).once()
+
+    flexmock(module).should_receive('make_check_time_path').and_return(
+        '/home/user/.local/state/borgmatic/checks/1234/archives/all'
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(False)
+    flexmock(module.os).should_receive('mkdir').never()
+
+    module.upgrade_check_times(flexmock(), flexmock())
+
+
+def test_upgrade_check_times_with_checks_already_in_borgmatic_state_directory_does_not_move_anything():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').with_args(
+        '/home/user/.borgmatic/checks'
+    ).and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args(
+        '/home/user/.local/state/borgmatic/checks'
+    ).and_return(True)
+    flexmock(module.os).should_receive('makedirs').never()
+    flexmock(module.os).should_receive('rename').never()
+
+    flexmock(module).should_receive('make_check_time_path').and_return(
+        '/home/user/.local/state/borgmatic/checks/1234/archives/all'
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(False)
+    flexmock(module.os).should_receive('rename').never()
+    flexmock(module.os).should_receive('mkdir').never()
+
+    module.upgrade_check_times(flexmock(), flexmock())
+
+
 def test_upgrade_check_times_renames_old_check_paths_to_all():
-    base_path = '~/.borgmatic/checks/1234'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    base_path = '/home/user/.local/state/borgmatic/checks/1234'
     flexmock(module).should_receive('make_check_time_path').with_args(
         object, object, 'archives', 'all'
     ).and_return(f'{base_path}/archives/all')
@@ -408,7 +460,15 @@ def test_upgrade_check_times_renames_old_check_paths_to_all():
 
 
 def test_upgrade_check_times_renames_data_check_paths_when_archives_paths_are_already_upgraded():
-    base_path = '~/.borgmatic/checks/1234'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    base_path = '/home/user/.local/state/borgmatic/checks/1234'
     flexmock(module).should_receive('make_check_time_path').with_args(
         object, object, 'archives', 'all'
     ).and_return(f'{base_path}/archives/all')
@@ -435,9 +495,17 @@ def test_upgrade_check_times_renames_data_check_paths_when_archives_paths_are_al
     module.upgrade_check_times(flexmock(), flexmock())
 
 
-def test_upgrade_check_times_skips_missing_check_paths():
+def test_upgrade_check_times_skips_already_upgraded_check_paths():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
     flexmock(module).should_receive('make_check_time_path').and_return(
-        '~/.borgmatic/checks/1234/archives/all'
+        '/home/user/.local/state/borgmatic/checks/1234/archives/all'
     )
     flexmock(module.os.path).should_receive('isfile').and_return(False)
     flexmock(module.os).should_receive('rename').never()
@@ -447,7 +515,15 @@ def test_upgrade_check_times_skips_missing_check_paths():
 
 
 def test_upgrade_check_times_renames_stale_temporary_check_path():
-    base_path = '~/.borgmatic/checks/1234'
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_state_directory'
+    ).and_return('/home/user/.local/state/borgmatic')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    base_path = '/home/borgmatic/.local/state/checks/1234'
     flexmock(module).should_receive('make_check_time_path').with_args(
         object, object, 'archives', 'all'
     ).and_return(f'{base_path}/archives/all')
@@ -497,9 +573,7 @@ def test_collect_spot_check_source_paths_parses_borg_output():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -537,9 +611,7 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -577,9 +649,7 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -617,9 +687,7 @@ def test_collect_spot_check_source_paths_skips_directories():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -642,6 +710,12 @@ def test_collect_spot_check_source_paths_skips_directories():
 
 
 def test_collect_spot_check_archive_paths_excludes_directories():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/home/user/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/var/run/1001/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -662,6 +736,12 @@ def test_collect_spot_check_archive_paths_excludes_directories():
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_directory():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/root/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/var/run/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -673,6 +753,31 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
         repository={'path': 'repo'},
         archive='archive',
         config={'borgmatic_source_directory': '/root/.borgmatic'},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path',)
+
+
+def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/root.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/var/run/0/borgmatic')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        (
+            'f /etc/path',
+            'f /var/run/0/borgmatic/some/thing',
+        )
+    )
+
+    assert module.collect_spot_check_archive_paths(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={'borgmatic_runtime_directory': '/var/run/0/borgmatic'},
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
@@ -700,7 +805,7 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
         flexmock()
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir'
     )
     flexmock(module.borgmatic.execute).should_receive(
@@ -725,7 +830,7 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -766,7 +871,7 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -807,7 +912,7 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -845,7 +950,7 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -882,7 +987,7 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').with_args('/foo').and_return(True)
@@ -919,7 +1024,7 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
@@ -965,7 +1070,7 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
     )
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',
     )
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/foo').and_return(True)

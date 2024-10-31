@@ -18,7 +18,7 @@ def insert_execute_command_mock(
     borgmatic.logger.add_custom_log_levels()
 
     flexmock(module.environment).should_receive('make_environment').with_args(config or {}).once()
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         working_directory,
     )
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
@@ -169,9 +169,7 @@ def test_change_passphrase_with_log_debug_calls_borg_with_debug_flags():
 
 def test_change_passphrase_with_dry_run_skips_borg_call():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    flexmock(module.borgmatic.config.options).should_receive('get_working_directory').and_return(
-        None
-    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
     module.change_passphrase(
