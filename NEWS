@@ -20,6 +20,7 @@
    cases.
  * #902: Add loading of encrypted systemd credentials. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/#using-systemd-service-credentials
+ * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #914: Fix a confusing apparent hang when when the repository location changes, and instead
    show a helpful error message.
  * #915: BREAKING: Rename repository actions like "rcreate" to more explicit names like
@@ -31,7 +32,6 @@
  * #919: Clarify the command-line help for the "--config" flag.
  * #919: Document a policy for versioning and breaking changes:
    https://torsion.org/borgmatic/docs/how-to/upgrade/#versioning-and-breaking-changes
- * #911: Add a "key change-passphrase" action to change the passphrase protecting a repository key.
  * #921: BREAKING: Change soft failure command hooks to skip only the current repository rather than
    all repositories in the configuration file.
  * #922: Replace setup.py (Python packaging metadata) with the more modern pyproject.toml.
