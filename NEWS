@@ -1,4 +1,4 @@
-1.9.0.dev0
+1.9.0
  * #609: Fix the glob expansion of "source_directories" values to respect the "working_directory"
    option.
  * #609: BREAKING: Apply the "working_directory" option to all actions, not just "create". This
@@ -6,17 +6,18 @@
  * #562: Deprecate the "borgmatic_source_directory" option in favor of "user_runtime_directory"
    and "user_state_directory".
  * #562: BREAKING: Move the default borgmatic streaming database dump and bootstrap metadata
-   directory from ~/.borgmatic to /run/user/$UID/borgmatic, which is more XDG-compliant. Override
-   this location with the new "user_runtime_directory" option. Existing archives with database dumps
-   at the old location are still restorable. 
+   directory from ~/.borgmatic to /run/user/$UID/borgmatic, which is more XDG-compliant. You can
+   override this location with the new "user_runtime_directory" option. Existing archives with
+   database dumps at the old location are still restorable. 
  * #562, #638: Move the default check state directory from ~/.borgmatic to 
    ~/.local/state/borgmatic. This is more XDG-compliant and also prevents these state files from
-   getting backed up (unless you explicitly include them). Override this location with the new
-   "user_state_directory" option. After the first time you run the "check" action with borgmatic
+   getting backed up (unless you explicitly include them). You can override this location with the
+   new "user_state_directory" option. After the first time you run the "check" action with borgmatic
    1.9.0, you can safely delete the ~/.borgmatic directory.
- * #838: With Borg 1.4+, store database dumps and bootstrap metadata in a "/borgmatic" directory
-   within a backup archive, so the path doesn't depend on the current user. This means that you can
-   now backup as one user and restore or bootstrap as another user, among other use cases.
+ * #838: BREAKING: With Borg 1.4+, store database dumps and bootstrap metadata in a "/borgmatic"
+   directory within a backup archive, so the path doesn't depend on the current user. This means
+   that you can now backup as one user and restore or bootstrap as another user, among other use
+   cases.
  * #902: Add loading of encrypted systemd credentials. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/#using-systemd-service-credentials
  * #914: Fix a confusing apparent hang when when the repository location changes, and instead
@@ -37,7 +38,7 @@
  * When using Borg 2, default the "archive_name_format" option to just "{hostname}", as Borg 2 does
    not require unique archive names; identical archive names form a common "series" that can be
    targeted together. See the Borg 2 documentation for more information:
-   https://borgbackup.readthedocs.io/en/2.0.0b12/changes.html#borg-1-2-x-1-4-x-to-borg-2-0
+   https://borgbackup.readthedocs.io/en/2.0.0b13/changes.html#borg-1-2-x-1-4-x-to-borg-2-0
  * Add support for Borg 2's "rclone:" repository URLs, so you can backup to 70+ cloud storage
    services whether or not they support Borg explicitly.
  * Add support for Borg 2's "sftp://" repository URLs.

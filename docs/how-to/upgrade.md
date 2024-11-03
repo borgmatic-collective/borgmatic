@@ -93,8 +93,8 @@ versioning. But here's how borgmatic versioning generally works:
    on the features you use, this may be a drop-in replacement. But read the
    release notes to make sure.
  * Patch version bumps (e.g., 1.8.13 to 1.8.14): Minor breaking changes. These
-   include, for instance, bug fixes that are technically breaking and may only
-   affects a small subset of users.
+   include, for instance, bug fixes that are technically breaking but may only
+   affect a small subset of users.
 
 Each breaking change is prefixed with "BREAKING:" in [borgmatic's release
 notes](https://projects.torsion.org/borgmatic-collective/borgmatic/releases),
@@ -193,7 +193,7 @@ confirmation of success—or tells you if something hasn't been transferred yet.
 Note that by omitting the `--upgrader` flag, you can also do archive transfers
 between related Borg 2 repositories without upgrading, even down to individual
 archives. For more on that functionality, see the [Borg transfer
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b12/usage/transfer.html).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b13/usage/transfer.html).
 
 That's it! Now you can use your new Borg 2 repository as normal with
 borgmatic. If you've got multiple repositories, repeat the above process for

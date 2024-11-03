@@ -141,7 +141,7 @@ for more information.
 
 <span class="minilink minilink-addedin">With Borg version 2.x</span>See the
 [match archives
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b12/usage/help.html#borg-help-match-archives).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b13/usage/help.html#borg-help-match-archives).
 
 Some borgmatic command-line actions also have a `--match-archives` flag that
 overrides both the auto-matching behavior and the `match_archives`
