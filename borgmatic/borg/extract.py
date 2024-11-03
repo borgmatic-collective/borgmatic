@@ -132,10 +132,9 @@ def extract_archive(
         + (('--progress',) if progress else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
-            # Make the repository path absolute so the destination directory
-            # used below via changing the working directory doesn't prevent
-            # Borg from finding the repo. But also apply the user's configured
-            # working directory (if any) to the repo path.
+            # Make the repository path absolute so the destination directory used below via changing
+            # the working directory doesn't prevent Borg from finding the repo. But also apply the
+            # user's configured working directory (if any) to the repo path.
             borgmatic.config.validate.normalize_repository_path(
                 os.path.join(working_directory or '', repository)
             ),

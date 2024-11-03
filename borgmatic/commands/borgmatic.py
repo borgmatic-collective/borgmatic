@@ -694,7 +694,9 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
     if 'bootstrap' in arguments:
         try:
             # No configuration file is needed for bootstrap.
-            local_borg_version = borg_version.local_borg_version({}, 'borg')
+            local_borg_version = borg_version.local_borg_version(
+                {}, arguments['bootstrap'].local_path
+            )
         except (OSError, CalledProcessError, ValueError) as error:
             yield from log_error_records('Error getting local Borg version', error)
             return

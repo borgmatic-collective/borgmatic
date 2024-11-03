@@ -49,11 +49,18 @@ def test_get_subactions_for_actions_with_subactions_returns_one_entry_per_action
     ) == {'action': ('foo', 'bar', 'baz'), 'other': ('quux',)}
 
 
-def test_omit_values_colliding_with_action_names_drops_action_names_that_have__been_parsed_as_values():
+def test_omit_values_colliding_with_action_names_drops_action_names_that_have_been_parsed_as_values():
     assert module.omit_values_colliding_with_action_names(
         ('check', '--only', 'extract', '--some-list', 'borg'),
         {'check': flexmock(only='extract', some_list=['borg'])},
     ) == ('check', '--only', '--some-list')
+
+
+def test_omit_values_colliding_twice_with_action_names_drops_action_names_that_have_been_parsed_as_values():
+    assert module.omit_values_colliding_with_action_names(
+        ('config', 'bootstrap', '--local-path', '--remote-path', 'borg'),
+        {'bootstrap': flexmock(local_path='borg', remote_path='borg')},
+    ) == ('config', 'bootstrap', '--local-path', '--remote-path')
 
 
 def test_parse_and_record_action_arguments_without_action_name_leaves_arguments_untouched():

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def local_borg_version(config, local_path='borg'):
     '''
-    Given a configuration dict and a local Borg binary path, return a version string for it.
+    Given a configuration dict and a local Borg executable path, return a version string for it.
 
     Raise OSError or CalledProcessError if there is a problem running Borg.
     Raise ValueError if the version cannot be parsed.

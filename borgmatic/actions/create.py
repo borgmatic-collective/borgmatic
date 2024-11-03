@@ -5,7 +5,7 @@ import os
 
 import borgmatic.actions.json
 import borgmatic.borg.create
-import borgmatic.borg.state
+import borgmatic.config.paths
 import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
@@ -22,12 +22,9 @@ def create_borgmatic_manifest(config, config_paths, dry_run):
     if dry_run:
         return
 
-    borgmatic_source_directory = config.get(
-        'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-    )
-
-    borgmatic_manifest_path = os.path.expanduser(
-        os.path.join(borgmatic_source_directory, 'bootstrap', 'manifest.json')
+    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
+    borgmatic_manifest_path = os.path.join(
+        borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
     )
 
     if not os.path.exists(borgmatic_manifest_path):

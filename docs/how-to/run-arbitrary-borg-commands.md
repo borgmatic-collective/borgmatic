@@ -22,7 +22,7 @@ following, all based on your borgmatic configuration files or command-line
 arguments:
 
  * configured repositories, running your Borg command once for each one
- * local and remote Borg binary paths
+ * local and remote Borg executable paths
  * SSH settings and Borg environment variables
  * lock wait settings
  * verbosity

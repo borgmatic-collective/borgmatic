@@ -29,18 +29,21 @@ def get_borgmatic_source_directory(config):
 def get_borgmatic_runtime_directory(config):
     '''
     Given a configuration dict, get the borgmatic runtime directory used for storing temporary
-    runtime data like streaming database dumps and bootstrap metadata. Defaults to the
-    "borgmatic_source_directory" value (deprecated) or $XDG_RUNTIME_DIR/borgmatic or
-    /var/run/$UID/borgmatic.
+    runtime data like streaming database dumps and bootstrap metadata. Defaults to
+    $XDG_RUNTIME_DIR/./borgmatic or /run/user/$UID/./borgmatic.
+
+    The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
+    does not get stored in the file path within an archive. That way, the path of the runtime
+    directory can change without leaving database dumps within an archive inaccessible.
     '''
     return expand_user_in_path(
-        config.get('borgmatic_runtime_directory')
-        or config.get('borgmatic_source_directory')
-        or os.path.join(
-            os.environ.get(
+        os.path.join(
+            config.get('user_runtime_directory')
+            or os.environ.get(
                 'XDG_RUNTIME_DIR',
-                f'/var/run/{os.getuid()}',
+                f'/run/user/{os.getuid()}',
             ),
+            '.',
             'borgmatic',
         )
     )
@@ -49,14 +52,13 @@ def get_borgmatic_runtime_directory(config):
 def get_borgmatic_state_directory(config):
     '''
     Given a configuration dict, get the borgmatic state directory used for storing borgmatic state
-    files like records of when checks last ran. Defaults to the "borgmatic_source_directory" value
-    (deprecated) or $XDG_STATE_HOME/borgmatic or ~/.local/state/borgmatic.
+    files like records of when checks last ran. Defaults to $XDG_STATE_HOME/borgmatic or
+    ~/.local/state/./borgmatic.
     '''
     return expand_user_in_path(
-        config.get('borgmatic_state_directory')
-        or config.get('borgmatic_source_directory')
-        or os.path.join(
-            os.environ.get(
+        os.path.join(
+            config.get('user_state_directory')
+            or os.environ.get(
                 'XDG_STATE_HOME',
                 '~/.local/state',
             ),

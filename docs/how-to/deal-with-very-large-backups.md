@@ -225,14 +225,25 @@ repository, at most once a month.
 
 Unlike a real scheduler like cron, borgmatic only makes a best effort to run
 checks on the configured frequency. It compares that frequency with how long
-it's been since the last check for a given repository (as recorded in a file
-within `~/.borgmatic/checks`). If it hasn't been long enough, the check is
-skipped. And you still have to run `borgmatic check` (or `borgmatic` without
-actions) in order for checks to run, even when a `frequency` is configured!
+it's been since the last check for a given repository If it hasn't been long
+enough, the check is skipped. And you still have to run `borgmatic check` (or
+`borgmatic` without actions) in order for checks to run, even when a
+`frequency` is configured!
 
 This also applies *across* configuration files that have the same repository
 configured. Make sure you have the same check frequency configured in each
 though—or the most frequently configured check will apply.
+
+<span class="minilink minilink-addedin">New in version 1.9.0</span>To support
+this frequency logic, borgmatic records check timestamps within the
+`~/.local/state/borgmatic/checks` directory. To override the `~/.local/state`
+portion of this path, set the `user_state_directory` configuration option.
+Alternatively, set the `XDG_STATE_HOME` environment variable.
+
+<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
+borgmatic recorded check timestamps within the `~/.borgmatic` directory. At
+that time, the path was configurable by the `borgmatic_source_directory`
+configuration option (now deprecated).
 
 If you want to temporarily ignore your configured frequencies, you can invoke
 `borgmatic check --force` to run checks unconditionally.

@@ -74,11 +74,11 @@ def omit_values_colliding_with_action_names(unparsed_arguments, parsed_arguments
     for action_name, parsed in parsed_arguments.items():
         for value in vars(parsed).values():
             if isinstance(value, str):
-                if value in ACTION_ALIASES.keys():
+                if value in ACTION_ALIASES.keys() and value in remaining_arguments:
                     remaining_arguments.remove(value)
             elif isinstance(value, list):
                 for item in value:
-                    if item in ACTION_ALIASES.keys():
+                    if item in ACTION_ALIASES.keys() and item in remaining_arguments:
                         remaining_arguments.remove(item)
 
     return tuple(remaining_arguments)
@@ -865,8 +865,22 @@ def make_parsers():
         required=True,
     )
     config_bootstrap_group.add_argument(
+        '--local-path',
+        help='Alternate Borg local executable. Defaults to "borg"',
+        default='borg',
+    )
+    config_bootstrap_group.add_argument(
+        '--remote-path',
+        help='Alternate Borg remote executable. Defaults to "borg"',
+        default='borg',
+    )
+    config_bootstrap_group.add_argument(
+        '--user-runtime-directory',
+        help='Path used for temporary runtime data like bootstrap metadata. Defaults to $XDG_RUNTIME_DIR or /var/run/$UID',
+    )
+    config_bootstrap_group.add_argument(
         '--borgmatic-source-directory',
-        help='Path that stores the config files used to create an archive and additional source files used for temporary internal state like borgmatic database dumps. Defaults to ~/.borgmatic',
+        help='Deprecated. Path formerly used for temporary runtime data like bootstrap metadata. Defaults to ~/.borgmatic',
     )
     config_bootstrap_group.add_argument(
         '--archive',

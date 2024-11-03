@@ -368,7 +368,7 @@ def collect_spot_check_source_paths(
             config_paths=(),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
-            borgmatic_source_directories=(),
+            borgmatic_runtime_directories=(),
             local_path=local_path,
             remote_path=remote_path,
             list_files=True,
@@ -427,6 +427,7 @@ def collect_spot_check_archive_paths(
         )
         for (file_type, path) in (line.split(' ', 1),)
         if file_type != BORG_DIRECTORY_FILE_TYPE
+        if pathlib.Path('/borgmatic') not in pathlib.Path(path).parents
         if pathlib.Path(borgmatic_source_directory) not in pathlib.Path(path).parents
         if pathlib.Path(borgmatic_runtime_directory) not in pathlib.Path(path).parents
     )

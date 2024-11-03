@@ -14,7 +14,7 @@ def write_configuration(
     source_directory,
     config_path,
     repository_path,
-    borgmatic_source_directory,
+    user_runtime_directory,
     postgresql_dump_format='custom',
     mongodb_dump_format='archive',
 ):
@@ -28,7 +28,7 @@ source_directories:
     - {source_directory}
 repositories:
     - path: {repository_path}
-borgmatic_source_directory: {borgmatic_source_directory}
+user_runtime_directory: {user_runtime_directory}
 
 encryption_passphrase: "test"
 
@@ -101,7 +101,7 @@ def write_custom_restore_configuration(
     source_directory,
     config_path,
     repository_path,
-    borgmatic_source_directory,
+    user_runtime_directory,
     postgresql_dump_format='custom',
     mongodb_dump_format='archive',
 ):
@@ -115,7 +115,7 @@ source_directories:
     - {source_directory}
 repositories:
     - path: {repository_path}
-borgmatic_source_directory: {borgmatic_source_directory}
+user_runtime_directory: {user_runtime_directory}
 
 encryption_passphrase: "test"
 
@@ -173,7 +173,7 @@ def write_simple_custom_restore_configuration(
     source_directory,
     config_path,
     repository_path,
-    borgmatic_source_directory,
+    user_runtime_directory,
     postgresql_dump_format='custom',
 ):
     '''
@@ -187,7 +187,7 @@ source_directories:
     - {source_directory}
 repositories:
     - path: {repository_path}
-borgmatic_source_directory: {borgmatic_source_directory}
+user_runtime_directory: {user_runtime_directory}
 
 encryption_passphrase: "test"
 
@@ -347,7 +347,6 @@ def test_database_dump_and_restore():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
     # Write out a special file to ensure that it gets properly excluded and Borg doesn't hang on it.
     os.mkfifo(os.path.join(temporary_directory, 'special_file'))
@@ -357,7 +356,7 @@ def test_database_dump_and_restore():
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_configuration(
-            temporary_directory, config_path, repository_path, borgmatic_source_directory
+            temporary_directory, config_path, repository_path, temporary_directory
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -406,14 +405,13 @@ def test_database_dump_and_restore_with_restore_cli_flags():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
     original_working_directory = os.getcwd()
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_simple_custom_restore_configuration(
-            temporary_directory, config_path, repository_path, borgmatic_source_directory
+            temporary_directory, config_path, repository_path, temporary_directory
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -485,14 +483,13 @@ def test_database_dump_and_restore_with_restore_configuration_options():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
     original_working_directory = os.getcwd()
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
         config = write_custom_restore_configuration(
-            temporary_directory, config_path, repository_path, borgmatic_source_directory
+            temporary_directory, config_path, repository_path, temporary_directory
         )
         create_test_tables(config)
         select_test_tables(config)
@@ -542,7 +539,6 @@ def test_database_dump_and_restore_with_directory_format():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
     original_working_directory = os.getcwd()
 
@@ -552,7 +548,7 @@ def test_database_dump_and_restore_with_directory_format():
             temporary_directory,
             config_path,
             repository_path,
-            borgmatic_source_directory,
+            temporary_directory,
             postgresql_dump_format='directory',
             mongodb_dump_format='directory',
         )
@@ -593,15 +589,12 @@ def test_database_dump_with_error_causes_borgmatic_to_exit():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
-    borgmatic_source_directory = os.path.join(temporary_directory, '.borgmatic')
 
     original_working_directory = os.getcwd()
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
-        write_configuration(
-            temporary_directory, config_path, repository_path, borgmatic_source_directory
-        )
+        write_configuration(temporary_directory, config_path, repository_path, temporary_directory)
 
         subprocess.check_call(
             [

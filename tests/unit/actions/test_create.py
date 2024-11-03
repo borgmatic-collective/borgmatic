@@ -191,15 +191,18 @@ def test_run_create_produces_json():
 
 
 def test_create_borgmatic_manifest_creates_manifest_file():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/run/user/0/borgmatic')
     flexmock(module.os.path).should_receive('join').with_args(
-        module.borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY, 'bootstrap', 'manifest.json'
-    ).and_return('/home/user/.borgmatic/bootstrap/manifest.json')
+        '/run/user/0/borgmatic', 'bootstrap', 'manifest.json'
+    ).and_return('/run/user/0/borgmatic/bootstrap/manifest.json')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
     flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
-        '/home/user/.borgmatic/bootstrap/manifest.json', 'w'
+        '/run/user/0/borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(
         flexmock(
             __enter__=lambda *args: flexmock(write=lambda *args: None, close=lambda *args: None),
@@ -211,7 +214,10 @@ def test_create_borgmatic_manifest_creates_manifest_file():
     module.create_borgmatic_manifest({}, 'test.yaml', False)
 
 
-def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_source_directory():
+def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_runtime_directory():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/borgmatic')
     flexmock(module.os.path).should_receive('join').with_args(
         '/borgmatic', 'bootstrap', 'manifest.json'
     ).and_return('/borgmatic/bootstrap/manifest.json')
@@ -230,11 +236,9 @@ def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_s
     flexmock(module.json).should_receive('dump').and_return(True).once()
 
     module.create_borgmatic_manifest(
-        {'borgmatic_source_directory': '/borgmatic'}, 'test.yaml', False
+        {'borgmatic_runtime_directory': '/borgmatic'}, 'test.yaml', False
     )
 
 
 def test_create_borgmatic_manifest_does_not_create_manifest_file_on_dry_run():
-    flexmock(module.os.path).should_receive('expanduser').never()
-
     module.create_borgmatic_manifest({}, 'test.yaml', True)

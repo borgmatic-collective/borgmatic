@@ -3,6 +3,7 @@ import logging
 import os
 import shlex
 
+import borgmatic.config.paths
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
@@ -13,12 +14,14 @@ from borgmatic.hooks import dump
 logger = logging.getLogger(__name__)
 
 
-def make_dump_path(config):  # pragma: no cover
+def make_dump_path(config, base_directory=None):  # pragma: no cover
     '''
-    Make the dump path from the given configuration dict and the name of this hook.
+    Given a configuration dict and an optional base directory, make the corresponding dump path. If
+    a base directory isn't provided, use the borgmatic runtime directory.
     '''
     return dump.make_data_source_dump_path(
-        config.get('borgmatic_source_directory'), 'mariadb_databases'
+        base_directory or borgmatic.config.paths.get_borgmatic_runtime_directory(config),
+        'mariadb_databases',
     )
 
 
@@ -191,13 +194,23 @@ def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma:
     dump.remove_data_source_dumps(make_dump_path(config), 'MariaDB', log_prefix, dry_run)
 
 
-def make_data_source_dump_pattern(databases, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_patterns(databases, config, log_prefix, name=None):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, a prefix to log with, and a
     database name to match, return the corresponding glob patterns to match the database dump in an
     archive.
     '''
-    return dump.make_data_source_dump_filename(make_dump_path(config), name, hostname='*')
+    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
+
+    return (
+        dump.make_data_source_dump_filename(
+            make_dump_path(config, 'borgmatic'), name, hostname='*'
+        ),
+        dump.make_data_source_dump_filename(make_dump_path(config), name, hostname='*'),
+        dump.make_data_source_dump_filename(
+            make_dump_path(config, borgmatic_source_directory), name, hostname='*'
+        ),
+    )
 
 
 def restore_data_source_dump(

@@ -63,14 +63,23 @@ dump formats, which can't stream and therefore do consume temporary disk
 space. Additionally, prior to borgmatic 1.5.3, all database dumps consumed
 temporary disk space.)
 
-To support this, borgmatic creates temporary named pipes in `~/.borgmatic` by
-default. To customize this path, set the `borgmatic_source_directory` option
-in borgmatic's configuration.
+<span class="minilink minilink-addedin">New in version 1.9.0</span> To support
+this, borgmatic creates temporary streaming database dumps within
+`/run/user/$UID/borgmatic` by default (where `$UID` is the current user's ID).
+To customize the `/run/user/$UID` portion of this path, set the
+`user_runtime_directory` option in borgmatic's configuration. Alternatively,
+set the `XDG_RUNTIME_DIR` environment variable (often already set to
+`/run/user/$UID`).
 
-Also note that using a database hook implicitly enables both the
-`read_special` and `one_file_system` configuration settings (even if they're
-disabled in your configuration) to support this dump and restore streaming.
-See Limitations below for more on this.
+<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
+borgmatic created temporary streaming database dumps within the `~/.borgmatic`
+directory by default. At that time, the path was configurable by the
+`borgmatic_source_directory` configuration option (now deprecated).
+
+Also note that using a database hook implicitly enables the
+`read_special` configuration option (even if it's disabled in your
+configuration) to support this dump and restore streaming. See Limitations
+below for more on this.
 
 Here's a more involved example that connects to remote databases:
 

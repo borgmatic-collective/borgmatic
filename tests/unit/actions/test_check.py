@@ -564,7 +564,7 @@ def test_collect_spot_check_source_paths_parses_borg_output():
         config_paths=(),
         local_borg_version=object,
         global_arguments=object,
-        borgmatic_source_directories=(),
+        borgmatic_runtime_directories=(),
         local_path=object,
         remote_path=object,
         list_files=True,
@@ -602,7 +602,7 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
         config_paths=(),
         local_borg_version=object,
         global_arguments=object,
-        borgmatic_source_directories=(),
+        borgmatic_runtime_directories=(),
         local_path=object,
         remote_path=object,
         list_files=True,
@@ -640,7 +640,7 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
         config_paths=(),
         local_borg_version=object,
         global_arguments=object,
-        borgmatic_source_directories=(),
+        borgmatic_runtime_directories=(),
         local_path=object,
         remote_path=object,
         list_files=True,
@@ -678,7 +678,7 @@ def test_collect_spot_check_source_paths_skips_directories():
         config_paths=(),
         local_borg_version=object,
         global_arguments=object,
-        borgmatic_source_directories=(),
+        borgmatic_runtime_directories=(),
         local_path=object,
         remote_path=object,
         list_files=True,
@@ -715,7 +715,7 @@ def test_collect_spot_check_archive_paths_excludes_directories():
     ).and_return('/home/user/.borgmatic')
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/1001/borgmatic')
+    ).and_return('/run/user/1001/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -735,13 +735,38 @@ def test_collect_spot_check_archive_paths_excludes_directories():
     ) == ('/etc/path', '/etc/other')
 
 
+def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory_as_stored_with_prefix_truncation():
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_source_directory'
+    ).and_return('/root/.borgmatic')
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'get_borgmatic_runtime_directory'
+    ).and_return('/run/user/0/borgmatic')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        (
+            'f /etc/path',
+            'f /borgmatic/some/thing',
+        )
+    )
+
+    assert module.collect_spot_check_archive_paths(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    ) == ('/etc/path',)
+
+
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_directory():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
+    ).and_return('/run/user/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -752,7 +777,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
     assert module.collect_spot_check_archive_paths(
         repository={'path': 'repo'},
         archive='archive',
-        config={'borgmatic_source_directory': '/root/.borgmatic'},
+        config={},
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
@@ -766,18 +791,18 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     ).and_return('/root.borgmatic')
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
+    ).and_return('/run/user/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
-            'f /var/run/0/borgmatic/some/thing',
+            'f /run/user/0/borgmatic/some/thing',
         )
     )
 
     assert module.collect_spot_check_archive_paths(
         repository={'path': 'repo'},
         archive='archive',
-        config={'borgmatic_runtime_directory': '/var/run/0/borgmatic'},
+        config={},
         local_borg_version=flexmock(),
         global_arguments=flexmock(),
         local_path=flexmock(),
@@ -796,7 +821,7 @@ def test_collect_spot_check_source_paths_uses_working_directory():
         config_paths=(),
         local_borg_version=object,
         global_arguments=object,
-        borgmatic_source_directories=(),
+        borgmatic_runtime_directories=(),
         local_path=object,
         remote_path=object,
         list_files=True,

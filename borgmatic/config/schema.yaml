@@ -207,24 +207,27 @@ properties:
     borgmatic_source_directory:
         type: string
         description: |
-            Deprecated. Replaced by borgmatic_runtime_directory and
+            Deprecated. Only used for locating database dumps and bootstrap
+            metadata within backup archives created prior to deprecation.
+            Replaced by borgmatic_runtime_directory and
             borgmatic_state_directory. Defaults to ~/.borgmatic
         example: /tmp/borgmatic
-    borgmatic_runtime_directory:
+    user_runtime_directory:
         type: string
         description: |
             Path for storing temporary runtime data like streaming database
-            dumps and bootstrap metadata. Defaults to the
-            borgmatic_source_directory value (deprecated) or
-            $XDG_RUNTIME_DIR/borgmatic or /var/run/$UID/borgmatic.
+            dumps and bootstrap metadata. borgmatic automatically creates and
+            uses a "borgmatic" subdirectory here. Defaults to $XDG_RUNTIME_DIR
+            or /run/user/$UID.
         example: /run/user/1001/borgmatic
-    borgmatic_state_directory:
+    user_state_directory:
         type: string
         description: |
             Path for storing borgmatic state files like records of when checks
-            last ran. Defaults to the borgmatic_source_directory value
-            (deprecated) or $XDG_STATE_HOME/borgmatic or
-            ~/.local/state/borgmatic.
+            last ran. borgmatic automatically creates and uses a "borgmatic"
+            subdirectory here. If you change this option, borgmatic must
+            create the check records again (and therefore re-run checks).
+            Defaults to $XDG_STATE_HOME or ~/.local/state.
         example: /var/lib/borgmatic
     store_config_files:
         type: boolean

@@ -9,7 +9,7 @@ import textwrap
 
 import borgmatic.config.paths
 import borgmatic.logger
-from borgmatic.borg import environment, feature, flags, state
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import (
     DO_NOT_CAPTURE,
     execute_command,
@@ -221,18 +221,13 @@ def make_list_filter_flags(local_borg_version, dry_run):
         return f'{base_flags}-'
 
 
-def collect_borgmatic_source_directories(borgmatic_source_directory):
+def collect_borgmatic_runtime_directories(borgmatic_runtime_directory):
     '''
-    Return a list of borgmatic-specific source directories used for state like database backups.
+    Return a list of borgmatic-specific runtime directories used for temporary runtime data like
+    streaming database dumps and bootstrap metadata. If no such directories exist, return an empty
+    list.
     '''
-    if not borgmatic_source_directory:
-        borgmatic_source_directory = state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-
-    return (
-        [borgmatic_source_directory]
-        if os.path.exists(os.path.expanduser(borgmatic_source_directory))
-        else []
-    )
+    return [borgmatic_runtime_directory] if os.path.exists(borgmatic_runtime_directory) else []
 
 
 ROOT_PATTERN_PREFIX = 'R '
@@ -342,7 +337,7 @@ def make_base_create_command(
     config_paths,
     local_borg_version,
     global_arguments,
-    borgmatic_source_directories,
+    borgmatic_runtime_directories,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -368,7 +363,7 @@ def make_base_create_command(
         map_directories_to_devices(
             expand_directories(
                 tuple(config.get('source_directories', ()))
-                + borgmatic_source_directories
+                + borgmatic_runtime_directories
                 + tuple(config_paths if config.get('store_config_files', True) else ()),
                 working_directory=working_directory,
             )
@@ -479,7 +474,7 @@ def make_base_create_command(
             local_path,
             working_directory,
             borg_environment,
-            skip_directories=borgmatic_source_directories,
+            skip_directories=borgmatic_runtime_directories,
         )
 
         if special_file_paths:
@@ -528,8 +523,10 @@ def create_archive(
     borgmatic.logger.add_custom_log_levels()
 
     working_directory = borgmatic.config.paths.get_working_directory(config)
-    borgmatic_source_directories = expand_directories(
-        collect_borgmatic_source_directories(config.get('borgmatic_source_directory')),
+    borgmatic_runtime_directories = expand_directories(
+        collect_borgmatic_runtime_directories(
+            borgmatic.config.paths.get_borgmatic_runtime_directory(config)
+        ),
         working_directory=working_directory,
     )
 
@@ -541,7 +538,7 @@ def create_archive(
             config_paths,
             local_borg_version,
             global_arguments,
-            borgmatic_source_directories,
+            borgmatic_runtime_directories,
             local_path,
             remote_path,
             progress,

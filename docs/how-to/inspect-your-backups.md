@@ -62,9 +62,9 @@ for available values.
 
 (No borgmatic `list` or `info` actions? Upgrade borgmatic!)
 
-<span class="minilink minilink-addedin">New in borgmatic version 1.9.0</span>
-There are also `repo-list` and `repo-info` actions for displaying repository
-information with Borg 2.x:
+<span class="minilink minilink-addedin">New in version 1.9.0</span> There are
+also `repo-list` and `repo-info` actions for displaying repository information
+with Borg 2.x:
 
 ```bash
 borgmatic repo-list
@@ -107,11 +107,27 @@ hooks](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/), you
 can list backed up database dumps via borgmatic. For example:
 
 ```bash 
-borgmatic list --archive latest --find .borgmatic/*_databases
+borgmatic list --archive latest --find *borgmatic/*_databases
 ```
 
 This gives you a listing of all database dump files contained in the latest
 archive, complete with file sizes.
+
+<span class="minilink minilink-addedin">New in borgmatic version
+1.9.0</span>Database dump files are stored at `/borgmatic` within a backup
+archive, regardless of the user who performs the backup. (Note that Borg
+doesn't store the leading `/`.)
+
+<span class="minilink minilink-addedin">With Borg version 1.2 and
+earlier</span>Database dump files are stored at `/var/run/$UID/borgmatic`
+(where `$UID` is the current user's ID) unless overridden by the
+`user_runtime_directory` configuration option or the `XDG_STATE_HOME`
+environment variable.
+
+<span class="minilink minilink-addedin">Prior to borgmatic version
+1.9.0</span>Database dump files were instead stored at `~/.borgmatic` within
+the backup archive (where `~` was expanded to the home directory of the user
+who performed the backup). This applied with all versions of Borg.
 
 
 ## Logging

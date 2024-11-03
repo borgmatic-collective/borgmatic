@@ -1237,7 +1237,7 @@ def test_collect_highlander_action_summary_logs_info_for_success_with_bootstrap(
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap')
     arguments = {
-        'bootstrap': flexmock(repository='repo'),
+        'bootstrap': flexmock(repository='repo', local_path='borg7'),
         'global': flexmock(dry_run=False),
     }
 
@@ -1255,7 +1255,7 @@ def test_collect_highlander_action_summary_logs_error_on_bootstrap_failure():
         ValueError
     )
     arguments = {
-        'bootstrap': flexmock(repository='repo'),
+        'bootstrap': flexmock(repository='repo', local_path='borg7'),
         'global': flexmock(dry_run=False),
     }
 
@@ -1272,7 +1272,7 @@ def test_collect_highlander_action_summary_logs_error_on_bootstrap_local_borg_ve
     flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
     flexmock(module.borgmatic.actions.config.bootstrap).should_receive('run_bootstrap').never()
     arguments = {
-        'bootstrap': flexmock(repository='repo'),
+        'bootstrap': flexmock(repository='repo', local_path='borg7'),
         'global': flexmock(dry_run=False),
     }
 

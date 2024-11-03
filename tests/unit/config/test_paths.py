@@ -38,16 +38,10 @@ def test_get_borgmatic_runtime_directory_uses_config_option():
 
     assert (
         module.get_borgmatic_runtime_directory(
-            {'borgmatic_runtime_directory': '/tmp', 'borgmatic_source_directory': '/nope'}
+            {'user_runtime_directory': '/tmp', 'borgmatic_source_directory': '/nope'}
         )
-        == '/tmp'
+        == '/tmp/./borgmatic'
     )
-
-
-def test_get_borgmatic_runtime_directory_falls_back_to_borgmatic_source_directory_option():
-    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-
-    assert module.get_borgmatic_runtime_directory({'borgmatic_source_directory': '/tmp'}) == '/tmp'
 
 
 def test_get_borgmatic_runtime_directory_falls_back_to_environment_variable():
@@ -56,15 +50,15 @@ def test_get_borgmatic_runtime_directory_falls_back_to_environment_variable():
         'XDG_RUNTIME_DIR', object
     ).and_return('/tmp')
 
-    assert module.get_borgmatic_runtime_directory({}) == '/tmp/borgmatic'
+    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
 
 
 def test_get_borgmatic_runtime_directory_defaults_to_hard_coded_path():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').and_return('/var/run/0')
+    flexmock(module.os.environ).should_receive('get').and_return('/run/user/0')
     flexmock(module.os).should_receive('getuid').and_return(0)
 
-    assert module.get_borgmatic_runtime_directory({}) == '/var/run/0/borgmatic'
+    assert module.get_borgmatic_runtime_directory({}) == '/run/user/0/./borgmatic'
 
 
 def test_get_borgmatic_state_directory_uses_config_option():
@@ -72,16 +66,10 @@ def test_get_borgmatic_state_directory_uses_config_option():
 
     assert (
         module.get_borgmatic_state_directory(
-            {'borgmatic_state_directory': '/tmp', 'borgmatic_source_directory': '/nope'}
+            {'user_state_directory': '/tmp', 'borgmatic_source_directory': '/nope'}
         )
-        == '/tmp'
+        == '/tmp/borgmatic'
     )
-
-
-def test_get_borgmatic_state_directory_falls_back_to_borgmatic_source_directory_option():
-    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-
-    assert module.get_borgmatic_state_directory({'borgmatic_source_directory': '/tmp'}) == '/tmp'
 
 
 def test_get_borgmatic_state_directory_falls_back_to_environment_variable():

@@ -1,12 +1,15 @@
 import copy
 import logging
 import os
+import pathlib
+import shutil
+import tempfile
 
 import borgmatic.borg.extract
 import borgmatic.borg.list
 import borgmatic.borg.mount
 import borgmatic.borg.repo_list
-import borgmatic.borg.state
+import borgmatic.config.paths
 import borgmatic.config.validate
 import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
@@ -61,6 +64,37 @@ def get_configured_data_source(
     )
 
 
+def strip_path_prefix_from_extracted_dump_destination(
+    destination_path, borgmatic_runtime_directory
+):
+    '''
+    Directory-format dump files get extracted into a temporary directory containing a path prefix
+    that depends how the files were stored in the archive. So, given the destination path where the
+    dump was extracted and the borgmatic runtime directory, move the dump files such that the
+    restore doesn't have to deal with that varying path prefix.
+
+    For instance, if the dump was extracted to:
+
+      /run/user/0/borgmatic/tmp1234/borgmatic/postgresql_databases/test/...
+
+    or:
+
+      /run/user/0/borgmatic/tmp1234/root/.borgmatic/postgresql_databases/test/...
+
+    then this function moves it to:
+
+      /run/user/0/borgmatic/postgresql_databases/test/...
+    '''
+    for subdirectory_path, _, _ in os.walk(destination_path):
+        databases_directory = os.path.basename(subdirectory_path)
+
+        if not databases_directory.endswith('_databases'):
+            continue
+
+        os.rename(subdirectory_path, os.path.join(borgmatic_runtime_directory, databases_directory))
+        break
+
+
 def restore_single_data_source(
     repository,
     config,
@@ -72,7 +106,7 @@ def restore_single_data_source(
     hook_name,
     data_source,
     connection_params,
-):  # pragma: no cover
+):
     '''
     Given (among other things) an archive name, a data source hook name, the hostname, port,
     username/password as connection params, and a configured data source configuration dict, restore
@@ -82,30 +116,47 @@ def restore_single_data_source(
         f'{repository.get("label", repository["path"])}: Restoring data source {data_source["name"]}'
     )
 
-    dump_pattern = borgmatic.hooks.dispatch.call_hooks(
-        'make_data_source_dump_pattern',
+    dump_patterns = borgmatic.hooks.dispatch.call_hooks(
+        'make_data_source_dump_patterns',
         config,
         repository['path'],
         borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
         data_source['name'],
     )[hook_name]
+    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
 
-    # Kick off a single data source extract to stdout.
-    extract_process = borgmatic.borg.extract.extract_archive(
-        dry_run=global_arguments.dry_run,
-        repository=repository['path'],
-        archive=archive_name,
-        paths=borgmatic.hooks.dump.convert_glob_patterns_to_borg_patterns([dump_pattern]),
-        config=config,
-        local_borg_version=local_borg_version,
-        global_arguments=global_arguments,
-        local_path=local_path,
-        remote_path=remote_path,
-        destination_path='/',
-        # A directory format dump isn't a single file, and therefore can't extract
-        # to stdout. In this case, the extract_process return value is None.
-        extract_to_stdout=bool(data_source.get('format') != 'directory'),
+    destination_path = (
+        tempfile.mkdtemp(dir=borgmatic_runtime_directory)
+        if data_source.get('format') == 'directory'
+        else None
     )
+
+    try:
+        # Kick off a single data source extract. If using a directory format, extract to a temporary
+        # directory. Otheriwes extract the single dump file to stdout.
+        extract_process = borgmatic.borg.extract.extract_archive(
+            dry_run=global_arguments.dry_run,
+            repository=repository['path'],
+            archive=archive_name,
+            paths=[borgmatic.hooks.dump.convert_glob_patterns_to_borg_pattern(dump_patterns)],
+            config=config,
+            local_borg_version=local_borg_version,
+            global_arguments=global_arguments,
+            local_path=local_path,
+            remote_path=remote_path,
+            destination_path=destination_path,
+            # A directory format dump isn't a single file, and therefore can't extract
+            # to stdout. In this case, the extract_process return value is None.
+            extract_to_stdout=bool(data_source.get('format') != 'directory'),
+        )
+
+        if destination_path and not global_arguments.dry_run:
+            strip_path_prefix_from_extracted_dump_destination(
+                destination_path, borgmatic_runtime_directory
+            )
+    finally:
+        if destination_path and not global_arguments.dry_run:
+            shutil.rmtree(destination_path, ignore_errors=True)
 
     # Run a single data source restore, consuming the extract stdout (if any).
     borgmatic.hooks.dispatch.call_hooks(
@@ -135,11 +186,14 @@ def collect_archive_data_source_names(
     query the archive for the names of data sources it contains as dumps and return them as a dict
     from hook name to a sequence of data source names.
     '''
-    borgmatic_source_directory = os.path.expanduser(
-        config.get(
-            'borgmatic_source_directory', borgmatic.borg.state.DEFAULT_BORGMATIC_SOURCE_DIRECTORY
-        )
-    ).lstrip('/')
+    borgmatic_source_directory = str(
+        pathlib.Path(borgmatic.config.paths.get_borgmatic_source_directory(config))
+    )
+    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
+
+    # Probe for the data source dumps in multiple locations, as the default location has moved to
+    # the borgmatic runtime directory (which get stored as just "/borgmatic" with Borg 1.4+). But we
+    # still want to support reading dumps from previously created archives as well.
     dump_paths = borgmatic.borg.list.capture_archive_listing(
         repository,
         archive,
@@ -148,10 +202,12 @@ def collect_archive_data_source_names(
         global_arguments,
         list_paths=[
             'sh:'
-            + os.path.expanduser(
-                borgmatic.hooks.dump.make_data_source_dump_path(borgmatic_source_directory, pattern)
+            + borgmatic.hooks.dump.make_data_source_dump_path(base_directory, '*_databases/*/*')
+            for base_directory in (
+                'borgmatic',
+                borgmatic_runtime_directory.lstrip('/'),
+                borgmatic_source_directory.lstrip('/'),
             )
-            for pattern in ('*_databases/*/*',)
         ],
         local_path=local_path,
         remote_path=remote_path,
@@ -162,17 +218,28 @@ def collect_archive_data_source_names(
     archive_data_source_names = {}
 
     for dump_path in dump_paths:
-        try:
-            (hook_name, _, data_source_name) = dump_path.split(
-                borgmatic_source_directory + os.path.sep, 1
-            )[1].split(os.path.sep)[0:3]
-        except (ValueError, IndexError):
+        if not dump_path:
+            continue
+
+        for base_directory in (
+            'borgmatic',
+            borgmatic_runtime_directory,
+            borgmatic_source_directory,
+        ):
+            try:
+                (hook_name, _, data_source_name) = dump_path.split(base_directory + os.path.sep, 1)[
+                    1
+                ].split(os.path.sep)[0:3]
+            except (ValueError, IndexError):
+                pass
+            else:
+                if data_source_name not in archive_data_source_names.get(hook_name, []):
+                    archive_data_source_names.setdefault(hook_name, []).extend([data_source_name])
+                    break
+        else:
             logger.warning(
                 f'{repository}: Ignoring invalid data source dump path "{dump_path}" in archive {archive}'
             )
-        else:
-            if data_source_name not in archive_data_source_names.get(hook_name, []):
-                archive_data_source_names.setdefault(hook_name, []).extend([data_source_name])
 
     return archive_data_source_names
 
@@ -243,7 +310,7 @@ def ensure_data_sources_found(restore_names, remaining_restore_names, found_name
     )
 
     if not combined_restore_names and not found_names:
-        raise ValueError('No data sources were found to restore')
+        raise ValueError('No data source dumps were found to restore')
 
     missing_names = sorted(set(combined_restore_names) - set(found_names))
     if missing_names:
