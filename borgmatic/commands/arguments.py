@@ -876,7 +876,7 @@ def make_parsers():
     )
     config_bootstrap_group.add_argument(
         '--user-runtime-directory',
-        help='Path used for temporary runtime data like bootstrap metadata. Defaults to $XDG_RUNTIME_DIR or /var/run/$UID',
+        help='Path used for temporary runtime data like bootstrap metadata. Defaults to $XDG_RUNTIME_DIR or $TMPDIR or $TEMP or /var/run/$UID',
     )
     config_bootstrap_group.add_argument(
         '--borgmatic-source-directory',

@@ -30,7 +30,8 @@ def get_borgmatic_runtime_directory(config):
     '''
     Given a configuration dict, get the borgmatic runtime directory used for storing temporary
     runtime data like streaming database dumps and bootstrap metadata. Defaults to
-    $XDG_RUNTIME_DIR/./borgmatic or /run/user/$UID/./borgmatic.
+    $XDG_RUNTIME_DIR/./borgmatic or $TMPDIR/./borgmatic or $TEMP/./borgmatic or
+    /run/user/$UID/./borgmatic.
 
     The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
     does not get stored in the file path within an archive. That way, the path of the runtime
@@ -39,10 +40,10 @@ def get_borgmatic_runtime_directory(config):
     return expand_user_in_path(
         os.path.join(
             config.get('user_runtime_directory')
-            or os.environ.get(
-                'XDG_RUNTIME_DIR',
-                f'/run/user/{os.getuid()}',
-            ),
+            or os.environ.get('XDG_RUNTIME_DIR')
+            or os.environ.get('TMPDIR')
+            or os.environ.get('TEMP')
+            or f'/run/user/{os.getuid()}',
             '.',
             'borgmatic',
         )

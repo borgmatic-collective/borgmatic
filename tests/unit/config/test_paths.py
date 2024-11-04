@@ -44,11 +44,28 @@ def test_get_borgmatic_runtime_directory_uses_config_option():
     )
 
 
-def test_get_borgmatic_runtime_directory_falls_back_to_environment_variable():
+def test_get_borgmatic_runtime_directory_falls_back_to_linux_environment_variable():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args(
-        'XDG_RUNTIME_DIR', object
-    ).and_return('/tmp')
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
+        '/tmp'
+    )
+
+    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
+
+
+def test_get_borgmatic_runtime_directory_falls_back_to_macos_environment_variable():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('/tmp')
+
+    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
+
+
+def test_get_borgmatic_runtime_directory_falls_back_to_other_environment_variable():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('/tmp')
 
     assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
 

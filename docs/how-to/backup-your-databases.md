@@ -76,6 +76,11 @@ borgmatic created temporary streaming database dumps within the `~/.borgmatic`
 directory by default. At that time, the path was configurable by the
 `borgmatic_source_directory` configuration option (now deprecated).
 
+<span class="minilink minilink-addedin">New in version 1.9.1</span>In addition
+to `XDG_RUNTIME_DIR`, borgmatic also uses the `TMPDIR` or `TEMP` environment
+variable if set. `TMPDIR` is available on macOS, while `TEMP` is often
+available on other platforms.
+
 Also note that using a database hook implicitly enables the
 `read_special` configuration option (even if it's disabled in your
 configuration) to support this dump and restore streaming. See Limitations
