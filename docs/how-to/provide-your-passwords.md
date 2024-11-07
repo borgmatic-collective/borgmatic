@@ -39,9 +39,15 @@ Save your password as an encrypted credential to `/etc/credstore.encrypted/borgm
 # systemd-ask-password -n | systemd-creds encrypt - /etc/credstore.encrypted/borgmatic.pw
 ```
 
+Then uncomment or use the following in your configuration file:
+
+```yaml
+encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw"
+```
+
 Note that the name `borgmatic.pw` is hardcoded in the systemd service file.
 
-If you use multiple different passwords, save them as encrypted credentials to `/etc/credstore.encrypted/borgmatic/`, e.g.,
+To use multiple different passwords, save them as encrypted credentials to `/etc/credstore.encrypted/borgmatic/`, e.g.,
 
 ```
 # mkdir /etc/credstore.encrypted/borgmatic
@@ -49,16 +55,28 @@ If you use multiple different passwords, save them as encrypted credentials to `
 # systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_pw2 - /etc/credstore.encrypted/borgmatic/pw2
 ...
 ```
+
 Ensure that the file names, (e.g. `backupserver1`) match the corresponding part of
-the `--name` option *after* the underscore (_). The `borgmatic` folder is hardcoded in the systemd service file.
+the `--name` option *after* the underscore (_), and that the part *before* 
+the underscore matches the directory name (e.g. `borgmatic`).
 
-Then uncomment or use one of the following in your configuration file. Adjust `borgmatic_backupserver1`
-according to the name given to the credential.
+Then, uncomment the appropriate line in the systemd service file:
 
-```yaml
-encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw"
+```
+# systemctl edit borgmatic.service
+...
+# Load multiple encrypted credentials.
+LoadCredentialEncrypted=borgmatic:/etc/credstore.encrypted/borgmatic/
+```
+
+Finally, use the following in your configuration file:
+
+```
 encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1"
 ```
+
+Adjust `borgmatic_backupserver1` according to the name given to the credential 
+and the directory set in the service file.
 
 ### Environment variable interpolation
 
