@@ -1632,7 +1632,8 @@ properties:
                     message:
                         type: string
                         description: |
-                            Message to be sent to the user or group.
+                            Message to be sent to the user or group. If omitted
+                            the default is the name of the state.
                         example: A backup job has started.
                     priority:
                         type: integer
@@ -1704,8 +1705,9 @@ properties:
                     message:
                         type: string
                         description: |
-                            Message to be sent to the user or group.
-                        example: A backup job has started.
+                            Message to be sent to the user or group. If omitted
+                            the default is the name of the state.
+                        example: A backup job has finished.
                     priority:
                         type: integer
                         description: |
@@ -1775,8 +1777,9 @@ properties:
                     message:
                         type: string
                         description: |
-                            Message to be sent to the user or group.
-                        example: A backup job has started.
+                            Message to be sent to the user or group. If omitted
+                            the default is the name of the state.
+                        example: A backup job has failed.
                     priority:
                         type: integer
                         description: |
