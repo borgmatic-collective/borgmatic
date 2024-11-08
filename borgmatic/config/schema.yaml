@@ -1656,7 +1656,8 @@ properties:
                     device:
                         type: string
                         description: |
-                            The name of one of your devices to send just to that device instead of all devices.
+                            The name of one of your devices to send just to 
+                            that device instead of all devices.
                         example: pixel8
                     html:
                         type: integer
@@ -1723,7 +1724,8 @@ properties:
                     device:
                         type: string
                         description: |
-                            The name of one of your devices to send just to that device instead of all devices.
+                            The name of one of your devices to send just to 
+                            that device instead of all devices.
                         example: pixel8
                     html:
                         type: integer
@@ -1789,7 +1791,8 @@ properties:
                     device:
                         type: string
                         description: |
-                            The name of one of your devices to send just to that device instead of all devices.
+                            The name of one of your devices to send just to 
+                            that device instead of all devices.
                         example: pixel8
                     html:
                         type: integer
