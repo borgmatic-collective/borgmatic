@@ -39,7 +39,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     logger.info(f'{config_filename}: Updating Pushover{dry_run_label}')
 
-    if 'priority' in state_config and state_config['priority'] == 2:
+    if state_config.get('priority') == 2:
         if 'expire' not in state_config:
             logger.info(f'{config_filename}: Setting expire to default (10min).')
             state_config['expire'] = 1200
