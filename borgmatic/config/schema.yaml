@@ -1628,7 +1628,6 @@ properties:
                 example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
             start:
                 type: object
-                type: object
                 properties:
                     message:
                         type: string
