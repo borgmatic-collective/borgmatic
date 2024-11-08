@@ -42,7 +42,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if state_config.get('priority') == 2:
         if 'expire' not in state_config:
             logger.info(f'{config_filename}: Setting expire to default (10min).')
-            state_config['expire'] = 1200
+            state_config['expire'] = 600
         if 'retry' not in state_config:
             logger.info(f'{config_filename}: Setting retry to default (30sec).')
             state_config['retry'] = 30
