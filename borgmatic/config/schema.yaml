@@ -1680,8 +1680,9 @@ properties:
                     ttl:
                         type: integer
                         description: |
-                            The number of seconds that the message will live, before being deleted 
-                            automatically. The ttl parameter is ignored for messages with a priority 
+                            The number of seconds that the message will live, 
+                            before being deleted automatically. The ttl 
+                            parameter is ignored for messages with a priority.
                             value of 2.
                         example: 3600
                     url:
@@ -1750,8 +1751,9 @@ properties:
                     ttl:
                         type: integer
                         description: |
-                            The number of seconds that the message will live, before being deleted 
-                            automatically. The ttl parameter is ignored for messages with a priority 
+                            The number of seconds that the message will live, 
+                            before being deleted automatically. The ttl 
+                            parameter is ignored for messages with a priority.
                             value of 2.
                         example: 3600
                     url:
@@ -1819,8 +1821,9 @@ properties:
                     ttl:
                         type: integer
                         description: |
-                            The number of seconds that the message will live, before being deleted 
-                            automatically. The ttl parameter is ignored for messages with a priority 
+                            The number of seconds that the message will live, 
+                            before being deleted automatically. The ttl 
+                            parameter is ignored for messages with a priority.
                             value of 2.
                         example: 3600
                     url:
