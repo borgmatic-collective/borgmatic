@@ -1,5 +1,6 @@
 1.9.1.dev0
  * #928: Fix the user runtime directory location on macOS (and possibly Cygwin).
+ * #930: Fix error with multiple systemd credentials when no credentials are configured.
  * #931: Fix an error when implicitly upgrading the check state directory from ~/.borgmatic to
    ~/.local/state/borgmatic across filesystems.
 
