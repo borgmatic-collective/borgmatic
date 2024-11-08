@@ -39,13 +39,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     logger.info(f'{config_filename}: Updating Pushover {dry_run_label}')
 
-    if token is None:
-        logger.warning(f'{config_filename}: Token missing for Pushover')
-        return
-    if user is None:
-        logger.warning(f'{config_filename}: User missing for Pushover')
-        return
-
     if 'priority' in state_config and state_config['priority'] == 2:
         if 'expire' not in state_config:
             logger.info(f'{config_filename}: Setting expire to default (10min).')

@@ -1611,6 +1611,7 @@ properties:
                     - finish
     pushover:
         type: object
+        required: ['token', 'user']
         additionalProperties: false
         properties:
             token:
