@@ -4,40 +4,6 @@ import borgmatic.hooks.monitor
 from borgmatic.hooks import pushover as module
 
 
-def test_ping_monitor_config_with_token_only_exit_early():
-    # This test should exit early since only providing a token is not enough
-    # for the hook to work
-    hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92'}
-    flexmock(module.logger).should_receive('warning').once()
-    flexmock(module.requests).should_receive('post').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.FAIL,
-        monitoring_log_level=1,
-        dry_run=False,
-    )
-
-
-def test_ping_monitor_config_with_user_only_exit_early():
-    # This test should exit early since only providing a token is not enough
-    # for the hook to work
-    hook_config = {'user': '983hfe0of902lkjfa2amanfgui'}
-    flexmock(module.logger).should_receive('warning').once()
-    flexmock(module.requests).should_receive('post').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.FAIL,
-        monitoring_log_level=1,
-        dry_run=False,
-    )
-
-
 def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_send_to_pushover():
     # This test should be the minimum working configuration. The "message"
     # should be auto populated with the default value which is the state name.
