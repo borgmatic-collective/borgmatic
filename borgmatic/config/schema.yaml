@@ -1642,9 +1642,8 @@ properties:
                     expire:
                         type: integer
                         description: |
-                            he expire parameter specifies how many seconds 
-                            your notification will continue to be retried 
-                            for (every retry seconds).
+                            How many seconds your notification will continue 
+                            to be retried (every retry seconds).
                         example: 1200
                     retry:
                         type: integer
@@ -1709,9 +1708,8 @@ properties:
                     expire:
                         type: integer
                         description: |
-                            he expire parameter specifies how many seconds 
-                            your notification will continue to be retried 
-                            for (every retry seconds).
+                            How many seconds your notification will continue 
+                            to be retried (every retry seconds).
                         example: 1200
                     retry:
                         type: integer
@@ -1775,9 +1773,8 @@ properties:
                     expire:
                         type: integer
                         description: |
-                            he expire parameter specifies how many seconds 
-                            your notification will continue to be retried 
-                            for (every retry seconds).
+                            How many seconds your notification will continue 
+                            to be retried (every retry seconds).
                         example: 1200
                     retry:
                         type: integer
