@@ -1668,8 +1668,9 @@ properties:
                     sound:
                         type: string
                         description: |
-                            The name of a supported sound to override your default sound choice. All 
-                            options can be found here: https://pushover.net/api#sounds 
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be found 
+                            here: https://pushover.net/api#sounds 
                         example: bike
                     title:
                         type: string
@@ -1737,8 +1738,9 @@ properties:
                     sound:
                         type: string
                         description: |
-                            The name of a supported sound to override your default sound choice. All 
-                            options can be found here: https://pushover.net/api#sounds 
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be found 
+                            here: https://pushover.net/api#sounds 
                         example: bike
                     title:
                         type: string
@@ -1805,8 +1807,9 @@ properties:
                     sound:
                         type: string
                         description: |
-                            The name of a supported sound to override your default sound choice. All 
-                            options can be found here: https://pushover.net/api#sounds 
+                            The name of a supported sound to override your 
+                            default sound choice. All options can be found 
+                            here: https://pushover.net/api#sounds 
                         example: bike
                     title:
                         type: string
