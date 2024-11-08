@@ -10,9 +10,11 @@ Documentation=https://torsion.org/borgmatic/
 [Service]
 Type=oneshot
 
-# Load encrypted credentials.
-LoadCredentialEncrypted=borgmatic:/etc/credstore.encrypted/borgmatic/
+# Load single encrypted credential.
 LoadCredentialEncrypted=borgmatic.pw
+
+# Load multiple encrypted credentials.
+# LoadCredentialEncrypted=borgmatic:/etc/credstore.encrypted/borgmatic/
 
 # Security settings for systemd running as root, optional but recommended to improve security. You
 # can disable individual settings if they cause problems for your use case. For more details, see
