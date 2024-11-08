@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import random
+import shutil
 
 import borgmatic.borg.check
 import borgmatic.borg.create
@@ -322,7 +323,7 @@ def upgrade_check_times(config, borg_repository_id):
             f'Upgrading archives check times directory from {borgmatic_source_checks_path} to {borgmatic_state_checks_path}'
         )
         os.makedirs(borgmatic_state_path, mode=0o700, exist_ok=True)
-        os.rename(borgmatic_source_checks_path, borgmatic_state_checks_path)
+        shutil.move(borgmatic_source_checks_path, borgmatic_state_checks_path)
 
     for check_type in ('archives', 'data'):
         new_path = make_check_time_path(config, borg_repository_id, check_type, 'all')
@@ -335,12 +336,12 @@ def upgrade_check_times(config, borg_repository_id):
         logger.debug(f'Upgrading archives check time file from {old_path} to {new_path}')
 
         try:
-            os.rename(old_path, temporary_path)
+            shutil.move(old_path, temporary_path)
         except FileNotFoundError:
             pass
 
         os.mkdir(old_path)
-        os.rename(temporary_path, new_path)
+        shutil.move(temporary_path, new_path)
 
 
 def collect_spot_check_source_paths(

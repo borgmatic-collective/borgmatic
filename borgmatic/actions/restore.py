@@ -91,7 +91,9 @@ def strip_path_prefix_from_extracted_dump_destination(
         if not databases_directory.endswith('_databases'):
             continue
 
-        os.rename(subdirectory_path, os.path.join(borgmatic_runtime_directory, databases_directory))
+        shutil.move(
+            subdirectory_path, os.path.join(borgmatic_runtime_directory, databases_directory)
+        )
         break
 
 

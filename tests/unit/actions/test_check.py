@@ -381,7 +381,7 @@ def test_upgrade_check_times_moves_checks_from_borgmatic_source_directory_to_sta
         '/home/user/.local/state/borgmatic/checks'
     ).and_return(False)
     flexmock(module.os).should_receive('makedirs')
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         '/home/user/.borgmatic/checks', '/home/user/.local/state/borgmatic/checks'
     ).once()
 
@@ -408,13 +408,13 @@ def test_upgrade_check_times_with_checks_already_in_borgmatic_state_directory_do
         '/home/user/.local/state/borgmatic/checks'
     ).and_return(True)
     flexmock(module.os).should_receive('makedirs').never()
-    flexmock(module.os).should_receive('rename').never()
+    flexmock(module.shutil).should_receive('move').never()
 
     flexmock(module).should_receive('make_check_time_path').and_return(
         '/home/user/.local/state/borgmatic/checks/1234/archives/all'
     )
     flexmock(module.os.path).should_receive('isfile').and_return(False)
-    flexmock(module.os).should_receive('rename').never()
+    flexmock(module.shutil).should_receive('move').never()
     flexmock(module.os).should_receive('mkdir').never()
 
     module.upgrade_check_times(flexmock(), flexmock())
@@ -448,11 +448,11 @@ def test_upgrade_check_times_renames_old_check_paths_to_all():
     flexmock(module.os.path).should_receive('isfile').with_args(
         f'{base_path}/data.temp'
     ).and_return(False)
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/archives', f'{base_path}/archives.temp'
     ).once()
     flexmock(module.os).should_receive('mkdir').with_args(f'{base_path}/archives').once()
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/archives.temp', f'{base_path}/archives/all'
     ).once()
 
@@ -484,11 +484,11 @@ def test_upgrade_check_times_renames_data_check_paths_when_archives_paths_are_al
     flexmock(module.os.path).should_receive('isfile').with_args(f'{base_path}/data').and_return(
         True
     )
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/data', f'{base_path}/data.temp'
     ).once()
     flexmock(module.os).should_receive('mkdir').with_args(f'{base_path}/data').once()
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/data.temp', f'{base_path}/data/all'
     ).once()
 
@@ -508,7 +508,7 @@ def test_upgrade_check_times_skips_already_upgraded_check_paths():
         '/home/user/.local/state/borgmatic/checks/1234/archives/all'
     )
     flexmock(module.os.path).should_receive('isfile').and_return(False)
-    flexmock(module.os).should_receive('rename').never()
+    flexmock(module.shutil).should_receive('move').never()
     flexmock(module.os).should_receive('mkdir').never()
 
     module.upgrade_check_times(flexmock(), flexmock())
@@ -542,11 +542,11 @@ def test_upgrade_check_times_renames_stale_temporary_check_path():
     flexmock(module.os.path).should_receive('isfile').with_args(
         f'{base_path}/data.temp'
     ).and_return(False)
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/archives', f'{base_path}/archives.temp'
     ).and_raise(FileNotFoundError)
     flexmock(module.os).should_receive('mkdir').with_args(f'{base_path}/archives').once()
-    flexmock(module.os).should_receive('rename').with_args(
+    flexmock(module.shutil).should_receive('move').with_args(
         f'{base_path}/archives.temp', f'{base_path}/archives/all'
     ).once()
 
