@@ -334,12 +334,12 @@ pushover:
         priority: -2
         title: "Backup Started"
         html: 1
-        ttl: 10 # Message will be deleted after 10 seconds.
+        ttl: 10  # Message will be deleted after 10 seconds.
     fail:
         message: "Backup <font color='#ff6961'>Failed</font>"
-        priority: 2 # Requests acknowledgement for messages.
-        expire: 1200 # Used only for priority 2. Default is 1200 seconds.
-        retry: 30 # Used only for priority 2. Default is 30 seconds.
+        priority: 2  # Requests acknowledgement for messages.
+        expire: 1200  # Used only for priority 2. Default is 1200 seconds.
+        retry: 30  # Used only for priority 2. Default is 30 seconds.
         device: "pixel8"
         title: "Backup Failed"
         html: 1
