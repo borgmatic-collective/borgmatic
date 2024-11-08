@@ -1662,7 +1662,8 @@ properties:
                     html:
                         type: integer
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set to 0 for plain text.
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
                         example: 1
                     sound:
                         type: string
@@ -1730,7 +1731,8 @@ properties:
                     html:
                         type: integer
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set to 0 for plain text.
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
                         example: 1
                     sound:
                         type: string
@@ -1797,7 +1799,8 @@ properties:
                     html:
                         type: integer
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set to 0 for plain text.
+                            Set to 1 to enable HTML parsing of the message. Set
+                            to 0 for plain text.
                         example: 1
                     sound:
                         type: string
