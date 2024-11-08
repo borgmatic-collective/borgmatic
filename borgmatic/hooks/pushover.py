@@ -27,12 +27,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
-    state_config = hook_config.get(
-        state.name.lower(),
-        {
-            'message': state.name.lower(),
-        },
-    )
+    state_config = hook_config.get(state.name.lower())
 
     token = hook_config.get('token')
     user = hook_config.get('user')
