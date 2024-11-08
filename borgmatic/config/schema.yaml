@@ -1675,7 +1675,8 @@ properties:
                     title:
                         type: string
                         description: |
-                            Your message's title, otherwise your app's name is used.
+                            Your message's title, otherwise your app's name is 
+                            used.
                         example: A backup job has started.
                     ttl:
                         type: integer
@@ -1746,7 +1747,8 @@ properties:
                     title:
                         type: string
                         description: |
-                            Your message's title, otherwise your app's name is used.
+                            Your message's title, otherwise your app's name is 
+                            used.
                         example: A backup job has started.
                     ttl:
                         type: integer
@@ -1816,7 +1818,8 @@ properties:
                     title:
                         type: string
                         description: |
-                            Your message's title, otherwise your app's name is used.
+                            Your message's title, otherwise your app's name is 
+                            used.
                         example: A backup job has started.
                     ttl:
                         type: integer
