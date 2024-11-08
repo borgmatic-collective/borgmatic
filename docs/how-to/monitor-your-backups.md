@@ -295,7 +295,8 @@ us](https://torsion.org/borgmatic/#support-and-contributing).
 
 <span class="minilink minilink-addedin">New in version 1.9.1</span>
 [Pushover](https://pushover.net) makes it easy to get real-time notifications 
-on your Android, iPhone, iPad, and Desktop (Android Wear and Apple Watch, too!)
+on your Android, iPhone, iPad, and Desktop (Android Wear and Apple Watch, 
+too!).
 
 First, create a Pushover account and login on your mobile device. Create an
 Application in your Pushover dashboard.
