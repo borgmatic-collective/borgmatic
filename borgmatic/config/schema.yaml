@@ -1637,7 +1637,8 @@ properties:
                     priority:
                         type: integer
                         description: |
-                            A value of -2, -1, 0 (default), 1 or 2 that indicates the message priority.
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
                         example: 0
                     expire:
                         type: integer
@@ -1703,7 +1704,8 @@ properties:
                     priority:
                         type: integer
                         description: |
-                            A value of -2, -1, 0 (default), 1 or 2 that indicates the message priority.
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
                         example: 0
                     expire:
                         type: integer
@@ -1768,7 +1770,8 @@ properties:
                     priority:
                         type: integer
                         description: |
-                            A value of -2, -1, 0 (default), 1 or 2 that indicates the message priority.
+                            A value of -2, -1, 0 (default), 1 or 2 that 
+                            indicates the message priority.
                         example: 0
                     expire:
                         type: integer
