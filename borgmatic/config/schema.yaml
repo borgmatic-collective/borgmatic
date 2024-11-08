@@ -1693,8 +1693,8 @@ properties:
                     url_title:
                         type: string
                         description: |
-                            A title for the URL specified as the url parameter, otherwise just 
-                            the URL is shown.
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
                         example: Pushover Link
             finish:
                 type: object
@@ -1764,8 +1764,8 @@ properties:
                     url_title:
                         type: string
                         description: |
-                            A title for the URL specified as the url parameter, otherwise just 
-                            the URL is shown.
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
                         example: Pushover Link
             fail:
                 type: object
@@ -1834,8 +1834,8 @@ properties:
                     url_title:
                         type: string
                         description: |
-                            A title for the URL specified as the url parameter, otherwise just 
-                            the URL is shown.
+                            A title for the URL specified as the url parameter,
+                            otherwise just the URL is shown.
                         example: Pushover Link
             states:
                 type: array
