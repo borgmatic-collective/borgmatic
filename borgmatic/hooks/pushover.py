@@ -37,7 +37,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     token = hook_config.get('token')
     user = hook_config.get('user')
 
-    logger.info(f'{config_filename}: Updating Pushover {dry_run_label}')
+    logger.info(f'{config_filename}: Updating Pushover{dry_run_label}')
 
     if 'priority' in state_config and state_config['priority'] == 2:
         if 'expire' not in state_config:
