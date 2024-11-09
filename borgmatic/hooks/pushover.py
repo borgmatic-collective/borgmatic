@@ -5,6 +5,8 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+EMERGENCY_PRIORITY = 2
+
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -34,7 +36,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     logger.info(f'{config_filename}: Updating Pushover{dry_run_label}')
 
-    if state_config.get('priority') == 2:
+    if state_config.get('priority') == EMERGENCY_PRIORITY:
         if 'expire' not in state_config:
             logger.info(f'{config_filename}: Setting expire to default (10min).')
             state_config['expire'] = 600
