@@ -127,7 +127,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
             'message': 'start',
             'priority': 2,
             'retry': 30,
-            'expire': 1200,
+            'expire': 600,
         },
     ).and_return(flexmock(ok=True)).once()
 
@@ -257,7 +257,7 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
         'fail': {
             'message': 'Backup <font color="#ff6961">Failed</font>',
             'priority': 2,
-            'expire': 1200,
+            'expire': 600,
             'retry': 30,
             'device': 'pixel8',
             'title': 'Backup Failed',
@@ -318,7 +318,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
         'fail': {
             'message': 'Backup <font color="#ff6961">Failed</font>',
             'priority': 2,
-            'expire': 1200,
+            'expire': 600,
             'retry': 30,
             'device': 'pixel8',
             'title': 'Backup Failed',
@@ -346,7 +346,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
             'user': '983hfe0of902lkjfa2amanfgui',
             'message': 'Backup <font color="#ff6961">Failed</font>',
             'priority': 2,
-            'expire': 1200,
+            'expire': 600,
             'retry': 30,
             'device': 'pixel8',
             'title': 'Backup Failed',
@@ -384,7 +384,7 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
         'fail': {
             'message': 'Backup <font color="#ff6961">Failed</font>',
             'priority': 2,
-            'expire': 1200,
+            'expire': 600,
             'retry': 30,
             'device': 'pixel8',
             'title': 'Backup Failed',

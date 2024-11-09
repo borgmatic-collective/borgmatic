@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 EMERGENCY_PRIORITY = 2
 
+
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -29,7 +30,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     dry_run_label = ' (dry run; not actually updating)' if dry_run else ''
 
-    state_config = hook_config.get(state.name.lower())
+    state_config = hook_config.get(state.name.lower(), {})
 
     token = hook_config.get('token')
     user = hook_config.get('user')
@@ -52,7 +53,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         'user': user,
         'message': state.name.lower(),  # default to state name. Can be overwritten in state_config loop below.
     }
-    
+
     for key in state_config:
         data[key] = state_config[key]
 
