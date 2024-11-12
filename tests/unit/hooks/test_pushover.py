@@ -195,7 +195,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
         'states': {'start', 'fail', 'finish'},
-        'start': {'priority': 2, 'expire': 30},
+        'start': {'priority': 2, 'retry': 30},
     }
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
