@@ -116,7 +116,7 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
     )
 
 
-def test_ping_monitor_start_state_backup_default_message_with_priority_emergency_declared_no_expiry_or_retry_success():
+def test_ping_monitor_start_state_backup_default_message_with_priority_emergency_uses_expire_and_retry_defaults():
     '''
     This simulates priority level 2 being set but expiry and retry are
     not declared. This should set retry and expiry to their defaults.
