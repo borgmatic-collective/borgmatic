@@ -315,7 +315,7 @@ pushover:
 
 
 With this configuration, borgmatic creates a Pushover event for your service
-whenever borgmatic fail, but only when any of the `create`, `prune`, `compact`,
+whenever borgmatic fails, but only when any of the `create`, `prune`, `compact`,
 or `check` actions are run. Note that borgmatic does not contact Pushover
 when a backup starts or when it ends without error by default.
 
