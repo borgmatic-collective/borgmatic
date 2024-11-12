@@ -5,8 +5,10 @@ from borgmatic.hooks import pushover as module
 
 
 def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_send_to_pushover():
-    # This test should be the minimum working configuration. The "message"
-    # should be auto populated with the default value which is the state name.
+    '''
+    This test should be the minimum working configuration. The "message"
+    should be auto populated with the default value which is the state name.
+    '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').with_args(
@@ -30,8 +32,10 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
 
 
 def test_ping_monitor_config_with_minimum_config_start_state_backup_not_send_to_pushover_exit_early():
-    # This test should exit early since the hook config does not specify the
-    # 'start' state. Only the 'fail' state is enabled by default.
+    '''
+    This test should exit early since the hook config does not specify the
+    'start' state. Only the 'fail' state is enabled by default.
+    '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').never()
@@ -47,10 +51,12 @@ def test_ping_monitor_config_with_minimum_config_start_state_backup_not_send_to_
 
 
 def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pushover():
-    # This test should send a notification to Pushover on backup start
-    # since the state has been configured. It should default to sending
-    # the name of the state as the 'message' since it is not
-    # explicitly declared in the state config.
+    '''
+    This test should send a notification to Pushover on backup start
+    since the state has been configured. It should default to sending
+    the name of the state as the 'message' since it is not
+    explicitly declared in the state config.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -78,9 +84,11 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
 
 
 def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pushover():
-    # This test should send a notification to Pushover on backup start
-    # since the state has been configured. It should send a custom
-    # 'message' since it is explicitly declared in the state config.
+    '''
+    This test should send a notification to Pushover on backup start
+    since the state has been configured. It should send a custom
+    'message' since it is explicitly declared in the state config.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -109,8 +117,10 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
 
 
 def test_ping_monitor_start_state_backup_default_message_with_priority_emergency_declared_no_expiry_or_retry_success():
-    # This simulates priority level 2 being set but expiry and retry are
-    # not declared. This should set retry and expiry to their defaults.
+    '''
+    This simulates priority level 2 being set but expiry and retry are
+    not declared. This should set retry and expiry to their defaults.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -142,8 +152,10 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
 
 
 def test_ping_monitor_start_state_backup_default_message_with_priority_emergency_declared_with_expire_no_retry_success():
-    # This simulates priority level 2 and expiry being set but retry is
-    # not declared. This should set retry to the default.
+    '''
+    This simulates priority level 2 and expiry being set but retry is
+    not declared. This should set retry to the default.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -175,8 +187,10 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
 
 
 def test_ping_monitor_start_state_backup_default_message_with_priority_emergency_declared_no_expire_with_retry_success():
-    # This simulates priority level 2  and retry being set but expire is
-    # not declared. This should set expire to the default.
+    '''
+    This simulates priority level 2  and retry being set but expire is
+    not declared. This should set expire to the default.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -208,10 +222,12 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
 
 
 def test_ping_monitor_start_state_backup_default_message_with_priority_high_declared_expire_and_retry_delared_success():
-    # This simulates priority level 1, retry and expiry being set. Since expire
-    # and retry are only used for priority level 2, they should not be included
-    # in the request sent to Pushover. This test verifies that those are
-    # stripped from the request.
+    '''
+    This simulates priority level 1, retry and expiry being set. Since expire
+    and retry are only used for priority level 2, they should not be included
+    in the request sent to Pushover. This test verifies that those are
+    stripped from the request.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -241,8 +257,10 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
 
 
 def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example_success():
-    # Here is a test of what is provided in the monitor-your-backups.md file
-    # as an 'advanced example'. This test runs the start state.
+    '''
+    Here is a test of what is provided in the monitor-your-backups.md file
+    as an 'advanced example'. This test runs the start state.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -302,8 +320,10 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
 
 
 def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_success():
-    # Here is a test of what is provided in the monitor-your-backups.md file
-    # as an 'advanced example'. This test runs the fail state.
+    '''
+    Here is a test of what is provided in the monitor-your-backups.md file
+    as an 'advanced example'. This test runs the fail state.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
@@ -368,8 +388,10 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
 
 
 def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_example_success():
-    # Here is a test of what is provided in the monitor-your-backups.md file
-    # as an 'advanced example'. This test runs the finish state.
+    '''
+    Here is a test of what is provided in the monitor-your-backups.md file
+    as an 'advanced example'. This test runs the finish state.
+    '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
