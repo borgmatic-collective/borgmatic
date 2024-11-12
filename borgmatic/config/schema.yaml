@@ -1646,14 +1646,16 @@ properties:
                         description: |
                             How many seconds your notification will continue 
                             to be retried (every retry seconds). Defaults to
-                            600.
+                            600. This settings only applies to priority 2
+                            notifications.
                         example: 600
                     retry:
                         type: integer
                         description: |
                             The retry parameter specifies how often 
                             (in seconds) the Pushover servers will send the 
-                            same notification to the user. Defaults to 30.
+                            same notification to the user. Defaults to 30. This
+                            settings only applies to priority 2 notifications.
                         example: 30
                     device:
                         type: string
@@ -1720,14 +1722,16 @@ properties:
                         description: |
                             How many seconds your notification will continue 
                             to be retried (every retry seconds). Defaults to
-                            600.
+                            600. This settings only applies to priority 2
+                            notifications.
                         example: 600
                     retry:
                         type: integer
                         description: |
                             The retry parameter specifies how often 
                             (in seconds) the Pushover servers will send the 
-                            same notification to the user. Defaults to 30.
+                            same notification to the user. Defaults to 30. This
+                            settings only applies to priority 2 notifications.
                         example: 30
                     device:
                         type: string
@@ -1793,14 +1797,16 @@ properties:
                         description: |
                             How many seconds your notification will continue 
                             to be retried (every retry seconds). Defaults to
-                            600.
+                            600. This settings only applies to priority 2
+                            notifications.
                         example: 600
                     retry:
                         type: integer
                         description: |
                             The retry parameter specifies how often 
                             (in seconds) the Pushover servers will send the 
-                            same notification to the user. Defaults to 30.
+                            same notification to the user. Defaults to 30. This
+                            settings only applies to priority 2 notifications.
                         example: 30
                     device:
                         type: string
