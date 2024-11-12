@@ -48,14 +48,14 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         state_config.pop('expire', None)
         state_config.pop('retry', None)
 
-    data = {
-        'token': token,
-        'user': user,
-        'message': state.name.lower(),  # default to state name. Can be overwritten in state_config loop below.
-    }
-
-    for key in state_config:
-        data[key] = state_config[key]
+    data = dict(
+        {
+            'token': token,
+            'user': user,
+            'message': state.name.lower(),  # default to state name. Can be overwritten in state_config loop below.
+        },
+        **state_config,
+    )
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
