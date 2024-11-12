@@ -207,7 +207,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
             'message': 'start',
             'priority': 2,
             'retry': 30,
-            'expire': 30,
+            'expire': 600,
         },
     ).and_return(flexmock(ok=True)).once()
 
