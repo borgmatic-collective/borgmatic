@@ -477,3 +477,32 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
         monitoring_log_level=1,
         dry_run=True,
     )
+
+
+def test_ping_monitor_config_incorrect_state_exit_early():
+    '''
+    This test should exit early since the start state is not declared in the configuration.
+    '''
+    hook_config = {
+        'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
+        'user': '983hfe0of902lkjfa2amanfgui',
+    }
+    flexmock(module.logger).should_receive('warning').never()
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://api.pushover.net/1/messages.json',
+        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        data={
+            'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
+            'user': '983hfe0of902lkjfa2amanfgui',
+            'message': 'start',
+        },
+    ).and_return(flexmock(ok=True)).never()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.START,
+        monitoring_log_level=1,
+        dry_run=True,
+    )
