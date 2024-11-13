@@ -51,7 +51,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             )
 
     state_config = {
-        key: (int(value) if value is True and key in 'html' else value)
+        key: (int(value) if key in 'html' else value)
         for key, value in state_config.items()
     }
 
