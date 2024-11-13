@@ -1664,11 +1664,11 @@ properties:
                             that device instead of all devices.
                         example: pixel8
                     html:
-                        type: integer
+                        type: boolean
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set
-                            to 0 for plain text.
-                        example: 1
+                            Set to True to enable HTML parsing of the message.
+                            Set to False for plain text.
+                        example: True
                     sound:
                         type: string
                         description: |
@@ -1740,11 +1740,11 @@ properties:
                             that device instead of all devices.
                         example: pixel8
                     html:
-                        type: integer
+                        type: boolean
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set
-                            to 0 for plain text.
-                        example: 1
+                            Set to True to enable HTML parsing of the message.
+                            Set to False for plain text.
+                        example: True
                     sound:
                         type: string
                         description: |
@@ -1815,11 +1815,11 @@ properties:
                             that device instead of all devices.
                         example: pixel8
                     html:
-                        type: integer
+                        type: boolean
                         description: |
-                            Set to 1 to enable HTML parsing of the message. Set
-                            to 0 for plain text.
-                        example: 1
+                            Set to True to enable HTML parsing of the message.
+                            Set to False for plain text.
+                        example: True
                     sound:
                         type: string
                         description: |

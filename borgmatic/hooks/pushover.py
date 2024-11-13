@@ -48,6 +48,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         state_config.pop('expire', None)
         state_config.pop('retry', None)
 
+    state_config = {
+        key: (1 if value is True and key in 'html' else value)
+        for key, value in state_config.items()
+    }
+
     data = dict(
         {
             'token': token,
