@@ -506,3 +506,39 @@ def test_ping_monitor_config_incorrect_state_exit_early():
         monitoring_log_level=1,
         dry_run=True,
     )
+
+
+def test_ping_monitor_push_post_error_exits_early():
+    '''
+    This test simulates the Pushover servers not responding with a 200 OK. We
+    should raise for status and warn then exit.
+    '''
+    hook_config = hook_config = {
+        'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
+        'user': '983hfe0of902lkjfa2amanfgui',
+    }
+
+    push_response = flexmock(ok=False)
+    push_response.should_receive('raise_for_status').and_raise(
+        module.requests.ConnectionError
+    ).once()
+    flexmock(module.requests).should_receive('post').with_args(
+        'https://api.pushover.net/1/messages.json',
+        headers={'Content-type': 'application/x-www-form-urlencoded'},
+        data={
+            'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
+            'user': '983hfe0of902lkjfa2amanfgui',
+            'message': 'fail',
+        },
+    ).and_return(push_response).once()
+
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
