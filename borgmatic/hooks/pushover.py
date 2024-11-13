@@ -45,8 +45,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             logger.info(f'{config_filename}: Setting retry to default (30sec).')
             state_config['retry'] = 30
     else:
-        state_config.pop('expire', None)
-        state_config.pop('retry', None)
+        if 'expire' in state_config or 'retry' in state_config:
+            raise ValueError(
+                'The configuration parameters retry and expire should not be set when priority is not equal to 2. Please remove them from the configuration.'
+            )
 
     state_config = {
         key: (1 if value is True and key in 'html' else value)

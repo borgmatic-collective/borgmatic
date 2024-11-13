@@ -225,8 +225,8 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
     '''
     This simulates priority level 1, retry and expiry being set. Since expire
     and retry are only used for priority level 2, they should not be included
-    in the request sent to Pushover. This test verifies that those are
-    stripped from the request.
+    in the request sent to Pushover. This test verifies that a ValueError is
+    raised.
     '''
     hook_config = {
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
@@ -234,17 +234,9 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
         'states': {'start', 'fail', 'finish'},
         'start': {'priority': 1, 'expire': 30, 'retry': 30},
     }
+
     flexmock(module.logger).should_receive('warning').never()
-    flexmock(module.requests).should_receive('post').with_args(
-        'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
-        data={
-            'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
-            'user': '983hfe0of902lkjfa2amanfgui',
-            'message': 'start',
-            'priority': 1,
-        },
-    ).and_return(flexmock(ok=True)).once()
+    flexmock(module.requests).should_receive('post').never()
 
     module.ping_monitor(
         hook_config,
