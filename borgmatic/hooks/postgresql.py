@@ -241,14 +241,22 @@ def make_data_source_dump_patterns(
 
 
 def restore_data_source_dump(
-    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
+    hook_config,
+    config,
+    log_prefix,
+    data_source,
+    dry_run,
+    extract_process,
+    connection_params,
+    borgmatic_runtime_directory,
 ):
     '''
     Restore a database from the given extract stream. The database is supplied as a data source
-    configuration dict, but the given hook configuration is ignored. The given configuration dict is
-    used to construct the destination path, and the given log prefix is used for any log entries. If
-    this is a dry run, then don't actually restore anything. Trigger the given active extract
-    process (an instance of subprocess.Popen) to produce output to consume.
+    configuration dict, but the given hook configuration is ignored. The given borgmatic runtime
+    directory is used to construct the destination path (used for the directory format), and the
+    given log prefix is used for any log entries. If this is a dry run, then don't actually restore
+    anything. Trigger the given active extract process (an instance of subprocess.Popen) to produce
+    output to consume.
 
     If the extract process is None, then restore the dump from the filesystem rather than from an
     extract stream.
@@ -269,7 +277,9 @@ def restore_data_source_dump(
 
     all_databases = bool(data_source['name'] == 'all')
     dump_filename = dump.make_data_source_dump_filename(
-        make_dump_path(config), data_source['name'], data_source.get('hostname')
+        make_dump_path(borgmatic_runtime_directory),
+        data_source['name'],
+        data_source.get('hostname'),
     )
     psql_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('psql_command') or 'psql')

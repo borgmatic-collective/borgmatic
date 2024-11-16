@@ -171,6 +171,7 @@ def restore_single_data_source(
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
         connection_params=connection_params,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
 
 
@@ -331,7 +332,6 @@ def run_restore(
     global_arguments,
     local_path,
     remote_path,
-    borgmatic_runtime_directory,
 ):
     '''
     Run the "restore" action for the given repository, but only if the repository matches the
@@ -375,6 +375,7 @@ def run_restore(
             global_arguments,
             local_path,
             remote_path,
+            borgmatic_runtime_directory,
         )
         restore_names = find_data_sources_to_restore(
             restore_arguments.data_sources, archive_data_source_names

@@ -27,7 +27,8 @@ def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory
     '''
     Dump the given MongoDB databases to a named pipe. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the borgmatic
-    runtime directory to construct the destination path and the given log prefix in any log entries.
+    runtime directory to construct the destination path (used for the directory format and the given
+    log prefix in any log entries.
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
@@ -125,7 +126,14 @@ def make_data_source_dump_patterns(
 
 
 def restore_data_source_dump(
-    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
+    hook_config,
+    config,
+    log_prefix,
+    data_source,
+    dry_run,
+    extract_process,
+    connection_params,
+    borgmatic_runtime_directory,
 ):
     '''
     Restore a database from the given extract stream. The database is supplied as a data source
@@ -139,7 +147,9 @@ def restore_data_source_dump(
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     dump_filename = dump.make_data_source_dump_filename(
-        make_dump_path(config), data_source['name'], data_source.get('hostname')
+        make_dump_path(borgmatic_runtime_directory),
+        data_source['name'],
+        data_source.get('hostname'),
     )
     restore_command = build_restore_command(
         extract_process, data_source, dump_filename, connection_params

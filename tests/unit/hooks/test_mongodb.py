@@ -241,6 +241,7 @@ def test_restore_data_source_dump_runs_mongorestore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -280,6 +281,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -327,6 +329,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -382,6 +385,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'username': 'cliusername',
             'password': 'clipassword',
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -437,6 +441,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -466,6 +471,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_options():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -503,6 +509,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -532,6 +539,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -555,6 +563,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -583,4 +592,5 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
