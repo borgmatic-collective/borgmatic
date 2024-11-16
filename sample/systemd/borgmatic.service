@@ -9,6 +9,8 @@ Documentation=https://torsion.org/borgmatic/
 
 [Service]
 Type=oneshot
+RuntimeDirectory=borgmatic
+StateDirectory=borgmatic
 
 # Load single encrypted credential.
 LoadCredentialEncrypted=borgmatic.pw

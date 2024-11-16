@@ -504,6 +504,7 @@ def create_archive(
     config_paths,
     local_borg_version,
     global_arguments,
+    borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -524,9 +525,7 @@ def create_archive(
 
     working_directory = borgmatic.config.paths.get_working_directory(config)
     borgmatic_runtime_directories = expand_directories(
-        collect_borgmatic_runtime_directories(
-            borgmatic.config.paths.get_borgmatic_runtime_directory(config)
-        ),
+        collect_borgmatic_runtime_directories(borgmatic_runtime_directory),
         working_directory=working_directory,
     )
 

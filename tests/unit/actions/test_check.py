@@ -713,9 +713,6 @@ def test_collect_spot_check_archive_paths_excludes_directories():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/home/user/.borgmatic')
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/run/user/1001/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -732,6 +729,7 @@ def test_collect_spot_check_archive_paths_excludes_directories():
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/user/1001/borgmatic',
     ) == ('/etc/path', '/etc/other')
 
 
@@ -739,9 +737,6 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/run/user/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -757,6 +752,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/user/0/borgmatic',
     ) == ('/etc/path',)
 
 
@@ -764,9 +760,6 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/run/user/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -782,6 +775,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/user/0/borgmatic',
     ) == ('/etc/path',)
 
 
@@ -789,9 +783,6 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root.borgmatic')
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/run/user/0/borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
             'f /etc/path',
@@ -807,6 +798,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/user/0/borgmatic',
     ) == ('/etc/path',)
 
 
@@ -1149,6 +1141,7 @@ def test_spot_check_without_spot_configuration_errors():
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
         )
 
 
@@ -1161,6 +1154,7 @@ def test_spot_check_without_any_configuration_errors():
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
         )
 
 
@@ -1181,6 +1175,7 @@ def test_spot_check_data_tolerance_percenatge_greater_than_data_sample_percentag
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
         )
 
 
@@ -1212,6 +1207,7 @@ def test_spot_check_with_count_delta_greater_than_count_tolerance_percentage_err
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
         )
 
 
@@ -1244,6 +1240,7 @@ def test_spot_check_with_failing_percentage_greater_than_data_tolerance_percenta
             global_arguments=flexmock(),
             local_path=flexmock(),
             remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
         )
 
 
@@ -1275,6 +1272,7 @@ def test_spot_check_with_high_enough_tolerances_does_not_raise():
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1362,6 +1360,9 @@ def test_run_check_runs_configured_spot_check():
     flexmock(module).should_receive('make_archives_check_id').and_return(None)
     flexmock(module).should_receive('filter_checks_on_frequency').and_return({'spot'})
     flexmock(module.borgmatic.borg.check).should_receive('check_archives').never()
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.actions.check).should_receive('spot_check').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')

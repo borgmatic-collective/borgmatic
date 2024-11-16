@@ -18,15 +18,20 @@ def test_use_streaming_false_for_no_databases():
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == []
+    )
 
 
 def test_dump_data_sources_dumps_each_database():
@@ -36,9 +41,9 @@ def test_dump_data_sources_dumps_each_database():
     ]
     processes = [flexmock(), flexmock()]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -46,7 +51,12 @@ def test_dump_data_sources_dumps_each_database():
         processes[1]
     )
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_with_path_injection_attack_gets_escaped():
@@ -55,9 +65,9 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
     ]
     processes = [flexmock()]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -67,13 +77,18 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
             "'/path/to/database1; naughty-command'",
             '.dump',
             '>',
-            '/path/to/dump/database',
+            '/run/borgmatic/database',
         ),
         shell=True,
         run_to_completion=False,
     ).and_return(processes[0])
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
@@ -82,16 +97,21 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     ]
     processes = [flexmock()]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
@@ -100,32 +120,42 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
     ]
     processes = [flexmock()]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.logger).should_receive(
         'warning'
     ).twice()  # once for the name=all, once for the non-existent path
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic/database'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
     flexmock(module).should_receive('execute_command').and_return(processes[0])
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_does_not_dump_if_dry_run():
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
-    flexmock(module).should_receive('make_dump_path').and_return('/path/to/dump')
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        '/path/to/dump/database'
+        '/run/borgmatic'
     )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=True) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=True
+        )
+        == []
+    )
 
 
 def test_restore_data_source_dump_restores_database():

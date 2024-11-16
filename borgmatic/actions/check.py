@@ -403,16 +403,22 @@ BORG_DIRECTORY_FILE_TYPE = 'd'
 
 
 def collect_spot_check_archive_paths(
-    repository, archive, config, local_borg_version, global_arguments, local_path, remote_path
+    repository,
+    archive,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    borgmatic_runtime_directory,
 ):
     '''
     Given a repository configuration dict, the name of the latest archive, a configuration dict, the
-    local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, and
-    the remote Borg path, collect the paths from the given archive (but only include files and
-    symlinks and exclude borgmatic runtime directories).
+    local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
+    remote Borg path, and the borgmatic runtime directory, collect the paths from the given archive
+    (but only include files and symlinks and exclude borgmatic runtime directories).
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
-    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
 
     return tuple(
         path
@@ -546,11 +552,12 @@ def spot_check(
     global_arguments,
     local_path,
     remote_path,
+    borgmatic_runtime_directory,
 ):
     '''
     Given a repository dict, a loaded configuration dict, the local Borg version, global arguments
-    as an argparse.Namespace instance, the local Borg path, and the remote Borg path, perform a spot
-    check for the latest archive in the given repository.
+    as an argparse.Namespace instance, the local Borg path, the remote Borg path, and the borgmatic
+    runtime directory, perform a spot check for the latest archive in the given repository.
 
     A spot check compares file counts and also the hashes for a random sampling of source files on
     disk to those stored in the latest archive. If any differences are beyond configured tolerances,
@@ -600,6 +607,7 @@ def spot_check(
         global_arguments,
         local_path,
         remote_path,
+        borgmatic_runtime_directory,
     )
     logger.debug(f'{log_label}: {len(archive_paths)} total archive paths for spot check')
 
@@ -730,14 +738,16 @@ def run_check(
         write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
     if 'spot' in checks:
-        spot_check(
-            repository,
-            config,
-            local_borg_version,
-            global_arguments,
-            local_path,
-            remote_path,
-        )
+        with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+            spot_check(
+                repository,
+                config,
+                local_borg_version,
+                global_arguments,
+                local_path,
+                remote_path,
+                borgmatic_runtime_directory,
+            )
         write_check_time(make_check_time_path(config, repository_id, 'spot'))
 
     borgmatic.hooks.command.execute_hook(

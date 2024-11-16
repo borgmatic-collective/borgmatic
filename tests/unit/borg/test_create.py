@@ -1453,9 +1453,6 @@ def test_create_archive_calls_borg_with_parameters():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1483,6 +1480,7 @@ def test_create_archive_calls_borg_with_parameters():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1490,9 +1488,6 @@ def test_create_archive_calls_borg_with_environment():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1521,6 +1516,7 @@ def test_create_archive_calls_borg_with_environment():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1528,9 +1524,6 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1559,6 +1552,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1566,9 +1560,6 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1595,6 +1586,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
 
@@ -1603,9 +1595,6 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1634,6 +1623,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1641,9 +1631,6 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1670,6 +1657,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
 
@@ -1680,9 +1668,6 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create', '--dry-run'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1711,6 +1696,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         stats=True,
     )
 
@@ -1719,9 +1705,6 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1752,6 +1735,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1759,9 +1743,6 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1791,6 +1772,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
@@ -1798,9 +1780,6 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1828,6 +1807,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         stats=True,
     )
 
@@ -1836,9 +1816,6 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (
@@ -1871,6 +1848,7 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         list_files=True,
     )
 
@@ -1879,9 +1857,6 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1910,6 +1885,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         progress=True,
     )
 
@@ -1918,9 +1894,6 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -1948,6 +1921,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         progress=True,
     )
 
@@ -1957,9 +1931,6 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (
@@ -2009,6 +1980,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         progress=True,
         stream_processes=processes,
     )
@@ -2018,9 +1990,6 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -2046,6 +2015,7 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
 
@@ -2056,9 +2026,6 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -2084,6 +2051,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
         json=True,
         stats=True,
     )
@@ -2095,9 +2063,6 @@ def test_create_archive_calls_borg_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('expand_directories').and_return(())
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/var/run/0/borgmatic')
     flexmock(module).should_receive('collect_borgmatic_runtime_directories').and_return([])
     flexmock(module).should_receive('make_base_create_command').and_return(
         (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
@@ -2128,6 +2093,7 @@ def test_create_archive_calls_borg_with_working_directory():
         config_paths=['/tmp/test.yaml'],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/borgmatic/run',
     )
 
 

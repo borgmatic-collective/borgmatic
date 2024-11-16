@@ -275,8 +275,8 @@ def run_actions(
     '''
     Given parsed command-line arguments as an argparse.ArgumentParser instance, the configuration
     filename, a configuration dict, a sequence of loaded configuration paths, local and remote paths
-    to Borg, a local Borg version string, and a repository name, run all actions from the
-    command-line arguments on the given repository.
+    to Borg, a local Borg version string, a repository name, and the borgmatic runtime directory,
+    run all actions from the command-line arguments on the given repository.
 
     Yield JSON output strings from executing any actions that produce JSON.
 

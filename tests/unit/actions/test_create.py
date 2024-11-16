@@ -8,6 +8,9 @@ from borgmatic.actions import create as module
 def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module).should_receive('create_borgmatic_manifest').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
@@ -44,6 +47,9 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
 def test_run_create_with_store_config_files_false_does_not_create_borgmatic_manifest():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module).should_receive('create_borgmatic_manifest').never()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
@@ -82,6 +88,9 @@ def test_run_create_runs_with_selected_repository():
     flexmock(module.borgmatic.config.validate).should_receive(
         'repositories_match'
     ).once().and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
     flexmock(module).should_receive('create_borgmatic_manifest').once()
     flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
@@ -120,6 +129,7 @@ def test_run_create_bails_if_repository_does_not_match():
     flexmock(module.borgmatic.config.validate).should_receive(
         'repositories_match'
     ).once().and_return(False)
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
     flexmock(module).should_receive('create_borgmatic_manifest').never()
     create_arguments = flexmock(
@@ -153,6 +163,9 @@ def test_run_create_produces_json():
     flexmock(module.borgmatic.config.validate).should_receive(
         'repositories_match'
     ).once().and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        flexmock()
+    )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once().and_return(
         flexmock()
     )
@@ -191,18 +204,15 @@ def test_run_create_produces_json():
 
 
 def test_create_borgmatic_manifest_creates_manifest_file():
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/run/user/0/borgmatic')
     flexmock(module.os.path).should_receive('join').with_args(
-        '/run/user/0/borgmatic', 'bootstrap', 'manifest.json'
-    ).and_return('/run/user/0/borgmatic/bootstrap/manifest.json')
+        '/run/borgmatic', 'bootstrap', 'manifest.json'
+    ).and_return('/run/borgmatic/bootstrap/manifest.json')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
     flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
-        '/run/user/0/borgmatic/bootstrap/manifest.json', 'w'
+        '/run/borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(
         flexmock(
             __enter__=lambda *args: flexmock(write=lambda *args: None, close=lambda *args: None),
@@ -211,22 +221,19 @@ def test_create_borgmatic_manifest_creates_manifest_file():
     )
     flexmock(module.json).should_receive('dump').and_return(True).once()
 
-    module.create_borgmatic_manifest({}, 'test.yaml', False)
+    module.create_borgmatic_manifest({}, 'test.yaml', '/run/borgmatic', False)
 
 
 def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_runtime_directory():
-    flexmock(module.borgmatic.config.paths).should_receive(
-        'get_borgmatic_runtime_directory'
-    ).and_return('/borgmatic')
     flexmock(module.os.path).should_receive('join').with_args(
-        '/borgmatic', 'bootstrap', 'manifest.json'
-    ).and_return('/borgmatic/bootstrap/manifest.json')
+        '/run/borgmatic', 'bootstrap', 'manifest.json'
+    ).and_return('/run/borgmatic/bootstrap/manifest.json')
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.os).should_receive('makedirs').and_return(True)
 
     flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
     flexmock(sys.modules['builtins']).should_receive('open').with_args(
-        '/borgmatic/bootstrap/manifest.json', 'w'
+        '/run/borgmatic/bootstrap/manifest.json', 'w'
     ).and_return(
         flexmock(
             __enter__=lambda *args: flexmock(write=lambda *args: None, close=lambda *args: None),
@@ -236,9 +243,11 @@ def test_create_borgmatic_manifest_creates_manifest_file_with_custom_borgmatic_r
     flexmock(module.json).should_receive('dump').and_return(True).once()
 
     module.create_borgmatic_manifest(
-        {'borgmatic_runtime_directory': '/borgmatic'}, 'test.yaml', False
+        {'borgmatic_runtime_directory': '/borgmatic'}, 'test.yaml', '/run/borgmatic', False
     )
 
 
 def test_create_borgmatic_manifest_does_not_create_manifest_file_on_dry_run():
-    module.create_borgmatic_manifest({}, 'test.yaml', True)
+    flexmock(module.json).should_receive('dump').never()
+
+    module.create_borgmatic_manifest({}, 'test.yaml', '/run/borgmatic', True)
