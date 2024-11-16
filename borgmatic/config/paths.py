@@ -70,7 +70,8 @@ class Runtime_directory:
             self.temporary_directory = None
         else:
             self.temporary_directory = tempfile.TemporaryDirectory(
-                prefix='borgmatic', dir=os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp'
+                prefix='borgmatic-',
+                dir=os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp',
             )
             runtime_directory = self.temporary_directory.name
 

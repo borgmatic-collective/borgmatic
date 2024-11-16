@@ -101,7 +101,7 @@ def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_
     temporary_directory = flexmock(name='/run/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
-        prefix='borgmatic', dir='/run'
+        prefix='borgmatic-', dir='/run'
     ).and_return(temporary_directory)
 
     with module.Runtime_directory({}) as borgmatic_runtime_directory:
@@ -119,7 +119,7 @@ def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_th
     temporary_directory = flexmock(name='/run/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
-        prefix='borgmatic', dir='/run'
+        prefix='borgmatic-', dir='/run'
     ).and_return(temporary_directory)
 
     with module.Runtime_directory({}) as borgmatic_runtime_directory:
@@ -137,7 +137,7 @@ def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_
     temporary_directory = flexmock(name='/tmp/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
-        prefix='borgmatic', dir='/tmp'
+        prefix='borgmatic-', dir='/tmp'
     ).and_return(temporary_directory)
 
     with module.Runtime_directory({}) as borgmatic_runtime_directory:
