@@ -240,6 +240,11 @@ this frequency logic, borgmatic records check timestamps within the
 portion of this path, set the `user_state_directory` configuration option.
 Alternatively, set the `XDG_STATE_HOME` environment variable.
 
+<span class="minilink minilink-addedin">New in version 1.9.2</span>The
+`STATE_DIRECTORY` environment variable also works for this purpose. It's set
+by systemd if `StateDirectory=borgmatic` is added to borgmatic's systemd
+serivce file.
+
 <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
 borgmatic recorded check timestamps within the `~/.borgmatic` directory. At
 that time, the path was configurable by the `borgmatic_source_directory`

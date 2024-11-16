@@ -63,28 +63,9 @@ dump formats, which can't stream and therefore do consume temporary disk
 space. Additionally, prior to borgmatic 1.5.3, all database dumps consumed
 temporary disk space.)
 
-<span class="minilink minilink-addedin">New in version 1.9.0</span> To support
-this, borgmatic creates temporary streaming database dumps within
-`/run/user/$UID/borgmatic` by default (where `$UID` is the current user's ID).
-To customize the `/run/user/$UID` portion of this path, set the
-`user_runtime_directory` option in borgmatic's configuration. Alternatively,
-set the `XDG_RUNTIME_DIR` environment variable (often already set to
-`/run/user/$UID`).
-
-<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
-borgmatic created temporary streaming database dumps within the `~/.borgmatic`
-directory by default. At that time, the path was configurable by the
-`borgmatic_source_directory` configuration option (now deprecated).
-
-<span class="minilink minilink-addedin">New in version 1.9.1</span>In addition
-to `XDG_RUNTIME_DIR`, borgmatic also uses the `TMPDIR` or `TEMP` environment
-variable if set. `TMPDIR` is available on macOS, while `TEMP` is often
-available on other platforms.
-
-Also note that using a database hook implicitly enables the
-`read_special` configuration option (even if it's disabled in your
-configuration) to support this dump and restore streaming. See Limitations
-below for more on this.
+Also note that using a database hook implicitly enables the `read_special`
+configuration option (even if it's disabled in your configuration) to support
+this dump and restore streaming. See Limitations below for more on this.
 
 Here's a more involved example that connects to remote databases:
 
@@ -130,6 +111,40 @@ See your [borgmatic configuration
 file](https://torsion.org/borgmatic/docs/reference/configuration/) for
 additional customization of the options passed to database commands (when
 listing databases, restoring databases, etc.).
+
+
+### Runtime directory
+
+<span class="minilink minilink-addedin">New in version 1.9.0</span> To support
+streaming database dumps to Borg, borgmatic uses a runtime directory for
+temporary file storage, probing the following locations (in order) to find it:
+
+ 1. The `user_runtime_directory` borgmatic configuration option.
+ 2. The `XDG_RUNTIME_DIR` environment variable, usually `/run/user/$UID`
+    (where `$UID` is the current user's ID), automatically set by PAM on Linux
+    for a user with a session.
+ 3. <span class="minilink minilink-addedin">New in version 1.9.2</span>The
+    `RUNTIME_DIRECTORY` environment variable, set by systemd if
+    `RuntimeDirectory=borgmatic` is added to borgmatic's systemd service file.
+ 4. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
+    `TMPDIR` environment variable, set on macOS for a user with a session,
+    among other operating systems.
+ 5. <span class="minilink minilink-addedin">New in version 1.9.1</span>The
+    `TEMP` environment variable, set on various systems.
+ 6. <span class="minilink minilink-addedin">New in version 1.9.2</span>
+    Hard-coded `/tmp`. <span class="minilink minilink-addedin">Prior to
+    version 1.9.2</span>This was instead hard-coded to `/run/user/$UID`.
+
+Regardless of the runtime directory selected, borgmatic stores its files
+within a `borgmatic` subdirectory of the runtime directory. Additionally, in
+the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
+randomly named subdirectory in an effort to reduce path collisions in shared
+system temporary directories.
+
+<span class="minilink minilink-addedin">Prior to version 1.9.0</span>
+borgmatic created temporary streaming database dumps within the `~/.borgmatic`
+directory by default. At that time, the path was configurable by the
+`borgmatic_source_directory` configuration option (now deprecated).
 
 
 ### All databases

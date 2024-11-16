@@ -119,10 +119,10 @@ archive, regardless of the user who performs the backup. (Note that Borg
 doesn't store the leading `/`.)
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
-earlier</span>Database dump files are stored at `/var/run/$UID/borgmatic`
-(where `$UID` is the current user's ID) unless overridden by the
-`user_runtime_directory` configuration option or the `XDG_STATE_HOME`
-environment variable.
+earlier</span>Database dump files are stored at a path dependent on the
+[runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+in use at the time the archive was created.
 
 <span class="minilink minilink-addedin">Prior to borgmatic version
 1.9.0</span>Database dump files were instead stored at `~/.borgmatic` within
