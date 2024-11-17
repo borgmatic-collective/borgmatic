@@ -44,7 +44,8 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
     # borgmatic runtime directory (which get stored as just "/borgmatic" with Borg 1.4+). But we
     # still want to support reading the manifest from previously created archives as well.
     with borgmatic.config.paths.Runtime_directory(
-        {'user_runtime_directory': bootstrap_arguments.user_runtime_directory}
+        {'user_runtime_directory': bootstrap_arguments.user_runtime_directory},
+        bootstrap_arguments.repository,
     ) as borgmatic_runtime_directory:
         for base_directory in (
             'borgmatic',

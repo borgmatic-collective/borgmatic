@@ -879,7 +879,7 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar', '/baz', '/quux'),
     ) == ('/bar',)
 
@@ -920,7 +920,7 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar'),
     ) == ('/foo', '/bar')
 
@@ -958,7 +958,7 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar', '/baz', '/quux'),
     ) == ('/bar',)
 
@@ -995,7 +995,7 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar', '/baz', '/quux'),
     ) == ('/bar',)
 
@@ -1031,7 +1031,7 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar', '/baz', '/quux'),
     ) == ('/bar',)
 
@@ -1078,7 +1078,7 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('/foo', '/bar', '/baz', '/quux'),
     ) == ('/quux',)
 
@@ -1121,7 +1121,7 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
         global_arguments=flexmock(),
         local_path=flexmock(),
         remote_path=flexmock(),
-        log_label='repo',
+        log_prefix='repo',
         source_paths=('foo', 'bar', 'baz', 'quux'),
     ) == ('bar',)
 

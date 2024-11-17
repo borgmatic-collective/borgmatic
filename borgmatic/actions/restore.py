@@ -344,11 +344,12 @@ def run_restore(
     ):
         return
 
-    logger.info(
-        f'{repository.get("label", repository["path"])}: Restoring data sources from archive {restore_arguments.archive}'
-    )
+    log_prefix = repository.get('label', repository['path'])
+    logger.info(f'{log_prefix}: Restoring data sources from archive {restore_arguments.archive}')
 
-    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+    with borgmatic.config.paths.Runtime_directory(
+        config, log_prefix
+    ) as borgmatic_runtime_directory:
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,

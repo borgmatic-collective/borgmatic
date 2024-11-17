@@ -38,7 +38,7 @@ def test_runtime_directory_uses_config_option():
     flexmock(module.os).should_receive('makedirs')
     config = {'user_runtime_directory': '/run', 'borgmatic_source_directory': '/nope'}
 
-    with module.Runtime_directory(config) as borgmatic_runtime_directory:
+    with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -47,7 +47,7 @@ def test_runtime_directory_uses_config_option_without_adding_duplicate_borgmatic
     flexmock(module.os).should_receive('makedirs')
     config = {'user_runtime_directory': '/run/borgmatic', 'borgmatic_source_directory': '/nope'}
 
-    with module.Runtime_directory(config) as borgmatic_runtime_directory:
+    with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -58,7 +58,7 @@ def test_runtime_directory_falls_back_to_xdg_runtime_dir():
     )
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -69,7 +69,7 @@ def test_runtime_directory_falls_back_to_xdg_runtime_dir_without_adding_duplicat
     )
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -81,7 +81,7 @@ def test_runtime_directory_falls_back_to_runtime_directory():
     )
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -93,7 +93,7 @@ def test_runtime_directory_falls_back_to_runtime_directory_without_adding_duplic
     )
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
@@ -111,7 +111,7 @@ def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
 
 
@@ -130,7 +130,7 @@ def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_th
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
 
 
@@ -149,7 +149,7 @@ def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_
     ).and_return(temporary_directory)
     flexmock(module.os).should_receive('makedirs')
 
-    with module.Runtime_directory({}) as borgmatic_runtime_directory:
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
 
 

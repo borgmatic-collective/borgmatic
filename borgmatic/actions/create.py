@@ -71,9 +71,13 @@ def run_create(
         global_arguments.dry_run,
         **hook_context,
     )
-    logger.info(f'{repository.get("label", repository["path"])}: Creating archive{dry_run_label}')
 
-    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+    log_prefix = repository.get('label', repository['path'])
+    logger.info(f'{log_prefix}: Creating archive{dry_run_label}')
+
+    with borgmatic.config.paths.Runtime_directory(
+        config, log_prefix
+    ) as borgmatic_runtime_directory:
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
