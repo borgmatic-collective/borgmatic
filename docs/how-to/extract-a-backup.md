@@ -156,12 +156,19 @@ borgmatic umount --mount-point /mnt
 
 ## Extract the configuration files used to create an archive
 
-<span class="minilink minilink-addedin">New in version 1.7.15</span> borgmatic
-automatically stores all the configuration files used to create an archive
-inside the archive itself. They are stored in the archive using their full
-paths from the machine being backed up. This is useful in cases where you've
-lost a configuration file or you want to see what configurations were used to
-create a particular archive.
+<span class="minilink minilink-addedin">New in version 1.7.15</span> As part
+of creating a backup archive, borgmatic automatically includes all of the
+configuration files used when creating it, storing them inside the archive
+itself with their full paths from the machine being backed up. This is useful
+in cases where you've lost a configuration file or you want to see what
+configurations were used to create a particular archive.
+
+To support this, borgmatic creates a manifest file that records the paths of
+all the borgmatic configuration files stored within an archive. The file gets
+written to borgmatic's runtime directory on disk and then stored within the
+archive. See the [runtime directory
+documentation](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+for how and where that happens.
 
 To extract the configuration files from an archive, use the `config bootstrap`
 action. For example:
