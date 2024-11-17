@@ -59,7 +59,6 @@ class Runtime_directory:
         does not get stored in the file path within an archive. That way, the path of the runtime
         directory can change without leaving database dumps within an archive inaccessible.
         '''
-
         runtime_directory = (
             config.get('user_runtime_directory')
             or os.environ.get('XDG_RUNTIME_DIR')  # Set by PAM on Linux.
@@ -82,6 +81,7 @@ class Runtime_directory:
                 base_path if final_directory == 'borgmatic' else runtime_directory, '.', 'borgmatic'
             )
         )
+        os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
 
     def __enter__(self):
         '''
