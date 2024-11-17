@@ -49,10 +49,12 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
     ) as borgmatic_runtime_directory:
         for base_directory in (
             'borgmatic',
-            borgmatic_runtime_directory,
+            borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
             borgmatic_source_directory,
         ):
-            borgmatic_manifest_path = os.path.join(base_directory, 'bootstrap', 'manifest.json')
+            borgmatic_manifest_path = 'sh:' + os.path.join(
+                base_directory, 'bootstrap', 'manifest.json'
+            )
 
             extract_process = borgmatic.borg.extract.extract_archive(
                 global_arguments.dry_run,

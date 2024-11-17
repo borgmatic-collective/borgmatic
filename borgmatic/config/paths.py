@@ -30,6 +30,9 @@ def get_borgmatic_source_directory(config):
     return expand_user_in_path(config.get('borgmatic_source_directory') or '~/.borgmatic')
 
 
+TEMPORARY_DIRECTORY_PREFIX = 'borgmatic-'
+
+
 class Runtime_directory:
     '''
     A Python context manager for creating and cleaning up the borgmatic runtime directory used for
@@ -72,7 +75,7 @@ class Runtime_directory:
             base_directory = os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp'
             os.makedirs(base_directory, mode=0o700, exist_ok=True)
             self.temporary_directory = tempfile.TemporaryDirectory(
-                prefix='borgmatic-',
+                prefix=TEMPORARY_DIRECTORY_PREFIX,
                 dir=base_directory,
             )
             runtime_directory = self.temporary_directory.name
@@ -100,6 +103,20 @@ class Runtime_directory:
         '''
         if self.temporary_directory:
             self.temporary_directory.cleanup()
+
+
+def make_runtime_directory_glob(borgmatic_runtime_directory):
+    '''
+    Given a borgmatic runtime directory path, make a glob that would match that path, specifically
+    replacing any randomly generated temporary subdirectory with "*" since such a directory's name
+    changes on every borgmatic run.
+    '''
+    return os.path.join(
+        *(
+            '*' if subdirectory.startswith(TEMPORARY_DIRECTORY_PREFIX) else subdirectory
+            for subdirectory in os.path.normpath(borgmatic_runtime_directory).split(os.path.sep)
+        )
+    )
 
 
 def get_borgmatic_state_directory(config):

@@ -209,7 +209,7 @@ def collect_archive_data_source_names(
             + borgmatic.hooks.dump.make_data_source_dump_path(base_directory, '*_databases/*/*')
             for base_directory in (
                 'borgmatic',
-                borgmatic_runtime_directory.lstrip('/'),
+                borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
                 borgmatic_source_directory.lstrip('/'),
             )
         ],

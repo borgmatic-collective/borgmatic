@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic.config import paths as module
@@ -151,6 +152,18 @@ def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_
 
     with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
+
+
+@pytest.mark.parametrize(
+    'borgmatic_runtime_directory,expected_glob',
+    (
+        ('/foo/bar/baz/./borgmatic', 'foo/bar/baz/borgmatic'),
+        ('/foo/borgmatic/baz/./borgmatic', 'foo/borgmatic/baz/borgmatic'),
+        ('/foo/borgmatic-jti8idds/./borgmatic', 'foo/*/borgmatic'),
+    ),
+)
+def test_make_runtime_directory_glob(borgmatic_runtime_directory, expected_glob):
+    assert module.make_runtime_directory_glob(borgmatic_runtime_directory) == expected_glob
 
 
 def test_get_borgmatic_state_directory_uses_config_option():
