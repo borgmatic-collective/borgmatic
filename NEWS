@@ -1,7 +1,9 @@
 1.9.2.dev0
- * #932: Fix missing build backend setting in pyproject.toml to allow Fedora builds.
+ * #932: Fix the missing build backend setting in pyproject.toml to allow Fedora builds.
  * #934: Update the logic that probes for the borgmatic streaming database dump, bootstrap
-   metadata, and check state directories to support more platforms and use cases.
+   metadata, and check state directories to support more platforms and use cases. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory
  * #934: Add the "RuntimeDirectory" and "StateDirectory" options to the sample systemd service
    file to support the new runtime and state directory logic.
 
