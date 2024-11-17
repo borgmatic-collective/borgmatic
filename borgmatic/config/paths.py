@@ -1,4 +1,8 @@
+import logging
 import os
+import tempfile
+
+logger = logging.getLogger(__name__)
 
 
 def expand_user_in_path(path):
@@ -26,26 +30,91 @@ def get_borgmatic_source_directory(config):
     return expand_user_in_path(config.get('borgmatic_source_directory') or '~/.borgmatic')
 
 
-def get_borgmatic_runtime_directory(config):
-    '''
-    Given a configuration dict, get the borgmatic runtime directory used for storing temporary
-    runtime data like streaming database dumps and bootstrap metadata. Defaults to
-    $XDG_RUNTIME_DIR/./borgmatic or $TMPDIR/./borgmatic or $TEMP/./borgmatic or
-    /run/user/$UID/./borgmatic.
+TEMPORARY_DIRECTORY_PREFIX = 'borgmatic-'
 
-    The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
-    does not get stored in the file path within an archive. That way, the path of the runtime
-    directory can change without leaving database dumps within an archive inaccessible.
+
+class Runtime_directory:
     '''
-    return expand_user_in_path(
-        os.path.join(
+    A Python context manager for creating and cleaning up the borgmatic runtime directory used for
+    storing temporary runtime data like streaming database dumps and bootstrap metadata.
+
+    Example use as a context manager:
+
+        with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
+            do_something_with(borgmatic_runtime_directory)
+
+    For the scope of that "with" statement, the runtime directory is available. Afterwards, it
+    automatically gets cleaned up as necessary.
+    '''
+
+    def __init__(self, config, log_prefix):
+        '''
+        Given a configuration dict and a log prefix, determine the borgmatic runtime directory,
+        creating a secure, temporary directory within it if necessary. Defaults to
+        $XDG_RUNTIME_DIR/./borgmatic or $RUNTIME_DIRECTORY/./borgmatic or
+        $TMPDIR/borgmatic-[random]/./borgmatic or $TEMP/borgmatic-[random]/./borgmatic or
+        /tmp/borgmatic-[random]/./borgmatic where "[random]" is a randomly generated string intended
+        to avoid path collisions.
+
+        If XDG_RUNTIME_DIR or RUNTIME_DIRECTORY is set and already ends in "/borgmatic", then don't
+        tack on a second "/borgmatic" path component.
+
+        The "/./" is taking advantage of a Borg feature such that the part of the path before the "/./"
+        does not get stored in the file path within an archive. That way, the path of the runtime
+        directory can change without leaving database dumps within an archive inaccessible.
+        '''
+        runtime_directory = (
             config.get('user_runtime_directory')
-            or os.environ.get('XDG_RUNTIME_DIR')
-            or os.environ.get('TMPDIR')
-            or os.environ.get('TEMP')
-            or f'/run/user/{os.getuid()}',
-            '.',
-            'borgmatic',
+            or os.environ.get('XDG_RUNTIME_DIR')  # Set by PAM on Linux.
+            or os.environ.get('RUNTIME_DIRECTORY')  # Set by systemd if configured.
+        )
+
+        if runtime_directory:
+            self.temporary_directory = None
+        else:
+            base_directory = os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp'
+            os.makedirs(base_directory, mode=0o700, exist_ok=True)
+            self.temporary_directory = tempfile.TemporaryDirectory(
+                prefix=TEMPORARY_DIRECTORY_PREFIX,
+                dir=base_directory,
+            )
+            runtime_directory = self.temporary_directory.name
+
+        (base_path, final_directory) = os.path.split(runtime_directory.rstrip(os.path.sep))
+
+        self.runtime_path = expand_user_in_path(
+            os.path.join(
+                base_path if final_directory == 'borgmatic' else runtime_directory, '.', 'borgmatic'
+            )
+        )
+        os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
+
+        logger.debug(f'{log_prefix}: Using runtime directory {os.path.normpath(self.runtime_path)}')
+
+    def __enter__(self):
+        '''
+        Return the borgmatic runtime path as a string.
+        '''
+        return self.runtime_path
+
+    def __exit__(self, exception, value, traceback):
+        '''
+        Delete any temporary directory that was created as part of initialization.
+        '''
+        if self.temporary_directory:
+            self.temporary_directory.cleanup()
+
+
+def make_runtime_directory_glob(borgmatic_runtime_directory):
+    '''
+    Given a borgmatic runtime directory path, make a glob that would match that path, specifically
+    replacing any randomly generated temporary subdirectory with "*" since such a directory's name
+    changes on every borgmatic run.
+    '''
+    return os.path.join(
+        *(
+            '*' if subdirectory.startswith(TEMPORARY_DIRECTORY_PREFIX) else subdirectory
+            for subdirectory in os.path.normpath(borgmatic_runtime_directory).split(os.path.sep)
         )
     )
 
@@ -59,10 +128,9 @@ def get_borgmatic_state_directory(config):
     return expand_user_in_path(
         os.path.join(
             config.get('user_state_directory')
-            or os.environ.get(
-                'XDG_STATE_HOME',
-                '~/.local/state',
-            ),
+            or os.environ.get('XDG_STATE_HOME')
+            or os.environ.get('STATE_DIRECTORY')  # Set by systemd if configured.
+            or '~/.local/state',
             'borgmatic',
         )
     )

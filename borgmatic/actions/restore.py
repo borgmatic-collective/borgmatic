@@ -108,6 +108,7 @@ def restore_single_data_source(
     hook_name,
     data_source,
     connection_params,
+    borgmatic_runtime_directory,
 ):
     '''
     Given (among other things) an archive name, a data source hook name, the hostname, port,
@@ -123,9 +124,9 @@ def restore_single_data_source(
         config,
         repository['path'],
         borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+        borgmatic_runtime_directory,
         data_source['name'],
     )[hook_name]
-    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
 
     destination_path = (
         tempfile.mkdtemp(dir=borgmatic_runtime_directory)
@@ -135,7 +136,7 @@ def restore_single_data_source(
 
     try:
         # Kick off a single data source extract. If using a directory format, extract to a temporary
-        # directory. Otheriwes extract the single dump file to stdout.
+        # directory. Otherwise extract the single dump file to stdout.
         extract_process = borgmatic.borg.extract.extract_archive(
             dry_run=global_arguments.dry_run,
             repository=repository['path'],
@@ -170,6 +171,7 @@ def restore_single_data_source(
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
         connection_params=connection_params,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
     )
 
 
@@ -181,17 +183,17 @@ def collect_archive_data_source_names(
     global_arguments,
     local_path,
     remote_path,
+    borgmatic_runtime_directory,
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a configuration dict, the
-    local Borg version, global_arguments an argparse.Namespace, and local and remote Borg paths,
-    query the archive for the names of data sources it contains as dumps and return them as a dict
-    from hook name to a sequence of data source names.
+    local Borg version, global_arguments an argparse.Namespace, local and remote Borg paths, and the
+    borgmatic runtime directory, query the archive for the names of data sources it contains as
+    dumps and return them as a dict from hook name to a sequence of data source names.
     '''
     borgmatic_source_directory = str(
         pathlib.Path(borgmatic.config.paths.get_borgmatic_source_directory(config))
     )
-    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(config)
 
     # Probe for the data source dumps in multiple locations, as the default location has moved to
     # the borgmatic runtime directory (which get stored as just "/borgmatic" with Borg 1.4+). But we
@@ -207,7 +209,7 @@ def collect_archive_data_source_names(
             + borgmatic.hooks.dump.make_data_source_dump_path(base_directory, '*_databases/*/*')
             for base_directory in (
                 'borgmatic',
-                borgmatic_runtime_directory.lstrip('/'),
+                borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
                 borgmatic_source_directory.lstrip('/'),
             )
         ],
@@ -342,109 +344,116 @@ def run_restore(
     ):
         return
 
-    logger.info(
-        f'{repository.get("label", repository["path"])}: Restoring data sources from archive {restore_arguments.archive}'
-    )
+    log_prefix = repository.get('label', repository['path'])
+    logger.info(f'{log_prefix}: Restoring data sources from archive {restore_arguments.archive}')
 
-    borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-        'remove_data_source_dumps',
-        config,
-        repository['path'],
-        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
-        global_arguments.dry_run,
-    )
+    with borgmatic.config.paths.Runtime_directory(
+        config, log_prefix
+    ) as borgmatic_runtime_directory:
+        borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
+            'remove_data_source_dumps',
+            config,
+            repository['path'],
+            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic_runtime_directory,
+            global_arguments.dry_run,
+        )
 
-    archive_name = borgmatic.borg.repo_list.resolve_archive_name(
-        repository['path'],
-        restore_arguments.archive,
-        config,
-        local_borg_version,
-        global_arguments,
-        local_path,
-        remote_path,
-    )
-    archive_data_source_names = collect_archive_data_source_names(
-        repository['path'],
-        archive_name,
-        config,
-        local_borg_version,
-        global_arguments,
-        local_path,
-        remote_path,
-    )
-    restore_names = find_data_sources_to_restore(
-        restore_arguments.data_sources, archive_data_source_names
-    )
-    found_names = set()
-    remaining_restore_names = {}
-    connection_params = {
-        'hostname': restore_arguments.hostname,
-        'port': restore_arguments.port,
-        'username': restore_arguments.username,
-        'password': restore_arguments.password,
-        'restore_path': restore_arguments.restore_path,
-    }
+        archive_name = borgmatic.borg.repo_list.resolve_archive_name(
+            repository['path'],
+            restore_arguments.archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
+        )
+        archive_data_source_names = collect_archive_data_source_names(
+            repository['path'],
+            archive_name,
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
+            borgmatic_runtime_directory,
+        )
+        restore_names = find_data_sources_to_restore(
+            restore_arguments.data_sources, archive_data_source_names
+        )
+        found_names = set()
+        remaining_restore_names = {}
+        connection_params = {
+            'hostname': restore_arguments.hostname,
+            'port': restore_arguments.port,
+            'username': restore_arguments.username,
+            'password': restore_arguments.password,
+            'restore_path': restore_arguments.restore_path,
+        }
 
-    for hook_name, data_source_names in restore_names.items():
-        for data_source_name in data_source_names:
-            found_hook_name, found_data_source = get_configured_data_source(
-                config, archive_data_source_names, hook_name, data_source_name
-            )
-
-            if not found_data_source:
-                remaining_restore_names.setdefault(found_hook_name or hook_name, []).append(
-                    data_source_name
+        for hook_name, data_source_names in restore_names.items():
+            for data_source_name in data_source_names:
+                found_hook_name, found_data_source = get_configured_data_source(
+                    config, archive_data_source_names, hook_name, data_source_name
                 )
-                continue
 
-            found_names.add(data_source_name)
-            restore_single_data_source(
-                repository,
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path,
-                remote_path,
-                archive_name,
-                found_hook_name or hook_name,
-                dict(found_data_source, **{'schemas': restore_arguments.schemas}),
-                connection_params,
-            )
+                if not found_data_source:
+                    remaining_restore_names.setdefault(found_hook_name or hook_name, []).append(
+                        data_source_name
+                    )
+                    continue
 
-    # For any data sources that weren't found via exact matches in the configuration, try to
-    # fallback to "all" entries.
-    for hook_name, data_source_names in remaining_restore_names.items():
-        for data_source_name in data_source_names:
-            found_hook_name, found_data_source = get_configured_data_source(
-                config, archive_data_source_names, hook_name, data_source_name, 'all'
-            )
+                found_names.add(data_source_name)
+                restore_single_data_source(
+                    repository,
+                    config,
+                    local_borg_version,
+                    global_arguments,
+                    local_path,
+                    remote_path,
+                    archive_name,
+                    found_hook_name or hook_name,
+                    dict(found_data_source, **{'schemas': restore_arguments.schemas}),
+                    connection_params,
+                    borgmatic_runtime_directory,
+                )
 
-            if not found_data_source:
-                continue
+        # For any data sources that weren't found via exact matches in the configuration, try to
+        # fallback to "all" entries.
+        for hook_name, data_source_names in remaining_restore_names.items():
+            for data_source_name in data_source_names:
+                found_hook_name, found_data_source = get_configured_data_source(
+                    config, archive_data_source_names, hook_name, data_source_name, 'all'
+                )
 
-            found_names.add(data_source_name)
-            data_source = copy.copy(found_data_source)
-            data_source['name'] = data_source_name
+                if not found_data_source:
+                    continue
 
-            restore_single_data_source(
-                repository,
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path,
-                remote_path,
-                archive_name,
-                found_hook_name or hook_name,
-                dict(data_source, **{'schemas': restore_arguments.schemas}),
-                connection_params,
-            )
+                found_names.add(data_source_name)
+                data_source = copy.copy(found_data_source)
+                data_source['name'] = data_source_name
 
-    borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
-        'remove_data_source_dumps',
-        config,
-        repository['path'],
-        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
-        global_arguments.dry_run,
-    )
+                restore_single_data_source(
+                    repository,
+                    config,
+                    local_borg_version,
+                    global_arguments,
+                    local_path,
+                    remote_path,
+                    archive_name,
+                    found_hook_name or hook_name,
+                    dict(data_source, **{'schemas': restore_arguments.schemas}),
+                    connection_params,
+                    borgmatic_runtime_directory,
+                )
+
+        borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
+            'remove_data_source_dumps',
+            config,
+            repository['path'],
+            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic_runtime_directory,
+            global_arguments.dry_run,
+        )
 
     ensure_data_sources_found(restore_names, remaining_restore_names, found_names)

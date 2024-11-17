@@ -73,7 +73,12 @@ def test_dump_data_sources_dumps_each_database():
             dry_run_label=object,
         ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_dumps_with_password():
@@ -94,7 +99,9 @@ def test_dump_data_sources_dumps_with_password():
         dry_run_label=object,
     ).and_return(process).once()
 
-    assert module.dump_data_sources([database], {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        [database], {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_dumps_all_databases_at_once():
@@ -112,7 +119,9 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         dry_run_label=object,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_dumps_all_databases_separately_when_format_configured():
@@ -132,7 +141,12 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             dry_run_label=object,
         ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_database_names_to_dump_runs_mysql_with_list_options():
@@ -432,7 +446,9 @@ def test_dump_data_sources_errors_for_missing_all_databases():
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
     with pytest.raises(ValueError):
-        assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False)
+        assert module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
 
 
 def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
@@ -443,7 +459,12 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
     )
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=True) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=True
+        )
+        == []
+    )
 
 
 def test_restore_data_source_dump_runs_mysql_to_restore():
@@ -471,6 +492,7 @@ def test_restore_data_source_dump_runs_mysql_to_restore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -499,6 +521,7 @@ def test_restore_data_source_dump_runs_mysql_with_options():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -527,6 +550,7 @@ def test_restore_data_source_dump_runs_non_default_mysql_with_options():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -564,6 +588,7 @@ def test_restore_data_source_dump_runs_mysql_with_hostname_and_port():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -592,6 +617,7 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -641,6 +667,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'username': 'cliusername',
             'password': 'clipassword',
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -692,6 +719,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -713,4 +741,5 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )

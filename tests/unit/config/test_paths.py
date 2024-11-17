@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic.config import paths as module
@@ -33,53 +34,141 @@ def test_get_borgmatic_source_directory_without_config_option_uses_default():
     assert module.get_borgmatic_source_directory({}) == '~/.borgmatic'
 
 
-def test_get_borgmatic_runtime_directory_uses_config_option():
+def test_runtime_directory_uses_config_option():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os).should_receive('makedirs')
+    config = {'user_runtime_directory': '/run', 'borgmatic_source_directory': '/nope'}
 
-    assert (
-        module.get_borgmatic_runtime_directory(
-            {'user_runtime_directory': '/tmp', 'borgmatic_source_directory': '/nope'}
-        )
-        == '/tmp/./borgmatic'
-    )
+    with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
-def test_get_borgmatic_runtime_directory_falls_back_to_linux_environment_variable():
+def test_runtime_directory_uses_config_option_without_adding_duplicate_borgmatic_subdirectory():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os).should_receive('makedirs')
+    config = {'user_runtime_directory': '/run/borgmatic', 'borgmatic_source_directory': '/nope'}
+
+    with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
+
+
+def test_runtime_directory_falls_back_to_xdg_runtime_dir():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
-        '/tmp'
+        '/run'
     )
+    flexmock(module.os).should_receive('makedirs')
 
-    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
-def test_get_borgmatic_runtime_directory_falls_back_to_macos_environment_variable():
+def test_runtime_directory_falls_back_to_xdg_runtime_dir_without_adding_duplicate_borgmatic_subdirectory():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
+        '/run/borgmatic'
+    )
+    flexmock(module.os).should_receive('makedirs')
+
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
+
+
+def test_runtime_directory_falls_back_to_runtime_directory():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('/tmp')
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        '/run'
+    )
+    flexmock(module.os).should_receive('makedirs')
 
-    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
-def test_get_borgmatic_runtime_directory_falls_back_to_other_environment_variable():
+def test_runtime_directory_falls_back_to_runtime_directory_without_adding_duplicate_borgmatic_subdirectory():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        '/run/borgmatic'
+    )
+    flexmock(module.os).should_receive('makedirs')
+
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/./borgmatic'
+
+
+def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('/run')
+    temporary_directory = flexmock(name='/run/borgmatic-1234')
+    temporary_directory.should_receive('cleanup').once()
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
+        prefix='borgmatic-', dir='/run'
+    ).and_return(temporary_directory)
+    flexmock(module.os).should_receive('makedirs')
+
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
+
+
+def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
     flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
-    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('/tmp')
+    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('/run')
+    temporary_directory = flexmock(name='/run/borgmatic-1234')
+    temporary_directory.should_receive('cleanup').once()
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
+        prefix='borgmatic-', dir='/run'
+    ).and_return(temporary_directory)
+    flexmock(module.os).should_receive('makedirs')
 
-    assert module.get_borgmatic_runtime_directory({}) == '/tmp/./borgmatic'
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
 
 
-def test_get_borgmatic_runtime_directory_defaults_to_hard_coded_path():
+def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').and_return('/run/user/0')
-    flexmock(module.os).should_receive('getuid').and_return(0)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return(None)
+    temporary_directory = flexmock(name='/tmp/borgmatic-1234')
+    temporary_directory.should_receive('cleanup').once()
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
+        prefix='borgmatic-', dir='/tmp'
+    ).and_return(temporary_directory)
+    flexmock(module.os).should_receive('makedirs')
 
-    assert module.get_borgmatic_runtime_directory({}) == '/run/user/0/./borgmatic'
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
+
+
+@pytest.mark.parametrize(
+    'borgmatic_runtime_directory,expected_glob',
+    (
+        ('/foo/bar/baz/./borgmatic', 'foo/bar/baz/borgmatic'),
+        ('/foo/borgmatic/baz/./borgmatic', 'foo/borgmatic/baz/borgmatic'),
+        ('/foo/borgmatic-jti8idds/./borgmatic', 'foo/*/borgmatic'),
+    ),
+)
+def test_make_runtime_directory_glob(borgmatic_runtime_directory, expected_glob):
+    assert module.make_runtime_directory_glob(borgmatic_runtime_directory) == expected_glob
 
 
 def test_get_borgmatic_state_directory_uses_config_option():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').never()
 
     assert (
         module.get_borgmatic_state_directory(
@@ -89,16 +178,24 @@ def test_get_borgmatic_state_directory_uses_config_option():
     )
 
 
-def test_get_borgmatic_state_directory_falls_back_to_environment_variable():
+def test_get_borgmatic_state_directory_falls_back_to_xdg_state_home():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').with_args(
-        'XDG_STATE_HOME', object
-    ).and_return('/tmp')
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_STATE_HOME').and_return('/tmp')
+
+    assert module.get_borgmatic_state_directory({}) == '/tmp/borgmatic'
+
+
+def test_get_borgmatic_state_directory_falls_back_to_state_directory():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_STATE_HOME').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('STATE_DIRECTORY').and_return(
+        '/tmp'
+    )
 
     assert module.get_borgmatic_state_directory({}) == '/tmp/borgmatic'
 
 
 def test_get_borgmatic_state_directory_defaults_to_hard_coded_path():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
-    flexmock(module.os.environ).should_receive('get').and_return('/root/.local/state')
-    assert module.get_borgmatic_state_directory({}) == '/root/.local/state/borgmatic'
+    flexmock(module.os.environ).should_receive('get').and_return(None)
+    assert module.get_borgmatic_state_directory({}) == '~/.local/state/borgmatic'

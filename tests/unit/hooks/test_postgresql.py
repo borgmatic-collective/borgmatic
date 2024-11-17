@@ -251,7 +251,12 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
             run_to_completion=False,
         ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == processes
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == processes
+    )
 
 
 def test_dump_data_sources_raises_when_no_database_names_to_dump():
@@ -261,7 +266,9 @@ def test_dump_data_sources_raises_when_no_database_names_to_dump():
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
     with pytest.raises(ValueError):
-        module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False)
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
 
 
 def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
@@ -270,7 +277,9 @@ def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
-    module.dump_data_sources(databases, {}, 'test.yaml', dry_run=True) == []
+    module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=True
+    ) == []
 
 
 def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
@@ -287,7 +296,12 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == []
+    )
 
 
 def test_dump_data_sources_with_dry_run_skips_pg_dump():
@@ -304,7 +318,12 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=True) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=True
+        )
+        == []
+    )
 
 
 def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
@@ -340,7 +359,9 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_runs_pg_dump_with_username_and_password():
@@ -376,7 +397,9 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_with_username_injection_attack_gets_escaped():
@@ -412,7 +435,9 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_runs_pg_dump_with_directory_format():
@@ -443,7 +468,12 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
         extra_environment={'PGSSLMODE': 'disable'},
     ).and_return(flexmock()).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == []
+    assert (
+        module.dump_data_sources(
+            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        )
+        == []
+    )
 
 
 def test_dump_data_sources_runs_pg_dump_with_options():
@@ -476,7 +506,9 @@ def test_dump_data_sources_runs_pg_dump_with_options():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
@@ -498,7 +530,9 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_dump_data_sources_runs_non_default_pg_dump():
@@ -532,7 +566,9 @@ def test_dump_data_sources_runs_non_default_pg_dump():
         run_to_completion=False,
     ).and_return(process).once()
 
-    assert module.dump_data_sources(databases, {}, 'test.yaml', dry_run=False) == [process]
+    assert module.dump_data_sources(
+        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+    ) == [process]
 
 
 def test_restore_data_source_dump_runs_pg_restore():
@@ -584,6 +620,7 @@ def test_restore_data_source_dump_runs_pg_restore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -646,6 +683,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -706,6 +744,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -785,6 +824,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'username': 'cliusername',
             'password': 'clipassword',
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -864,6 +904,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -925,6 +966,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -964,6 +1006,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1008,6 +1051,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1077,6 +1121,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1101,6 +1146,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1153,6 +1199,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
 
@@ -1209,4 +1256,5 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
             'username': None,
             'password': None,
         },
+        borgmatic_runtime_directory='/run/borgmatic',
     )

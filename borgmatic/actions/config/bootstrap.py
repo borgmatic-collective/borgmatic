@@ -38,37 +38,44 @@ def get_config_paths(archive_name, bootstrap_arguments, global_arguments, local_
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(
         {'borgmatic_source_directory': bootstrap_arguments.borgmatic_source_directory}
     )
-    borgmatic_runtime_directory = borgmatic.config.paths.get_borgmatic_runtime_directory(
-        {'user_runtime_directory': bootstrap_arguments.user_runtime_directory}
-    )
     config = make_bootstrap_config(bootstrap_arguments)
 
     # Probe for the manifest file in multiple locations, as the default location has moved to the
     # borgmatic runtime directory (which get stored as just "/borgmatic" with Borg 1.4+). But we
     # still want to support reading the manifest from previously created archives as well.
-    for base_directory in ('borgmatic', borgmatic_runtime_directory, borgmatic_source_directory):
-        borgmatic_manifest_path = os.path.join(base_directory, 'bootstrap', 'manifest.json')
+    with borgmatic.config.paths.Runtime_directory(
+        {'user_runtime_directory': bootstrap_arguments.user_runtime_directory},
+        bootstrap_arguments.repository,
+    ) as borgmatic_runtime_directory:
+        for base_directory in (
+            'borgmatic',
+            borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
+            borgmatic_source_directory,
+        ):
+            borgmatic_manifest_path = 'sh:' + os.path.join(
+                base_directory, 'bootstrap', 'manifest.json'
+            )
 
-        extract_process = borgmatic.borg.extract.extract_archive(
-            global_arguments.dry_run,
-            bootstrap_arguments.repository,
-            archive_name,
-            [borgmatic_manifest_path],
-            config,
-            local_borg_version,
-            global_arguments,
-            local_path=bootstrap_arguments.local_path,
-            remote_path=bootstrap_arguments.remote_path,
-            extract_to_stdout=True,
-        )
-        manifest_json = extract_process.stdout.read()
+            extract_process = borgmatic.borg.extract.extract_archive(
+                global_arguments.dry_run,
+                bootstrap_arguments.repository,
+                archive_name,
+                [borgmatic_manifest_path],
+                config,
+                local_borg_version,
+                global_arguments,
+                local_path=bootstrap_arguments.local_path,
+                remote_path=bootstrap_arguments.remote_path,
+                extract_to_stdout=True,
+            )
+            manifest_json = extract_process.stdout.read()
 
-        if manifest_json:
-            break
-    else:
-        raise ValueError(
-            'Cannot read configuration paths from archive due to missing bootstrap manifest'
-        )
+            if manifest_json:
+                break
+        else:
+            raise ValueError(
+                'Cannot read configuration paths from archive due to missing bootstrap manifest'
+            )
 
     try:
         manifest_data = json.loads(manifest_json)

@@ -8,15 +8,11 @@ from borgmatic.hooks import dump
 logger = logging.getLogger(__name__)
 
 
-def make_dump_path(config, base_directory=None):  # pragma: no cover
+def make_dump_path(base_directory):  # pragma: no cover
     '''
-    Given a configuration dict and an optional base directory, make the corresponding dump path. If
-    a base directory isn't provided, use the borgmatic runtime directory.
+    Given a base directory, make the corresponding dump path.
     '''
-    return dump.make_data_source_dump_path(
-        base_directory or borgmatic.config.paths.get_borgmatic_runtime_directory(config),
-        'mongodb_databases',
-    )
+    return dump.make_data_source_dump_path(base_directory, 'mongodb_databases')
 
 
 def use_streaming(databases, config, log_prefix):
@@ -27,11 +23,12 @@ def use_streaming(databases, config, log_prefix):
     return any(database.get('format') != 'directory' for database in databases)
 
 
-def dump_data_sources(databases, config, log_prefix, dry_run):
+def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory, dry_run):
     '''
     Dump the given MongoDB databases to a named pipe. The databases are supplied as a sequence of
-    dicts, one dict describing each database as per the configuration schema. Use the configuration
-    dict to construct the destination path and the given log prefix in any log entries.
+    dicts, one dict describing each database as per the configuration schema. Use the borgmatic
+    runtime directory to construct the destination path (used for the directory format and the given
+    log prefix in any log entries.
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
@@ -44,7 +41,7 @@ def dump_data_sources(databases, config, log_prefix, dry_run):
     for database in databases:
         name = database['name']
         dump_filename = dump.make_data_source_dump_filename(
-            make_dump_path(config), name, database.get('hostname')
+            make_dump_path(borgmatic_runtime_directory), name, database.get('hostname')
         )
         dump_format = database.get('format', 'archive')
 
@@ -94,36 +91,49 @@ def build_dump_command(database, dump_filename, dump_format):
     )
 
 
-def remove_data_source_dumps(databases, config, log_prefix, dry_run):  # pragma: no cover
+def remove_data_source_dumps(
+    databases, config, log_prefix, borgmatic_runtime_directory, dry_run
+):  # pragma: no cover
     '''
-    Remove all database dump files for this hook regardless of the given databases. Use the log
-    prefix in any log entries. Use the given configuration dict to construct the destination path.
-    If this is a dry run, then don't actually remove anything.
+    Remove all database dump files for this hook regardless of the given databases. Use the
+    borgmatic_runtime_directory to construct the destination path and the log prefix in any log
+    entries. If this is a dry run, then don't actually remove anything.
     '''
-    dump.remove_data_source_dumps(make_dump_path(config), 'MongoDB', log_prefix, dry_run)
+    dump.remove_data_source_dumps(
+        make_dump_path(borgmatic_runtime_directory), 'MongoDB', log_prefix, dry_run
+    )
 
 
-def make_data_source_dump_patterns(databases, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_patterns(
+    databases, config, log_prefix, borgmatic_runtime_directory, name=None
+):  # pragma: no cover
     '''
-    Given a sequence of database configurations dicts, a configuration dict, a prefix to log with,
-    and a database name to match, return the corresponding glob patterns to match the database dump
-    in an archive.
+    Given a sequence of configurations dicts, a configuration dict, a prefix to log with, the
+    borgmatic runtime directory, and a database name to match, return the corresponding glob
+    patterns to match the database dump in an archive.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
     return (
+        dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
-            make_dump_path(config, 'borgmatic'), name, hostname='*'
+            make_dump_path(borgmatic_runtime_directory), name, hostname='*'
         ),
-        dump.make_data_source_dump_filename(make_dump_path(config), name, hostname='*'),
         dump.make_data_source_dump_filename(
-            make_dump_path(config, borgmatic_source_directory), name, hostname='*'
+            make_dump_path(borgmatic_source_directory), name, hostname='*'
         ),
     )
 
 
 def restore_data_source_dump(
-    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
+    hook_config,
+    config,
+    log_prefix,
+    data_source,
+    dry_run,
+    extract_process,
+    connection_params,
+    borgmatic_runtime_directory,
 ):
     '''
     Restore a database from the given extract stream. The database is supplied as a data source
@@ -137,7 +147,9 @@ def restore_data_source_dump(
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     dump_filename = dump.make_data_source_dump_filename(
-        make_dump_path(config), data_source['name'], data_source.get('hostname')
+        make_dump_path(borgmatic_runtime_directory),
+        data_source['name'],
+        data_source.get('hostname'),
     )
     restore_command = build_restore_command(
         extract_process, data_source, dump_filename, connection_params
