@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 import borgmatic.hooks.monitor
@@ -237,15 +238,15 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
 
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').never()
-
-    module.ping_monitor(
-        hook_config,
-        {},
-        'config.yaml',
-        borgmatic.hooks.monitor.State.START,
-        monitoring_log_level=1,
-        dry_run=False,
-    )
+    with pytest.raises(ValueError):
+        module.ping_monitor(
+            hook_config,
+            {},
+            'config.yaml',
+            borgmatic.hooks.monitor.State.START,
+            monitoring_log_level=1,
+            dry_run=False,
+        )
 
 
 def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example_success():
