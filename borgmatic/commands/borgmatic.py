@@ -793,9 +793,6 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
             break
 
     try:
-        if 'extract' in arguments or 'mount' in arguments:
-            validate.guard_single_repository_selected(repository, configs)
-
         validate.guard_configuration_contains_repository(repository, configs)
     except ValueError as error:
         yield from log_error_records(str(error))

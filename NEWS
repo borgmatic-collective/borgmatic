@@ -1,4 +1,6 @@
 1.9.2.dev0
+ * #722: Remove the restriction that the "extract" and "mount" actions must match a single
+   repository. Now they work more like other actions, where each repository is applied in turn.
  * #932: Fix the missing build backend setting in pyproject.toml to allow Fedora builds.
  * #934: Update the logic that probes for the borgmatic streaming database dump, bootstrap
    metadata, and check state directories to support more platforms and use cases. See the

@@ -199,26 +199,3 @@ def guard_configuration_contains_repository(repository, configurations):
 
     if count == 0:
         raise ValueError(f'Repository "{repository}" not found in configuration files')
-
-
-def guard_single_repository_selected(repository, configurations):
-    '''
-    Given a repository path and a dict mapping from config filename to corresponding parsed config
-    dict, ensure either a single repository exists across all configuration files or a repository
-    path was given.
-    '''
-    if repository:
-        return
-
-    count = len(
-        tuple(
-            config_repository
-            for config in configurations.values()
-            for config_repository in config['repositories']
-        )
-    )
-
-    if count != 1:
-        raise ValueError(
-            "Can't determine which repository to use. Use --repository to disambiguate"
-        )

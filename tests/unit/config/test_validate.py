@@ -210,32 +210,3 @@ def test_guard_configuration_contains_repository_errors_when_repository_does_not
             repository='nope',
             configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
         )
-
-
-def test_guard_single_repository_selected_raises_when_multiple_repositories_configured_and_none_selected():
-    with pytest.raises(ValueError):
-        module.guard_single_repository_selected(
-            repository=None,
-            configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
-        )
-
-
-def test_guard_single_repository_selected_does_not_raise_when_single_repository_configured_and_none_selected():
-    module.guard_single_repository_selected(
-        repository=None,
-        configurations={'config.yaml': {'repositories': ['repo']}},
-    )
-
-
-def test_guard_single_repository_selected_does_not_raise_when_no_repositories_configured_and_one_selected():
-    module.guard_single_repository_selected(
-        repository='repo',
-        configurations={'config.yaml': {'repositories': []}},
-    )
-
-
-def test_guard_single_repository_selected_does_not_raise_when_repositories_configured_and_one_selected():
-    module.guard_single_repository_selected(
-        repository='repo',
-        configurations={'config.yaml': {'repositories': ['repo', 'repo2']}},
-    )

@@ -1397,7 +1397,6 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
-    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'extract': flexmock(repository='repo')}
@@ -1429,7 +1428,6 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_mount():
-    flexmock(module.validate).should_receive('guard_single_repository_selected')
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {'mount': flexmock(repository='repo')}
