@@ -39,6 +39,7 @@ def resolve_archive_name(
             ),
         )
         + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', global_arguments.log_json)
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags('last', 1)
@@ -100,6 +101,7 @@ def make_repo_list_command(
             else ()
         )
         + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', global_arguments.log_json)
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + (

@@ -703,6 +703,31 @@ def test_check_archives_with_remote_path_passes_through_to_borg():
     )
 
 
+def test_check_archives_with_umask_passes_through_to_borg():
+    checks = {'repository'}
+    config = {'umask': '077'}
+    flexmock(module).should_receive('make_check_name_flags').with_args(checks, ()).and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    insert_execute_command_mock(('borg', 'check', '--umask', '077', 'repo'))
+
+    module.check_archives(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        check_arguments=flexmock(
+            progress=None,
+            repair=None,
+            only_checks=None,
+            force=None,
+            match_archives=None,
+            max_duration=None,
+        ),
+        global_arguments=flexmock(log_json=False),
+        checks=checks,
+        archive_filter_flags=(),
+    )
+
+
 def test_check_archives_with_log_json_passes_through_to_borg():
     checks = {'repository'}
     config = {}

@@ -150,6 +150,7 @@ def check_archives(
         )
 
     max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
+    umask = config.get('umask')
 
     borg_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
@@ -160,6 +161,7 @@ def check_archives(
         + (('--max-duration', str(max_duration)) if max_duration else ())
         + make_check_name_flags(checks, archive_filter_flags)
         + (('--remote-path', remote_path) if remote_path else ())
+        + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + verbosity_flags

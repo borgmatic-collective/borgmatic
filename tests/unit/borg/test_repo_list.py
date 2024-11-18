@@ -180,6 +180,30 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags
     )
 
 
+def test_resolve_archive_name_with_umask_calls_borg_with_umask_flags():
+    expected_archive = 'archive-name'
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        ('borg', 'list', '--umask', '077') + BORG_LIST_LATEST_ARGUMENTS,
+        extra_environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).and_return(expected_archive + '\n')
+
+    assert (
+        module.resolve_archive_name(
+            'repo',
+            'latest',
+            config={'umask': '077'},
+            local_borg_version='1.2.3',
+            global_arguments=flexmock(log_json=False),
+        )
+        == expected_archive
+    )
+
+
 def test_resolve_archive_name_without_archives_raises():
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -455,9 +479,9 @@ def test_make_repo_list_command_includes_local_path():
 
 
 def test_make_repo_list_command_includes_remote_path():
-    flexmock(module.flags).should_receive('make_flags').and_return(
-        ('--remote-path', 'borg2')
-    ).and_return(()).and_return(())
+    flexmock(module.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else ()
+    )
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
         None, None, '1.2.3'
     ).and_return(())
@@ -476,6 +500,29 @@ def test_make_repo_list_command_includes_remote_path():
     )
 
     assert command == ('borg', 'list', '--remote-path', 'borg2', 'repo')
+
+
+def test_make_repo_list_command_includes_umask():
+    flexmock(module.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else ()
+    )
+    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
+        None, None, '1.2.3'
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_repo_list_command(
+        repository_path='repo',
+        config={'umask': '077'},
+        local_borg_version='1.2.3',
+        repo_list_arguments=flexmock(
+            archive=None, paths=None, json=False, prefix=None, match_archives=None
+        ),
+        global_arguments=flexmock(log_json=False),
+    )
+
+    assert command == ('borg', 'list', '--umask', '077', 'repo')
 
 
 def test_make_repo_list_command_transforms_prefix_into_match_archives():

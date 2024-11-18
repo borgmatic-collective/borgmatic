@@ -34,8 +34,6 @@ def make_list_command(
     and local and remote Borg paths, return a command as a tuple to list archives or paths within an
     archive.
     '''
-    lock_wait = config.get('lock_wait', None)
-
     return (
         (local_path, 'list')
         + (
@@ -49,8 +47,9 @@ def make_list_command(
             else ()
         )
         + flags.make_flags('remote-path', remote_path)
+        + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', lock_wait)
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (
             flags.make_repository_archive_flags(

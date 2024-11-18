@@ -100,6 +100,29 @@ def test_make_delete_command_includes_remote_path():
     assert command == ('borg', 'delete', '--remote-path', 'borg1', 'repo')
 
 
+def test_make_delete_command_includes_umask():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else ()
+    )
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
+        ('repo',)
+    )
+
+    command = module.make_delete_command(
+        repository={'path': 'repo'},
+        config={'umask': '077'},
+        local_borg_version='1.2.3',
+        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == ('borg', 'delete', '--umask', '077', 'repo')
+
+
 def test_make_delete_command_includes_log_json():
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(

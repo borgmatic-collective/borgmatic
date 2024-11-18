@@ -64,6 +64,7 @@ def create_repository(
             raise
 
     lock_wait = config.get('lock_wait')
+    umask = config.get('umask')
     extra_borg_options = config.get('extra_borg_options', {}).get('repo-create', '')
 
     repo_create_command = (
@@ -84,6 +85,7 @@ def create_repository(
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--remote-path', remote_path) if remote_path else ())
+        + (('--umask', str(umask)) if umask else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )

@@ -94,7 +94,9 @@ def test_make_list_command_includes_json():
 
 
 def test_make_list_command_includes_log_json():
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(('--log-json',))
+    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
+        ('--log-json',)
+    )
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
 
@@ -110,7 +112,7 @@ def test_make_list_command_includes_log_json():
 
 
 def test_make_list_command_includes_lock_wait():
-    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(
+    flexmock(module.flags).should_receive('make_flags').and_return(()).and_return(()).and_return(
         ('--lock-wait', '5')
     )
     flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
@@ -201,6 +203,24 @@ def test_make_list_command_includes_remote_path():
     )
 
     assert command == ('borg', 'list', '--remote-path', 'borg2', 'repo')
+
+
+def test_make_list_command_includes_umask():
+    flexmock(module.flags).should_receive('make_flags').replace_with(
+        lambda name, value: (f'--{name}', value) if value else ()
+    )
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+
+    command = module.make_list_command(
+        repository_path='repo',
+        config={'umask': '077'},
+        local_borg_version='1.2.3',
+        list_arguments=flexmock(archive=None, paths=None, json=False),
+        global_arguments=flexmock(log_json=False),
+    )
+
+    assert command == ('borg', 'list', '--umask', '077', 'repo')
 
 
 def test_make_list_command_includes_short():
