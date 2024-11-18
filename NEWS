@@ -9,6 +9,8 @@
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory
  * #934: Add the "RuntimeDirectory" and "StateDirectory" options to the sample systemd service
    file to support the new runtime and state directory logic.
+ * #939: Fix borgmatic ignoring the "BORG_RELOCATED_REPO_ACCESS_IS_OK" and
+   "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK" environment variables.
 
 1.9.1
  * #928: Fix the user runtime directory location on macOS (and possibly Cygwin).

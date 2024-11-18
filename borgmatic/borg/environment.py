@@ -1,3 +1,5 @@
+import os
+
 OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_base_directory': 'BORG_BASE_DIR',
     'borg_config_directory': 'BORG_CONFIG_DIR',
@@ -38,8 +40,9 @@ def make_environment(config):
         option_name,
         environment_variable_name,
     ) in DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE.items():
-        value = config.get(option_name)
-        environment[environment_variable_name] = 'yes' if value else 'no'
+        if os.environ.get(environment_variable_name) is None:
+            value = config.get(option_name)
+            environment[environment_variable_name] = 'yes' if value else 'no'
 
     for (
         option_name,
