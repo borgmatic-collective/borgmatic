@@ -222,7 +222,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
     )
 
 
-def test_ping_monitor_start_state_backup_default_message_with_priority_high_declared_expire_and_retry_delared_success():
+def test_ping_monitor_start_state_backup_default_message_with_priority_high_declared_expire_and_retry_ignored_success():
     '''
     This simulates priority level 1, retry and expiry being set. Since expire
     and retry are only used for priority level 2, they should not be included
