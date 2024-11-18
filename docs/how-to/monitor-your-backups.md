@@ -293,7 +293,7 @@ us](https://torsion.org/borgmatic/#support-and-contributing).
 
 ## Pushover hook
 
-<span class="minilink minilink-addedin">New in version 1.9.1</span>
+<span class="minilink minilink-addedin">New in version 1.9.2</span>
 [Pushover](https://pushover.net) makes it easy to get real-time notifications 
 on your Android, iPhone, iPad, and Desktop (Android Wear and Apple Watch, 
 too!).
