@@ -1,4 +1,4 @@
-1.9.2.dev0
+1.9.2
  * #441: Apply the "umask" option to all relevant actions, not just some of them.
  * #722: Remove the restriction that the "extract" and "mount" actions must match a single
    repository. Now they work more like other actions, where each repository is applied in turn.
