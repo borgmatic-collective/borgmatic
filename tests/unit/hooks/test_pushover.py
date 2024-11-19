@@ -222,7 +222,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
     )
 
 
-def test_ping_monitor_start_state_backup_default_message_with_priority_high_declared_expire_and_retry_ignored_success():
+def test_ping_monitor_start_state_backup_default_message_with_priority_high_declared_expire_and_retry_raises():
     '''
     This simulates priority level 1, retry and expiry being set. Since expire
     and retry are only used for priority level 2, they should not be included
@@ -238,6 +238,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
 
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module.requests).should_receive('post').never()
+
     with pytest.raises(ValueError):
         module.ping_monitor(
             hook_config,
@@ -452,15 +453,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
     flexmock(module.logger).should_receive('warning').never()
-    flexmock(module.requests).should_receive('post').with_args(
-        'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
-        data={
-            'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
-            'user': '983hfe0of902lkjfa2amanfgui',
-            'message': 'fail',
-        },
-    ).and_return(flexmock(ok=True)).never()
+    flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True)).never()
 
     module.ping_monitor(
         hook_config,
@@ -481,15 +474,7 @@ def test_ping_monitor_config_incorrect_state_exit_early():
         'user': '983hfe0of902lkjfa2amanfgui',
     }
     flexmock(module.logger).should_receive('warning').never()
-    flexmock(module.requests).should_receive('post').with_args(
-        'https://api.pushover.net/1/messages.json',
-        headers={'Content-type': 'application/x-www-form-urlencoded'},
-        data={
-            'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
-            'user': '983hfe0of902lkjfa2amanfgui',
-            'message': 'start',
-        },
-    ).and_return(flexmock(ok=True)).never()
+    flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True)).never()
 
     module.ping_monitor(
         hook_config,

@@ -39,10 +39,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if state_config.get('priority') == EMERGENCY_PRIORITY:
         if 'expire' not in state_config:
-            logger.info(f'{config_filename}: Setting expire to default (10min).')
+            logger.info(f'{config_filename}: Setting expire to default (10 min).')
             state_config['expire'] = 600
         if 'retry' not in state_config:
-            logger.info(f'{config_filename}: Setting retry to default (30sec).')
+            logger.info(f'{config_filename}: Setting retry to default (30 sec).')
             state_config['retry'] = 30
     else:
         if 'expire' in state_config or 'retry' in state_config:
@@ -51,14 +51,15 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             )
 
     state_config = {
-        key: (int(value) if key in 'html' else value) for key, value in state_config.items()
+        key: (int(value) if key == 'html' else value) for key, value in state_config.items()
     }
 
     data = dict(
         {
             'token': token,
             'user': user,
-            'message': state.name.lower(),  # default to state name. Can be overwritten in state_config loop below.
+            # Default to state name. Can be overwritten by state_config below.
+            'message': state.name.lower(),
         },
         **state_config,
     )
