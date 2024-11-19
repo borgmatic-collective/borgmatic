@@ -45,11 +45,13 @@ def test_interactive_console_true_when_isatty_and_TERM_is_not_dumb(capsys):
 
 
 def test_should_do_markup_respects_no_color_value():
+    flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
     assert module.should_do_markup(no_color=True, configs={}) is False
 
 
 def test_should_do_markup_respects_config_value():
+    flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
     assert module.should_do_markup(no_color=False, configs={'foo.yaml': {'color': False}}) is False
 
@@ -58,6 +60,7 @@ def test_should_do_markup_respects_config_value():
 
 
 def test_should_do_markup_prefers_any_false_config_value():
+    flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
 
     assert (
@@ -84,6 +87,7 @@ def test_should_do_markup_respects_PY_COLORS_environment_variable():
 
 
 def test_should_do_markup_prefers_no_color_value_to_config_value():
+    flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
 
     assert module.should_do_markup(no_color=True, configs={'foo.yaml': {'color': True}}) is False
