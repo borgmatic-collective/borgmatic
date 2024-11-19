@@ -46,6 +46,7 @@ them as backups happen:
  * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
  * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
  * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+ * [Pushover](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pushover-hook)
  * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
  * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
 
@@ -288,6 +289,76 @@ fail.
 
 If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
+
+
+## Pushover hook
+
+<span class="minilink minilink-addedin">New in version 1.9.2</span>
+[Pushover](https://pushover.net) makes it easy to get real-time notifications 
+on your Android, iPhone, iPad, and Desktop (Android Wear and Apple Watch, 
+too!).
+
+First, create a Pushover account and login on your mobile device. Create an
+Application in your Pushover dashboard.
+
+Then, configure borgmatic with your user's unique "User Key" found in your 
+Pushover dashboard and the unique "API Token" from the created Application.
+
+Here's a basic example:
+
+
+```yaml
+pushover:
+    token: 7ms6TXHpTokTou2P6x4SodDeentHRa
+    user: hwRwoWsXMBWwgrSecfa9EfPey55WSN
+```
+
+
+With this configuration, borgmatic creates a Pushover event for your service
+whenever borgmatic fails, but only when any of the `create`, `prune`, `compact`,
+or `check` actions are run. Note that borgmatic does not contact Pushover
+when a backup starts or when it ends without error by default.
+
+You can configure Pushover to have custom parameters declared for borgmatic's
+`start`, `fail` and `finish` hooks states.
+
+Here's a more advanced example:
+
+
+```yaml
+pushover:
+    token: 7ms6TXHpTokTou2P6x4SodDeentHRa
+    user: hwRwoWsXMBWwgrSecfa9EfPey55WSN
+    start:
+        message: "Backup <b>Started</b>"
+        priority: -2
+        title: "Backup Started"
+        html: True
+        ttl: 10  # Message will be deleted after 10 seconds.
+    fail:
+        message: "Backup <font color='#ff6961'>Failed</font>"
+        priority: 2  # Requests acknowledgement for messages.
+        expire: 1200  # Used only for priority 2. Default is 1200 seconds.
+        retry: 30  # Used only for priority 2. Default is 30 seconds.
+        device: "pixel8"
+        title: "Backup Failed"
+        html: True
+        sound: "siren"
+        url: "https://ticketing-system.example.com/login"
+        url_title: "Login to ticketing system"
+    finish:
+        message: "Backup <font color='#77dd77'>Finished</font>"
+        priority: 0
+        title: "Backup Finished"
+        html: True
+        ttl: 60
+        url: "https://ticketing-system.example.com/login"
+        url_title: "Login to ticketing system"
+    states:
+        - start
+        - finish
+        - fail
+```
 
 
 ## ntfy hook
