@@ -1245,6 +1245,12 @@ def make_parsers():
         help='List archives that are newer than the specified time range (e.g. 7d or 12m) from the current time [Borg 2.x+ only]',
     )
     repo_list_group.add_argument(
+        '--deleted',
+        default=False,
+        action='store_true',
+        help="List only deleted archives that haven't yet been compacted [Borg 2.x+ only]",
+    )
+    repo_list_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

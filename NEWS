@@ -1,3 +1,7 @@
+1.9.3.dev0
+ * Add a "--deleted" flag to the "repo-list" action for listing deleted archives that haven't
+   yet been compacted (Borg 2 only).
+
 1.9.2
  * #441: Apply the "umask" option to all relevant actions, not just some of them.
  * #722: Remove the restriction that the "extract" and "mount" actions must match a single
