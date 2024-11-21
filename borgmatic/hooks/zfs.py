@@ -24,12 +24,11 @@ def dump_data_sources(
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
     directory, the configured source directories, and whether this is a dry run, auto-detect and
-    snapshot any ZFS dataset mount points within the given source directories. Also update those
-    source directories, repacing dataset mount points with corresponding snapshot directories. Use
+    snapshot any ZFS dataset mount points listed in the given source directories. Also update those
+    source directories, replacing dataset mount points with corresponding snapshot directories. Use
     the log prefix in any log entries.
 
-    Return an empty sequence of subprocess.Popen instances, since there are no ongoing dump
-    processes.
+    Return an empty sequence, since there are no ongoing dump processes.
 
     If this is a dry run or ZFS isn't enabled, then don't actually snapshot anything.
 
@@ -212,6 +211,7 @@ def make_data_source_dump_patterns(hook_config, config, log_prefix, name=None): 
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
     '''
+    # TODO: Error gracefully if the user tries to run a restore.
     raise NotImplementedError()
 
 
@@ -221,4 +221,5 @@ def restore_data_source_dump(
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
     '''
+    # TODO: Error gracefully if the user tries to run a restore.
     raise NotImplementedError()
