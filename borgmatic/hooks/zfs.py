@@ -47,7 +47,7 @@ def dump_data_sources(
     # TODO: Dry run.
 
     # List ZFS datasets to get their mount points.
-    zfs_command = config.get('zfs_command', 'zfs')
+    zfs_command = hook_config.get('zfs_command', 'zfs')
     list_command = (
         zfs_command,
         'list',
@@ -105,10 +105,9 @@ def dump_data_sources(
         logger.debug(f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}')
 
         os.makedirs(snapshot_path, mode=0o700, exist_ok=True)
-
         borgmatic.execute.execute_command(
             (
-                config.get('mount_command', 'mount'),
+                hook_config.get('mount_command', 'mount'),
                 '-t',
                 'zfs',
                 f'{dataset_name}@{snapshot_name}',
@@ -133,7 +132,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # TODO: Dry run.
 
     # Unmount snapshots.
-    zfs_command = config.get('zfs_command', 'zfs')
+    zfs_command = hook_config.get('zfs_command', 'zfs')
     list_datasets_command = (
         zfs_command,
         'list',
@@ -171,7 +170,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_path}')
             borgmatic.execute.execute_command(
                 (
-                    config.get('umount_command', 'umount'),
+                    hook_config.get('umount_command', 'umount'),
                     snapshot_path,
                 ),
                 output_log_level=logging.DEBUG,

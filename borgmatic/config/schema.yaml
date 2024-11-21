@@ -2261,17 +2261,9 @@ properties:
             monitoring documentation for details.
 
     zfs:
-        type: object
-        required: ['enabled']
+        type: ["object", "null"]
         additionalProperties: false
         properties:
-            enabled:
-                type: boolean
-                description: |
-                    Whether to auto-detect and snapshot any ZFS dataset mount
-                    points listed in "source_directories" when creating backups.
-                    Defaults to false.
-                example: true
             zfs_command:
                 type: string
                 description: |
