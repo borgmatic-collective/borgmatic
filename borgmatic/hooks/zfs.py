@@ -1,6 +1,7 @@
 import logging
 import os
 import shlex
+import subprocess
 
 import borgmatic.config.paths
 import borgmatic.execute
@@ -136,9 +137,16 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         '-o',
         'name,mountpoint',
     )
-    list_datasets_output = borgmatic.execute.execute_command_and_capture_output(
-        list_datasets_command
-    )
+    try:
+        list_datasets_output = borgmatic.execute.execute_command_and_capture_output(
+            list_datasets_command
+        )
+    except FileNotFoundError:
+        logger.debug(f'{log_prefix}: Could not find "{zfs_command}" command')
+        return
+    except subprocess.CalledProcessError as error:
+        logger.debug(f'{log_prefix}: {error}')
+        return
 
     mount_points = tuple(
         mount_point
@@ -202,7 +210,6 @@ def make_data_source_dump_patterns(hook_config, config, log_prefix, name=None): 
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
     '''
-    # TODO: Error gracefully if the user tries to run a restore.
     raise NotImplementedError()
 
 
@@ -212,5 +219,4 @@ def restore_data_source_dump(
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
     '''
-    # TODO: Error gracefully if the user tries to run a restore.
     raise NotImplementedError()
