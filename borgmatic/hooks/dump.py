@@ -11,6 +11,7 @@ DATA_SOURCE_HOOK_NAMES = (
     'mongodb_databases',
     'postgresql_databases',
     'sqlite_databases',
+    'zfs',
 )
 
 

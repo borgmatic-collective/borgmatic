@@ -122,7 +122,9 @@ def use_streaming(databases, config, log_prefix):
     return any(databases)
 
 
-def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory, dry_run):
+def dump_data_sources(
+    databases, config, log_prefix, borgmatic_runtime_directory, source_directories, dry_run
+):
     '''
     Dump the given MariaDB databases to a named pipe. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the given

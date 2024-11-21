@@ -104,7 +104,9 @@ def use_streaming(databases, config, log_prefix):
     return any(database.get('format') != 'directory' for database in databases)
 
 
-def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory, dry_run):
+def dump_data_sources(
+    databases, config, log_prefix, borgmatic_runtime_directory, source_directories, dry_run
+):
     '''
     Dump the given PostgreSQL databases to a named pipe. The databases are supplied as a sequence of
     dicts, one dict describing each database as per the configuration schema. Use the given

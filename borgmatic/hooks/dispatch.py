@@ -16,6 +16,7 @@ from borgmatic.hooks import (
     sqlite,
     uptimekuma,
     zabbix,
+    zfs,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ HOOK_NAME_TO_MODULE = {
     'sqlite_databases': sqlite,
     'uptime_kuma': uptimekuma,
     'zabbix': zabbix,
+    'zfs': zfs,
 }
 
 

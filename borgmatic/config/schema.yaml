@@ -2259,3 +2259,33 @@ properties:
             can send the logs to a self-hosted instance or create an account at
             https://grafana.com/auth/sign-up/create-user. See borgmatic
             monitoring documentation for details.
+
+    zfs:
+        type: object
+        required: ['enabled']
+        additionalProperties: false
+        properties:
+            enabled:
+                type: boolean
+                description: |
+                    Whether to auto-detect and snapshot any ZFS dataset mount
+                    points listed in "source_directories" when creating backups.
+                    Defaults to false.
+                example: true
+            zfs_command:
+                type: string
+                description: |
+                    Command to use instead of "zfs".
+                example: /usr/local/bin/zfs
+            mount_command:
+                type: string
+                description: |
+                    Command to use instead of "mount".
+                example: /usr/local/bin/mount
+            umount_command:
+                type: string
+                description: |
+                    Command to use instead of "umount".
+                example: /usr/local/bin/umount
+        description: |
+            Configuration for a integration with the ZFS filesystem.
