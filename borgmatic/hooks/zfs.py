@@ -93,6 +93,7 @@ def dump_data_sources(
         # up in the Borg archive at the "original" dataset mount point path.
         snapshot_path = os.path.join(
             # TODO: Maybe factor out into normalize_runtime_directory() utility function.
+            '/',
             *(
                 subdirectory
                 for subdirectory in borgmatic_runtime_directory.split(os.path.sep)
@@ -153,6 +154,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # FIXME: This doesn't necessarily find snapshot mounts from previous borgmatic runs, because
     # borgmatic_runtime_directory could be in a tempfile-created directory that has a random name.
     snapshots_directory = os.path.join(
+        '/',
         *(
             subdirectory
             for subdirectory in borgmatic_runtime_directory.split(os.path.sep)
