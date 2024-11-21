@@ -143,10 +143,10 @@ def pattern_root_directories(patterns=None):
     ]
 
 
-def process_source_directories(config, config_paths, borgmatic_runtime_directory):
+def process_source_directories(config, config_paths):
     '''
-    Given a configuration dict, a sequence of configuration paths, and the borgmatic runtime
-    directory, expand and deduplicate the source directories from them.
+    Given a configuration dict and a sequence of configuration paths, expand and deduplicate the
+    source directories from them.
     '''
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
@@ -154,7 +154,6 @@ def process_source_directories(config, config_paths, borgmatic_runtime_directory
         map_directories_to_devices(
             expand_directories(
                 tuple(config.get('source_directories', ()))
-                + (borgmatic_runtime_directory,)
                 + tuple(config_paths if config.get('store_config_files', True) else ()),
                 working_directory=working_directory,
             )
@@ -214,9 +213,7 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-        source_directories = process_source_directories(
-            config, config_paths, borgmatic_runtime_directory
-        )
+        source_directories = process_source_directories(config, config_paths)
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
             config,
@@ -235,6 +232,7 @@ def run_create(
                 borgmatic_runtime_directory,
                 global_arguments.dry_run,
             )
+            source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
 
         json_output = borgmatic.borg.create.create_archive(
             global_arguments.dry_run,

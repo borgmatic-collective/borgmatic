@@ -379,7 +379,6 @@ def collect_spot_check_source_paths(
             ),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
-            borgmatic_runtime_directory=borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
             list_files=True,

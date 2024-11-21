@@ -20,7 +20,12 @@ BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
 
 
 def dump_data_sources(
-    hook_config, config, log_prefix, borgmatic_runtime_directory, source_directories, dry_run
+    hook_config,
+    config,
+    log_prefix,
+    borgmatic_runtime_directory,
+    source_directories,
+    dry_run,
 ):
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
@@ -34,12 +39,11 @@ def dump_data_sources(
     If this is a dry run or ZFS isn't enabled, then don't actually snapshot anything.
 
     '''
-    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+    # TODO: Check for ZFS enabled in config and skip accordingly.
 
+    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     logger.info(f'{log_prefix}: Snapshotting ZFS datasets{dry_run_label}')
 
-    # TODO: Check for ZFS enabled in config and skip accordingly.
-    # TODO: Check for Borg 1.4+ and error if Borg is too old (cuz we need the slashdot hack).
     # TODO: Dry run.
 
     # List ZFS datasets to get their mount points.

@@ -122,7 +122,12 @@ def use_streaming(databases, config, log_prefix):
 
 
 def dump_data_sources(
-    databases, config, log_prefix, borgmatic_runtime_directory, source_directories, dry_run
+    databases,
+    config,
+    log_prefix,
+    borgmatic_runtime_directory,
+    source_directories,
+    dry_run,
 ):
     '''
     Dump the given MySQL/MariaDB databases to a named pipe. The databases are supplied as a sequence
@@ -132,6 +137,7 @@ def dump_data_sources(
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
+    Also append the given source directories with the parent directory of the database dumps.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -178,6 +184,8 @@ def dump_data_sources(
                     dry_run_label,
                 )
             )
+
+    source_directories.append(os.path.join(borgmatic_runtime_directory, 'mysql_databases'))
 
     return [process for process in processes if process]
 
