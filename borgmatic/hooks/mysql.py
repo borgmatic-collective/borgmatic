@@ -185,7 +185,8 @@ def dump_data_sources(
                 )
             )
 
-    source_directories.append(os.path.join(borgmatic_runtime_directory, 'mysql_databases'))
+    if not dry_run:
+        source_directories.append(os.path.join(borgmatic_runtime_directory, 'mysql_databases'))
 
     return [process for process in processes if process]
 

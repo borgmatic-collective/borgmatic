@@ -37,14 +37,9 @@ def dump_data_sources(
     Return an empty sequence, since there are no ongoing dump processes.
 
     If this is a dry run or ZFS isn't enabled, then don't actually snapshot anything.
-
     '''
-    # TODO: Check for ZFS enabled in config and skip accordingly.
-
-    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+    dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'{log_prefix}: Snapshotting ZFS datasets{dry_run_label}')
-
-    # TODO: Dry run.
 
     # List ZFS datasets to get their mount points.
     zfs_command = hook_config.get('zfs_command', 'zfs')
@@ -82,17 +77,18 @@ def dump_data_sources(
 
     for mount_point, dataset_name in requested_mount_point_to_dataset_name.items():
         full_snapshot_name = f'{dataset_name}@{snapshot_name}'
-        logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name}')
+        logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
-        borgmatic.execute.execute_command(
-            (
-                zfs_command,
-                'snapshot',
-                '-r',
-                full_snapshot_name,
-            ),
-            output_log_level=logging.DEBUG,
-        )
+        if not dry_run:
+            borgmatic.execute.execute_command(
+                (
+                    zfs_command,
+                    'snapshot',
+                    '-r',
+                    full_snapshot_name,
+                ),
+                output_log_level=logging.DEBUG,
+            )
 
         # Mount the snapshot into a particular named temporary directory so that the snapshot ends
         # up in the Borg archive at the "original" dataset mount point path.
@@ -102,22 +98,24 @@ def dump_data_sources(
             '.',
             mount_point.lstrip(os.path.sep),
         )
-        logger.debug(f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}')
+        logger.debug(f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}{dry_run_label}')
 
-        os.makedirs(snapshot_path, mode=0o700, exist_ok=True)
-        borgmatic.execute.execute_command(
-            (
-                hook_config.get('mount_command', 'mount'),
-                '-t',
-                'zfs',
-                f'{dataset_name}@{snapshot_name}',
-                snapshot_path,
-            ),
-            output_log_level=logging.DEBUG,
-        )
+        if not dry_run:
+            os.makedirs(snapshot_path, mode=0o700, exist_ok=True)
+            borgmatic.execute.execute_command(
+                (
+                    hook_config.get('mount_command', 'mount'),
+                    '-t',
+                    'zfs',
+                    f'{dataset_name}@{snapshot_name}',
+                    snapshot_path,
+                ),
+                output_log_level=logging.DEBUG,
+            )
 
-        source_directories.remove(mount_point)
-        source_directories.append(snapshot_path)
+        if not dry_run:
+            source_directories.remove(mount_point)
+            source_directories.append(snapshot_path)
 
     return []
 
@@ -129,7 +127,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     borgmatic. Use the log prefix in any log entries. If this is a dry run or ZFS isn't enabled,
     then don't actually remove anything.
     '''
-    # TODO: Dry run.
+    dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     # Unmount snapshots.
     zfs_command = hook_config.get('zfs_command', 'zfs')
@@ -162,19 +160,21 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         os.path.normpath(borgmatic_runtime_directory),
         'zfs_snapshots',
     )
-    logger.debug(f'{log_prefix}: Looking for snapshots in {snapshots_directory}')
+    logger.debug(f'{log_prefix}: Looking for snapshots to remove in {snapshots_directory}{dry_run_label}')
 
     if os.path.isdir(snapshots_directory):
         for mount_point in mount_points:
             snapshot_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_path}')
-            borgmatic.execute.execute_command(
-                (
-                    hook_config.get('umount_command', 'umount'),
-                    snapshot_path,
-                ),
-                output_log_level=logging.DEBUG,
-            )
+            logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_path}{dry_run_label}')
+
+            if not dry_run:
+                borgmatic.execute.execute_command(
+                    (
+                        hook_config.get('umount_command', 'umount'),
+                        snapshot_path,
+                    ),
+                    output_log_level=logging.DEBUG,
+                )
 
     # Destroy snapshots.
     list_snapshots_command = (
@@ -192,21 +192,22 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
 
     for line in list_snapshots_output.splitlines():
         full_snapshot_name = line.rstrip()
-        logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}')
+        logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
         # Only destroy snapshots that borgmatic actually created!
         if not full_snapshot_name.split('@')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
 
-        borgmatic.execute.execute_command(
-            (
-                zfs_command,
-                'destroy',
-                '-r',
-                full_snapshot_name,
-            ),
-            output_log_level=logging.DEBUG,
-        )
+        if not dry_run:
+            borgmatic.execute.execute_command(
+                (
+                    zfs_command,
+                    'destroy',
+                    '-r',
+                    full_snapshot_name,
+                ),
+                output_log_level=logging.DEBUG,
+            )
 
 
 def make_data_source_dump_patterns(hook_config, config, log_prefix, name=None):  # pragma: no cover

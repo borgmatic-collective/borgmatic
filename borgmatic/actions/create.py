@@ -232,7 +232,8 @@ def run_create(
                 borgmatic_runtime_directory,
                 global_arguments.dry_run,
             )
-            source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
+            if not global_arguments.dry_run:
+                source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
 
         json_output = borgmatic.borg.create.create_archive(
             global_arguments.dry_run,

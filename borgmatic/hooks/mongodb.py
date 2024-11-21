@@ -68,7 +68,8 @@ def dump_data_sources(
             dump.create_named_pipe_for_dump(dump_filename)
             processes.append(execute_command(command, shell=True, run_to_completion=False))
 
-    source_directories.append(os.path.join(borgmatic_runtime_directory, 'mongodb_databases'))
+    if not dry_run:
+        source_directories.append(os.path.join(borgmatic_runtime_directory, 'mongodb_databases'))
 
     return processes
 
