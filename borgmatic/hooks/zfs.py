@@ -1,6 +1,8 @@
+import glob
 import logging
 import os
 import shlex
+import shutil
 import subprocess
 
 import borgmatic.config.paths
@@ -65,8 +67,7 @@ def dump_data_sources(
         (dataset_name, mount_point)
         for line in list_output.splitlines()
         for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
-        if mount_point in source_directories_set
-        or user_property_value == 'auto'
+        if mount_point in source_directories_set or user_property_value == 'auto'
     )
 
     # Snapshot each dataset, rewriting source directories to use the snapshot paths.
@@ -97,7 +98,9 @@ def dump_data_sources(
             mount_point.lstrip(os.path.sep),
         )
         snapshot_path = os.path.normpath(snapshot_path_for_borg)
-        logger.debug(f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}{dry_run_label}')
+        logger.debug(
+            f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}{dry_run_label}'
+        )
 
         if not dry_run:
             os.makedirs(snapshot_path, mode=0o700, exist_ok=True)
@@ -154,15 +157,26 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         for line in list_datasets_output.splitlines()
         for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
     )
-    # FIXME: This doesn't necessarily find snapshot mounts from previous borgmatic runs, because
-    # borgmatic_runtime_directory could be in a tempfile-created directory that has a random name.
-    snapshots_directory = os.path.join(
-        os.path.normpath(borgmatic_runtime_directory),
+    snapshots_glob = os.path.join(
+        borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
+            os.path.normpath(borgmatic_runtime_directory)
+        ),
         'zfs_snapshots',
     )
-    logger.debug(f'{log_prefix}: Looking for snapshots to remove in {snapshots_directory}{dry_run_label}')
+    logger.debug(
+        f'{log_prefix}: Looking for snapshots to remove in {snapshots_glob}{dry_run_label}'
+    )
 
-    if os.path.isdir(snapshots_directory):
+    for snapshots_directory in glob.glob(snapshots_glob):
+        if not os.path.isdir(snapshots_directory):
+            continue
+
+        # This might fail if the directory is already mounted, but we swallow errors here since
+        # we'll try again below. The point of doing it here is that we don't want to try to unmount
+        # a non-mounted directory (which *will* fail), and probing for whether a directory is
+        # mounted is tough to do in a cross-platform way.
+        shutil.rmtree(snapshots_directory, ignore_errors=True)
+
         for mount_point in mount_points:
             snapshot_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
             logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_path}{dry_run_label}')
@@ -175,6 +189,8 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
                     ),
                     output_log_level=logging.DEBUG,
                 )
+
+        shutil.rmtree(snapshots_directory)
 
     # Destroy snapshots.
     list_snapshots_command = (
