@@ -17,6 +17,7 @@ def use_streaming(hook_config, config, log_prefix):
 
 
 BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
+BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 
 def dump_data_sources(
@@ -50,32 +51,28 @@ def dump_data_sources(
         '-t',
         'filesystem',
         '-o',
-        'name,mountpoint',
+        f'name,mountpoint,{BORGMATIC_USER_PROPERTY}',
     )
     list_output = borgmatic.execute.execute_command_and_capture_output(list_command)
-    mount_point_to_dataset_name = {
-        mount_point: dataset_name
+    source_directories_set = set(source_directories)
+
+    # Find the intersection between the dataset mount points and the configured borgmatic source
+    # directories, the idea being that these are the requested datasets to snapshot. But also
+    # include any datasets tagged with a borgmatic-specific user property whether or not they
+    # appear in source directories.
+    requested_datasets = tuple(
+        (dataset_name, mount_point)
         for line in list_output.splitlines()
-        for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
-    }
-
-    # Find the intersection between those mount points and the configured borgmatic source
-    # directories, the idea being that these are the requested datasets to snapshot.
-    requested_mount_point_to_dataset_name = {
-        source_directory: dataset_name
-        for source_directory in source_directories
-        for dataset_name in (mount_point_to_dataset_name.get(source_directory),)
-        if dataset_name
-    }
-
-    # TODO: Also maybe support datasets with property torsion.org.borgmatic:backup even if not
-    # listed in source directories?
+        for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
+        if mount_point in source_directories_set
+        or user_property_value == 'auto'
+    )
 
     # Snapshot each dataset, rewriting source directories to use the snapshot paths.
     snapshot_paths = []
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
 
-    for mount_point, dataset_name in requested_mount_point_to_dataset_name.items():
+    for dataset_name, mount_point in requested_datasets:
         full_snapshot_name = f'{dataset_name}@{snapshot_name}'
         logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
@@ -92,12 +89,13 @@ def dump_data_sources(
 
         # Mount the snapshot into a particular named temporary directory so that the snapshot ends
         # up in the Borg archive at the "original" dataset mount point path.
-        snapshot_path = os.path.join(
+        snapshot_path_for_borg = os.path.join(
             os.path.normpath(borgmatic_runtime_directory),
             'zfs_snapshots',
             '.',
             mount_point.lstrip(os.path.sep),
         )
+        snapshot_path = os.path.normpath(snapshot_path_for_borg)
         logger.debug(f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_path}{dry_run_label}')
 
         if not dry_run:
@@ -113,9 +111,10 @@ def dump_data_sources(
                 output_log_level=logging.DEBUG,
             )
 
-        if not dry_run:
-            source_directories.remove(mount_point)
-            source_directories.append(snapshot_path)
+            if mount_point in source_directories:
+                source_directories.remove(mount_point)
+
+            source_directories.append(snapshot_path_for_borg)
 
     return []
 
