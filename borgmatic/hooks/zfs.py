@@ -31,13 +31,14 @@ def dump_data_sources(
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
     directory, the configured source directories, and whether this is a dry run, auto-detect and
-    snapshot any ZFS dataset mount points listed in the given source directories. Also update those
-    source directories, replacing dataset mount points with corresponding snapshot directories. Use
-    the log prefix in any log entries.
+    snapshot any ZFS dataset mount points listed in the given source directories and also any
+    dataset with a borgmatic-specific user property. Also update those source directories, replacing
+    dataset mount points with corresponding snapshot directories. Use the log prefix in any log
+    entries.
 
     Return an empty sequence, since there are no ongoing dump processes.
 
-    If this is a dry run or ZFS isn't enabled, then don't actually snapshot anything.
+    If this is a dry run, then don't actually snapshot anything.
     '''
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'{log_prefix}: Snapshotting ZFS datasets{dry_run_label}')
@@ -123,8 +124,8 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
     directory, and whether this is a dry run, unmount and destroy any ZFS snapshots created by
-    borgmatic. Use the log prefix in any log entries. If this is a dry run or ZFS isn't enabled,
-    then don't actually remove anything.
+    borgmatic. Use the log prefix in any log entries. If this is a dry run, then don't actually
+    remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
