@@ -32,16 +32,17 @@ def get_datasets_to_backup(zfs_command, source_directories):
 
     Return the result as a sequence of (dataset name, mount point) pairs.
     '''
-    list_command = (
-        zfs_command,
-        'list',
-        '-H',
-        '-t',
-        'filesystem',
-        '-o',
-        f'name,mountpoint,{BORGMATIC_USER_PROPERTY}',
+    list_output = borgmatic.execute.execute_command_and_capture_output(
+        (
+            zfs_command,
+            'list',
+            '-H',
+            '-t',
+            'filesystem',
+            '-o',
+            f'name,mountpoint,{BORGMATIC_USER_PROPERTY}',
+        )
     )
-    list_output = borgmatic.execute.execute_command_and_capture_output(list_command)
     source_directories_set = set(source_directories)
 
     return tuple(
@@ -49,6 +50,30 @@ def get_datasets_to_backup(zfs_command, source_directories):
         for line in list_output.splitlines()
         for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
         if mount_point in source_directories_set or user_property_value == 'auto'
+    )
+
+
+def get_all_datasets(zfs_command): 
+    '''
+    Given a ZFS command to run, return all ZFS datasets as a sequence of (dataset name, mount point)
+    pairs.
+    '''
+    list_output = borgmatic.execute.execute_command_and_capture_output(
+        (
+            zfs_command,
+            'list',
+            '-H',
+            '-t',
+            'filesystem',
+            '-o',
+            f'name,mountpoint',
+        )
+    )
+
+    return tuple(
+        (dataset_name, mount_point)
+        for line in list_output.splitlines()
+        for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
     )
 
 
@@ -148,6 +173,57 @@ def dump_data_sources(
     return []
 
 
+def unmount_snapshot(umount_command, snapshot_mount_path):
+    '''
+    Given a umount command to run and the mount path of a snapshot, unmount it.
+    '''
+    borgmatic.execute.execute_command(
+        (
+            umount_command,
+            snapshot_mount_path,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+
+def destroy_snapshot(zfs_command, full_snapshot_name):
+    '''
+    Given a ZFS command to run and the name of a snapshot in the form "dataset@snapshot", destroy
+    it.
+    '''
+    borgmatic.execute.execute_command(
+        (
+            zfs_command,
+            'destroy',
+            '-r',
+            full_snapshot_name,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+def get_all_snapshots(zfs_command):
+    '''
+    Given a ZFS command to run, return all ZFS snapshots as a sequence of full snapshot names of the
+    form "dataset@snapshot".
+    '''
+    list_output = borgmatic.execute.execute_command_and_capture_output(
+        (
+            zfs_command,
+            'list',
+            '-H',
+            '-t',
+            'snapshot',
+            '-o',
+            'name',
+        )
+    )
+
+    return tuple(
+        line.rstrip()
+        for line in list_output.splitlines()
+    )
+
+
 def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
@@ -159,17 +235,9 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
 
     # Unmount snapshots.
     zfs_command = hook_config.get('zfs_command', 'zfs')
-    list_datasets_command = (
-        zfs_command,
-        'list',
-        '-H',
-        '-o',
-        'name,mountpoint',
-    )
+
     try:
-        list_datasets_output = borgmatic.execute.execute_command_and_capture_output(
-            list_datasets_command
-        )
+        datasets = get_all_datasets(zfs_command)
     except FileNotFoundError:
         logger.debug(f'{log_prefix}: Could not find "{zfs_command}" command')
         return
@@ -177,11 +245,6 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         logger.debug(f'{log_prefix}: {error}')
         return
 
-    mount_points = tuple(
-        mount_point
-        for line in list_datasets_output.splitlines()
-        for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
-    )
     snapshots_glob = os.path.join(
         borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
             os.path.normpath(borgmatic_runtime_directory)
@@ -191,6 +254,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     logger.debug(
         f'{log_prefix}: Looking for snapshots to remove in {snapshots_glob}{dry_run_label}'
     )
+    umount_command = hook_config.get('umount_command', 'umount')
 
     for snapshots_directory in glob.glob(snapshots_glob):
         if not os.path.isdir(snapshots_directory):
@@ -202,37 +266,19 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         # mounted is tough to do in a cross-platform way.
         shutil.rmtree(snapshots_directory, ignore_errors=True)
 
-        for mount_point in mount_points:
-            snapshot_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_path}{dry_run_label}')
+        for (_, mount_point) in datasets:
+            snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+            logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}')
 
             if not dry_run:
-                borgmatic.execute.execute_command(
-                    (
-                        hook_config.get('umount_command', 'umount'),
-                        snapshot_path,
-                    ),
-                    output_log_level=logging.DEBUG,
-                )
+                unmount_snapshot(umount_command, snapshot_mount_path)
 
         shutil.rmtree(snapshots_directory)
 
     # Destroy snapshots.
-    list_snapshots_command = (
-        zfs_command,
-        'list',
-        '-H',
-        '-t',
-        'snapshot',
-        '-o',
-        'name',
-    )
-    list_snapshots_output = borgmatic.execute.execute_command_and_capture_output(
-        list_snapshots_command
-    )
+    full_snapshot_names = get_all_snapshots(zfs_command)
 
-    for line in list_snapshots_output.splitlines():
-        full_snapshot_name = line.rstrip()
+    for full_snapshot_name in full_snapshot_names:
         logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
         # Only destroy snapshots that borgmatic actually created!
@@ -240,15 +286,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             continue
 
         if not dry_run:
-            borgmatic.execute.execute_command(
-                (
-                    zfs_command,
-                    'destroy',
-                    '-r',
-                    full_snapshot_name,
-                ),
-                output_log_level=logging.DEBUG,
-            )
+            destroy_snapshot(zfs_command, full_snapshot_name)
 
 
 def make_data_source_dump_patterns(hook_config, config, log_prefix, name=None):  # pragma: no cover
