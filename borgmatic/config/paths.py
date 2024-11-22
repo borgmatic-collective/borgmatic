@@ -55,7 +55,7 @@ def replace_temporary_subdirectory_with_glob(path):
                 else subdirectory
             )
             for subdirectory in path.split(os.path.sep)
-        )
+        ),
     )
 
 
