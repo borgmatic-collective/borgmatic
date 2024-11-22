@@ -128,7 +128,13 @@ class Runtime_directory:
         Delete any temporary directory that was created as part of initialization.
         '''
         if self.temporary_directory:
-            self.temporary_directory.cleanup()
+            try:
+                self.temporary_directory.cleanup()
+            # The cleanup() call errors if, for instance, there's still a
+            # mounted filesystem within the temporary directory. There's
+            # nothing we can do about that here, so swallow the error.
+            except OSError:
+                pass
 
 
 def make_runtime_directory_glob(borgmatic_runtime_directory):
