@@ -2255,7 +2255,7 @@ properties:
                     config: "__config"
                     hostname: "__hostname"
         description: |
-            Configuration for a monitoring integration with Grafana loki. You
+            Configuration for a monitoring integration with Grafana Loki. You
             can send the logs to a self-hosted instance or create an account at
             https://grafana.com/auth/sign-up/create-user. See borgmatic
             monitoring documentation for details.
@@ -2280,4 +2280,4 @@ properties:
                     Command to use instead of "umount".
                 example: /usr/local/bin/umount
         description: |
-            Configuration for a integration with the ZFS filesystem.
+            Configuration for integration with the ZFS filesystem.

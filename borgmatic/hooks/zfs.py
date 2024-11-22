@@ -284,11 +284,11 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     full_snapshot_names = get_all_snapshots(zfs_command)
 
     for full_snapshot_name in full_snapshot_names:
-        logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
-
         # Only destroy snapshots that borgmatic actually created!
         if not full_snapshot_name.split('@')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
+
+        logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
         if not dry_run:
             destroy_snapshot(zfs_command, full_snapshot_name)

@@ -2,7 +2,7 @@ FROM docker.io/alpine:3.20.1 AS borgmatic
 
 COPY . /app
 RUN apk add --no-cache py3-pip py3-ruamel.yaml py3-ruamel.yaml.clib
-RUN pip install --break-system-packages --no-cache /app && generate-borgmatic-config && chmod +r /etc/borgmatic/config.yaml
+RUN pip install --break-system-packages --no-cache /app && borgmatic config generate && chmod +r /etc/borgmatic/config.yaml
 RUN borgmatic --help > /command-line.txt \
     && for action in repo-create transfer create prune compact check delete extract config "config bootstrap" "config generate" "config validate" export-tar mount umount repo-delete restore repo-list list repo-info info break-lock "key export" "key change-passphrase" borg; do \
            echo -e "\n--------------------------------------------------------------------------------\n" >> /command-line.txt \
