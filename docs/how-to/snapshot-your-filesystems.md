@@ -15,16 +15,18 @@ almost instantly.
 
 ### ZFS
 
-borgmatic supports taking and backing up snapshots with the ZFS filesystem.
-First, you need one or more mounted ZFS datasets. Then, enable ZFS within
-borgmatic by adding the following line to your configuration file:
+<span class="minilink minilink-addedin">New in version 1.9.3</span> <span
+class="minilink minilink-addedin">Beta feature</span> borgmatic supports
+taking and backing up snapshots with the ZFS filesystem. First, you need one
+or more mounted ZFS datasets. Then, enable ZFS within borgmatic by adding the
+following line to your configuration file:
 
 ```yaml
 zfs:
 ```
 
-No other options are necessary, but if desired you can override some of the
-commands used by the ZFS hook. For instance:
+No other options are necessary to enable ZFS support, but if desired you can
+override some of the commands used by the ZFS hook. For instance:
 
 ```yaml
 zfs:
@@ -32,6 +34,12 @@ zfs:
     mount_command: /usr/local/bin/mount
     umount_command: /usr/local/bin/umount
 ```
+
+As long as the ZFS hook is in beta, it may be subject to breaking changes
+and/or may not work well for your use cases. But feel free to use it in
+production if you're okay with these caveats, and please [provide any
+feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
+
 
 #### Dataset discovery
 

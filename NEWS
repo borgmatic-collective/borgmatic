@@ -1,5 +1,5 @@
 1.9.3.dev0
- * #261: Add a ZFS hook for snapshotting ZFS datasets and backing them up.
+ * #261 (beta): Add a ZFS hook for snapshotting ZFS datasets and backing them up.
  * Add a "--deleted" flag to the "repo-list" action for listing deleted archives that haven't
    yet been compacted (Borg 2 only).
 
