@@ -53,7 +53,7 @@ def get_datasets_to_backup(zfs_command, source_directories):
     )
 
 
-def get_all_datasets(zfs_command): 
+def get_all_datasets(zfs_command):
     '''
     Given a ZFS command to run, return all ZFS datasets as a sequence of (dataset name, mount point)
     pairs.
@@ -163,7 +163,9 @@ def dump_data_sources(
         )
 
         if not dry_run:
-            mount_snapshot(hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path)
+            mount_snapshot(
+                hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
+            )
 
             if mount_point in source_directories:
                 source_directories.remove(mount_point)
@@ -201,6 +203,7 @@ def destroy_snapshot(zfs_command, full_snapshot_name):
         output_log_level=logging.DEBUG,
     )
 
+
 def get_all_snapshots(zfs_command):
     '''
     Given a ZFS command to run, return all ZFS snapshots as a sequence of full snapshot names of the
@@ -218,10 +221,7 @@ def get_all_snapshots(zfs_command):
         )
     )
 
-    return tuple(
-        line.rstrip()
-        for line in list_output.splitlines()
-    )
+    return tuple(line.rstrip() for line in list_output.splitlines())
 
 
 def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
@@ -266,9 +266,14 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         # mounted is tough to do in a cross-platform way.
         shutil.rmtree(snapshots_directory, ignore_errors=True)
 
-        for (_, mount_point) in datasets:
+        for _, mount_point in datasets:
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            logger.debug(f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}')
+            if not os.path.isdir(snapshot_mount_path):
+                continue
+
+            logger.debug(
+                f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}'
+            )
 
             if not dry_run:
                 unmount_snapshot(umount_command, snapshot_mount_path)
