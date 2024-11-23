@@ -146,18 +146,23 @@ def pattern_root_directories(patterns=None):
     ]
 
 
-def process_source_directories(config, config_paths):
+def process_source_directories(config, config_paths, source_directories=None):
     '''
-    Given a configuration dict and a sequence of configuration paths, expand and deduplicate the
-    source directories from them.
+    Given a sequence of source directories (either in the source_directories argument or, lacking
+    that, from config) and a sequence of config paths to append, expand and deduplicate the source
+    directories, returning the result.
     '''
     working_directory = borgmatic.config.paths.get_working_directory(config)
+
+    if source_directories is None:
+        source_directories = tuple(config.get('source_directories', ())) + (
+            tuple(config_paths) if config.get('store_config_files', True) else ()
+        )
 
     return deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                tuple(config.get('source_directories', ()))
-                + tuple(config_paths if config.get('store_config_files', True) else ()),
+                tuple(source_directories),
                 working_directory=working_directory,
             )
         ),
@@ -226,6 +231,11 @@ def run_create(
             source_directories,
             global_arguments.dry_run,
         )
+
+        # Process source directories again in case any data source hooks updated them. Without this
+        # step, we could end up with duplicate paths that cause Borg to hang when it tries to read
+        # from the same named pipe twice.
+        source_directories = process_source_directories(config, config_paths, source_directories)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         if config.get('store_config_files', True):

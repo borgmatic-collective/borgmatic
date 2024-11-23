@@ -248,6 +248,27 @@ def test_process_source_directories_does_not_include_config_paths_when_store_con
     ) == ('foo', 'bar')
 
 
+def test_process_source_directories_prefers_source_directory_argument_to_config():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/working'
+    )
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').with_args(
+        ('foo', 'bar'), working_directory='/working'
+    ).and_return(()).once()
+    flexmock(module).should_receive('pattern_root_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').with_args(
+        (), working_directory='/working'
+    ).and_return(())
+
+    assert module.process_source_directories(
+        config={'source_directories': ['nope']},
+        config_paths=('test.yaml',),
+        source_directories=['foo', 'bar'],
+    ) == ('foo', 'bar')
+
+
 def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
