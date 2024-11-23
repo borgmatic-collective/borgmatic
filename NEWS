@@ -1,5 +1,6 @@
 1.9.3.dev0
- * #261 (beta): Add a ZFS hook for snapshotting ZFS datasets and backing them up.
+ * #261 (beta): Add a ZFS hook for snapshotting and backing up ZFS datasets. See the documentation
+   for more information: https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
  * Add a "--deleted" flag to the "repo-list" action for listing deleted archives that haven't
    yet been compacted (Borg 2 only).
 
