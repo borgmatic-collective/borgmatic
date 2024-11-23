@@ -22,6 +22,10 @@ def test_expand_user_in_path_handles_none_directory():
     assert module.expand_user_in_path(None) is None
 
 
+def test_expand_user_in_path_handles_incorrectly_typed_directory():
+    assert module.expand_user_in_path(3) is None
+
+
 def test_get_borgmatic_source_directory_uses_config_option():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
 
@@ -32,6 +36,13 @@ def test_get_borgmatic_source_directory_without_config_option_uses_default():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
 
     assert module.get_borgmatic_source_directory({}) == '~/.borgmatic'
+
+
+def test_replace_temporary_subdirectory_with_glob_transforms_path():
+    assert (
+        module.replace_temporary_subdirectory_with_glob('/tmp/borgmatic-aet8kn93/borgmatic')
+        == '/tmp/borgmatic-*/borgmatic'
+    )
 
 
 def test_runtime_directory_uses_config_option():
@@ -145,6 +156,25 @@ def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_
     flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return(None)
     temporary_directory = flexmock(name='/tmp/borgmatic-1234')
     temporary_directory.should_receive('cleanup').once()
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
+        prefix='borgmatic-', dir='/tmp'
+    ).and_return(temporary_directory)
+    flexmock(module.os).should_receive('makedirs')
+
+    with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        assert borgmatic_runtime_directory == '/tmp/borgmatic-1234/./borgmatic'
+
+
+def test_runtime_directory_with_erroring_cleanup_does_not_raise():
+    flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return(None)
+    temporary_directory = flexmock(name='/tmp/borgmatic-1234')
+    temporary_directory.should_receive('cleanup').and_raise(OSError).once()
     flexmock(module.tempfile).should_receive('TemporaryDirectory').with_args(
         prefix='borgmatic-', dir='/tmp'
     ).and_return(temporary_directory)

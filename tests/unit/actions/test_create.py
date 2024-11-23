@@ -207,13 +207,45 @@ def test_pattern_root_directories_parses_roots_and_ignores_others():
     ) == ['/root', '/baz']
 
 
-# TODO
-# def test_process_source_directories_...
-#    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
-#    flexmock(module).should_receive('map_directories_to_devices').and_return({})
-#    flexmock(module).should_receive('expand_directories').and_return(())
-#    flexmock(module).should_receive('pattern_root_directories').and_return([])
-#    ...
+def test_process_source_directories_includes_source_directories_and_config_paths():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/working'
+    )
+    flexmock(module).should_receive('deduplicate_directories').and_return(
+        ('foo', 'bar', 'test.yaml')
+    )
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').with_args(
+        ('foo', 'bar', 'test.yaml'), working_directory='/working'
+    ).and_return(()).once()
+    flexmock(module).should_receive('pattern_root_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').with_args(
+        (), working_directory='/working'
+    ).and_return(())
+
+    assert module.process_source_directories(
+        config={'source_directories': ['foo', 'bar']}, config_paths=('test.yaml',)
+    ) == ('foo', 'bar', 'test.yaml')
+
+
+def test_process_source_directories_does_not_include_config_paths_when_store_config_files_is_false():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/working'
+    )
+    flexmock(module).should_receive('deduplicate_directories').and_return(('foo', 'bar'))
+    flexmock(module).should_receive('map_directories_to_devices').and_return({})
+    flexmock(module).should_receive('expand_directories').with_args(
+        ('foo', 'bar'), working_directory='/working'
+    ).and_return(()).once()
+    flexmock(module).should_receive('pattern_root_directories').and_return(())
+    flexmock(module).should_receive('expand_directories').with_args(
+        (), working_directory='/working'
+    ).and_return(())
+
+    assert module.process_source_directories(
+        config={'source_directories': ['foo', 'bar'], 'store_config_files': False},
+        config_paths=('test.yaml',),
+    ) == ('foo', 'bar')
 
 
 def test_run_create_executes_and_calls_hooks_for_configured_repository():

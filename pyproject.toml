@@ -49,7 +49,7 @@ skip-string-normalization = true
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --ignore=tests/end-to-end"
+addopts = "--cov-report term-missing:skip-covered --cov=borgmatic --no-cov-on-fail --cov-fail-under=100 --ignore=tests/end-to-end"
 
 [tool.isort]
 profile = "black"
