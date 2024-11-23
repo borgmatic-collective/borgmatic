@@ -134,9 +134,6 @@ def make_list_filter_flags(local_borg_version, dry_run):
         return f'{base_flags}-'
 
 
-ROOT_PATTERN_PREFIX = 'R '
-
-
 def special_file(path):
     '''
     Return whether the given path is a special file (character device, block device, or named pipe
@@ -197,21 +194,15 @@ def collect_special_file_paths(
     )
 
 
-def check_all_source_directories_exist(source_directories, working_directory=None):
+def check_all_source_directories_exist(source_directories):
     '''
-    Given a sequence of source directories and an optional working directory to serve as a prefix
-    for each (if it's a relative directory), check that the source directories all exist. If any do
+    Given a sequence of source directories, check that the source directories all exist. If any do
     not, raise an exception.
     '''
     missing_directories = [
         source_directory
         for source_directory in source_directories
-        if not all(
-            [
-                os.path.exists(os.path.join(working_directory or '', directory))
-                for directory in expand_directory(source_directory, working_directory)
-            ]
-        )
+        if not os.path.exists(source_directory)
     ]
     if missing_directories:
         raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
@@ -224,10 +215,10 @@ def make_base_create_command(
     dry_run,
     repository_path,
     config,
-    config_paths,
     source_directories,
     local_borg_version,
     global_arguments,
+    borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
     progress=False,
@@ -242,12 +233,8 @@ def make_base_create_command(
     (base Borg create command flags, Borg create command positional arguments, open pattern file
     handle, open exclude file handle).
     '''
-    working_directory = borgmatic.config.paths.get_working_directory(config)
-
     if config.get('source_directories_must_exist', False):
-        check_all_source_directories_exist(
-            config.get('source_directories'), working_directory=working_directory
-        )
+        check_all_source_directories_exist(source_directories)
 
     ensure_files_readable(config.get('patterns_from'), config.get('exclude_from'))
 
@@ -339,6 +326,7 @@ def make_base_create_command(
             f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
         borg_environment = environment.make_environment(config)
+        working_directory = borgmatic.config.paths.get_working_directory(config)
 
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
@@ -376,7 +364,6 @@ def create_archive(
     dry_run,
     repository_path,
     config,
-    config_paths,
     source_directories,
     local_borg_version,
     global_arguments,
@@ -406,10 +393,10 @@ def create_archive(
             dry_run,
             repository_path,
             config,
-            config_paths,
             source_directories,
             local_borg_version,
             global_arguments,
+            borgmatic_runtime_directory,
             local_path,
             remote_path,
             progress,

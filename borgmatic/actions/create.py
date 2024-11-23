@@ -129,6 +129,9 @@ def deduplicate_directories(directory_devices, additional_directory_devices):
     return sorted(deduplicated)
 
 
+ROOT_PATTERN_PREFIX = 'R '
+
+
 def pattern_root_directories(patterns=None):
     '''
     Given a sequence of patterns, parse out and return just the root directories.
@@ -239,7 +242,6 @@ def run_create(
             global_arguments.dry_run,
             repository['path'],
             config,
-            config_paths,
             source_directories,
             local_borg_version,
             global_arguments,

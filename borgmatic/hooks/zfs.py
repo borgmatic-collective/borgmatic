@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import shlex
 import shutil
 import subprocess
 
@@ -66,7 +65,7 @@ def get_all_datasets(zfs_command):
             '-t',
             'filesystem',
             '-o',
-            f'name,mountpoint',
+            'name,mountpoint',
         )
     )
 

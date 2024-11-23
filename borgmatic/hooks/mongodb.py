@@ -1,4 +1,5 @@
 import logging
+import os
 import shlex
 
 import borgmatic.config.paths

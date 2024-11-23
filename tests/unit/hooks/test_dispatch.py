@@ -77,10 +77,12 @@ def test_call_hooks_calls_skips_return_values_for_missing_hooks():
     assert return_values == expected_return_values
 
 
-def test_call_hooks_calls_skips_return_values_for_null_hooks():
+def test_call_hooks_calls_treats_null_hook_as_optionless():
     config = {'super_hook': flexmock(), 'other_hook': None}
-    expected_return_values = {'super_hook': flexmock()}
-    flexmock(module).should_receive('call_hook').and_return(expected_return_values['super_hook'])
+    expected_return_values = {'super_hook': flexmock(), 'other_hook': flexmock()}
+    flexmock(module).should_receive('call_hook').and_return(
+        expected_return_values['super_hook']
+    ).and_return(expected_return_values['other_hook'])
 
     return_values = module.call_hooks(
         'do_stuff', config, 'prefix', ('super_hook', 'other_hook'), 55
