@@ -8,18 +8,24 @@ eleventyNavigation:
 ## Filesystem hooks
 
 Many filesystems support taking snapshots—point-in-time, read-only "copies" of
-your data, ideal for backing up files that may be changing during the backup.
-These snapshots initially don't use any additional storage space and can be made
+your data, ideal for backing up files that may change during the backup. These
+snapshots initially don't use any additional storage space and can be made
 almost instantly.
+
+To help automate backup of these filesystems, borgmatic can use them to take
+snapshots.
 
 
 ### ZFS
 
 <span class="minilink minilink-addedin">New in version 1.9.3</span> <span
 class="minilink minilink-addedin">Beta feature</span> borgmatic supports
-taking and backing up snapshots with the ZFS filesystem. First, you need one
-or more mounted ZFS datasets. Then, enable ZFS within borgmatic by adding the
-following line to your configuration file:
+taking snapshots with the [ZFS filesystem](https://openzfs.org/) and sending
+those snapshots to Borg for backup.
+
+To use this feature, first you need one or more mounted ZFS datasets. Then,
+enable ZFS within borgmatic by adding the following line to your configuration
+file:
 
 ```yaml
 zfs:
@@ -54,18 +60,23 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
 
 If you have multiple borgmatic configuration files with ZFS enabled, and you'd
 like particular datasets to be backed up only for particular configuration
-files, use the `source_directories` option.
+files, use the `source_directories` option instead of the user property.
 
 During a backup, borgmatic automatically snapshots these discovered datasets,
 temporary mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
-and includes the snapshotted files in the backup. Additionally, borgmatic
-rewrites the paths so that they appear at their original dataset locations in a
-Borg archive. For instance, if your dataset is mounted at `/mnt/dataset`, then
-the snapshotted files will appear in an archive at `/mnt/dataset` as well.
+and includes the snapshotted files in the files sent to Borg. borgmatic is
+also responsible for cleaning up (destroying) these snapshots after a backup
+completes.
+
+Additionally, borgmatic rewrites the snapshot file paths so that they appear
+at their original dataset locations in a Borg archive. For instance, if your
+dataset is mounted at `/mnt/dataset`, then the snapshotted files will appear
+in an archive at `/mnt/dataset` as well.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
-earlier</span>Snapshotted files are stored at a path dependent on the [runtime
+earlier</span>Snapshotted files are instead stored at a path dependent on the
+[runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
 in use at the time the archive was created, as Borg 1.2 and earlier do not
 support path rewriting.
@@ -73,7 +84,7 @@ support path rewriting.
 
 #### Extract a dataset
 
-Given that filesystem snapshots are stored in a Borg archive as normal files,
+Filesystem snapshots are stored in a Borg archive as normal files, so
 you can use the standard
 [extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
 extract them.
