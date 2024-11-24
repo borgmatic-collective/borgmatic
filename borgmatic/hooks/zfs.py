@@ -91,7 +91,6 @@ def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
         (
             zfs_command,
             'snapshot',
-            '-r',
             full_snapshot_name,
         ),
         output_log_level=logging.DEBUG,
@@ -202,7 +201,6 @@ def destroy_snapshot(zfs_command, full_snapshot_name):  # pragma: no cover
         (
             zfs_command,
             'destroy',
-            '-r',
             full_snapshot_name,
         ),
         output_log_level=logging.DEBUG,
