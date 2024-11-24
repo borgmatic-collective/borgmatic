@@ -110,7 +110,9 @@ class Runtime_directory:
 
         self.runtime_path = expand_user_in_path(
             os.path.join(
-                base_path if final_directory == 'borgmatic' else runtime_directory, '.', 'borgmatic'
+                base_path if final_directory == 'borgmatic' else runtime_directory,
+                '.',  # Borg 1.4+ "slashdot" hack.
+                'borgmatic',
             )
         )
         os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
