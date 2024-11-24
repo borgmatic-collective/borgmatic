@@ -1,7 +1,10 @@
+import glob
 import importlib.metadata
+import itertools
 import json
 import logging
 import os
+import pathlib
 
 import borgmatic.actions.json
 import borgmatic.borg.create
@@ -38,6 +41,138 @@ def create_borgmatic_manifest(config, config_paths, borgmatic_runtime_directory,
             },
             config_list_file,
         )
+
+
+def expand_directory(directory, working_directory):
+    '''
+    Given a directory path, expand any tilde (representing a user's home directory) and any globs
+    therein. Return a list of one or more resulting paths.
+    '''
+    expanded_directory = os.path.join(working_directory or '', os.path.expanduser(directory))
+
+    return glob.glob(expanded_directory) or [expanded_directory]
+
+
+def expand_directories(directories, working_directory=None):
+    '''
+    Given a sequence of directory paths and an optional working directory, expand tildes and globs
+    in each one. Return all the resulting directories as a single flattened tuple.
+    '''
+    if directories is None:
+        return ()
+
+    return tuple(
+        itertools.chain.from_iterable(
+            expand_directory(directory, working_directory) for directory in directories
+        )
+    )
+
+
+def map_directories_to_devices(directories, working_directory=None):
+    '''
+    Given a sequence of directories and an optional working directory, return a map from directory
+    to an identifier for the device on which that directory resides or None if the path doesn't
+    exist.
+
+    This is handy for determining whether two different directories are on the same filesystem (have
+    the same device identifier).
+    '''
+    return {
+        directory: os.stat(full_directory).st_dev if os.path.exists(full_directory) else None
+        for directory in directories
+        for full_directory in (os.path.join(working_directory or '', directory),)
+    }
+
+
+def deduplicate_directories(directory_devices, additional_directory_devices):
+    '''
+    Given a map from directory to the identifier for the device on which that directory resides,
+    return the directories as a sorted sequence with all duplicate child directories removed. For
+    instance, if paths is ['/foo', '/foo/bar'], return just: ['/foo']
+
+    The one exception to this rule is if two paths are on different filesystems (devices). In that
+    case, they won't get de-duplicated in case they both need to be passed to Borg (e.g. the
+    location.one_file_system option is true).
+
+    The idea is that if Borg is given a parent directory, then it doesn't also need to be given
+    child directories, because it will naturally spider the contents of the parent directory. And
+    there are cases where Borg coming across the same file twice will result in duplicate reads and
+    even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
+    Borg.
+
+    If any additional directory devices are given, also deduplicate against them, but don't include
+    them in the returned directories.
+    '''
+    deduplicated = set()
+    directories = sorted(directory_devices.keys())
+    additional_directories = sorted(additional_directory_devices.keys())
+    all_devices = {**directory_devices, **additional_directory_devices}
+
+    for directory in directories:
+        deduplicated.add(directory)
+        parents = pathlib.PurePath(directory).parents
+
+        # If another directory in the given list (or the additional list) is a parent of current
+        # directory (even n levels up) and both are on the same filesystem, then the current
+        # directory is a duplicate.
+        for other_directory in directories + additional_directories:
+            for parent in parents:
+                if (
+                    pathlib.PurePath(other_directory) == parent
+                    and all_devices[directory] is not None
+                    and all_devices[other_directory] == all_devices[directory]
+                ):
+                    if directory in deduplicated:
+                        deduplicated.remove(directory)
+                    break
+
+    return sorted(deduplicated)
+
+
+ROOT_PATTERN_PREFIX = 'R '
+
+
+def pattern_root_directories(patterns=None):
+    '''
+    Given a sequence of patterns, parse out and return just the root directories.
+    '''
+    if not patterns:
+        return []
+
+    return [
+        pattern.split(ROOT_PATTERN_PREFIX, maxsplit=1)[1]
+        for pattern in patterns
+        if pattern.startswith(ROOT_PATTERN_PREFIX)
+    ]
+
+
+def process_source_directories(config, config_paths, source_directories=None):
+    '''
+    Given a sequence of source directories (either in the source_directories argument or, lacking
+    that, from config) and a sequence of config paths to append, expand and deduplicate the source
+    directories, returning the result.
+    '''
+    working_directory = borgmatic.config.paths.get_working_directory(config)
+
+    if source_directories is None:
+        source_directories = tuple(config.get('source_directories', ())) + (
+            tuple(config_paths) if config.get('store_config_files', True) else ()
+        )
+
+    return deduplicate_directories(
+        map_directories_to_devices(
+            expand_directories(
+                tuple(source_directories),
+                working_directory=working_directory,
+            )
+        ),
+        additional_directory_devices=map_directories_to_devices(
+            expand_directories(
+                pattern_root_directories(config.get('patterns')),
+                working_directory=working_directory,
+            )
+        ),
+    )
 
 
 def run_create(
@@ -86,14 +221,21 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
+        source_directories = process_source_directories(config, config_paths)
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
             config,
             repository['path'],
             borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
             borgmatic_runtime_directory,
+            source_directories,
             global_arguments.dry_run,
         )
+
+        # Process source directories again in case any data source hooks updated them. Without this
+        # step, we could end up with duplicate paths that cause Borg to hang when it tries to read
+        # from the same named pipe twice.
+        source_directories = process_source_directories(config, config_paths, source_directories)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         if config.get('store_config_files', True):
@@ -103,12 +245,14 @@ def run_create(
                 borgmatic_runtime_directory,
                 global_arguments.dry_run,
             )
+            if not global_arguments.dry_run:
+                source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
 
         json_output = borgmatic.borg.create.create_archive(
             global_arguments.dry_run,
             repository['path'],
             config,
-            config_paths,
+            source_directories,
             local_borg_version,
             global_arguments,
             borgmatic_runtime_directory,

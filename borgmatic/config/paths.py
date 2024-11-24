@@ -33,6 +33,32 @@ def get_borgmatic_source_directory(config):
 TEMPORARY_DIRECTORY_PREFIX = 'borgmatic-'
 
 
+def replace_temporary_subdirectory_with_glob(path):
+    '''
+    Given an absolute temporary directory path, look for a subdirectory within it starting with the
+    temporary directory prefix and replace it with an appropriate glob. For instance, given:
+
+        /tmp/borgmatic-aet8kn93/borgmatic
+
+    ... replace it with:
+
+        /tmp/borgmatic-*/borgmatic
+
+    This is useful for finding previous temporary directories from prior borgmatic runs.
+    '''
+    return os.path.join(
+        '/',
+        *(
+            (
+                f'{TEMPORARY_DIRECTORY_PREFIX}*'
+                if subdirectory.startswith(TEMPORARY_DIRECTORY_PREFIX)
+                else subdirectory
+            )
+            for subdirectory in path.split(os.path.sep)
+        ),
+    )
+
+
 class Runtime_directory:
     '''
     A Python context manager for creating and cleaning up the borgmatic runtime directory used for
@@ -84,7 +110,9 @@ class Runtime_directory:
 
         self.runtime_path = expand_user_in_path(
             os.path.join(
-                base_path if final_directory == 'borgmatic' else runtime_directory, '.', 'borgmatic'
+                base_path if final_directory == 'borgmatic' else runtime_directory,
+                '.',  # Borg 1.4+ "slashdot" hack.
+                'borgmatic',
             )
         )
         os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
@@ -102,7 +130,13 @@ class Runtime_directory:
         Delete any temporary directory that was created as part of initialization.
         '''
         if self.temporary_directory:
-            self.temporary_directory.cleanup()
+            try:
+                self.temporary_directory.cleanup()
+            # The cleanup() call errors if, for instance, there's still a
+            # mounted filesystem within the temporary directory. There's
+            # nothing we can do about that here, so swallow the error.
+            except OSError:
+                pass
 
 
 def make_runtime_directory_glob(borgmatic_runtime_directory):

@@ -3,7 +3,7 @@ title: How to backup to a removable drive or an intermittent server
 eleventyNavigation:
   key: 💾 Backup to a removable drive/server
   parent: How-to guides
-  order: 10
+  order: 11
 ---
 ## Occasional backups
 

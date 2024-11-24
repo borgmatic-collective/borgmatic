@@ -103,6 +103,26 @@ def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_e
     assert config == [OrderedDict([('field1', 'Example 1'), ('field2', 'Example 2')])]
 
 
+def test_schema_to_sample_configuration_generates_config_sequence_of_maps_with_multiple_types():
+    schema = {
+        'type': 'array',
+        'items': {
+            'type': ['object', 'null'],
+            'properties': OrderedDict(
+                [('field1', {'example': 'Example 1'}), ('field2', {'example': 'Example 2'})]
+            ),
+        },
+    }
+    flexmock(module).should_receive('get_properties').and_return(schema['items']['properties'])
+    flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
+    flexmock(module).should_receive('add_comments_to_configuration_sequence')
+    flexmock(module).should_receive('add_comments_to_configuration_object')
+
+    config = module.schema_to_sample_configuration(schema)
+
+    assert config == [OrderedDict([('field1', 'Example 1'), ('field2', 'Example 2')])]
+
+
 def test_schema_to_sample_configuration_with_unsupported_schema_raises():
     schema = {'gobbledygook': [{'type': 'not-your'}]}
 

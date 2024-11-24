@@ -16,6 +16,7 @@ from borgmatic.hooks import (
     sqlite,
     uptimekuma,
     zabbix,
+    zfs,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ HOOK_NAME_TO_MODULE = {
     'sqlite_databases': sqlite,
     'uptime_kuma': uptimekuma,
     'zabbix': zabbix,
+    'zfs': zfs,
 }
 
 
@@ -49,7 +51,7 @@ def call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs):
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that the called function raises.
     '''
-    hook_config = config.get(hook_name, {})
+    hook_config = config.get(hook_name) or {}
 
     try:
         module = HOOK_NAME_TO_MODULE[hook_name]
@@ -77,7 +79,7 @@ def call_hooks(function_name, config, log_prefix, hook_names, *args, **kwargs):
     return {
         hook_name: call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs)
         for hook_name in hook_names
-        if config.get(hook_name)
+        if hook_name in config
     }
 
 

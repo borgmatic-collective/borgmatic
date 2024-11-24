@@ -8,6 +8,7 @@ import pathlib
 import random
 import shutil
 
+import borgmatic.actions.create
 import borgmatic.borg.check
 import borgmatic.borg.create
 import borgmatic.borg.environment
@@ -345,7 +346,13 @@ def upgrade_check_times(config, borg_repository_id):
 
 
 def collect_spot_check_source_paths(
-    repository, config, local_borg_version, global_arguments, local_path, remote_path
+    repository,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path,
+    remote_path,
+    borgmatic_runtime_directory,
 ):
     '''
     Given a repository configuration dict, a configuration dict, the local Borg version, global
@@ -366,10 +373,12 @@ def collect_spot_check_source_paths(
             dry_run=True,
             repository_path=repository['path'],
             config=config,
-            config_paths=(),
+            source_directories=borgmatic.actions.create.process_source_directories(
+                config, config_paths=()
+            ),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
-            borgmatic_runtime_directories=(),
+            borgmatic_runtime_directory=borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
             list_files=True,
@@ -585,6 +594,7 @@ def spot_check(
         global_arguments,
         local_path,
         remote_path,
+        borgmatic_runtime_directory,
     )
     logger.debug(f'{log_prefix}: {len(source_paths)} total source paths for spot check')
 

@@ -43,7 +43,12 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
 
     assert (
         module.dump_data_sources(
-            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+            databases,
+            {},
+            'test.yaml',
+            borgmatic_runtime_directory='/run/borgmatic',
+            source_directories=[],
+            dry_run=False,
         )
         == processes
     )
@@ -60,7 +65,12 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
     assert (
         module.dump_data_sources(
-            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=True
+            databases,
+            {},
+            'test.yaml',
+            borgmatic_runtime_directory='/run/borgmatic',
+            source_directories=[],
+            dry_run=True,
         )
         == []
     )
@@ -93,7 +103,12 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
     ).and_return(process).once()
 
     assert module.dump_data_sources(
-        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        databases,
+        {},
+        'test.yaml',
+        borgmatic_runtime_directory='/run/borgmatic',
+        source_directories=[],
+        dry_run=False,
     ) == [process]
 
 
@@ -133,7 +148,12 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
     ).and_return(process).once()
 
     assert module.dump_data_sources(
-        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        databases,
+        {},
+        'test.yaml',
+        borgmatic_runtime_directory='/run/borgmatic',
+        source_directories=[],
+        dry_run=False,
     ) == [process]
 
 
@@ -153,7 +173,12 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
 
     assert (
         module.dump_data_sources(
-            databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+            databases,
+            {},
+            'test.yaml',
+            borgmatic_runtime_directory='/run/borgmatic',
+            source_directories=[],
+            dry_run=False,
         )
         == []
     )
@@ -183,7 +208,12 @@ def test_dump_data_sources_runs_mongodump_with_options():
     ).and_return(process).once()
 
     assert module.dump_data_sources(
-        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        databases,
+        {},
+        'test.yaml',
+        borgmatic_runtime_directory='/run/borgmatic',
+        source_directories=[],
+        dry_run=False,
     ) == [process]
 
 
@@ -203,7 +233,12 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
     ).and_return(process).once()
 
     assert module.dump_data_sources(
-        databases, {}, 'test.yaml', borgmatic_runtime_directory='/run/borgmatic', dry_run=False
+        databases,
+        {},
+        'test.yaml',
+        borgmatic_runtime_directory='/run/borgmatic',
+        source_directories=[],
+        dry_run=False,
     ) == [process]
 
 

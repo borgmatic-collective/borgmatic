@@ -24,7 +24,14 @@ def use_streaming(databases, config, log_prefix):
     return any(databases)
 
 
-def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory, dry_run):
+def dump_data_sources(
+    databases,
+    config,
+    log_prefix,
+    borgmatic_runtime_directory,
+    source_directories,
+    dry_run,
+):
     '''
     Dump the given SQLite databases to a named pipe. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given borgmatic runtime directory
@@ -32,6 +39,7 @@ def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
+    Also append the given source directories with the parent directory of the database dumps.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
@@ -72,6 +80,9 @@ def dump_data_sources(databases, config, log_prefix, borgmatic_runtime_directory
 
         dump.create_named_pipe_for_dump(dump_filename)
         processes.append(execute_command(command, shell=True, run_to_completion=False))
+
+    if not dry_run:
+        source_directories.append(os.path.join(borgmatic_runtime_directory, 'sqlite_databases'))
 
     return processes
 
