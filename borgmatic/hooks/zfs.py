@@ -159,7 +159,7 @@ def dump_data_sources(
         snapshot_mount_path_for_borg = os.path.join(
             os.path.normpath(borgmatic_runtime_directory),
             'zfs_snapshots',
-            '.',
+            '.',  # Borg 1.4+ "slashdot" hack.
             mount_point.lstrip(os.path.sep),
         )
         snapshot_mount_path = os.path.normpath(snapshot_mount_path_for_borg)
@@ -282,7 +282,14 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             )
 
             if not dry_run:
-                unmount_snapshot(umount_command, snapshot_mount_path)
+                try:
+                    unmount_snapshot(umount_command, snapshot_mount_path)
+                except FileNotFoundError:
+                    logger.debug(f'{log_prefix}: Could not find "{umount_command}" command')
+                    return
+                except subprocess.CalledProcessError as error:
+                    logger.debug(f'{log_prefix}: {error}')
+                    return
 
         if not dry_run:
             shutil.rmtree(snapshots_directory)

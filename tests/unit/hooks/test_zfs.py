@@ -248,6 +248,54 @@ def test_remove_data_source_dumps_bails_for_zfs_command_error():
     )
 
 
+def test_remove_data_source_dumps_bails_for_missing_umount_command():
+    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return('/run/borgmatic')
+    flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
+    flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.shutil).should_receive('rmtree')
+    flexmock(module).should_receive('unmount_snapshot').with_args(
+        '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/mnt/dataset'
+    ).and_raise(FileNotFoundError)
+    flexmock(module).should_receive('get_all_snapshots').never()
+    flexmock(module).should_receive('destroy_snapshot').never()
+    hook_config = {'zfs_command': '/usr/local/bin/zfs', 'umount_command': '/usr/local/bin/umount'}
+
+    module.remove_data_source_dumps(
+        hook_config=hook_config,
+        config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
+def test_remove_data_source_dumps_bails_for_umount_command_error():
+    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return('/run/borgmatic')
+    flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
+    flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.shutil).should_receive('rmtree')
+    flexmock(module).should_receive('unmount_snapshot').with_args(
+        '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/mnt/dataset'
+    ).and_raise(module.subprocess.CalledProcessError(1, 'wtf'))
+    flexmock(module).should_receive('get_all_snapshots').never()
+    flexmock(module).should_receive('destroy_snapshot').never()
+    hook_config = {'zfs_command': '/usr/local/bin/zfs', 'umount_command': '/usr/local/bin/umount'}
+
+    module.remove_data_source_dumps(
+        hook_config=hook_config,
+        config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
 def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_not_actually_directories():
     flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
     flexmock(module.borgmatic.config.paths).should_receive(
