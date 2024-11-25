@@ -113,11 +113,11 @@ file). Because if something goes wrong with your source files, most
 consistency checks will still pass with flying colors and you won't discover
 there's a problem until you go to restore.
 
-<span class="minilink minilink-addedin">New in version 1.8.10</span> <span
-class="minilink minilink-addedin">Beta feature</span> That's where the spot
-check comes in. This check actually compares your source file counts and data
-against those in the latest archive, potentially catching problems like
-incorrect excludes, inadvertent deletes, files changed by malware, etc.
+<span class="minilink minilink-addedin">New in version 1.8.10</span> That's
+where the spot check comes in. This check actually compares your source file
+counts and data against those in the latest archive, potentially catching
+problems like incorrect excludes, inadvertent deletes, files changed by
+malware, etc.
 
 But because an exhaustive comparison of all source files against the latest
 archive might be too slow, the spot check supports *sampling* a percentage of
@@ -179,11 +179,6 @@ Because the spot check only looks at the most recent archive, you may not want
 to run it immediately after a `create` action (borgmatic's default behavior).
 Instead, it may make more sense to run the spot check on a separate schedule
 from `create`.
-
-As long as the spot check feature is in beta, it may be subject to breaking
-changes. But feel free to use it in production if you're okay with that
-caveat, and please [provide any
-feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 
 ### Check frequency

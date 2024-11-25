@@ -9,6 +9,7 @@
  * Require the runtime directory to be an absolute path.
  * Add a "--deleted" flag to the "repo-list" action for listing deleted archives that haven't
    yet been compacted (Borg 2 only).
+ * Promote the "spot" check from a beta feature to stable.
 
 1.9.2
  * #441: Apply the "umask" option to all relevant actions, not just some of them.
