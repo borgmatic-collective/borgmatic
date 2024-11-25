@@ -1,4 +1,4 @@
-1.9.3.dev0
+1.9.3
  * #261 (beta): Add a ZFS hook for snapshotting and backing up ZFS datasets. See the documentation
    for more information: https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
  * Remove any temporary copies of the manifest file created in support of the "bootstrap" action.
