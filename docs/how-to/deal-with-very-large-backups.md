@@ -62,8 +62,8 @@ actions](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#skipping-acti
 Another option is to customize your consistency checks. By default, if you
 omit consistency checks from configuration, borgmatic runs full-repository
 checks (`repository`) and per-archive checks (`archives`) within each
-repository. (Although see below about check frequency.) This is equivalent to
-what `borg check` does if run without options.
+repository, running the checks on a monthly basis. (See below about setting
+your own check frequency.)
 
 But if you find that archive checks are too slow, for example, you can
 configure borgmatic to run repository checks only. Configure this in the
