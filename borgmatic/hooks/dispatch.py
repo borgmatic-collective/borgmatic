@@ -2,6 +2,7 @@ import logging
 
 from borgmatic.hooks import (
     apprise,
+    bootstrap,
     cronhub,
     cronitor,
     healthchecks,
@@ -23,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 HOOK_NAME_TO_MODULE = {
     'apprise': apprise,
+    'bootstrap': bootstrap,
     'cronhub': cronhub,
     'cronitor': cronitor,
     'healthchecks': healthchecks,

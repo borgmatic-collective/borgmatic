@@ -67,6 +67,7 @@ def test_parse_configuration_transforms_file_into_mapping():
         'keep_hourly': 24,
         'keep_minutely': 60,
         'checks': [{'name': 'repository'}, {'name': 'archives'}],
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
@@ -90,6 +91,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
     assert config == {
         'source_directories': [f'/home/{string.punctuation}'],
         'repositories': [{'path': 'test.borg'}],
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
@@ -150,6 +152,7 @@ def test_parse_configuration_inlines_include_inside_deprecated_section():
         'repositories': [{'path': 'hostname.borg'}],
         'keep_daily': 7,
         'keep_hourly': 24,
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/include.yaml', '/tmp/config.yaml'}
     assert len(logs) == 1
@@ -185,6 +188,7 @@ def test_parse_configuration_merges_include():
         'repositories': [{'path': 'hostname.borg'}],
         'keep_daily': 1,
         'keep_hourly': 24,
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/include.yaml', '/tmp/config.yaml'}
     assert logs == []
@@ -248,6 +252,7 @@ def test_parse_configuration_applies_overrides():
         'source_directories': ['/home'],
         'repositories': [{'path': 'hostname.borg'}],
         'local_path': 'borg2',
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/config.yaml'}
     assert logs == []
@@ -274,6 +279,7 @@ def test_parse_configuration_applies_normalization_after_environment_variable_in
         'source_directories': ['/home'],
         'repositories': [{'path': 'ssh://user@hostname/./repo'}],
         'exclude_if_present': ['.nobackup'],
+        'bootstrap': {},
     }
     assert config_paths == {'/tmp/config.yaml'}
     assert logs

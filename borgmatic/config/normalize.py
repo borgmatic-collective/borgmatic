@@ -93,6 +93,25 @@ def normalize(config_filename, config):
         )
         config['exclude_if_present'] = [exclude_if_present]
 
+    # Unconditionally set the bootstrap hook so that it's enabled by default and config files get
+    # stored in each Borg archive.
+    config.setdefault('bootstrap', {})
+
+    # Move store_config_files from the global scope to the bootstrap hook.
+    store_config_files = config.get('store_config_files')
+    if store_config_files is not None:
+        logs.append(
+            logging.makeLogRecord(
+                dict(
+                    levelno=logging.WARNING,
+                    levelname='WARNING',
+                    msg=f'{config_filename}: The store_config_files option has moved under the bootstrap hook. Specifying store_config_files at the global scope is deprecated and support will be removed from a future release.',
+                )
+            )
+        )
+        del config['store_config_files']
+        config['bootstrap']['store_config_files'] = store_config_files
+
     # Upgrade various monitoring hooks from a string to a dict.
     healthchecks = config.get('healthchecks')
     if isinstance(healthchecks, str):

@@ -229,13 +229,6 @@ properties:
             create the check records again (and therefore re-run checks).
             Defaults to $XDG_STATE_HOME or ~/.local/state.
         example: /var/lib/borgmatic
-    store_config_files:
-        type: boolean
-        description: |
-            Store configuration files used to create a backup in the backup
-            itself. Defaults to true. Changing this to false prevents "borgmatic
-            bootstrap" from extracting configuration files from the backup.
-        example: false
     source_directories_must_exist:
         type: boolean
         description: |
@@ -942,6 +935,20 @@ properties:
             of them (after any action).
         example:
             - "echo Completed actions."
+    bootstrap:
+        type: object
+        properties:
+            store_config_files:
+                type: boolean
+                description: |
+                    Store configuration files used to create a backup inside the
+                    backup itself. Defaults to true. Changing this to false
+                    prevents "borgmatic bootstrap" from extracting configuration
+                    files from the backup.
+                example: false
+        description: |
+            Support for the "borgmatic bootstrap" action, used to extract
+            borgmatic configuration files from a backup archive.
     postgresql_databases:
         type: array
         items:

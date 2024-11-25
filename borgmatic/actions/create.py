@@ -1,7 +1,5 @@
 import glob
-import importlib.metadata
 import itertools
-import json
 import logging
 import os
 import pathlib
@@ -15,32 +13,6 @@ import borgmatic.hooks.dispatch
 import borgmatic.hooks.dump
 
 logger = logging.getLogger(__name__)
-
-
-def create_borgmatic_manifest(config, config_paths, borgmatic_runtime_directory, dry_run):
-    '''
-    Given a configuration dict, a sequence of config file paths, the borgmatic runtime directory,
-    and whether this is a dry run, create a borgmatic manifest file to store the paths to the
-    configuration files used to create the archive.
-    '''
-    if dry_run:
-        return
-
-    borgmatic_manifest_path = os.path.join(
-        borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
-    )
-
-    if not os.path.exists(borgmatic_manifest_path):
-        os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
-
-    with open(borgmatic_manifest_path, 'w') as config_list_file:
-        json.dump(
-            {
-                'borgmatic_version': importlib.metadata.version('borgmatic'),
-                'config_paths': config_paths,
-            },
-            config_list_file,
-        )
 
 
 def expand_directory(directory, working_directory):
@@ -146,18 +118,15 @@ def pattern_root_directories(patterns=None):
     ]
 
 
-def process_source_directories(config, config_paths, source_directories=None):
+def process_source_directories(config, source_directories=None):
     '''
     Given a sequence of source directories (either in the source_directories argument or, lacking
-    that, from config) and a sequence of config paths to append, expand and deduplicate the source
-    directories, returning the result.
+    that, from config), expand and deduplicate the source directories, returning the result.
     '''
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     if source_directories is None:
-        source_directories = tuple(config.get('source_directories', ())) + (
-            tuple(config_paths) if config.get('store_config_files', True) else ()
-        )
+        source_directories = tuple(config.get('source_directories', ()))
 
     return deduplicate_directories(
         map_directories_to_devices(
@@ -221,12 +190,13 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-        source_directories = process_source_directories(config, config_paths)
+        source_directories = process_source_directories(config)
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
             config,
             repository['path'],
             borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            config_paths,
             borgmatic_runtime_directory,
             source_directories,
             global_arguments.dry_run,
@@ -235,18 +205,8 @@ def run_create(
         # Process source directories again in case any data source hooks updated them. Without this
         # step, we could end up with duplicate paths that cause Borg to hang when it tries to read
         # from the same named pipe twice.
-        source_directories = process_source_directories(config, config_paths, source_directories)
+        source_directories = process_source_directories(config, source_directories)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
-
-        if config.get('store_config_files', True):
-            create_borgmatic_manifest(
-                config,
-                config_paths,
-                borgmatic_runtime_directory,
-                global_arguments.dry_run,
-            )
-            if not global_arguments.dry_run:
-                source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
 
         json_output = borgmatic.borg.create.create_archive(
             global_arguments.dry_run,

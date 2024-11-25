@@ -28,6 +28,7 @@ def dump_data_sources(
     databases,
     config,
     log_prefix,
+    config_paths,
     borgmatic_runtime_directory,
     source_directories,
     dry_run,

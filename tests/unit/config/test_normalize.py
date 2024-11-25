@@ -137,6 +137,11 @@ def test_normalize_sections_with_only_scalar_raises():
             False,
         ),
         (
+            {'store_config_files': False},
+            {'bootstrap': {'store_config_files': False}},
+            True,
+        ),
+        (
             {'source_directories': ['foo', 'bar']},
             {'source_directories': ['foo', 'bar']},
             False,
@@ -259,6 +264,7 @@ def test_normalize_applies_hard_coded_normalization_to_config(
     flexmock(module).should_receive('normalize_sections').and_return([])
 
     logs = module.normalize('test.yaml', config)
+    expected_config.setdefault('bootstrap', {})
 
     assert config == expected_config
 

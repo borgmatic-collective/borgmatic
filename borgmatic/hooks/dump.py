@@ -6,6 +6,7 @@ import shutil
 logger = logging.getLogger(__name__)
 
 DATA_SOURCE_HOOK_NAMES = (
+    'bootstrap',
     'mariadb_databases',
     'mysql_databases',
     'mongodb_databases',

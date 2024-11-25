@@ -202,13 +202,25 @@ borgmatic config bootstrap --repository repo.borg --archive host-2023-01-02T04:0
 See the output of `config bootstrap --help` for additional flags you may need
 for bootstrapping.
 
-<span class="minilink minilink-addedin">New in version 1.8.1</span> Set the
-`store_config_files` option to `false` to disable the automatic backup of
-borgmatic configuration files, for instance if they contain sensitive
-information you don't want to store even inside your encrypted backups. If you
-do this though, the `config bootstrap` action will no longer work.
+<span class="minilink minilink-addedin">New in version 1.9.3</span>
+If your borgmatic configuration files contain sensitive information you don't
+want to store even inside your encrypted backups, you can disable the
+automatic backup of the configuration files. To do this, set the
+`store_config_files` option under the `bootstrap` hook to `false`. For
+instance:
 
-<span class="minilink minilink-addedin">New in version 1.8.7</span> Included
-configuration files are stored in each backup archive. This means that the
-`config bootstrap` action not only extracts the top-level configuration files
-but also the includes they depend upon.
+```yaml
+bootstrap:
+    store_config_files: false
+```
+
+If you do this though, the `config bootstrap` action will no longer work.
+
+<span class="minilink minilink-addedin">In version 1.8.1 through 1.9.2</span>
+The `store_config_files` option was at the global scope instead of under the
+`bootstrap` hook.
+
+<span class="minilink minilink-addedin">New in version 1.8.7</span>
+Configuration file includes are stored in each backup archive. This means that
+the `config bootstrap` action not only extracts the top-level configuration
+files but also the includes they depend upon.

@@ -120,17 +120,19 @@ def dump_data_sources(
     hook_config,
     config,
     log_prefix,
+    config_paths,
     borgmatic_runtime_directory,
     source_directories,
     dry_run,
 ):
     '''
-    Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
-    directory, the configured source directories, and whether this is a dry run, auto-detect and
-    snapshot any ZFS dataset mount points listed in the given source directories and any dataset
-    with a borgmatic-specific user property. Also update those source directories, replacing dataset
-    mount points with corresponding snapshot directories so they get stored in the Borg archive
-    instead of the dataset mount points. Use the log prefix in any log entries.
+    Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic configuration
+    file paths, the borgmatic runtime directory, the configured source directories, and whether this
+    is a dry run, auto-detect and snapshot any ZFS dataset mount points listed in the given source
+    directories and any dataset with a borgmatic-specific user property. Also update those source
+    directories, replacing dataset mount points with corresponding snapshot directories so they get
+    stored in the Borg archive instead of the dataset mount points. Use the log prefix in any log
+    entries.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -306,15 +308,24 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             destroy_snapshot(zfs_command, full_snapshot_name)
 
 
-def make_data_source_dump_patterns(hook_config, config, log_prefix, name=None):  # pragma: no cover
+def make_data_source_dump_patterns(
+    hook_config, config, log_prefix, borgmatic_runtime_directory, name=None
+):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
     '''
-    raise NotImplementedError()
+    return ()
 
 
 def restore_data_source_dump(
-    hook_config, config, log_prefix, data_source, dry_run, extract_process, connection_params
+    hook_config,
+    config,
+    log_prefix,
+    data_source,
+    dry_run,
+    extract_process,
+    connection_params,
+    borgmatic_runtime_directory,
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".

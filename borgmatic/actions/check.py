@@ -374,7 +374,7 @@ def collect_spot_check_source_paths(
             repository_path=repository['path'],
             config=config,
             source_directories=borgmatic.actions.create.process_source_directories(
-                config, config_paths=()
+                config,
             ),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
