@@ -68,7 +68,9 @@ def test_runtime_directory_with_relative_config_option_errors():
     config = {'user_runtime_directory': 'run', 'borgmatic_source_directory': '/nope'}
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
+        with module.Runtime_directory(
+            config, 'prefix'
+        ) as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 
@@ -99,7 +101,7 @@ def test_runtime_directory_with_relative_xdg_runtime_dir_errors():
     flexmock(module.os).should_receive('makedirs').never()
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 
@@ -127,7 +129,7 @@ def test_runtime_directory_falls_back_to_runtime_directory_without_adding_duplic
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
-def test_runtime_directory_falls_back_to_runtime_directory():
+def test_runtime_directory_with_relative_runtime_directory_errors():
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
     flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
         'run'
@@ -135,7 +137,7 @@ def test_runtime_directory_falls_back_to_runtime_directory():
     flexmock(module.os).should_receive('makedirs').never()
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 
@@ -167,7 +169,7 @@ def test_runtime_directory_with_relative_tmpdir_errors():
     flexmock(module.os).should_receive('makedirs').never()
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 
@@ -201,7 +203,7 @@ def test_runtime_directory_with_relative_temp_errors():
     flexmock(module.os).should_receive('makedirs')
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 
