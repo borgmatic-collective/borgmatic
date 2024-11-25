@@ -104,7 +104,7 @@ class Runtime_directory:
             base_directory = os.environ.get('TMPDIR') or os.environ.get('TEMP') or '/tmp'
 
             if not base_directory.startswith(os.path.sep):
-                raise ValueError('The runtime directory must be an absolute path')
+                raise ValueError('The temporary directory must be an absolute path')
 
             os.makedirs(base_directory, mode=0o700, exist_ok=True)
             self.temporary_directory = tempfile.TemporaryDirectory(
