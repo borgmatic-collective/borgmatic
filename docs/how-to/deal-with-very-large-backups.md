@@ -87,14 +87,16 @@ checks:
 ```
 
 
-Here are the available checks from fastest to slowest:
+Here are the available checks, roughly from fastest to slowest:
 
- * `archives`: Checks all of the archives metadata in the repository.
+ * `archives`: Checks all of the archives' metadata in the repository.
  * `repository`: Checks the consistency of the whole repository. The checks run
    on the server and do not cause significant network traffic.
  * `extract`: Performs an extraction dry-run of the latest archive.
- * `data`: Verifies the data integrity of all archives contents, decrypting and decompressing all data.
- * `spot`: Compares file counts and contents between your source files and the latest archive.
+ * `data`: Verifies the data integrity of all archives contents, decrypting
+   and decompressing all data.
+ * `spot`: Compares file counts and contents between your source files and the
+   latest archive.
 
 Note that the `data` check is a more thorough version of the `archives` check,
 so enabling the `data` check implicitly enables the `archives` check as well.
