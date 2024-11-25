@@ -1,8 +1,7 @@
 1.9.3.dev0
  * #261 (beta): Add a ZFS hook for snapshotting and backing up ZFS datasets. See the documentation
    for more information: https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
- * After it's stored in a Borg archive, remove the manifest file created in support of
-   the "bootstrap" action.
+ * Remove any temporary copies of the manifest file created in support of the "bootstrap" action.
  * Deprecate the "store_config_files" option at the global scope and move it under the "bootstrap"
    hook. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive
