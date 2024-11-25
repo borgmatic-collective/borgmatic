@@ -63,6 +63,15 @@ def test_runtime_directory_uses_config_option_without_adding_duplicate_borgmatic
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
+def test_runtime_directory_with_relative_config_option_errors():
+    flexmock(module.os).should_receive('makedirs').never()
+    config = {'user_runtime_directory': 'run', 'borgmatic_source_directory': '/nope'}
+
+    with pytest.raises(ValueError):
+        with module.Runtime_directory(config, 'prefix') as borgmatic_runtime_directory:
+            pass
+
+
 def test_runtime_directory_falls_back_to_xdg_runtime_dir():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(
@@ -83,6 +92,15 @@ def test_runtime_directory_falls_back_to_xdg_runtime_dir_without_adding_duplicat
 
     with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/./borgmatic'
+
+
+def test_runtime_directory_with_relative_xdg_runtime_dir_errors():
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return('run')
+    flexmock(module.os).should_receive('makedirs').never()
+
+    with pytest.raises(ValueError):
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+            pass
 
 
 def test_runtime_directory_falls_back_to_runtime_directory():
@@ -109,6 +127,18 @@ def test_runtime_directory_falls_back_to_runtime_directory_without_adding_duplic
         assert borgmatic_runtime_directory == '/run/./borgmatic'
 
 
+def test_runtime_directory_falls_back_to_runtime_directory():
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        'run'
+    )
+    flexmock(module.os).should_receive('makedirs').never()
+
+    with pytest.raises(ValueError):
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+            pass
+
+
 def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_that_get_cleaned_up():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
@@ -125,6 +155,20 @@ def test_runtime_directory_falls_back_to_tmpdir_and_adds_temporary_subdirectory_
 
     with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
+
+
+def test_runtime_directory_with_relative_tmpdir_errors():
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return('run')
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').never()
+    flexmock(module.os).should_receive('makedirs').never()
+
+    with pytest.raises(ValueError):
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+            pass
 
 
 def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_that_get_cleaned_up():
@@ -144,6 +188,21 @@ def test_runtime_directory_falls_back_to_temp_and_adds_temporary_subdirectory_th
 
     with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
         assert borgmatic_runtime_directory == '/run/borgmatic-1234/./borgmatic'
+
+
+def test_runtime_directory_with_relative_temp_errors():
+    flexmock(module.os.environ).should_receive('get').with_args('XDG_RUNTIME_DIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('RUNTIME_DIRECTORY').and_return(
+        None
+    )
+    flexmock(module.os.environ).should_receive('get').with_args('TMPDIR').and_return(None)
+    flexmock(module.os.environ).should_receive('get').with_args('TEMP').and_return('run')
+    flexmock(module.tempfile).should_receive('TemporaryDirectory').never()
+    flexmock(module.os).should_receive('makedirs')
+
+    with pytest.raises(ValueError):
+        with module.Runtime_directory({}, 'prefix') as borgmatic_runtime_directory:
+            pass
 
 
 def test_runtime_directory_falls_back_to_hard_coded_tmp_path_and_adds_temporary_subdirectory_that_get_cleaned_up():

@@ -6,6 +6,7 @@
  * Deprecate the "store_config_files" option at the global scope and move it under the "bootstrap"
    hook. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/extract-a-backup/#extract-the-configuration-files-used-to-create-an-archive
+ * Require the runtime directory to be an absolute path.
  * Add a "--deleted" flag to the "repo-list" action for listing deleted archives that haven't
    yet been compacted (Borg 2 only).
 
