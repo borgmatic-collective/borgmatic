@@ -1,6 +1,3 @@
-1.9.4.dev0
- * #926: Fix library error when running within a PyInstaller bundle.
-
 1.9.3
  * #261 (beta): Add a ZFS hook for snapshotting and backing up ZFS datasets. See the documentation
    for more information: https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/

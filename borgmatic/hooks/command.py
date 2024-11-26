@@ -2,9 +2,8 @@ import logging
 import os
 import re
 import shlex
-import sys
 
-import borgmatic.execute
+from borgmatic import execute
 
 logger = logging.getLogger(__name__)
 
@@ -26,20 +25,6 @@ def interpolate_context(config_filename, hook_description, command, context):
         )
 
     return command
-
-
-def make_environment(current_environment, sys_module=sys):
-    '''
-    Given the existing system environment as a map from environment variable name to value, return
-    (in the same form) any extra environment variables that should be used when running command
-    hooks.
-    '''
-    # Detect whether we're running within a PyInstaller bundle. If so, set or clear LD_LIBRARY_PATH
-    # based on the value of LD_LIBRARY_PATH_ORIG. This prevents library version information errors.
-    if getattr(sys_module, 'frozen', False) and hasattr(sys_module, '_MEIPASS'):
-        return {'LD_LIBRARY_PATH': current_environment.get('LD_LIBRARY_PATH_ORIG', '')}
-
-    return {}
 
 
 def execute_hook(commands, umask, config_filename, description, dry_run, **context):
@@ -80,15 +65,14 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
 
     try:
         for command in commands:
-            if dry_run:
-                continue
-
-            borgmatic.execute.execute_command(
-                [command],
-                output_log_level=(logging.ERROR if description == 'on-error' else logging.WARNING),
-                shell=True,
-                extra_environment=make_environment(os.environ),
-            )
+            if not dry_run:
+                execute.execute_command(
+                    [command],
+                    output_log_level=(
+                        logging.ERROR if description == 'on-error' else logging.WARNING
+                    ),
+                    shell=True,
+                )
     finally:
         if original_umask:
             os.umask(original_umask)
