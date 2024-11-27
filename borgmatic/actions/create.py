@@ -10,7 +10,6 @@ import borgmatic.config.paths
 import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
-import borgmatic.hooks.dump
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +185,7 @@ def run_create(
             'remove_data_source_dumps',
             config,
             repository['path'],
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
@@ -195,7 +194,7 @@ def run_create(
             'dump_data_sources',
             config,
             repository['path'],
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             config_paths,
             borgmatic_runtime_directory,
             source_directories,
@@ -232,7 +231,7 @@ def run_create(
             'remove_data_source_dumps',
             config,
             config_filename,
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )

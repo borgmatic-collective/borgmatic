@@ -90,7 +90,7 @@ def test_restore_single_data_source_extracts_and_restores_single_file_dump():
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
     flexmock(module.tempfile).should_receive('mkdtemp').never()
-    flexmock(module.borgmatic.hooks.dump).should_receive(
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
         'convert_glob_patterns_to_borg_pattern'
     ).and_return(flexmock())
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
@@ -98,11 +98,11 @@ def test_restore_single_data_source_extracts_and_restores_single_file_dump():
     ).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
     flexmock(module.shutil).should_receive('rmtree').never()
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
         log_prefix=object,
-        hook_names=object,
+        hook_name=object,
         data_source=object,
         dry_run=object,
         extract_process=object,
@@ -132,7 +132,7 @@ def test_restore_single_data_source_extracts_and_restores_directory_dump():
     flexmock(module.tempfile).should_receive('mkdtemp').once().and_return(
         '/run/user/0/borgmatic/tmp1234'
     )
-    flexmock(module.borgmatic.hooks.dump).should_receive(
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
         'convert_glob_patterns_to_borg_pattern'
     ).and_return(flexmock())
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
@@ -140,11 +140,11 @@ def test_restore_single_data_source_extracts_and_restores_directory_dump():
     ).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').once()
     flexmock(module.shutil).should_receive('rmtree').once()
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
         log_prefix=object,
-        hook_names=object,
+        hook_name=object,
         data_source=object,
         dry_run=object,
         extract_process=object,
@@ -174,7 +174,7 @@ def test_restore_single_data_source_with_directory_dump_error_cleans_up_temporar
     flexmock(module.tempfile).should_receive('mkdtemp').once().and_return(
         '/run/user/0/borgmatic/tmp1234'
     )
-    flexmock(module.borgmatic.hooks.dump).should_receive(
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
         'convert_glob_patterns_to_borg_pattern'
     ).and_return(flexmock())
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_raise(
@@ -182,11 +182,11 @@ def test_restore_single_data_source_with_directory_dump_error_cleans_up_temporar
     ).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
     flexmock(module.shutil).should_receive('rmtree').once()
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
         log_prefix=object,
-        hook_names=object,
+        hook_name=object,
         data_source=object,
         dry_run=object,
         extract_process=object,
@@ -215,7 +215,7 @@ def test_restore_single_data_source_with_directory_dump_and_dry_run_skips_direct
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
     flexmock(module.tempfile).should_receive('mkdtemp').once().and_return('/run/borgmatic/tmp1234')
-    flexmock(module.borgmatic.hooks.dump).should_receive(
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
         'convert_glob_patterns_to_borg_pattern'
     ).and_return(flexmock())
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive').and_return(
@@ -223,11 +223,11 @@ def test_restore_single_data_source_with_directory_dump_and_dry_run_skips_direct
     ).once()
     flexmock(module).should_receive('strip_path_prefix_from_extracted_dump_destination').never()
     flexmock(module.shutil).should_receive('rmtree').never()
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
         log_prefix=object,
-        hook_names=object,
+        hook_name=object,
         data_source=object,
         dry_run=object,
         extract_process=object,
@@ -254,9 +254,9 @@ def test_collect_archive_data_source_names_parses_archive_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.hooks.dump).should_receive('make_data_source_dump_path').and_return(
-        ''
-    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'make_data_source_dump_path'
+    ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo',
@@ -286,9 +286,9 @@ def test_collect_archive_data_source_names_parses_archive_paths_with_different_b
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.hooks.dump).should_receive('make_data_source_dump_path').and_return(
-        ''
-    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'make_data_source_dump_path'
+    ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo',
@@ -319,9 +319,9 @@ def test_collect_archive_data_source_names_parses_directory_format_archive_paths
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.hooks.dump).should_receive('make_data_source_dump_path').and_return(
-        ''
-    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'make_data_source_dump_path'
+    ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo/table1',
@@ -349,9 +349,9 @@ def test_collect_archive_data_source_names_skips_bad_archive_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
-    flexmock(module.borgmatic.hooks.dump).should_receive('make_data_source_dump_path').and_return(
-        ''
-    )
+    flexmock(module.borgmatic.hooks.data_source.dump).should_receive(
+        'make_data_source_dump_path'
+    ).and_return('')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo',

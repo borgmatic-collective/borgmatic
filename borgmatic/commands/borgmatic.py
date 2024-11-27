@@ -39,7 +39,8 @@ from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, validate
-from borgmatic.hooks import command, dispatch, monitor
+from borgmatic.hooks import command, dispatch
+from borgmatic.hooks.monitoring import monitor
 from borgmatic.logger import DISABLED, add_custom_log_levels, configure_logging, should_do_markup
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
@@ -103,7 +104,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 'initialize_monitor',
                 config,
                 config_filename,
-                monitor.MONITOR_HOOK_NAMES,
+                dispatch.Hook_type.MONITORING,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
@@ -112,7 +113,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 'ping_monitor',
                 config,
                 config_filename,
-                monitor.MONITOR_HOOK_NAMES,
+                dispatch.Hook_type.MONITORING,
                 monitor.State.START,
                 monitoring_log_level,
                 global_arguments.dry_run,
@@ -188,7 +189,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 'ping_monitor',
                 config,
                 config_filename,
-                monitor.MONITOR_HOOK_NAMES,
+                dispatch.Hook_type.MONITORING,
                 monitor.State.LOG,
                 monitoring_log_level,
                 global_arguments.dry_run,
@@ -205,7 +206,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     'ping_monitor',
                     config,
                     config_filename,
-                    monitor.MONITOR_HOOK_NAMES,
+                    dispatch.Hook_type.MONITORING,
                     monitor.State.FINISH,
                     monitoring_log_level,
                     global_arguments.dry_run,
@@ -214,7 +215,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     'destroy_monitor',
                     config,
                     config_filename,
-                    monitor.MONITOR_HOOK_NAMES,
+                    dispatch.Hook_type.MONITORING,
                     monitoring_log_level,
                     global_arguments.dry_run,
                 )
@@ -241,7 +242,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 'ping_monitor',
                 config,
                 config_filename,
-                monitor.MONITOR_HOOK_NAMES,
+                dispatch.Hook_type.MONITORING,
                 monitor.State.FAIL,
                 monitoring_log_level,
                 global_arguments.dry_run,
@@ -250,7 +251,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 'destroy_monitor',
                 config,
                 config_filename,
-                monitor.MONITOR_HOOK_NAMES,
+                dispatch.Hook_type.MONITORING,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )

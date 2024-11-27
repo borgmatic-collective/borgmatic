@@ -16,8 +16,10 @@ you get started. Starting at the top level, we have:
    * [actions](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/actions): borgmatic-specific logic for running each action (create, list, check, etc.).
    * [borg](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/borg): Lower-level code that's responsible for interacting with Borg to run each action.
    * [commands](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/commands): Looking to add a new flag or action? Start here. This contains borgmatic's entry point, argument parsing, and shell completion. 
-   * [config](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/config): Code responsible for loading, normalizing, and validating borgmatic's configuration.
-   * [hooks](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks): Looking to add a new database or monitoring integration? Start here.
+   * [config](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/config): Code responsible for loading, normalizing, and validating borgmatic's configuration. Interested in adding a new configuration option? Check out `schema.yaml` here.
+   * [hooks](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks): Looking to add a new database, filesystem, or monitoring integration? Start here.
+     * [data_source](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks): Database and filesystem hooks—anything that produces data or files to go into a backup archive.
+     * [monitoring](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks): Monitoring hooks—integrations with third-party or self-hosted monitoring services.
  * [docs](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/docs): How-to and reference documentation, including the document you're reading now.
  * [sample](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/sample): Example configurations for cron and systemd.
  * [scripts](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/scripts): Dev-facing scripts for things like building documentation and running end-to-end tests.

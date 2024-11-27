@@ -11,8 +11,8 @@ import borgmatic.borg.mount
 import borgmatic.borg.repo_list
 import borgmatic.config.paths
 import borgmatic.config.validate
+import borgmatic.hooks.data_source.dump
 import borgmatic.hooks.dispatch
-import borgmatic.hooks.dump
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,8 @@ def get_configured_data_source(
         hooks_to_search = {
             hook_name: value
             for (hook_name, value) in config.items()
-            if hook_name in borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES
+            if hook_name.split('_databases')[0]
+            in borgmatic.hooks.dispatch.get_submodule_names(borgmatic.hooks.data_source)
         }
     else:
         try:
@@ -123,10 +124,10 @@ def restore_single_data_source(
         'make_data_source_dump_patterns',
         config,
         repository['path'],
-        borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+        borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         borgmatic_runtime_directory,
         data_source['name'],
-    )[hook_name]
+    )[hook_name.split('_databases')[0]]
 
     destination_path = (
         tempfile.mkdtemp(dir=borgmatic_runtime_directory)
@@ -141,7 +142,11 @@ def restore_single_data_source(
             dry_run=global_arguments.dry_run,
             repository=repository['path'],
             archive=archive_name,
-            paths=[borgmatic.hooks.dump.convert_glob_patterns_to_borg_pattern(dump_patterns)],
+            paths=[
+                borgmatic.hooks.data_source.dump.convert_glob_patterns_to_borg_pattern(
+                    dump_patterns
+                )
+            ],
             config=config,
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
@@ -162,11 +167,11 @@ def restore_single_data_source(
             shutil.rmtree(destination_path, ignore_errors=True)
 
     # Run a single data source restore, consuming the extract stdout (if any).
-    borgmatic.hooks.dispatch.call_hooks(
+    borgmatic.hooks.dispatch.call_hook(
         function_name='restore_data_source_dump',
         config=config,
         log_prefix=repository['path'],
-        hook_names=[hook_name],
+        hook_name=hook_name,
         data_source=data_source,
         dry_run=global_arguments.dry_run,
         extract_process=extract_process,
@@ -206,7 +211,9 @@ def collect_archive_data_source_names(
         global_arguments,
         list_paths=[
             'sh:'
-            + borgmatic.hooks.dump.make_data_source_dump_path(base_directory, '*_databases/*/*')
+            + borgmatic.hooks.data_source.dump.make_data_source_dump_path(
+                base_directory, '*_databases/*/*'
+            )
             for base_directory in (
                 'borgmatic',
                 borgmatic.config.paths.make_runtime_directory_glob(borgmatic_runtime_directory),
@@ -354,7 +361,7 @@ def run_restore(
             'remove_data_source_dumps',
             config,
             repository['path'],
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
@@ -451,7 +458,7 @@ def run_restore(
             'remove_data_source_dumps',
             config,
             repository['path'],
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )

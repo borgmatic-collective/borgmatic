@@ -1,75 +1,70 @@
+import enum
+import importlib
 import logging
+import pkgutil
 
-from borgmatic.hooks import (
-    apprise,
-    bootstrap,
-    cronhub,
-    cronitor,
-    healthchecks,
-    loki,
-    mariadb,
-    mongodb,
-    mysql,
-    ntfy,
-    pagerduty,
-    postgresql,
-    pushover,
-    sqlite,
-    uptimekuma,
-    zabbix,
-    zfs,
-)
+import borgmatic.hooks.data_source
+import borgmatic.hooks.monitoring
 
 logger = logging.getLogger(__name__)
 
-HOOK_NAME_TO_MODULE = {
-    'apprise': apprise,
-    'bootstrap': bootstrap,
-    'cronhub': cronhub,
-    'cronitor': cronitor,
-    'healthchecks': healthchecks,
-    'loki': loki,
-    'mariadb_databases': mariadb,
-    'mongodb_databases': mongodb,
-    'mysql_databases': mysql,
-    'ntfy': ntfy,
-    'pagerduty': pagerduty,
-    'postgresql_databases': postgresql,
-    'pushover': pushover,
-    'sqlite_databases': sqlite,
-    'uptime_kuma': uptimekuma,
-    'zabbix': zabbix,
-    'zfs': zfs,
-}
+
+class Hook_type(enum.Enum):
+    DATA_SOURCE = 'data_source'
+    MONITORING = 'monitoring'
+
+
+def get_submodule_names(parent_module):  # pragma: no cover
+    '''
+    Given a parent module, return the names of its direct submodules as a tuple of strings.
+    '''
+    return tuple(module_info.name for module_info in pkgutil.iter_modules(parent_module.__path__))
 
 
 def call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs):
     '''
     Given a configuration dict and a prefix to use in log entries, call the requested function of
     the Python module corresponding to the given hook name. Supply that call with the configuration
-    for this hook (if any), the log prefix, and any given args and kwargs. Return any return value.
+    for this hook (if any), the log prefix, and any given args and kwargs. Return the return value
+    of that call or None if the module in question is not a hook.
 
     Raise ValueError if the hook name is unknown.
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that the called function raises.
     '''
-    hook_config = config.get(hook_name) or {}
+    hook_config = config.get(hook_name) or config.get(f'{hook_name}_databases') or {}
+    module_name = hook_name.split('_databases')[0]
 
-    try:
-        module = HOOK_NAME_TO_MODULE[hook_name]
-    except KeyError:
+    # Probe for a data source or monitoring hook module corresponding to the hook name.
+    for parent_module in (borgmatic.hooks.data_source, borgmatic.hooks.monitoring):
+        if module_name not in get_submodule_names(parent_module):
+            continue
+
+        module = importlib.import_module(f'{parent_module.__name__}.{module_name}')
+
+        # If this module is explicitly flagged as not a hook, bail.
+        if not getattr(module, 'IS_A_HOOK', True):
+            return None
+
+        break
+    else:
         raise ValueError(f'Unknown hook name: {hook_name}')
 
     logger.debug(f'{log_prefix}: Calling {hook_name} hook function {function_name}')
+
     return getattr(module, function_name)(hook_config, config, log_prefix, *args, **kwargs)
 
 
-def call_hooks(function_name, config, log_prefix, hook_names, *args, **kwargs):
+def call_hooks(function_name, config, log_prefix, hook_type, *args, **kwargs):
     '''
     Given a configuration dict and a prefix to use in log entries, call the requested function of
-    the Python module corresponding to each given hook name. Supply each call with the configuration
-    for that hook, the log prefix, and any given args and kwargs. Collect any return values into a
-    dict from hook name to return value.
+    the Python module corresponding to each hook of the given hook type (either "data_source" or
+    "monitoring"). Supply each call with the configuration for that hook, the log prefix, and any
+    given args and kwargs.
+
+    Collect any return values into a dict from module name to return value. Note that the module
+    name is the name of the hook module itself, which might be different from the hook configuration
+    option (e.g. "postgresql" for the former vs. "postgresql_databases" for the latter).
 
     If the hook name is not present in the hooks configuration, then don't call the function for it
     and omit it from the return values.
@@ -80,22 +75,26 @@ def call_hooks(function_name, config, log_prefix, hook_names, *args, **kwargs):
     '''
     return {
         hook_name: call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs)
-        for hook_name in hook_names
-        if hook_name in config
+        for hook_name in get_submodule_names(
+            importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
+        )
+        if hook_name in config or f'{hook_name}_databases' in config
     }
 
 
-def call_hooks_even_if_unconfigured(function_name, config, log_prefix, hook_names, *args, **kwargs):
+def call_hooks_even_if_unconfigured(function_name, config, log_prefix, hook_type, *args, **kwargs):
     '''
     Given a configuration dict and a prefix to use in log entries, call the requested function of
-    the Python module corresponding to each given hook name. Supply each call with the configuration
-    for that hook, the log prefix, and any given args and kwargs. Collect any return values into a
-    dict from hook name to return value.
+    the Python module corresponding to each hook of the given hook type (either "data_source" or
+    "monitoring"). Supply each call with the configuration for that hook, the log prefix, and any
+    given args and kwargs. Collect any return values into a dict from hook name to return value.
 
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that a called function raises. An error stops calls to subsequent functions.
     '''
     return {
         hook_name: call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs)
-        for hook_name in hook_names
+        for hook_name in get_submodule_names(
+            importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
+        )
     }

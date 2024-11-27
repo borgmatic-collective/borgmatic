@@ -364,7 +364,7 @@ def collect_spot_check_source_paths(
             'use_streaming',
             config,
             repository['path'],
-            borgmatic.hooks.dump.DATA_SOURCE_HOOK_NAMES,
+            borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         ).values()
     )
 
