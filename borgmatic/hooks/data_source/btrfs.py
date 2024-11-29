@@ -18,6 +18,52 @@ def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
     return False
 
 
+def get_filesystem_mount_points(findmnt_command):
+    '''
+    Given a findmnt command to run, get all top-level Btrfs filesystem mount points.
+    '''
+    findmnt_output = borgmatic.execute.execute_command_and_capture_output(
+        (
+            findmnt_command,
+            '-nt',
+            'btrfs',
+        )
+    )
+
+    try:
+        return tuple(
+            line.rstrip().split(' ')[0]
+            for line in findmnt_output.splitlines()
+        )
+    except ValueError:
+        raise ValueError('Invalid {findmnt_command} output')
+
+
+def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
+    '''
+    Given a Btrfs command to run and a Btrfs filesystem mount point, get the subvolumes for that
+    filesystem.
+    '''
+    btrfs_output = borgmatic.execute.execute_command_and_capture_output(
+        (
+            btrfs_command,
+            'subvolume',
+            'list',
+            filesystem_mount_point,
+        )
+    )
+
+    try:
+        return tuple(
+            subvolume_path
+            for line in btrfs_output.splitlines()
+            for subvolume_subpath in (line.rstrip().split(' ')[-1],)
+            for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
+        )
+    except ValueError:
+        raise ValueError('Invalid {btrfs_command} subvolume list output')
+
+
 def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
     '''
     Given a Btrfs command to run and a sequence of configured source directories, find the
@@ -28,52 +74,21 @@ def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
 
     Return the result as a sequence of matching subvolume mount points.
     '''
-    # Find all top-level Btrfs filesystem mount points.
-    findmnt_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            findmnt_command,
-            '-nt',
-            'btrfs',
-        )
-    )
-
-    try:
-        filesystem_mount_points = tuple(
-            line.rstrip().split(' ')[0]
-            for line in findmnt_output.splitlines()
-        )
-    except ValueError:
-        raise ValueError('Invalid {findmnt_command} output')
-
-    source_directories_set = set(source_directories or ())
+    source_directories_lookup = set(source_directories or ())
     subvolumes = []
 
     # For each filesystem mount point, find its subvolumes and match them again the given source
     # directories to find the subvolumes to backup. Also try to match the filesystem mount point
-    # itself.
-    for mount_point in filesystem_mount_points:
-        if source_directories is None or mount_point in source_directories_set:
+    # itself (since it's implicitly a subvolume).
+    for mount_point in get_filesystem_mount_points(findmnt_command):
+        if source_directories is None or mount_point in source_directories_lookup:
             subvolumes.append(mount_point)
 
-        btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-            (
-                btrfs_command,
-                'subvolume',
-                'list',
-                mount_point,
-            )
+        subvolumes.extend(
+            subvolume_path
+            for subvolume_path in get_subvolumes_for_filesystem(btrfs_command, mount_point)
+            if source_directories is None or subvolume_path in source_directories_lookup
         )
-
-        try:
-            subvolumes.extend(
-                subvolume_path
-                for line in btrfs_output.splitlines()
-                for subvolume_subpath in (line.rstrip().split(' ')[-1],)
-                for subvolume_path in (os.path.join(mount_point, subvolume_subpath),)
-                if source_directories is None or subvolume_path in source_directories_set
-            )
-        except ValueError:
-            raise ValueError('Invalid {btrfs_command} subvolume list output')
 
     return tuple(subvolumes)
 
@@ -169,10 +184,9 @@ def dump_data_sources(
     # Based on the configured source directories, determine Btrfs subvolumes to backup.
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
     findmnt_command = hook_config.get('findmnt_command', 'findmnt')
-    requested_subvolume_paths = get_subvolumes(btrfs_command, findmnt_command, source_directories)
 
     # Snapshot each subvolume, rewriting source directories to use their snapshot paths.
-    for subvolume_path in requested_subvolume_paths:
+    for subvolume_path in get_subvolumes(btrfs_command, findmnt_command, source_directories):
         logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume_path} subvolume')
 
         snapshot_path = make_snapshot_path(subvolume_path)
