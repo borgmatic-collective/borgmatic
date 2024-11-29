@@ -134,6 +134,7 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
             btrfs_command,
             'subvolume',
             'snapshot',
+            '-r',  # Read-only,
             subvolume_path,
             snapshot_path,
         ),
