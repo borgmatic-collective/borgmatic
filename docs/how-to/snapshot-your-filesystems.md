@@ -52,7 +52,7 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 You have a couple of options for borgmatic to find and backup your ZFS datasets:
 
  * For any dataset you'd like backed up, add its mount point to borgmatic's
-   `source_directories`.
+   `source_directories` option.
  * Or set the borgmatic-specific user property
    `org.torsion.borgmatic:backup=auto` onto your dataset, e.g. by running `zfs
    set org.torsion.borgmatic:backup=auto datasetname`. Then borgmatic can find
@@ -62,11 +62,11 @@ If you have multiple borgmatic configuration files with ZFS enabled, and you'd
 like particular datasets to be backed up only for particular configuration
 files, use the `source_directories` option instead of the user property.
 
-During a backup, borgmatic automatically snapshots these discovered datasets,
-temporary mounts the snapshots within its [runtime
+During a backup, borgmatic automatically snapshots these discovered datasets
+(non-recursively), temporary mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
-and includes the snapshotted files in the files sent to Borg. borgmatic is
-also responsible for cleaning up (destroying) these snapshots after a backup
+and includes the snapshotted files in the paths sent to Borg. borgmatic is also
+responsible for cleaning up (destroying) these snapshots after a backup
 completes.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
@@ -88,3 +88,60 @@ Filesystem snapshots are stored in a Borg archive as normal files, so
 you can use the standard
 [extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
 extract them.
+
+
+### Btrfs
+
+<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
+class="minilink minilink-addedin">Beta feature</span> borgmatic supports taking
+snapshots with the [Btrfs filesystem](https://btrfs.readthedocs.io/) and sending
+those snapshots to Borg for backup.
+
+To use this feature, first you need one or more Btrfs subvolumes on mounted
+filesystems. Then, enable Btrfs within borgmatic by adding the following line to
+your configuration file:
+
+```yaml
+btrfs:
+```
+
+No other options are necessary to enable Btrfs support, but if desired you can
+override some of the commands used by the Btrfs hook. For instance:
+
+```yaml
+btrfs:
+    btrfs_command: /usr/local/bin/btrfs
+    findmnt_command: /usr/local/bin/findmnt
+```
+
+As long as the Btrfs hook is in beta, it may be subject to breaking changes
+and/or may not work well for your use cases. But feel free to use it in
+production if you're okay with these caveats, and please [provide any
+feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
+
+
+#### Subvolume discovery
+
+For any subvolume you'd like backed up, add its path to borgmatic's
+`source_directories` option. During a backup, borgmatic snapshots these
+subvolumes (non-recursively) and includes the snapshotted files in the paths
+sent to Borg. borgmatic is also responsible for cleaning up (deleting) these
+snapshots after a backup completes.
+
+Additionally, borgmatic rewrites the snapshot file paths so that they appear at
+their original subvolume locations in a Borg archive. For instance, if your
+subvolume exists at `/mnt/subvolume`, then the snapshotted files will appear in
+an archive at `/mnt/subvolume` as well.
+
+<span class="minilink minilink-addedin">With Borg version 1.2 and
+earlier</span>Snapshotted files are instead stored at a path dependent on the
+temporary snapshot directory in use at the time the archive was created, as Borg
+1.2 and earlier do not support path rewriting.
+
+
+#### Extract a subvolume
+
+Subvolume snapshots are stored in a Borg archive as normal files, so you can use
+the standard [extract
+action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to extract
+them.
