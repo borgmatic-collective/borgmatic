@@ -2288,3 +2288,17 @@ properties:
                 example: /usr/local/bin/umount
         description: |
             Configuration for integration with the ZFS filesystem.
+    btrfs:
+        type: ["object", "null"]
+        additionalProperties: false
+        properties:
+            btrfs_command:
+                type: string
+                description: |
+                    Command to use instead of "btrfs".
+                example: /usr/local/bin/btrfs
+            findmnt_command:
+                type: string
+                description: |
+                    Command to use instead of "findmnt".
+                example: /usr/local/bin/findmnt
