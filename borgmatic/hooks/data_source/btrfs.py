@@ -30,13 +30,7 @@ def get_filesystem_mount_points(findmnt_command):
         )
     )
 
-    try:
-        return tuple(
-            line.rstrip().split(' ')[0]
-            for line in findmnt_output.splitlines()
-        )
-    except ValueError:
-        raise ValueError('Invalid {findmnt_command} output')
+    return tuple(line.rstrip().split(' ')[0] for line in findmnt_output.splitlines())
 
 
 def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
@@ -53,15 +47,12 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
         )
     )
 
-    try:
-        return tuple(
-            subvolume_path
-            for line in btrfs_output.splitlines()
-            for subvolume_subpath in (line.rstrip().split(' ')[-1],)
-            for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
-        )
-    except ValueError:
-        raise ValueError('Invalid {btrfs_command} subvolume list output')
+    return tuple(
+        subvolume_path
+        for line in btrfs_output.splitlines()
+        for subvolume_subpath in (line.rstrip().split(' ')[-1],)
+        for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
+    )
 
 
 def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
