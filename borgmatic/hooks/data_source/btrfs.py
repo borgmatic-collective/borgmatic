@@ -51,6 +51,8 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
         for line in btrfs_output.splitlines()
         for subvolume_subpath in (line.rstrip().split(' ')[-1],)
         for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
+        if subvolume_subpath.strip()
+        if filesystem_mount_point.strip()
     )
 
 
