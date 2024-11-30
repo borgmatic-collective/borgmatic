@@ -1,4 +1,3 @@
-import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import btrfs as module
