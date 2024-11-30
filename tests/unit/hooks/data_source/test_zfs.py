@@ -97,6 +97,29 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
     assert source_directories == [snapshot_mount_path]
 
 
+def test_dump_data_sources_snapshots_with_no_datasets_skips_snapshots():
+    flexmock(module).should_receive('get_datasets_to_backup').and_return(())
+    flexmock(module.os).should_receive('getpid').and_return(1234)
+    flexmock(module).should_receive('snapshot_dataset').never()
+    flexmock(module).should_receive('mount_snapshot').never()
+    source_directories = ['/mnt/dataset']
+
+    assert (
+        module.dump_data_sources(
+            hook_config={},
+            config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            log_prefix='test',
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            source_directories=source_directories,
+            dry_run=False,
+        )
+        == []
+    )
+
+    assert source_directories == ['/mnt/dataset']
+
+
 def test_dump_data_sources_uses_custom_commands():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (('dataset', '/mnt/dataset'),)

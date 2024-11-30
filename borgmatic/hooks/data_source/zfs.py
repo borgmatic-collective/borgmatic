@@ -148,6 +148,9 @@ def dump_data_sources(
     # Snapshot each dataset, rewriting source directories to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
 
+    if not requested_datasets:
+        logger.warning(f'{log_prefix}: No ZFS datasets found to snapshot{dry_run_label}')
+
     for dataset_name, mount_point in requested_datasets:
         full_snapshot_name = f'{dataset_name}@{snapshot_name}'
         logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name}{dry_run_label}')

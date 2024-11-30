@@ -171,14 +171,18 @@ def dump_data_sources(
     If this is a dry run, then don't actually snapshot anything.
     '''
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-    logger.info(f'{log_prefix}: Snapshotting Btrfs datasets{dry_run_label}')
+    logger.info(f'{log_prefix}: Snapshotting Btrfs subvolumes{dry_run_label}')
 
     # Based on the configured source directories, determine Btrfs subvolumes to backup.
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
     findmnt_command = hook_config.get('findmnt_command', 'findmnt')
+    subvolumes = get_subvolumes(btrfs_command, findmnt_command, source_directories)
+
+    if not subvolumes:
+        logger.warning(f'{log_prefix}: No Btrfs subvolumes found to snapshot{dry_run_label}')
 
     # Snapshot each subvolume, rewriting source directories to use their snapshot paths.
-    for subvolume_path in get_subvolumes(btrfs_command, findmnt_command, source_directories):
+    for subvolume_path in subvolumes:
         logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume_path} subvolume')
 
         snapshot_path = make_snapshot_path(subvolume_path)
