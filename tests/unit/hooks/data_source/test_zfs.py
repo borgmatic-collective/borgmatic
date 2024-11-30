@@ -1,12 +1,13 @@
 import pytest
 from flexmock import flexmock
 
-import borgmatic.execute
 from borgmatic.hooks.data_source import zfs as module
 
 
 def test_get_datasets_to_backup_filters_datasets_by_source_directories():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset\t/dataset\t-\nother\t/other\t-',
     )
 
@@ -16,7 +17,9 @@ def test_get_datasets_to_backup_filters_datasets_by_source_directories():
 
 
 def test_get_datasets_to_backup_filters_datasets_by_user_property():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset\t/dataset\tauto\nother\t/other\t-',
     )
 
@@ -26,7 +29,9 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
 
 
 def test_get_datasets_to_backup_with_invalid_list_output_raises():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset',
     )
 
@@ -35,7 +40,9 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
 
 
 def test_get_get_all_datasets_does_not_filter_datasets():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset\t/dataset\nother\t/other',
     )
 
@@ -46,7 +53,9 @@ def test_get_get_all_datasets_does_not_filter_datasets():
 
 
 def test_get_all_datasets_with_invalid_list_output_raises():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset',
     )
 
@@ -86,6 +95,29 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
     )
 
     assert source_directories == [snapshot_mount_path]
+
+
+def test_dump_data_sources_snapshots_with_no_datasets_skips_snapshots():
+    flexmock(module).should_receive('get_datasets_to_backup').and_return(())
+    flexmock(module.os).should_receive('getpid').and_return(1234)
+    flexmock(module).should_receive('snapshot_dataset').never()
+    flexmock(module).should_receive('mount_snapshot').never()
+    source_directories = ['/mnt/dataset']
+
+    assert (
+        module.dump_data_sources(
+            hook_config={},
+            config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            log_prefix='test',
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            source_directories=source_directories,
+            dry_run=False,
+        )
+        == []
+    )
+
+    assert source_directories == ['/mnt/dataset']
 
 
 def test_dump_data_sources_uses_custom_commands():
@@ -155,7 +187,9 @@ def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_source
 
 
 def test_get_all_snapshots_parses_list_output():
-    flexmock(borgmatic.execute).should_receive('execute_command_and_capture_output').and_return(
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
         'dataset1@borgmatic-1234\ndataset2@borgmatic-4567',
     )
 

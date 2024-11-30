@@ -33,10 +33,13 @@ def get_borgmatic_source_directory(config):
 TEMPORARY_DIRECTORY_PREFIX = 'borgmatic-'
 
 
-def replace_temporary_subdirectory_with_glob(path):
+def replace_temporary_subdirectory_with_glob(
+    path, temporary_directory_prefix=TEMPORARY_DIRECTORY_PREFIX
+):
     '''
-    Given an absolute temporary directory path, look for a subdirectory within it starting with the
-    temporary directory prefix and replace it with an appropriate glob. For instance, given:
+    Given an absolute temporary directory path and an optional temporary directory prefix, look for
+    a subdirectory within it starting with the temporary directory prefix (or a default) and replace
+    it with an appropriate glob. For instance, given:
 
         /tmp/borgmatic-aet8kn93/borgmatic
 
@@ -50,8 +53,8 @@ def replace_temporary_subdirectory_with_glob(path):
         '/',
         *(
             (
-                f'{TEMPORARY_DIRECTORY_PREFIX}*'
-                if subdirectory.startswith(TEMPORARY_DIRECTORY_PREFIX)
+                f'{temporary_directory_prefix}*'
+                if subdirectory.startswith(temporary_directory_prefix)
                 else subdirectory
             )
             for subdirectory in path.split(os.path.sep)

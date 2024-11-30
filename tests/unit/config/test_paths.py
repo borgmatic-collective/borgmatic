@@ -45,6 +45,22 @@ def test_replace_temporary_subdirectory_with_glob_transforms_path():
     )
 
 
+def test_replace_temporary_subdirectory_with_glob_passes_through_non_matching_path():
+    assert (
+        module.replace_temporary_subdirectory_with_glob('/tmp/foo-aet8kn93/borgmatic')
+        == '/tmp/foo-aet8kn93/borgmatic'
+    )
+
+
+def test_replace_temporary_subdirectory_with_glob_uses_custom_temporary_directory_prefix():
+    assert (
+        module.replace_temporary_subdirectory_with_glob(
+            '/tmp/.borgmatic-aet8kn93/borgmatic', temporary_directory_prefix='.borgmatic-'
+        )
+        == '/tmp/.borgmatic-*/borgmatic'
+    )
+
+
 def test_runtime_directory_uses_config_option():
     flexmock(module).should_receive('expand_user_in_path').replace_with(lambda path: path)
     flexmock(module.os).should_receive('makedirs')

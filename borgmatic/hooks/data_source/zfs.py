@@ -104,6 +104,7 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     first).
     '''
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
+
     borgmatic.execute.execute_command(
         (
             mount_command,
@@ -131,8 +132,7 @@ def dump_data_sources(
     is a dry run, auto-detect and snapshot any ZFS dataset mount points listed in the given source
     directories and any dataset with a borgmatic-specific user property. Also update those source
     directories, replacing dataset mount points with corresponding snapshot directories so they get
-    stored in the Borg archive instead of the dataset mount points. Use the log prefix in any log
-    entries.
+    stored in the Borg archive instead. Use the log prefix in any log entries.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -147,6 +147,9 @@ def dump_data_sources(
 
     # Snapshot each dataset, rewriting source directories to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+
+    if not requested_datasets:
+        logger.warning(f'{log_prefix}: No ZFS datasets found to snapshot{dry_run_label}')
 
     for dataset_name, mount_point in requested_datasets:
         full_snapshot_name = f'{dataset_name}@{snapshot_name}'
