@@ -2340,4 +2340,4 @@ properties:
                 example: /usr/local/bin/umount
         description: |
             Configuration for integration with Linux LVM (Logical Volume
-            Manger).
+            Manager).
