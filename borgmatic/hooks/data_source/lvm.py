@@ -1,0 +1,343 @@
+import glob
+import json
+import logging
+import os
+import shutil
+import subprocess
+
+import borgmatic.config.paths
+import borgmatic.execute
+
+logger = logging.getLogger(__name__)
+
+
+def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
+    '''
+    Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
+    '''
+    return False
+
+
+BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
+
+
+def get_logical_volumes(lsblk_command, source_directories=None):
+    '''
+    Given an lsblk command to run and a sequence of configured source directories, find the
+    intersection between the current LVM logical volume mount points and the configured borgmatic
+    source directories. The idea is that these are the requested logical volumes to snapshot.
+
+    If source directories is None, include all logical volume mounts points, not just those in
+    source directories.
+
+    Return the result as a sequence of (device name, device path, mount point) pairs.
+    '''
+    try:
+        devices_info = json.loads(
+            subprocess.check_output(
+                (
+                    # Use lsblk instead of lvs here because lvs can't show active mounts.
+                    lsblk_command,
+                    '--output',
+                    'name,path,mountpoint,type',
+                    '--json',
+                    '--list',
+                )
+            )
+        )
+    except json.JSONDecodeError as error:
+        raise ValueError('Invalid {lsblk_command} JSON output: {error}')
+
+    source_directories_set = set(source_directories or ())
+
+    try:
+        return tuple(
+            (device['name'], device['path'], device['mountpoint'])
+            for device in devices_info['blockdevices']
+            if device['mountpoint'] and device['type'] == 'lvm'
+            if not source_directories or device['mountpoint'] in source_directories_set
+        )
+    except KeyError as error:
+        raise ValueError(f'Invalid {lsblk_command} output: Missing key "{error}"')
+
+
+def snapshot_logical_volume(
+    lvcreate_command, snapshot_name, logical_volume_device
+):  # pragma: no cover
+    '''
+    Given an lvcreate command to run, a snapshot name, and the path to the logical volume device to
+    snapshot, create a new LVM snapshot.
+    '''
+    borgmatic.execute.execute_command(
+        (
+            lvcreate_command,
+            '--snapshot',
+            '--extents',
+            '1',  # The snapshot doesn't need much disk space because it's read-only.
+            '--name',
+            snapshot_name,
+            logical_volume_device,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+
+def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # pragma: no cover
+    '''
+    Given a mount command to run, the device path for an existing snapshot, and the path where the
+    snapshot should be mounted, mount the snapshot as read-only (making any necessary directories
+    first).
+    '''
+    os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
+
+    borgmatic.execute.execute_command(
+        (
+            mount_command,
+            '-o',
+            'ro',
+            snapshot_device,
+            snapshot_mount_path,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+
+def dump_data_sources(
+    hook_config,
+    config,
+    log_prefix,
+    config_paths,
+    borgmatic_runtime_directory,
+    source_directories,
+    dry_run,
+):
+    '''
+    Given an LVM configuration dict, a configuration dict, a log prefix, the borgmatic configuration
+    file paths, the borgmatic runtime directory, the configured source directories, and whether this
+    is a dry run, auto-detect and snapshot any LVM logical volume mount points listed in the given
+    source directories. Also update those source directories, replacing logical volume mount points
+    with corresponding snapshot directories so they get stored in the Borg archive instead. Use the
+    log prefix in any log entries.
+
+    Return an empty sequence, since there are no ongoing dump processes from this hook.
+
+    If this is a dry run, then don't actually snapshot anything.
+    '''
+    dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
+    logger.info(f'{log_prefix}: Snapshotting LVM logical volumes{dry_run_label}')
+
+    # List logical volumes to get their mount points.
+    lsblk_command = hook_config.get('lsblk_command', 'lsblk')
+    requested_logical_volumes = get_logical_volumes(lsblk_command, source_directories)
+
+    # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
+    snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+
+    if not requested_logical_volumes:
+        logger.warning(f'{log_prefix}: No LVM logical volumes found to snapshot{dry_run_label}')
+
+    for device_name, device_path, mount_point in requested_logical_volumes:
+        snapshot_name = f'{device_name}_{snapshot_suffix}'
+        logger.debug(f'{log_prefix}: Creating LVM snapshot {snapshot_name}{dry_run_label}')
+
+        if not dry_run:
+            snapshot_logical_volume(
+                hook_config.get('lvcreate_command', 'lvcreate'), snapshot_name, device_path
+            )
+
+        # Get the device path for the device path for the snapshot we just created.
+        try:
+            (_, snapshot_device_path) = get_snapshots(hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name)[0]
+        except IndexError:
+            raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
+
+        # Mount the snapshot into a particular named temporary directory so that the snapshot ends
+        # up in the Borg archive at the "original" logical volume mount point path.
+        snapshot_mount_path_for_borg = os.path.join(
+            os.path.normpath(borgmatic_runtime_directory),
+            'lvm_snapshots',
+            '.',  # Borg 1.4+ "slashdot" hack.
+            mount_point.lstrip(os.path.sep),
+        )
+        snapshot_mount_path = os.path.normpath(snapshot_mount_path_for_borg)
+
+        logger.debug(
+            f'{log_prefix}: Mounting LVM snapshot {snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+        )
+
+        if not dry_run:
+            mount_snapshot(
+                hook_config.get('mount_command', 'mount'), snapshot_device_path, snapshot_mount_path
+            )
+
+            if mount_point in source_directories:
+                source_directories.remove(mount_point)
+
+            source_directories.append(snapshot_mount_path_for_borg)
+
+    return []
+
+
+def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
+    '''
+    Given a umount command to run and the mount path of a snapshot, unmount it.
+    '''
+    borgmatic.execute.execute_command(
+        (
+            umount_command,
+            snapshot_mount_path,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+
+def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
+    '''
+    Given an lvremote command to run and the device path of a snapshot, remove it it.
+    '''
+    borgmatic.execute.execute_command(
+        (
+            lvremove_command,
+            '--force',  # Suppress an interactive "are you sure?" type prompt.
+            snapshot_device_path,
+        ),
+        output_log_level=logging.DEBUG,
+    )
+
+
+def get_snapshots(lvs_command, snapshot_name=None):
+    '''
+    Given an lvs command to run, return all LVM snapshots as a sequence of (snapshot name, snapshot
+    device path) pairs.
+
+    If a snapshot name is given, filter the results to that snapshot.
+    '''
+    try:
+        snapshot_info = json.loads(
+            borgmatic.execute.execute_command_and_capture_output(
+                (
+                    # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
+                    lvs_command,
+                    '--report-format',
+                    'json',
+                    '--options',
+                    'lv_name,lv_path',
+                    '--select',
+                    'lv_attr =~ ^s',  # Filter to just snapshots.
+                )
+            )
+        )
+    except json.JSONDecodeError as error:
+        raise ValueError('Invalid {lvs_command} JSON output: {error}')
+
+    try:
+        return tuple(
+            (snapshot['lv_name'], snapshot['lv_path'])
+            for snapshot in snapshot_info['report'][0]['lv']
+            if snapshot_name is None or snapshot['lv_name'] == snapshot_name
+        )
+    except KeyError as error:
+        raise ValueError(f'Invalid {lvs_command} output: Missing key "{error}"')
+
+
+def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
+    '''
+    Given an LVM configuration dict, a configuration dict, a log prefix, the borgmatic runtime
+    directory, and whether this is a dry run, unmount and delete any LVM snapshots created by
+    borgmatic. Use the log prefix in any log entries. If this is a dry run, then don't actually
+    remove anything.
+    '''
+    dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
+
+    # Unmount snapshots.
+    try:
+        logical_volumes = get_logical_volumes(hook_config.get('lsblk_command', 'lsblk'))
+    except FileNotFoundError:
+        logger.debug(f'{log_prefix}: Could not find "{lsblk_command}" command')
+        return
+    except subprocess.CalledProcessError as error:
+        logger.debug(f'{log_prefix}: {error}')
+        return
+
+    snapshots_glob = os.path.join(
+        borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
+            os.path.normpath(borgmatic_runtime_directory),
+        ),
+        'lvm_snapshots',
+    )
+    logger.debug(
+        f'{log_prefix}: Looking for snapshots to remove in {snapshots_glob}{dry_run_label}'
+    )
+    umount_command = hook_config.get('umount_command', 'umount')
+
+    for snapshots_directory in glob.glob(snapshots_glob):
+        if not os.path.isdir(snapshots_directory):
+            continue
+
+        # This might fail if the directory is already mounted, but we swallow errors here since
+        # we'll try again below. The point of doing it here is that we don't want to try to unmount
+        # a non-mounted directory (which *will* fail).
+        if not dry_run:
+            shutil.rmtree(snapshots_directory, ignore_errors=True)
+
+        for _, _, mount_point in logical_volumes:
+            snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+            if not os.path.isdir(snapshot_mount_path):
+                continue
+
+            logger.debug(
+                f'{log_prefix}: Unmounting LVM snapshot at {snapshot_mount_path}{dry_run_label}'
+            )
+
+            if not dry_run:
+                try:
+                    unmount_snapshot(umount_command, snapshot_mount_path)
+                except FileNotFoundError:
+                    logger.debug(f'{log_prefix}: Could not find "{umount_command}" command')
+                    return
+                except subprocess.CalledProcessError as error:
+                    logger.debug(f'{log_prefix}: {error}')
+                    return
+
+        if not dry_run:
+            shutil.rmtree(snapshots_directory)
+
+    # Delete snapshots.
+    lvremove_command = hook_config.get('lvremove_command', 'lvremove')
+
+    for snapshot_name, snapshot_device_path in get_snapshots(
+        hook_config.get('lvs_command', 'lvs')
+    ):
+        # Only delete snapshots that borgmatic actually created!
+        if not snapshot_name.split('_')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
+            continue
+
+        logger.debug(f'{log_prefix}: Deleting LVM snapshot {snapshot_name}{dry_run_label}')
+
+        if not dry_run:
+            delete_snapshot(lvremove_command, snapshot_device_path)
+
+
+def make_data_source_dump_patterns(
+    hook_config, config, log_prefix, borgmatic_runtime_directory, name=None
+):  # pragma: no cover
+    '''
+    Restores aren't implemented, because stored files can be extracted directly with "extract".
+    '''
+    return ()
+
+
+def restore_data_source_dump(
+    hook_config,
+    config,
+    log_prefix,
+    data_source,
+    dry_run,
+    extract_process,
+    connection_params,
+    borgmatic_runtime_directory,
+):  # pragma: no cover
+    '''
+    Restores aren't implemented, because stored files can be extracted directly with "extract".
+    '''
+    raise NotImplementedError()

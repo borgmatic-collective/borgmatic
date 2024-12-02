@@ -2304,3 +2304,40 @@ properties:
                 example: /usr/local/bin/findmnt
         description: |
             Configuration for integration with the Btrfs filesystem.
+    lvm:
+        type: ["object", "null"]
+        additionalProperties: false
+        properties:
+            lvcreate_command:
+                type: string
+                description: |
+                    Command to use instead of "lvcreate".
+                example: /usr/local/bin/lvcreate
+            lvremove_command:
+                type: string
+                description: |
+                    Command to use instead of "lvremove".
+                example: /usr/local/bin/lvremove
+            lvs_command:
+                type: string
+                description: |
+                    Command to use instead of "lvs".
+                example: /usr/local/bin/lvs
+            lsbrk_command:
+                type: string
+                description: |
+                    Command to use instead of "lsbrk".
+                example: /usr/local/bin/lsbrk
+            mount_command:
+                type: string
+                description: |
+                    Command to use instead of "mount".
+                example: /usr/local/bin/mount
+            umount_command:
+                type: string
+                description: |
+                    Command to use instead of "umount".
+                example: /usr/local/bin/umount
+        description: |
+            Configuration for integration with Linux LVM (Logical Volume
+            Manger).
