@@ -30,7 +30,7 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     If source directories is None, include all logical volume mounts points, not just those in
     source directories.
 
-    Return the result as a sequence of (device name, device path, mount point) pairs.
+    Return the result as a sequence of (device name, device path, mount point) tuples.
     '''
     try:
         devices_info = json.loads(
@@ -193,7 +193,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
 
 def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
     '''
-    Given an lvremote command to run and the device path of a snapshot, remove it it.
+    Given an lvremove command to run and the device path of a snapshot, remove it it.
     '''
     borgmatic.execute.execute_command(
         (
