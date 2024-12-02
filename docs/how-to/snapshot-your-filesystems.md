@@ -71,8 +71,10 @@ completes.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original dataset locations in a Borg archive. For instance, if your
-dataset is mounted at `/mnt/dataset`, then the snapshotted files will appear
-in an archive at `/mnt/dataset` as well.
+dataset is mounted at `/var/dataset`, then the snapshotted files will appear
+in an archive at `/var/dataset` as well—even if borgmatic has to mount the
+snapshot somewhere in `/run/user/1000/borgmatic/zfs_snapshots/` to perform the
+backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -128,10 +130,12 @@ subvolumes (non-recursively) and includes the snapshotted files in the paths
 sent to Borg. borgmatic is also responsible for cleaning up (deleting) these
 snapshots after a backup completes.
 
-Additionally, borgmatic rewrites the snapshot file paths so that they appear at
-their original subvolume locations in a Borg archive. For instance, if your
-subvolume exists at `/mnt/subvolume`, then the snapshotted files will appear in
-an archive at `/mnt/subvolume` as well.
+Additionally, borgmatic rewrites the snapshot file paths so that they appear
+at their original subvolume locations in a Borg archive. For instance, if your
+subvolume exists at `/var/subvolume`, then the snapshotted files will appear
+in an archive at `/var/subvolume` as well—even if borgmatic has to mount the
+snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform
+the backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -217,8 +221,10 @@ completes.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original logical volume locations in a Borg archive. For instance, if
-your logical volume is mounted at `/mnt/lvolume`, then the snapshotted files
-will appear in an archive at `/mnt/lvolume` as well.
+your logical volume is mounted at `/var/lvolume`, then the snapshotted files
+will appear in an archive at `/var/lvolume` as well—even if borgmatic has to
+mount the snapshot somewhere in `/run/user/1000/borgmatic/lvm_snapshots/` to
+perform the backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
