@@ -62,18 +62,18 @@ def get_logical_volumes(lsblk_command, source_directories=None):
 
 
 def snapshot_logical_volume(
-    lvcreate_command, snapshot_name, logical_volume_device
+    lvcreate_command, snapshot_name, logical_volume_device, snapshot_size,
 ):  # pragma: no cover
     '''
-    Given an lvcreate command to run, a snapshot name, and the path to the logical volume device to
-    snapshot, create a new LVM snapshot.
+    Given an lvcreate command to run, a snapshot name, the path to the logical volume device to
+    snapshot, and a snapshot size string, create a new LVM snapshot.
     '''
     borgmatic.execute.execute_command(
         (
             lvcreate_command,
             '--snapshot',
-            '--extents',
-            '1',  # The snapshot doesn't need much disk space because it's read-only.
+            ('--extents' if '%' in snapshot_size else '--size'),
+            snapshot_size,
             '--name',
             snapshot_name,
             logical_volume_device,
@@ -100,6 +100,9 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
         ),
         output_log_level=logging.DEBUG,
     )
+
+
+DEFAULT_SNAPSHOT_SIZE = '10%ORIGIN'
 
 
 def dump_data_sources(
@@ -142,7 +145,8 @@ def dump_data_sources(
 
         if not dry_run:
             snapshot_logical_volume(
-                hook_config.get('lvcreate_command', 'lvcreate'), snapshot_name, device_path
+                hook_config.get('lvcreate_command', 'lvcreate'), snapshot_name, device_path,
+                hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
             )
 
         # Get the device path for the device path for the snapshot we just created.
