@@ -1,8 +1,13 @@
 1.9.4.dev0
+ * #80 (beta): Add an LVM hook for snapshotting and backing up LVM logical volumes. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
  * #251 (beta): Add a Btrfs hook for snapshotting and backing up Btrfs subvolumes. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
  * #926: Fix library error when running within a PyInstaller bundle.
+ * Update the ZFS hook to discover and snapshot ZFS datasets even if they are parent/grandparent
+   directories of your source directories.
  * Reorganize data source and monitoring hooks to make developing new hooks easier.
 
 1.9.3
