@@ -314,19 +314,19 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         if not os.path.isdir(snapshots_directory):
             continue
 
-        # This might fail if the directory is already mounted, but we swallow errors here since
-        # we'll try again below. The point of doing it here is that we don't want to try to unmount
-        # a non-mounted directory (which *will* fail), and probing for whether a directory is
-        # mounted is tough to do in a cross-platform way.
-        if not dry_run:
-            shutil.rmtree(snapshots_directory, ignore_errors=True)
-
         # Reversing the sorted datasets ensures that we unmount the longer mount point paths of
         # child datasets before the shorter mount point paths of parent datasets.
         for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
             if not os.path.isdir(snapshot_mount_path):
                 continue
+
+            # This might fail if the path is already mounted, but we swallow errors here since we'll
+            # do another recursive delete below. The point of doing it here is that we don't want to
+            # try to unmount a non-mounted directory (which *will* fail), and probing for whether a
+            # directory is mounted is tough to do in a cross-platform way.
+            if not dry_run:
+                shutil.rmtree(snapshot_mount_path, ignore_errors=True)
 
             logger.debug(
                 f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}'
