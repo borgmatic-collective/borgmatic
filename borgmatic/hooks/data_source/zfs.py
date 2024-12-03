@@ -23,7 +23,9 @@ BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
 BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 
-Dataset = collections.namedtuple('Dataset', ('name', 'mount_point', 'user_property_value', 'contained_source_directories'))
+Dataset = collections.namedtuple(
+    'Dataset', ('name', 'mount_point', 'user_property_value', 'contained_source_directories')
+)
 
 
 def get_datasets_to_backup(zfs_command, source_directories):
@@ -69,7 +71,12 @@ def get_datasets_to_backup(zfs_command, source_directories):
 
     return sorted(
         tuple(
-            Dataset(dataset.name, dataset.mount_point, dataset.user_property_value, contained_source_directories)
+            Dataset(
+                dataset.name,
+                dataset.mount_point,
+                dataset.user_property_value,
+                contained_source_directories,
+            )
             for dataset in datasets
             for contained_source_directories in (
                 borgmatic.hooks.data_source.snapshot.get_contained_directories(
@@ -99,9 +106,7 @@ def get_all_dataset_mount_points(zfs_command):
     )
 
     try:
-        return tuple(
-            sorted(line.rstrip() for line in list_output.splitlines())
-        )
+        return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
     except ValueError:
         raise ValueError('Invalid {zfs_command} list output')
 
@@ -178,7 +183,9 @@ def dump_data_sources(
 
     for dataset in requested_datasets:
         full_snapshot_name = f'{dataset.name}@{snapshot_name}'
-        logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}')
+        logger.debug(
+            f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+        )
 
         if not dry_run:
             snapshot_dataset(zfs_command, full_snapshot_name)

@@ -1,3 +1,4 @@
+import collections
 import glob
 import json
 import logging
@@ -20,6 +21,9 @@ def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
 
 
 BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
+Logical_volume = collections.namedtuple(
+    'Logical_volume', ('name', 'device_path', 'mount_point', 'contained_source_directories')
+)
 
 
 def get_logical_volumes(lsblk_command, source_directories=None):
@@ -31,8 +35,7 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     If source directories is None, include all logical volume mounts points, not just those in
     source directories.
 
-    Return the result as a sequence of (device name, device path, mount point, sequence of contained
-    source directories) tuples.
+    Return the result as a sequence of Logical_volume instances.
     '''
     try:
         devices_info = json.loads(
@@ -50,12 +53,13 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     except json.JSONDecodeError as error:
         raise ValueError('Invalid {lsblk_command} JSON output: {error}')
 
-
     candidate_source_directories = set(source_directories or ())
 
     try:
         return tuple(
-            (device['name'], device['path'], device['mountpoint'], contained_source_directories)
+            Logical_volume(
+                device['name'], device['path'], device['mountpoint'], contained_source_directories
+            )
             for device in devices_info['blockdevices']
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_source_directories in (
@@ -151,22 +155,17 @@ def dump_data_sources(
     if not requested_logical_volumes:
         logger.warning(f'{log_prefix}: No LVM logical volumes found to snapshot{dry_run_label}')
 
-    for (
-        device_name,
-        device_path,
-        mount_point,
-        contained_source_directories,
-    ) in requested_logical_volumes:
-        snapshot_name = f'{device_name}_{snapshot_suffix}'
+    for logical_volume in requested_logical_volumes:
+        snapshot_name = f'{logical_volume.name}_{snapshot_suffix}'
         logger.debug(
-            f'{log_prefix}: Creating LVM snapshot {snapshot_name} of {mount_point}{dry_run_label}'
+            f'{log_prefix}: Creating LVM snapshot {snapshot_name} of {logical_volume.mount_point}{dry_run_label}'
         )
 
         if not dry_run:
             snapshot_logical_volume(
                 hook_config.get('lvcreate_command', 'lvcreate'),
                 snapshot_name,
-                device_path,
+                logical_volume.device_path,
                 hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
             )
 
@@ -183,7 +182,7 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'lvm_snapshots',
-            mount_point.lstrip(os.path.sep),
+            logical_volume.mount_point.lstrip(os.path.sep),
         )
 
         logger.debug(
@@ -199,7 +198,7 @@ def dump_data_sources(
 
         # Update the path for each contained source directory, so Borg sees it within the
         # mounted snapshot.
-        for source_directory in contained_source_directories:
+        for source_directory in logical_volume.contained_source_directories:
             try:
                 source_directories.remove(source_directory)
             except ValueError:
@@ -319,8 +318,10 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         if not dry_run:
             shutil.rmtree(snapshots_directory, ignore_errors=True)
 
-        for _, _, mount_point, _ in logical_volumes:
-            snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+        for logical_volume in logical_volumes:
+            snapshot_mount_path = os.path.join(
+                snapshots_directory, logical_volume.mount_point.lstrip(os.path.sep)
+            )
             if not os.path.isdir(snapshot_mount_path):
                 continue
 
