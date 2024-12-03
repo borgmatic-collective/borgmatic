@@ -155,7 +155,9 @@ def dump_data_sources(
         contained_source_directories,
     ) in requested_logical_volumes:
         snapshot_name = f'{device_name}_{snapshot_suffix}'
-        logger.debug(f'{log_prefix}: Creating LVM snapshot {snapshot_name} of {mount_point}{dry_run_label}')
+        logger.debug(
+            f'{log_prefix}: Creating LVM snapshot {snapshot_name} of {mount_point}{dry_run_label}'
+        )
 
         if not dry_run:
             snapshot_logical_volume(
