@@ -1,3 +1,4 @@
+import collections
 import glob
 import logging
 import os
@@ -5,6 +6,7 @@ import shutil
 import subprocess
 
 import borgmatic.config.paths
+import borgmatic.hooks.data_source.snapshot
 import borgmatic.execute
 
 logger = logging.getLogger(__name__)
@@ -34,8 +36,8 @@ def get_filesystem_mount_points(findmnt_command):
 
 def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
     '''
-    Given a Btrfs command to run and a Btrfs filesystem mount point, get the subvolumes for that
-    filesystem.
+    Given a Btrfs command to run and a Btrfs filesystem mount point, get the sorted subvolumes for
+    that filesystem. Include the filesystem itself.
     '''
     btrfs_output = borgmatic.execute.execute_command_and_capture_output(
         (
@@ -46,14 +48,19 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
         )
     )
 
-    return tuple(
-        subvolume_path
-        for line in btrfs_output.splitlines()
-        for subvolume_subpath in (line.rstrip().split(' ')[-1],)
-        for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
-        if subvolume_subpath.strip()
-        if filesystem_mount_point.strip()
+    return (filesystem_mount_point,) + tuple(
+        sorted(
+            subvolume_path
+            for line in btrfs_output.splitlines()
+            for subvolume_subpath in (line.rstrip().split(' ')[-1],)
+            for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
+            if subvolume_subpath.strip()
+            if filesystem_mount_point.strip()
+        )
     )
+
+
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_source_directories'))
 
 
 def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
@@ -62,27 +69,33 @@ def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
     intersection between the current Btrfs filesystem and subvolume mount points and the configured
     borgmatic source directories. The idea is that these are the requested subvolumes to snapshot.
 
-    If the source directories is None, then return all subvolumes.
+    If the source directories is None, then return all subvolumes, sorted by path.
 
     Return the result as a sequence of matching subvolume mount points.
     '''
-    source_directories_lookup = set(source_directories or ())
+    candidate_source_directories = set(source_directories or ())
     subvolumes = []
 
     # For each filesystem mount point, find its subvolumes and match them again the given source
-    # directories to find the subvolumes to backup. Also try to match the filesystem mount point
-    # itself (since it's implicitly a subvolume).
+    # directories to find the subvolumes to backup. And within this loop, sort the subvolumes from
+    # longest to shortest mount points, so longer mount points get a whack at the candidate source
+    # directory piñata before their parents do. (Source directories are consumed during this
+    # process, so no two datasets get the same contained source directories.)
     for mount_point in get_filesystem_mount_points(findmnt_command):
-        if source_directories is None or mount_point in source_directories_lookup:
-            subvolumes.append(mount_point)
-
         subvolumes.extend(
-            subvolume_path
-            for subvolume_path in get_subvolumes_for_filesystem(btrfs_command, mount_point)
-            if source_directories is None or subvolume_path in source_directories_lookup
+            Subvolume(subvolume_path, contained_source_directories)
+            for subvolume_path in reversed(
+                get_subvolumes_for_filesystem(btrfs_command, mount_point)
+            )
+            for contained_source_directories in (
+                borgmatic.hooks.data_source.snapshot.get_contained_directories(
+                    subvolume_path, candidate_source_directories
+                ),
+            )
+            if source_directories is None or contained_source_directories
         )
 
-    return tuple(subvolumes)
+    return tuple(sorted(subvolumes, key=lambda subvolume: subvolume.path))
 
 
 BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot-'
@@ -95,7 +108,6 @@ def make_snapshot_path(subvolume_path):  # pragma: no cover
     return os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
-        '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the snapshot ends up in the Borg archive at the "original" subvolume
         # path.
         subvolume_path.lstrip(os.path.sep),
@@ -126,6 +138,20 @@ def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
         snapshot_directory,
         subvolume_path.lstrip(os.path.sep),
         snapshot_directory,
+    )
+
+
+def make_borg_source_directory_path(subvolume_path, source_directory):
+    '''
+    Given the path to a subvolume and a source directory inside it, make a corresponding path for
+    the source directory within a snapshot path intended for giving to Borg.
+    '''
+    return os.path.join(
+        subvolume_path,
+        f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
+        '.',  # Borg 1.4+ "slashdot" hack.
+        # Included so that the source directory ends up in the Borg archive at its "original" path.
+        source_directory.lstrip(os.path.sep),
     )
 
 
@@ -182,21 +208,27 @@ def dump_data_sources(
         logger.warning(f'{log_prefix}: No Btrfs subvolumes found to snapshot{dry_run_label}')
 
     # Snapshot each subvolume, rewriting source directories to use their snapshot paths.
-    for subvolume_path in subvolumes:
-        logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume_path} subvolume')
+    for subvolume in subvolumes:
+        logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume.path} subvolume')
 
-        snapshot_path = make_snapshot_path(subvolume_path)
+        snapshot_path = make_snapshot_path(subvolume.path)
 
         if dry_run:
             continue
 
-        snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path)
+        snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
-        if subvolume_path in source_directories:
-            source_directories.remove(subvolume_path)
+        for source_directory in subvolume.contained_source_directories:
+            try:
+                source_directories.remove(source_directory)
+            except ValueError:
+                pass
 
-        source_directories.append(snapshot_path)
-        config.setdefault('exclude_patterns', []).append(make_snapshot_exclude_path(subvolume_path))
+            source_directories.append(
+                make_borg_source_directory_path(subvolume.path, source_directory)
+            )
+
+        config.setdefault('exclude_patterns', []).append(make_snapshot_exclude_path(subvolume.path))
 
     return []
 
@@ -228,7 +260,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     findmnt_command = hook_config.get('findmnt_command', 'findmnt')
 
     try:
-        all_subvolume_paths = get_subvolumes(btrfs_command, findmnt_command)
+        all_subvolumes = get_subvolumes(btrfs_command, findmnt_command)
     except FileNotFoundError as error:
         logger.debug(f'{log_prefix}: Could not find "{error.filename}" command')
         return
@@ -236,9 +268,11 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         logger.debug(f'{log_prefix}: {error}')
         return
 
-    for subvolume_path in all_subvolume_paths:
+    # Reversing the sorted subvolumes ensures that we remove longer mount point paths of child
+    # subvolumes before the shorter mount point paths of parent subvolumes.
+    for subvolume in reversed(all_subvolumes):
         subvolume_snapshots_glob = borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
-            os.path.normpath(make_snapshot_path(subvolume_path)),
+            os.path.normpath(make_snapshot_path(subvolume.path)),
             temporary_directory_prefix=BORGMATIC_SNAPSHOT_PREFIX,
         )
 
@@ -266,7 +300,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
 
             # Strip off the subvolume path from the end of the snapshot path and then delete the
             # resulting directory.
-            shutil.rmtree(snapshot_path.rsplit(subvolume_path, 1)[0])
+            shutil.rmtree(snapshot_path.rsplit(subvolume.path, 1)[0])
 
 
 def make_data_source_dump_patterns(

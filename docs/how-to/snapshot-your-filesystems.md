@@ -138,6 +138,14 @@ subvolumes (non-recursively) and includes the snapshotted files in the paths
 sent to Borg. borgmatic is also responsible for cleaning up (deleting) these
 snapshots after a backup completes.
 
+borgmatic is smart enough to look at the parent (and grandparent, etc.)
+directories of each of your `source_directories` to discover any subvolumes.
+For instance, let's say you add `/var/log` and `/var/lib` to your source
+directories, but `/var` is a subvolume. borgmatic will discover that and
+snapshot `/var` accordingly. This also works even with nested subvolumes;
+borgmatic selects the subvolume that's the "closest" parent to your source
+directories.
+
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original subvolume locations in a Borg archive. For instance, if your
 subvolume exists at `/var/subvolume`, then the snapshotted files will appear
