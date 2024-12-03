@@ -76,6 +76,14 @@ in an archive at `/var/dataset` as well—even if borgmatic has to mount the
 snapshot somewhere in `/run/user/1000/borgmatic/zfs_snapshots/` to perform the
 backup.
 
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+is smart enough to look at the parent (and grandparent, etc.) directories of
+each of your `source_directories` to discover any datasets. For instance,
+let's say you add `/var/log` and `/var/lib` to your source directories, but
+`/var` is a dataset. borgmatic will discover that and snapshot `/var`
+accordingly. This also works even with nested datasets; borgmatic selects
+the dataset that's the "closest" parent to your source directories.
+
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
 [runtime

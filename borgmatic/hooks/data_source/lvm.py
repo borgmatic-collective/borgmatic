@@ -50,6 +50,9 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     except json.JSONDecodeError as error:
         raise ValueError('Invalid {lsblk_command} JSON output: {error}')
 
+
+    candidate_source_directories = set(source_directories or ())
+
     try:
         return tuple(
             (device['name'], device['path'], device['mountpoint'], contained_source_directories)
@@ -57,7 +60,7 @@ def get_logical_volumes(lsblk_command, source_directories=None):
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_source_directories in (
                 borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                    device['mountpoint'], source_directories
+                    device['mountpoint'], candidate_source_directories
                 ),
             )
             if not source_directories or contained_source_directories
