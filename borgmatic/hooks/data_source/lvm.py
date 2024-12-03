@@ -35,7 +35,8 @@ def get_contained_source_directories(mount_point, source_directories):
     return tuple(
         source_directory
         for source_directory in source_directories
-        if mount_point == source_directory or pathlib.PurePosixPath(mount_point) in pathlib.PurePath(source_directory).parents
+        if mount_point == source_directory
+        or pathlib.PurePosixPath(mount_point) in pathlib.PurePath(source_directory).parents
     )
 
 
@@ -72,7 +73,9 @@ def get_logical_volumes(lsblk_command, source_directories=None):
             (device['name'], device['path'], device['mountpoint'], contained_source_directories)
             for device in devices_info['blockdevices']
             if device['mountpoint'] and device['type'] == 'lvm'
-            for contained_source_directories in (get_contained_source_directories(device['mountpoint'], source_directories),)
+            for contained_source_directories in (
+                get_contained_source_directories(device['mountpoint'], source_directories),
+            )
             if not source_directories or contained_source_directories
         )
     except KeyError as error:
@@ -80,7 +83,10 @@ def get_logical_volumes(lsblk_command, source_directories=None):
 
 
 def snapshot_logical_volume(
-    lvcreate_command, snapshot_name, logical_volume_device, snapshot_size,
+    lvcreate_command,
+    snapshot_name,
+    logical_volume_device,
+    snapshot_size,
 ):  # pragma: no cover
     '''
     Given an lvcreate command to run, a snapshot name, the path to the logical volume device to
@@ -158,19 +164,28 @@ def dump_data_sources(
     if not requested_logical_volumes:
         logger.warning(f'{log_prefix}: No LVM logical volumes found to snapshot{dry_run_label}')
 
-    for device_name, device_path, mount_point, contained_source_directories in requested_logical_volumes:
+    for (
+        device_name,
+        device_path,
+        mount_point,
+        contained_source_directories,
+    ) in requested_logical_volumes:
         snapshot_name = f'{device_name}_{snapshot_suffix}'
         logger.debug(f'{log_prefix}: Creating LVM snapshot {snapshot_name}{dry_run_label}')
 
         if not dry_run:
             snapshot_logical_volume(
-                hook_config.get('lvcreate_command', 'lvcreate'), snapshot_name, device_path,
+                hook_config.get('lvcreate_command', 'lvcreate'),
+                snapshot_name,
+                device_path,
                 hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
             )
 
         # Get the device path for the device path for the snapshot we just created.
         try:
-            (_, snapshot_device_path) = get_snapshots(hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name)[0]
+            (_, snapshot_device_path) = get_snapshots(
+                hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
+            )[0]
         except IndexError:
             raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
 
@@ -340,9 +355,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # Delete snapshots.
     lvremove_command = hook_config.get('lvremove_command', 'lvremove')
 
-    for snapshot_name, snapshot_device_path in get_snapshots(
-        hook_config.get('lvs_command', 'lvs')
-    ):
+    for snapshot_name, snapshot_device_path in get_snapshots(hook_config.get('lvs_command', 'lvs')):
         # Only delete snapshots that borgmatic actually created!
         if not snapshot_name.split('_')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
