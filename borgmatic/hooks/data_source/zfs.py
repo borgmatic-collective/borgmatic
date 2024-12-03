@@ -24,7 +24,7 @@ BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 
 Dataset = collections.namedtuple(
-    'Dataset', ('name', 'mount_point', 'user_property_value', 'contained_source_directories')
+    'Dataset', ('name', 'mount_point', 'auto_backup', 'contained_source_directories')
 )
 
 
@@ -57,7 +57,7 @@ def get_datasets_to_backup(zfs_command, source_directories):
         # directories.)
         datasets = sorted(
             (
-                Dataset(dataset_name, mount_point, user_property_value, ())
+                Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
                 for line in list_output.splitlines()
                 for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
             ),
@@ -74,16 +74,19 @@ def get_datasets_to_backup(zfs_command, source_directories):
             Dataset(
                 dataset.name,
                 dataset.mount_point,
-                dataset.user_property_value,
+                dataset.auto_backup,
                 contained_source_directories,
             )
             for dataset in datasets
             for contained_source_directories in (
-                borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                    dataset.mount_point, candidate_source_directories
+                (
+                    ((dataset.mount_point,) if dataset.auto_backup else ())
+                    + borgmatic.hooks.data_source.snapshot.get_contained_directories(
+                        dataset.mount_point, candidate_source_directories
+                    )
                 ),
             )
-            if contained_source_directories or dataset.user_property_value == 'auto'
+            if contained_source_directories
         ),
         key=lambda dataset: dataset.mount_point,
     )
