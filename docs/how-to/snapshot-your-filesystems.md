@@ -219,6 +219,12 @@ and includes the snapshotted files in the paths sent to Borg. borgmatic is
 also responsible for cleaning up (deleting) these snapshots after a backup
 completes.
 
+borgmatic is smart enough to look at the parent (and grandparent, etc.)
+directories of each of your `source_directories` to discover any logical
+volumes. For instance, let's say you add `/var/log` and `/var/lib` to your
+source directories, but `/var` is a logical volume. borgmatic will discover
+that and snapshot `/var` accordingly.
+
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original logical volume locations in a Borg archive. For instance, if
 your logical volume is mounted at `/var/lvolume`, then the snapshotted files
