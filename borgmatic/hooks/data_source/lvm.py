@@ -2,11 +2,11 @@ import glob
 import json
 import logging
 import os
-import pathlib
 import shutil
 import subprocess
 
 import borgmatic.config.paths
+import borgmatic.hooks.data_source.snapshot
 import borgmatic.execute
 
 logger = logging.getLogger(__name__)
@@ -20,24 +20,6 @@ def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
 
 
 BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
-
-
-def get_contained_source_directories(mount_point, source_directories):
-    '''
-    Given a mount point and a sequence of source directories, get the subset of source directories
-    for which the mount point is the same as that source directory, a parent of it, a grandparent,
-    etc. The idea is if, say, /var/log and /var/lib are source directories, but there's a logical
-    volume mount point at /var, then /var is what we want to snapshot.
-    '''
-    if not source_directories:
-        return ()
-
-    return tuple(
-        source_directory
-        for source_directory in source_directories
-        if mount_point == source_directory
-        or pathlib.PurePosixPath(mount_point) in pathlib.PurePath(source_directory).parents
-    )
 
 
 def get_logical_volumes(lsblk_command, source_directories=None):
@@ -74,7 +56,9 @@ def get_logical_volumes(lsblk_command, source_directories=None):
             for device in devices_info['blockdevices']
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_source_directories in (
-                get_contained_source_directories(device['mountpoint'], source_directories),
+                borgmatic.hooks.data_source.snapshot.get_contained_directories(
+                    device['mountpoint'], source_directories
+                ),
             )
             if not source_directories or contained_source_directories
         )
@@ -171,7 +155,7 @@ def dump_data_sources(
         contained_source_directories,
     ) in requested_logical_volumes:
         snapshot_name = f'{device_name}_{snapshot_suffix}'
-        logger.debug(f'{log_prefix}: Creating LVM snapshot {snapshot_name}{dry_run_label}')
+        logger.debug(f'{log_prefix}: Creating LVM snapshot {snapshot_name} of {mount_point}{dry_run_label}')
 
         if not dry_run:
             snapshot_logical_volume(
