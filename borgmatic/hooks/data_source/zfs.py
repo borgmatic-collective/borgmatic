@@ -24,7 +24,9 @@ BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 
 Dataset = collections.namedtuple(
-    'Dataset', ('name', 'mount_point', 'auto_backup', 'contained_source_directories')
+    'Dataset',
+    ('name', 'mount_point', 'auto_backup', 'contained_source_directories'),
+    defaults=(False, ()),
 )
 
 
@@ -69,26 +71,29 @@ def get_datasets_to_backup(zfs_command, source_directories):
 
     candidate_source_directories = set(source_directories)
 
-    return sorted(
-        tuple(
-            Dataset(
-                dataset.name,
-                dataset.mount_point,
-                dataset.auto_backup,
-                contained_source_directories,
-            )
-            for dataset in datasets
-            for contained_source_directories in (
-                (
-                    ((dataset.mount_point,) if dataset.auto_backup else ())
-                    + borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                        dataset.mount_point, candidate_source_directories
-                    )
-                ),
-            )
-            if contained_source_directories
-        ),
-        key=lambda dataset: dataset.mount_point,
+    return tuple(
+        sorted(
+            (
+                Dataset(
+                    dataset.name,
+                    dataset.mount_point,
+                    dataset.auto_backup,
+                    contained_source_directories,
+                )
+                for dataset in datasets
+                for contained_source_directories in (
+                    (
+                        (dataset.mount_point,)
+                        if dataset.auto_backup
+                        else borgmatic.hooks.data_source.snapshot.get_contained_directories(
+                            dataset.mount_point, candidate_source_directories
+                        )
+                    ),
+                )
+                if contained_source_directories
+            ),
+            key=lambda dataset: dataset.mount_point,
+        )
     )
 
 
@@ -108,10 +113,7 @@ def get_all_dataset_mount_points(zfs_command):
         )
     )
 
-    try:
-        return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
-    except ValueError:
-        raise ValueError('Invalid {zfs_command} list output')
+    return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
 
 
 def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover

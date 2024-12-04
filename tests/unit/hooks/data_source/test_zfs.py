@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from flexmock import flexmock
 
@@ -10,10 +12,18 @@ def test_get_datasets_to_backup_filters_datasets_by_source_directories():
     ).and_return(
         'dataset\t/dataset\t-\nother\t/other\t-',
     )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).with_args('/dataset', object).and_return(('/dataset',))
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).with_args('/other', object).and_return(())
 
     assert module.get_datasets_to_backup(
         'zfs', source_directories=('/foo', '/dataset', '/bar')
-    ) == (('dataset', '/dataset'),)
+    ) == (
+        module.Dataset(name='dataset', mount_point='/dataset', contained_source_directories=('/dataset',)),
+    )
 
 
 def test_get_datasets_to_backup_filters_datasets_by_user_property():
@@ -22,9 +32,20 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
     ).and_return(
         'dataset\t/dataset\tauto\nother\t/other\t-',
     )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).with_args('/dataset', object).never()
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).with_args('/other', object).and_return(())
 
     assert module.get_datasets_to_backup('zfs', source_directories=('/foo', '/bar')) == (
-        ('dataset', '/dataset'),
+        module.Dataset(
+            name='dataset',
+            mount_point='/dataset',
+            auto_backup=True,
+            contained_source_directories=('/dataset',),
+        ),
     )
 
 
@@ -34,38 +55,39 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
     ).and_return(
         'dataset',
     )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).never()
 
     with pytest.raises(ValueError, match='zfs'):
         module.get_datasets_to_backup('zfs', source_directories=('/foo', '/bar'))
 
 
-def test_get_get_all_datasets_does_not_filter_datasets():
+def test_get_all_dataset_mount_points_does_not_filter_datasets():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
-        'dataset\t/dataset\nother\t/other',
+        '/dataset\n/other',
     )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_directories'
+    ).and_return(('/dataset',))
 
-    assert module.get_all_datasets('zfs') == (
-        ('dataset', '/dataset'),
-        ('other', '/other'),
+    assert module.get_all_dataset_mount_points('zfs') == (
+        ('/dataset'),
+        ('/other'),
     )
-
-
-def test_get_all_datasets_with_invalid_list_output_raises():
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
-    ).and_return(
-        'dataset',
-    )
-
-    with pytest.raises(ValueError, match='zfs'):
-        module.get_all_datasets('zfs')
 
 
 def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
-        (('dataset', '/mnt/dataset'),)
+        (
+            flexmock(
+                name='dataset',
+                mount_point='/mnt/dataset',
+                contained_source_directories=('/mnt/dataset/subdir',),
+            )
+        )
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     full_snapshot_name = 'dataset@borgmatic-1234'
@@ -79,7 +101,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    source_directories = ['/mnt/dataset']
+    source_directories = ['/mnt/dataset/subdir']
 
     assert (
         module.dump_data_sources(
@@ -94,7 +116,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
         == []
     )
 
-    assert source_directories == [snapshot_mount_path]
+    assert source_directories == [os.path.join(snapshot_mount_path, 'subdir')]
 
 
 def test_dump_data_sources_snapshots_with_no_datasets_skips_snapshots():
@@ -122,7 +144,13 @@ def test_dump_data_sources_snapshots_with_no_datasets_skips_snapshots():
 
 def test_dump_data_sources_uses_custom_commands():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
-        (('dataset', '/mnt/dataset'),)
+        (
+            flexmock(
+                name='dataset',
+                mount_point='/mnt/dataset',
+                contained_source_directories=('/mnt/dataset/subdir',),
+            )
+        )
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     full_snapshot_name = 'dataset@borgmatic-1234'
@@ -136,7 +164,7 @@ def test_dump_data_sources_uses_custom_commands():
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    source_directories = ['/mnt/dataset']
+    source_directories = ['/mnt/dataset/subdir']
     hook_config = {
         'zfs_command': '/usr/local/bin/zfs',
         'mount_command': '/usr/local/bin/mount',
@@ -158,12 +186,12 @@ def test_dump_data_sources_uses_custom_commands():
         == []
     )
 
-    assert source_directories == [snapshot_mount_path]
+    assert source_directories == [os.path.join(snapshot_mount_path, 'subdir')]
 
 
 def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_source_directories():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
-        (('dataset', '/mnt/dataset'),)
+        (flexmock(name='dataset', mount_point='/mnt/dataset'),)
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
@@ -197,7 +225,7 @@ def test_get_all_snapshots_parses_list_output():
 
 
 def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -224,7 +252,7 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
 
 
 def test_remove_data_source_dumps_use_custom_commands():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -252,7 +280,7 @@ def test_remove_data_source_dumps_use_custom_commands():
 
 
 def test_remove_data_source_dumps_bails_for_missing_zfs_command():
-    flexmock(module).should_receive('get_all_datasets').and_raise(FileNotFoundError)
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_raise(FileNotFoundError)
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).never()
@@ -268,7 +296,7 @@ def test_remove_data_source_dumps_bails_for_missing_zfs_command():
 
 
 def test_remove_data_source_dumps_bails_for_zfs_command_error():
-    flexmock(module).should_receive('get_all_datasets').and_raise(
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_raise(
         module.subprocess.CalledProcessError(1, 'wtf')
     )
     flexmock(module.borgmatic.config.paths).should_receive(
@@ -286,7 +314,7 @@ def test_remove_data_source_dumps_bails_for_zfs_command_error():
 
 
 def test_remove_data_source_dumps_bails_for_missing_umount_command():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -310,7 +338,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
 
 
 def test_remove_data_source_dumps_bails_for_umount_command_error():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -334,7 +362,7 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
 
 
 def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_not_actually_directories():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -359,7 +387,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_no
 
 
 def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_not_actually_directories():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')
@@ -389,7 +417,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
 
 
 def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
-    flexmock(module).should_receive('get_all_datasets').and_return((('dataset', '/mnt/dataset'),))
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
     flexmock(module.borgmatic.config.paths).should_receive(
         'replace_temporary_subdirectory_with_glob'
     ).and_return('/run/borgmatic')

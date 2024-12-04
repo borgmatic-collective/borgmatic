@@ -244,7 +244,8 @@ def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
 
 
 Snapshot = collections.namedtuple(
-    'Snapshot', ('name', 'device_path'),
+    'Snapshot',
+    ('name', 'device_path'),
 )
 
 
