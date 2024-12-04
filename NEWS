@@ -5,7 +5,8 @@
  * #251 (beta): Add a Btrfs hook for snapshotting and backing up Btrfs subvolumes. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
- * #926: Fix library error when running within a PyInstaller bundle.
+ * #926: Fix a library error when running within a PyInstaller bundle.
+ * #950: Fix a snapshot unmount error in the ZFS hook when using nested datasets.
  * Update the ZFS hook to discover and snapshot ZFS datasets even if they are parent/grandparent
    directories of your source directories.
  * Reorganize data source and monitoring hooks to make developing new hooks easier.
