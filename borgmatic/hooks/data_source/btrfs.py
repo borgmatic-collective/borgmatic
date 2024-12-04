@@ -60,7 +60,7 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
     )
 
 
-Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_source_directories'))
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_source_directories'), defaults=(()))
 
 
 def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):

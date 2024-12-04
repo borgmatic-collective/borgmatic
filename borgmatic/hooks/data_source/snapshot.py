@@ -24,8 +24,8 @@ def get_contained_directories(parent_directory, candidate_contained_directories)
     contained = tuple(
         candidate
         for candidate in candidate_contained_directories
-        if parent_directory == candidate
-        or pathlib.PurePosixPath(parent_directory) in pathlib.PurePath(candidate).parents
+        if pathlib.PurePath(parent_directory) == pathlib.PurePath(candidate)
+        or pathlib.PurePath(parent_directory) in pathlib.PurePath(candidate).parents
     )
     candidate_contained_directories -= set(contained)
 

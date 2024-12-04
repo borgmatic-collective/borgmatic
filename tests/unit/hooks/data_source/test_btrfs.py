@@ -51,9 +51,12 @@ def test_get_subvolumes_collects_subvolumes_matching_source_directories_from_all
         'btrfs', '/mnt2'
     ).and_return(('/three', '/four'))
 
+    for path in ('/one', '/two', '/three', '/four'):
+        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive('get_contained_directories').with_args(path).and_return((path,))
+
     assert module.get_subvolumes(
         'btrfs', 'findmnt', source_directories=['/one', '/four', '/five', '/six', '/mnt2', '/mnt3']
-    ) == ('/one', '/mnt2', '/four')
+    ) == (module.Subvolume('/one'), module.Subvolume('/mnt2'), module.Subvolume('/four'))
 
 
 def test_get_subvolumes_without_source_directories_collects_all_subvolumes_from_all_filesystems():
@@ -65,13 +68,16 @@ def test_get_subvolumes_without_source_directories_collects_all_subvolumes_from_
         'btrfs', '/mnt2'
     ).and_return(('/three', '/four'))
 
+    for path in ('/one', '/two', '/three', '/four'):
+        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive('get_contained_directories').with_args(path).and_return((path,))
+
     assert module.get_subvolumes('btrfs', 'findmnt') == (
-        '/mnt1',
-        '/one',
-        '/two',
-        '/mnt2',
-        '/three',
-        '/four',
+        module.Subvolume('/mnt1'),
+        module.Subvolume('/one'),
+        module.Subvolume('/two'),
+        module.Subvolume('/mnt2'),
+        module.Subvolume('/three'),
+        module.Subvolume('/four'),
     )
 
 
