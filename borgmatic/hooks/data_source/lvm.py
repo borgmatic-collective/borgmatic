@@ -171,7 +171,7 @@ def dump_data_sources(
 
         # Get the device path for the device path for the snapshot we just created.
         try:
-            (_, snapshot_device_path) = get_snapshots(
+            snapshot = get_snapshots(
                 hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
             )[0]
         except IndexError:
@@ -193,7 +193,7 @@ def dump_data_sources(
             continue
 
         mount_snapshot(
-            hook_config.get('mount_command', 'mount'), snapshot_device_path, snapshot_mount_path
+            hook_config.get('mount_command', 'mount'), snapshot.device_path, snapshot_mount_path
         )
 
         # Update the path for each contained source directory, so Borg sees it within the
@@ -243,10 +243,14 @@ def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
     )
 
 
+Snapshot = collections.namedtuple(
+    'Snapshot', ('name', 'device_path'),
+)
+
+
 def get_snapshots(lvs_command, snapshot_name=None):
     '''
-    Given an lvs command to run, return all LVM snapshots as a sequence of (snapshot name, snapshot
-    device path) pairs.
+    Given an lvs command to run, return all LVM snapshots as a sequence of Snapshot instances.
 
     If a snapshot name is given, filter the results to that snapshot.
     '''
@@ -270,7 +274,7 @@ def get_snapshots(lvs_command, snapshot_name=None):
 
     try:
         return tuple(
-            (snapshot['lv_name'], snapshot['lv_path'])
+            Snapshot(snapshot['lv_name'], snapshot['lv_path'])
             for snapshot in snapshot_info['report'][0]['lv']
             if snapshot_name is None or snapshot['lv_name'] == snapshot_name
         )
@@ -345,15 +349,15 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # Delete snapshots.
     lvremove_command = hook_config.get('lvremove_command', 'lvremove')
 
-    for snapshot_name, snapshot_device_path in get_snapshots(hook_config.get('lvs_command', 'lvs')):
+    for snapshot in get_snapshots(hook_config.get('lvs_command', 'lvs')):
         # Only delete snapshots that borgmatic actually created!
-        if not snapshot_name.split('_')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
+        if not snapshot.name.split('_')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
 
-        logger.debug(f'{log_prefix}: Deleting LVM snapshot {snapshot_name}{dry_run_label}')
+        logger.debug(f'{log_prefix}: Deleting LVM snapshot {snapshot.name}{dry_run_label}')
 
         if not dry_run:
-            delete_snapshot(lvremove_command, snapshot_device_path)
+            delete_snapshot(lvremove_command, snapshot.device_path)
 
 
 def make_data_source_dump_patterns(

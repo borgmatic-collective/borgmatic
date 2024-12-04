@@ -14,7 +14,9 @@ def get_contained_directories(parent_directory, candidate_contained_directories)
     then /var is what we want to snapshot.
 
     Also mutate the given set of candidate contained directories to remove any actually contained
-    directories from it.
+    directories from it. That way, this function can be called multiple times, successively
+    processing candidate directories until none are left—and avoiding assigning any candidate
+    directory to more than one parent directory.
     '''
     if not candidate_contained_directories:
         return ()
