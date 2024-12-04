@@ -169,7 +169,7 @@ def dump_data_sources(
                 hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
             )
 
-        # Get the device path for the device path for the snapshot we just created.
+        # Get the device path for the snapshot we just created.
         try:
             snapshot = get_snapshots(
                 hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
@@ -316,18 +316,18 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         if not os.path.isdir(snapshots_directory):
             continue
 
-        # This might fail if the directory is already mounted, but we swallow errors here since
-        # we'll try again below. The point of doing it here is that we don't want to try to unmount
-        # a non-mounted directory (which *will* fail).
-        if not dry_run:
-            shutil.rmtree(snapshots_directory, ignore_errors=True)
-
         for logical_volume in logical_volumes:
             snapshot_mount_path = os.path.join(
                 snapshots_directory, logical_volume.mount_point.lstrip(os.path.sep)
             )
             if not os.path.isdir(snapshot_mount_path):
                 continue
+
+            # This might fail if the directory is already mounted, but we swallow errors here since
+            # we'll do another recursive delete below. The point of doing it here is that we don't
+            # want to try to unmount a non-mounted directory (which *will* fail).
+            if not dry_run:
+                shutil.rmtree(snapshot_mount_path, ignore_errors=True)
 
             logger.debug(
                 f'{log_prefix}: Unmounting LVM snapshot at {snapshot_mount_path}{dry_run_label}'
