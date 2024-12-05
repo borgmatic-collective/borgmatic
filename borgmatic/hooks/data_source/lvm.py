@@ -295,8 +295,8 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # Unmount snapshots.
     try:
         logical_volumes = get_logical_volumes(hook_config.get('lsblk_command', 'lsblk'))
-    except FileNotFoundError:
-        logger.debug(f'{log_prefix}: Could not find "{lsblk_command}" command')
+    except FileNotFoundError as error:
+        logger.debug(f'{log_prefix}: Could not find "{error.filename}" command')
         return
     except subprocess.CalledProcessError as error:
         logger.debug(f'{log_prefix}: {error}')

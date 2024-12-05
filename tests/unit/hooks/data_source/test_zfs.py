@@ -22,7 +22,9 @@ def test_get_datasets_to_backup_filters_datasets_by_source_directories():
     assert module.get_datasets_to_backup(
         'zfs', source_directories=('/foo', '/dataset', '/bar')
     ) == (
-        module.Dataset(name='dataset', mount_point='/dataset', contained_source_directories=('/dataset',)),
+        module.Dataset(
+            name='dataset', mount_point='/dataset', contained_source_directories=('/dataset',)
+        ),
     )
 
 

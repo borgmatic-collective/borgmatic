@@ -48,6 +48,9 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
         )
     )
 
+    if not filesystem_mount_point.strip():
+        return ()
+
     return (filesystem_mount_point,) + tuple(
         sorted(
             subvolume_path
@@ -55,12 +58,13 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
             for subvolume_subpath in (line.rstrip().split(' ')[-1],)
             for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
             if subvolume_subpath.strip()
-            if filesystem_mount_point.strip()
         )
     )
 
 
-Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_source_directories'), defaults=(()))
+Subvolume = collections.namedtuple(
+    'Subvolume', ('path', 'contained_source_directories'), defaults=((),)
+)
 
 
 def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):

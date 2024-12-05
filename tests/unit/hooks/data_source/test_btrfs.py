@@ -21,7 +21,7 @@ def test_get_subvolumes_for_filesystem_parses_subvolume_list_output():
         'ID 270 gen 107 top level 5 path subvol1\nID 272 gen 74 top level 5 path subvol2\n'
     )
 
-    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == ('/mnt/subvol1', '/mnt/subvol2')
+    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == ('/mnt', '/mnt/subvol1', '/mnt/subvol2')
 
 
 def test_get_subvolumes_for_filesystem_skips_empty_subvolume_paths():
@@ -29,7 +29,7 @@ def test_get_subvolumes_for_filesystem_skips_empty_subvolume_paths():
         'execute_command_and_capture_output'
     ).and_return('\n \nID 272 gen 74 top level 5 path subvol2\n')
 
-    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == ('/mnt/subvol2',)
+    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == ('/mnt', '/mnt/subvol2')
 
 
 def test_get_subvolumes_for_filesystem_skips_empty_filesystem_mount_points():
@@ -51,12 +51,21 @@ def test_get_subvolumes_collects_subvolumes_matching_source_directories_from_all
         'btrfs', '/mnt2'
     ).and_return(('/three', '/four'))
 
-    for path in ('/one', '/two', '/three', '/four'):
-        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive('get_contained_directories').with_args(path).and_return((path,))
+    for path in ('/one', '/four'):
+        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+            'get_contained_directories'
+        ).with_args(path, object).and_return((path,))
+    for path in ('/two', '/three'):
+        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+            'get_contained_directories'
+        ).with_args(path, object).and_return(())
 
     assert module.get_subvolumes(
         'btrfs', 'findmnt', source_directories=['/one', '/four', '/five', '/six', '/mnt2', '/mnt3']
-    ) == (module.Subvolume('/one'), module.Subvolume('/mnt2'), module.Subvolume('/four'))
+    ) == (
+        module.Subvolume('/four', contained_source_directories=('/four',)),
+        module.Subvolume('/one', contained_source_directories=('/one',)),
+    )
 
 
 def test_get_subvolumes_without_source_directories_collects_all_subvolumes_from_all_filesystems():
@@ -69,22 +78,27 @@ def test_get_subvolumes_without_source_directories_collects_all_subvolumes_from_
     ).and_return(('/three', '/four'))
 
     for path in ('/one', '/two', '/three', '/four'):
-        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive('get_contained_directories').with_args(path).and_return((path,))
+        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+            'get_contained_directories'
+        ).with_args(path, object).and_return((path,))
 
     assert module.get_subvolumes('btrfs', 'findmnt') == (
-        module.Subvolume('/mnt1'),
-        module.Subvolume('/one'),
-        module.Subvolume('/two'),
-        module.Subvolume('/mnt2'),
-        module.Subvolume('/three'),
-        module.Subvolume('/four'),
+        module.Subvolume('/four', contained_source_directories=('/four',)),
+        module.Subvolume('/one', contained_source_directories=('/one',)),
+        module.Subvolume('/three', contained_source_directories=('/three',)),
+        module.Subvolume('/two', contained_source_directories=('/two',)),
     )
 
 
 def test_dump_data_sources_snapshots_each_subvolume_and_updates_source_directories():
     source_directories = ['/foo', '/mnt/subvol1']
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (
+            module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)),
+            module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)),
+        )
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/mnt/subvol1'
     )
@@ -103,6 +117,12 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_source_directori
     flexmock(module).should_receive('make_snapshot_exclude_path').with_args(
         '/mnt/subvol2'
     ).and_return('/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol1', object
+    ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol2', object
+    ).and_return('/mnt/subvol2/.borgmatic-1234/mnt/subvol2')
 
     assert (
         module.dump_data_sources(
@@ -134,7 +154,9 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_source_directori
 def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     source_directories = ['/foo', '/mnt/subvol1']
     config = {'btrfs': {'btrfs_command': '/usr/local/bin/btrfs'}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1',))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)),)
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/mnt/subvol1'
     )
@@ -144,6 +166,9 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     flexmock(module).should_receive('make_snapshot_exclude_path').with_args(
         '/mnt/subvol1'
     ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol1', object
+    ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1')
 
     assert (
         module.dump_data_sources(
@@ -177,7 +202,7 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
     config = {'btrfs': {'findmnt_command': '/usr/local/bin/findmnt'}}
     flexmock(module).should_receive('get_subvolumes').with_args(
         'btrfs', '/usr/local/bin/findmnt', source_directories
-    ).and_return(('/mnt/subvol1',)).once()
+    ).and_return((module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)),)).once()
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/mnt/subvol1'
     )
@@ -187,6 +212,9 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
     flexmock(module).should_receive('make_snapshot_exclude_path').with_args(
         '/mnt/subvol1'
     ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol1', object
+    ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1')
 
     assert (
         module.dump_data_sources(
@@ -218,7 +246,9 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
 def test_dump_data_sources_with_dry_run_skips_snapshot_and_source_directories_update():
     source_directories = ['/foo', '/mnt/subvol1']
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1',))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)),)
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/mnt/subvol1'
     )
@@ -270,7 +300,9 @@ def test_dump_data_sources_without_matching_subvolumes_skips_snapshot_and_source
 def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
     source_directories = ['/foo', '/mnt/subvol1']
     config = {'btrfs': {}, 'exclude_patterns': ['/bar']}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)), module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)))
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/mnt/subvol1'
     )
@@ -289,6 +321,12 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
     flexmock(module).should_receive('make_snapshot_exclude_path').with_args(
         '/mnt/subvol2'
     ).and_return('/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol1', object
+    ).and_return('/mnt/subvol1/.borgmatic-1234/mnt/subvol1')
+    flexmock(module).should_receive('make_borg_source_directory_path').with_args(
+        '/mnt/subvol2', object
+    ).and_return('/mnt/subvol2/.borgmatic-1234/mnt/subvol2')
 
     assert (
         module.dump_data_sources(
@@ -320,7 +358,9 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
 
 def test_remove_data_source_dumps_deletes_snapshots():
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)), module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)))
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/./mnt/subvol1'
     )
@@ -441,7 +481,9 @@ def test_remove_data_source_dumps_with_get_subvolumes_called_process_error_bails
 
 def test_remove_data_source_dumps_with_dry_run_skips_deletes():
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)), module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)))
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/./mnt/subvol1'
     )
@@ -519,7 +561,9 @@ def test_remove_data_source_dumps_without_subvolumes_skips_deletes():
 
 def test_remove_data_source_without_snapshots_skips_deletes():
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)), module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)))
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/./mnt/subvol1'
     )
@@ -558,7 +602,9 @@ def test_remove_data_source_without_snapshots_skips_deletes():
 
 def test_remove_data_source_dumps_with_delete_snapshot_file_not_found_error_bails():
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)), module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)))
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/./mnt/subvol1'
     )
@@ -617,7 +663,12 @@ def test_remove_data_source_dumps_with_delete_snapshot_file_not_found_error_bail
 
 def test_remove_data_source_dumps_with_delete_snapshot_called_process_error_bails():
     config = {'btrfs': {}}
-    flexmock(module).should_receive('get_subvolumes').and_return(('/mnt/subvol1', '/mnt/subvol2'))
+    flexmock(module).should_receive('get_subvolumes').and_return(
+        (
+            module.Subvolume('/mnt/subvol1', contained_source_directories=('/mnt/subvol1',)),
+            module.Subvolume('/mnt/subvol2', contained_source_directories=('/mnt/subvol2',)),
+        )
+    )
     flexmock(module).should_receive('make_snapshot_path').with_args('/mnt/subvol1').and_return(
         '/mnt/subvol1/.borgmatic-1234/./mnt/subvol1'
     )
