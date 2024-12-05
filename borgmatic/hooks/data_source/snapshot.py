@@ -18,7 +18,6 @@ def get_contained_directories(parent_directory, candidate_contained_directories)
     processing candidate directories until none are left—and avoiding assigning any candidate
     directory to more than one parent directory.
     '''
-    1 / 0
     if not candidate_contained_directories:
         return ()
 
