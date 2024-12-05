@@ -24,8 +24,8 @@ def get_filesystem_mount_points(findmnt_command):
     Given a findmnt command to run, get all top-level Btrfs filesystem mount points.
     '''
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            findmnt_command,
+        tuple(findmnt_command.split(' '))
+        + (
             '-nt',
             'btrfs',
         )
@@ -40,8 +40,8 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
     that filesystem. Include the filesystem itself.
     '''
     btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            btrfs_command,
+        tuple(btrfs_command.split(' '))
+        + (
             'subvolume',
             'list',
             filesystem_mount_point,
@@ -167,8 +167,8 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
     os.makedirs(os.path.dirname(snapshot_path), mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        (
-            btrfs_command,
+        tuple(btrfs_command.split(' '))
+        + (
             'subvolume',
             'snapshot',
             '-r',  # Read-only,
@@ -242,8 +242,8 @@ def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover
     Given a Btrfs command to run and the name of a snapshot path, delete it.
     '''
     borgmatic.execute.execute_command(
-        (
-            btrfs_command,
+        tuple(btrfs_command.split(' '))
+        + (
             'subvolume',
             'delete',
             snapshot_path,

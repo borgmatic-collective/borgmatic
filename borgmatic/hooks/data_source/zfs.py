@@ -41,8 +41,8 @@ def get_datasets_to_backup(zfs_command, source_directories):
     Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',
@@ -67,7 +67,7 @@ def get_datasets_to_backup(zfs_command, source_directories):
             reverse=True,
         )
     except ValueError:
-        raise ValueError('Invalid {zfs_command} list output')
+        raise ValueError(f'Invalid {zfs_command} list output')
 
     candidate_source_directories = set(source_directories)
 
@@ -102,8 +102,8 @@ def get_all_dataset_mount_points(zfs_command):
     Given a ZFS command to run, return all ZFS datasets as a sequence of sorted mount points.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',
@@ -122,8 +122,8 @@ def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
     snapshot.
     '''
     borgmatic.execute.execute_command(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'snapshot',
             full_snapshot_name,
         ),
@@ -140,8 +140,8 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        (
-            mount_command,
+        tuple(mount_command.split(' '))
+        + (
             '-t',
             'zfs',
             full_snapshot_name,
@@ -237,8 +237,8 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        (
-            umount_command,
+        tuple(umount_command.split(' '))
+        + (
             snapshot_mount_path,
         ),
         output_log_level=logging.DEBUG,
@@ -251,8 +251,8 @@ def destroy_snapshot(zfs_command, full_snapshot_name):  # pragma: no cover
     it.
     '''
     borgmatic.execute.execute_command(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'destroy',
             full_snapshot_name,
         ),
@@ -266,8 +266,8 @@ def get_all_snapshots(zfs_command):
     form "dataset@snapshot".
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',

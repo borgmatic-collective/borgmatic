@@ -51,7 +51,7 @@ def get_logical_volumes(lsblk_command, source_directories=None):
             )
         )
     except json.JSONDecodeError as error:
-        raise ValueError('Invalid {lsblk_command} JSON output: {error}')
+        raise ValueError(f'Invalid {lsblk_command} JSON output: {error}')
 
     candidate_source_directories = set(source_directories or ())
 
@@ -84,8 +84,8 @@ def snapshot_logical_volume(
     snapshot, and a snapshot size string, create a new LVM snapshot.
     '''
     borgmatic.execute.execute_command(
-        (
-            lvcreate_command,
+        tuple(lvcreate_command.split(' '))
+        + (
             '--snapshot',
             ('--extents' if '%' in snapshot_size else '--size'),
             snapshot_size,
@@ -106,8 +106,8 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        (
-            mount_command,
+        tuple(mount_command.split(' '))
+        + (
             '-o',
             'ro',
             snapshot_device,
@@ -221,8 +221,8 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        (
-            umount_command,
+        tuple(umount_command.split(' '))
+        + (
             snapshot_mount_path,
         ),
         output_log_level=logging.DEBUG,
@@ -234,8 +234,8 @@ def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
     Given an lvremove command to run and the device path of a snapshot, remove it it.
     '''
     borgmatic.execute.execute_command(
-        (
-            lvremove_command,
+        tuple(lvremove_command.split(' '))
+        + (
             '--force',  # Suppress an interactive "are you sure?" type prompt.
             snapshot_device_path,
         ),
@@ -258,9 +258,9 @@ def get_snapshots(lvs_command, snapshot_name=None):
     try:
         snapshot_info = json.loads(
             borgmatic.execute.execute_command_and_capture_output(
-                (
-                    # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
-                    lvs_command,
+                # Use lvs instead of lsblk here because lsblk can't filter to just snapshots.
+                tuple(lvs_command.split(' '))
+                + (
                     '--report-format',
                     'json',
                     '--options',
@@ -271,7 +271,7 @@ def get_snapshots(lvs_command, snapshot_name=None):
             )
         )
     except json.JSONDecodeError as error:
-        raise ValueError('Invalid {lvs_command} JSON output: {error}')
+        raise ValueError(f'Invalid {lvs_command} JSON output: {error}')
 
     try:
         return tuple(
