@@ -26,7 +26,8 @@ def get_filesystem_mount_points(findmnt_command):
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
         tuple(findmnt_command.split(' '))
         + (
-            '-nt',
+            '-n',  # No headings.
+            '-t',  # Filesystem type.
             'btrfs',
         )
     )

@@ -19,20 +19,19 @@ def generate_configuration(config_path, repository_path):
         .replace('- path: /mnt/backup', '')
         .replace('label: local', '')
         .replace('- /home', f'- {config_path}')
-        .replace('- /etc', '- /pool/dataset/subdir')
+        .replace('- /etc', '- /mnt/subvolume/subdir')
         .replace('- /var/log/syslog*', '')
         + 'encryption_passphrase: "test"\n'
-        + 'zfs:\n'
-        + '    zfs_command: python3 /app/tests/end-to-end/commands/fake_zfs.py\n'
-        + '    mount_command: python3 /app/tests/end-to-end/commands/fake_mount.py\n'
-        + '    umount_command: python3 /app/tests/end-to-end/commands/fake_umount.py'
+        + 'btrfs:\n'
+        + '    btrfs_command: python3 /app/tests/end-to-end/commands/fake_btrfs.py\n'
+        + '    findmnt_command: python3 /app/tests/end-to-end/commands/fake_findmnt.py\n'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)
     config_file.close()
 
 
-def test_zfs_create_and_list():
+def test_btrfs_create_and_list():
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
 
@@ -44,7 +43,7 @@ def test_zfs_create_and_list():
             f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' ')
         )
 
-        # Run a create action to exercise ZFS snapshotting and backup.
+        # Run a create action to exercise Btrfs snapshotting and backup.
         subprocess.check_call(f'borgmatic --config {config_path} create'.split(' '))
 
         # List the resulting archive and assert that the snapshotted files are there.
@@ -52,11 +51,11 @@ def test_zfs_create_and_list():
             f'borgmatic --config {config_path} list --archive latest'.split(' ')
         ).decode(sys.stdout.encoding)
 
-        assert 'pool/dataset/subdir/file.txt' in output
+        assert 'mnt/subvolume/subdir/file.txt' in output
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
-            f'python3 /app/tests/end-to-end/commands/fake_zfs.py list -H -t snapshot'.split(' ')
+            f'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /mnt/subvolume'.split(' ')
         )
     finally:
         shutil.rmtree(temporary_directory)
