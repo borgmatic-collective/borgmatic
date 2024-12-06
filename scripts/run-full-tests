@@ -25,5 +25,5 @@ python3 -m pip install --no-cache --upgrade pip==24.2 setuptools==72.1.0
 pip3 install --ignore-installed tox==4.11.3
 export COVERAGE_FILE=/tmp/.coverage
 
-#tox --workdir /tmp/.tox --sitepackages
+tox --workdir /tmp/.tox --sitepackages
 tox --workdir /tmp/.tox --sitepackages -e end-to-end

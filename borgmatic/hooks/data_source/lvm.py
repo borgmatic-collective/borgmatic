@@ -39,10 +39,10 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     '''
     try:
         devices_info = json.loads(
-            subprocess.check_output(
-                (
-                    # Use lsblk instead of lvs here because lvs can't show active mounts.
-                    lsblk_command,
+            borgmatic.execute.execute_command_and_capture_output(
+                # Use lsblk instead of lvs here because lvs can't show active mounts.
+                tuple(lsblk_command.split(' '))
+                + (
                     '--output',
                     'name,path,mountpoint,type',
                     '--json',
@@ -229,7 +229,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     )
 
 
-def delete_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
+def remove_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
     '''
     Given an lvremove command to run and the device path of a snapshot, remove it it.
     '''
@@ -362,7 +362,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         logger.debug(f'{log_prefix}: Deleting LVM snapshot {snapshot.name}{dry_run_label}')
 
         if not dry_run:
-            delete_snapshot(lvremove_command, snapshot.device_path)
+            remove_snapshot(lvremove_command, snapshot.device_path)
 
 
 def make_data_source_dump_patterns(

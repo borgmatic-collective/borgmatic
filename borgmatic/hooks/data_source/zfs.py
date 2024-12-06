@@ -144,6 +144,8 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
         + (
             '-t',
             'zfs',
+            '-o',
+            'ro',
             full_snapshot_name,
             snapshot_mount_path,
         ),

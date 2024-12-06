@@ -2333,11 +2333,11 @@ properties:
                 description: |
                     Command to use instead of "lvs".
                 example: /usr/local/bin/lvs
-            lsbrk_command:
+            lsblk_command:
                 type: string
                 description: |
-                    Command to use instead of "lsbrk".
-                example: /usr/local/bin/lsbrk
+                    Command to use instead of "lsblk".
+                example: /usr/local/bin/lsblk
             mount_command:
                 type: string
                 description: |
