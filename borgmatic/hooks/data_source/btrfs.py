@@ -146,7 +146,7 @@ def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
     )
 
 
-def make_borg_source_directory_path(subvolume_path, source_directory):
+def make_borg_source_directory_path(subvolume_path, source_directory):  # pragma: no cover
     '''
     Given the path to a subvolume and a source directory inside it, make a corresponding path for
     the source directory within a snapshot path intended for giving to Borg.

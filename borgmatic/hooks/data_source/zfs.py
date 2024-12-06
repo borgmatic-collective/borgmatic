@@ -332,9 +332,9 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             if not dry_run:
                 shutil.rmtree(snapshot_mount_path, ignore_errors=True)
 
-            # If the delete was successful, that means there's nothing to unmount.
-            if not os.path.isdir(snapshot_mount_path):
-                continue
+                # If the delete was successful, that means there's nothing to unmount.
+                if not os.path.isdir(snapshot_mount_path):
+                    continue
 
             logger.debug(
                 f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}'
