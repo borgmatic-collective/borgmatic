@@ -28,7 +28,7 @@ def main():
 
     snapshots = [
         snapshot for snapshot in load_snapshots()
-        if snapshot['lv_path'] == arguments.snapshot_device
+        if snapshot['lv_path'] != arguments.snapshot_device
     ]
 
     save_snapshots(snapshots)
