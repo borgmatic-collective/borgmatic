@@ -59,8 +59,13 @@ def test_lvm_create_and_list():
         assert 'mnt/lvolume/subdir/file.txt' in output
 
         # Assert that the snapshot has been deleted.
-        assert not json.loads(subprocess.check_output(
-            'python3 /app/tests/end-to-end/commands/fake_lvs.py --report-format json --options lv_name,lv_path --select'.split(' ') + ['lv_attr =~ ^s']
-        ))['report'][0]['lv']
+        assert not json.loads(
+            subprocess.check_output(
+                'python3 /app/tests/end-to-end/commands/fake_lvs.py --report-format json --options lv_name,lv_path --select'.split(
+                    ' '
+                )
+                + ['lv_attr =~ ^s']
+            )
+        )['report'][0]['lv']
     finally:
         shutil.rmtree(temporary_directory)

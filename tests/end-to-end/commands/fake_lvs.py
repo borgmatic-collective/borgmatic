@@ -32,10 +32,8 @@ def print_snapshots_json(arguments, snapshots):
                     {
                         'lv': snapshots,
                     }
-                ]
-                ,
-                'log': [
-                ]
+                ],
+                'log': [],
             }
         )
     )

@@ -53,7 +53,10 @@ def print_subvolume_list(arguments, snapshot_paths):
             print(line)
 
     for snapshot_path in snapshot_paths:
-        print(SUBVOLUME_LIST_LINE_PREFIX + snapshot_path[snapshot_path.index('.borgmatic-snapshot-'):])
+        print(
+            SUBVOLUME_LIST_LINE_PREFIX
+            + snapshot_path[snapshot_path.index('.borgmatic-snapshot-') :]
+        )
 
 
 def main():
@@ -76,7 +79,8 @@ def main():
         shutil.rmtree(subdirectory)
 
         snapshot_paths = [
-            snapshot_path for snapshot_path in snapshot_paths
+            snapshot_path
+            for snapshot_path in snapshot_paths
             if snapshot_path.endswith('/' + arguments.snapshot_path)
         ]
         save_snapshots(snapshot_paths)

@@ -27,7 +27,8 @@ def main():
     arguments = parse_arguments(*sys.argv[1:])
 
     snapshots = [
-        snapshot for snapshot in load_snapshots()
+        snapshot
+        for snapshot in load_snapshots()
         if snapshot['lv_path'] != arguments.snapshot_device
     ]
 

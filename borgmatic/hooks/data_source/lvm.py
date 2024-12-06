@@ -78,7 +78,7 @@ def snapshot_logical_volume(
     snapshot_name,
     logical_volume_device,
     snapshot_size,
-):  # pragma: no cover
+):
     '''
     Given an lvcreate command to run, a snapshot name, the path to the logical volume device to
     snapshot, and a snapshot size string, create a new LVM snapshot.
@@ -221,10 +221,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        tuple(umount_command.split(' '))
-        + (
-            snapshot_mount_path,
-        ),
+        tuple(umount_command.split(' ')) + (snapshot_mount_path,),
         output_log_level=logging.DEBUG,
     )
 
@@ -279,6 +276,8 @@ def get_snapshots(lvs_command, snapshot_name=None):
             for snapshot in snapshot_info['report'][0]['lv']
             if snapshot_name is None or snapshot['lv_name'] == snapshot_name
         )
+    except IndexError:
+        raise ValueError(f'Invalid {lvs_command} output: Missing report data')
     except KeyError as error:
         raise ValueError(f'Invalid {lvs_command} output: Missing key "{error}"')
 

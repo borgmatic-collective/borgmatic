@@ -14,31 +14,22 @@ def parse_arguments(*unparsed_arguments):
 
 
 BUILTIN_BLOCK_DEVICES = {
-   'blockdevices': [
-      {
-         'name': 'loop0',
-         'path': '/dev/loop0',
-         'mountpoint': None,
-         'type': 'loop'
-      },
-      {
-         'name': 'cryptroot',
-         'path': '/dev/mapper/cryptroot',
-         'mountpoint': '/',
-         'type': 'crypt'
-      },{
-         'name': 'vgroup-lvolume',
-         'path': '/dev/mapper/vgroup-lvolume',
-         'mountpoint': '/mnt/lvolume',
-         'type': 'lvm'
-      },
-      {
-         'name': 'vgroup-lvolume-real',
-         'path': '/dev/mapper/vgroup-lvolume-real',
-         'mountpoint': None,
-         'type': 'lvm'
-      },
-   ]
+    'blockdevices': [
+        {'name': 'loop0', 'path': '/dev/loop0', 'mountpoint': None, 'type': 'loop'},
+        {'name': 'cryptroot', 'path': '/dev/mapper/cryptroot', 'mountpoint': '/', 'type': 'crypt'},
+        {
+            'name': 'vgroup-lvolume',
+            'path': '/dev/mapper/vgroup-lvolume',
+            'mountpoint': '/mnt/lvolume',
+            'type': 'lvm',
+        },
+        {
+            'name': 'vgroup-lvolume-real',
+            'path': '/dev/mapper/vgroup-lvolume-real',
+            'mountpoint': None,
+            'type': 'lvm',
+        },
+    ]
 }
 
 
@@ -55,10 +46,10 @@ def print_logical_volumes_json(arguments, snapshots):
     for snapshot in snapshots:
         data['blockdevices'].extend(
             {
-               'name': snapshot['lv_name'],
-               'path': snapshot['lv_path'],
-               'mountpoint': None,
-               'type': 'lvm'
+                'name': snapshot['lv_name'],
+                'path': snapshot['lv_path'],
+                'mountpoint': None,
+                'type': 'lvm',
             }
             for snapshot in snapshots
         )

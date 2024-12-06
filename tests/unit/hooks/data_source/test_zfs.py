@@ -121,7 +121,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
     assert source_directories == [os.path.join(snapshot_mount_path, 'subdir')]
 
 
-def test_dump_data_sources_snapshots_with_no_datasets_skips_snapshots():
+def test_dump_data_sources_with_no_datasets_skips_snapshots():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(())
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()

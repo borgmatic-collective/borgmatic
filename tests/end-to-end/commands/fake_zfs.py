@@ -39,9 +39,6 @@ BUILTIN_DATASETS = (
 )
 
 
-
-
-
 def load_snapshots():
     try:
         return json.load(open('/tmp/fake_zfs.json'))
@@ -56,14 +53,9 @@ def save_snapshots(snapshots):
 def print_dataset_list(arguments, datasets, snapshots):
     properties = arguments.properties.split(',')
     data = (
-        (
-            tuple(property_name.upper() for property_name in properties),
-        )
-        if arguments.header else ()
+        (tuple(property_name.upper() for property_name in properties),) if arguments.header else ()
     ) + tuple(
-        tuple(
-            dataset.get(property_name, '-') for property_name in properties
-        )
+        tuple(dataset.get(property_name, '-') for property_name in properties)
         for dataset in (snapshots if arguments.type == 'snapshot' else datasets)
     )
 
@@ -92,10 +84,7 @@ def main():
         )
         save_snapshots(snapshots)
     elif arguments.action == 'destroy':
-        snapshots = [
-            snapshot for snapshot in snapshots
-            if snapshot['name'] != arguments.name
-        ]
+        snapshots = [snapshot for snapshot in snapshots if snapshot['name'] != arguments.name]
         save_snapshots(snapshots)
 
 

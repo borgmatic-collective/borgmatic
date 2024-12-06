@@ -239,10 +239,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        tuple(umount_command.split(' '))
-        + (
-            snapshot_mount_path,
-        ),
+        tuple(umount_command.split(' ')) + (snapshot_mount_path,),
         output_log_level=logging.DEBUG,
     )
 
