@@ -68,9 +68,7 @@ properties:
         type: boolean
         description: |
             Stay in same file system; do not cross mount points beyond the given
-            source directories. Defaults to false. But when a database hook is
-            used, the setting here is ignored and one_file_system is considered
-            true.
+            source directories. Defaults to false.
         example: true
     numeric_ids:
         type: boolean
@@ -963,8 +961,8 @@ properties:
                         dump all databases on the host. (Also set the "format"
                         to dump each database to a separate file instead of one
                         combined file.) Note that using this database hook
-                        implicitly enables both read_special and one_file_system
-                        (see above) to support dump and restore streaming.
+                        implicitly enables read_special (see above) to support
+                        dump and restore streaming.
                     example: users
                 hostname:
                     type: string
@@ -1145,9 +1143,8 @@ properties:
                     description: |
                         Database name (required if using this hook). Or "all" to
                         dump all databases on the host. Note that using this
-                        database hook implicitly enables both read_special and
-                        one_file_system (see above) to support dump and restore
-                        streaming.
+                        database hook implicitly enables read_special (see
+                        above) to support dump and restore streaming.
                     example: users
                 hostname:
                     type: string
@@ -1272,9 +1269,8 @@ properties:
                     description: |
                         Database name (required if using this hook). Or "all" to
                         dump all databases on the host. Note that using this
-                        database hook implicitly enables both read_special and
-                        one_file_system (see above) to support dump and restore
-                        streaming.
+                        database hook implicitly enables read_special (see
+                        above) to support dump and restore streaming.
                     example: users
                 hostname:
                     type: string
@@ -1407,9 +1403,9 @@ properties:
                     description: |
                         Path to the SQLite database file to dump. If relative,
                         it is relative to the current working directory. Note
-                        that using this database hook implicitly enables both
-                        read_special and one_file_system (see above) to support
-                        dump and restore streaming.
+                        that using this database hook implicitly enables
+                        read_special (see above) to support dump and restore
+                        streaming.
                     example: /var/lib/sqlite/users.db
                 restore_path:
                     type: string
@@ -1429,9 +1425,8 @@ properties:
                     description: |
                         Database name (required if using this hook). Or "all" to
                         dump all databases on the host. Note that using this
-                        database hook implicitly enables both read_special and
-                        one_file_system (see above) to support dump and restore
-                        streaming.
+                        database hook implicitly enables read_special (see
+                        above) to support dump and restore streaming.
                     example: users
                 hostname:
                     type: string
