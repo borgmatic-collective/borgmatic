@@ -472,15 +472,10 @@ postgresql_databases:
 There are a few important limitations with borgmatic's current database
 restoration feature that you should know about:
 
-1. You must restore as the same Unix user that created the archive containing
-the database dump. That's because the user's home directory path is encoded
-into the path of the database dump within the archive.
-2. As mentioned above, borgmatic can only restore a database that's defined in
-borgmatic's own configuration file. So include your configuration file in
-backups to avoid getting caught without a way to restore a database.
-3. borgmatic does not currently support backing up or restoring multiple
-databases that share the exact same name on different hosts.
-4. When database hooks are enabled, borgmatic instructs Borg to consume
+1. borgmatic does not currently support backing up or restoring multiple
+databases that share the exact same name on different hosts or with different
+ports.
+2. When database hooks are enabled, borgmatic instructs Borg to consume
 special files (via `--read-special`) to support database dump
 streaming—regardless of the value of your `read_special` configuration option.
 And because this can cause Borg to hang, borgmatic also automatically excludes
@@ -495,7 +490,7 @@ exclude them. <span class="minilink minilink-addedin">Prior to version
 1.7.3</span>Special files were not auto-excluded, and you were responsible for
 excluding them yourself. Common directories to exclude are `/dev` and `/run`,
 but that may not be exhaustive.
-5. <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
+3. <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
 Database hooks also implicitly enabled the `one_file_system` option, which
 meant Borg wouldn't cross filesystem boundaries when looking for files to
 backup. When borgmatic was running in a container, this often required a
@@ -503,6 +498,16 @@ work-around to explicitly add each mounted backup volume to
 `source_directories` instead of relying on Borg to include them implicitly via
 a parent directory. But as of borgmatic 1.9.0, `one_file_system` is no longer
 auto-enabled and such work-arounds aren't necessary.
+4. <span class="minilink minilink-addedin">Prior to version 1.9.0</span> You
+must restore as the same Unix user that created the archive containing the
+database dump. That's because the user's home directory path is encoded into
+the path of the database dump within the archive.
+5. <span class="minilink minilink-addedin">Prior to version 1.7.15</span> As
+mentioned above, borgmatic can only restore a database that's defined in
+borgmatic's own configuration file. So include your configuration files in
+backups to avoid getting caught without a way to restore a database. But
+starting from version 1.7.15, borgmatic includes your configuration files
+automatically.
 
 
 ### Manual restoration
@@ -511,11 +516,15 @@ If you prefer to restore a database without the help of borgmatic, first
 [extract](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) an
 archive containing a database dump.
 
-borgmatic extracts the dump file into the *`username`*`/.borgmatic/` directory
-within the extraction destination path, where *`username`* is the user that
-created the backup. For example, if you created the backup with the `root`
-user and you're extracting to `/tmp`, then the dump will be in
-`/tmp/root/.borgmatic`.
+borgmatic extracts the dump file into the `borgmatic/` directory within the
+extraction destination path. For example, if you're extracting to `/tmp`, then
+the dump will be in `/tmp/borgmatic/`.
+
+<span class="minilink minilink-addedin">Prior to version 1.9.0</span> borgmatic
+extracts the dump file into the *`username`*`/.borgmatic/` directory within the
+extraction destination path, where *`username`* is the user that created the
+backup. For example, if you created the backup with the `root` user and you're
+extracting to `/tmp`, then the dump will be in `/tmp/root/.borgmatic`.
 
 After extraction, you can manually restore the dump file using native database
 commands like `pg_restore`, `mysql`, `mongorestore`, `sqlite`, or similar.
