@@ -89,6 +89,8 @@ def snapshot_logical_volume(
             '--snapshot',
             ('--extents' if '%' in snapshot_size else '--size'),
             snapshot_size,
+            '--permission',
+            'r',  # Read-only.
             '--name',
             snapshot_name,
             logical_volume_device,

@@ -9,6 +9,7 @@ def parse_arguments(*unparsed_arguments):
     parser.add_argument('--snapshot', action='store_true', required=True)
     parser.add_argument('--extents')
     parser.add_argument('--size')
+    parser.add_argument('--permission', required=True)
     parser.add_argument('--name', dest='snapshot_name', required=True)
     parser.add_argument('logical_volume_device')
 
