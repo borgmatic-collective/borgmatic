@@ -215,12 +215,12 @@ too small (and LVM isn't configured to grow snapshots automatically), then the
 snapshots will fail to allocate enough space, resulting in a broken backup.
 
 If not specified, the `snapshot_size` option defaults to `10%ORIGIN`, which
-means 10% of the size of logical volume being snapshotted. See the [`lvcreate
---size` and `--extents`
+means 10% of the size of the logical volume being snapshotted. See the
+[`lvcreate --size` and `--extents`
 documentation](https://www.man7.org/linux/man-pages/man8/lvcreate.8.html) for
 more information about possible values here. (Under the hood, borgmatic uses
-`lvcreate --extents` if the `snapshot_size` is a percentage value, and
-`lvcreate --size` otherwise.)
+`lvcreate --extents` if the `snapshot_size` is a percentage value, and `lvcreate
+--size` otherwise.)
 
 
 #### Logical volume discovery
