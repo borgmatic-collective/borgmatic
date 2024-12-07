@@ -63,7 +63,7 @@ like particular datasets to be backed up only for particular configuration
 files, use the `source_directories` option instead of the user property.
 
 During a backup, borgmatic automatically snapshots these discovered datasets
-(non-recursively), temporary mounts the snapshots within its [runtime
+(non-recursively), temporarily mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
 and includes the snapshotted files in the paths sent to Borg. borgmatic is also
 responsible for cleaning up (destroying) these snapshots after a backup
@@ -228,12 +228,11 @@ more information about possible values here. (Under the hood, borgmatic uses
 For any logical volume you'd like backed up, add its mount point to
 borgmatic's `source_directories` option.
 
-During a backup, borgmatic automatically snapshots these discovered logical
-volumes (non-recursively), temporary mounts the snapshots within its [runtime
-directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
-and includes the snapshotted files in the paths sent to Borg. borgmatic is
-also responsible for cleaning up (deleting) these snapshots after a backup
-completes.
+During a backup, borgmatic automatically snapshots these discovered logical volumes, temporarily
+mounts the snapshots within its [runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory), and
+includes the snapshotted files in the paths sent to Borg. borgmatic is also responsible for cleaning
+up (deleting) these snapshots after a backup completes.
 
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
 directories of each of your `source_directories` to discover any logical
