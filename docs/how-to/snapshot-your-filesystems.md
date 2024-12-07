@@ -71,8 +71,18 @@ completes.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original dataset locations in a Borg archive. For instance, if your
-dataset is mounted at `/mnt/dataset`, then the snapshotted files will appear
-in an archive at `/mnt/dataset` as well.
+dataset is mounted at `/var/dataset`, then the snapshotted files will appear
+in an archive at `/var/dataset` as well—even if borgmatic has to mount the
+snapshot somewhere in `/run/user/1000/borgmatic/zfs_snapshots/` to perform the
+backup.
+
+<span class="minilink minilink-addedin">New in version 1.9.4</span> borgmatic
+is smart enough to look at the parent (and grandparent, etc.) directories of
+each of your `source_directories` to discover any datasets. For instance,
+let's say you add `/var/log` and `/var/lib` to your source directories, but
+`/var` is a dataset. borgmatic will discover that and snapshot `/var`
+accordingly. This also works even with nested datasets; borgmatic selects
+the dataset that's the "closest" parent to your source directories.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -128,10 +138,20 @@ subvolumes (non-recursively) and includes the snapshotted files in the paths
 sent to Borg. borgmatic is also responsible for cleaning up (deleting) these
 snapshots after a backup completes.
 
-Additionally, borgmatic rewrites the snapshot file paths so that they appear at
-their original subvolume locations in a Borg archive. For instance, if your
-subvolume exists at `/mnt/subvolume`, then the snapshotted files will appear in
-an archive at `/mnt/subvolume` as well.
+borgmatic is smart enough to look at the parent (and grandparent, etc.)
+directories of each of your `source_directories` to discover any subvolumes.
+For instance, let's say you add `/var/log` and `/var/lib` to your source
+directories, but `/var` is a subvolume. borgmatic will discover that and
+snapshot `/var` accordingly. This also works even with nested subvolumes;
+borgmatic selects the subvolume that's the "closest" parent to your source
+directories.
+
+Additionally, borgmatic rewrites the snapshot file paths so that they appear
+at their original subvolume locations in a Borg archive. For instance, if your
+subvolume exists at `/var/subvolume`, then the snapshotted files will appear
+in an archive at `/var/subvolume` as well—even if borgmatic has to mount the
+snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform
+the backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -145,3 +165,100 @@ Subvolume snapshots are stored in a Borg archive as normal files, so you can use
 the standard [extract
 action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to extract
 them.
+
+
+### LVM
+
+<span class="minilink minilink-addedin">New in version 1.9.4</span> <span
+class="minilink minilink-addedin">Beta feature</span> borgmatic supports
+taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux Logical
+Volume Manager) and sending those snapshots to Borg for backup. LVM isn't
+itself a filesystem, but it can take snapshots at the layer right below your
+filesystem.
+
+To use this feature, first you need one or more mounted LVM logical volumes.
+Then, enable LVM within borgmatic by adding the following line to your
+configuration file:
+
+```yaml
+lvm:
+```
+
+No other options are necessary to enable LVM support, but if desired you can
+override some of the options used by the LVM hook. For instance:
+
+```yaml
+lvm:
+    snapshot_size: 5GB  # See below for details.
+    lvcreate_command: /usr/local/bin/lvcreate
+    lvremove_command: /usr/local/bin/lvremove
+    lvs_command: /usr/local/bin/lvs
+    lsbrk_command: /usr/local/bin/lsbrk
+    mount_command: /usr/local/bin/mount
+    umount_command: /usr/local/bin/umount
+```
+
+As long as the LVM hook is in beta, it may be subject to breaking changes
+and/or may not work well for your use cases. But feel free to use it in
+production if you're okay with these caveats, and please [provide any
+feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
+
+
+#### Snapshot size
+
+The `snapshot_size` option is the size to allocate for each snapshot taken,
+including the units to use for that size. While borgmatic's snapshots
+themselves are read-only and don't change during backups, the logical volume
+being snapshotted *can* change—therefore requiring additional snapshot storage
+since LVM snapshots are copy-on-write. And if the configured snapshot size is
+too small (and LVM isn't configured to grow snapshots automatically), then the
+snapshots will fail to allocate enough space, resulting in a broken backup.
+
+If not specified, the `snapshot_size` option defaults to `10%ORIGIN`, which
+means 10% of the size of logical volume being snapshotted. See the [`lvcreate
+--size` and `--extents`
+documentation](https://www.man7.org/linux/man-pages/man8/lvcreate.8.html) for
+more information about possible values here. (Under the hood, borgmatic uses
+`lvcreate --extents` if the `snapshot_size` is a percentage value, and
+`lvcreate --size` otherwise.)
+
+
+#### Logical volume discovery
+
+For any logical volume you'd like backed up, add its mount point to
+borgmatic's `source_directories` option.
+
+During a backup, borgmatic automatically snapshots these discovered logical
+volumes (non-recursively), temporary mounts the snapshots within its [runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
+and includes the snapshotted files in the paths sent to Borg. borgmatic is
+also responsible for cleaning up (deleting) these snapshots after a backup
+completes.
+
+borgmatic is smart enough to look at the parent (and grandparent, etc.)
+directories of each of your `source_directories` to discover any logical
+volumes. For instance, let's say you add `/var/log` and `/var/lib` to your
+source directories, but `/var` is a logical volume. borgmatic will discover
+that and snapshot `/var` accordingly.
+
+Additionally, borgmatic rewrites the snapshot file paths so that they appear
+at their original logical volume locations in a Borg archive. For instance, if
+your logical volume is mounted at `/var/lvolume`, then the snapshotted files
+will appear in an archive at `/var/lvolume` as well—even if borgmatic has to
+mount the snapshot somewhere in `/run/user/1000/borgmatic/lvm_snapshots/` to
+perform the backup.
+
+<span class="minilink minilink-addedin">With Borg version 1.2 and
+earlier</span>Snapshotted files are instead stored at a path dependent on the
+[runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+in use at the time the archive was created, as Borg 1.2 and earlier do not
+support path rewriting.
+
+
+#### Extract a logical volume
+
+Logical volume snapshots are stored in a Borg archive as normal files, so
+you can use the standard
+[extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
+extract them.

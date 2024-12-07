@@ -1,3 +1,4 @@
+import collections
 import glob
 import logging
 import os
@@ -6,6 +7,7 @@ import subprocess
 
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,13 @@ BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
 BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 
+Dataset = collections.namedtuple(
+    'Dataset',
+    ('name', 'mount_point', 'auto_backup', 'contained_source_directories'),
+    defaults=(False, ()),
+)
+
+
 def get_datasets_to_backup(zfs_command, source_directories):
     '''
     Given a ZFS command to run and a sequence of configured source directories, find the
@@ -29,11 +38,11 @@ def get_datasets_to_backup(zfs_command, source_directories):
     datasets tagged with a borgmatic-specific user property, whether or not they appear in source
     directories.
 
-    Return the result as a sequence of (dataset name, mount point) pairs.
+    Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',
@@ -42,44 +51,69 @@ def get_datasets_to_backup(zfs_command, source_directories):
             f'name,mountpoint,{BORGMATIC_USER_PROPERTY}',
         )
     )
-    source_directories_set = set(source_directories)
 
     try:
-        return tuple(
-            (dataset_name, mount_point)
-            for line in list_output.splitlines()
-            for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
-            if mount_point in source_directories_set or user_property_value == 'auto'
+        # Sort from longest to shortest mount points, so longer mount points get a whack at the
+        # candidate source directory piñata before their parents do. (Source directories are
+        # consumed during the second loop below, so no two datasets get the same contained source
+        # directories.)
+        datasets = sorted(
+            (
+                Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
+                for line in list_output.splitlines()
+                for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
+            ),
+            key=lambda dataset: dataset.mount_point,
+            reverse=True,
         )
     except ValueError:
-        raise ValueError('Invalid {zfs_command} list output')
+        raise ValueError(f'Invalid {zfs_command} list output')
+
+    candidate_source_directories = set(source_directories)
+
+    return tuple(
+        sorted(
+            (
+                Dataset(
+                    dataset.name,
+                    dataset.mount_point,
+                    dataset.auto_backup,
+                    contained_source_directories,
+                )
+                for dataset in datasets
+                for contained_source_directories in (
+                    (
+                        (dataset.mount_point,)
+                        if dataset.auto_backup
+                        else borgmatic.hooks.data_source.snapshot.get_contained_directories(
+                            dataset.mount_point, candidate_source_directories
+                        )
+                    ),
+                )
+                if contained_source_directories
+            ),
+            key=lambda dataset: dataset.mount_point,
+        )
+    )
 
 
-def get_all_datasets(zfs_command):
+def get_all_dataset_mount_points(zfs_command):
     '''
-    Given a ZFS command to run, return all ZFS datasets as a sequence of (dataset name, mount point)
-    pairs.
+    Given a ZFS command to run, return all ZFS datasets as a sequence of sorted mount points.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',
             'filesystem',
             '-o',
-            'name,mountpoint',
+            'mountpoint',
         )
     )
 
-    try:
-        return tuple(
-            (dataset_name, mount_point)
-            for line in list_output.splitlines()
-            for (dataset_name, mount_point) in (line.rstrip().split('\t'),)
-        )
-    except ValueError:
-        raise ValueError('Invalid {zfs_command} list output')
+    return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
 
 
 def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
@@ -88,8 +122,8 @@ def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
     snapshot.
     '''
     borgmatic.execute.execute_command(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'snapshot',
             full_snapshot_name,
         ),
@@ -106,10 +140,12 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     os.makedirs(snapshot_mount_path, mode=0o700, exist_ok=True)
 
     borgmatic.execute.execute_command(
-        (
-            mount_command,
+        tuple(mount_command.split(' '))
+        + (
             '-t',
             'zfs',
+            '-o',
+            'ro',
             full_snapshot_name,
             snapshot_mount_path,
         ),
@@ -147,39 +183,53 @@ def dump_data_sources(
 
     # Snapshot each dataset, rewriting source directories to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+    normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
 
     if not requested_datasets:
         logger.warning(f'{log_prefix}: No ZFS datasets found to snapshot{dry_run_label}')
 
-    for dataset_name, mount_point in requested_datasets:
-        full_snapshot_name = f'{dataset_name}@{snapshot_name}'
-        logger.debug(f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name}{dry_run_label}')
+    for dataset in requested_datasets:
+        full_snapshot_name = f'{dataset.name}@{snapshot_name}'
+        logger.debug(
+            f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+        )
 
         if not dry_run:
             snapshot_dataset(zfs_command, full_snapshot_name)
 
         # Mount the snapshot into a particular named temporary directory so that the snapshot ends
         # up in the Borg archive at the "original" dataset mount point path.
-        snapshot_mount_path_for_borg = os.path.join(
-            os.path.normpath(borgmatic_runtime_directory),
+        snapshot_mount_path = os.path.join(
+            normalized_runtime_directory,
             'zfs_snapshots',
-            '.',  # Borg 1.4+ "slashdot" hack.
-            mount_point.lstrip(os.path.sep),
+            dataset.mount_point.lstrip(os.path.sep),
         )
-        snapshot_mount_path = os.path.normpath(snapshot_mount_path_for_borg)
+
         logger.debug(
             f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
         )
 
-        if not dry_run:
-            mount_snapshot(
-                hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
+        if dry_run:
+            continue
+
+        mount_snapshot(
+            hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
+        )
+
+        for source_directory in dataset.contained_source_directories:
+            try:
+                source_directories.remove(source_directory)
+            except ValueError:
+                pass
+
+            source_directories.append(
+                os.path.join(
+                    normalized_runtime_directory,
+                    'zfs_snapshots',
+                    '.',  # Borg 1.4+ "slashdot" hack.
+                    source_directory.lstrip(os.path.sep),
+                )
             )
-
-            if mount_point in source_directories:
-                source_directories.remove(mount_point)
-
-            source_directories.append(snapshot_mount_path_for_borg)
 
     return []
 
@@ -189,10 +239,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     Given a umount command to run and the mount path of a snapshot, unmount it.
     '''
     borgmatic.execute.execute_command(
-        (
-            umount_command,
-            snapshot_mount_path,
-        ),
+        tuple(umount_command.split(' ')) + (snapshot_mount_path,),
         output_log_level=logging.DEBUG,
     )
 
@@ -203,8 +250,8 @@ def destroy_snapshot(zfs_command, full_snapshot_name):  # pragma: no cover
     it.
     '''
     borgmatic.execute.execute_command(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'destroy',
             full_snapshot_name,
         ),
@@ -218,8 +265,8 @@ def get_all_snapshots(zfs_command):
     form "dataset@snapshot".
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
-        (
-            zfs_command,
+        tuple(zfs_command.split(' '))
+        + (
             'list',
             '-H',
             '-t',
@@ -245,7 +292,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     zfs_command = hook_config.get('zfs_command', 'zfs')
 
     try:
-        datasets = get_all_datasets(zfs_command)
+        dataset_mount_points = get_all_dataset_mount_points(zfs_command)
     except FileNotFoundError:
         logger.debug(f'{log_prefix}: Could not find "{zfs_command}" command')
         return
@@ -268,17 +315,23 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         if not os.path.isdir(snapshots_directory):
             continue
 
-        # This might fail if the directory is already mounted, but we swallow errors here since
-        # we'll try again below. The point of doing it here is that we don't want to try to unmount
-        # a non-mounted directory (which *will* fail), and probing for whether a directory is
-        # mounted is tough to do in a cross-platform way.
-        if not dry_run:
-            shutil.rmtree(snapshots_directory, ignore_errors=True)
-
-        for _, mount_point in datasets:
+        # Reversing the sorted datasets ensures that we unmount the longer mount point paths of
+        # child datasets before the shorter mount point paths of parent datasets.
+        for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
             if not os.path.isdir(snapshot_mount_path):
                 continue
+
+            # This might fail if the path is already mounted, but we swallow errors here since we'll
+            # do another recursive delete below. The point of doing it here is that we don't want to
+            # try to unmount a non-mounted directory (which *will* fail), and probing for whether a
+            # directory is mounted is tough to do in a cross-platform way.
+            if not dry_run:
+                shutil.rmtree(snapshot_mount_path, ignore_errors=True)
+
+                # If the delete was successful, that means there's nothing to unmount.
+                if not os.path.isdir(snapshot_mount_path):
+                    continue
 
             logger.debug(
                 f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}'

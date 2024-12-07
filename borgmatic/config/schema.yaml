@@ -2304,3 +2304,50 @@ properties:
                 example: /usr/local/bin/findmnt
         description: |
             Configuration for integration with the Btrfs filesystem.
+    lvm:
+        type: ["object", "null"]
+        additionalProperties: false
+        properties:
+            snapshot_size:
+                type: string
+                description: |
+                    Size to allocate for each snapshot taken, including the
+                    units to use for that size. Defaults to "10%ORIGIN" (10%
+                    of the size of logical volume being snapshotted). See the
+                    lvcreate "--size" and "--extents" documentation for more
+                    information:
+                    https://www.man7.org/linux/man-pages/man8/lvcreate.8.html
+                example: 5GB
+            lvcreate_command:
+                type: string
+                description: |
+                    Command to use instead of "lvcreate".
+                example: /usr/local/bin/lvcreate
+            lvremove_command:
+                type: string
+                description: |
+                    Command to use instead of "lvremove".
+                example: /usr/local/bin/lvremove
+            lvs_command:
+                type: string
+                description: |
+                    Command to use instead of "lvs".
+                example: /usr/local/bin/lvs
+            lsblk_command:
+                type: string
+                description: |
+                    Command to use instead of "lsblk".
+                example: /usr/local/bin/lsblk
+            mount_command:
+                type: string
+                description: |
+                    Command to use instead of "mount".
+                example: /usr/local/bin/mount
+            umount_command:
+                type: string
+                description: |
+                    Command to use instead of "umount".
+                example: /usr/local/bin/umount
+        description: |
+            Configuration for integration with Linux LVM (Logical Volume
+            Manager).
