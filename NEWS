@@ -1,4 +1,4 @@
-1.9.4.dev0
+1.9.4
  * #80 (beta): Add an LVM hook for snapshotting and backing up LVM logical volumes. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
