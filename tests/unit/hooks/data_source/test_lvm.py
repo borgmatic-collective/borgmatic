@@ -1,5 +1,5 @@
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.hooks.data_source import lvm as module
 

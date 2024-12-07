@@ -7,8 +7,8 @@ import shutil
 import subprocess
 
 import borgmatic.config.paths
-import borgmatic.hooks.data_source.snapshot
 import borgmatic.execute
+import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
 
