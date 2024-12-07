@@ -337,15 +337,17 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
                 f'{log_prefix}: Unmounting LVM snapshot at {snapshot_mount_path}{dry_run_label}'
             )
 
-            if not dry_run:
-                try:
-                    unmount_snapshot(umount_command, snapshot_mount_path)
-                except FileNotFoundError:
-                    logger.debug(f'{log_prefix}: Could not find "{umount_command}" command')
-                    return
-                except subprocess.CalledProcessError as error:
-                    logger.debug(f'{log_prefix}: {error}')
-                    return
+            if dry_run:
+                continue
+
+            try:
+                unmount_snapshot(umount_command, snapshot_mount_path)
+            except FileNotFoundError:
+                logger.debug(f'{log_prefix}: Could not find "{umount_command}" command')
+                return
+            except subprocess.CalledProcessError as error:
+                logger.debug(f'{log_prefix}: {error}')
+                return
 
         if not dry_run:
             shutil.rmtree(snapshots_directory)
@@ -353,7 +355,16 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     # Delete snapshots.
     lvremove_command = hook_config.get('lvremove_command', 'lvremove')
 
-    for snapshot in get_snapshots(hook_config.get('lvs_command', 'lvs')):
+    try:
+        snapshots = get_snapshots(hook_config.get('lvs_command', 'lvs'))
+    except FileNotFoundError as error:
+        logger.debug(f'{log_prefix}: Could not find "{error.filename}" command')
+        return
+    except subprocess.CalledProcessError as error:
+        logger.debug(f'{log_prefix}: {error}')
+        return
+
+    for snapshot in snapshots:
         # Only delete snapshots that borgmatic actually created!
         if not snapshot.name.split('_')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
