@@ -67,7 +67,6 @@ def test_get_logical_volumes_with_invalid_lsblk_json_errors():
         'execute_command_and_capture_output'
     ).and_return('{')
 
-    contained = {'/mnt/lvolume', '/mnt/lvolume/subdir'}
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_directories'
     ).never()
@@ -83,7 +82,6 @@ def test_get_logical_volumes_with_lsblk_json_missing_keys_errors():
         'execute_command_and_capture_output'
     ).and_return('{"block_devices": [{}]}')
 
-    contained = {'/mnt/lvolume', '/mnt/lvolume/subdir'}
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_directories'
     ).never()

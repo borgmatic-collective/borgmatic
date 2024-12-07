@@ -56,7 +56,7 @@ def test_zfs_create_and_list():
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
-            f'python3 /app/tests/end-to-end/commands/fake_zfs.py list -H -t snapshot'.split(' ')
+            'python3 /app/tests/end-to-end/commands/fake_zfs.py list -H -t snapshot'.split(' ')
         )
     finally:
         shutil.rmtree(temporary_directory)

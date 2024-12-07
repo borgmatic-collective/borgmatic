@@ -1,4 +1,3 @@
-import itertools
 import pathlib
 
 IS_A_HOOK = False

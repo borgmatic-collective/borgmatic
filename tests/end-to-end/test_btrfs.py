@@ -55,7 +55,7 @@ def test_btrfs_create_and_list():
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
-            f'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /mnt/subvolume'.split(
+            'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /mnt/subvolume'.split(
                 ' '
             )
         )
