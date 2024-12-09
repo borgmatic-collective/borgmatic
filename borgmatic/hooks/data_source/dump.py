@@ -16,17 +16,19 @@ def make_data_source_dump_path(borgmatic_runtime_directory, data_source_hook_nam
     return os.path.join(borgmatic_runtime_directory, data_source_hook_name)
 
 
-def make_data_source_dump_filename(dump_path, name, hostname=None):
+def make_data_source_dump_filename(dump_path, name, hostname=None, port=None):
     '''
-    Based on the given dump directory path, data source name, and hostname, return a filename to use
-    for the data source dump. The hostname defaults to localhost.
+    Based on the given dump directory path, data source name, hostname, and port, return a filename
+    to use for the data source dump. The hostname defaults to localhost.
 
     Raise ValueError if the data source name is invalid.
     '''
     if os.path.sep in name:
         raise ValueError(f'Invalid data source name {name}')
 
-    return os.path.join(dump_path, hostname or 'localhost', name)
+    return os.path.join(
+        dump_path, (hostname or 'localhost') + (f':{port}' if port is not None else ''), name
+    )
 
 
 def create_parent_directory_for_dump(dump_path):
