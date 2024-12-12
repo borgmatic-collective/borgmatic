@@ -1,5 +1,6 @@
 import collections
 import glob
+import json
 import logging
 import os
 import shutil
@@ -26,13 +27,21 @@ def get_filesystem_mount_points(findmnt_command):
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
         tuple(findmnt_command.split(' '))
         + (
-            '-n',  # No headings.
             '-t',  # Filesystem type.
             'btrfs',
+            '--json',
+            '--list',  # Request a flat list instead of a nested subvolume hierarchy.
         )
     )
 
-    return tuple(line.rstrip().split(' ')[0] for line in findmnt_output.splitlines())
+    try:
+        return tuple(
+            filesystem['target'] for filesystem in json.loads(findmnt_output)['filesystems']
+        )
+    except json.JSONDecodeError as error:
+        raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
+    except KeyError as error:
+        raise ValueError(f'Invalid {findmnt_command} output: Missing key "{error}"')
 
 
 def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):

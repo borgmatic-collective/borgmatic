@@ -1,3 +1,6 @@
+1.9.5.dev0
+ * #954: Fix findmnt command error in the Btrfs hook by switching to parsing JSON output.
+
 1.9.4
  * #80 (beta): Add an LVM hook for snapshotting and backing up LVM logical volumes. See the
    documentation for more information:

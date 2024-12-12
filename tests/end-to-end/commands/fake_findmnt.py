@@ -4,29 +4,38 @@ import sys
 
 def parse_arguments(*unparsed_arguments):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-n', dest='headings', action='store_false', default=True)
     parser.add_argument('-t', dest='type')
+    parser.add_argument('--json', action='store_true')
+    parser.add_argument('--list', action='store_true')
 
     return parser.parse_args(unparsed_arguments)
 
 
-BUILTIN_FILESYSTEM_MOUNT_LINES = (
-    '/mnt/subvolume /dev/loop1 btrfs rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/',
-)
+BUILTIN_FILESYSTEM_MOUNT_OUTPUT = '''{
+       "filesystems": [
+          {
+             "target": "/mnt/subvolume",
+             "source": "/dev/loop0",
+             "fstype": "btrfs",
+             "options": "rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/"
+          }
+       ]
+    }
+    '''
 
 
-def print_filesystem_mounts(arguments):
-    for line in BUILTIN_FILESYSTEM_MOUNT_LINES:
-        print(line)
+def print_filesystem_mounts():
+    print(BUILTIN_FILESYSTEM_MOUNT_OUTPUT)
 
 
 def main():
     arguments = parse_arguments(*sys.argv[1:])
 
-    assert not arguments.headings
     assert arguments.type == 'btrfs'
+    assert arguments.json
+    assert arguments.list
 
-    print_filesystem_mounts(arguments)
+    print_filesystem_mounts()
 
 
 if __name__ == '__main__':

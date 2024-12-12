@@ -1,3 +1,4 @@
+import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks.data_source import btrfs as module
@@ -7,11 +8,44 @@ def test_get_filesystem_mount_points_parses_findmnt_output():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
-        '/mnt0   /dev/loop0 btrfs  rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/\n'
-        '/mnt1   /dev/loop1 btrfs  rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/\n'
+        '''{
+           "filesystems": [
+              {
+                 "target": "/mnt0",
+                 "source": "/dev/loop0",
+                 "fstype": "btrfs",
+                 "options": "rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/"
+              },
+              {
+                 "target": "/mnt1",
+                 "source": "/dev/loop0",
+                 "fstype": "btrfs",
+                 "options": "rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/"
+              }
+           ]
+        }
+        '''
     )
 
     assert module.get_filesystem_mount_points('findmnt') == ('/mnt0', '/mnt1')
+
+
+def test_get_filesystem_mount_points_with_invalid_findmnt_json_errors():
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return('{')
+
+    with pytest.raises(ValueError):
+        module.get_filesystem_mount_points('findmnt')
+
+
+def test_get_filesystem_mount_points_with_findmnt_json_missing_filesystems_errors():
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return('{"wtf": "something is wrong here"}')
+
+    with pytest.raises(ValueError):
+        module.get_filesystem_mount_points('findmnt')
 
 
 def test_get_subvolumes_for_filesystem_parses_subvolume_list_output():
