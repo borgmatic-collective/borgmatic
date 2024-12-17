@@ -81,7 +81,7 @@ def get_configured_data_source(config, restore_dump):
     '''
     Search in the given configuration dict for dumps corresponding to the given dump to restore. If
     there are multiple matches, error. If UNSPECIFIED is given as any field in the restore dump,
-    then that can match any valid value.
+    then that can match any value.
 
     Return the found data source as a tuple of (found hook name, data source configuration dict) or
     (None, None) if not found.
@@ -175,7 +175,7 @@ def restore_single_dump(
     that data source from the archive.
     '''
     dump_metadata = render_dump_metadata(
-        Dump(hook_name, data_source["name"], data_source.get("hostname"), data_source.get("port"))
+        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port'))
     )
 
     logger.info(
@@ -337,14 +337,21 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
 
     Raise ValueError if any of the requested data source names cannot be found in the archive.
     '''
-    # A map from data source hook name to the dumps to restore for that hook.
     dumps_to_restore = (
         {
             Dump(
-                hook_name=(restore_arguments.hook if restore_arguments.hook.endswith('_databases') else f'{restore_arguments.hook}_databases') if restore_arguments.hook else UNSPECIFIED,
+                hook_name=(
+                    (
+                        restore_arguments.hook
+                        if restore_arguments.hook.endswith('_databases')
+                        else f'{restore_arguments.hook}_databases'
+                    )
+                    if restore_arguments.hook
+                    else UNSPECIFIED
+                ),
                 data_source_name=name,
                 hostname=restore_arguments.original_hostname or 'localhost',
-                port=restore_arguments.original_port
+                port=restore_arguments.original_port,
             )
             for name in restore_arguments.data_sources
         }
@@ -378,7 +385,9 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     }
 
     if missing_dumps:
-        rendered_dumps = ', '.join(f'{render_dump_metadata(dump)}' for dump in sorted(missing_dumps))
+        rendered_dumps = ', '.join(
+            f'{render_dump_metadata(dump)}' for dump in sorted(missing_dumps)
+        )
 
         raise ValueError(
             f"Cannot restore data source{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from archive"
@@ -391,7 +400,7 @@ def ensure_requested_dumps_restored(dumps_to_restore, dumps_actually_restored):
     '''
     Given a set of requested dumps to restore and a set of dumps actually restored, raise ValueError
     if any requested dumps to restore weren't restored, indicating that they were missing from the
-    archive and/or configuration.
+    configuration.
     '''
     if not dumps_actually_restored:
         raise ValueError('No data source dumps were found to restore')
