@@ -34,7 +34,7 @@ def dump_data_sources(
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
-    if hook_config.get('store_config_files') is False:
+    if hook_config and hook_config.get('store_config_files') is False:
         return []
 
     borgmatic_manifest_path = os.path.join(

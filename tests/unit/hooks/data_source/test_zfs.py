@@ -321,6 +321,21 @@ def test_remove_data_source_dumps_use_custom_commands():
     )
 
 
+def test_remove_data_source_dumps_bails_for_missing_hook_configuration():
+    flexmock(module).should_receive('get_all_dataset_mount_points').never()
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).never()
+
+    module.remove_data_source_dumps(
+        hook_config=None,
+        config={'source_directories': '/mnt/dataset'},
+        log_prefix='test',
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
 def test_remove_data_source_dumps_bails_for_missing_zfs_command():
     flexmock(module).should_receive('get_all_dataset_mount_points').and_raise(FileNotFoundError)
     flexmock(module.borgmatic.config.paths).should_receive(

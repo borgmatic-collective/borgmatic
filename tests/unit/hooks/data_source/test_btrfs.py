@@ -485,6 +485,24 @@ def test_remove_data_source_dumps_deletes_snapshots():
     )
 
 
+def test_remove_data_source_dumps_without_hook_configuration_bails():
+    flexmock(module).should_receive('get_subvolumes').never()
+    flexmock(module).should_receive('make_snapshot_path').never()
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).never()
+    flexmock(module).should_receive('delete_snapshot').never()
+    flexmock(module.shutil).should_receive('rmtree').never()
+
+    module.remove_data_source_dumps(
+        hook_config=None,
+        config={'source_directories': '/mnt/subvolume'},
+        log_prefix='test',
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
 def test_remove_data_source_dumps_with_get_subvolumes_file_not_found_error_bails():
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_raise(FileNotFoundError)
