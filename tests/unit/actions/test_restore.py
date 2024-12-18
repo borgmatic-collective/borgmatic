@@ -85,7 +85,7 @@ def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matchin
     module.strip_path_prefix_from_extracted_dump_destination('/foo', '/run/user/0/borgmatic')
 
 
-def test_restore_single_data_source_extracts_and_restores_single_file_dump():
+def test_restore_single_dump_extracts_and_restores_single_file_dump():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -110,7 +110,7 @@ def test_restore_single_data_source_extracts_and_restores_single_file_dump():
         borgmatic_runtime_directory=object,
     ).once()
 
-    module.restore_single_data_source(
+    module.restore_single_dump(
         repository={'path': 'test.borg'},
         config=flexmock(),
         local_borg_version=flexmock(),
@@ -125,7 +125,7 @@ def test_restore_single_data_source_extracts_and_restores_single_file_dump():
     )
 
 
-def test_restore_single_data_source_extracts_and_restores_directory_dump():
+def test_restore_single_dump_extracts_and_restores_directory_dump():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -152,7 +152,7 @@ def test_restore_single_data_source_extracts_and_restores_directory_dump():
         borgmatic_runtime_directory='/run/borgmatic',
     ).once()
 
-    module.restore_single_data_source(
+    module.restore_single_dump(
         repository={'path': 'test.borg'},
         config=flexmock(),
         local_borg_version=flexmock(),
@@ -167,7 +167,7 @@ def test_restore_single_data_source_extracts_and_restores_directory_dump():
     )
 
 
-def test_restore_single_data_source_with_directory_dump_error_cleans_up_temporary_directory():
+def test_restore_single_dump_with_directory_dump_error_cleans_up_temporary_directory():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -195,7 +195,7 @@ def test_restore_single_data_source_with_directory_dump_error_cleans_up_temporar
     ).never()
 
     with pytest.raises(ValueError):
-        module.restore_single_data_source(
+        module.restore_single_dump(
             repository={'path': 'test.borg'},
             config=flexmock(),
             local_borg_version=flexmock(),
@@ -210,7 +210,7 @@ def test_restore_single_data_source_with_directory_dump_error_cleans_up_temporar
         )
 
 
-def test_restore_single_data_source_with_directory_dump_and_dry_run_skips_directory_move_and_cleanup():
+def test_restore_single_dump_with_directory_dump_and_dry_run_skips_directory_move_and_cleanup():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -235,7 +235,7 @@ def test_restore_single_data_source_with_directory_dump_and_dry_run_skips_direct
         borgmatic_runtime_directory='/run/borgmatic',
     ).once()
 
-    module.restore_single_data_source(
+    module.restore_single_dump(
         repository={'path': 'test.borg'},
         config=flexmock(),
         local_borg_version=flexmock(),
@@ -250,7 +250,7 @@ def test_restore_single_data_source_with_directory_dump_and_dry_run_skips_direct
     )
 
 
-def test_collect_archive_data_source_names_parses_archive_paths():
+def test_collect_dumps_from_archive_parses_archive_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
@@ -265,7 +265,7 @@ def test_collect_archive_data_source_names_parses_archive_paths():
         ]
     )
 
-    archive_data_source_names = module.collect_archive_data_source_names(
+    archive_data_source_names = module.collect_dumps_from_archive(
         repository={'path': 'repo'},
         archive='archive',
         config={},
@@ -282,7 +282,7 @@ def test_collect_archive_data_source_names_parses_archive_paths():
     }
 
 
-def test_collect_archive_data_source_names_parses_archive_paths_with_different_base_directories():
+def test_collect_dumps_from_archive_parses_archive_paths_with_different_base_directories():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
@@ -298,7 +298,7 @@ def test_collect_archive_data_source_names_parses_archive_paths_with_different_b
         ]
     )
 
-    archive_data_source_names = module.collect_archive_data_source_names(
+    archive_data_source_names = module.collect_dumps_from_archive(
         repository={'path': 'repo'},
         archive='archive',
         config={},
@@ -315,7 +315,7 @@ def test_collect_archive_data_source_names_parses_archive_paths_with_different_b
     }
 
 
-def test_collect_archive_data_source_names_parses_directory_format_archive_paths():
+def test_collect_dumps_from_archive_parses_directory_format_archive_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
@@ -329,7 +329,7 @@ def test_collect_archive_data_source_names_parses_directory_format_archive_paths
         ]
     )
 
-    archive_data_source_names = module.collect_archive_data_source_names(
+    archive_data_source_names = module.collect_dumps_from_archive(
         repository={'path': 'repo'},
         archive='archive',
         config={},
@@ -345,7 +345,7 @@ def test_collect_archive_data_source_names_parses_directory_format_archive_paths
     }
 
 
-def test_collect_archive_data_source_names_skips_bad_archive_paths():
+def test_collect_dumps_from_archive_skips_bad_archive_paths():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
@@ -361,7 +361,7 @@ def test_collect_archive_data_source_names_skips_bad_archive_paths():
         ]
     )
 
-    archive_data_source_names = module.collect_archive_data_source_names(
+    archive_data_source_names = module.collect_dumps_from_archive(
         repository={'path': 'repo'},
         archive='archive',
         config={},
@@ -377,8 +377,8 @@ def test_collect_archive_data_source_names_skips_bad_archive_paths():
     }
 
 
-def test_find_data_sources_to_restore_passes_through_requested_names_found_in_archive():
-    restore_names = module.find_data_sources_to_restore(
+def test_get_dumps_to_restore_passes_through_requested_names_found_in_archive():
+    restore_names = module.get_dumps_to_restore(
         requested_data_source_names=['foo', 'bar'],
         archive_data_source_names={'postresql_databases': ['foo', 'bar', 'baz']},
     )
@@ -386,18 +386,18 @@ def test_find_data_sources_to_restore_passes_through_requested_names_found_in_ar
     assert restore_names == {module.UNSPECIFIED_HOOK: ['foo', 'bar']}
 
 
-def test_find_data_sources_to_restore_raises_for_requested_names_missing_from_archive():
+def test_get_dumps_to_restore_raises_for_requested_names_missing_from_archive():
     with pytest.raises(ValueError):
-        module.find_data_sources_to_restore(
+        module.get_dumps_to_restore(
             requested_data_source_names=['foo', 'bar'],
             archive_data_source_names={'postresql_databases': ['foo']},
         )
 
 
-def test_find_data_sources_to_restore_without_requested_names_finds_all_archive_data_sources():
+def test_get_dumps_to_restore_without_requested_names_finds_all_archive_data_sources():
     archive_data_source_names = {'postresql_databases': ['foo', 'bar']}
 
-    restore_names = module.find_data_sources_to_restore(
+    restore_names = module.get_dumps_to_restore(
         requested_data_source_names=[],
         archive_data_source_names=archive_data_source_names,
     )
@@ -405,10 +405,10 @@ def test_find_data_sources_to_restore_without_requested_names_finds_all_archive_
     assert restore_names == archive_data_source_names
 
 
-def test_find_data_sources_to_restore_with_all_in_requested_names_finds_all_archive_data_sources():
+def test_get_dumps_to_restore_with_all_in_requested_names_finds_all_archive_data_sources():
     archive_data_source_names = {'postresql_databases': ['foo', 'bar']}
 
-    restore_names = module.find_data_sources_to_restore(
+    restore_names = module.get_dumps_to_restore(
         requested_data_source_names=['all'],
         archive_data_source_names=archive_data_source_names,
     )
@@ -416,10 +416,10 @@ def test_find_data_sources_to_restore_with_all_in_requested_names_finds_all_arch
     assert restore_names == archive_data_source_names
 
 
-def test_find_data_sources_to_restore_with_all_in_requested_names_plus_additional_requested_names_omits_duplicates():
+def test_get_dumps_to_restore_with_all_in_requested_names_plus_additional_requested_names_omits_duplicates():
     archive_data_source_names = {'postresql_databases': ['foo', 'bar']}
 
-    restore_names = module.find_data_sources_to_restore(
+    restore_names = module.get_dumps_to_restore(
         requested_data_source_names=['all', 'foo', 'bar'],
         archive_data_source_names=archive_data_source_names,
     )
@@ -427,34 +427,34 @@ def test_find_data_sources_to_restore_with_all_in_requested_names_plus_additiona
     assert restore_names == archive_data_source_names
 
 
-def test_find_data_sources_to_restore_raises_for_all_in_requested_names_and_requested_named_missing_from_archives():
+def test_get_dumps_to_restore_raises_for_all_in_requested_names_and_requested_named_missing_from_archives():
     with pytest.raises(ValueError):
-        module.find_data_sources_to_restore(
+        module.get_dumps_to_restore(
             requested_data_source_names=['all', 'foo', 'bar'],
             archive_data_source_names={'postresql_databases': ['foo']},
         )
 
 
-def test_ensure_data_sources_found_with_all_data_sources_found_does_not_raise():
-    module.ensure_data_sources_found(
+def test_ensure_requested_dumps_restored_with_all_data_sources_found_does_not_raise():
+    module.ensure_requested_dumps_restored(
         restore_names={'postgresql_databases': ['foo']},
         remaining_restore_names={'postgresql_databases': ['bar']},
         found_names=['foo', 'bar'],
     )
 
 
-def test_ensure_data_sources_found_with_no_data_sources_raises():
+def test_ensure_requested_dumps_restored_with_no_data_sources_raises():
     with pytest.raises(ValueError):
-        module.ensure_data_sources_found(
+        module.ensure_requested_dumps_restored(
             restore_names={'postgresql_databases': []},
             remaining_restore_names={},
             found_names=[],
         )
 
 
-def test_ensure_data_sources_found_with_missing_data_sources_raises():
+def test_ensure_requested_dumps_restored_with_missing_data_sources_raises():
     with pytest.raises(ValueError):
-        module.ensure_data_sources_found(
+        module.ensure_requested_dumps_restored(
             restore_names={'postgresql_databases': ['foo']},
             remaining_restore_names={'postgresql_databases': ['bar']},
             found_names=['foo'],
@@ -478,12 +478,12 @@ def test_run_restore_restores_each_data_source():
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
-    flexmock(module).should_receive('collect_archive_data_source_names').and_return(flexmock())
-    flexmock(module).should_receive('find_data_sources_to_restore').and_return(restore_names)
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_data_source').and_return(
         ('postgresql_databases', {'name': 'foo'})
     ).and_return(('postgresql_databases', {'name': 'bar'}))
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -496,7 +496,7 @@ def test_run_restore_restores_each_data_source():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -509,7 +509,7 @@ def test_run_restore_restores_each_data_source():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('ensure_data_sources_found')
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
         repository={'path': 'repo'},
@@ -545,7 +545,7 @@ def test_run_restore_bails_for_non_matching_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
     ).never()
-    flexmock(module).should_receive('restore_single_data_source').never()
+    flexmock(module).should_receive('restore_single_dump').never()
 
     module.run_restore(
         repository={'path': 'repo'},
@@ -575,8 +575,8 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
-    flexmock(module).should_receive('collect_archive_data_source_names').and_return(flexmock())
-    flexmock(module).should_receive('find_data_sources_to_restore').and_return(restore_names)
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         archive_data_source_names=object,
@@ -596,7 +596,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
         data_source_name='bar',
         configuration_data_source_name='all',
     ).and_return(('postgresql_databases', {'name': 'bar'}))
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -609,7 +609,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -622,7 +622,7 @@ def test_run_restore_restores_data_source_configured_with_all_name():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('ensure_data_sources_found')
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
         repository={'path': 'repo'},
@@ -662,8 +662,8 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
-    flexmock(module).should_receive('collect_archive_data_source_names').and_return(flexmock())
-    flexmock(module).should_receive('find_data_sources_to_restore').and_return(restore_names)
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         archive_data_source_names=object,
@@ -683,7 +683,7 @@ def test_run_restore_skips_missing_data_source():
         data_source_name='bar',
         configuration_data_source_name='all',
     ).and_return((None, None))
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -696,7 +696,7 @@ def test_run_restore_skips_missing_data_source():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -709,7 +709,7 @@ def test_run_restore_skips_missing_data_source():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).never()
-    flexmock(module).should_receive('ensure_data_sources_found')
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
         repository={'path': 'repo'},
@@ -750,8 +750,8 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
         flexmock()
     )
-    flexmock(module).should_receive('collect_archive_data_source_names').and_return(flexmock())
-    flexmock(module).should_receive('find_data_sources_to_restore').and_return(restore_names)
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(restore_names)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         archive_data_source_names=object,
@@ -764,7 +764,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
         hook_name='mysql_databases',
         data_source_name='bar',
     ).and_return(('mysql_databases', {'name': 'bar'}))
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -777,7 +777,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('restore_single_data_source').with_args(
+    flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
         local_borg_version=object,
@@ -790,7 +790,7 @@ def test_run_restore_restores_data_sources_from_different_hooks():
         connection_params=object,
         borgmatic_runtime_directory=borgmatic_runtime_directory,
     ).once()
-    flexmock(module).should_receive('ensure_data_sources_found')
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
 
     module.run_restore(
         repository={'path': 'repo'},
