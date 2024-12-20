@@ -95,7 +95,7 @@ def test_call_hook_without_hook_config_invokes_module_function_with_arguments_an
         'borgmatic.hooks.monitoring.super_hook'
     ).and_return(test_module)
     flexmock(test_module).should_receive('hook_function').with_args(
-        {}, config, 'prefix', 55, value=66
+        None, config, 'prefix', 55, value=66
     ).and_return(expected_return_value).once()
 
     return_value = module.call_hook('hook_function', config, 'prefix', 'super_hook', 55, value=66)

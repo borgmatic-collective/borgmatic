@@ -1,5 +1,6 @@
 import collections
 import glob
+import json
 import logging
 import os
 import shutil
@@ -26,13 +27,21 @@ def get_filesystem_mount_points(findmnt_command):
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
         tuple(findmnt_command.split(' '))
         + (
-            '-n',  # No headings.
             '-t',  # Filesystem type.
             'btrfs',
+            '--json',
+            '--list',  # Request a flat list instead of a nested subvolume hierarchy.
         )
     )
 
-    return tuple(line.rstrip().split(' ')[0] for line in findmnt_output.splitlines())
+    try:
+        return tuple(
+            filesystem['target'] for filesystem in json.loads(findmnt_output)['filesystems']
+        )
+    except json.JSONDecodeError as error:
+        raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
+    except KeyError as error:
+        raise ValueError(f'Invalid {findmnt_command} output: Missing key "{error}"')
 
 
 def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
@@ -257,8 +266,12 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     '''
     Given a Btrfs configuration dict, a configuration dict, a log prefix, the borgmatic runtime
     directory, and whether this is a dry run, delete any Btrfs snapshots created by borgmatic. Use
-    the log prefix in any log entries. If this is a dry run, then don't actually remove anything.
+    the log prefix in any log entries. If this is a dry run or Btrfs isn't configured in borgmatic's
+    configuration, then don't actually remove anything.
     '''
+    if hook_config is None:
+        return
+
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')

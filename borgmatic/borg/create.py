@@ -160,14 +160,24 @@ def any_parent_directories(path, candidate_parents):
 
 
 def collect_special_file_paths(
-    create_command, config, local_path, working_directory, borg_environment, skip_directories
+    create_command,
+    config,
+    local_path,
+    working_directory,
+    borg_environment,
+    borgmatic_runtime_directory,
 ):
     '''
     Given a Borg create command as a tuple, a configuration dict, a local Borg path, a working
-    directory, a dict of environment variables to pass to Borg, and a sequence of parent directories
-    to skip, collect the paths for any special files (character devices, block devices, and named
-    pipes / FIFOs) that Borg would encounter during a create. These are all paths that could cause
-    Borg to hang if its --read-special flag is used.
+    directory, a dict of environment variables to pass to Borg, and the borgmatic runtime directory,
+    collect the paths for any special files (character devices, block devices, and named pipes /
+    FIFOs) that Borg would encounter during a create. These are all paths that could cause Borg to
+    hang if its --read-special flag is used.
+
+    Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
+    its own special files there for database dumps. And if the borgmatic runtime directory is
+    configured to be excluded from the files Borg backs up, error, because this means Borg won't be
+    able to consume any database dumps and therefore borgmatic will hang.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created.
@@ -186,12 +196,19 @@ def collect_special_file_paths(
         for path_line in paths_output.split('\n')
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
+    skip_paths = {}
 
-    return tuple(
-        path
-        for path in paths
-        if special_file(path) and not any_parent_directories(path, skip_directories)
-    )
+    if os.path.exists(borgmatic_runtime_directory):
+        skip_paths = {
+            path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
+        }
+
+        if not skip_paths:
+            raise ValueError(
+                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes. Please remove it from excludes or change the runtime directory.'
+            )
+
+    return tuple(path for path in paths if special_file(path) if path not in skip_paths)
 
 
 def check_all_source_directories_exist(source_directories):
@@ -335,9 +352,7 @@ def make_base_create_command(
             local_path,
             working_directory,
             borg_environment,
-            skip_directories=(
-                [borgmatic_runtime_directory] if os.path.exists(borgmatic_runtime_directory) else []
-            ),
+            borgmatic_runtime_directory=borgmatic_runtime_directory,
         )
 
         if special_file_paths:

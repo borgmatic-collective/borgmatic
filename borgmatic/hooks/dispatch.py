@@ -32,7 +32,11 @@ def call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs):
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that the called function raises.
     '''
-    hook_config = config.get(hook_name) or config.get(f'{hook_name}_databases') or {}
+    if hook_name in config or f'{hook_name}_databases' in config:
+        hook_config = config.get(hook_name) or config.get(f'{hook_name}_databases') or {}
+    else:
+        hook_config = None
+
     module_name = hook_name.split('_databases')[0]
 
     # Probe for a data source or monitoring hook module corresponding to the hook name.

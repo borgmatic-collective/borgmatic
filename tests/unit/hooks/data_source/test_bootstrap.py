@@ -22,7 +22,7 @@ def test_dump_data_sources_creates_manifest_file():
     ).once()
 
     module.dump_data_sources(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         config_paths=('test.yaml',),
@@ -53,7 +53,7 @@ def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
     flexmock(module.json).should_receive('dump').never()
 
     module.dump_data_sources(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         config_paths=('test.yaml',),
@@ -74,7 +74,7 @@ def test_remove_data_source_dumps_deletes_manifest_and_parent_directory():
     flexmock(module.os).should_receive('rmdir').with_args('/run/borgmatic/bootstrap').once()
 
     module.remove_data_source_dumps(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
@@ -91,7 +91,7 @@ def test_remove_data_source_dumps_with_dry_run_bails():
     flexmock(module.os).should_receive('rmdir').never()
 
     module.remove_data_source_dumps(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
@@ -110,7 +110,7 @@ def test_remove_data_source_dumps_swallows_manifest_file_not_found_error():
     flexmock(module.os).should_receive('rmdir').with_args('/run/borgmatic/bootstrap').once()
 
     module.remove_data_source_dumps(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
@@ -131,7 +131,7 @@ def test_remove_data_source_dumps_swallows_manifest_parent_directory_not_found_e
     ).once()
 
     module.remove_data_source_dumps(
-        hook_config={},
+        hook_config=None,
         config={},
         log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',

@@ -673,6 +673,23 @@ def test_remove_data_source_dumps_unmounts_and_remove_snapshots():
     )
 
 
+def test_remove_data_source_dumps_bails_for_missing_lvm_configuration():
+    flexmock(module).should_receive('get_logical_volumes').never()
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).never()
+    flexmock(module).should_receive('unmount_snapshot').never()
+    flexmock(module).should_receive('remove_snapshot').never()
+
+    module.remove_data_source_dumps(
+        hook_config=None,
+        config={'source_directories': '/mnt/lvolume'},
+        log_prefix='test',
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
 def test_remove_data_source_dumps_bails_for_missing_lsblk_command():
     config = {'lvm': {}}
     flexmock(module).should_receive('get_logical_volumes').and_raise(FileNotFoundError)

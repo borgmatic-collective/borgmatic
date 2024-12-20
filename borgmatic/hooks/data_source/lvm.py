@@ -288,9 +288,12 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     '''
     Given an LVM configuration dict, a configuration dict, a log prefix, the borgmatic runtime
     directory, and whether this is a dry run, unmount and delete any LVM snapshots created by
-    borgmatic. Use the log prefix in any log entries. If this is a dry run, then don't actually
-    remove anything.
+    borgmatic. Use the log prefix in any log entries. If this is a dry run or LVM isn't configured
+    in borgmatic's configuration, then don't actually remove anything.
     '''
+    if hook_config is None:
+        return
+
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
     # Unmount snapshots.
