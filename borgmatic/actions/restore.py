@@ -95,7 +95,7 @@ def get_configured_data_source(config, restore_dump):
             Dump(
                 hook_name,
                 hook_data_source.get('name'),
-                hook_data_source.get('hostname'),
+                hook_data_source.get('hostname', 'localhost'),
                 hook_data_source.get('port'),
             ),
             restore_dump,
@@ -107,7 +107,7 @@ def get_configured_data_source(config, restore_dump):
 
     if len(matching_dumps) > 1:
         raise ValueError(
-            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching dumps in the archive. Try adding additional flags to disambiguate.'
+            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources. Try adding additional flags to disambiguate.'
         )
 
     return matching_dumps[0]
