@@ -21,41 +21,29 @@ logger = logging.getLogger(__name__)
 UNSPECIFIED = object()
 
 
-class Dump(
-    collections.namedtuple(
-        'Dump',
-        ('hook_name', 'data_source_name', 'hostname', 'port'),
-        defaults=('localhost', None),
-    )
-):
-    def __eq__(self, other):
-        '''
-        Compare two namedtuples for equality while supporting a field value of UNSPECIFIED, which
-        indicates that the field should match any value.
-        '''
-        for field_name in self._fields:
-            self_value = getattr(self, field_name)
-            other_value = getattr(other, field_name)
+Dump = collections.namedtuple(
+    'Dump',
+    ('hook_name', 'data_source_name', 'hostname', 'port'),
+    defaults=('localhost', None),
+)
 
-            if self_value == UNSPECIFIED or other_value == UNSPECIFIED:
-                continue
 
-            if self_value != other_value:
-                return False
+def dumps_match(first, second):
+    '''
+    Compare two Dump instances for equality while supporting a field value of UNSPECIFIED, which
+    indicates that the field should match any value.
+    '''
+    for field_name in first._fields:
+        first_value = getattr(first, field_name)
+        second_value = getattr(second, field_name)
 
-        return True
+        if first_value == UNSPECIFIED or second_value == UNSPECIFIED:
+            continue
 
-    def __ne__(self, other):
-        return not self == other
+        if first_value != second_value:
+            return False
 
-    def __lt__(self, other):
-        return self.data_source_name < other.data_source_name
-
-    def __gt__(self, other):
-        return self.data_source_name > other.data_source_name
-
-    def __hash__(self):
-        return hash(tuple(self))
+    return True
 
 
 def render_dump_metadata(dump):
@@ -103,13 +91,15 @@ def get_configured_data_source(config, restore_dump):
         (hook_name, hook_data_source)
         for (hook_name, hook) in hooks_to_search.items()
         for hook_data_source in hook
-        if Dump(
-            hook_name,
-            hook_data_source.get('name'),
-            hook_data_source.get('hostname'),
-            hook_data_source.get('port'),
+        if dumps_match(
+            Dump(
+                hook_name,
+                hook_data_source.get('name'),
+                hook_data_source.get('hostname'),
+                hook_data_source.get('port'),
+            ),
+            restore_dump,
         )
-        == restore_dump
     )
 
     if not matching_dumps:
@@ -331,13 +321,13 @@ def collect_dumps_from_archive(
 def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     '''
     Given restore arguments as an argparse.Namespace instance indicating which dumps to restore and
-    a set of Dump instances representing the dumps found in an archive, return a set of Dump
-    instances to restore. As part of this, replace any Dump having a data source name of "all" with
-    multiple named Dump instances as appropriate.
+    a set of Dump instances representing the dumps found in an archive, return a set of specific
+    Dump instances from the archive to restore. As part of this, replace any Dump having a data
+    source name of "all" with multiple named Dump instances as appropriate.
 
     Raise ValueError if any of the requested data source names cannot be found in the archive.
     '''
-    dumps_to_restore = (
+    requested_dumps = (
         {
             Dump(
                 hook_name=(
@@ -365,24 +355,24 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
             )
         }
     )
+    missing_dumps = set()
+    dumps_to_restore = set()
 
-    # If "all" is in dumps_to_restore, then replace it with named dumps found within the archive.
-    try:
-        all_dump = next(dump for dump in dumps_to_restore if dump.data_source_name == 'all')
-    except StopIteration:
-        pass
-    else:
-        dumps_to_restore.remove(all_dump)
+    # If there's a requested "all" dump, add every dump from the archive to the dumps to restore.
+    if any(dump for dump in requested_dumps if dump.data_source_name == 'all'):
+        dumps_to_restore.update(dumps_from_archive)
 
-        for dump in dumps_from_archive:
-            if all_dump.hook_name == UNSPECIFIED or dump.hook_name == all_dump.hook_name:
-                dumps_to_restore.add(dump)
+    # Put any archive dump matching a requested dump in the dumps to restore.
+    for requested_dump in requested_dumps:
+        if requested_dump.data_source_name == 'all':
+            continue
 
-    missing_dumps = {
-        restore_dump
-        for restore_dump in dumps_to_restore
-        if all(restore_dump != archive_dump for archive_dump in dumps_from_archive)
-    }
+        for archive_dump in dumps_from_archive:
+            if dumps_match(requested_dump, archive_dump):
+                dumps_to_restore.add(archive_dump)
+                break
+        else:
+            missing_dumps.add(requested_dump)
 
     if missing_dumps:
         rendered_dumps = ', '.join(
@@ -390,7 +380,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         )
 
         raise ValueError(
-            f"Cannot restore data source{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from archive"
+            f"Cannot restore data source dump{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from archive"
         )
 
     return dumps_to_restore
