@@ -325,7 +325,8 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     Dump instances from the archive to restore. As part of this, replace any Dump having a data
     source name of "all" with multiple named Dump instances as appropriate.
 
-    Raise ValueError if any of the requested data source names cannot be found in the archive.
+    Raise ValueError if any of the requested data source names cannot be found in the archive or if
+    there are multiple archive dump matches for a given requested dump.
     '''
     requested_dumps = (
         {
@@ -367,12 +368,20 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         if requested_dump.data_source_name == 'all':
             continue
 
-        for archive_dump in dumps_from_archive:
-            if dumps_match(requested_dump, archive_dump):
-                dumps_to_restore.add(archive_dump)
-                break
-        else:
+        matching_dumps = (
+            archive_dump
+            for archive_dump in dumps_from_archive
+            if dumps_match(requested_dump, archive_dump)
+        )
+
+        if len(matching_dumps) == 0:
             missing_dumps.add(requested_dump)
+        elif len(matching_dumps) == 1:
+            dumps_to_restore.add(archive_dump)
+        else:
+            raise ValueError(
+                f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding additional flags to disambiguate.'
+            )
 
     if missing_dumps:
         rendered_dumps = ', '.join(
