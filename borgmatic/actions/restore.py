@@ -68,27 +68,17 @@ def render_dump_metadata(dump):
 def get_configured_data_source(config, restore_dump):
     '''
     Search in the given configuration dict for dumps corresponding to the given dump to restore. If
-    there are multiple matches, error. If UNSPECIFIED is given as any field in the restore dump,
-    then that can match any value.
+    there are multiple matches, error.
 
-    Return the found data source as a tuple of (found hook name, data source configuration dict) or
-    (None, None) if not found.
+    Return the found data source as a data source configuration dict or None if not found.
     '''
-    if restore_dump.hook_name == UNSPECIFIED:
-        hooks_to_search = {
-            hook_name: value
-            for (hook_name, value) in config.items()
-            if hook_name.split('_databases')[0]
-            in borgmatic.hooks.dispatch.get_submodule_names(borgmatic.hooks.data_source)
-        }
-    else:
-        try:
-            hooks_to_search = {restore_dump.hook_name: config[restore_dump.hook_name]}
-        except KeyError:
-            return (None, None)
+    try:
+        hooks_to_search = {restore_dump.hook_name: config[restore_dump.hook_name]}
+    except KeyError:
+        return None
 
     matching_dumps = tuple(
-        (hook_name, hook_data_source)
+        hook_data_source
         for (hook_name, hook) in hooks_to_search.items()
         for hook_data_source in hook
         if dumps_match(
@@ -103,11 +93,11 @@ def get_configured_data_source(config, restore_dump):
     )
 
     if not matching_dumps:
-        return (None, None)
+        return None
 
     if len(matching_dumps) > 1:
         raise ValueError(
-            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources. Try adding additional flags to disambiguate.'
+            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources.'
         )
 
     return matching_dumps[0]
@@ -368,7 +358,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         if requested_dump.data_source_name == 'all':
             continue
 
-        matching_dumps = (
+        matching_dumps = tuple(
             archive_dump
             for archive_dump in dumps_from_archive
             if dumps_match(requested_dump, archive_dump)
@@ -377,10 +367,10 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
         if len(matching_dumps) == 0:
             missing_dumps.add(requested_dump)
         elif len(matching_dumps) == 1:
-            dumps_to_restore.add(archive_dump)
+            dumps_to_restore.add(matching_dumps[0])
         else:
             raise ValueError(
-                f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding additional flags to disambiguate.'
+                f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding flags to disambiguate.'
             )
 
     if missing_dumps:
@@ -483,7 +473,7 @@ def run_restore(
 
         # Restore each dump.
         for restore_dump in dumps_to_restore:
-            found_hook_name, found_data_source = get_configured_data_source(
+            found_data_source = get_configured_data_source(
                 config,
                 restore_dump,
             )
@@ -491,7 +481,7 @@ def run_restore(
             # For any data sources that weren't found via exact matches in the configuration, try to
             # fallback to "all" entries.
             if not found_data_source:
-                found_hook_name, found_data_source = get_configured_data_source(
+                found_data_source = get_configured_data_source(
                     config,
                     Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
                 )
@@ -512,7 +502,7 @@ def run_restore(
                 local_path,
                 remote_path,
                 archive_name,
-                found_hook_name or restore_dump.hook_name,
+                restore_dump.hook_name,
                 dict(found_data_source, **{'schemas': restore_arguments.schemas}),
                 connection_params,
                 borgmatic_runtime_directory,

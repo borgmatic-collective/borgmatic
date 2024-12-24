@@ -19,7 +19,7 @@ def test_get_configured_data_source_matches_data_source_by_name():
             'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}],
         },
         restore_dump=module.Dump('postgresql_databases', 'bar'),
-    ) == ('postgresql_databases', {'name': 'bar'})
+    ) == {'name': 'bar'}
 
 
 def test_get_configured_data_source_matches_nothing_when_nothing_configured():
@@ -28,7 +28,7 @@ def test_get_configured_data_source_matches_nothing_when_nothing_configured():
     assert module.get_configured_data_source(
         config={},
         restore_dump=module.Dump('postgresql_databases', 'quux'),
-    ) == (None, None)
+    ) is None
 
 
 def test_get_configured_data_source_matches_nothing_when_data_source_name_not_configured():
@@ -39,23 +39,7 @@ def test_get_configured_data_source_matches_nothing_when_data_source_name_not_co
             'postgresql_databases': [{'name': 'foo'}],
         },
         restore_dump=module.Dump('postgresql_databases', 'quux'),
-    ) == (None, None)
-
-
-def test_get_configured_data_source_with_unspecified_hook_matches_data_source_by_name():
-    flexmock(module).should_receive('dumps_match').and_return(False)
-    flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump('postgresql_databases', 'bar'),
-        module.Dump(module.UNSPECIFIED, 'bar'),
-    ).and_return(True)
-
-    assert module.get_configured_data_source(
-        config={
-            'other_databases': [{'name': 'other'}],
-            'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}],
-        },
-        restore_dump=module.Dump(module.UNSPECIFIED, 'bar'),
-    ) == ('postgresql_databases', {'name': 'bar'})
+    ) is None
 
 
 def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matching_databases_subdirectory():
@@ -565,8 +549,8 @@ def test_run_restore_restores_each_data_source():
     flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
     flexmock(module).should_receive('get_dumps_to_restore').and_return(dumps_to_restore)
     flexmock(module).should_receive('get_configured_data_source').and_return(
-        ('postgresql_databases', {'name': 'foo'})
-    ).and_return(('postgresql_databases', {'name': 'bar'}))
+        {'name': 'foo'}
+    ).and_return({'name': 'bar'})
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
@@ -665,15 +649,15 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-    ).and_return(('postgresql_databases', {'name': 'foo'}))
+    ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='bar'),
-    ).and_return((None, None))
+    ).and_return(None)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='all'),
-    ).and_return(('postgresql_databases', {'name': 'bar'}))
+    ).and_return({'name': 'bar'})
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
@@ -746,15 +730,15 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-    ).and_return(('postgresql_databases', {'name': 'foo'}))
+    ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='bar'),
-    ).and_return((None, None))
+    ).and_return(None)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='all'),
-    ).and_return((None, None))
+    ).and_return(None)
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
@@ -827,11 +811,11 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-    ).and_return(('postgresql_databases', {'name': 'foo'}))
+    ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='mysql_databases', data_source_name='foo'),
-    ).and_return(('mysql_databases', {'name': 'bar'}))
+    ).and_return({'name': 'bar'})
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
         config=object,
