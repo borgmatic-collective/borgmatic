@@ -1,12 +1,142 @@
-import collections
-
 import pytest
 from flexmock import flexmock
 
 import borgmatic.actions.restore as module
 
 
-def test_get_configured_data_source_matches_data_source_by_name():
+@pytest.mark.parametrize(
+    'first_dump,second_dump,expected_result',
+    (
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            module.Dump('postgresql_databases', 'foo'),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            module.Dump('postgresql_databases', 'bar'),
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            module.Dump('mariadb_databases', 'foo'),
+            False,
+        ),
+        (module.Dump('postgresql_databases', 'foo'), module.Dump(module.UNSPECIFIED, 'foo'), True),
+        (module.Dump('postgresql_databases', 'foo'), module.Dump(module.UNSPECIFIED, 'bar'), False),
+        (
+            module.Dump('postgresql_databases', module.UNSPECIFIED),
+            module.Dump('postgresql_databases', 'foo'),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', module.UNSPECIFIED),
+            module.Dump('mariadb_databases', 'foo'),
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost'),
+            module.Dump('postgresql_databases', 'foo', 'myhost'),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost'),
+            module.Dump('postgresql_databases', 'foo', 'otherhost'),
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost'),
+            module.Dump('postgresql_databases', 'foo', module.UNSPECIFIED),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost'),
+            module.Dump('postgresql_databases', 'bar', module.UNSPECIFIED),
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost', 1234),
+            module.Dump('postgresql_databases', 'foo', 'myhost', 1234),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost', 1234),
+            module.Dump('postgresql_databases', 'foo', 'myhost', 4321),
+            False,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost', module.UNSPECIFIED),
+            module.Dump('postgresql_databases', 'foo', 'myhost', 1234),
+            True,
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'myhost', module.UNSPECIFIED),
+            module.Dump('postgresql_databases', 'foo', 'otherhost', 1234),
+            False,
+        ),
+        (
+            module.Dump(
+                module.UNSPECIFIED, module.UNSPECIFIED, module.UNSPECIFIED, module.UNSPECIFIED
+            ),
+            module.Dump('postgresql_databases', 'foo', 'myhost', 1234),
+            True,
+        ),
+    ),
+)
+def test_dumps_match_compares_two_dumps_while_respecting_unspecified_values(
+    first_dump, second_dump, expected_result
+):
+    assert module.dumps_match(first_dump, second_dump) == expected_result
+
+
+@pytest.mark.parametrize(
+    'dump,expected_result',
+    (
+        (
+            module.Dump('postgresql_databases', 'foo'),
+            'foo@localhost (postgresql_databases)',
+        ),
+        (
+            module.Dump(module.UNSPECIFIED, 'foo'),
+            'foo@localhost',
+        ),
+        (
+            module.Dump('postgresql_databases', module.UNSPECIFIED),
+            'unspecified@localhost (postgresql_databases)',
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'host'),
+            'foo@host (postgresql_databases)',
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', module.UNSPECIFIED),
+            'foo (postgresql_databases)',
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'host', 1234),
+            'foo@host:1234 (postgresql_databases)',
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', module.UNSPECIFIED, 1234),
+            'foo@:1234 (postgresql_databases)',
+        ),
+        (
+            module.Dump('postgresql_databases', 'foo', 'host', module.UNSPECIFIED),
+            'foo@host (postgresql_databases)',
+        ),
+        (
+            module.Dump(
+                module.UNSPECIFIED, module.UNSPECIFIED, module.UNSPECIFIED, module.UNSPECIFIED
+            ),
+            'unspecified',
+        ),
+    ),
+)
+def test_render_dump_metadata_renders_dump_values_into_string(dump, expected_result):
+    assert module.render_dump_metadata(dump) == expected_result
+
+
+def test_get_configured_data_source_matches_data_source_with_restore_dump():
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
         module.Dump('postgresql_databases', 'bar'),
@@ -25,21 +155,49 @@ def test_get_configured_data_source_matches_data_source_by_name():
 def test_get_configured_data_source_matches_nothing_when_nothing_configured():
     flexmock(module).should_receive('dumps_match').and_return(False)
 
-    assert module.get_configured_data_source(
-        config={},
-        restore_dump=module.Dump('postgresql_databases', 'quux'),
-    ) is None
+    assert (
+        module.get_configured_data_source(
+            config={},
+            restore_dump=module.Dump('postgresql_databases', 'quux'),
+        )
+        is None
+    )
 
 
-def test_get_configured_data_source_matches_nothing_when_data_source_name_not_configured():
+def test_get_configured_data_source_matches_nothing_when_restore_dump_does_not_match_configuration():
     flexmock(module).should_receive('dumps_match').and_return(False)
 
-    assert module.get_configured_data_source(
-        config={
-            'postgresql_databases': [{'name': 'foo'}],
-        },
-        restore_dump=module.Dump('postgresql_databases', 'quux'),
-    ) is None
+    assert (
+        module.get_configured_data_source(
+            config={
+                'postgresql_databases': [{'name': 'foo'}],
+            },
+            restore_dump=module.Dump('postgresql_databases', 'quux'),
+        )
+        is None
+    )
+
+
+def test_get_configured_data_source_with_multiple_matching_data_sources_errors():
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'bar'),
+    ).and_return(True)
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
+
+    with pytest.raises(ValueError):
+        module.get_configured_data_source(
+            config={
+                'other_databases': [{'name': 'other'}],
+                'postgresql_databases': [
+                    {'name': 'foo'},
+                    {'name': 'bar'},
+                    {'name': 'bar', 'format': 'directory'},
+                ],
+            },
+            restore_dump=module.Dump('postgresql_databases', 'bar'),
+        )
 
 
 def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matching_databases_subdirectory():
@@ -63,6 +221,7 @@ def test_strip_path_prefix_from_extracted_dump_destination_renames_first_matchin
 
 
 def test_restore_single_dump_extracts_and_restores_single_file_dump():
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -103,6 +262,7 @@ def test_restore_single_dump_extracts_and_restores_single_file_dump():
 
 
 def test_restore_single_dump_extracts_and_restores_directory_dump():
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -145,6 +305,7 @@ def test_restore_single_dump_extracts_and_restores_directory_dump():
 
 
 def test_restore_single_dump_with_directory_dump_error_cleans_up_temporary_directory():
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -188,6 +349,7 @@ def test_restore_single_dump_with_directory_dump_error_cleans_up_temporary_direc
 
 
 def test_restore_single_dump_with_directory_dump_and_dry_run_skips_directory_move_and_cleanup():
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').with_args(
         'make_data_source_dump_patterns', object, object, object, object, object
     ).and_return({'postgresql': flexmock()})
@@ -392,6 +554,7 @@ def test_get_dumps_to_restore_raises_for_requested_dumps_missing_from_archive():
         module.Dump('postgresql_databases', 'foo'),
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
 
     with pytest.raises(ValueError):
         module.get_dumps_to_restore(
@@ -412,15 +575,18 @@ def test_get_dumps_to_restore_without_requested_dumps_finds_all_archive_dumps():
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
 
-    assert module.get_dumps_to_restore(
-        restore_arguments=flexmock(
-            hook=None,
-            data_sources=[],
-            original_hostname=None,
-            original_port=None,
-        ),
-        dumps_from_archive=dumps_from_archive,
-    ) == dumps_from_archive
+    assert (
+        module.get_dumps_to_restore(
+            restore_arguments=flexmock(
+                hook=None,
+                data_sources=[],
+                original_hostname=None,
+                original_port=None,
+            ),
+            dumps_from_archive=dumps_from_archive,
+        )
+        == dumps_from_archive
+    )
 
 
 def test_get_dumps_to_restore_with_all_in_requested_dumps_finds_all_archive_dumps():
@@ -438,15 +604,18 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_finds_all_archive_dump
         module.Dump('postgresql_databases', 'bar'),
     ).and_return(True)
 
-    assert module.get_dumps_to_restore(
-        restore_arguments=flexmock(
-            hook=None,
-            data_sources=['all'],
-            original_hostname=None,
-            original_port=None,
-        ),
-        dumps_from_archive=dumps_from_archive,
-    ) == dumps_from_archive
+    assert (
+        module.get_dumps_to_restore(
+            restore_arguments=flexmock(
+                hook=None,
+                data_sources=['all'],
+                original_hostname=None,
+                original_port=None,
+            ),
+            dumps_from_archive=dumps_from_archive,
+        )
+        == dumps_from_archive
+    )
 
 
 def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_requested_dumps_omits_duplicates():
@@ -478,12 +647,40 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_reques
     )
 
 
-def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_dumps_missing_from_archives():
+def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
         module.Dump(module.UNSPECIFIED, 'foo'),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump('mariadb_databases', 'foo'),
+    ).and_return(True)
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
+
+    with pytest.raises(ValueError):
+        module.get_dumps_to_restore(
+            restore_arguments=flexmock(
+                hook=None,
+                data_sources=['foo'],
+                original_hostname=None,
+                original_port=None,
+            ),
+            dumps_from_archive={
+                module.Dump('postgresql_databases', 'foo'),
+                module.Dump('mariadb_databases', 'foo'),
+            },
+        )
+
+
+def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_dumps_missing_from_archive():
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump('postgresql_databases', 'foo'),
+    ).and_return(True)
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
 
     with pytest.raises(ValueError):
         module.get_dumps_to_restore(
@@ -519,9 +716,13 @@ def test_ensure_requested_dumps_restored_with_no_dumps_raises():
 
 
 def test_ensure_requested_dumps_restored_with_missing_dumps_raises():
+    flexmock(module).should_receive('render_dump_metadata').and_return('test')
+
     with pytest.raises(ValueError):
         module.ensure_requested_dumps_restored(
-            dumps_to_restore={module.Dump(hook_name='postgresql_databases', data_source_name='foo')},
+            dumps_to_restore={
+                module.Dump(hook_name='postgresql_databases', data_source_name='foo')
+            },
             dumps_actually_restored={
                 module.Dump(hook_name='postgresql_databases', data_source_name='bar')
             },

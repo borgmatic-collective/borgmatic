@@ -1,5 +1,4 @@
 import collections
-import copy
 import logging
 import os
 import pathlib
@@ -48,7 +47,7 @@ def dumps_match(first, second):
 
 def render_dump_metadata(dump):
     '''
-    Given a Dump instance, make a display string describing it for use in log messges.
+    Given a Dump instance, make a display string describing it for use in log messages.
     '''
     name = dump.data_source_name if dump.data_source_name != UNSPECIFIED else 'unspecified'
     hostname = dump.hostname or 'localhost'
@@ -97,7 +96,7 @@ def get_configured_data_source(config, restore_dump):
 
     if len(matching_dumps) > 1:
         raise ValueError(
-            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources.'
+            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources'
         )
 
     return matching_dumps[0]
@@ -353,7 +352,7 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     if any(dump for dump in requested_dumps if dump.data_source_name == 'all'):
         dumps_to_restore.update(dumps_from_archive)
 
-    # Put any archive dump matching a requested dump in the dumps to restore.
+    # If any archive dump matches a requested dump, add the archive dump to the dumps to restore.
     for requested_dump in requested_dumps:
         if requested_dump.data_source_name == 'all':
             continue

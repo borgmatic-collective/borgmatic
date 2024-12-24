@@ -25,8 +25,12 @@ def write_configuration(
     for testing. This includes injecting the given repository path, borgmatic source directory for
     storing database dumps, dump format (for PostgreSQL), and encryption passphrase.
     '''
-    postgresql_all_format_option = f'format: {postgresql_all_dump_format}' if postgresql_all_dump_format else ''
-    mariadb_mysql_dump_format_option = f'format: {mariadb_mysql_all_dump_format}' if mariadb_mysql_all_dump_format else ''
+    postgresql_all_format_option = (
+        f'format: {postgresql_all_dump_format}' if postgresql_all_dump_format else ''
+    )
+    mariadb_mysql_dump_format_option = (
+        f'format: {mariadb_mysql_all_dump_format}' if mariadb_mysql_all_dump_format else ''
+    )
 
     config_yaml = f'''
 source_directories:
@@ -95,7 +99,7 @@ sqlite_databases:
     (
         (None, None),
         ('custom', 'sql'),
-    )
+    ),
 )
 def write_custom_restore_configuration(
     source_directory,

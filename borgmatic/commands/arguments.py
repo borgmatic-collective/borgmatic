@@ -1184,16 +1184,16 @@ def make_parsers():
     )
     restore_group.add_argument(
         '--original-hostname',
-        help="The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps",
+        help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '--original-port',
         type=int,
-        help="The port where the dump to restore came from, only necessary if you need to disambiguate dumps",
+        help='The port where the dump to restore came from, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '--hook',
-        help="The name of the data source hook for the dump to restore, only necessary if you need to disambiguate dumps",
+        help='The name of the data source hook for the dump to restore, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
