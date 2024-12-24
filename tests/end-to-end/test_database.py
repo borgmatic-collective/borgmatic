@@ -16,6 +16,8 @@ def write_configuration(
     repository_path,
     user_runtime_directory,
     postgresql_dump_format='custom',
+    postgresql_all_dump_format=None,
+    mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
 ):
     '''
@@ -23,6 +25,9 @@ def write_configuration(
     for testing. This includes injecting the given repository path, borgmatic source directory for
     storing database dumps, dump format (for PostgreSQL), and encryption passphrase.
     '''
+    postgresql_all_format_option = f'format: {postgresql_all_dump_format}' if postgresql_all_dump_format else ''
+    mariadb_mysql_dump_format_option = f'format: {mariadb_mysql_all_dump_format}' if mariadb_mysql_all_dump_format else ''
+
     config_yaml = f'''
 source_directories:
     - {source_directory}
@@ -39,11 +44,7 @@ postgresql_databases:
       password: test
       format: {postgresql_dump_format}
     - name: all
-      hostname: postgresql
-      username: postgres
-      password: test
-    - name: all
-      format: custom
+      {postgresql_all_format_option}
       hostname: postgresql
       username: postgres
       password: test
@@ -53,11 +54,7 @@ mariadb_databases:
       username: root
       password: test
     - name: all
-      hostname: mariadb
-      username: root
-      password: test
-    - name: all
-      format: sql
+      {mariadb_mysql_dump_format_option}
       hostname: mariadb
       username: root
       password: test
@@ -67,11 +64,7 @@ mysql_databases:
       username: root
       password: test
     - name: all
-      hostname: not-actually-mysql
-      username: root
-      password: test
-    - name: all
-      format: sql
+      {mariadb_mysql_dump_format_option}
       hostname: not-actually-mysql
       username: root
       password: test
@@ -97,12 +90,21 @@ sqlite_databases:
     return ruamel.yaml.YAML(typ='safe').load(config_yaml)
 
 
+@pytest.mark.parametrize(
+    'postgresql_all_dump_format,mariadb_mysql_all_dump_format',
+    (
+        (None, None),
+        ('custom', 'sql'),
+    )
+)
 def write_custom_restore_configuration(
     source_directory,
     config_path,
     repository_path,
     user_runtime_directory,
     postgresql_dump_format='custom',
+    postgresql_all_dump_format=None,
+    mariadb_mysql_all_dump_format=None,
     mongodb_dump_format='archive',
 ):
     '''
