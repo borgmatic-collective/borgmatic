@@ -915,7 +915,10 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
     color_enabled = should_do_markup(global_arguments.no_color or any_json_flags, configs)
-    colorama.init(autoreset=color_enabled, strip=not color_enabled)
+
+    if color_enabled:
+        colorama.init(autoreset=True)
+
     try:
         configure_logging(
             verbosity_to_log_level(global_arguments.verbosity),

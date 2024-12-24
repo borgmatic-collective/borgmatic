@@ -4,6 +4,7 @@
  * #947: To avoid a hang in the database hooks, error and exit when the borgmatic runtime
    directory overlaps with the configured excludes.
  * #954: Fix a findmnt command error in the Btrfs hook by switching to parsing JSON output.
+ * #956: Fix the printing of a color reset code even when color is disabled.
  * When the ZFS, Btrfs, or LVM hooks aren't configured, don't try to cleanup snapshots for them.
 
 1.9.4
