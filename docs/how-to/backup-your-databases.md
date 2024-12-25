@@ -412,38 +412,73 @@ for more information.
 ### Restore databases sharing a name
 
 <span class="minilink minilink-addedin">New in version 1.9.5</span> If you've
-backed up multiple databases that happen to share the same name (e.g. from
-different hostnames or ports), you can include additional flags to disambiguate
-which database you'd like to restore. For instance:
+backed up multiple databases that happen to share the same name but different
+hostnames, ports, or hooks, you can include additional flags to disambiguate
+which database you'd like to restore. For instance, let's say you've backed up
+the following configured databases:
 
-```bash
-borgmatic restore --archive latest --database users --original-hostname myhost.org
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: host1.example.org
+    - name: users
+      hostname: host2.example.org
 ```
 
-This selects a `users` database to restore, but only if it originally came from
-the host `myhost.org`—and doesn't restore `users` databases from any other
-hosts.
+... then you can run the following command to restore only one of them:
 
-Here's another example:
+```bash
+borgmatic restore --archive latest --database users --original-hostname host1.example.org
+```
+
+This selects a `users` database to restore, but only if it originally came
+from the host `host1.example.org`. And this command won't restore `users`
+databases from any other hosts.
+
+Here's another example configuration:
+
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: example.org
+      port: 5433
+    - name: users
+      hostname: example.org
+      port: 5434
+```
+
+And a command to restore just one of the databases:
 
 ```bash
 borgmatic restore --archive latest --database users --original-port 5433
 ```
 
-That restores a `users` database only if it originally came from port 5433.
+That restores a `users` database only if it originally came from port `5433`.
 
-Finally:
+Finally, check out this configuration:
+
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: example.org
+mariadb_databases:
+    - name: users
+      hostname: example.org
+```
+
+And to select just one of the databases to restore:
 
 ```bash
 borgmatic restore --archive latest --database users --hook postgresql
 ```
 
 That restores a `users` database only if it was dumped using the
-`postgresql_databases:` database hook—and doesn't restore `users` databases that
-were dumped using other database hooks.
+`postgresql_databases:` data source hook. And this command won't restore
+`users` databases that were dumped using other hooks.
 
-Note that these flags don't change the hostname or port where the database is
-restored. For that, see below about restoring to an alternate host.
+Note that these flags don't change the hostname or port to which the database
+is actually restored. For that, see below about restoring to an alternate
+host.
 
 
 ### Restore all databases
