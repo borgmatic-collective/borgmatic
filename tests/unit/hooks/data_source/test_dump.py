@@ -15,6 +15,13 @@ def test_make_data_source_dump_filename_uses_name_and_hostname():
     )
 
 
+def test_make_data_source_dump_filename_uses_name_and_hostname_and_port():
+    assert (
+        module.make_data_source_dump_filename('databases', 'test', 'hostname', 1234)
+        == 'databases/hostname:1234/test'
+    )
+
+
 def test_make_data_source_dump_filename_without_hostname_defaults_to_localhost():
     assert module.make_data_source_dump_filename('databases', 'test') == 'databases/localhost/test'
 

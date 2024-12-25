@@ -399,7 +399,7 @@ def test_collect_dumps_from_archive_parses_archive_paths():
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo',
-            'borgmatic/postgresql_databases/localhost/bar',
+            'borgmatic/postgresql_databases/host:1234/bar',
             'borgmatic/mysql_databases/localhost/quux',
         ]
     )
@@ -417,7 +417,7 @@ def test_collect_dumps_from_archive_parses_archive_paths():
 
     assert archive_dumps == {
         module.Dump('postgresql_databases', 'foo'),
-        module.Dump('postgresql_databases', 'bar'),
+        module.Dump('postgresql_databases', 'bar', 'host', 1234),
         module.Dump('mysql_databases', 'quux'),
     }
 
@@ -487,7 +487,7 @@ def test_collect_dumps_from_archive_parses_directory_format_archive_paths():
     }
 
 
-def test_collect_dumps_from_archive_skips_bad_archive_paths():
+def test_collect_dumps_from_archive_skips_bad_archive_paths_or_bad_path_components():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/root/.borgmatic')
@@ -497,6 +497,7 @@ def test_collect_dumps_from_archive_skips_bad_archive_paths():
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         [
             'borgmatic/postgresql_databases/localhost/foo',
+            'borgmatic/postgresql_databases/localhost:abcd/bar',
             'borgmatic/invalid',
             'invalid/as/well',
             '',
@@ -516,6 +517,7 @@ def test_collect_dumps_from_archive_skips_bad_archive_paths():
 
     assert archive_dumps == {
         module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'bar'),
     }
 
 
@@ -694,6 +696,106 @@ def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_du
         )
 
 
+def test_get_dumps_to_restore_with_requested_hook_name_filters_dumps_found_in_archive():
+    dumps_from_archive = {
+        module.Dump('mariadb_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('sqlite_databases', 'bar'),
+    }
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo'),
+    ).and_return(True)
+
+    assert module.get_dumps_to_restore(
+        restore_arguments=flexmock(
+            hook='postgresql_databases',
+            data_sources=['foo'],
+            original_hostname=None,
+            original_port=None,
+        ),
+        dumps_from_archive=dumps_from_archive,
+    ) == {
+        module.Dump('postgresql_databases', 'foo'),
+    }
+
+
+def test_get_dumps_to_restore_with_requested_shortened_hook_name_filters_dumps_found_in_archive():
+    dumps_from_archive = {
+        module.Dump('mariadb_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('sqlite_databases', 'bar'),
+    }
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo'),
+    ).and_return(True)
+
+    assert module.get_dumps_to_restore(
+        restore_arguments=flexmock(
+            hook='postgresql',
+            data_sources=['foo'],
+            original_hostname=None,
+            original_port=None,
+        ),
+        dumps_from_archive=dumps_from_archive,
+    ) == {
+        module.Dump('postgresql_databases', 'foo'),
+    }
+
+
+def test_get_dumps_to_restore_with_requested_hostname_filters_dumps_found_in_archive():
+    dumps_from_archive = {
+        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo', 'host'),
+        module.Dump('postgresql_databases', 'bar'),
+    }
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump('postgresql_databases', 'foo', 'host'),
+        module.Dump('postgresql_databases', 'foo', 'host'),
+    ).and_return(True)
+
+    assert module.get_dumps_to_restore(
+        restore_arguments=flexmock(
+            hook='postgresql_databases',
+            data_sources=['foo'],
+            original_hostname='host',
+            original_port=None,
+        ),
+        dumps_from_archive=dumps_from_archive,
+    ) == {
+        module.Dump('postgresql_databases', 'foo', 'host'),
+    }
+
+
+def test_get_dumps_to_restore_with_requested_port_filters_dumps_found_in_archive():
+    dumps_from_archive = {
+        module.Dump('postgresql_databases', 'foo', 'host'),
+        module.Dump('postgresql_databases', 'foo', 'host', 1234),
+        module.Dump('postgresql_databases', 'bar'),
+    }
+    flexmock(module).should_receive('dumps_match').and_return(False)
+    flexmock(module).should_receive('dumps_match').with_args(
+        module.Dump('postgresql_databases', 'foo', 'host', 1234),
+        module.Dump('postgresql_databases', 'foo', 'host', 1234),
+    ).and_return(True)
+
+    assert module.get_dumps_to_restore(
+        restore_arguments=flexmock(
+            hook='postgresql_databases',
+            data_sources=['foo'],
+            original_hostname='host',
+            original_port=1234,
+        ),
+        dumps_from_archive=dumps_from_archive,
+    ) == {
+        module.Dump('postgresql_databases', 'foo', 'host', 1234),
+    }
+
+
 def test_ensure_requested_dumps_restored_with_all_dumps_restored_does_not_raise():
     module.ensure_requested_dumps_restored(
         dumps_to_restore={
@@ -821,6 +923,64 @@ def test_run_restore_bails_for_non_matching_repository():
         config=flexmock(),
         local_borg_version=flexmock(),
         restore_arguments=flexmock(repository='repo', archive='archive', data_sources=flexmock()),
+        global_arguments=flexmock(dry_run=False),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+    )
+
+
+def test_run_restore_restores_data_source_by_falling_back_to_all_name():
+    dumps_to_restore = {
+        module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
+    }
+
+    flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
+    borgmatic_runtime_directory = flexmock()
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').and_return(
+        borgmatic_runtime_directory
+    )
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'make_runtime_directory_glob'
+    ).replace_with(lambda path: path)
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks_even_if_unconfigured')
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
+        flexmock()
+    )
+    flexmock(module).should_receive('collect_dumps_from_archive').and_return(flexmock())
+    flexmock(module).should_receive('get_dumps_to_restore').and_return(dumps_to_restore)
+    flexmock(module).should_receive('get_configured_data_source').and_return(
+        {'name': 'foo'}
+    ).and_return({'name': 'all'})
+    flexmock(module).should_receive('restore_single_dump').with_args(
+        repository=object,
+        config=object,
+        local_borg_version=object,
+        global_arguments=object,
+        local_path=object,
+        remote_path=object,
+        archive_name=object,
+        hook_name='postgresql_databases',
+        data_source={'name': 'foo', 'schemas': None},
+        connection_params=object,
+        borgmatic_runtime_directory=borgmatic_runtime_directory,
+    ).once()
+    flexmock(module).should_receive('ensure_requested_dumps_restored')
+
+    module.run_restore(
+        repository={'path': 'repo'},
+        config=flexmock(),
+        local_borg_version=flexmock(),
+        restore_arguments=flexmock(
+            repository='repo',
+            archive='archive',
+            data_sources=flexmock(),
+            schemas=None,
+            hostname=None,
+            port=None,
+            username=None,
+            password=None,
+            restore_path=None,
+        ),
         global_arguments=flexmock(dry_run=False),
         local_path=flexmock(),
         remote_path=flexmock(),

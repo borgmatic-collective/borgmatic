@@ -96,7 +96,7 @@ def get_configured_data_source(config, restore_dump):
 
     if len(matching_dumps) > 1:
         raise ValueError(
-            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching configured data sources'
+            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching data sources configured'
         )
 
     return matching_dumps[0]
