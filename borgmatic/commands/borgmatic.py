@@ -8,8 +8,6 @@ import time
 from queue import Queue
 from subprocess import CalledProcessError
 
-import colorama
-
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
 import borgmatic.actions.change_passphrase
@@ -915,9 +913,6 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
     color_enabled = should_do_markup(global_arguments.no_color or any_json_flags, configs)
-
-    if color_enabled:
-        colorama.init(autoreset=True)
 
     try:
         configure_logging(
