@@ -6,7 +6,6 @@ certifi==2024.7.4
 chardet==5.2.0
 click==8.1.7
 codespell==2.2.6
-colorama==0.4.6
 coverage==7.5.1
 flake8==7.0.0
 flake8-quotes==3.4.0

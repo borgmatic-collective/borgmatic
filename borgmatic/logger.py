@@ -1,9 +1,8 @@
+import enum
 import logging
 import logging.handlers
 import os
 import sys
-
-import colorama
 
 
 def to_bool(arg):
@@ -33,7 +32,7 @@ def interactive_console():
 def should_do_markup(no_color, configs):
     '''
     Given the value of the command-line no-color argument, and a dict of configuration filename to
-    corresponding parsed configuration, determine if we should enable colorama marking up.
+    corresponding parsed configuration, determine if we should enable color marking up.
     '''
     if no_color:
         return False
@@ -93,30 +92,50 @@ class Console_no_color_formatter(logging.Formatter):
         return record.msg
 
 
+class Color(enum.Enum):
+    RESET = 0
+    RED = 31
+    GREEN = 32
+    YELLOW = 33
+    MAGENTA = 35
+    CYAN = 36
+
+
 class Console_color_formatter(logging.Formatter):
     def format(self, record):
         add_custom_log_levels()
 
-        color = {
-            logging.CRITICAL: colorama.Fore.RED,
-            logging.ERROR: colorama.Fore.RED,
-            logging.WARN: colorama.Fore.YELLOW,
-            logging.ANSWER: colorama.Fore.MAGENTA,
-            logging.INFO: colorama.Fore.GREEN,
-            logging.DEBUG: colorama.Fore.CYAN,
-        }.get(record.levelno)
+        color = (
+            {
+                logging.CRITICAL: Color.RED,
+                logging.ERROR: Color.RED,
+                logging.WARN: Color.YELLOW,
+                logging.ANSWER: Color.MAGENTA,
+                logging.INFO: Color.GREEN,
+                logging.DEBUG: Color.CYAN,
+            }
+            .get(record.levelno)
+            .value
+        )
 
         return color_text(color, record.msg)
 
 
+def ansi_escape_code(color):  # pragma: no cover
+    '''
+    Given a color value, produce the corresponding ANSI escape code.
+    '''
+    return f'\x1b[{color}m'
+
+
 def color_text(color, message):
     '''
-    Give colored text.
+    Given a color value and a message, return the message colored with ANSI escape codes.
     '''
     if not color:
         return message
 
-    return f'{color}{message}{colorama.Style.RESET_ALL}'
+    return f'{ansi_escape_code(color)}{message}{ansi_escape_code(Color.RESET.value)}'
 
 
 def add_logging_level(level_name, level_number):

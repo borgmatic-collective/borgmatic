@@ -187,10 +187,14 @@ def test_console_color_formatter_format_includes_log_message():
 
 
 def test_color_text_does_not_raise():
-    module.color_text(module.colorama.Fore.RED, 'hi')
+    flexmock(module).should_receive('ansi_escape_code').and_return('blah')
+
+    module.color_text(module.Color.RED, 'hi')
 
 
 def test_color_text_without_color_does_not_raise():
+    flexmock(module).should_receive('ansi_escape_code').and_return('blah')
+
     module.color_text(None, 'hi')
 
 

@@ -17,7 +17,6 @@ classifiers=[
     "Topic :: System :: Archiving :: Backup",
 ]
 dependencies = [
-  "colorama>=0.4.1,<0.5",
   "jsonschema",
   "packaging",
   "requests",
