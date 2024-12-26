@@ -432,7 +432,7 @@ borgmatic restore --archive latest --database users --original-hostname host1.ex
 ```
 
 This selects a `users` database to restore, but only if it originally came
-from the host `host1.example.org`. And this command won't restore `users`
+from the host `host1.example.org`. This command won't restore `users`
 databases from any other hosts.
 
 Here's another example configuration:
@@ -453,7 +453,8 @@ And a command to restore just one of the databases:
 borgmatic restore --archive latest --database users --original-port 5433
 ```
 
-That restores a `users` database only if it originally came from port `5433`.
+That restores a `users` database only if it originally came from port `5433`
+*and* if that port is in borgmatic's configuration, e.g. `port: 5433`.
 
 Finally, check out this configuration:
 
@@ -473,8 +474,8 @@ borgmatic restore --archive latest --database users --hook postgresql
 ```
 
 That restores a `users` database only if it was dumped using the
-`postgresql_databases:` data source hook. And this command won't restore
-`users` databases that were dumped using other hooks.
+`postgresql_databases:` data source hook. This command won't restore `users`
+databases that were dumped using other hooks.
 
 Note that these flags don't change the hostname or port to which the database
 is actually restored. For that, see below about restoring to an alternate

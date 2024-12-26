@@ -1189,7 +1189,7 @@ def make_parsers():
     restore_group.add_argument(
         '--original-port',
         type=int,
-        help='The port where the dump to restore came from, only necessary if you need to disambiguate dumps',
+        help="The port where the dump to restore came from (if that port is in borgmatic's configuration), only necessary if you need to disambiguate dumps",
     )
     restore_group.add_argument(
         '--hook',
