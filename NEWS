@@ -1,9 +1,11 @@
 1.9.5.dev0
+ * #418: Backup and restore databases that have the same name but with different ports, hostnames,
+   or hooks.
  * #947: To avoid a hang in the database hooks, error and exit when the borgmatic runtime
    directory overlaps with the configured excludes.
- * #954: Fix findmnt command error in the Btrfs hook by switching to parsing JSON output.
- * #956: Fix the printing of a color reset code at exit even when color is disabled.
- # #958: Drop colorama as a library dependency.
+ * #954: Fix a findmnt command error in the Btrfs hook by switching to parsing JSON output.
+ * #956: Fix the printing of a color reset code even when color is disabled.
+ * #958: Drop colorama as a library dependency.
  * When the ZFS, Btrfs, or LVM hooks aren't configured, don't try to cleanup snapshots for them.
 
 1.9.4

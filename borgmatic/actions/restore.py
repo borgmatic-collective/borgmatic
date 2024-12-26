@@ -1,4 +1,4 @@
-import copy
+import collections
 import logging
 import os
 import pathlib
@@ -17,52 +17,89 @@ import borgmatic.hooks.dispatch
 logger = logging.getLogger(__name__)
 
 
-UNSPECIFIED_HOOK = object()
+UNSPECIFIED = object()
 
 
-def get_configured_data_source(
-    config,
-    archive_data_source_names,
-    hook_name,
-    data_source_name,
-    configuration_data_source_name=None,
-):
+Dump = collections.namedtuple(
+    'Dump',
+    ('hook_name', 'data_source_name', 'hostname', 'port'),
+    defaults=('localhost', None),
+)
+
+
+def dumps_match(first, second):
     '''
-    Find the first data source with the given hook name and data source name in the configuration
-    dict and the given archive data source names dict (from hook name to data source names contained
-    in a particular backup archive). If UNSPECIFIED_HOOK is given as the hook name, search all data
-    source hooks for the named data source. If a configuration data source name is given, use that
-    instead of the data source name to lookup the data source in the given hooks configuration.
-
-    Return the found data source as a tuple of (found hook name, data source configuration dict) or
-    (None, None) if not found.
+    Compare two Dump instances for equality while supporting a field value of UNSPECIFIED, which
+    indicates that the field should match any value.
     '''
-    if not configuration_data_source_name:
-        configuration_data_source_name = data_source_name
+    for field_name in first._fields:
+        first_value = getattr(first, field_name)
+        second_value = getattr(second, field_name)
 
-    if hook_name == UNSPECIFIED_HOOK:
-        hooks_to_search = {
-            hook_name: value
-            for (hook_name, value) in config.items()
-            if hook_name.split('_databases')[0]
-            in borgmatic.hooks.dispatch.get_submodule_names(borgmatic.hooks.data_source)
-        }
+        if first_value == UNSPECIFIED or second_value == UNSPECIFIED:
+            continue
+
+        if first_value != second_value:
+            return False
+
+    return True
+
+
+def render_dump_metadata(dump):
+    '''
+    Given a Dump instance, make a display string describing it for use in log messages.
+    '''
+    name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
+    hostname = dump.hostname or 'localhost'
+    port = None if dump.port is UNSPECIFIED else dump.port
+
+    if port:
+        metadata = f'{name}@:{port}' if hostname is UNSPECIFIED else f'{name}@{hostname}:{port}'
     else:
-        try:
-            hooks_to_search = {hook_name: config[hook_name]}
-        except KeyError:
-            return (None, None)
+        metadata = f'{name}' if hostname is UNSPECIFIED else f'{name}@{hostname}'
 
-    return next(
-        (
-            (name, hook_data_source)
-            for (name, hook) in hooks_to_search.items()
-            for hook_data_source in hook
-            if hook_data_source['name'] == configuration_data_source_name
-            and data_source_name in archive_data_source_names.get(name, [])
-        ),
-        (None, None),
+    if dump.hook_name not in (None, UNSPECIFIED):
+        return f'{metadata} ({dump.hook_name})'
+
+    return metadata
+
+
+def get_configured_data_source(config, restore_dump):
+    '''
+    Search in the given configuration dict for dumps corresponding to the given dump to restore. If
+    there are multiple matches, error.
+
+    Return the found data source as a data source configuration dict or None if not found.
+    '''
+    try:
+        hooks_to_search = {restore_dump.hook_name: config[restore_dump.hook_name]}
+    except KeyError:
+        return None
+
+    matching_dumps = tuple(
+        hook_data_source
+        for (hook_name, hook) in hooks_to_search.items()
+        for hook_data_source in hook
+        if dumps_match(
+            Dump(
+                hook_name,
+                hook_data_source.get('name'),
+                hook_data_source.get('hostname', 'localhost'),
+                hook_data_source.get('port'),
+            ),
+            restore_dump,
+        )
     )
+
+    if not matching_dumps:
+        return None
+
+    if len(matching_dumps) > 1:
+        raise ValueError(
+            f'Cannot restore data source {render_dump_metadata(restore_dump)} because there are multiple matching data sources configured'
+        )
+
+    return matching_dumps[0]
 
 
 def strip_path_prefix_from_extracted_dump_destination(
@@ -98,7 +135,7 @@ def strip_path_prefix_from_extracted_dump_destination(
         break
 
 
-def restore_single_data_source(
+def restore_single_dump(
     repository,
     config,
     local_borg_version,
@@ -116,8 +153,12 @@ def restore_single_data_source(
     username/password as connection params, and a configured data source configuration dict, restore
     that data source from the archive.
     '''
+    dump_metadata = render_dump_metadata(
+        Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port'))
+    )
+
     logger.info(
-        f'{repository.get("label", repository["path"])}: Restoring data source {data_source["name"]}'
+        f'{repository.get("label", repository["path"])}: Restoring data source {dump_metadata}'
     )
 
     dump_patterns = borgmatic.hooks.dispatch.call_hooks(
@@ -127,7 +168,7 @@ def restore_single_data_source(
         borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         borgmatic_runtime_directory,
         data_source['name'],
-    )[hook_name.split('_databases')[0]]
+    )[hook_name.split('_databases', 1)[0]]
 
     destination_path = (
         tempfile.mkdtemp(dir=borgmatic_runtime_directory)
@@ -180,7 +221,7 @@ def restore_single_data_source(
     )
 
 
-def collect_archive_data_source_names(
+def collect_dumps_from_archive(
     repository,
     archive,
     config,
@@ -192,17 +233,17 @@ def collect_archive_data_source_names(
 ):
     '''
     Given a local or remote repository path, a resolved archive name, a configuration dict, the
-    local Borg version, global_arguments an argparse.Namespace, local and remote Borg paths, and the
-    borgmatic runtime directory, query the archive for the names of data sources it contains as
-    dumps and return them as a dict from hook name to a sequence of data source names.
+    local Borg version, global arguments an argparse.Namespace, local and remote Borg paths, and the
+    borgmatic runtime directory, query the archive for the names of data sources dumps it contains
+    and return them as a set of Dump instances.
     '''
     borgmatic_source_directory = str(
         pathlib.Path(borgmatic.config.paths.get_borgmatic_source_directory(config))
     )
 
     # Probe for the data source dumps in multiple locations, as the default location has moved to
-    # the borgmatic runtime directory (which get stored as just "/borgmatic" with Borg 1.4+). But we
-    # still want to support reading dumps from previously created archives as well.
+    # the borgmatic runtime directory (which gets stored as just "/borgmatic" with Borg 1.4+). But
+    # we still want to support reading dumps from previously created archives as well.
     dump_paths = borgmatic.borg.list.capture_archive_listing(
         repository,
         archive,
@@ -224,110 +265,145 @@ def collect_archive_data_source_names(
         remote_path=remote_path,
     )
 
-    # Determine the data source names corresponding to the dumps found in the archive and
-    # add them to restore_names.
-    archive_data_source_names = {}
+    # Parse the paths of dumps found in the archive to get their respective dump metadata.
+    dumps_from_archive = set()
 
     for dump_path in dump_paths:
         if not dump_path:
             continue
 
+        # Probe to find the base directory that's at the start of the dump path.
         for base_directory in (
             'borgmatic',
             borgmatic_runtime_directory,
             borgmatic_source_directory,
         ):
             try:
-                (hook_name, _, data_source_name) = dump_path.split(base_directory + os.path.sep, 1)[
-                    1
-                ].split(os.path.sep)[0:3]
+                (hook_name, host_and_port, data_source_name) = dump_path.split(
+                    base_directory + os.path.sep, 1
+                )[1].split(os.path.sep)[0:3]
             except (ValueError, IndexError):
-                pass
-            else:
-                if data_source_name not in archive_data_source_names.get(hook_name, []):
-                    archive_data_source_names.setdefault(hook_name, []).extend([data_source_name])
-                    break
+                continue
+
+            parts = host_and_port.split(':', 1)
+
+            if len(parts) == 1:
+                parts += (None,)
+
+            (hostname, port) = parts
+
+            try:
+                port = int(port)
+            except (ValueError, TypeError):
+                port = None
+
+            dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port))
+
+            # We've successfully parsed the dump path, so need to probe any further.
+            break
         else:
             logger.warning(
                 f'{repository}: Ignoring invalid data source dump path "{dump_path}" in archive {archive}'
             )
 
-    return archive_data_source_names
+    return dumps_from_archive
 
 
-def find_data_sources_to_restore(requested_data_source_names, archive_data_source_names):
+def get_dumps_to_restore(restore_arguments, dumps_from_archive):
     '''
-    Given a sequence of requested data source names to restore and a dict of hook name to the names
-    of data sources found in an archive, return an expanded sequence of data source names to
-    restore, replacing "all" with actual data source names as appropriate.
+    Given restore arguments as an argparse.Namespace instance indicating which dumps to restore and
+    a set of Dump instances representing the dumps found in an archive, return a set of specific
+    Dump instances from the archive to restore. As part of this, replace any Dump having a data
+    source name of "all" with multiple named Dump instances as appropriate.
 
-    Raise ValueError if any of the requested data source names cannot be found in the archive.
+    Raise ValueError if any of the requested data source names cannot be found in the archive or if
+    there are multiple archive dump matches for a given requested dump.
     '''
-    # A map from data source hook name to the data source names to restore for that hook.
-    restore_names = (
-        {UNSPECIFIED_HOOK: requested_data_source_names}
-        if requested_data_source_names
-        else {UNSPECIFIED_HOOK: ['all']}
+    requested_dumps = (
+        {
+            Dump(
+                hook_name=(
+                    (
+                        restore_arguments.hook
+                        if restore_arguments.hook.endswith('_databases')
+                        else f'{restore_arguments.hook}_databases'
+                    )
+                    if restore_arguments.hook
+                    else UNSPECIFIED
+                ),
+                data_source_name=name,
+                hostname=restore_arguments.original_hostname or 'localhost',
+                port=restore_arguments.original_port,
+            )
+            for name in restore_arguments.data_sources
+        }
+        if restore_arguments.data_sources
+        else {
+            Dump(
+                hook_name=UNSPECIFIED,
+                data_source_name='all',
+                hostname=UNSPECIFIED,
+                port=UNSPECIFIED,
+            )
+        }
     )
+    missing_dumps = set()
+    dumps_to_restore = set()
 
-    # If "all" is in restore_names, then replace it with the names of dumps found within the
-    # archive.
-    if 'all' in restore_names[UNSPECIFIED_HOOK]:
-        restore_names[UNSPECIFIED_HOOK].remove('all')
+    # If there's a requested "all" dump, add every dump from the archive to the dumps to restore.
+    if any(dump for dump in requested_dumps if dump.data_source_name == 'all'):
+        dumps_to_restore.update(dumps_from_archive)
 
-        for hook_name, data_source_names in archive_data_source_names.items():
-            restore_names.setdefault(hook_name, []).extend(data_source_names)
+    # If any archive dump matches a requested dump, add the archive dump to the dumps to restore.
+    for requested_dump in requested_dumps:
+        if requested_dump.data_source_name == 'all':
+            continue
 
-            # If a data source is to be restored as part of "all", then remove it from restore names
-            # so it doesn't get restored twice.
-            for data_source_name in data_source_names:
-                if data_source_name in restore_names[UNSPECIFIED_HOOK]:
-                    restore_names[UNSPECIFIED_HOOK].remove(data_source_name)
-
-    if not restore_names[UNSPECIFIED_HOOK]:
-        restore_names.pop(UNSPECIFIED_HOOK)
-
-    combined_restore_names = set(
-        name for data_source_names in restore_names.values() for name in data_source_names
-    )
-    combined_archive_data_source_names = set(
-        name
-        for data_source_names in archive_data_source_names.values()
-        for name in data_source_names
-    )
-
-    missing_names = sorted(set(combined_restore_names) - combined_archive_data_source_names)
-    if missing_names:
-        joined_names = ', '.join(f'"{name}"' for name in missing_names)
-        raise ValueError(
-            f"Cannot restore data source{'s' if len(missing_names) > 1 else ''} {joined_names} missing from archive"
+        matching_dumps = tuple(
+            archive_dump
+            for archive_dump in dumps_from_archive
+            if dumps_match(requested_dump, archive_dump)
         )
 
-    return restore_names
+        if len(matching_dumps) == 0:
+            missing_dumps.add(requested_dump)
+        elif len(matching_dumps) == 1:
+            dumps_to_restore.add(matching_dumps[0])
+        else:
+            raise ValueError(
+                f'Cannot restore data source {render_dump_metadata(requested_dump)} because there are multiple matching dumps in the archive. Try adding flags to disambiguate.'
+            )
+
+    if missing_dumps:
+        rendered_dumps = ', '.join(
+            f'{render_dump_metadata(dump)}' for dump in sorted(missing_dumps)
+        )
+
+        raise ValueError(
+            f"Cannot restore data source dump{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from archive"
+        )
+
+    return dumps_to_restore
 
 
-def ensure_data_sources_found(restore_names, remaining_restore_names, found_names):
+def ensure_requested_dumps_restored(dumps_to_restore, dumps_actually_restored):
     '''
-    Given a dict from hook name to data source names to restore, a dict from hook name to remaining
-    data source names to restore, and a sequence of found (actually restored) data source names,
-    raise ValueError if requested data source to restore were missing from the archive and/or
+    Given a set of requested dumps to restore and a set of dumps actually restored, raise ValueError
+    if any requested dumps to restore weren't restored, indicating that they were missing from the
     configuration.
     '''
-    combined_restore_names = set(
-        name
-        for data_source_names in tuple(restore_names.values())
-        + tuple(remaining_restore_names.values())
-        for name in data_source_names
-    )
-
-    if not combined_restore_names and not found_names:
+    if not dumps_actually_restored:
         raise ValueError('No data source dumps were found to restore')
 
-    missing_names = sorted(set(combined_restore_names) - set(found_names))
-    if missing_names:
-        joined_names = ', '.join(f'"{name}"' for name in missing_names)
+    missing_dumps = sorted(
+        dumps_to_restore - dumps_actually_restored, key=lambda dump: dump.data_source_name
+    )
+
+    if missing_dumps:
+        rendered_dumps = ', '.join(f'{render_dump_metadata(dump)}' for dump in missing_dumps)
+
         raise ValueError(
-            f"Cannot restore data source{'s' if len(missing_names) > 1 else ''} {joined_names} missing from borgmatic's configuration"
+            f"Cannot restore data source{'s' if len(missing_dumps) > 1 else ''} {rendered_dumps} missing from borgmatic's configuration"
         )
 
 
@@ -344,7 +420,8 @@ def run_restore(
     Run the "restore" action for the given repository, but only if the repository matches the
     requested repository in restore arguments.
 
-    Raise ValueError if a configured data source could not be found to restore.
+    Raise ValueError if a configured data source could not be found to restore or there's no
+    matching dump in the archive.
     '''
     if restore_arguments.repository and not borgmatic.config.validate.repositories_match(
         repository, restore_arguments.repository
@@ -375,7 +452,7 @@ def run_restore(
             local_path,
             remote_path,
         )
-        archive_data_source_names = collect_archive_data_source_names(
+        dumps_from_archive = collect_dumps_from_archive(
             repository['path'],
             archive_name,
             config,
@@ -385,11 +462,9 @@ def run_restore(
             remote_path,
             borgmatic_runtime_directory,
         )
-        restore_names = find_data_sources_to_restore(
-            restore_arguments.data_sources, archive_data_source_names
-        )
-        found_names = set()
-        remaining_restore_names = {}
+        dumps_to_restore = get_dumps_to_restore(restore_arguments, dumps_from_archive)
+
+        dumps_actually_restored = set()
         connection_params = {
             'hostname': restore_arguments.hostname,
             'port': restore_arguments.port,
@@ -398,61 +473,42 @@ def run_restore(
             'restore_path': restore_arguments.restore_path,
         }
 
-        for hook_name, data_source_names in restore_names.items():
-            for data_source_name in data_source_names:
-                found_hook_name, found_data_source = get_configured_data_source(
-                    config, archive_data_source_names, hook_name, data_source_name
-                )
+        # Restore each dump.
+        for restore_dump in dumps_to_restore:
+            found_data_source = get_configured_data_source(
+                config,
+                restore_dump,
+            )
 
-                if not found_data_source:
-                    remaining_restore_names.setdefault(found_hook_name or hook_name, []).append(
-                        data_source_name
-                    )
-                    continue
-
-                found_names.add(data_source_name)
-                restore_single_data_source(
-                    repository,
+            # For a dump that wasn't found via an exact match in the configuration, try to fallback
+            # to an "all" data source.
+            if not found_data_source:
+                found_data_source = get_configured_data_source(
                     config,
-                    local_borg_version,
-                    global_arguments,
-                    local_path,
-                    remote_path,
-                    archive_name,
-                    found_hook_name or hook_name,
-                    dict(found_data_source, **{'schemas': restore_arguments.schemas}),
-                    connection_params,
-                    borgmatic_runtime_directory,
-                )
-
-        # For any data sources that weren't found via exact matches in the configuration, try to
-        # fallback to "all" entries.
-        for hook_name, data_source_names in remaining_restore_names.items():
-            for data_source_name in data_source_names:
-                found_hook_name, found_data_source = get_configured_data_source(
-                    config, archive_data_source_names, hook_name, data_source_name, 'all'
+                    Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
                 )
 
                 if not found_data_source:
                     continue
 
-                found_names.add(data_source_name)
-                data_source = copy.copy(found_data_source)
-                data_source['name'] = data_source_name
+                found_data_source = dict(found_data_source)
+                found_data_source['name'] = restore_dump.data_source_name
 
-                restore_single_data_source(
-                    repository,
-                    config,
-                    local_borg_version,
-                    global_arguments,
-                    local_path,
-                    remote_path,
-                    archive_name,
-                    found_hook_name or hook_name,
-                    dict(data_source, **{'schemas': restore_arguments.schemas}),
-                    connection_params,
-                    borgmatic_runtime_directory,
-                )
+            dumps_actually_restored.add(restore_dump)
+
+            restore_single_dump(
+                repository,
+                config,
+                local_borg_version,
+                global_arguments,
+                local_path,
+                remote_path,
+                archive_name,
+                restore_dump.hook_name,
+                dict(found_data_source, **{'schemas': restore_arguments.schemas}),
+                connection_params,
+                borgmatic_runtime_directory,
+            )
 
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
@@ -463,4 +519,4 @@ def run_restore(
             global_arguments.dry_run,
         )
 
-    ensure_data_sources_found(restore_names, remaining_restore_names, found_names)
+    ensure_requested_dumps_restored(dumps_to_restore, dumps_actually_restored)

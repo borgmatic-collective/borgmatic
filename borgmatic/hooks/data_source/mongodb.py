@@ -51,7 +51,10 @@ def dump_data_sources(
     for database in databases:
         name = database['name']
         dump_filename = dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory), name, database.get('hostname')
+            make_dump_path(borgmatic_runtime_directory),
+            name,
+            database.get('hostname'),
+            database.get('port'),
         )
         dump_format = database.get('format', 'archive')
 

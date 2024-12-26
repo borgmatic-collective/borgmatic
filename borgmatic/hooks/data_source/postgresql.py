@@ -151,7 +151,10 @@ def dump_data_sources(
                 for part in shlex.split(database.get('pg_dump_command') or default_dump_command)
             )
             dump_filename = dump.make_data_source_dump_filename(
-                dump_path, database_name, database.get('hostname')
+                dump_path,
+                database_name,
+                database.get('hostname'),
+                database.get('port'),
             )
             if os.path.exists(dump_filename):
                 logger.warning(

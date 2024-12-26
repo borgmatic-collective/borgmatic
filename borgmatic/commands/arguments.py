@@ -1153,7 +1153,7 @@ def make_parsers():
         metavar='NAME',
         dest='data_sources',
         action='append',
-        help="Name of data source (e.g. database) to restore from archive, must be defined in borgmatic's configuration, can specify flag multiple times, defaults to all data sources in the archive",
+        help="Name of data source (e.g. database) to restore from the archive, must be defined in borgmatic's configuration, can specify the flag multiple times, defaults to all data sources in the archive",
     )
     restore_group.add_argument(
         '--schema',
@@ -1181,6 +1181,19 @@ def make_parsers():
     restore_group.add_argument(
         '--restore-path',
         help='Path to restore SQLite database dumps to. Defaults to the "restore_path" option in borgmatic\'s configuration',
+    )
+    restore_group.add_argument(
+        '--original-hostname',
+        help='The hostname where the dump to restore came from, only necessary if you need to disambiguate dumps',
+    )
+    restore_group.add_argument(
+        '--original-port',
+        type=int,
+        help="The port where the dump to restore came from (if that port is in borgmatic's configuration), only necessary if you need to disambiguate dumps",
+    )
+    restore_group.add_argument(
+        '--hook',
+        help='The name of the data source hook for the dump to restore, only necessary if you need to disambiguate dumps',
     )
     restore_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

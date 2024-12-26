@@ -73,7 +73,10 @@ def execute_dump_command(
     '''
     database_name = database['name']
     dump_filename = dump.make_data_source_dump_filename(
-        dump_path, database['name'], database.get('hostname')
+        dump_path,
+        database['name'],
+        database.get('hostname'),
+        database.get('port'),
     )
 
     if os.path.exists(dump_filename):

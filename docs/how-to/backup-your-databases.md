@@ -391,7 +391,7 @@ with the repository's path or its label as configured in your borgmatic
 configuration file.
 
 ```bash
-borgmatic restore --repository repo.borg --archive host-2023-...
+borgmatic restore --repository repo.borg --archive latest
 ```
 
 ### Restore particular databases
@@ -401,7 +401,7 @@ restore one of them, use the `--database` flag to select one or more
 databases. For instance:
 
 ```bash
-borgmatic restore --archive host-2023-... --database users --database orders
+borgmatic restore --archive latest --database users --database orders
 ```
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> You can
@@ -409,29 +409,99 @@ also restore individual databases even if you dumped them as "all"—as long as
 you dumped them into separate files via use of the "format" option. See above
 for more information.
 
+### Restore databases sharing a name
+
+<span class="minilink minilink-addedin">New in version 1.9.5</span> If you've
+backed up multiple databases that happen to share the same name but different
+hostnames, ports, or hooks, you can include additional flags to disambiguate
+which database you'd like to restore. For instance, let's say you've backed up
+the following configured databases:
+
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: host1.example.org
+    - name: users
+      hostname: host2.example.org
+```
+
+... then you can run the following command to restore only one of them:
+
+```bash
+borgmatic restore --archive latest --database users --original-hostname host1.example.org
+```
+
+This selects a `users` database to restore, but only if it originally came
+from the host `host1.example.org`. This command won't restore `users`
+databases from any other hosts.
+
+Here's another example configuration:
+
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: example.org
+      port: 5433
+    - name: users
+      hostname: example.org
+      port: 5434
+```
+
+And a command to restore just one of the databases:
+
+```bash
+borgmatic restore --archive latest --database users --original-port 5433
+```
+
+That restores a `users` database only if it originally came from port `5433`
+*and* if that port is in borgmatic's configuration, e.g. `port: 5433`.
+
+Finally, check out this configuration:
+
+```yaml
+postgresql_databases:
+    - name: users
+      hostname: example.org
+mariadb_databases:
+    - name: users
+      hostname: example.org
+```
+
+And to select just one of the databases to restore:
+
+```bash
+borgmatic restore --archive latest --database users --hook postgresql
+```
+
+That restores a `users` database only if it was dumped using the
+`postgresql_databases:` data source hook. This command won't restore `users`
+databases that were dumped using other hooks.
+
+Note that these flags don't change the hostname or port to which the database
+is actually restored. For that, see below about restoring to an alternate
+host.
+
 
 ### Restore all databases
 
 To restore all databases:
 
 ```bash
-borgmatic restore --archive host-2023-... --database all
+borgmatic restore --archive latest --database all
 ```
 
 Or omit the `--database` flag entirely:
 
 
 ```bash
-borgmatic restore --archive host-2023-...
+borgmatic restore --archive latest
 ```
-
-Prior to borgmatic version 1.7.6, this restores a combined "all" database
-dump from the archive.
 
 <span class="minilink minilink-addedin">New in version 1.7.6</span> Restoring
 "all" databases restores each database found in the selected archive. That
 includes any combined dump file named "all" and any other individual database
-dumps found in the archive.
+dumps found in the archive. Prior to borgmatic version 1.7.6, restoring "all"
+only restored a combined "all" database dump from the archive.
 
 
 ### Restore particular schemas
@@ -466,50 +536,6 @@ postgresql_databases:
         restore_password: trustsome1
 ```
 
-
-### Limitations
-
-There are a few important limitations with borgmatic's current database
-restoration feature that you should know about:
-
-1. borgmatic does not currently support backing up or restoring multiple
-databases that share the exact same name on different hosts or with different
-ports.
-2. When database hooks are enabled, borgmatic instructs Borg to consume
-special files (via `--read-special`) to support database dump
-streaming—regardless of the value of your `read_special` configuration option.
-And because this can cause Borg to hang, borgmatic also automatically excludes
-special files (and symlinks to them) that Borg may get stuck on. Even so,
-there are still potential edge cases in which applications on your system
-create new special files *after* borgmatic constructs its exclude list,
-resulting in Borg hangs. If that occurs, you can resort to manually excluding
-those files. And if you explicitly set the `read_special` option to `true`,
-borgmatic will opt you out of the auto-exclude feature entirely, but will
-still instruct Borg to consume special files—and you will be on your own to
-exclude them. <span class="minilink minilink-addedin">Prior to version
-1.7.3</span>Special files were not auto-excluded, and you were responsible for
-excluding them yourself. Common directories to exclude are `/dev` and `/run`,
-but that may not be exhaustive.
-3. <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
-Database hooks also implicitly enabled the `one_file_system` option, which
-meant Borg wouldn't cross filesystem boundaries when looking for files to
-backup. When borgmatic was running in a container, this often required a
-work-around to explicitly add each mounted backup volume to
-`source_directories` instead of relying on Borg to include them implicitly via
-a parent directory. But as of borgmatic 1.9.0, `one_file_system` is no longer
-auto-enabled and such work-arounds aren't necessary.
-4. <span class="minilink minilink-addedin">Prior to version 1.9.0</span> You
-must restore as the same Unix user that created the archive containing the
-database dump. That's because the user's home directory path is encoded into
-the path of the database dump within the archive.
-5. <span class="minilink minilink-addedin">Prior to version 1.7.15</span> As
-mentioned above, borgmatic can only restore a database that's defined in
-borgmatic's own configuration file. So include your configuration files in
-backups to avoid getting caught without a way to restore a database. But
-starting from version 1.7.15, borgmatic includes your configuration files
-automatically.
-
-
 ### Manual restoration
 
 If you prefer to restore a database without the help of borgmatic, first
@@ -531,6 +557,49 @@ commands like `pg_restore`, `mysql`, `mongorestore`, `sqlite`, or similar.
 
 Also see the documentation on [listing database
 dumps](https://torsion.org/borgmatic/docs/how-to/inspect-your-backups/#listing-database-dumps).
+
+
+## Limitations
+
+There are a few important limitations with borgmatic's current database
+hooks that you should know about:
+
+1. When database hooks are enabled, borgmatic instructs Borg to consume
+special files (via `--read-special`) to support database dump
+streaming—regardless of the value of your `read_special` configuration option.
+And because this can cause Borg to hang, borgmatic also automatically excludes
+special files (and symlinks to them) that Borg may get stuck on. Even so,
+there are still potential edge cases in which applications on your system
+create new special files *after* borgmatic constructs its exclude list,
+resulting in Borg hangs. If that occurs, you can resort to manually excluding
+those files. And if you explicitly set the `read_special` option to `true`,
+borgmatic will opt you out of the auto-exclude feature entirely, but will
+still instruct Borg to consume special files—and you will be on your own to
+exclude them. <span class="minilink minilink-addedin">Prior to version
+1.7.3</span>Special files were not auto-excluded, and you were responsible for
+excluding them yourself. Common directories to exclude are `/dev` and `/run`,
+but that may not be exhaustive.
+2. <span class="minilink minilink-addedin">Prior to version 1.9.5</span>
+borgmatic did not support backing up or restoring multiple databases that
+shared the exact same name on different hosts or with different ports.
+3. <span class="minilink minilink-addedin">Prior to version 1.9.0</span>
+Database hooks also implicitly enabled the `one_file_system` option, which
+meant Borg wouldn't cross filesystem boundaries when looking for files to
+backup. When borgmatic was running in a container, this often required a
+work-around to explicitly add each mounted backup volume to
+`source_directories` instead of relying on Borg to include them implicitly via
+a parent directory. But as of borgmatic 1.9.0, `one_file_system` is no longer
+auto-enabled and such work-arounds aren't necessary.
+4. <span class="minilink minilink-addedin">Prior to version 1.9.0</span> You
+must restore as the same Unix user that created the archive containing the
+database dump. That's because the user's home directory path is encoded into
+the path of the database dump within the archive.
+5. <span class="minilink minilink-addedin">Prior to version 1.7.15</span> As
+mentioned above, borgmatic can only restore a database that's defined in
+borgmatic's own configuration file. So include your configuration files in
+backups to avoid getting caught without a way to restore a database. But
+starting from version 1.7.15, borgmatic includes your configuration files
+automatically.
 
 
 ## Preparation and cleanup hooks
