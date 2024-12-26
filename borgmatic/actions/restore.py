@@ -49,9 +49,9 @@ def render_dump_metadata(dump):
     '''
     Given a Dump instance, make a display string describing it for use in log messages.
     '''
-    name = dump.data_source_name if dump.data_source_name != UNSPECIFIED else 'unspecified'
+    name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
     hostname = dump.hostname or 'localhost'
-    port = dump.port if dump.port != UNSPECIFIED else None
+    port = None if dump.port is UNSPECIFIED else dump.port
 
     if port:
         metadata = f'{name}@:{port}' if hostname is UNSPECIFIED else f'{name}@{hostname}:{port}'
@@ -168,7 +168,7 @@ def restore_single_dump(
         borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         borgmatic_runtime_directory,
         data_source['name'],
-    )[hook_name.split('_databases')[0]]
+    )[hook_name.split('_databases', 1)[0]]
 
     destination_path = (
         tempfile.mkdtemp(dir=borgmatic_runtime_directory)
@@ -265,13 +265,14 @@ def collect_dumps_from_archive(
         remote_path=remote_path,
     )
 
-    # Parse out the details for the dumps found in the archive.
+    # Parse the paths of dumps found in the archive to get their respective dump metadata.
     dumps_from_archive = set()
 
     for dump_path in dump_paths:
         if not dump_path:
             continue
 
+        # Probe to find the base directory that's at the start of the dump path.
         for base_directory in (
             'borgmatic',
             borgmatic_runtime_directory,
@@ -298,6 +299,7 @@ def collect_dumps_from_archive(
 
             dumps_from_archive.add(Dump(hook_name, data_source_name, hostname, port))
 
+            # We've successfully parsed the dump path, so need to probe any further.
             break
         else:
             logger.warning(
@@ -418,7 +420,8 @@ def run_restore(
     Run the "restore" action for the given repository, but only if the repository matches the
     requested repository in restore arguments.
 
-    Raise ValueError if a configured data source could not be found to restore.
+    Raise ValueError if a configured data source could not be found to restore or there's no
+    matching dump in the archive.
     '''
     if restore_arguments.repository and not borgmatic.config.validate.repositories_match(
         repository, restore_arguments.repository
@@ -477,8 +480,8 @@ def run_restore(
                 restore_dump,
             )
 
-            # For any data sources that weren't found via exact matches in the configuration, try to
-            # fallback to "all" entries.
+            # For a dump that wasn't found via an exact match in the configuration, try to fallback
+            # to an "all" data source.
             if not found_data_source:
                 found_data_source = get_configured_data_source(
                     config,
