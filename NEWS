@@ -1,4 +1,4 @@
-1.9.5.dev0
+1.9.5
  * #418: Backup and restore databases that have the same name but with different ports, hostnames,
    or hooks.
  * #947: To avoid a hang in the database hooks, error and exit when the borgmatic runtime
