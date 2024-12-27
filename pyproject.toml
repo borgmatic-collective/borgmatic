@@ -17,10 +17,10 @@ classifiers=[
     "Topic :: System :: Archiving :: Backup",
 ]
 dependencies = [
-  "jsonschema",
-  "packaging",
-  "requests",
-  "ruamel.yaml>0.15.0",
+    "jsonschema",
+    "packaging",
+    "requests",
+    "ruamel.yaml>0.15.0",
 ]
 
 [project.scripts]
