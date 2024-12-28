@@ -115,17 +115,15 @@ def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
 BORGMATIC_SNAPSHOT_PREFIX = '.borgmatic-snapshot-'
 
 
-def make_snapshot_path(subvolume_path):  # pragma: no cover
+def make_snapshot_path(subvolume_path):
     '''
     Given the path to a subvolume, make a corresponding snapshot path for it.
     '''
     return os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
-        # Included so that the snapshot ends up in the Borg archive at the "original" subvolume
-        # path.
-        subvolume_path.lstrip(os.path.sep),
-    )
+        # Included so that the snapshot ends up in the Borg archive at the "original" subvolume path.
+    ) + subvolume_path.rstrip(os.path.sep)
 
 
 def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
@@ -155,7 +153,7 @@ def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
     )
 
 
-def make_borg_source_directory_path(subvolume_path, source_directory):  # pragma: no cover
+def make_borg_source_directory_path(subvolume_path, source_directory):
     '''
     Given the path to a subvolume and a source directory inside it, make a corresponding path for
     the source directory within a snapshot path intended for giving to Borg.
@@ -181,7 +179,7 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
         + (
             'subvolume',
             'snapshot',
-            '-r',  # Read-only,
+            '-r',  # Read-only.
             subvolume_path,
             snapshot_path,
         ),

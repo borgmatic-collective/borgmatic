@@ -128,6 +128,41 @@ def test_get_subvolumes_without_source_directories_collects_all_subvolumes_from_
     )
 
 
+@pytest.mark.parametrize(
+    'subvolume_path,expected_snapshot_path',
+    (
+        ('/foo/bar', '/foo/bar/.borgmatic-snapshot-1234/foo/bar'),
+        ('/', '/.borgmatic-snapshot-1234'),
+    ),
+)
+def test_make_snapshot_path_includes_stripped_subvolume_path(
+    subvolume_path, expected_snapshot_path
+):
+    flexmock(module.os).should_receive('getpid').and_return(1234)
+
+    assert module.make_snapshot_path(subvolume_path) == expected_snapshot_path
+
+
+@pytest.mark.parametrize(
+    'subvolume_path,source_directory_path,expected_path',
+    (
+        ('/foo/bar', '/foo/bar/baz', '/foo/bar/.borgmatic-snapshot-1234/./foo/bar/baz'),
+        ('/foo/bar', '/foo/bar', '/foo/bar/.borgmatic-snapshot-1234/./foo/bar'),
+        ('/', '/foo', '/.borgmatic-snapshot-1234/./foo'),
+        ('/', '/', '/.borgmatic-snapshot-1234/./'),
+    ),
+)
+def test_make_borg_source_directory_path_includes_slashdot_hack_and_stripped_source_directory_path(
+    subvolume_path, source_directory_path, expected_path
+):
+    flexmock(module.os).should_receive('getpid').and_return(1234)
+
+    assert (
+        module.make_borg_source_directory_path(subvolume_path, source_directory_path)
+        == expected_path
+    )
+
+
 def test_dump_data_sources_snapshots_each_subvolume_and_updates_source_directories():
     source_directories = ['/foo', '/mnt/subvol1']
     config = {'btrfs': {}}
