@@ -17,12 +17,9 @@ if [ -z "$TEST_CONTAINER" ]; then
     exit 1
 fi
 
-apk add --no-cache python3 py3-pip borgbackup postgresql-client mariadb-client mongodb-tools \
-    py3-ruamel.yaml py3-ruamel.yaml.clib py3-yaml bash sqlite fish
-# If certain dependencies of black are available in this version of Alpine, install them.
-apk add --no-cache py3-typed-ast py3-regex || true
-python3 -m pip install --no-cache --upgrade pip==24.2 setuptools==72.1.0
-pip3 install --ignore-installed tox==4.11.3
+apk add --no-cache python3 py3-pip borgbackup postgresql17-client mariadb-client mongodb-tools \
+    py3-mongo py3-regex py3-ruamel.yaml py3-ruamel.yaml.clib py3-tox py3-typed-ast py3-yaml bash \
+    sqlite fish
 export COVERAGE_FILE=/tmp/.coverage
 
 tox --workdir /tmp/.tox --sitepackages
