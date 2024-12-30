@@ -25,7 +25,7 @@ def expand_directory(directory, working_directory):
 
     # This would be a lot easier to do with glob(..., root_dir=working_directory), but root_dir is
     # only available in Python 3.10+.
-    glob_paths = glob.glob(os.path.join(working_directory or '', os.path.expanduser(directory)))
+    glob_paths = glob.glob(os.path.join(working_directory or '', expanded_directory))
 
     if not glob_paths:
         return [expanded_directory]
