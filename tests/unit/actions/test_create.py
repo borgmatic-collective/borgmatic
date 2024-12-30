@@ -22,16 +22,16 @@ def test_expand_directory_with_glob_expands():
     assert paths == ['foo', 'food']
 
 
-def test_expand_directory_with_working_directory_passes_it_through():
+def test_expand_directory_strips_off_working_directory():
     flexmock(module.os.path).should_receive('expanduser').and_return('foo')
     flexmock(module.glob).should_receive('glob').with_args('/working/dir/foo').and_return([]).once()
 
     paths = module.expand_directory('foo', working_directory='/working/dir')
 
-    assert paths == ['/working/dir/foo']
+    assert paths == ['foo']
 
 
-def test_expand_directory_with_glob_passes_through_working_directory():
+def test_expand_directory_globs_working_directory_and_strips_it_off():
     flexmock(module.os.path).should_receive('expanduser').and_return('foo*')
     flexmock(module.glob).should_receive('glob').with_args('/working/dir/foo*').and_return(
         ['/working/dir/foo', '/working/dir/food']
@@ -39,7 +39,18 @@ def test_expand_directory_with_glob_passes_through_working_directory():
 
     paths = module.expand_directory('foo*', working_directory='/working/dir')
 
-    assert paths == ['/working/dir/foo', '/working/dir/food']
+    assert paths == ['foo', 'food']
+
+
+def test_expand_directory_with_slashdot_hack_globs_working_directory_and_strips_it_off():
+    flexmock(module.os.path).should_receive('expanduser').and_return('./foo*')
+    flexmock(module.glob).should_receive('glob').with_args('/working/dir/./foo*').and_return(
+        ['/working/dir/./foo', '/working/dir/./food']
+    ).once()
+
+    paths = module.expand_directory('./foo*', working_directory='/working/dir')
+
+    assert paths == ['./foo', './food']
 
 
 def test_expand_directories_flattens_expanded_directories():

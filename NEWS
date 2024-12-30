@@ -1,6 +1,9 @@
 1.9.6.dev0
  * #959: Fix an error in the Btrfs hook when a "/" subvolume is configured in borgmatic's source
    directories.
+ * #960: Fix for archives storing relative source directory paths such that they contain the working
+   directory.
+ * Drop support for Python 3.8, which has been end-of-lifed.
 
 1.9.5
  * #418: Backup and restore databases that have the same name but with different ports, hostnames,

@@ -18,10 +18,26 @@ def expand_directory(directory, working_directory):
     '''
     Given a directory path, expand any tilde (representing a user's home directory) and any globs
     therein. Return a list of one or more resulting paths.
-    '''
-    expanded_directory = os.path.join(working_directory or '', os.path.expanduser(directory))
 
-    return glob.glob(expanded_directory) or [expanded_directory]
+    Take into account the given working directory so that relative paths are supported.
+    '''
+    expanded_directory = os.path.expanduser(directory)
+
+    # This would be a lot easier to do with glob(..., root_dir=working_directory), but root_dir is
+    # only available in Python 3.10+.
+    glob_paths = glob.glob(os.path.join(working_directory or '', os.path.expanduser(directory)))
+
+    if not glob_paths:
+        return [expanded_directory]
+
+    working_directory_prefix = os.path.join(working_directory or '', '')
+
+    # Remove the working directory prefix that we added above in order to make glob() work.
+    return [
+        # os.path.relpath() won't work here because it collapses any usage of Borg's slashdot hack.
+        glob_path.removeprefix(working_directory_prefix)
+        for glob_path in glob_paths
+    ]
 
 
 def expand_directories(directories, working_directory=None):
