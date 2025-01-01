@@ -258,6 +258,17 @@ def test_special_file_treats_broken_symlink_as_non_special():
     assert module.special_file('/broken/symlink') is False
 
 
+def test_special_file_prepends_relative_path_with_working_directory():
+    flexmock(module.os).should_receive('stat').with_args('/working/dir/relative').and_return(
+        flexmock(st_mode=flexmock())
+    )
+    flexmock(module.stat).should_receive('S_ISCHR').and_return(False)
+    flexmock(module.stat).should_receive('S_ISBLK').and_return(False)
+    flexmock(module.stat).should_receive('S_ISFIFO').and_return(False)
+
+    assert module.special_file('relative', '/working/dir') is False
+
+
 def test_any_parent_directories_treats_parents_as_match():
     module.any_parent_directories('/foo/bar.txt', ('/foo', '/etc'))
 

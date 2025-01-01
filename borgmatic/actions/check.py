@@ -409,6 +409,7 @@ def collect_spot_check_source_paths(
 
 
 BORG_DIRECTORY_FILE_TYPE = 'd'
+BORG_PIPE_FILE_TYPE = 'p'
 
 
 def collect_spot_check_archive_paths(
@@ -426,6 +427,9 @@ def collect_spot_check_archive_paths(
     local Borg version, global arguments as an argparse.Namespace instance, the local Borg path, the
     remote Borg path, and the borgmatic runtime directory, collect the paths from the given archive
     (but only include files and symlinks and exclude borgmatic runtime directories).
+
+    These paths do not have a leading slash, as that's how Borg stores them. As a result, we don't
+    know whether they came from absolute or relative source directories.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
@@ -437,15 +441,17 @@ def collect_spot_check_archive_paths(
             config,
             local_borg_version,
             global_arguments,
-            path_format='{type} /{path}{NL}',  # noqa: FS003
+            path_format='{type} {path}{NL}',  # noqa: FS003
             local_path=local_path,
             remote_path=remote_path,
         )
         for (file_type, path) in (line.split(' ', 1),)
-        if file_type != BORG_DIRECTORY_FILE_TYPE
-        if pathlib.Path('/borgmatic') not in pathlib.Path(path).parents
-        if pathlib.Path(borgmatic_source_directory) not in pathlib.Path(path).parents
-        if pathlib.Path(borgmatic_runtime_directory) not in pathlib.Path(path).parents
+        if file_type not in (BORG_DIRECTORY_FILE_TYPE, BORG_PIPE_FILE_TYPE)
+        if pathlib.Path('borgmatic') not in pathlib.Path(path).parents
+        if pathlib.Path(borgmatic_source_directory.lstrip(os.path.sep))
+        not in pathlib.Path(path).parents
+        if pathlib.Path(borgmatic_runtime_directory.lstrip(os.path.sep))
+        not in pathlib.Path(path).parents
     )
 
 
@@ -532,7 +538,7 @@ def compare_spot_check_hashes(
                     local_borg_version,
                     global_arguments,
                     list_paths=source_sample_paths_subset,
-                    path_format='{xxh64} /{path}{NL}',  # noqa: FS003
+                    path_format='{xxh64} {path}{NL}',  # noqa: FS003
                     local_path=local_path,
                     remote_path=remote_path,
                 )
@@ -544,7 +550,7 @@ def compare_spot_check_hashes(
     failing_paths = []
 
     for path, source_hash in source_hashes.items():
-        archive_hash = archive_hashes.get(path)
+        archive_hash = archive_hashes.get(path.lstrip(os.path.sep))
 
         if archive_hash is not None and archive_hash == source_hash:
             continue
@@ -626,11 +632,12 @@ def spot_check(
     count_delta_percentage = abs(len(source_paths) - len(archive_paths)) / len(source_paths) * 100
 
     if count_delta_percentage > spot_check_config['count_tolerance_percentage']:
+        rootless_source_paths = set(path.lstrip(os.path.sep) for path in source_paths)
         logger.debug(
-            f'{log_prefix}: Paths in source paths but not latest archive: {", ".join(set(source_paths) - set(archive_paths)) or "none"}'
+            f'{log_prefix}: Paths in source paths but not latest archive: {", ".join(rootless_source_paths - set(archive_paths)) or "none"}'
         )
         logger.debug(
-            f'{log_prefix}: Paths in latest archive but not source paths: {", ".join(set(archive_paths) - set(source_paths)) or "none"}'
+            f'{log_prefix}: Paths in latest archive but not source paths: {", ".join(set(archive_paths) - rootless_source_paths) or "none"}'
         )
         raise ValueError(
             f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)'

@@ -134,13 +134,14 @@ def make_list_filter_flags(local_borg_version, dry_run):
         return f'{base_flags}-'
 
 
-def special_file(path):
+def special_file(path, working_directory=None):
     '''
     Return whether the given path is a special file (character device, block device, or named pipe
-    / FIFO).
+    / FIFO). If a working directory is given, take it into account when making the full path to
+    check.
     '''
     try:
-        mode = os.stat(path).st_mode
+        mode = os.stat(os.path.join(working_directory or '', path)).st_mode
     except (FileNotFoundError, OSError):
         return False
 
@@ -208,7 +209,9 @@ def collect_special_file_paths(
                 f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes. Please remove it from excludes or change the runtime directory.'
             )
 
-    return tuple(path for path in paths if special_file(path) if path not in skip_paths)
+    return tuple(
+        path for path in paths if special_file(path, working_directory) if path not in skip_paths
+    )
 
 
 def check_all_source_directories_exist(source_directories):

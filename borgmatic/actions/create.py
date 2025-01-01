@@ -133,12 +133,15 @@ def pattern_root_directories(patterns=None):
     ]
 
 
-def process_source_directories(config, source_directories=None):
+def process_source_directories(config, source_directories=None, skip_expand_paths=None):
     '''
     Given a sequence of source directories (either in the source_directories argument or, lacking
     that, from config), expand and deduplicate the source directories, returning the result.
+
+    If any paths are given to skip, don't expand them.
     '''
     working_directory = borgmatic.config.paths.get_working_directory(config)
+    skip_paths = set(skip_expand_paths or ())
 
     if source_directories is None:
         source_directories = tuple(config.get('source_directories', ()))
@@ -146,9 +149,10 @@ def process_source_directories(config, source_directories=None):
     return deduplicate_directories(
         map_directories_to_devices(
             expand_directories(
-                tuple(source_directories),
+                tuple(source for source in source_directories if source not in skip_paths),
                 working_directory=working_directory,
             )
+            + tuple(skip_paths)
         ),
         additional_directory_devices=map_directories_to_devices(
             expand_directories(
@@ -220,7 +224,9 @@ def run_create(
         # Process source directories again in case any data source hooks updated them. Without this
         # step, we could end up with duplicate paths that cause Borg to hang when it tries to read
         # from the same named pipe twice.
-        source_directories = process_source_directories(config, source_directories)
+        source_directories = process_source_directories(
+            config, source_directories, skip_expand_paths=config_paths
+        )
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         json_output = borgmatic.borg.create.create_archive(

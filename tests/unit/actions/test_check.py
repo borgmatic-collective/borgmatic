@@ -725,15 +725,16 @@ def test_collect_spot_check_source_paths_skips_directories():
     )
 
 
-def test_collect_spot_check_archive_paths_excludes_directories():
+def test_collect_spot_check_archive_paths_excludes_directories_and_pipes():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/home/user/.borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
-            'f /etc/path',
-            'f /etc/other',
-            'd /etc/dir',
+            'f etc/path',
+            'p var/pipe',
+            'f etc/other',
+            'd etc/dir',
         )
     )
 
@@ -746,7 +747,7 @@ def test_collect_spot_check_archive_paths_excludes_directories():
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/1001/borgmatic',
-    ) == ('/etc/path', '/etc/other')
+    ) == ('etc/path', 'etc/other')
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory_as_stored_with_prefix_truncation():
@@ -755,8 +756,8 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     ).and_return('/root/.borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
-            'f /etc/path',
-            'f /borgmatic/some/thing',
+            'f etc/path',
+            'f borgmatic/some/thing',
         )
     )
 
@@ -769,7 +770,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('/etc/path',)
+    ) == ('etc/path',)
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_directory():
@@ -778,8 +779,8 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
     ).and_return('/root/.borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
-            'f /etc/path',
-            'f /root/.borgmatic/some/thing',
+            'f etc/path',
+            'f root/.borgmatic/some/thing',
         )
     )
 
@@ -792,7 +793,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_source_dire
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('/etc/path',)
+    ) == ('etc/path',)
 
 
 def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_directory():
@@ -801,8 +802,8 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
     ).and_return('/root.borgmatic')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         (
-            'f /etc/path',
-            'f /run/user/0/borgmatic/some/thing',
+            'f etc/path',
+            'f run/user/0/borgmatic/some/thing',
         )
     )
 
@@ -815,7 +816,7 @@ def test_collect_spot_check_archive_paths_excludes_file_in_borgmatic_runtime_dir
         local_path=flexmock(),
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/user/0/borgmatic',
-    ) == ('/etc/path',)
+    ) == ('etc/path',)
 
 
 def test_collect_spot_check_source_paths_uses_working_directory():
@@ -877,7 +878,7 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         'hash1  /foo\nhash2  /bar'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 /foo', 'nothash2 /bar']
+        ['hash1 foo', 'nothash2 bar']
     )
 
     assert module.compare_spot_check_hashes(
@@ -904,6 +905,47 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
     ) == ('/bar',)
 
 
+def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        None,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', 'foo', 'bar'), working_directory=None).and_return(
+        'hash1  foo\nhash2  bar'
+    )
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 foo', 'nothash2 bar']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'archives',
+                    'frequency': '2 weeks',
+                },
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        log_prefix='repo',
+        source_paths=('foo', 'bar', 'baz', 'quux'),
+    ) == ('bar',)
+
+
 def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
     flexmock(module.random).should_receive('sample').replace_with(
         lambda population, count: population[:count]
@@ -918,7 +960,7 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         'hash1  /foo\nhash2  /bar'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['nothash1 /foo', 'nothash2 /bar']
+        ['nothash1 foo', 'nothash2 bar']
     )
 
     assert module.compare_spot_check_hashes(
@@ -959,7 +1001,7 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         'hash1  /foo\nhash2  /bar'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 /foo', 'nothash2 /bar']
+        ['hash1 foo', 'nothash2 bar']
     )
 
     assert module.compare_spot_check_hashes(
@@ -997,7 +1039,7 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         'hash1  /foo\nhash2  /bar'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 /foo']
+        ['hash1 foo']
     )
 
     assert module.compare_spot_check_hashes(
@@ -1033,7 +1075,7 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_return('hash1  /foo')
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 /foo', 'hash2 /bar']
+        ['hash1 foo', 'hash2 bar']
     )
 
     assert module.compare_spot_check_hashes(
@@ -1076,8 +1118,8 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         'hash3  /baz\nhash4  /quux'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
-        ['hash1 /foo', 'hash2 /bar']
-    ).and_return(['hash3 /baz', 'nothash4 /quux'])
+        ['hash1 foo', 'hash2 bar']
+    ).and_return(['hash3 baz', 'nothash4 quux'])
 
     assert module.compare_spot_check_hashes(
         repository={'path': 'repo'},
