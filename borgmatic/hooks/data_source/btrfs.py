@@ -90,7 +90,7 @@ def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
     candidate_source_directories = set(source_directories or ())
     subvolumes = []
 
-    # For each filesystem mount point, find its subvolumes and match them again the given source
+    # For each filesystem mount point, find its subvolumes and match them against the given source
     # directories to find the subvolumes to backup. And within this loop, sort the subvolumes from
     # longest to shortest mount points, so longer mount points get a whack at the candidate source
     # directory piñata before their parents do. (Source directories are consumed during this
