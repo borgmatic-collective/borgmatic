@@ -144,8 +144,7 @@ properties:
             type: string
         description: |
             Read include/exclude patterns from one or more separate named files,
-            one pattern per line. Note that Borg considers this option
-            experimental. See the output of "borg help patterns" for more
+            one pattern per line. See the output of "borg help patterns" for more
             details.
         example:
             - /etc/borgmatic/patterns
@@ -230,8 +229,8 @@ properties:
     source_directories_must_exist:
         type: boolean
         description: |
-            If true, then source directories must exist, otherwise an error is
-            raised. Defaults to false.
+            If true, then source directories (and root pattern paths) must
+            exist. If they don't, an error is raised. Defaults to false.
         example: true
     encryption_passcommand:
         type: string

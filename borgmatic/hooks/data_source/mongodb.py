@@ -2,6 +2,7 @@ import logging
 import os
 import shlex
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
@@ -30,7 +31,7 @@ def dump_data_sources(
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
@@ -41,7 +42,8 @@ def dump_data_sources(
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
-    Also append the given source directories with the parent directory of the database dumps.
+    Also append the the parent directory of the database dumps to the given patterns list, so the
+    dumps actually get backed up.
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
@@ -74,7 +76,11 @@ def dump_data_sources(
             processes.append(execute_command(command, shell=True, run_to_completion=False))
 
     if not dry_run:
-        source_directories.append(os.path.join(borgmatic_runtime_directory, 'mongodb_databases'))
+        patterns.append(
+            borgmatic.borg.pattern.Pattern(
+                os.path.join(borgmatic_runtime_directory, 'mongodb_databases')
+            )
+        )
 
     return processes
 

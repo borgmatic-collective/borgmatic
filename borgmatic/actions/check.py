@@ -368,7 +368,7 @@ def collect_spot_check_source_paths(
         ).values()
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+    (create_flags, create_positional_arguments, pattern_file) = (
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],

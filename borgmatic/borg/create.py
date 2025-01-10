@@ -6,6 +6,7 @@ import stat
 import tempfile
 import textwrap
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.logger
 from borgmatic.borg import environment, feature, flags
@@ -19,81 +20,41 @@ from borgmatic.execute import (
 logger = logging.getLogger(__name__)
 
 
-def expand_home_directories(directories):
+def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patterns_file=None):
     '''
-    Given a sequence of directory paths, expand tildes in each one. Do not perform any globbing.
-    Return the results as a tuple.
-    '''
-    if directories is None:
-        return ()
+    Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a
+    named temporary file in the given borgmatic runtime directory and return the file object.
 
-    return tuple(os.path.expanduser(directory) for directory in directories)
+    Use the given log prefix in any logging.
 
-
-def write_pattern_file(patterns=None, sources=None, pattern_file=None):
-    '''
-    Given a sequence of patterns and an optional sequence of source directories, write them to a
-    named temporary file (with the source directories as additional roots) and return the file.
-    If an optional open pattern file is given, overwrite it instead of making a new temporary file.
+    If an optional open pattern file is given, append to it instead of making a new temporary file.
     Return None if no patterns are provided.
     '''
-    if not patterns and not sources:
+    if not patterns:
         return None
 
-    if pattern_file is None:
-        pattern_file = tempfile.NamedTemporaryFile('w')
+    if patterns_file is None:
+        patterns_file = tempfile.NamedTemporaryFile('w', dir=borgmatic_runtime_directory)
     else:
-        pattern_file.seek(0)
+        patterns_file.write('\n')
 
-    pattern_file.write(
-        '\n'.join(tuple(patterns or ()) + tuple(f'R {source}' for source in (sources or [])))
+    patterns_output = '\n'.join(
+        f'{pattern.type.value} {pattern.style.value}{":" if pattern.style.value else ""}{pattern.path}'
+        for pattern in patterns
     )
-    pattern_file.flush()
+    logger.debug(f'{log_prefix}: Writing patterns to {patterns_file.name}:\n{patterns_output}')
 
-    return pattern_file
+    patterns_file.write(patterns_output)
+    patterns_file.flush()
+
+    return patterns_file
 
 
-def ensure_files_readable(*filename_lists):
+def make_exclude_flags(config):
     '''
-    Given a sequence of filename sequences, ensure that each filename is openable. This prevents
-    unreadable files from being passed to Borg, which in certain situations only warns instead of
-    erroring.
+    Given a configuration dict with various exclude options, return the corresponding Borg flags as
+    a tuple.
     '''
-    for file_object in itertools.chain.from_iterable(
-        filename_list for filename_list in filename_lists if filename_list
-    ):
-        open(file_object).close()
-
-
-def make_pattern_flags(config, pattern_filename=None):
-    '''
-    Given a configuration dict with a potential patterns_from option, and a filename containing any
-    additional patterns, return the corresponding Borg flags for those files as a tuple.
-    '''
-    pattern_filenames = tuple(config.get('patterns_from') or ()) + (
-        (pattern_filename,) if pattern_filename else ()
-    )
-
-    return tuple(
-        itertools.chain.from_iterable(
-            ('--patterns-from', pattern_filename) for pattern_filename in pattern_filenames
-        )
-    )
-
-
-def make_exclude_flags(config, exclude_filename=None):
-    '''
-    Given a configuration dict with various exclude options, and a filename containing any exclude
-    patterns, return the corresponding Borg flags as a tuple.
-    '''
-    exclude_filenames = tuple(config.get('exclude_from') or ()) + (
-        (exclude_filename,) if exclude_filename else ()
-    )
-    exclude_from_flags = tuple(
-        itertools.chain.from_iterable(
-            ('--exclude-from', exclude_filename) for exclude_filename in exclude_filenames
-        )
-    )
     caches_flag = ('--exclude-caches',) if config.get('exclude_caches') else ()
     if_present_flags = tuple(
         itertools.chain.from_iterable(
@@ -104,13 +65,7 @@ def make_exclude_flags(config, exclude_filename=None):
     keep_exclude_tags_flags = ('--keep-exclude-tags',) if config.get('keep_exclude_tags') else ()
     exclude_nodump_flags = ('--exclude-nodump',) if config.get('exclude_nodump') else ()
 
-    return (
-        exclude_from_flags
-        + caches_flag
-        + if_present_flags
-        + keep_exclude_tags_flags
-        + exclude_nodump_flags
-    )
+    return caches_flag + if_present_flags + keep_exclude_tags_flags + exclude_nodump_flags
 
 
 def make_list_filter_flags(local_borg_version, dry_run):
@@ -214,18 +169,22 @@ def collect_special_file_paths(
     )
 
 
-def check_all_source_directories_exist(source_directories):
+def check_all_root_patterns_exist(patterns):
     '''
-    Given a sequence of source directories, check that the source directories all exist. If any do
-    not, raise an exception.
+    Given a sequence of borgmatic.borg.pattern.Pattern instances, check that all root pattern
+    paths exist. If any don't, raise an exception.
     '''
-    missing_directories = [
-        source_directory
-        for source_directory in source_directories
-        if not os.path.exists(source_directory)
+    missing_paths = [
+        pattern.path
+        for pattern in pattern
+        if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+        if not os.path.exists(pattern.path)
     ]
-    if missing_directories:
-        raise ValueError(f"Source directories do not exist: {', '.join(missing_directories)}")
+
+    if missing_paths:
+        raise ValueError(
+            f"Source directories / root pattern paths do not exist: {', '.join(missing_paths)}"
+        )
 
 
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
@@ -235,7 +194,7 @@ def make_base_create_command(
     dry_run,
     repository_path,
     config,
-    source_directories,
+    patterns,
     local_borg_version,
     global_arguments,
     borgmatic_runtime_directory,
@@ -248,22 +207,15 @@ def make_base_create_command(
 ):
     '''
     Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
-    sequence of loaded configuration paths, the local Borg version, global arguments as an
-    argparse.Namespace instance, and a sequence of borgmatic source directories, return a tuple of
-    (base Borg create command flags, Borg create command positional arguments, open pattern file
-    handle, open exclude file handle).
+    sequence of patterns as borgmatic.borg.pattern.Pattern instances, the local Borg version,
+    global arguments as an argparse.Namespace instance, and a sequence of borgmatic source
+    directories, return a tuple of (base Borg create command flags, Borg create command positional
+    arguments, open pattern file handle).
     '''
     if config.get('source_directories_must_exist', False):
-        check_all_source_directories_exist(source_directories)
+        check_all_root_patterns_exist(patterns)
 
-    ensure_files_readable(config.get('patterns_from'), config.get('exclude_from'))
-
-    pattern_file = (
-        write_pattern_file(config.get('patterns'), source_directories)
-        if config.get('patterns') or config.get('patterns_from')
-        else None
-    )
-    exclude_file = write_pattern_file(expand_home_directories(config.get('exclude_patterns')))
+    patterns_file = write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix=repository_path)
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
     chunker_params = config.get('chunker_params', None)
@@ -306,8 +258,8 @@ def make_base_create_command(
     create_flags = (
         tuple(local_path.split(' '))
         + ('create',)
-        + make_pattern_flags(config, pattern_file.name if pattern_file else None)
-        + make_exclude_flags(config, exclude_file.name if exclude_file else None)
+        + (('--patterns-from', patterns_file.name) if patterns_file else ())
+        + make_exclude_flags(config)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--checkpoint-volume', str(checkpoint_volume)) if checkpoint_volume else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
@@ -337,7 +289,7 @@ def make_base_create_command(
 
     create_positional_arguments = flags.make_repository_archive_flags(
         repository_path, archive_name_format, local_borg_version
-    ) + (tuple(source_directories) if not pattern_file else ())
+    )
 
     # If database hooks are enabled (as indicated by streaming processes), exclude files that might
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
@@ -367,22 +319,30 @@ def make_base_create_command(
             logger.warning(
                 f'{repository_path}: Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
             )
-            exclude_file = write_pattern_file(
-                expand_home_directories(
-                    tuple(config.get('exclude_patterns') or ()) + special_file_paths
+            patterns_file = write_patterns_file(
+                tuple(
+                    borgmatic.borg.pattern.Pattern(
+                        special_file_path,
+                        borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+                        borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                    )
+                    for special_file_path in special_file_paths
                 ),
-                pattern_file=exclude_file,
+                borgmatic_runtime_directory,
+                log_prefix=repository_path,
+                patterns_file=patterns_file,
             )
-            create_flags += make_exclude_flags(config, exclude_file.name)
+            if '--patterns-from' not in create_flags:
+                create_flags.append(('--patterns-from', patterns_file.name))
 
-    return (create_flags, create_positional_arguments, pattern_file, exclude_file)
+    return (create_flags, create_positional_arguments, patterns_file)
 
 
 def create_archive(
     dry_run,
     repository_path,
     config,
-    source_directories,
+    patterns,
     local_borg_version,
     global_arguments,
     borgmatic_runtime_directory,
@@ -406,22 +366,20 @@ def create_archive(
 
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        make_base_create_command(
-            dry_run,
-            repository_path,
-            config,
-            source_directories,
-            local_borg_version,
-            global_arguments,
-            borgmatic_runtime_directory,
-            local_path,
-            remote_path,
-            progress,
-            json,
-            list_files,
-            stream_processes,
-        )
+    (create_flags, create_positional_arguments, patterns_file) = make_base_create_command(
+        dry_run,
+        repository_path,
+        config,
+        patterns,
+        local_borg_version,
+        global_arguments,
+        borgmatic_runtime_directory,
+        local_path,
+        remote_path,
+        progress,
+        json,
+        list_files,
+        stream_processes,
     )
 
     if json:

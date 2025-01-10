@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
 import borgmatic.hooks.data_source.snapshot
@@ -25,18 +26,17 @@ BORGMATIC_USER_PROPERTY = 'org.torsion.borgmatic:backup'
 
 Dataset = collections.namedtuple(
     'Dataset',
-    ('name', 'mount_point', 'auto_backup', 'contained_source_directories'),
+    ('name', 'mount_point', 'auto_backup', 'contained_patterns'),
     defaults=(False, ()),
 )
 
 
-def get_datasets_to_backup(zfs_command, source_directories):
+def get_datasets_to_backup(zfs_command, patterns):
     '''
-    Given a ZFS command to run and a sequence of configured source directories, find the
-    intersection between the current ZFS dataset mount points and the configured borgmatic source
-    directories. The idea is that these are the requested datasets to snapshot. But also include any
-    datasets tagged with a borgmatic-specific user property, whether or not they appear in source
-    directories.
+    Given a ZFS command to run and a sequence of configured patterns, find the intersection between
+    the current ZFS dataset mount points and the paths of any patterns. The idea is that these
+    pattern paths represent the requested datasets to snapshot. But also include any datasets tagged
+    with a borgmatic-specific user property, whether or not they appear in the patterns.
 
     Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
@@ -54,9 +54,8 @@ def get_datasets_to_backup(zfs_command, source_directories):
 
     try:
         # Sort from longest to shortest mount points, so longer mount points get a whack at the
-        # candidate source directory piñata before their parents do. (Source directories are
-        # consumed during the second loop below, so no two datasets get the same contained source
-        # directories.)
+        # candidate pattern piñata before their parents do. (Patterns are consumed during the second
+        # loop below, so no two datasets end up with the same contained patterns.)
         datasets = sorted(
             (
                 Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
@@ -69,7 +68,7 @@ def get_datasets_to_backup(zfs_command, source_directories):
     except ValueError:
         raise ValueError(f'Invalid {zfs_command} list output')
 
-    candidate_source_directories = set(source_directories)
+    candidate_patterns = set(patterns)
 
     return tuple(
         sorted(
@@ -78,19 +77,22 @@ def get_datasets_to_backup(zfs_command, source_directories):
                     dataset.name,
                     dataset.mount_point,
                     dataset.auto_backup,
-                    contained_source_directories,
+                    contained_patterns,
                 )
                 for dataset in datasets
-                for contained_source_directories in (
+                for contained_patterns in (
                     (
-                        (dataset.mount_point,)
-                        if dataset.auto_backup
-                        else borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                            dataset.mount_point, candidate_source_directories
+                        (
+                            (borgmatic.borg.pattern.Pattern(dataset.mount_point),)
+                            if dataset.auto_backup
+                            else ()
+                        )
+                        + borgmatic.hooks.data_source.snapshot.get_contained_patterns(
+                            dataset.mount_point, candidate_patterns
                         )
                     ),
                 )
-                if contained_source_directories
+                if contained_patterns
             ),
             key=lambda dataset: dataset.mount_point,
         )
@@ -153,22 +155,53 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     )
 
 
+def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
+    '''
+    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance, return a new Pattern with its
+    path rewritten to be in a snapshot directory based on the given runtime directory.
+
+    Move any initial caret in a regular expression pattern path to the beginning, so as not to break
+    the regular expression.
+    '''
+    initial_caret = (
+        '^'
+        if pattern.style == borgmatic.borg.pattern.Pattern_style.REGULAR_EXPRESSION
+        and pattern.path.startswith('^')
+        else ''
+    )
+
+    rewritten_path = initial_caret + os.path.join(
+        normalized_runtime_directory,
+        'zfs_snapshots',
+        '.',  # Borg 1.4+ "slashdot" hack.
+        # Included so that the source directory ends up in the Borg archive at its "original" path.
+        pattern.path.lstrip('^').lstrip(os.path.sep),
+    )
+
+    return borgmatic.borg.pattern.Pattern(
+        rewritten_path,
+        pattern.type,
+        pattern.style,
+        pattern.device,
+    )
+
+
 def dump_data_sources(
     hook_config,
     config,
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
     Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic configuration
-    file paths, the borgmatic runtime directory, the configured source directories, and whether this
-    is a dry run, auto-detect and snapshot any ZFS dataset mount points listed in the given source
-    directories and any dataset with a borgmatic-specific user property. Also update those source
-    directories, replacing dataset mount points with corresponding snapshot directories so they get
-    stored in the Borg archive instead. Use the log prefix in any log entries.
+    file paths, the borgmatic runtime directory, the configured patterns, and whether this is a dry
+    run, auto-detect and snapshot any ZFS dataset mount points listed in the given patterns and any
+    dataset with a borgmatic-specific user property. Also update those patterns, replacing dataset
+    mount points with corresponding snapshot directories so they get stored in the Borg archive
+    instead. Use the log prefix in any log entries.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -179,9 +212,9 @@ def dump_data_sources(
 
     # List ZFS datasets to get their mount points.
     zfs_command = hook_config.get('zfs_command', 'zfs')
-    requested_datasets = get_datasets_to_backup(zfs_command, source_directories)
+    requested_datasets = get_datasets_to_backup(zfs_command, patterns)
 
-    # Snapshot each dataset, rewriting source directories to use the snapshot paths.
+    # Snapshot each dataset, rewriting patterns to use the snapshot paths.
     snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
     normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
 
@@ -216,20 +249,17 @@ def dump_data_sources(
             hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
         )
 
-        for source_directory in dataset.contained_source_directories:
+        for pattern in dataset.contained_patterns:
+            # Update the pattern in place, since pattern order matters to Borg.
             try:
-                source_directories.remove(source_directory)
+                patterns[patterns.index(pattern)] = (
+                    make_borg_snapshot_pattern(
+                        pattern,
+                        normalized_runtime_directory,
+                    )
+                )
             except ValueError:
                 pass
-
-            source_directories.append(
-                os.path.join(
-                    normalized_runtime_directory,
-                    'zfs_snapshots',
-                    '.',  # Borg 1.4+ "slashdot" hack.
-                    source_directory.lstrip(os.path.sep),
-                )
-            )
 
     return []
 
