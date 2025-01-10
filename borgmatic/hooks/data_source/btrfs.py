@@ -73,9 +73,7 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
     )
 
 
-Subvolume = collections.namedtuple(
-    'Subvolume', ('path', 'contained_patterns'), defaults=((),)
-)
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
 
 
 def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
@@ -256,7 +254,9 @@ def dump_data_sources(
         for pattern in subvolume.contained_patterns:
             # Update the pattern in place, since pattern order matters to Borg.
             try:
-                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(subvolume.path, pattern)
+                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(
+                    subvolume.path, pattern
+                )
             except ValueError:
                 pass
 

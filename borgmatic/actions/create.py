@@ -50,7 +50,11 @@ def collect_patterns(config):
             borgmatic.borg.pattern.Pattern(source_directory)
             for source_directory in config.get('source_directories', ())
         )
-        + tuple(parse_pattern(pattern_line) for pattern_line in config.get('patterns', ()))
+        + tuple(
+            parse_pattern(pattern_line)
+            for pattern_line in config.get('patterns', ())
+            if not pattern_line.lstrip().startswith('#')
+        )
         + tuple(
             borgmatic.borg.pattern.Pattern(
                 exclude_line,
@@ -64,6 +68,7 @@ def collect_patterns(config):
                 parse_pattern(pattern_line)
                 for filename in config.get('patterns_from', ())
                 for pattern_line in open(filename).readlines()
+                if not pattern_line.lstrip().startswith('#')
             )
         )
         + tuple(

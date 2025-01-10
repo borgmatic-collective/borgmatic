@@ -57,9 +57,7 @@ def get_logical_volumes(lsblk_command, patterns=None):
 
     try:
         return tuple(
-            Logical_volume(
-                device['name'], device['path'], device['mountpoint'], contained_patterns
-            )
+            Logical_volume(device['name'], device['path'], device['mountpoint'], contained_patterns)
             for device in devices_info['blockdevices']
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_patterns in (
@@ -232,11 +230,9 @@ def dump_data_sources(
         for pattern in logical_volume.contained_patterns:
             # Update the pattern in place, since pattern order matters to Borg.
             try:
-                patterns[patterns.index(pattern)] = (
-                    make_borg_snapshot_pattern(
-                        pattern,
-                        normalized_runtime_directory,
-                    )
+                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(
+                    pattern,
+                    normalized_runtime_directory,
                 )
             except ValueError:
                 pass

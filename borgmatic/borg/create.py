@@ -215,7 +215,9 @@ def make_base_create_command(
     if config.get('source_directories_must_exist', False):
         check_all_root_patterns_exist(patterns)
 
-    patterns_file = write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix=repository_path)
+    patterns_file = write_patterns_file(
+        patterns, borgmatic_runtime_directory, log_prefix=repository_path
+    )
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
     chunker_params = config.get('chunker_params', None)

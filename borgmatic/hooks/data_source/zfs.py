@@ -252,11 +252,9 @@ def dump_data_sources(
         for pattern in dataset.contained_patterns:
             # Update the pattern in place, since pattern order matters to Borg.
             try:
-                patterns[patterns.index(pattern)] = (
-                    make_borg_snapshot_pattern(
-                        pattern,
-                        normalized_runtime_directory,
-                    )
+                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(
+                    pattern,
+                    normalized_runtime_directory,
                 )
             except ValueError:
                 pass
