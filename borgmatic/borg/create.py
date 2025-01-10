@@ -206,7 +206,7 @@ def collect_special_file_paths(
 
         if not skip_paths:
             raise ValueError(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes. Please remove it from excludes or change the runtime directory.'
+                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns. Please remove it from excludes/patterns or change the runtime directory.'
             )
 
     return tuple(
