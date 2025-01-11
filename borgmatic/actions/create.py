@@ -175,11 +175,11 @@ def deduplicate_patterns(patterns):
     '''
     Given a sequence of borgmatic.borg.pattern.Pattern instances, return them with all duplicate
     root child patterns removed. For instance, if two root patterns are given with paths "/foo" and
-    "/foo/bar", return just the one with "/foo". Non-root patterns are passed through with
+    "/foo/bar", return just the one with "/foo". Non-root patterns are passed through without
     modification.
 
-    The one exception to this rule is if two paths are on different filesystems (devices). In that
-    case, they won't get de-duplicated, in case they both need to be passed to Borg (e.g. the
+    The one exception to deduplication is two paths are on different filesystems (devices). In that
+    case, they won't get deduplicated, in case they both need to be passed to Borg (e.g. the
     one_file_system option is true).
 
     The idea is that if Borg is given a root parent pattern, then it doesn't also need to be given

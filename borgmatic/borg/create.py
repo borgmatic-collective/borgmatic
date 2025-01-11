@@ -22,8 +22,9 @@ logger = logging.getLogger(__name__)
 
 def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patterns_file=None):
     '''
-    Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a
-    named temporary file in the given borgmatic runtime directory and return the file object.
+    Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a named
+    temporary file in the given borgmatic runtime directory and return the file object so it can
+    continue to exist on disk as long as the caller needs it.
 
     Use the given log prefix in any logging.
 
