@@ -117,6 +117,7 @@ def any_parent_directories(path, candidate_parents):
 
 
 def collect_special_file_paths(
+    dry_run,
     create_command,
     config,
     local_path,
@@ -125,11 +126,11 @@ def collect_special_file_paths(
     borgmatic_runtime_directory,
 ):
     '''
-    Given a Borg create command as a tuple, a configuration dict, a local Borg path, a working
-    directory, a dict of environment variables to pass to Borg, and the borgmatic runtime directory,
-    collect the paths for any special files (character devices, block devices, and named pipes /
-    FIFOs) that Borg would encounter during a create. These are all paths that could cause Borg to
-    hang if its --read-special flag is used.
+    Given a dry-run flag, a Borg create command as a tuple, a configuration dict, a local Borg path,
+    a working directory, a dict of environment variables to pass to Borg, and the borgmatic runtime
+    directory, collect the paths for any special files (character devices, block devices, and named
+    pipes / FIFOs) that Borg would encounter during a create. These are all paths that could cause
+    Borg to hang if its --read-special flag is used.
 
     Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
     its own special files there for database dumps. And if the borgmatic runtime directory is
@@ -160,9 +161,9 @@ def collect_special_file_paths(
             path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
         }
 
-        if not skip_paths:
+        if not skip_paths and not dry_run:
             raise ValueError(
-                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns. Please remove it from excludes/patterns or change the runtime directory.'
+                f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.'
             )
 
     return tuple(
@@ -305,6 +306,7 @@ def make_base_create_command(
 
         logger.debug(f'{repository_path}: Collecting special file paths')
         special_file_paths = collect_special_file_paths(
+            dry_run,
             create_flags + create_positional_arguments,
             config,
             local_path,

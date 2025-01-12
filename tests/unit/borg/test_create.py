@@ -290,7 +290,8 @@ def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_
     flexmock(module).should_receive('any_parent_directories').never()
 
     assert module.collect_special_file_paths(
-        ('borg', 'create'),
+        dry_run=False,
+        create_command=('borg', 'create'),
         config={},
         local_path=None,
         working_directory=None,
@@ -316,7 +317,8 @@ def test_collect_special_file_paths_skips_borgmatic_runtime_directory():
     ).and_return(False)
 
     assert module.collect_special_file_paths(
-        ('borg', 'create'),
+        dry_run=False,
+        create_command=('borg', 'create'),
         config={},
         local_path=None,
         working_directory=None,
@@ -335,13 +337,33 @@ def test_collect_special_file_paths_with_borgmatic_runtime_directory_missing_fro
 
     with pytest.raises(ValueError):
         module.collect_special_file_paths(
-            ('borg', 'create'),
+            dry_run=False,
+            create_command=('borg', 'create'),
             config={},
             local_path=None,
             working_directory=None,
             borg_environment=None,
             borgmatic_runtime_directory='/run/borgmatic',
         )
+
+
+def test_collect_special_file_paths_with_dry_run_and_borgmatic_runtime_directory_missing_from_paths_output_does_not_raise():
+    flexmock(module).should_receive('execute_command_and_capture_output').and_return(
+        '+ /foo\n- /bar\n- /baz'
+    )
+    flexmock(module).should_receive('special_file').and_return(True)
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('any_parent_directories').and_return(False)
+
+    assert module.collect_special_file_paths(
+        dry_run=True,
+        create_command=('borg', 'create'),
+        config={},
+        local_path=None,
+        working_directory=None,
+        borg_environment=None,
+        borgmatic_runtime_directory='/run/borgmatic',
+    ) == ('/foo', '/bar', '/baz')
 
 
 def test_collect_special_file_paths_excludes_non_special_files():
@@ -355,7 +377,8 @@ def test_collect_special_file_paths_excludes_non_special_files():
     flexmock(module).should_receive('any_parent_directories').never()
 
     assert module.collect_special_file_paths(
-        ('borg', 'create'),
+        dry_run=False,
+        create_command=('borg', 'create'),
         config={},
         local_path=None,
         working_directory=None,
@@ -378,7 +401,8 @@ def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
     flexmock(module).should_receive('any_parent_directories').never()
 
     module.collect_special_file_paths(
-        ('borg', 'create', '--exclude-nodump'),
+        dry_run=False,
+        create_command=('borg', 'create', '--exclude-nodump'),
         config={},
         local_path='borg',
         working_directory=None,

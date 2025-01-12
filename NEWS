@@ -9,6 +9,8 @@
  * #962: Under the hood, merge all configured source directories, excludes, and patterns into a
    unified temporary patterns file for passing to Borg. The borgmatic configuration options remain
    unchanged.
+ * #965: Fix a borgmatic runtime directory error when running the "spot" check with a database hook
+   enabled.
  * Fix the "spot" check to no longer consider pipe files within an archive for file comparisons.
  * Fix auto-excluding of special files (when databases are configured) to support relative source
    directory paths.
