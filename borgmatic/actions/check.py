@@ -367,14 +367,16 @@ def collect_spot_check_source_paths(
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         ).values()
     )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     (create_flags, create_positional_arguments, pattern_file) = (
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],
             config=config,
-            source_directories=borgmatic.actions.create.process_source_directories(
-                config,
+            patterns=borgmatic.actions.create.process_patterns(
+                borgmatic.actions.create.collect_patterns(config),
+                working_directory,
             ),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
