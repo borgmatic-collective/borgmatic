@@ -1,10 +1,11 @@
 import pytest
 from flexmock import flexmock
 
+from borgmatic.borg.pattern import Pattern
 from borgmatic.hooks.data_source import lvm as module
 
 
-def test_get_logical_volumes_filters_by_source_directories():
+def test_get_logical_volumes_filters_by_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -36,28 +37,28 @@ def test_get_logical_volumes_filters_by_source_directories():
         }
         '''
     )
-    contained = {'/mnt/lvolume', '/mnt/lvolume/subdir'}
+    contained = {Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')}
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).with_args(None, contained).never()
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
-    ).with_args('/mnt/lvolume', contained).and_return(('/mnt/lvolume', '/mnt/lvolume/subdir'))
+        'get_contained_patterns'
+    ).with_args('/mnt/lvolume', contained).and_return((Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')))
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).with_args('/mnt/other', contained).and_return(())
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).with_args('/mnt/notlvm', contained).never()
 
     assert module.get_logical_volumes(
-        'lsblk', source_directories=('/mnt/lvolume', '/mnt/lvolume/subdir')
+        'lsblk', patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir'))
     ) == (
         module.Logical_volume(
-            'vgroup-lvolume',
-            '/dev/mapper/vgroup-lvolume',
-            '/mnt/lvolume',
-            ('/mnt/lvolume', '/mnt/lvolume/subdir'),
+            name='vgroup-lvolume',
+            device_path='/dev/mapper/vgroup-lvolume',
+            mount_point='/mnt/lvolume',
+            contained_patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')),
         ),
     )
 
@@ -68,12 +69,12 @@ def test_get_logical_volumes_with_invalid_lsblk_json_errors():
     ).and_return('{')
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).never()
 
     with pytest.raises(ValueError):
         module.get_logical_volumes(
-            'lsblk', source_directories=('/mnt/lvolume', '/mnt/lvolume/subdir')
+            'lsblk', patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir'))
         )
 
 
@@ -83,12 +84,12 @@ def test_get_logical_volumes_with_lsblk_json_missing_keys_errors():
     ).and_return('{"block_devices": [{}]}')
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).never()
 
     with pytest.raises(ValueError):
         module.get_logical_volumes(
-            'lsblk', source_directories=('/mnt/lvolume', '/mnt/lvolume/subdir')
+            'lsblk', patterns=(Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir'))
         )
 
 
@@ -130,22 +131,22 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
     module.snapshot_logical_volume('lvcreate', 'snap', '/dev/snap', '10TB')
 
 
-def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories():
+def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     config = {'lvm': {}}
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -180,21 +181,21 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir',
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume2',
+    assert patterns == [
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'),
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'),
     ]
 
 
 def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
     config = {'lvm': {}}
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(())
     flexmock(module).should_receive('snapshot_logical_volume').never()
     flexmock(module).should_receive('mount_snapshot').never()
@@ -206,31 +207,31 @@ def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    assert patterns == [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
 
 
 def test_dump_data_sources_uses_snapshot_size_for_snapshot():
     config = {'lvm': {'snapshot_size': '1000PB'}}
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -271,15 +272,15 @@ def test_dump_data_sources_uses_snapshot_size_for_snapshot():
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir',
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume2',
+    assert patterns == [
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'),
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'),
     ]
 
 
@@ -292,20 +293,20 @@ def test_dump_data_sources_uses_custom_commands():
             'mount_command': '/usr/local/bin/mount',
         },
     }
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -346,34 +347,34 @@ def test_dump_data_sources_uses_custom_commands():
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir',
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume2',
+    assert patterns == [
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'),
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'),
     ]
 
 
-def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_source_directories():
+def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patterns():
     config = {'lvm': {}}
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -398,34 +399,34 @@ def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_sourc
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=True,
         )
         == []
     )
 
-    assert source_directories == [
-        '/mnt/lvolume1/subdir',
-        '/mnt/lvolume2',
+    assert patterns == [
+        Pattern('/mnt/lvolume1/subdir'),
+        Pattern('/mnt/lvolume2'),
     ]
 
 
-def test_dump_data_sources_ignores_mismatch_between_source_directories_and_contained_source_directories():
+def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained_patterns():
     config = {'lvm': {}}
-    source_directories = ['/hmm']
+    patterns = [Pattern('/hmm')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -460,35 +461,35 @@ def test_dump_data_sources_ignores_mismatch_between_source_directories_and_conta
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [
-        '/hmm',
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir',
-        '/run/borgmatic/lvm_snapshots/./mnt/lvolume2',
+    assert patterns == [
+        Pattern('/hmm'),
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'),
+        Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'),
     ]
 
 
 def test_dump_data_sources_with_missing_snapshot_errors():
     config = {'lvm': {}}
-    source_directories = ['/mnt/lvolume1/subdir', '/mnt/lvolume2']
+    patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
             module.Logical_volume(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -514,7 +515,7 @@ def test_dump_data_sources_with_missing_snapshot_errors():
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
 
@@ -627,13 +628,13 @@ def test_remove_data_source_dumps_unmounts_and_remove_snapshots():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -736,13 +737,13 @@ def test_remove_data_source_dumps_with_missing_snapshot_directory_skips_unmount(
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -781,13 +782,13 @@ def test_remove_data_source_dumps_with_missing_snapshot_mount_path_skips_unmount
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -839,13 +840,13 @@ def test_remove_data_source_dumps_with_successful_mount_point_removal_skips_unmo
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -897,13 +898,13 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -941,13 +942,13 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -985,13 +986,13 @@ def test_remove_data_source_dumps_bails_for_missing_lvs_command():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -1029,13 +1030,13 @@ def test_remove_data_source_dumps_bails_for_lvs_command_error():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )
@@ -1075,13 +1076,13 @@ def test_remove_data_source_with_dry_run_skips_snapshot_unmount_and_delete():
                 name='lvolume1',
                 device_path='/dev/lvolume1',
                 mount_point='/mnt/lvolume1',
-                contained_source_directories=('/mnt/lvolume1/subdir',),
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
             ),
             module.Logical_volume(
                 name='lvolume2',
                 device_path='/dev/lvolume2',
                 mount_point='/mnt/lvolume2',
-                contained_source_directories=('/mnt/lvolume2',),
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
             ),
         )
     )

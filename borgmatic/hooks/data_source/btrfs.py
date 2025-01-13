@@ -252,13 +252,13 @@ def dump_data_sources(
         snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
         for pattern in subvolume.contained_patterns:
-            # Update the pattern in place, since pattern order matters to Borg.
+            snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+
+            # Attempt to update the pattern in place, since pattern order matters to Borg.
             try:
-                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(
-                    subvolume.path, pattern
-                )
+                patterns[patterns.index(pattern)] = snapshot_pattern
             except ValueError:
-                pass
+                patterns.append(snapshot_pattern)
 
         patterns.append(make_snapshot_exclude_pattern(subvolume.path))
 

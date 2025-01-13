@@ -228,14 +228,13 @@ def dump_data_sources(
         )
 
         for pattern in logical_volume.contained_patterns:
-            # Update the pattern in place, since pattern order matters to Borg.
+            snapshot_pattern = make_borg_snapshot_pattern(pattern, normalized_runtime_directory)
+
+            # Attempt to update the pattern in place, since pattern order matters to Borg.
             try:
-                patterns[patterns.index(pattern)] = make_borg_snapshot_pattern(
-                    pattern,
-                    normalized_runtime_directory,
-                )
+                patterns[patterns.index(pattern)] = snapshot_pattern
             except ValueError:
-                pass
+                patterns.append(snapshot_pattern)
 
     return []
 

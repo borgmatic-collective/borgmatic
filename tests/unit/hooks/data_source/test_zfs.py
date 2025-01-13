@@ -3,27 +3,35 @@ import os
 import pytest
 from flexmock import flexmock
 
+from borgmatic.borg.pattern import Pattern
 from borgmatic.hooks.data_source import zfs as module
 
 
-def test_get_datasets_to_backup_filters_datasets_by_source_directories():
+def test_get_datasets_to_backup_filters_datasets_by_patterns():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
         'dataset\t/dataset\t-\nother\t/other\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
-    ).with_args('/dataset', object).and_return(('/dataset',))
+        'get_contained_patterns'
+    ).with_args('/dataset', object).and_return((Pattern('/dataset'),))
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).with_args('/other', object).and_return(())
 
     assert module.get_datasets_to_backup(
-        'zfs', source_directories=('/foo', '/dataset', '/bar')
+        'zfs',
+        patterns=(
+            Pattern('/foo'),
+            Pattern('/dataset'),
+            Pattern('/bar'),
+        ),
     ) == (
         module.Dataset(
-            name='dataset', mount_point='/dataset', contained_source_directories=('/dataset',)
+            name='dataset',
+            mount_point='/dataset',
+            contained_patterns=(Pattern('/dataset'),),
         ),
     )
 
@@ -35,18 +43,18 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
         'dataset\t/dataset\tauto\nother\t/other\t-',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
-    ).with_args('/dataset', object).never()
+        'get_contained_patterns'
+    ).with_args('/dataset', object).and_return(())
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).with_args('/other', object).and_return(())
 
-    assert module.get_datasets_to_backup('zfs', source_directories=('/foo', '/bar')) == (
+    assert module.get_datasets_to_backup('zfs', patterns=(Pattern('/foo'), Pattern('/bar'))) == (
         module.Dataset(
             name='dataset',
             mount_point='/dataset',
             auto_backup=True,
-            contained_source_directories=('/dataset',),
+            contained_patterns=(Pattern('/dataset'),),
         ),
     )
 
@@ -58,11 +66,11 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
         'dataset',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
+        'get_contained_patterns'
     ).never()
 
     with pytest.raises(ValueError, match='zfs'):
-        module.get_datasets_to_backup('zfs', source_directories=('/foo', '/bar'))
+        module.get_datasets_to_backup('zfs', patterns=(Pattern('/foo'), Pattern('/bar')))
 
 
 def test_get_all_dataset_mount_points_does_not_filter_datasets():
@@ -72,8 +80,8 @@ def test_get_all_dataset_mount_points_does_not_filter_datasets():
         '/dataset\n/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-        'get_contained_directories'
-    ).and_return(('/dataset',))
+        'get_contained_patterns'
+    ).and_return((Pattern('/dataset'),))
 
     assert module.get_all_dataset_mount_points('zfs') == (
         ('/dataset'),
@@ -81,13 +89,13 @@ def test_get_all_dataset_mount_points_does_not_filter_datasets():
     )
 
 
-def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories():
+def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (
             flexmock(
                 name='dataset',
                 mount_point='/mnt/dataset',
-                contained_source_directories=('/mnt/dataset/subdir',),
+                contained_patterns=(Pattern('/mnt/dataset/subdir'),),
             )
         )
     )
@@ -103,7 +111,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    source_directories = ['/mnt/dataset/subdir']
+    patterns = [Pattern('/mnt/dataset/subdir')]
 
     assert (
         module.dump_data_sources(
@@ -112,13 +120,13 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_source_directories()
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [os.path.join(snapshot_mount_path, 'subdir')]
+    assert patterns == [Pattern(os.path.join(snapshot_mount_path, 'subdir'))]
 
 
 def test_dump_data_sources_with_no_datasets_skips_snapshots():
@@ -126,22 +134,22 @@ def test_dump_data_sources_with_no_datasets_skips_snapshots():
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
     flexmock(module).should_receive('mount_snapshot').never()
-    source_directories = ['/mnt/dataset']
+    patterns = [Pattern('/mnt/dataset')]
 
     assert (
         module.dump_data_sources(
             hook_config={},
-            config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            config={'patterns': flexmock(), 'zfs': {}},
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == ['/mnt/dataset']
+    assert patterns == [Pattern('/mnt/dataset')]
 
 
 def test_dump_data_sources_uses_custom_commands():
@@ -150,7 +158,7 @@ def test_dump_data_sources_uses_custom_commands():
             flexmock(
                 name='dataset',
                 mount_point='/mnt/dataset',
-                contained_source_directories=('/mnt/dataset/subdir',),
+                contained_patterns=(Pattern('/mnt/dataset/subdir'),),
             )
         )
     )
@@ -166,7 +174,7 @@ def test_dump_data_sources_uses_custom_commands():
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    source_directories = ['/mnt/dataset/subdir']
+    patterns = [Pattern('/mnt/dataset/subdir')]
     hook_config = {
         'zfs_command': '/usr/local/bin/zfs',
         'mount_command': '/usr/local/bin/mount',
@@ -176,53 +184,53 @@ def test_dump_data_sources_uses_custom_commands():
         module.dump_data_sources(
             hook_config=hook_config,
             config={
-                'source_directories': source_directories,
+                'patterns': flexmock(),
                 'zfs': hook_config,
             },
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == [os.path.join(snapshot_mount_path, 'subdir')]
+    assert patterns == [Pattern(os.path.join(snapshot_mount_path, 'subdir'))]
 
 
-def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_source_directories():
+def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patterns():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (flexmock(name='dataset', mount_point='/mnt/dataset'),)
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
     flexmock(module).should_receive('mount_snapshot').never()
-    source_directories = ['/mnt/dataset']
+    patterns = [Pattern('/mnt/dataset')]
 
     assert (
         module.dump_data_sources(
             hook_config={},
-            config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            config={'patterns': ('R /mnt/dataset',), 'zfs': {}},
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=True,
         )
         == []
     )
 
-    assert source_directories == ['/mnt/dataset']
+    assert patterns == [Pattern('/mnt/dataset')]
 
 
-def test_dump_data_sources_ignores_mismatch_between_source_directories_and_contained_source_directories():
+def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained_patterns():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (
             flexmock(
                 name='dataset',
                 mount_point='/mnt/dataset',
-                contained_source_directories=('/mnt/dataset/subdir',),
+                contained_patterns=(Pattern('/mnt/dataset/subdir'),),
             )
         )
     )
@@ -238,22 +246,22 @@ def test_dump_data_sources_ignores_mismatch_between_source_directories_and_conta
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    source_directories = ['/hmm']
+    patterns = [Pattern('/hmm'),]
 
     assert (
         module.dump_data_sources(
             hook_config={},
-            config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            config={'patterns': ('R /mnt/dataset',), 'zfs': {}},
             log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=source_directories,
+            patterns=patterns,
             dry_run=False,
         )
         == []
     )
 
-    assert source_directories == ['/hmm', os.path.join(snapshot_mount_path, 'subdir')]
+    assert patterns == [Pattern('/hmm'), Pattern(os.path.join(snapshot_mount_path, 'subdir'))]
 
 
 def test_get_all_snapshots_parses_list_output():
