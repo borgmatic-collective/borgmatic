@@ -172,7 +172,7 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
         else ''
     )
 
-    written_path = initial_caret + os.path.join(
+    rewritten_path = initial_caret + os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
         '.',  # Borg 1.4+ "slashdot" hack.

@@ -92,11 +92,11 @@ def test_get_subvolumes_collects_subvolumes_matching_patterns_from_all_filesyste
 
     for path in ('/one', '/four'):
         flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_directories'
-        ).with_args(path, object).and_return((path,))
+            'get_contained_patterns'
+        ).with_args(path, object).and_return((Pattern(path),))
     for path in ('/two', '/three'):
         flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_directories'
+            'get_contained_patterns'
         ).with_args(path, object).and_return(())
 
     assert module.get_subvolumes(
@@ -125,8 +125,8 @@ def test_get_subvolumes_without_patterns_collects_all_subvolumes_from_all_filesy
 
     for path in ('/one', '/two', '/three', '/four'):
         flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_directories'
-        ).with_args(path, object).and_return((path,))
+            'get_contained_patterns'
+        ).with_args(path, object).and_return((Pattern(path),))
 
     assert module.get_subvolumes('btrfs', 'findmnt') == (
         module.Subvolume('/four', contained_patterns=(Pattern('/four'),)),
@@ -233,14 +233,20 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
     assert patterns == [
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
+        Pattern(
+            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        ),
         Pattern('/mnt/subvol2/.borgmatic-1234/mnt/subvol2'),
+        Pattern(
+            '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        ),
     ]
     assert config == {
         'btrfs': {},
-        'exclude_patterns': [
-            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-        ],
     }
 
 
@@ -285,14 +291,16 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     assert patterns == [
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
+        Pattern(
+            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        ),
     ]
     assert config == {
         'btrfs': {
             'btrfs_command': '/usr/local/bin/btrfs',
         },
-        'exclude_patterns': [
-            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-        ],
     }
 
 
@@ -339,14 +347,16 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
     assert patterns == [
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
+        Pattern(
+            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        )
     ]
     assert config == {
         'btrfs': {
             'findmnt_command': '/usr/local/bin/findmnt',
         },
-        'exclude_patterns': [
-            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-        ],
     }
 
 
@@ -466,15 +476,21 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
     assert patterns == [
         Pattern('/foo'),
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
+        Pattern(
+            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        ),
         Pattern('/mnt/subvol2/.borgmatic-1234/mnt/subvol2'),
+        Pattern(
+            '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
+            Pattern_type.EXCLUDE,
+            Pattern_style.FNMATCH,
+        ),
     ]
     assert config == {
         'btrfs': {},
-        'exclude_patterns': [
-            '/bar',
-            '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-        ],
+        'exclude_patterns': ['/bar'],
     }
 
 
