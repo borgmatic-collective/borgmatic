@@ -1,8 +1,8 @@
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern
 from borgmatic.actions import check as module
+from borgmatic.borg.pattern import Pattern
 
 
 def test_parse_checks_returns_them_as_tuple():

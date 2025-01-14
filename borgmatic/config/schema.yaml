@@ -144,8 +144,8 @@ properties:
             type: string
         description: |
             Read include/exclude patterns from one or more separate named files,
-            one pattern per line. See the output of "borg help patterns" for more
-            details.
+            one pattern per line. See the output of "borg help patterns" for
+            more details.
         example:
             - /etc/borgmatic/patterns
     exclude_patterns:

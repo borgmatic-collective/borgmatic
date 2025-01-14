@@ -1,7 +1,7 @@
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern, Pattern_type, Pattern_style
+from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import btrfs as module
 
 

@@ -2,7 +2,6 @@ import logging
 
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern
 from borgmatic.hooks.data_source import sqlite as module
 
 

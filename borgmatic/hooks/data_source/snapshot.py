@@ -1,8 +1,5 @@
 import pathlib
 
-import borgmatic.borg.pattern
-
-
 IS_A_HOOK = False
 
 

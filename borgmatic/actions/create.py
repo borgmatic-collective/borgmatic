@@ -1,5 +1,3 @@
-import collections
-import enum
 import glob
 import itertools
 import logging
@@ -135,7 +133,7 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                     for expanded_path in expand_directory(pattern.path, working_directory)
                 )
                 if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
-                and pattern.path not in skip_paths
+                and pattern.path not in (skip_paths or ())
                 else (pattern,)
             )
             for pattern in patterns
@@ -188,11 +186,11 @@ def deduplicate_patterns(patterns):
     even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
     Borg.
     '''
-    deduplicated = []
+    deduplicated = {}  # Use just the keys as an ordered set.
 
     for pattern in patterns:
         if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
-            deduplicated.append(pattern)
+            deduplicated[pattern] = None
             continue
 
         parents = pathlib.PurePath(pattern.path).parents
@@ -203,17 +201,17 @@ def deduplicate_patterns(patterns):
             if other_pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
                 continue
 
-            for parent in parents:
-                if (
-                    pathlib.PurePath(other_pattern.path) == parent
-                    and pattern.device is not None
-                    and other_pattern.device == pattern.device
-                ):
-                    break
+            if any(
+                pathlib.PurePath(other_pattern.path) == parent
+                and pattern.device is not None
+                and other_pattern.device == pattern.device
+                for parent in parents
+            ):
+                break
         else:
-            deduplicated.append(pattern)
+            deduplicated[pattern] = None
 
-    return tuple(deduplicated)
+    return tuple(deduplicated.keys())
 
 
 def process_patterns(patterns, working_directory, skip_expand_paths=None):
