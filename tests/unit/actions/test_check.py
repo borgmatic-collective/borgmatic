@@ -558,13 +558,15 @@ def test_collect_spot_check_source_paths_parses_borg_output():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': True}
     )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'collect_patterns'
-    ).and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'process_patterns'
-    ).and_return([Pattern('foo'), Pattern('bar')])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -604,13 +606,15 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': False}
     )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'collect_patterns'
-    ).and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'process_patterns'
-    ).and_return([Pattern('foo'), Pattern('bar')])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -650,13 +654,15 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': True}
     )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'collect_patterns'
-    ).and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'process_patterns'
-    ).and_return([Pattern('foo'), Pattern('bar')])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -696,13 +702,15 @@ def test_collect_spot_check_source_paths_skips_directories():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': True}
     )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'collect_patterns'
-    ).and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'process_patterns'
-    ).and_return([Pattern('foo'), Pattern('bar')])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
@@ -840,13 +848,15 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': True}
     )
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'collect_patterns'
-    ).and_return(flexmock())
-    flexmock(module.borgmatic.actions.create).should_receive(
-        'process_patterns'
-    ).and_return([Pattern('foo'), Pattern('bar')])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.create).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',

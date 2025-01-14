@@ -100,14 +100,16 @@ def test_get_subvolumes_collects_subvolumes_matching_patterns_from_all_filesyste
         ).with_args(path, object).and_return(())
 
     assert module.get_subvolumes(
-        'btrfs', 'findmnt', patterns=[
+        'btrfs',
+        'findmnt',
+        patterns=[
             Pattern('/one'),
             Pattern('/four'),
             Pattern('/five'),
             Pattern('/six'),
             Pattern('/mnt2'),
             Pattern('/mnt3'),
-        ]
+        ],
     ) == (
         module.Subvolume('/four', contained_patterns=(Pattern('/four'),)),
         module.Subvolume('/one', contained_patterns=(Pattern('/one'),)),
@@ -165,9 +167,8 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
 ):
     flexmock(module.os).should_receive('getpid').and_return(1234)
 
-    assert (
-        module.make_borg_snapshot_pattern(subvolume_path, Pattern(pattern_path))
-        == Pattern(expected_path)
+    assert module.make_borg_snapshot_pattern(subvolume_path, Pattern(pattern_path)) == Pattern(
+        expected_path
     )
 
 
@@ -351,7 +352,7 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
             Pattern_type.EXCLUDE,
             Pattern_style.FNMATCH,
-        )
+        ),
     ]
     assert config == {
         'btrfs': {

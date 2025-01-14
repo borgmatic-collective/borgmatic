@@ -5,133 +5,41 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
+from borgmatic.borg.pattern import Pattern, Pattern_type
 
 from ..test_verbosity import insert_logging_mock
 
 
-def test_expand_home_directories_expands_tildes():
-    flexmock(module.os.path).should_receive('expanduser').with_args('~/bar').and_return('/foo/bar')
-    flexmock(module.os.path).should_receive('expanduser').with_args('baz').and_return('baz')
-
-    paths = module.expand_home_directories(('~/bar', 'baz'))
-
-    assert paths == ('/foo/bar', 'baz')
-
-
-def test_expand_home_directories_considers_none_as_no_directories():
-    paths = module.expand_home_directories(None)
-
-    assert paths == ()
-
-
-def test_write_pattern_file_writes_pattern_lines():
+def test_write_patterns_file_writes_pattern_lines():
     temporary_file = flexmock(name='filename', flush=lambda: None)
     temporary_file.should_receive('write').with_args('R /foo\n+ /foo/bar')
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
 
-    module.write_pattern_file(['R /foo', '+ /foo/bar'])
+    module.write_patterns_file(
+        [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE)],
+        borgmatic_runtime_directory='/run/user/0',
+        log_prefix='test.yaml',
+    )
 
 
-def test_write_pattern_file_with_sources_writes_sources_as_roots():
-    temporary_file = flexmock(name='filename', flush=lambda: None)
-    temporary_file.should_receive('write').with_args('R /foo\n+ /foo/bar\nR /baz\nR /quux')
-    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
-
-    module.write_pattern_file(['R /foo', '+ /foo/bar'], sources=['/baz', '/quux'])
+def test_write_patterns_file_with_empty_exclude_patterns_does_not_raise():
+    module.write_patterns_file(
+        [], borgmatic_runtime_directory='/run/user/0', log_prefix='test.yaml'
+    )
 
 
-def test_write_pattern_file_without_patterns_but_with_sources_writes_sources_as_roots():
-    temporary_file = flexmock(name='filename', flush=lambda: None)
-    temporary_file.should_receive('write').with_args('R /baz\nR /quux')
-    flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
-
-    module.write_pattern_file([], sources=['/baz', '/quux'])
-
-
-def test_write_pattern_file_with_empty_exclude_patterns_does_not_raise():
-    module.write_pattern_file([])
-
-
-def test_write_pattern_file_overwrites_existing_file():
-    pattern_file = flexmock(name='filename', flush=lambda: None)
-    pattern_file.should_receive('seek').with_args(0).once()
-    pattern_file.should_receive('write').with_args('R /foo\n+ /foo/bar')
+def test_write_patterns_file_appends_to_existing():
+    patterns_file = flexmock(name='filename', flush=lambda: None)
+    patterns_file.should_receive('write').with_args('\n')
+    patterns_file.should_receive('write').with_args('R /foo\n+ /foo/bar')
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').never()
 
-    module.write_pattern_file(['R /foo', '+ /foo/bar'], pattern_file=pattern_file)
-
-
-@pytest.mark.parametrize(
-    'filename_lists,opened_filenames',
-    (
-        ([('foo', 'bar'), ('baz', 'quux')], ('foo', 'bar', 'baz', 'quux')),
-        ([None, ('foo', 'bar')], ('foo', 'bar')),
-        ([None, None], ()),
-    ),
-)
-def test_ensure_files_readable_opens_filenames(filename_lists, opened_filenames):
-    for expected_filename in opened_filenames:
-        flexmock(sys.modules['builtins']).should_receive('open').with_args(
-            expected_filename
-        ).and_return(flexmock(close=lambda: None))
-
-    module.ensure_files_readable(*filename_lists)
-
-
-def test_make_pattern_flags_includes_pattern_filename_when_given():
-    pattern_flags = module.make_pattern_flags(
-        config={'patterns': ['R /', '- /var']}, pattern_filename='/tmp/patterns'
+    module.write_patterns_file(
+        [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE)],
+        borgmatic_runtime_directory='/run/user/0',
+        log_prefix='test.yaml',
+        patterns_file=patterns_file,
     )
-
-    assert pattern_flags == ('--patterns-from', '/tmp/patterns')
-
-
-def test_make_pattern_flags_includes_patterns_from_filenames_when_in_config():
-    pattern_flags = module.make_pattern_flags(config={'patterns_from': ['patterns', 'other']})
-
-    assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', 'other')
-
-
-def test_make_pattern_flags_includes_both_filenames_when_patterns_given_and_patterns_from_in_config():
-    pattern_flags = module.make_pattern_flags(
-        config={'patterns_from': ['patterns']}, pattern_filename='/tmp/patterns'
-    )
-
-    assert pattern_flags == ('--patterns-from', 'patterns', '--patterns-from', '/tmp/patterns')
-
-
-def test_make_pattern_flags_considers_none_patterns_from_filenames_as_empty():
-    pattern_flags = module.make_pattern_flags(config={'patterns_from': None})
-
-    assert pattern_flags == ()
-
-
-def test_make_exclude_flags_includes_exclude_patterns_filename_when_given():
-    exclude_flags = module.make_exclude_flags(
-        config={'exclude_patterns': ['*.pyc', '/var']}, exclude_filename='/tmp/excludes'
-    )
-
-    assert exclude_flags == ('--exclude-from', '/tmp/excludes')
-
-
-def test_make_exclude_flags_includes_exclude_from_filenames_when_in_config():
-    exclude_flags = module.make_exclude_flags(config={'exclude_from': ['excludes', 'other']})
-
-    assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', 'other')
-
-
-def test_make_exclude_flags_includes_both_filenames_when_patterns_given_and_exclude_from_in_config():
-    exclude_flags = module.make_exclude_flags(
-        config={'exclude_from': ['excludes']}, exclude_filename='/tmp/excludes'
-    )
-
-    assert exclude_flags == ('--exclude-from', 'excludes', '--exclude-from', '/tmp/excludes')
-
-
-def test_make_exclude_flags_considers_none_exclude_from_filenames_as_empty():
-    exclude_flags = module.make_exclude_flags(config={'exclude_from': None})
-
-    assert exclude_flags == ()
 
 
 def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
@@ -412,48 +320,41 @@ def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
 
 
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003
-REPO_ARCHIVE_WITH_PATHS = (f'repo::{DEFAULT_ARCHIVE_NAME}', 'foo', 'bar')
+REPO_ARCHIVE = (f'repo::{DEFAULT_ARCHIVE_NAME}',)
 
 
 def test_make_base_create_produces_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_patterns_file_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
     mock_pattern_file = flexmock(name='/tmp/patterns')
-    flexmock(module).should_receive('write_pattern_file').and_return(mock_pattern_file).and_return(
+    flexmock(module).should_receive('write_patterns_file').and_return(mock_pattern_file).and_return(
         None
     )
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
@@ -461,112 +362,93 @@ def test_make_base_create_command_includes_patterns_file_in_borg_command():
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
     pattern_flags = ('--patterns-from', mock_pattern_file.name)
-    flexmock(module).should_receive('make_pattern_flags').and_return(pattern_flags)
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'patterns': ['pattern'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'patterns': ['pattern'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create') + pattern_flags
     assert create_positional_arguments == (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     assert pattern_file == mock_pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_with_store_config_false_omits_config_files():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'store_config_files': False,
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'store_config_files': False,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_exclude_patterns_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(('exclude',))
-    mock_exclude_file = flexmock(name='/tmp/excludes')
-    flexmock(module).should_receive('write_pattern_file').and_return(mock_exclude_file)
+    flexmock(module).should_receive('write_patterns_file').and_return(flexmock(name='patterns'))
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
-    exclude_flags = ('--exclude-from', 'excludes')
-    flexmock(module).should_receive('make_exclude_flags').and_return(exclude_flags)
+    flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'exclude_patterns': ['exclude'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': ['exclude'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
-    assert create_flags == ('borg', 'create') + exclude_flags
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
-    assert not pattern_file
-    assert exclude_file == mock_exclude_file
+    assert create_flags == ('borg', 'create', '--patterns-from', 'patterns')
+    assert create_positional_arguments == REPO_ARCHIVE
+    assert pattern_file
 
 
 @pytest.mark.parametrize(
@@ -604,242 +486,203 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
     option_name, option_value, feature_available, option_flags
 ):
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(feature_available)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                option_name: option_value,
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            option_name: option_value,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create') + option_flags
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_dry_run_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=True,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'exclude_patterns': ['exclude'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=True,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': ['exclude'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create', '--dry-run')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_local_path_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-            local_path='borg1',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
+        local_path='borg1',
     )
 
     assert create_flags == ('borg1', 'create')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_remote_path_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-            remote_path='borg1',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
+        remote_path='borg1',
     )
 
     assert create_flags == ('borg', 'create', '--remote-path', 'borg1')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_log_json_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=True),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=True),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create', '--log-json')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_list_flags_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-            list_files=True,
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
+        list_files=True,
     )
 
     assert create_flags == ('borg', 'create', '--list', '--filter', 'FOO')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_with_stream_processes_ignores_read_special_false_and_excludes_special_files():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
@@ -847,44 +690,37 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
     flexmock(module.logger).should_receive('warning').twice()
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('collect_special_file_paths').and_return(('/dev/null',)).once()
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(flexmock(name='patterns'))
+    flexmock(module).should_receive('write_patterns_file').and_return(flexmock(name='patterns'))
     flexmock(module).should_receive('make_exclude_flags').and_return(())
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'read_special': False,
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-            stream_processes=flexmock(),
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'read_special': False,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
+        stream_processes=flexmock(),
     )
 
-    assert create_flags == ('borg', 'create', '--read-special')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
-    assert not pattern_file
-    assert exclude_file
+    assert create_flags == ('borg', 'create', '--patterns-from', 'patterns', '--read-special')
+    assert create_positional_arguments == REPO_ARCHIVE
+    assert pattern_file
 
 
 def test_make_base_create_command_with_stream_processes_and_read_special_true_skip_special_files_excludes():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
@@ -892,221 +728,188 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
     flexmock(module.logger).should_receive('warning').never()
     flexmock(module).should_receive('collect_special_file_paths').never()
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'read_special': True,
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-            stream_processes=flexmock(),
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'read_special': True,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
+        stream_processes=flexmock(),
     )
 
     assert create_flags == ('borg', 'create', '--read-special')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_archive_name_format_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::ARCHIVE_NAME',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'archive_name_format': 'ARCHIVE_NAME',
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'archive_name_format': 'ARCHIVE_NAME',
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == ('repo::ARCHIVE_NAME', 'foo', 'bar')
+    assert create_positional_arguments == ('repo::ARCHIVE_NAME',)
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_default_archive_name_format_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         ('repo::{hostname}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == ('repo::{hostname}', 'foo', 'bar')
+    assert create_positional_arguments == ('repo::{hostname}',)
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = 'repo::Documents_{hostname}-{now}'  # noqa: FS003
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (repository_archive_pattern,)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == (repository_archive_pattern, 'foo', 'bar')
+    assert create_positional_arguments == (repository_archive_pattern,)
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_repository_and_archive_name_format_with_placeholders_in_borg_command():
     repository_archive_pattern = '{fqdn}::Documents_{hostname}-{now}'  # noqa: FS003
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (repository_archive_pattern,)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='{fqdn}',  # noqa: FS003
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['{fqdn}'],  # noqa: FS003
-                'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='{fqdn}',  # noqa: FS003
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['{fqdn}'],  # noqa: FS003
+            'archive_name_format': 'Documents_{hostname}-{now}',  # noqa: FS003
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create')
-    assert create_positional_arguments == (repository_archive_pattern, 'foo', 'bar')
+    assert create_positional_arguments == (repository_archive_pattern,)
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('expand_home_directories').and_return(())
-    flexmock(module).should_receive('write_pattern_file').and_return(None)
+    flexmock(module).should_receive('write_patterns_file').and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
         '{hostname}'
     )
     flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module).should_receive('ensure_files_readable')
-    flexmock(module).should_receive('make_pattern_flags').and_return(())
     flexmock(module).should_receive('make_exclude_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
         (f'repo::{DEFAULT_ARCHIVE_NAME}',)
     )
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
-        module.make_base_create_command(
-            dry_run=False,
-            repository_path='repo',
-            config={
-                'source_directories': ['foo', 'bar'],
-                'repositories': ['repo'],
-                'extra_borg_options': {'create': '--extra --options'},
-            },
-            source_directories=['foo', 'bar'],
-            local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
-            borgmatic_runtime_directory='/run/borgmatic',
-        )
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'extra_borg_options': {'create': '--extra --options'},
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(log_json=False),
+        borgmatic_runtime_directory='/run/borgmatic',
     )
 
     assert create_flags == ('borg', 'create', '--extra', '--options')
-    assert create_positional_arguments == REPO_ARCHIVE_WITH_PATHS
+    assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
-    assert not exclude_file
 
 
 def test_make_base_create_command_with_non_existent_directory_and_source_directories_must_exist_raises():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('check_all_source_directories_exist').and_raise(ValueError)
+    flexmock(module).should_receive('check_all_root_patterns_exist').and_raise(ValueError)
 
     with pytest.raises(ValueError):
         module.make_base_create_command(
@@ -1117,7 +920,7 @@ def test_make_base_create_command_with_non_existent_directory_and_source_directo
                 'repositories': ['repo'],
                 'source_directories_must_exist': True,
             },
-            source_directories=['foo', 'bar'],
+            patterns=[Pattern('foo'), Pattern('bar')],
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
             borgmatic_runtime_directory='/run/borgmatic',
@@ -1128,12 +931,12 @@ def test_create_archive_calls_borg_with_parameters():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1150,7 +953,7 @@ def test_create_archive_calls_borg_with_parameters():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1161,13 +964,13 @@ def test_create_archive_calls_borg_with_environment():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     environment = {'BORG_THINGY': 'YUP'}
     flexmock(module.environment).should_receive('make_environment').and_return(environment)
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1184,7 +987,7 @@ def test_create_archive_calls_borg_with_environment():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1195,12 +998,12 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--info') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--info') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1218,7 +1021,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1229,12 +1032,12 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -1250,7 +1053,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1262,12 +1065,12 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--debug', '--show-rc') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--debug', '--show-rc') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1285,7 +1088,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1296,12 +1099,12 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -1317,7 +1120,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1331,12 +1134,12 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create', '--dry-run'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create', '--dry-run'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--dry-run', '--info') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--dry-run', '--info') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1354,7 +1157,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1366,14 +1169,14 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir'
     )
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1391,7 +1194,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
             'working_directory': '/working/dir',
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1402,13 +1205,13 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     borg_exit_codes = flexmock()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1426,7 +1229,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
             'exclude_patterns': None,
             'borg_exit_codes': borg_exit_codes,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1437,12 +1240,12 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--stats') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--stats') + REPO_ARCHIVE,
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',
@@ -1459,7 +1262,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1473,15 +1276,14 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
     flexmock(module).should_receive('make_base_create_command').and_return(
         (
             ('borg', 'create', '--list', '--filter', 'FOO'),
-            REPO_ARCHIVE_WITH_PATHS,
-            flexmock(),
+            REPO_ARCHIVE,
             flexmock(),
         )
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--list', '--filter', 'FOO') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--list', '--filter', 'FOO') + REPO_ARCHIVE,
         output_log_level=module.borgmatic.logger.ANSWER,
         output_file=None,
         borg_local_path='borg',
@@ -1498,7 +1300,7 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1510,12 +1312,12 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--info', '--progress') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--info', '--progress') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path='borg',
@@ -1533,7 +1335,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1545,12 +1347,12 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create', '--progress') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--progress') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=module.DO_NOT_CAPTURE,
         borg_local_path='borg',
@@ -1567,7 +1369,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1582,8 +1384,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
     flexmock(module).should_receive('make_base_create_command').and_return(
         (
             ('borg', 'create', '--read-special'),
-            REPO_ARCHIVE_WITH_PATHS,
-            flexmock(),
+            REPO_ARCHIVE,
             flexmock(),
         )
     )
@@ -1593,7 +1394,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         'create',
         '--read-special',
         '--progress',
-    ) + REPO_ARCHIVE_WITH_PATHS
+    ) + REPO_ARCHIVE
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         create_command + ('--dry-run', '--list'),
@@ -1624,7 +1425,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1637,12 +1438,12 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -1657,7 +1458,7 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1671,12 +1472,12 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create', '--json') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
         extra_environment=None,
         borg_local_path='borg',
@@ -1691,7 +1492,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
             'repositories': ['repo'],
             'exclude_patterns': None,
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
@@ -1706,14 +1507,14 @@ def test_create_archive_calls_borg_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
-        (('borg', 'create'), REPO_ARCHIVE_WITH_PATHS, flexmock(), flexmock())
+        (('borg', 'create'), REPO_ARCHIVE, flexmock())
     )
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir'
     )
     flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'create') + REPO_ARCHIVE_WITH_PATHS,
+        ('borg', 'create') + REPO_ARCHIVE,
         output_log_level=logging.INFO,
         output_file=None,
         borg_local_path='borg',
@@ -1731,21 +1532,21 @@ def test_create_archive_calls_borg_with_working_directory():
             'exclude_patterns': None,
             'working_directory': '/working/dir',
         },
-        source_directories=['foo', 'bar'],
+        patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
 
-def test_check_all_source_directories_exist_with_existent_directory_does_not_raise():
+def test_check_all_root_patterns_exist_with_existent_pattern_path_does_not_raise():
     flexmock(module.os.path).should_receive('exists').and_return(True)
 
-    module.check_all_source_directories_exist(['foo'])
+    module.check_all_root_patterns_exist([Pattern('foo')])
 
 
-def test_check_all_source_directories_exist_with_non_existent_directory_raises():
+def test_check_all_root_patterns_exist_with_non_existent_pattern_path_raises():
     flexmock(module.os.path).should_receive('exists').and_return(False)
 
     with pytest.raises(ValueError):
-        module.check_all_source_directories_exist(['foo'])
+        module.check_all_root_patterns_exist([Pattern('foo')])

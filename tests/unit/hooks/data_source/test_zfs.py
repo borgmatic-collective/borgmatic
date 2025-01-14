@@ -246,7 +246,9 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    patterns = [Pattern('/hmm'),]
+    patterns = [
+        Pattern('/hmm'),
+    ]
 
     assert (
         module.dump_data_sources(

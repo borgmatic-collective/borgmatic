@@ -178,7 +178,7 @@ def check_all_root_patterns_exist(patterns):
     '''
     missing_paths = [
         pattern.path
-        for pattern in pattern
+        for pattern in patterns
         if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
         if not os.path.exists(pattern.path)
     ]

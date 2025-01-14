@@ -43,7 +43,9 @@ def test_get_logical_volumes_filters_by_patterns():
     ).with_args(None, contained).never()
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
-    ).with_args('/mnt/lvolume', contained).and_return((Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir')))
+    ).with_args('/mnt/lvolume', contained).and_return(
+        (Pattern('/mnt/lvolume'), Pattern('/mnt/lvolume/subdir'))
+    )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
     ).with_args('/mnt/other', contained).and_return(())
