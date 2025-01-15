@@ -16,7 +16,13 @@ if [ -e "$USER_PODMAN_SOCKET_PATH" ]; then
     export DOCKER_HOST="unix://$USER_PODMAN_SOCKET_PATH"
 fi
 
-docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet up --force-recreate \
+if [ "`tty`" == "not a tty" ]; then
+    export PROGRESS=quiet
+else
+    export PROGRESS=auto
+fi
+
+docker-compose --file tests/end-to-end/docker-compose.yaml --progress "$PROGRESS" up --force-recreate \
     --renew-anon-volumes --detach
-docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet attach tests
-docker-compose --file tests/end-to-end/docker-compose.yaml --progress quiet down
+docker-compose --file tests/end-to-end/docker-compose.yaml --progress "$PROGRESS" attach tests
+docker-compose --file tests/end-to-end/docker-compose.yaml --progress "$PROGRESS" down
