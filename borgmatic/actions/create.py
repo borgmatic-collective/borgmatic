@@ -100,17 +100,24 @@ def expand_directory(directory, working_directory):
 
     # This would be a lot easier to do with glob(..., root_dir=working_directory), but root_dir is
     # only available in Python 3.10+.
-    glob_paths = glob.glob(os.path.join(working_directory or '', expanded_directory))
+    normalized_directory = os.path.join(working_directory or '', expanded_directory)
+    glob_paths = glob.glob(normalized_directory)
 
     if not glob_paths:
         return [expanded_directory]
 
     working_directory_prefix = os.path.join(working_directory or '', '')
 
-    # Remove the working directory prefix that we added above in order to make glob() work.
     return [
-        # os.path.relpath() won't work here because it collapses any usage of Borg's slashdot hack.
-        glob_path.removeprefix(working_directory_prefix)
+        (
+            glob_path
+            # If these are equal, that means we didn't add any working directory prefix above.
+            if normalized_directory == expanded_directory
+            # Remove the working directory prefix that we added above in order to make glob() work.
+            # We can't use os.path.relpath() here because it collapses any use of Borg's slashdot
+            # hack.
+            else glob_path.removeprefix(working_directory_prefix)
+        )
         for glob_path in glob_paths
     ]
 
@@ -304,7 +311,7 @@ def run_create(
         # Process the patterns again in case any data source hooks updated them. Without this step,
         # we could end up with duplicate paths that cause Borg to hang when it tries to read from
         # the same named pipe twice.
-        patterns = process_patterns(patterns, working_directory, skip_expand_paths=config_paths)
+        # patterns = process_patterns(patterns, working_directory, skip_expand_paths=config_paths)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         json_output = borgmatic.borg.create.create_archive(

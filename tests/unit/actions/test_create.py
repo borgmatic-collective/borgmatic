@@ -150,6 +150,17 @@ def test_expand_directory_with_slashdot_hack_globs_working_directory_and_strips_
     assert paths == ['./foo', './food']
 
 
+def test_expand_directory_with_working_directory_matching_start_of_directory_does_not_strip_it_off():
+    flexmock(module.os.path).should_receive('expanduser').and_return('/working/dir/foo')
+    flexmock(module.glob).should_receive('glob').with_args('/working/dir/foo').and_return(
+        ['/working/dir/foo']
+    ).once()
+
+    paths = module.expand_directory('/working/dir/foo', working_directory='/working/dir')
+
+    assert paths == ['/working/dir/foo']
+
+
 def test_expand_patterns_flattens_expanded_directories():
     flexmock(module).should_receive('expand_directory').with_args('~/foo', None).and_return(
         ['/root/foo']
