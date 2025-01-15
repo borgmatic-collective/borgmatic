@@ -5,12 +5,14 @@ import subprocess
 import sys
 import tempfile
 
+import pytest
 
-def generate_configuration(config_path, repository_path):
+
+def generate_configuration_with_source_directories(config_path, repository_path):
     '''
     Generate borgmatic configuration into a file at the config path, and update the defaults so as
-    to work for testing (including injecting the given repository path and tacking on an encryption
-    passphrase).
+    to work for testing, including updating the source directories, injecting the given repository
+    path, and tacking on an encryption passphrase.
     '''
     subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
     config = (
@@ -19,17 +21,52 @@ def generate_configuration(config_path, repository_path):
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
         .replace('- path: /mnt/backup', '')
         .replace('label: local', '')
+        .replace('- /home/user/path with spaces', '')
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
-        + 'encryption_passphrase: "test"'
+        + '\nencryption_passphrase: "test"'
+        # Disable automatic storage of config files so we can test storage and extraction manually.
+        + '\nbootstrap:\n  store_config_files: false'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)
     config_file.close()
 
 
-def test_borgmatic_command():
+def generate_configuration_with_patterns(config_path, repository_path):
+    '''
+    Generate borgmatic configuration into a file at the config path, and update the defaults so as
+    to work for testing, including adding patterns, injecting the given repository path, and tacking
+    on an encryption passphrase.
+    '''
+    subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
+    config = (
+        open(config_path)
+        .read()
+        .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
+        .replace('- path: /mnt/backup', '')
+        .replace('label: local', '')
+        .replace('source_directories:', '')
+        .replace('- /home/user/path with spaces', '')
+        .replace('- /home', '')
+        .replace('- /etc', '')
+        .replace('- /var/log/syslog*', '')
+        + f'\npatterns: ["R {config_path}"]'
+        + '\nencryption_passphrase: "test"'
+        # Disable automatic storage of config files so we can test storage and extraction manually.
+        + '\nbootstrap:\n  store_config_files: false'
+    )
+    config_file = open(config_path, 'w')
+    config_file.write(config)
+    config_file.close()
+
+
+@pytest.mark.parametrize(
+    'generate_configuration',
+    (generate_configuration_with_source_directories, generate_configuration_with_patterns),
+)
+def test_borgmatic_command(generate_configuration):
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
