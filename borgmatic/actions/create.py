@@ -43,44 +43,46 @@ def collect_patterns(config):
     directories, etc., but we'd like to collapse them all down to one common format (patterns) for
     ease of manipulation within borgmatic.
     '''
-    return (
-        tuple(
-            borgmatic.borg.pattern.Pattern(source_directory)
-            for source_directory in config.get('source_directories', ())
-        )
-        + tuple(
-            parse_pattern(pattern_line)
-            for pattern_line in config.get('patterns', ())
-            if not pattern_line.lstrip().startswith('#')
-        )
-        + tuple(
-            borgmatic.borg.pattern.Pattern(
-                exclude_line,
-                borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                borgmatic.borg.pattern.Pattern_style.FNMATCH,
+    try:
+        return (
+            tuple(
+                borgmatic.borg.pattern.Pattern(source_directory)
+                for source_directory in config.get('source_directories', ())
             )
-            for exclude_line in config.get('exclude_patterns', ())
-        )
-        + tuple(
-            itertools.chain.from_iterable(
-                parse_pattern(pattern_line)
+            + tuple(
+                parse_pattern(pattern_line.strip())
+                for pattern_line in config.get('patterns', ())
+                if not pattern_line.lstrip().startswith('#')
+            )
+            + tuple(
+                borgmatic.borg.pattern.Pattern(
+                    exclude_line.strip(),
+                    borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                )
+                for exclude_line in config.get('exclude_patterns', ())
+            )
+            + tuple(
+                parse_pattern(pattern_line.strip())
                 for filename in config.get('patterns_from', ())
                 for pattern_line in open(filename).readlines()
                 if not pattern_line.lstrip().startswith('#')
             )
-        )
-        + tuple(
-            itertools.chain.from_iterable(
+            + tuple(
                 borgmatic.borg.pattern.Pattern(
-                    exclude_line,
+                    exclude_line.strip(),
                     borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                    borgmatic.borg.pattern.Pattern_type.FNMATCH,
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for filename in config.get('excludes_from', ())
                 for exclude_line in open(filename).readlines()
+                if not exclude_line.lstrip().startswith('#')
             )
         )
-    )
+    except (FileNotFoundError, OSError) as error:
+        logger.debug(error)
+
+        raise ValueError(f'Cannot read patterns_from/excludes_from file: {error.filename}')
 
 
 def expand_directory(directory, working_directory):

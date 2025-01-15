@@ -337,8 +337,9 @@ def make_base_create_command(
                 log_prefix=repository_path,
                 patterns_file=patterns_file,
             )
+
             if '--patterns-from' not in create_flags:
-                create_flags.append(('--patterns-from', patterns_file.name))
+                create_flags += ('--patterns-from', patterns_file.name)
 
     return (create_flags, create_positional_arguments, patterns_file)
 

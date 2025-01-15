@@ -1,8 +1,104 @@
+import io
+import sys
+
 import pytest
 from flexmock import flexmock
 
 from borgmatic.actions import create as module
-from borgmatic.borg.pattern import Pattern, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+
+
+@pytest.mark.parametrize(
+    'pattern_line,expected_pattern',
+    (
+        ('R /foo', Pattern('/foo')),
+        ('P sh', Pattern('sh', Pattern_type.PATTERN_STYLE)),
+        ('+ /foo*', Pattern('/foo*', Pattern_type.INCLUDE)),
+        ('+ sh:/foo*', Pattern('/foo*', Pattern_type.INCLUDE, Pattern_style.SHELL)),
+    ),
+)
+def test_parse_pattern_transforms_pattern_line_to_instance(pattern_line, expected_pattern):
+    module.parse_pattern(pattern_line) == expected_pattern
+
+
+def test_parse_pattern_with_invalid_pattern_line_errors():
+    with pytest.raises(ValueError):
+        module.parse_pattern('/foo')
+
+
+def test_collect_patterns_converts_source_directories():
+    assert module.collect_patterns({'source_directories': ['/foo', '/bar']}) == (
+        Pattern('/foo'),
+        Pattern('/bar'),
+    )
+
+
+def test_collect_patterns_parses_config_patterns():
+    flexmock(module).should_receive('parse_pattern').with_args('R /foo').and_return(Pattern('/foo'))
+    flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
+    flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
+
+    assert module.collect_patterns({'patterns': ['R /foo', '# comment', 'R /bar']}) == (
+        Pattern('/foo'),
+        Pattern('/bar'),
+    )
+
+
+def test_collect_patterns_converts_exclude_patterns():
+    assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar']}) == (
+        Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+        Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+    )
+
+
+def test_collect_patterns_reads_config_patterns_from_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('file1.txt').and_return(io.StringIO('R /foo'))
+    builtins.should_receive('open').with_args('file2.txt').and_return(
+        io.StringIO('R /bar\n# comment\nR /baz')
+    )
+    flexmock(module).should_receive('parse_pattern').with_args('R /foo').and_return(Pattern('/foo'))
+    flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
+    flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
+    flexmock(module).should_receive('parse_pattern').with_args('R /baz').and_return(Pattern('/baz'))
+
+    assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}) == (
+        Pattern('/foo'),
+        Pattern('/bar'),
+        Pattern('/baz'),
+    )
+
+
+def test_collect_patterns_errors_on_missing_config_patterns_from_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('file1.txt').and_raise(FileNotFoundError)
+    flexmock(module).should_receive('parse_pattern').never()
+
+    with pytest.raises(ValueError):
+        module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']})
+
+
+def test_collect_patterns_reads_config_excludes_from_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('file1.txt').and_return(io.StringIO('/foo'))
+    builtins.should_receive('open').with_args('file2.txt').and_return(
+        io.StringIO('/bar\n# comment\n/baz')
+    )
+
+    assert module.collect_patterns({'excludes_from': ['file1.txt', 'file2.txt']}) == (
+        Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+        Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+        Pattern('/baz', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+    )
+
+
+def test_collect_patterns_errors_on_missing_config_excludes_from_file():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('file1.txt').and_raise(OSError)
+    flexmock(module).should_receive('parse_pattern').never()
+
+    with pytest.raises(ValueError):
+        module.collect_patterns({'excludes_from': ['file1.txt', 'file2.txt']})
 
 
 def test_expand_directory_with_basic_path_passes_it_through():
@@ -275,6 +371,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
     ).and_return({})
+    flexmock(module).should_receive('collect_patterns').and_return(())
     flexmock(module).should_receive('process_patterns').and_return([])
     flexmock(module.os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
     create_arguments = flexmock(
@@ -317,6 +414,7 @@ def test_run_create_runs_with_selected_repository():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
     ).and_return({})
+    flexmock(module).should_receive('collect_patterns').and_return(())
     flexmock(module).should_receive('process_patterns').and_return([])
     flexmock(module.os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
     create_arguments = flexmock(
@@ -396,6 +494,7 @@ def test_run_create_produces_json():
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
     ).and_return({})
+    flexmock(module).should_receive('collect_patterns').and_return(())
     flexmock(module).should_receive('process_patterns').and_return([])
     flexmock(module.os.path).should_receive('join').and_return('/run/borgmatic/bootstrap')
     create_arguments = flexmock(
