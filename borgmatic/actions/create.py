@@ -311,7 +311,7 @@ def run_create(
         # Process the patterns again in case any data source hooks updated them. Without this step,
         # we could end up with duplicate paths that cause Borg to hang when it tries to read from
         # the same named pipe twice.
-        # patterns = process_patterns(patterns, working_directory, skip_expand_paths=config_paths)
+        patterns = process_patterns(patterns, working_directory, skip_expand_paths=config_paths)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         json_output = borgmatic.borg.create.create_archive(
