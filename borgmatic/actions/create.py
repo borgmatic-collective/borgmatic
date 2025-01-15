@@ -31,7 +31,11 @@ def parse_pattern(pattern_line):
         pattern_style = ''
         path = remainder
 
-    return borgmatic.borg.pattern.Pattern(path, pattern_type, pattern_style)
+    return borgmatic.borg.pattern.Pattern(
+        path,
+        borgmatic.borg.pattern.Pattern_type(pattern_type),
+        borgmatic.borg.pattern.Pattern_style(pattern_style),
+    )
 
 
 def collect_patterns(config):
