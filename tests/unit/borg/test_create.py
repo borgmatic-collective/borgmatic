@@ -11,11 +11,11 @@ from ..test_verbosity import insert_logging_mock
 
 def test_write_patterns_file_writes_pattern_lines():
     temporary_file = flexmock(name='filename', flush=lambda: None)
-    temporary_file.should_receive('write').with_args('R /foo\n+ /foo/bar')
+    temporary_file.should_receive('write').with_args('R /foo\n+ sh:/foo/bar')
     flexmock(module.tempfile).should_receive('NamedTemporaryFile').and_return(temporary_file)
 
     module.write_patterns_file(
-        [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE)],
+        [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.SHELL)],
         borgmatic_runtime_directory='/run/user/0',
         log_prefix='test.yaml',
     )
@@ -1576,6 +1576,12 @@ def test_check_all_root_patterns_exist_with_existent_pattern_path_does_not_raise
     flexmock(module.os.path).should_receive('exists').and_return(True)
 
     module.check_all_root_patterns_exist([Pattern('foo')])
+
+
+def test_check_all_root_patterns_exist_with_non_root_pattern_skips_existence_check():
+    flexmock(module.os.path).should_receive('exists').never()
+
+    module.check_all_root_patterns_exist([Pattern('foo', Pattern_type.INCLUDE)])
 
 
 def test_check_all_root_patterns_exist_with_non_existent_pattern_path_raises():

@@ -208,7 +208,7 @@ def make_base_create_command(
     stream_processes=None,
 ):
     '''
-    Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
+    Given verbosity/dry-run flags, a local or remote repository path, a configuration dict, a
     sequence of patterns as borgmatic.borg.pattern.Pattern instances, the local Borg version,
     global arguments as an argparse.Namespace instance, and a sequence of borgmatic source
     directories, return a tuple of (base Borg create command flags, Borg create command positional
@@ -361,7 +361,7 @@ def create_archive(
     stream_processes=None,
 ):
     '''
-    Given vebosity/dry-run flags, a local or remote repository path, a configuration dict, a
+    Given verbosity/dry-run flags, a local or remote repository path, a configuration dict, a
     sequence of loaded configuration paths, the local Borg version, and global arguments as an
     argparse.Namespace instance, create a Borg archive and return Borg's JSON output (if any).
 

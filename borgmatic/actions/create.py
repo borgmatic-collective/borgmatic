@@ -203,7 +203,7 @@ def deduplicate_patterns(patterns):
 
     for pattern in patterns:
         if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
-            deduplicated[pattern] = None
+            deduplicated[pattern] = True
             continue
 
         parents = pathlib.PurePath(pattern.path).parents
@@ -222,7 +222,7 @@ def deduplicate_patterns(patterns):
             ):
                 break
         else:
-            deduplicated[pattern] = None
+            deduplicated[pattern] = True
 
     return tuple(deduplicated.keys())
 

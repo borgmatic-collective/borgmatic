@@ -634,7 +634,7 @@ def spot_check(
             f'{log_prefix}: Paths in latest archive but not source paths: {", ".join(set(archive_paths)) or "none"}'
         )
         raise ValueError(
-            f'Spot check failed: There are no source paths to compare against the archive'
+            'Spot check failed: There are no source paths to compare against the archive'
         )
 
     # Calculate the percentage delta between the source paths count and the archive paths count, and

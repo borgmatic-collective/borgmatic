@@ -221,6 +221,21 @@ def test_device_map_patterns_gives_device_id_per_path():
     )
 
 
+def test_device_map_patterns_only_considers_root_patterns():
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
+    flexmock(module.os).should_receive('stat').with_args('/bar*').never()
+
+    device_map = module.device_map_patterns(
+        (Pattern('/foo'), Pattern('/bar*', Pattern_type.INCLUDE))
+    )
+
+    assert device_map == (
+        Pattern('/foo', device=55),
+        Pattern('/bar*', Pattern_type.INCLUDE),
+    )
+
+
 def test_device_map_patterns_with_missing_path_does_not_error():
     flexmock(module.os.path).should_receive('exists').and_return(True).and_return(False)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
@@ -327,6 +342,10 @@ def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
         (
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
             (Pattern('/', device=1), Pattern('/root', Pattern_type.INCLUDE, device=1)),
+        ),
+        (
+            (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
+            (Pattern('/root', Pattern_type.INCLUDE, device=1), Pattern('/', device=1)),
         ),
     ),
 )

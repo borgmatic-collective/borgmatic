@@ -154,22 +154,42 @@ def test_make_snapshot_path_includes_stripped_subvolume_path(
 
 
 @pytest.mark.parametrize(
-    'subvolume_path,pattern_path,expected_path',
+    'subvolume_path,pattern,expected_pattern',
     (
-        ('/foo/bar', '/foo/bar/baz', '/foo/bar/.borgmatic-snapshot-1234/./foo/bar/baz'),
-        ('/foo/bar', '/foo/bar', '/foo/bar/.borgmatic-snapshot-1234/./foo/bar'),
-        ('/', '/foo', '/.borgmatic-snapshot-1234/./foo'),
-        ('/', '/', '/.borgmatic-snapshot-1234/./'),
+        (
+            '/foo/bar',
+            Pattern('/foo/bar/baz'),
+            Pattern('/foo/bar/.borgmatic-snapshot-1234/./foo/bar/baz'),
+        ),
+        ('/foo/bar', Pattern('/foo/bar'), Pattern('/foo/bar/.borgmatic-snapshot-1234/./foo/bar')),
+        (
+            '/foo/bar',
+            Pattern('^/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '^/foo/bar/.borgmatic-snapshot-1234/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        (
+            '/foo/bar',
+            Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '/foo/bar/.borgmatic-snapshot-1234/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        ('/', Pattern('/foo'), Pattern('/.borgmatic-snapshot-1234/./foo')),
+        ('/', Pattern('/'), Pattern('/.borgmatic-snapshot-1234/./')),
     ),
 )
 def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
-    subvolume_path, pattern_path, expected_path
+    subvolume_path, pattern, expected_pattern
 ):
     flexmock(module.os).should_receive('getpid').and_return(1234)
 
-    assert module.make_borg_snapshot_pattern(subvolume_path, Pattern(pattern_path)) == Pattern(
-        expected_path
-    )
+    assert module.make_borg_snapshot_pattern(subvolume_path, pattern) == expected_pattern
 
 
 def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():

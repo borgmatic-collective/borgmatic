@@ -1,7 +1,7 @@
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern
+from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import lvm as module
 
 
@@ -133,6 +133,40 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
     module.snapshot_logical_volume('lvcreate', 'snap', '/dev/snap', '10TB')
 
 
+@pytest.mark.parametrize(
+    'pattern,expected_pattern',
+    (
+        (
+            Pattern('/foo/bar/baz'),
+            Pattern('/run/borgmatic/lvm_snapshots/./foo/bar/baz'),
+        ),
+        (Pattern('/foo/bar'), Pattern('/run/borgmatic/lvm_snapshots/./foo/bar')),
+        (
+            Pattern('^/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '^/run/borgmatic/lvm_snapshots/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        (
+            Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '/run/borgmatic/lvm_snapshots/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        (Pattern('/foo'), Pattern('/run/borgmatic/lvm_snapshots/./foo')),
+        (Pattern('/'), Pattern('/run/borgmatic/lvm_snapshots/./')),
+    ),
+)
+def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
+    pattern, expected_pattern
+):
+    assert module.make_borg_snapshot_pattern(pattern, '/run/borgmatic') == expected_pattern
+
+
 def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
@@ -175,6 +209,12 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     flexmock(module).should_receive('mount_snapshot').with_args(
         'mount', '/dev/lvolume2_snap', '/run/borgmatic/lvm_snapshots/mnt/lvolume2'
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume1/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'))
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume2'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'))
 
     assert (
         module.dump_data_sources(
@@ -266,6 +306,12 @@ def test_dump_data_sources_uses_snapshot_size_for_snapshot():
     flexmock(module).should_receive('mount_snapshot').with_args(
         'mount', '/dev/lvolume2_snap', '/run/borgmatic/lvm_snapshots/mnt/lvolume2'
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume1/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'))
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume2'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'))
 
     assert (
         module.dump_data_sources(
@@ -341,6 +387,12 @@ def test_dump_data_sources_uses_custom_commands():
     flexmock(module).should_receive('mount_snapshot').with_args(
         '/usr/local/bin/mount', '/dev/lvolume2_snap', '/run/borgmatic/lvm_snapshots/mnt/lvolume2'
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume1/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'))
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume2'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'))
 
     assert (
         module.dump_data_sources(
@@ -455,6 +507,12 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
     flexmock(module).should_receive('mount_snapshot').with_args(
         'mount', '/dev/lvolume2_snap', '/run/borgmatic/lvm_snapshots/mnt/lvolume2'
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume1/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume1/subdir'))
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/lvolume2'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/lvm_snapshots/./mnt/lvolume2'))
 
     assert (
         module.dump_data_sources(

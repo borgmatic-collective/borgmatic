@@ -4,7 +4,7 @@ import enum
 
 # See https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns
 class Pattern_type(enum.Enum):
-    ROOT = 'R'  # A ROOT pattern type always has a NONE pattern style.
+    ROOT = 'R'  # A ROOT pattern always has a NONE pattern style.
     PATTERN_STYLE = 'P'
     EXCLUDE = '-'
     NO_RECURSE = '!'

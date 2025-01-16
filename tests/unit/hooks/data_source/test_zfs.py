@@ -3,7 +3,7 @@ import os
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern
+from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import zfs as module
 
 
@@ -89,6 +89,40 @@ def test_get_all_dataset_mount_points_does_not_filter_datasets():
     )
 
 
+@pytest.mark.parametrize(
+    'pattern,expected_pattern',
+    (
+        (
+            Pattern('/foo/bar/baz'),
+            Pattern('/run/borgmatic/zfs_snapshots/./foo/bar/baz'),
+        ),
+        (Pattern('/foo/bar'), Pattern('/run/borgmatic/zfs_snapshots/./foo/bar')),
+        (
+            Pattern('^/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '^/run/borgmatic/zfs_snapshots/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        (
+            Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.REGULAR_EXPRESSION),
+            Pattern(
+                '/run/borgmatic/zfs_snapshots/./foo/bar',
+                Pattern_type.INCLUDE,
+                Pattern_style.REGULAR_EXPRESSION,
+            ),
+        ),
+        (Pattern('/foo'), Pattern('/run/borgmatic/zfs_snapshots/./foo')),
+        (Pattern('/'), Pattern('/run/borgmatic/zfs_snapshots/./')),
+    ),
+)
+def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_path(
+    pattern, expected_pattern
+):
+    assert module.make_borg_snapshot_pattern(pattern, '/run/borgmatic') == expected_pattern
+
+
 def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (
@@ -111,6 +145,9 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/dataset/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/zfs_snapshots/./mnt/dataset/subdir'))
     patterns = [Pattern('/mnt/dataset/subdir')]
 
     assert (
@@ -174,6 +211,9 @@ def test_dump_data_sources_uses_custom_commands():
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/dataset/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/zfs_snapshots/./mnt/dataset/subdir'))
     patterns = [Pattern('/mnt/dataset/subdir')]
     hook_config = {
         'zfs_command': '/usr/local/bin/zfs',
@@ -246,9 +286,10 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         full_snapshot_name,
         module.os.path.normpath(snapshot_mount_path),
     ).once()
-    patterns = [
-        Pattern('/hmm'),
-    ]
+    flexmock(module).should_receive('make_borg_snapshot_pattern').with_args(
+        Pattern('/mnt/dataset/subdir'), '/run/borgmatic'
+    ).and_return(Pattern('/run/borgmatic/zfs_snapshots/./mnt/dataset/subdir'))
+    patterns = [Pattern('/hmm')]
 
     assert (
         module.dump_data_sources(
