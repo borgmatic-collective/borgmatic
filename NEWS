@@ -12,6 +12,7 @@
  * #965: Fix a borgmatic runtime directory error when running the "spot" check with a database hook
    enabled.
  * Fix the "spot" check to no longer consider pipe files within an archive for file comparisons.
+ * Fix the "spot" check to have a nicer error when there are no source paths to compare.
  * Fix auto-excluding of special files (when databases are configured) to support relative source
    directory paths.
  * Drop support for Python 3.8, which has been end-of-lifed.

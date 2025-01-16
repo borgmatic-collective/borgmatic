@@ -629,6 +629,14 @@ def spot_check(
     )
     logger.debug(f'{log_prefix}: {len(archive_paths)} total archive paths for spot check')
 
+    if len(source_paths) == 0:
+        logger.debug(
+            f'{log_prefix}: Paths in latest archive but not source paths: {", ".join(set(archive_paths)) or "none"}'
+        )
+        raise ValueError(
+            f'Spot check failed: There are no source paths to compare against the archive'
+        )
+
     # Calculate the percentage delta between the source paths count and the archive paths count, and
     # compare that delta to the configured count tolerance percentage.
     count_delta_percentage = abs(len(source_paths) - len(archive_paths)) / len(source_paths) * 100

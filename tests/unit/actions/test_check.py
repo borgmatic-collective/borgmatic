@@ -1251,7 +1251,7 @@ def test_spot_check_without_any_configuration_errors():
         )
 
 
-def test_spot_check_data_tolerance_percenatge_greater_than_data_sample_percentage_errors():
+def test_spot_check_data_tolerance_percentage_greater_than_data_sample_percentage_errors():
     with pytest.raises(ValueError):
         module.spot_check(
             repository={'path': 'repo'},
@@ -1367,6 +1367,35 @@ def test_spot_check_with_high_enough_tolerances_does_not_raise():
         remote_path=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
+
+
+def test_spot_check_without_any_source_paths_errors():
+    flexmock(module).should_receive('collect_spot_check_source_paths').and_return(())
+    flexmock(module.borgmatic.borg.repo_list).should_receive('resolve_archive_name').and_return(
+        'archive'
+    )
+    flexmock(module).should_receive('collect_spot_check_archive_paths').and_return(('/foo', '/bar'))
+    flexmock(module).should_receive('compare_spot_check_hashes').never()
+
+    with pytest.raises(ValueError):
+        module.spot_check(
+            repository={'path': 'repo'},
+            config={
+                'checks': [
+                    {
+                        'name': 'spot',
+                        'count_tolerance_percentage': 10,
+                        'data_tolerance_percentage': 40,
+                        'data_sample_percentage': 50,
+                    },
+                ]
+            },
+            local_borg_version=flexmock(),
+            global_arguments=flexmock(),
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            borgmatic_runtime_directory='/run/borgmatic',
+        )
 
 
 def test_run_check_checks_archives_for_configured_repository():
