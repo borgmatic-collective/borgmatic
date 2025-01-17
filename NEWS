@@ -1,4 +1,4 @@
-1.9.6.dev0
+1.9.6
  * #959: Fix an error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's
    source directories.
  * #960: Fix for archives storing relative source directory paths such that they contain the working
