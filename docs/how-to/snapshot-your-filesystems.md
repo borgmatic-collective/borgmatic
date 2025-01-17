@@ -254,8 +254,8 @@ borgmatic's `source_directories` option.
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
 the mount point with borgmatic's `patterns` or `patterns_from` options.
 
-During a backup, borgmatic automatically snapshots these discovered logical volumes, temporarily
-mounts the snapshots within its [runtime
+During a backup, borgmatic automatically snapshots these discovered logical volumes
+(non-recursively), temporarily mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory), and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also responsible for cleaning
 up (deleting) these snapshots after a backup completes.

@@ -56,9 +56,16 @@ def get_logical_volumes(lsblk_command, patterns=None):
     candidate_patterns = set(patterns or ())
 
     try:
+        # Sort from longest to shortest mount points, so longer mount points get a whack at the
+        # candidate pattern piñata before their parents do. (Patterns are consumed below, so no two
+        # logical volumes end up with the same contained patterns.)
         return tuple(
             Logical_volume(device['name'], device['path'], device['mountpoint'], contained_patterns)
-            for device in devices_info['blockdevices']
+            for device in sorted(
+                devices_info['blockdevices'],
+                key=lambda device: device['mountpoint'] or '',
+                reverse=True,
+            )
             if device['mountpoint'] and device['type'] == 'lvm'
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
