@@ -17,6 +17,10 @@ def make_dump_path(base_directory):  # pragma: no cover
     return dump.make_data_source_dump_path(base_directory, 'sqlite_databases')
 
 
+def get_default_port(databases, config, log_prefix):  # pragma: no cover
+    return None  # SQLite doesn't use a port.
+
+
 def use_streaming(databases, config, log_prefix):
     '''
     Given a sequence of SQLite database configuration dicts, a configuration dict (ignored), and a

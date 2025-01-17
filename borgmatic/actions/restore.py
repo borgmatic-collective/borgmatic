@@ -27,14 +27,21 @@ Dump = collections.namedtuple(
 )
 
 
-def dumps_match(first, second):
+def dumps_match(first, second, default_port=None):
     '''
     Compare two Dump instances for equality while supporting a field value of UNSPECIFIED, which
-    indicates that the field should match any value.
+    indicates that the field should match any value. If a default port is given, then consider any
+    dump having that port to match with a dump having a None port.
     '''
     for field_name in first._fields:
         first_value = getattr(first, field_name)
         second_value = getattr(second, field_name)
+
+        if default_port is not None and field_name == 'port':
+            if first_value == default_port and second_value is None:
+                continue
+            if second_value == default_port and first_value is None:
+                continue
 
         if first_value == UNSPECIFIED or second_value == UNSPECIFIED:
             continue
@@ -64,10 +71,10 @@ def render_dump_metadata(dump):
     return metadata
 
 
-def get_configured_data_source(config, restore_dump):
+def get_configured_data_source(config, restore_dump, log_prefix):
     '''
     Search in the given configuration dict for dumps corresponding to the given dump to restore. If
-    there are multiple matches, error.
+    there are multiple matches, error. Log using the given log prefix.
 
     Return the found data source as a data source configuration dict or None if not found.
     '''
@@ -78,8 +85,16 @@ def get_configured_data_source(config, restore_dump):
 
     matching_dumps = tuple(
         hook_data_source
-        for (hook_name, hook) in hooks_to_search.items()
-        for hook_data_source in hook
+        for (hook_name, hook_config) in hooks_to_search.items()
+        for hook_data_source in hook_config
+        for default_port in (
+            borgmatic.hooks.dispatch.call_hook(
+                function_name='get_default_port',
+                config=config,
+                log_prefix=log_prefix,
+                hook_name=hook_name,
+            ),
+        )
         if dumps_match(
             Dump(
                 hook_name,
@@ -88,6 +103,7 @@ def get_configured_data_source(config, restore_dump):
                 hook_data_source.get('port'),
             ),
             restore_dump,
+            default_port,
         )
     )
 
@@ -478,6 +494,7 @@ def run_restore(
             found_data_source = get_configured_data_source(
                 config,
                 restore_dump,
+                log_prefix=repository['path'],
             )
 
             # For a dump that wasn't found via an exact match in the configuration, try to fallback
@@ -486,6 +503,7 @@ def run_restore(
                 found_data_source = get_configured_data_source(
                     config,
                     Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
+                    log_prefix=repository['path'],
                 )
 
                 if not found_data_source:

@@ -97,6 +97,10 @@ def database_names_to_dump(database, extra_environment, log_prefix, dry_run):
     )
 
 
+def get_default_port(databases, config, log_prefix):  # pragma: no cover
+    return 5432
+
+
 def use_streaming(databases, config, log_prefix):
     '''
     Given a sequence of PostgreSQL database configuration dicts, a configuration dict (ignored), and

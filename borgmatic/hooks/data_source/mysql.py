@@ -117,6 +117,10 @@ def execute_dump_command(
     )
 
 
+def get_default_port(databases, config, log_prefix):  # pragma: no cover
+    return 3306
+
+
 def use_streaming(databases, config, log_prefix):
     '''
     Given a sequence of MySQL database configuration dicts, a configuration dict (ignored), and a
