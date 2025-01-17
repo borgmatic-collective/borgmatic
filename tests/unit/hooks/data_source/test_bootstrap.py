@@ -27,7 +27,7 @@ def test_dump_data_sources_creates_manifest_file():
         log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     )
 
@@ -43,7 +43,7 @@ def test_dump_data_sources_with_store_config_files_false_does_not_create_manifes
         log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=True,
     )
 
@@ -58,7 +58,7 @@ def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
         log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=True,
     )
 

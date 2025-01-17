@@ -4,6 +4,7 @@ import json
 import logging
 import os
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 
 logger = logging.getLogger(__name__)
@@ -22,15 +23,15 @@ def dump_data_sources(
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
     Given a bootstrap configuration dict, a configuration dict, a log prefix, the borgmatic
-    configuration file paths, the borgmatic runtime directory, the configured source directories,
-    and whether this is a dry run, create a borgmatic manifest file to store the paths of the
-    configuration files used to create the archive. But skip this if the bootstrap
-    store_config_files option is False or if this is a dry run.
+    configuration file paths, the borgmatic runtime directory, the configured patterns, and whether
+    this is a dry run, create a borgmatic manifest file to store the paths of the configuration
+    files used to create the archive. But skip this if the bootstrap store_config_files option is
+    False or if this is a dry run.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
@@ -55,8 +56,10 @@ def dump_data_sources(
             manifest_file,
         )
 
-    source_directories.extend(config_paths)
-    source_directories.append(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
+    patterns.extend(borgmatic.borg.pattern.Pattern(config_path) for config_path in config_paths)
+    patterns.append(
+        borgmatic.borg.pattern.Pattern(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
+    )
 
     return []
 

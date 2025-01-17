@@ -48,7 +48,7 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=False,
         )
         == processes
@@ -71,7 +71,7 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=True,
         )
         == []
@@ -110,7 +110,7 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 
@@ -156,7 +156,7 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 
@@ -182,7 +182,7 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=False,
         )
         == []
@@ -218,7 +218,7 @@ def test_dump_data_sources_runs_mongodump_with_options():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 
@@ -244,7 +244,7 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 

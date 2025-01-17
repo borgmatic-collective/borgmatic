@@ -53,6 +53,9 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
 
  * For any dataset you'd like backed up, add its mount point to borgmatic's
    `source_directories` option.
+ * <span class="minilink minilink-addedin">New in version 1.9.6</span> Or
+   include the mount point with borgmatic's `patterns` or `patterns_from`
+   options.
  * Or set the borgmatic-specific user property
    `org.torsion.borgmatic:backup=auto` onto your dataset, e.g. by running `zfs
    set org.torsion.borgmatic:backup=auto datasetname`. Then borgmatic can find
@@ -83,6 +86,14 @@ let's say you add `/var/log` and `/var/lib` to your source directories, but
 `/var` is a dataset. borgmatic will discover that and snapshot `/var`
 accordingly. This also works even with nested datasets; borgmatic selects
 the dataset that's the "closest" parent to your source directories.
+
+<span class="minilink minilink-addedin">New in version 1.9.6</span> When using
+[patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
+the initial portion of a pattern's path that you intend borgmatic to match
+against a dataset can't have globs or other non-literal characters in it—or it
+won't actually match. For instance, a mount point of `/var` would match a
+pattern of `+ fm:/var/*/data`, but borgmatic isn't currently smart enough to
+match `/var` to a pattern like `+ fm:/v*/lib/data`.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -133,10 +144,14 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 #### Subvolume discovery
 
 For any subvolume you'd like backed up, add its path to borgmatic's
-`source_directories` option. During a backup, borgmatic snapshots these
-subvolumes (non-recursively) and includes the snapshotted files in the paths
-sent to Borg. borgmatic is also responsible for cleaning up (deleting) these
-snapshots after a backup completes.
+`source_directories` option.
+
+<span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
+the mount point with borgmatic's `patterns` or `patterns_from` options.
+
+During a backup, borgmatic snapshots these subvolumes (non-recursively) and
+includes the snapshotted files in the paths sent to Borg. borgmatic is also
+responsible for cleaning up (deleting) these snapshots after a backup completes.
 
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
 directories of each of your `source_directories` to discover any subvolumes.
@@ -145,6 +160,14 @@ directories, but `/var` is a subvolume. borgmatic will discover that and
 snapshot `/var` accordingly. This also works even with nested subvolumes;
 borgmatic selects the subvolume that's the "closest" parent to your source
 directories.
+
+<span class="minilink minilink-addedin">New in version 1.9.6</span> When using
+[patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
+the initial portion of a pattern's path that you intend borgmatic to match
+against a subvolume can't have globs or other non-literal characters in it—or it
+won't actually match. For instance, a subvolume of `/var` would match a pattern
+of `+ fm:/var/*/data`, but borgmatic isn't currently smart enough to match
+`/var` to a pattern like `+ fm:/v*/lib/data`.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original subvolume locations in a Borg archive. For instance, if your
@@ -228,6 +251,9 @@ more information about possible values here. (Under the hood, borgmatic uses
 For any logical volume you'd like backed up, add its mount point to
 borgmatic's `source_directories` option.
 
+<span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
+the mount point with borgmatic's `patterns` or `patterns_from` options.
+
 During a backup, borgmatic automatically snapshots these discovered logical volumes, temporarily
 mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory), and
@@ -239,6 +265,14 @@ directories of each of your `source_directories` to discover any logical
 volumes. For instance, let's say you add `/var/log` and `/var/lib` to your
 source directories, but `/var` is a logical volume. borgmatic will discover
 that and snapshot `/var` accordingly.
+
+<span class="minilink minilink-addedin">New in version 1.9.6</span> When using
+[patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
+the initial portion of a pattern's path that you intend borgmatic to match
+against a logical volume can't have globs or other non-literal characters in
+it—or it won't actually match. For instance, a logical volume of `/var` would
+match a pattern of `+ fm:/var/*/data`, but borgmatic isn't currently smart
+enough to match `/var` to a pattern like `+ fm:/v*/lib/data`.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear
 at their original logical volume locations in a Borg archive. For instance, if

@@ -131,8 +131,7 @@ properties:
             Any paths matching these patterns are included/excluded from
             backups. Globs are expanded. (Tildes are not.) See the output of
             "borg help patterns" for more details. Quote any value if it
-            contains leading punctuation, so it parses correctly. Note that only
-            one of "patterns" and "source_directories" may be used.
+            contains leading punctuation, so it parses correctly.
         example:
             - 'R /'
             - '- /home/*/.cache'
@@ -144,9 +143,8 @@ properties:
             type: string
         description: |
             Read include/exclude patterns from one or more separate named files,
-            one pattern per line. Note that Borg considers this option
-            experimental. See the output of "borg help patterns" for more
-            details.
+            one pattern per line. See the output of "borg help patterns" for
+            more details.
         example:
             - /etc/borgmatic/patterns
     exclude_patterns:
@@ -230,8 +228,8 @@ properties:
     source_directories_must_exist:
         type: boolean
         description: |
-            If true, then source directories must exist, otherwise an error is
-            raised. Defaults to false.
+            If true, then source directories (and root pattern paths) must
+            exist. If they don't, an error is raised. Defaults to false.
         example: true
     encryption_passcommand:
         type: string

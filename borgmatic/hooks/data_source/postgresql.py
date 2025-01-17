@@ -5,6 +5,7 @@ import os
 import pathlib
 import shlex
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 from borgmatic.execute import (
     execute_command,
@@ -110,7 +111,7 @@ def dump_data_sources(
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
@@ -121,7 +122,8 @@ def dump_data_sources(
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
-    Also append the given source directories with the parent directory of the database dumps.
+    Also append the the parent directory of the database dumps to the given patterns list, so the
+    dumps actually get backed up.
 
     Raise ValueError if the databases to dump cannot be determined.
     '''
@@ -216,7 +218,11 @@ def dump_data_sources(
                 )
 
     if not dry_run:
-        source_directories.append(os.path.join(borgmatic_runtime_directory, 'postgresql_databases'))
+        patterns.append(
+            borgmatic.borg.pattern.Pattern(
+                os.path.join(borgmatic_runtime_directory, 'postgresql_databases')
+            )
+        )
 
     return processes
 

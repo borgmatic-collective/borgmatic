@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
 import borgmatic.hooks.data_source.snapshot
@@ -22,18 +23,17 @@ def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
 
 BORGMATIC_SNAPSHOT_PREFIX = 'borgmatic-'
 Logical_volume = collections.namedtuple(
-    'Logical_volume', ('name', 'device_path', 'mount_point', 'contained_source_directories')
+    'Logical_volume', ('name', 'device_path', 'mount_point', 'contained_patterns')
 )
 
 
-def get_logical_volumes(lsblk_command, source_directories=None):
+def get_logical_volumes(lsblk_command, patterns=None):
     '''
-    Given an lsblk command to run and a sequence of configured source directories, find the
-    intersection between the current LVM logical volume mount points and the configured borgmatic
-    source directories. The idea is that these are the requested logical volumes to snapshot.
+    Given an lsblk command to run and a sequence of configured patterns, find the intersection
+    between the current LVM logical volume mount points and the paths of any patterns. The idea is
+    that these pattern paths represent the requested logical volumes to snapshot.
 
-    If source directories is None, include all logical volume mounts points, not just those in
-    source directories.
+    If patterns is None, include all logical volume mounts points, not just those in patterns.
 
     Return the result as a sequence of Logical_volume instances.
     '''
@@ -53,21 +53,19 @@ def get_logical_volumes(lsblk_command, source_directories=None):
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {lsblk_command} JSON output: {error}')
 
-    candidate_source_directories = set(source_directories or ())
+    candidate_patterns = set(patterns or ())
 
     try:
         return tuple(
-            Logical_volume(
-                device['name'], device['path'], device['mountpoint'], contained_source_directories
-            )
+            Logical_volume(device['name'], device['path'], device['mountpoint'], contained_patterns)
             for device in devices_info['blockdevices']
             if device['mountpoint'] and device['type'] == 'lvm'
-            for contained_source_directories in (
-                borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                    device['mountpoint'], candidate_source_directories
+            for contained_patterns in (
+                borgmatic.hooks.data_source.snapshot.get_contained_patterns(
+                    device['mountpoint'], candidate_patterns
                 ),
             )
-            if not source_directories or contained_source_directories
+            if not patterns or contained_patterns
         )
     except KeyError as error:
         raise ValueError(f'Invalid {lsblk_command} output: Missing key "{error}"')
@@ -119,6 +117,37 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
     )
 
 
+def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
+    '''
+    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance, return a new Pattern with its
+    path rewritten to be in a snapshot directory based on the given runtime directory.
+
+    Move any initial caret in a regular expression pattern path to the beginning, so as not to break
+    the regular expression.
+    '''
+    initial_caret = (
+        '^'
+        if pattern.style == borgmatic.borg.pattern.Pattern_style.REGULAR_EXPRESSION
+        and pattern.path.startswith('^')
+        else ''
+    )
+
+    rewritten_path = initial_caret + os.path.join(
+        normalized_runtime_directory,
+        'lvm_snapshots',
+        '.',  # Borg 1.4+ "slashdot" hack.
+        # Included so that the source directory ends up in the Borg archive at its "original" path.
+        pattern.path.lstrip('^').lstrip(os.path.sep),
+    )
+
+    return borgmatic.borg.pattern.Pattern(
+        rewritten_path,
+        pattern.type,
+        pattern.style,
+        pattern.device,
+    )
+
+
 DEFAULT_SNAPSHOT_SIZE = '10%ORIGIN'
 
 
@@ -128,16 +157,16 @@ def dump_data_sources(
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
     Given an LVM configuration dict, a configuration dict, a log prefix, the borgmatic configuration
-    file paths, the borgmatic runtime directory, the configured source directories, and whether this
-    is a dry run, auto-detect and snapshot any LVM logical volume mount points listed in the given
-    source directories. Also update those source directories, replacing logical volume mount points
-    with corresponding snapshot directories so they get stored in the Borg archive instead. Use the
-    log prefix in any log entries.
+    file paths, the borgmatic runtime directory, the configured patterns, and whether this is a dry
+    run, auto-detect and snapshot any LVM logical volume mount points listed in the given patterns.
+    Also update those patterns, replacing logical volume mount points with corresponding snapshot
+    directories so they get stored in the Borg archive instead. Use the log prefix in any log
+    entries.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -148,7 +177,7 @@ def dump_data_sources(
 
     # List logical volumes to get their mount points.
     lsblk_command = hook_config.get('lsblk_command', 'lsblk')
-    requested_logical_volumes = get_logical_volumes(lsblk_command, source_directories)
+    requested_logical_volumes = get_logical_volumes(lsblk_command, patterns)
 
     # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
     snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
@@ -198,22 +227,14 @@ def dump_data_sources(
             hook_config.get('mount_command', 'mount'), snapshot.device_path, snapshot_mount_path
         )
 
-        # Update the path for each contained source directory, so Borg sees it within the
-        # mounted snapshot.
-        for source_directory in logical_volume.contained_source_directories:
-            try:
-                source_directories.remove(source_directory)
-            except ValueError:
-                pass
+        for pattern in logical_volume.contained_patterns:
+            snapshot_pattern = make_borg_snapshot_pattern(pattern, normalized_runtime_directory)
 
-            source_directories.append(
-                os.path.join(
-                    normalized_runtime_directory,
-                    'lvm_snapshots',
-                    '.',  # Borg 1.4+ "slashdot" hack.
-                    source_directory.lstrip(os.path.sep),
-                )
-            )
+            # Attempt to update the pattern in place, since pattern order matters to Borg.
+            try:
+                patterns[patterns.index(pattern)] = snapshot_pattern
+            except ValueError:
+                patterns.append(snapshot_pattern)
 
     return []
 

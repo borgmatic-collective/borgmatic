@@ -6,12 +6,87 @@ import pathlib
 
 import borgmatic.actions.json
 import borgmatic.borg.create
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.config.validate
 import borgmatic.hooks.command
 import borgmatic.hooks.dispatch
 
 logger = logging.getLogger(__name__)
+
+
+def parse_pattern(pattern_line):
+    '''
+    Given a Borg pattern as a string, parse it into a borgmatic.borg.pattern.Pattern instance and
+    return it.
+    '''
+    try:
+        (pattern_type, remainder) = pattern_line.split(' ', maxsplit=1)
+    except ValueError:
+        raise ValueError('Invalid pattern:', pattern_line)
+
+    try:
+        (pattern_style, path) = remainder.split(':', maxsplit=1)
+    except ValueError:
+        pattern_style = ''
+        path = remainder
+
+    return borgmatic.borg.pattern.Pattern(
+        path,
+        borgmatic.borg.pattern.Pattern_type(pattern_type),
+        borgmatic.borg.pattern.Pattern_style(pattern_style),
+    )
+
+
+def collect_patterns(config):
+    '''
+    Given a configuration dict, produce a single sequence of patterns comprised of the configured
+    source directories, patterns, excludes, pattern files, and exclude files.
+
+    The idea is that Borg has all these different ways of specifying includes, excludes, source
+    directories, etc., but we'd like to collapse them all down to one common format (patterns) for
+    ease of manipulation within borgmatic.
+    '''
+    try:
+        return (
+            tuple(
+                borgmatic.borg.pattern.Pattern(source_directory)
+                for source_directory in config.get('source_directories', ())
+            )
+            + tuple(
+                parse_pattern(pattern_line.strip())
+                for pattern_line in config.get('patterns', ())
+                if not pattern_line.lstrip().startswith('#')
+            )
+            + tuple(
+                borgmatic.borg.pattern.Pattern(
+                    exclude_line.strip(),
+                    borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                )
+                for exclude_line in config.get('exclude_patterns', ())
+            )
+            + tuple(
+                parse_pattern(pattern_line.strip())
+                for filename in config.get('patterns_from', ())
+                for pattern_line in open(filename).readlines()
+                if not pattern_line.lstrip().startswith('#')
+            )
+            + tuple(
+                borgmatic.borg.pattern.Pattern(
+                    exclude_line.strip(),
+                    borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                )
+                for filename in config.get('excludes_from', ())
+                for exclude_line in open(filename).readlines()
+                if not exclude_line.lstrip().startswith('#')
+            )
+        )
+    except (FileNotFoundError, OSError) as error:
+        logger.debug(error)
+
+        raise ValueError(f'Cannot read patterns_from/excludes_from file: {error.filename}')
 
 
 def expand_directory(directory, working_directory):
@@ -25,141 +100,152 @@ def expand_directory(directory, working_directory):
 
     # This would be a lot easier to do with glob(..., root_dir=working_directory), but root_dir is
     # only available in Python 3.10+.
-    glob_paths = glob.glob(os.path.join(working_directory or '', expanded_directory))
+    normalized_directory = os.path.join(working_directory or '', expanded_directory)
+    glob_paths = glob.glob(normalized_directory)
 
     if not glob_paths:
         return [expanded_directory]
 
     working_directory_prefix = os.path.join(working_directory or '', '')
 
-    # Remove the working directory prefix that we added above in order to make glob() work.
     return [
-        # os.path.relpath() won't work here because it collapses any usage of Borg's slashdot hack.
-        glob_path.removeprefix(working_directory_prefix)
+        (
+            glob_path
+            # If these are equal, that means we didn't add any working directory prefix above.
+            if normalized_directory == expanded_directory
+            # Remove the working directory prefix that we added above in order to make glob() work.
+            # We can't use os.path.relpath() here because it collapses any use of Borg's slashdot
+            # hack.
+            else glob_path.removeprefix(working_directory_prefix)
+        )
         for glob_path in glob_paths
     ]
 
 
-def expand_directories(directories, working_directory=None):
+def expand_patterns(patterns, working_directory=None, skip_paths=None):
     '''
-    Given a sequence of directory paths and an optional working directory, expand tildes and globs
-    in each one. Return all the resulting directories as a single flattened tuple.
+    Given a sequence of borgmatic.borg.pattern.Pattern instances and an optional working directory,
+    expand tildes and globs in each root pattern. Return all the resulting patterns (not just the
+    root patterns) as a tuple.
+
+    If a set of paths are given to skip, then don't expand any patterns matching them.
     '''
-    if directories is None:
+    if patterns is None:
         return ()
 
     return tuple(
         itertools.chain.from_iterable(
-            expand_directory(directory, working_directory) for directory in directories
+            (
+                (
+                    borgmatic.borg.pattern.Pattern(
+                        expanded_path,
+                        pattern.type,
+                        pattern.style,
+                        pattern.device,
+                    )
+                    for expanded_path in expand_directory(pattern.path, working_directory)
+                )
+                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                and pattern.path not in (skip_paths or ())
+                else (pattern,)
+            )
+            for pattern in patterns
         )
     )
 
 
-def map_directories_to_devices(directories, working_directory=None):
+def device_map_patterns(patterns, working_directory=None):
     '''
-    Given a sequence of directories and an optional working directory, return a map from directory
-    to an identifier for the device on which that directory resides or None if the path doesn't
-    exist.
+    Given a sequence of borgmatic.borg.pattern.Pattern instances and an optional working directory,
+    determine the identifier for the device on which the pattern's path resides—or None if the path
+    doesn't exist or is from a non-root pattern. Return an updated sequence of patterns with the
+    device field populated. But if the device field is already set, don't bother setting it again.
 
-    This is handy for determining whether two different directories are on the same filesystem (have
-    the same device identifier).
+    This is handy for determining whether two different pattern paths are on the same filesystem
+    (have the same device identifier).
     '''
-    return {
-        directory: os.stat(full_directory).st_dev if os.path.exists(full_directory) else None
-        for directory in directories
-        for full_directory in (os.path.join(working_directory or '', directory),)
-    }
+    return tuple(
+        borgmatic.borg.pattern.Pattern(
+            pattern.path,
+            pattern.type,
+            pattern.style,
+            device=pattern.device
+            or (
+                os.stat(full_path).st_dev
+                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                and os.path.exists(full_path)
+                else None
+            ),
+        )
+        for pattern in patterns
+        for full_path in (os.path.join(working_directory or '', pattern.path),)
+    )
 
 
-def deduplicate_directories(directory_devices, additional_directory_devices):
+def deduplicate_patterns(patterns):
     '''
-    Given a map from directory to the identifier for the device on which that directory resides,
-    return the directories as a sorted sequence with all duplicate child directories removed. For
-    instance, if paths is ['/foo', '/foo/bar'], return just: ['/foo']
+    Given a sequence of borgmatic.borg.pattern.Pattern instances, return them with all duplicate
+    root child patterns removed. For instance, if two root patterns are given with paths "/foo" and
+    "/foo/bar", return just the one with "/foo". Non-root patterns are passed through without
+    modification.
 
-    The one exception to this rule is if two paths are on different filesystems (devices). In that
-    case, they won't get de-duplicated in case they both need to be passed to Borg (e.g. the
-    location.one_file_system option is true).
+    The one exception to deduplication is two paths are on different filesystems (devices). In that
+    case, they won't get deduplicated, in case they both need to be passed to Borg (e.g. the
+    one_file_system option is true).
 
-    The idea is that if Borg is given a parent directory, then it doesn't also need to be given
-    child directories, because it will naturally spider the contents of the parent directory. And
+    The idea is that if Borg is given a root parent pattern, then it doesn't also need to be given
+    child patterns, because it will naturally spider the contents of the parent pattern's path. And
     there are cases where Borg coming across the same file twice will result in duplicate reads and
     even hangs, e.g. when a database hook is using a named pipe for streaming database dumps to
     Borg.
-
-    If any additional directory devices are given, also deduplicate against them, but don't include
-    them in the returned directories.
     '''
-    deduplicated = set()
-    directories = sorted(directory_devices.keys())
-    additional_directories = sorted(additional_directory_devices.keys())
-    all_devices = {**directory_devices, **additional_directory_devices}
+    deduplicated = {}  # Use just the keys as an ordered set.
 
-    for directory in directories:
-        deduplicated.add(directory)
-        parents = pathlib.PurePath(directory).parents
+    for pattern in patterns:
+        if pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
+            deduplicated[pattern] = True
+            continue
 
-        # If another directory in the given list (or the additional list) is a parent of current
-        # directory (even n levels up) and both are on the same filesystem, then the current
-        # directory is a duplicate.
-        for other_directory in directories + additional_directories:
-            for parent in parents:
-                if (
-                    pathlib.PurePath(other_directory) == parent
-                    and all_devices[directory] is not None
-                    and all_devices[other_directory] == all_devices[directory]
-                ):
-                    if directory in deduplicated:
-                        deduplicated.remove(directory)
-                    break
+        parents = pathlib.PurePath(pattern.path).parents
 
-    return sorted(deduplicated)
+        # If another directory in the given list is a parent of current directory (even n levels up)
+        # and both are on the same filesystem, then the current directory is a duplicate.
+        for other_pattern in patterns:
+            if other_pattern.type != borgmatic.borg.pattern.Pattern_type.ROOT:
+                continue
+
+            if any(
+                pathlib.PurePath(other_pattern.path) == parent
+                and pattern.device is not None
+                and other_pattern.device == pattern.device
+                for parent in parents
+            ):
+                break
+        else:
+            deduplicated[pattern] = True
+
+    return tuple(deduplicated.keys())
 
 
-ROOT_PATTERN_PREFIX = 'R '
-
-
-def pattern_root_directories(patterns=None):
+def process_patterns(patterns, working_directory, skip_expand_paths=None):
     '''
-    Given a sequence of patterns, parse out and return just the root directories.
-    '''
-    if not patterns:
-        return []
-
-    return [
-        pattern.split(ROOT_PATTERN_PREFIX, maxsplit=1)[1]
-        for pattern in patterns
-        if pattern.startswith(ROOT_PATTERN_PREFIX)
-    ]
-
-
-def process_source_directories(config, source_directories=None, skip_expand_paths=None):
-    '''
-    Given a sequence of source directories (either in the source_directories argument or, lacking
-    that, from config), expand and deduplicate the source directories, returning the result.
+    Given a sequence of Borg patterns and a configured working directory, expand and deduplicate any
+    "root" patterns, returning the resulting root and non-root patterns as a list.
 
     If any paths are given to skip, don't expand them.
     '''
-    working_directory = borgmatic.config.paths.get_working_directory(config)
     skip_paths = set(skip_expand_paths or ())
 
-    if source_directories is None:
-        source_directories = tuple(config.get('source_directories', ()))
-
-    return deduplicate_directories(
-        map_directories_to_devices(
-            expand_directories(
-                tuple(source for source in source_directories if source not in skip_paths),
-                working_directory=working_directory,
+    return list(
+        deduplicate_patterns(
+            device_map_patterns(
+                expand_patterns(
+                    patterns,
+                    working_directory=working_directory,
+                    skip_paths=skip_paths,
+                )
             )
-            + tuple(skip_paths)
-        ),
-        additional_directory_devices=map_directories_to_devices(
-            expand_directories(
-                pattern_root_directories(config.get('patterns')),
-                working_directory=working_directory,
-            )
-        ),
+        )
     )
 
 
@@ -197,6 +283,7 @@ def run_create(
 
     log_prefix = repository.get('label', repository['path'])
     logger.info(f'{log_prefix}: Creating archive{dry_run_label}')
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
     with borgmatic.config.paths.Runtime_directory(
         config, log_prefix
@@ -209,7 +296,7 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-        source_directories = process_source_directories(config)
+        patterns = process_patterns(collect_patterns(config), working_directory)
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
             config,
@@ -217,23 +304,21 @@ def run_create(
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             config_paths,
             borgmatic_runtime_directory,
-            source_directories,
+            patterns,
             global_arguments.dry_run,
         )
 
-        # Process source directories again in case any data source hooks updated them. Without this
-        # step, we could end up with duplicate paths that cause Borg to hang when it tries to read
-        # from the same named pipe twice.
-        source_directories = process_source_directories(
-            config, source_directories, skip_expand_paths=config_paths
-        )
+        # Process the patterns again in case any data source hooks updated them. Without this step,
+        # we could end up with duplicate paths that cause Borg to hang when it tries to read from
+        # the same named pipe twice.
+        patterns = process_patterns(patterns, working_directory, skip_expand_paths=config_paths)
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
         json_output = borgmatic.borg.create.create_archive(
             global_arguments.dry_run,
             repository['path'],
             config,
-            source_directories,
+            patterns,
             local_borg_version,
             global_arguments,
             borgmatic_runtime_directory,

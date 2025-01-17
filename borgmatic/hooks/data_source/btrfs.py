@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 
+import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
 import borgmatic.hooks.data_source.snapshot
@@ -72,41 +73,39 @@ def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
     )
 
 
-Subvolume = collections.namedtuple(
-    'Subvolume', ('path', 'contained_source_directories'), defaults=((),)
-)
+Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
 
 
-def get_subvolumes(btrfs_command, findmnt_command, source_directories=None):
+def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     '''
-    Given a Btrfs command to run and a sequence of configured source directories, find the
-    intersection between the current Btrfs filesystem and subvolume mount points and the configured
-    borgmatic source directories. The idea is that these are the requested subvolumes to snapshot.
+    Given a Btrfs command to run and a sequence of configured patterns, find the intersection
+    between the current Btrfs filesystem and subvolume mount points and the paths of any patterns.
+    The idea is that these pattern paths represent the requested subvolumes to snapshot.
 
-    If the source directories is None, then return all subvolumes, sorted by path.
+    If patterns is None, then return all subvolumes, sorted by path.
 
     Return the result as a sequence of matching subvolume mount points.
     '''
-    candidate_source_directories = set(source_directories or ())
+    candidate_patterns = set(patterns or ())
     subvolumes = []
 
-    # For each filesystem mount point, find its subvolumes and match them against the given source
-    # directories to find the subvolumes to backup. And within this loop, sort the subvolumes from
-    # longest to shortest mount points, so longer mount points get a whack at the candidate source
-    # directory piñata before their parents do. (Source directories are consumed during this
-    # process, so no two datasets get the same contained source directories.)
+    # For each filesystem mount point, find its subvolumes and match them against the given patterns
+    # to find the subvolumes to backup. And within this loop, sort the subvolumes from longest to
+    # shortest mount points, so longer mount points get a whack at the candidate pattern piñata
+    # before their parents do. (Patterns are consumed during this process, so no two subvolumes end
+    # up with the same contained patterns.)
     for mount_point in get_filesystem_mount_points(findmnt_command):
         subvolumes.extend(
-            Subvolume(subvolume_path, contained_source_directories)
+            Subvolume(subvolume_path, contained_patterns)
             for subvolume_path in reversed(
                 get_subvolumes_for_filesystem(btrfs_command, mount_point)
             )
-            for contained_source_directories in (
-                borgmatic.hooks.data_source.snapshot.get_contained_directories(
-                    subvolume_path, candidate_source_directories
+            for contained_patterns in (
+                borgmatic.hooks.data_source.snapshot.get_contained_patterns(
+                    subvolume_path, candidate_patterns
                 ),
             )
-            if source_directories is None or contained_source_directories
+            if patterns is None or contained_patterns
         )
 
     return tuple(sorted(subvolumes, key=lambda subvolume: subvolume.path))
@@ -126,13 +125,13 @@ def make_snapshot_path(subvolume_path):
     ) + subvolume_path.rstrip(os.path.sep)
 
 
-def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
+def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
     '''
-    Given the path to a subvolume, make a corresponding exclude path for its embedded snapshot path.
-    This is to work around a quirk of Btrfs: If you make a snapshot path as a child directory of a
-    subvolume, then the snapshot's own initial directory component shows up as an empty directory
-    within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and make a
-    snapshot of it at:
+    Given the path to a subvolume, make a corresponding exclude pattern for its embedded snapshot
+    path. This is to work around a quirk of Btrfs: If you make a snapshot path as a child directory
+    of a subvolume, then the snapshot's own initial directory component shows up as an empty
+    directory within the snapshot itself. For instance, if you have a Btrfs subvolume at /mnt and
+    make a snapshot of it at:
 
         /mnt/.borgmatic-snapshot-1234/mnt
 
@@ -140,30 +139,52 @@ def make_snapshot_exclude_path(subvolume_path):  # pragma: no cover
 
         /mnt/.borgmatic-snapshot-1234/mnt/.borgmatic-snapshot-1234
 
-    So to prevent that from ending up in the Borg archive, this function produces its path for
-    exclusion.
+    So to prevent that from ending up in the Borg archive, this function produces an exclude pattern
+    to exclude that path.
     '''
     snapshot_directory = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
 
-    return os.path.join(
-        subvolume_path,
-        snapshot_directory,
-        subvolume_path.lstrip(os.path.sep),
-        snapshot_directory,
+    return borgmatic.borg.pattern.Pattern(
+        os.path.join(
+            subvolume_path,
+            snapshot_directory,
+            subvolume_path.lstrip(os.path.sep),
+            snapshot_directory,
+        ),
+        borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        borgmatic.borg.pattern.Pattern_style.FNMATCH,
     )
 
 
-def make_borg_source_directory_path(subvolume_path, source_directory):
+def make_borg_snapshot_pattern(subvolume_path, pattern):
     '''
-    Given the path to a subvolume and a source directory inside it, make a corresponding path for
-    the source directory within a snapshot path intended for giving to Borg.
+    Given the path to a subvolume and a pattern as a borgmatic.borg.pattern.Pattern instance whose
+    path is inside the subvolume, return a new Pattern with its path rewritten to be in a snapshot
+    path intended for giving to Borg.
+
+    Move any initial caret in a regular expression pattern path to the beginning, so as not to break
+    the regular expression.
     '''
-    return os.path.join(
+    initial_caret = (
+        '^'
+        if pattern.style == borgmatic.borg.pattern.Pattern_style.REGULAR_EXPRESSION
+        and pattern.path.startswith('^')
+        else ''
+    )
+
+    rewritten_path = initial_caret + os.path.join(
         subvolume_path,
         f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}',
         '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the source directory ends up in the Borg archive at its "original" path.
-        source_directory.lstrip(os.path.sep),
+        pattern.path.lstrip('^').lstrip(os.path.sep),
+    )
+
+    return borgmatic.borg.pattern.Pattern(
+        rewritten_path,
+        pattern.type,
+        pattern.style,
+        pattern.device,
     )
 
 
@@ -193,16 +214,16 @@ def dump_data_sources(
     log_prefix,
     config_paths,
     borgmatic_runtime_directory,
-    source_directories,
+    patterns,
     dry_run,
 ):
     '''
     Given a Btrfs configuration dict, a configuration dict, a log prefix, the borgmatic
-    configuration file paths, the borgmatic runtime directory, the configured source directories,
-    and whether this is a dry run, auto-detect and snapshot any Btrfs subvolume mount points listed
-    in the given source directories. Also update those source directories, replacing subvolume mount
-    points with corresponding snapshot directories so they get stored in the Borg archive instead.
-    Use the log prefix in any log entries.
+    configuration file paths, the borgmatic runtime directory, the configured patterns, and whether
+    this is a dry run, auto-detect and snapshot any Btrfs subvolume mount points listed in the given
+    patterns. Also update those patterns, replacing subvolume mount points with corresponding
+    snapshot directories so they get stored in the Borg archive instead. Use the log prefix in any
+    log entries.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -211,15 +232,15 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'{log_prefix}: Snapshotting Btrfs subvolumes{dry_run_label}')
 
-    # Based on the configured source directories, determine Btrfs subvolumes to backup.
+    # Based on the configured patterns, determine Btrfs subvolumes to backup.
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
     findmnt_command = hook_config.get('findmnt_command', 'findmnt')
-    subvolumes = get_subvolumes(btrfs_command, findmnt_command, source_directories)
+    subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)
 
     if not subvolumes:
         logger.warning(f'{log_prefix}: No Btrfs subvolumes found to snapshot{dry_run_label}')
 
-    # Snapshot each subvolume, rewriting source directories to use their snapshot paths.
+    # Snapshot each subvolume, rewriting patterns to use their snapshot paths.
     for subvolume in subvolumes:
         logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume.path} subvolume')
 
@@ -230,17 +251,16 @@ def dump_data_sources(
 
         snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
-        for source_directory in subvolume.contained_source_directories:
+        for pattern in subvolume.contained_patterns:
+            snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+
+            # Attempt to update the pattern in place, since pattern order matters to Borg.
             try:
-                source_directories.remove(source_directory)
+                patterns[patterns.index(pattern)] = snapshot_pattern
             except ValueError:
-                pass
+                patterns.append(snapshot_pattern)
 
-            source_directories.append(
-                make_borg_source_directory_path(subvolume.path, source_directory)
-            )
-
-        config.setdefault('exclude_patterns', []).append(make_snapshot_exclude_path(subvolume.path))
+        patterns.append(make_snapshot_exclude_pattern(subvolume.path))
 
     return []
 

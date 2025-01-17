@@ -367,14 +367,16 @@ def collect_spot_check_source_paths(
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         ).values()
     )
+    working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    (create_flags, create_positional_arguments, pattern_file, exclude_file) = (
+    (create_flags, create_positional_arguments, pattern_file) = (
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],
             config=config,
-            source_directories=borgmatic.actions.create.process_source_directories(
-                config,
+            patterns=borgmatic.actions.create.process_patterns(
+                borgmatic.actions.create.collect_patterns(config),
+                working_directory,
             ),
             local_borg_version=local_borg_version,
             global_arguments=global_arguments,
@@ -626,6 +628,14 @@ def spot_check(
         borgmatic_runtime_directory,
     )
     logger.debug(f'{log_prefix}: {len(archive_paths)} total archive paths for spot check')
+
+    if len(source_paths) == 0:
+        logger.debug(
+            f'{log_prefix}: Paths in latest archive but not source paths: {", ".join(set(archive_paths)) or "none"}'
+        )
+        raise ValueError(
+            'Spot check failed: There are no source paths to compare against the archive'
+        )
 
     # Calculate the percentage delta between the source paths count and the archive paths count, and
     # compare that delta to the configured count tolerance percentage.

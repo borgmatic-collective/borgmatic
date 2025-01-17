@@ -80,7 +80,7 @@ def test_dump_data_sources_dumps_each_database():
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=False,
         )
         == processes
@@ -111,7 +111,7 @@ def test_dump_data_sources_dumps_with_password():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 
@@ -137,7 +137,7 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
-        source_directories=[],
+        patterns=[],
         dry_run=False,
     ) == [process]
 
@@ -166,7 +166,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=False,
         )
         == processes
@@ -478,7 +478,7 @@ def test_dump_data_sources_errors_for_missing_all_databases():
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=False,
         )
 
@@ -498,7 +498,7 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
             'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
-            source_directories=[],
+            patterns=[],
             dry_run=True,
         )
         == []
