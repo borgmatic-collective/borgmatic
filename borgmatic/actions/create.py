@@ -23,7 +23,7 @@ def parse_pattern(pattern_line):
     try:
         (pattern_type, remainder) = pattern_line.split(' ', maxsplit=1)
     except ValueError:
-        raise ValueError('Invalid pattern:', pattern_line)
+        raise ValueError(f'Invalid pattern: {pattern_line}')
 
     try:
         (pattern_style, path) = remainder.split(':', maxsplit=1)
@@ -57,6 +57,7 @@ def collect_patterns(config):
                 parse_pattern(pattern_line.strip())
                 for pattern_line in config.get('patterns', ())
                 if not pattern_line.lstrip().startswith('#')
+                if pattern_line.strip()
             )
             + tuple(
                 borgmatic.borg.pattern.Pattern(
@@ -71,6 +72,7 @@ def collect_patterns(config):
                 for filename in config.get('patterns_from', ())
                 for pattern_line in open(filename).readlines()
                 if not pattern_line.lstrip().startswith('#')
+                if pattern_line.strip()
             )
             + tuple(
                 borgmatic.borg.pattern.Pattern(
@@ -81,6 +83,7 @@ def collect_patterns(config):
                 for filename in config.get('excludes_from', ())
                 for exclude_line in open(filename).readlines()
                 if not exclude_line.lstrip().startswith('#')
+                if exclude_line.strip()
             )
         )
     except (FileNotFoundError, OSError) as error:
