@@ -1,5 +1,6 @@
 1.9.7
- * #970: Fix for an error when a blank line occurs in the configured patterns or excludes.
+ * #968: Fix for a "spot" check error when a filename in the most recent archive contains a newline.
+ * #970: Fix for an error when there's a blank line in the configured patterns or excludes.
 
 1.9.6
  * #959: Fix an error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's

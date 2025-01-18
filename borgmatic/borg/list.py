@@ -120,7 +120,7 @@ def capture_archive_listing(
                     paths=[path for path in list_paths] if list_paths else None,
                     find_paths=None,
                     json=None,
-                    format=path_format or '{path}{NL}',  # noqa: FS003
+                    format=path_format or '{path}{NUL}',  # noqa: FS003
                 ),
                 global_arguments,
                 local_path,
@@ -132,7 +132,7 @@ def capture_archive_listing(
             borg_exit_codes=config.get('borg_exit_codes'),
         )
         .strip('\n')
-        .split('\n')
+        .split('\0')
     )
 
 
@@ -230,7 +230,7 @@ def list_archive(
                 borg_exit_codes=borg_exit_codes,
             )
             .strip('\n')
-            .split('\n')
+            .splitlines()
         )
     else:
         archive_lines = (list_arguments.archive,)

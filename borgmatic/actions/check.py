@@ -401,7 +401,7 @@ def collect_spot_check_source_paths(
 
     paths = tuple(
         path_line.split(' ', 1)[1]
-        for path_line in paths_output.split('\n')
+        for path_line in paths_output.splitlines()
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
 
