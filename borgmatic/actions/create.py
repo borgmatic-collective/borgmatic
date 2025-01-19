@@ -80,7 +80,7 @@ def collect_patterns(config):
                     borgmatic.borg.pattern.Pattern_type.EXCLUDE,
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
-                for filename in config.get('excludes_from', ())
+                for filename in config.get('exclude_from', ())
                 for exclude_line in open(filename).readlines()
                 if not exclude_line.lstrip().startswith('#')
                 if exclude_line.strip()
@@ -89,7 +89,7 @@ def collect_patterns(config):
     except (FileNotFoundError, OSError) as error:
         logger.debug(error)
 
-        raise ValueError(f'Cannot read patterns_from/excludes_from file: {error.filename}')
+        raise ValueError(f'Cannot read patterns_from/exclude_from file: {error.filename}')
 
 
 def expand_directory(directory, working_directory):

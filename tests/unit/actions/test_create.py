@@ -82,7 +82,7 @@ def test_collect_patterns_errors_on_missing_config_patterns_from_file():
         module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']})
 
 
-def test_collect_patterns_reads_config_excludes_from_file():
+def test_collect_patterns_reads_config_exclude_from_file():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt').and_return(io.StringIO('/foo'))
     builtins.should_receive('open').with_args('file2.txt').and_return(
@@ -94,20 +94,20 @@ def test_collect_patterns_reads_config_excludes_from_file():
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
     flexmock(module).should_receive('parse_pattern').with_args('/baz').and_return(Pattern('/baz'))
 
-    assert module.collect_patterns({'excludes_from': ['file1.txt', 'file2.txt']}) == (
+    assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
         Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
         Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
         Pattern('/baz', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
     )
 
 
-def test_collect_patterns_errors_on_missing_config_excludes_from_file():
+def test_collect_patterns_errors_on_missing_config_exclude_from_file():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('file1.txt').and_raise(OSError)
     flexmock(module).should_receive('parse_pattern').never()
 
     with pytest.raises(ValueError):
-        module.collect_patterns({'excludes_from': ['file1.txt', 'file2.txt']})
+        module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']})
 
 
 def test_expand_directory_with_basic_path_passes_it_through():
