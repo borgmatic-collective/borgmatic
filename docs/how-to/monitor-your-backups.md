@@ -47,6 +47,7 @@ them as backups happen:
  * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
  * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
  * [Pushover](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pushover-hook)
+ * [Sentry](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#sentry-hook)
  * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
  * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
 
@@ -361,10 +362,47 @@ pushover:
 ```
 
 
+## Sentry hook
+
+<span class="minilink minilink-addedin">New in version 1.9.7</span>
+[Sentry](https://sentry.io/) is an application monitoring service that
+includes cron-style monitoring (either cloud-hosted or
+[self-hosted](https://develop.sentry.dev/self-hosted/)).
+
+To get started, create a [Sentry cron
+monitor](https://docs.sentry.io/product/crons/) in the Sentry UI. Under
+"Instrument your monitor," select "Sentry CLI" and copy the URL value for the
+displayed `SENTRY_DSN` environment variable into borgmatic's Sentry
+`data_source_name_url` configuration option. For example:
+
+```
+sentry:
+    data_source_name_url: https://5f80ec@o294220.ingest.us.sentry.io/203069
+    monitor_slug: mymonitor
+```
+
+The `monitor_slug` value comes from the "Monitor Slug" under "Cron Details" on
+the same Sentry monitor page.
+
+With this configuration, borgmatic pings Sentry whenever borgmatic starts,
+finishes, or fails, but only when any of the `create`, `prune`, `compact`, or
+`check` actions are run. You can optionally override the start/finish/fail
+behavior with the `states` configuration option. For instance, to only ping
+Sentry on failure:
+
+```
+sentry:
+    data_source_name_url: https://5f80ec@o294220.ingest.us.sentry.io/203069
+    monitor_slug: mymonitor
+    states:
+      - fail
+```
+
+
 ## ntfy hook
 
 <span class="minilink minilink-addedin">New in version 1.6.3</span>
-[ntfy](https://ntfy.sh) is a free, simple, service (either hosted or
+[ntfy](https://ntfy.sh) is a free, simple, service (either cloud-hosted or
 self-hosted) which offers simple pub/sub push notifications to multiple
 platforms including [web](https://ntfy.sh/stats),
 [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy) and

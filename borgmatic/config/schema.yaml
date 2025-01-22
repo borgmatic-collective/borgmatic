@@ -2259,7 +2259,45 @@ properties:
             can send the logs to a self-hosted instance or create an account at
             https://grafana.com/auth/sign-up/create-user. See borgmatic
             monitoring documentation for details.
-
+    sentry:
+        type: object
+        required: ['data_source_name_url', 'monitor_slug']
+        additionalProperties: false
+        properties:
+            data_source_name_url:
+                type: string
+                description: |
+                    Sentry Data Source Name (DSN) URL, associated with a
+                    particular Sentry project. Used to construct a cron URL,
+                    notified when a backup begins, ends, or errors.
+                example: https://5f80ec@o294220.ingest.us.sentry.io/203069
+            monitor_slug:
+                type: string
+                description: |
+                    Sentry monitor slug, associated with a particular Sentry
+                    project monitor. Used along with the data source name URL to
+                    construct a cron URL.
+                example: mymonitor
+            states:
+                type: array
+                items:
+                    type: string
+                    enum:
+                        - start
+                        - finish
+                        - fail
+                    uniqueItems: true
+                description: |
+                    List of one or more monitoring states to ping for: "start",
+                    "finish", and/or "fail". Defaults to pinging for all states.
+                example:
+                    - start
+                    - finish
+        description: |
+            Configuration for a monitoring integration with Sentry. You can use
+            a self-hosted instance via https://develop.sentry.dev/self-hosted/
+            or create a cloud-hosted account at https://sentry.io. See borgmatic
+            monitoring documentation for details.
     zfs:
         type: ["object", "null"]
         additionalProperties: false

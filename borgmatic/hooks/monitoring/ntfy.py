@@ -19,7 +19,6 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     Ping the configured Ntfy topic. Use the given configuration filename in any log entries.
     If this is a dry run, then don't actually ping anything.
     '''
-
     run_states = hook_config.get('states', ['fail'])
 
     if state.name.lower() in run_states:
