@@ -372,8 +372,10 @@ includes cron-style monitoring (either cloud-hosted or
 To get started, create a [Sentry cron
 monitor](https://docs.sentry.io/product/crons/) in the Sentry UI. Under
 "Instrument your monitor," select "Sentry CLI" and copy the URL value for the
-displayed `SENTRY_DSN` environment variable into borgmatic's Sentry
-`data_source_name_url` configuration option. For example:
+displayed
+[`SENTRY_DSN`](https://docs.sentry.io/concepts/key-terms/dsn-explainer/)
+environment variable into borgmatic's Sentry `data_source_name_url`
+configuration option. For example:
 
 ```
 sentry:
