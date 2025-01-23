@@ -34,11 +34,13 @@ def test_collect_patterns_converts_source_directories():
 
 
 def test_collect_patterns_parses_config_patterns():
-    flexmock(module).should_receive('parse_pattern').with_args('R /foo').and_return(Pattern('/foo'))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        'R /foo', Pattern_style.SHELL).and_return(Pattern('/foo'))
     flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
     flexmock(module).should_receive('parse_pattern').with_args('').never()
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
-    flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        'R /bar', Pattern_style.SHELL).and_return(Pattern('/bar'))
 
     assert module.collect_patterns({'patterns': ['R /foo', '# comment', '', '   ', 'R /bar']}) == (
         Pattern('/foo'),
@@ -60,12 +62,15 @@ def test_collect_patterns_reads_config_patterns_from_file():
     builtins.should_receive('open').with_args('file2.txt').and_return(
         io.StringIO('R /bar\n# comment\n\n   \nR /baz')
     )
-    flexmock(module).should_receive('parse_pattern').with_args('R /foo').and_return(Pattern('/foo'))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        'R /foo', Pattern_style.SHELL).and_return(Pattern('/foo'))
     flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
     flexmock(module).should_receive('parse_pattern').with_args('').never()
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
-    flexmock(module).should_receive('parse_pattern').with_args('R /bar').and_return(Pattern('/bar'))
-    flexmock(module).should_receive('parse_pattern').with_args('R /baz').and_return(Pattern('/baz'))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        'R /bar', Pattern_style.SHELL).and_return(Pattern('/bar'))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        'R /baz', Pattern_style.SHELL).and_return(Pattern('/baz'))
 
     assert module.collect_patterns({'patterns_from': ['file1.txt', 'file2.txt']}) == (
         Pattern('/foo'),
@@ -89,6 +94,15 @@ def test_collect_patterns_reads_config_exclude_from_file():
     builtins.should_receive('open').with_args('file2.txt').and_return(
         io.StringIO('/bar\n# comment\n\n   \n/baz')
     )
+    flexmock(module).should_receive('parse_pattern').with_args(
+        '- /foo', default_style=Pattern_style.FNMATCH).and_return(Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
+    flexmock(module).should_receive('parse_pattern').with_args(
+        '- /bar', default_style=Pattern_style.FNMATCH).and_return(Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
+    flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
+    flexmock(module).should_receive('parse_pattern').with_args('').never()
+    flexmock(module).should_receive('parse_pattern').with_args('   ').never()
+    flexmock(module).should_receive('parse_pattern').with_args(
+        '- /baz', default_style=Pattern_style.FNMATCH).and_return(Pattern('/baz', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
 
     assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
         Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
