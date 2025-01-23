@@ -1,3 +1,8 @@
+1.9.8.dev0
+ * Expand the recent contributors documentation section to include ticket submitters—not just code
+   contributors—because there are multiple ways to contribute to the project! See:
+   https://torsion.org/borgmatic/#recent-contributors
+
 1.9.7
  * #855: Add a Sentry monitoring hook. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#sentry-hook

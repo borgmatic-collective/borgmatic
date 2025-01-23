@@ -25,27 +25,43 @@ def list_merged_pulls(url):
     return tuple(pull for pull in response.json() if pull.get('merged_at'))
 
 
-API_ENDPOINT_URLS = (
+def list_contributing_issues(url):
+    # labels = bug, design finalized, etc.
+    response = requests.get(f'{url}?labels=19,20,22,23,32,52,53,54', headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+
+    if not response.ok:
+        response.raise_for_status()
+
+    return tuple(response.json())
+
+
+PULLS_API_ENDPOINT_URLS = (
     'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/pulls',
     'https://api.github.com/repos/borgmatic-collective/borgmatic/pulls',
 )
+ISSUES_API_ENDPOINT_URL = 'https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/issues'
 RECENT_CONTRIBUTORS_CUTOFF_DAYS = 365
+
+
+def get_item_timestamp(item):
+    return item.get('merged_at') or item.get('created_at')
 
 
 def print_contributors():
     '''
     Display the recent contributors as a row of avatars in an HTML fragment.
     '''
-    pulls = tuple(itertools.chain.from_iterable(list_merged_pulls(url) for url in API_ENDPOINT_URLS))
+    pulls = tuple(itertools.chain.from_iterable(list_merged_pulls(url) for url in PULLS_API_ENDPOINT_URLS))
+    issues = list_contributing_issues(ISSUES_API_ENDPOINT_URL)
     seen_user_ids = set()
 
     print('<p>')
 
-    for pull in sorted(pulls, key=operator.itemgetter('merged_at'), reverse=True):
-        merged_at = pull.get('merged_at')
-        user = pull.get('user')
+    for item in sorted(pulls + issues, key=get_item_timestamp, reverse=True):
+        timestamp = get_item_timestamp(item)
+        user = item.get('user')
 
-        if not merged_at or not user:
+        if not timestamp or not user:
             continue
 
         user_id = user.get('id')
@@ -53,7 +69,7 @@ def print_contributors():
         if not user_id or user_id in seen_user_ids:
             continue
 
-        if datetime.datetime.fromisoformat(merged_at) < datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=RECENT_CONTRIBUTORS_CUTOFF_DAYS):
+        if datetime.datetime.fromisoformat(timestamp) < datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=RECENT_CONTRIBUTORS_CUTOFF_DAYS):
             continue
 
         seen_user_ids.add(user_id)
