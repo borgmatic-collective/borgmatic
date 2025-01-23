@@ -15,7 +15,7 @@ import borgmatic.hooks.dispatch
 logger = logging.getLogger(__name__)
 
 
-def parse_pattern(pattern_line):
+def parse_pattern(pattern_line, default_style=borgmatic.borg.pattern.Pattern_style.NONE):
     '''
     Given a Borg pattern as a string, parse it into a borgmatic.borg.pattern.Pattern instance and
     return it.
@@ -26,9 +26,10 @@ def parse_pattern(pattern_line):
         raise ValueError(f'Invalid pattern: {pattern_line}')
 
     try:
-        (pattern_style, path) = remainder.split(':', maxsplit=1)
+        (parsed_pattern_style, path) = remainder.split(':', maxsplit=1)
+        pattern_style = borgmatic.borg.pattern.Pattern_style(parsed_pattern_style)
     except ValueError:
-        pattern_style = ''
+        pattern_style = default_style
         path = remainder
 
     return borgmatic.borg.pattern.Pattern(
@@ -54,32 +55,26 @@ def collect_patterns(config):
                 for source_directory in config.get('source_directories', ())
             )
             + tuple(
-                parse_pattern(pattern_line.strip())
+                parse_pattern(pattern_line.strip(), borgmatic.borg.pattern.Pattern_style.SHELL)
                 for pattern_line in config.get('patterns', ())
                 if not pattern_line.lstrip().startswith('#')
                 if pattern_line.strip()
             )
             + tuple(
-                borgmatic.borg.pattern.Pattern(
-                    exclude_line.strip(),
-                    borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
-                )
+                parse_pattern(f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {
+                              exclude_line.strip()}', borgmatic.borg.pattern.Pattern_style.FNMATCH)
                 for exclude_line in config.get('exclude_patterns', ())
             )
             + tuple(
-                parse_pattern(pattern_line.strip())
+                parse_pattern(pattern_line.strip(), borgmatic.borg.pattern.Pattern_style.SHELL)
                 for filename in config.get('patterns_from', ())
                 for pattern_line in open(filename).readlines()
                 if not pattern_line.lstrip().startswith('#')
                 if pattern_line.strip()
             )
             + tuple(
-                borgmatic.borg.pattern.Pattern(
-                    exclude_line.strip(),
-                    borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
-                )
+                parse_pattern(f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {
+                    exclude_line.strip()}', borgmatic.borg.pattern.Pattern_style.FNMATCH)
                 for filename in config.get('exclude_from', ())
                 for exclude_line in open(filename).readlines()
                 if not exclude_line.lstrip().startswith('#')
