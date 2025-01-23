@@ -61,8 +61,10 @@ def collect_patterns(config):
                 if pattern_line.strip()
             )
             + tuple(
-                parse_pattern(f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {
-                              exclude_line.strip()}', borgmatic.borg.pattern.Pattern_style.FNMATCH)
+                parse_pattern(
+                    f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {exclude_line.strip()}',
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                )
                 for exclude_line in config.get('exclude_patterns', ())
             )
             + tuple(
@@ -73,8 +75,10 @@ def collect_patterns(config):
                 if pattern_line.strip()
             )
             + tuple(
-                parse_pattern(f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {
-                    exclude_line.strip()}', borgmatic.borg.pattern.Pattern_style.FNMATCH)
+                parse_pattern(
+                    f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {exclude_line.strip()}',
+                    borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                )
                 for filename in config.get('exclude_from', ())
                 for exclude_line in open(filename).readlines()
                 if not exclude_line.lstrip().startswith('#')
