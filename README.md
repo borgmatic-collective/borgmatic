@@ -165,4 +165,8 @@ info on cloning source code, running tests, etc.
 
 ### Recent contributors
 
+Thanks to all borgmatic contributors! There are multiple ways to contribute to
+this project, so the following includes those who have fixed bugs, contributed
+features, *or* filed tickets.
+
 {% include borgmatic/contributors.html %}
