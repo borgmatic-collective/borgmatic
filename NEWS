@@ -1,4 +1,4 @@
-1.9.7.dev0
+1.9.7
  * #855: Add a Sentry monitoring hook. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#sentry-hook
  * #968: Fix for a "spot" check error when a filename in the most recent archive contains a newline.
