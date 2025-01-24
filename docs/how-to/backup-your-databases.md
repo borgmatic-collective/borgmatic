@@ -135,6 +135,9 @@ temporary file storage, probing the following locations (in order) to find it:
     Hard-coded `/tmp`. <span class="minilink minilink-addedin">Prior to
     version 1.9.2</span>This was instead hard-coded to `/run/user/$UID`.
 
+You can see the runtime directory path that borgmatic selects by running with
+`--verbosity 2` and looking for "Using runtime directory" in the output.
+
 Regardless of the runtime directory selected, borgmatic stores its files
 within a `borgmatic` subdirectory of the runtime directory. Additionally, in
 the case of `TMPDIR`, `TEMP`, and the hard-coded `/tmp`, borgmatic creates a
@@ -260,17 +263,18 @@ hooks:
 example, you'd also need to set the `pg_restore_command` and `psql_command`
 options. If you choose to use the `pg_dump` command within the container
 though, note that it will output the database dump to a file inside the
-container. So you'll have to mount the `.borgmatic` folder from your host's
-home folder into the container using the same directory structure.
+container. So you'll have to mount the [runtime directory](#runtime-directory)
+from your host into the container using the same directory structure.
 
-See the following Docker compose file an as example:
+For example, with Docker Compose and a runtime directory located at
+`/run/user/1000`:
 
 ```yaml
 services:
   db:
     image: postgres
     volumes:
-      - /home/USERNAME/.borgmatic:/home/USERNAME/.borgmatic
+      - /run/user/1000:/run/user/1000
 ```
 
 Similar command override options are available for (some of) the other
@@ -547,7 +551,7 @@ extraction destination path. For example, if you're extracting to `/tmp`, then
 the dump will be in `/tmp/borgmatic/`.
 
 <span class="minilink minilink-addedin">Prior to version 1.9.0</span> borgmatic
-extracts the dump file into the *`username`*`/.borgmatic/` directory within the
+extracted the dump file into the *`username`*`/.borgmatic/` directory within the
 extraction destination path, where *`username`* is the user that created the
 backup. For example, if you created the backup with the `root` user and you're
 extracting to `/tmp`, then the dump will be in `/tmp/root/.borgmatic`.
