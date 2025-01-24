@@ -945,6 +945,76 @@ properties:
         description: |
             Support for the "borgmatic bootstrap" action, used to extract
             borgmatic configuration files from a backup archive.
+    influxdb_databases:
+        type: array
+        items:
+            type: object
+            required:
+                - token
+            additionalProperties: false
+            properties:
+                token:
+                    type: string
+                    description: |
+                        Token to authenticate request. Required to use InfluxDB.
+                hostname:
+                    type: string
+                    description: |
+                        HTTP address of InfluxDB.
+                    default: http://127.0.0.1:8086
+                    example: https://example.com:8086
+                org_id:
+                    type: number
+                    description: |
+                        The ID of the organization.
+                org_name:
+                    type: string
+                    description: |
+                        The name of the organization.
+                bucket_name:
+                    type: string
+                    description: |
+                        The name of the bucket to backup.
+                bucket_id:
+                    type: number
+                    description: |
+                        The ID of the bucket to backup.
+                configs_path:
+                    type: string
+                    description: |
+                        Path to the influx CLI configurations.
+                active_config:
+                    type: string
+                    description: |
+                        Config name to use for command.
+                new_bucket:
+                    type: string
+                    description: |
+                        New name to use for the restored bucket.
+                new_org:
+                    type: string
+                    description: |
+                        New name to use for the restored organization.
+                skip_verify:
+                    type: boolean
+                    description: |
+                        Skip TLS certificate chain and host name verification.
+                    default: false
+                http_debug:
+                    type: boolean
+                    description: |
+                        Enable debug logging for HTTP requests.
+                    default: false
+                full:
+                    type: boolean
+                    description: |
+                        Fully restore and replace all data on server.
+                    default: false
+                compression:
+                    type: string
+                    description: |
+                        Compression to use for local backup files, either 'none' or 'gzip' (default: gzip).
+                    default: gzip
     postgresql_databases:
         type: array
         items:
