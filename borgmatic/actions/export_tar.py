@@ -23,7 +23,7 @@ def run_export_tar(
         repository, export_tar_arguments.repository
     ):
         logger.info(
-            f'{repository["path"]}: Exporting archive {export_tar_arguments.archive} as tar file'
+            f'Exporting archive {export_tar_arguments.archive} as tar file'
         )
         borgmatic.borg.export_tar.export_tar_archive(
             global_arguments.dry_run,

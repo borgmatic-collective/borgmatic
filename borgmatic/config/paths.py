@@ -76,14 +76,13 @@ class Runtime_directory:
     automatically gets cleaned up as necessary.
     '''
 
-    def __init__(self, config, log_prefix):
+    def __init__(self, config):
         '''
-        Given a configuration dict and a log prefix, determine the borgmatic runtime directory,
-        creating a secure, temporary directory within it if necessary. Defaults to
-        $XDG_RUNTIME_DIR/./borgmatic or $RUNTIME_DIRECTORY/./borgmatic or
-        $TMPDIR/borgmatic-[random]/./borgmatic or $TEMP/borgmatic-[random]/./borgmatic or
-        /tmp/borgmatic-[random]/./borgmatic where "[random]" is a randomly generated string intended
-        to avoid path collisions.
+        Given a configuration dict determine the borgmatic runtime directory, creating a secure,
+        temporary directory within it if necessary. Defaults to $XDG_RUNTIME_DIR/./borgmatic or
+        $RUNTIME_DIRECTORY/./borgmatic or $TMPDIR/borgmatic-[random]/./borgmatic or
+        $TEMP/borgmatic-[random]/./borgmatic or /tmp/borgmatic-[random]/./borgmatic where "[random]"
+        is a randomly generated string intended to avoid path collisions.
 
         If XDG_RUNTIME_DIR or RUNTIME_DIRECTORY is set and already ends in "/borgmatic", then don't
         tack on a second "/borgmatic" path component.
@@ -127,7 +126,7 @@ class Runtime_directory:
         )
         os.makedirs(self.runtime_path, mode=0o700, exist_ok=True)
 
-        logger.debug(f'{log_prefix}: Using runtime directory {os.path.normpath(self.runtime_path)}')
+        logger.debug(f'Using runtime directory {os.path.normpath(self.runtime_path)}')
 
     def __enter__(self):
         '''

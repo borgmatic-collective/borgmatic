@@ -7,13 +7,13 @@ from borgmatic.hooks import command as module
 
 
 def test_interpolate_context_passes_through_command_without_variable():
-    assert module.interpolate_context('test.yaml', 'pre-backup', 'ls', {'foo': 'bar'}) == 'ls'
+    assert module.interpolate_context('pre-backup', 'ls', {'foo': 'bar'}) == 'ls'
 
 
 def test_interpolate_context_passes_through_command_with_unknown_variable():
     command = 'ls {baz}'  # noqa: FS003
 
-    assert module.interpolate_context('test.yaml', 'pre-backup', command, {'foo': 'bar'}) == command
+    assert module.interpolate_context('pre-backup', command, {'foo': 'bar'}) == command
 
 
 def test_interpolate_context_interpolates_variables():
@@ -21,7 +21,7 @@ def test_interpolate_context_interpolates_variables():
     context = {'foo': 'bar', 'baz': 'quux'}
 
     assert (
-        module.interpolate_context('test.yaml', 'pre-backup', command, context) == 'ls barquux quux'
+        module.interpolate_context('pre-backup', command, context) == 'ls barquux quux'
     )
 
 
@@ -30,7 +30,7 @@ def test_interpolate_context_escapes_interpolated_variables():
     context = {'foo': 'bar', 'inject': 'hi; naughty-command'}
 
     assert (
-        module.interpolate_context('test.yaml', 'pre-backup', command, context)
+        module.interpolate_context('pre-backup', command, context)
         == "ls bar 'hi; naughty-command'"
     )
 
@@ -53,7 +53,7 @@ def test_make_environment_with_pyinstaller_and_LD_LIBRARY_PATH_ORIG_copies_it_in
 
 def test_execute_hook_invokes_each_command():
     flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda config_file, hook_description, command, context: command
+        lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
@@ -68,7 +68,7 @@ def test_execute_hook_invokes_each_command():
 
 def test_execute_hook_with_multiple_commands_invokes_each_command():
     flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda config_file, hook_description, command, context: command
+        lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
@@ -89,7 +89,7 @@ def test_execute_hook_with_multiple_commands_invokes_each_command():
 
 def test_execute_hook_with_umask_sets_that_umask():
     flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda config_file, hook_description, command, context: command
+        lambda hook_description, command, context: command
     )
     flexmock(module.os).should_receive('umask').with_args(0o77).and_return(0o22).once()
     flexmock(module.os).should_receive('umask').with_args(0o22).once()
@@ -106,7 +106,7 @@ def test_execute_hook_with_umask_sets_that_umask():
 
 def test_execute_hook_with_dry_run_skips_commands():
     flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda config_file, hook_description, command, context: command
+        lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
@@ -120,7 +120,7 @@ def test_execute_hook_with_empty_commands_does_not_raise():
 
 def test_execute_hook_on_error_logs_as_error():
     flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda config_file, hook_description, command, context: command
+        lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
@@ -136,14 +136,14 @@ def test_execute_hook_on_error_logs_as_error():
 def test_considered_soft_failure_treats_soft_fail_exit_code_as_soft_fail():
     error = subprocess.CalledProcessError(module.SOFT_FAIL_EXIT_CODE, 'try again')
 
-    assert module.considered_soft_failure('config.yaml', error)
+    assert module.considered_soft_failure(error)
 
 
 def test_considered_soft_failure_does_not_treat_other_exit_code_as_soft_fail():
     error = subprocess.CalledProcessError(1, 'error')
 
-    assert not module.considered_soft_failure('config.yaml', error)
+    assert not module.considered_soft_failure(error)
 
 
 def test_considered_soft_failure_does_not_treat_other_exception_type_as_soft_fail():
-    assert not module.considered_soft_failure('config.yaml', Exception())
+    assert not module.considered_soft_failure(Exception())

@@ -18,7 +18,7 @@ def run_transfer(
     Run the "transfer" action for the given repository.
     '''
     logger.info(
-        f'{repository.get("label", repository["path"])}: Transferring archives to repository'
+        'Transferring archives to repository'
     )
     borgmatic.borg.transfer.transfer_archives(
         global_arguments.dry_run,

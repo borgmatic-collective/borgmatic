@@ -21,12 +21,12 @@ def get_submodule_names(parent_module):  # pragma: no cover
     return tuple(module_info.name for module_info in pkgutil.iter_modules(parent_module.__path__))
 
 
-def call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs):
+def call_hook(function_name, config, hook_name, *args, **kwargs):
     '''
-    Given a configuration dict and a prefix to use in log entries, call the requested function of
-    the Python module corresponding to the given hook name. Supply that call with the configuration
-    for this hook (if any), the log prefix, and any given args and kwargs. Return the return value
-    of that call or None if the module in question is not a hook.
+    Given a configuration dict, call the requested function of the Python module corresponding to
+    the given hook name. Supply that call with the configuration for this hook (if any) and any
+    given args and kwargs. Return the return value of that call or None if the module in question is
+    not a hook.
 
     Raise ValueError if the hook name is unknown.
     Raise AttributeError if the function name is not found in the module.
@@ -54,17 +54,16 @@ def call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs):
     else:
         raise ValueError(f'Unknown hook name: {hook_name}')
 
-    logger.debug(f'{log_prefix}: Calling {hook_name} hook function {function_name}')
+    logger.debug(f'Calling {hook_name} hook function {function_name}')
 
-    return getattr(module, function_name)(hook_config, config, log_prefix, *args, **kwargs)
+    return getattr(module, function_name)(hook_config, config, *args, **kwargs)
 
 
-def call_hooks(function_name, config, log_prefix, hook_type, *args, **kwargs):
+def call_hooks(function_name, config, hook_type, *args, **kwargs):
     '''
-    Given a configuration dict and a prefix to use in log entries, call the requested function of
-    the Python module corresponding to each hook of the given hook type (either "data_source" or
-    "monitoring"). Supply each call with the configuration for that hook, the log prefix, and any
-    given args and kwargs.
+    Given a configuration dict, call the requested function of the Python module corresponding to
+    each hook of the given hook type (either "data_source" or "monitoring"). Supply each call with
+    the configuration for that hook, and any given args and kwargs.
 
     Collect any return values into a dict from module name to return value. Note that the module
     name is the name of the hook module itself, which might be different from the hook configuration
@@ -78,7 +77,7 @@ def call_hooks(function_name, config, log_prefix, hook_type, *args, **kwargs):
     Raise anything else that a called function raises. An error stops calls to subsequent functions.
     '''
     return {
-        hook_name: call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs)
+        hook_name: call_hook(function_name, config, hook_name, *args, **kwargs)
         for hook_name in get_submodule_names(
             importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
         )
@@ -86,18 +85,18 @@ def call_hooks(function_name, config, log_prefix, hook_type, *args, **kwargs):
     }
 
 
-def call_hooks_even_if_unconfigured(function_name, config, log_prefix, hook_type, *args, **kwargs):
+def call_hooks_even_if_unconfigured(function_name, config, hook_type, *args, **kwargs):
     '''
-    Given a configuration dict and a prefix to use in log entries, call the requested function of
-    the Python module corresponding to each hook of the given hook type (either "data_source" or
-    "monitoring"). Supply each call with the configuration for that hook, the log prefix, and any
-    given args and kwargs. Collect any return values into a dict from hook name to return value.
+    Given a configuration dict, call the requested function of the Python module corresponding to
+    each hook of the given hook type (either "data_source" or "monitoring"). Supply each call with
+    the configuration for that hook and any given args and kwargs. Collect any return values into a
+    dict from hook name to return value.
 
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that a called function raises. An error stops calls to subsequent functions.
     '''
     return {
-        hook_name: call_hook(function_name, config, log_prefix, hook_name, *args, **kwargs)
+        hook_name: call_hook(function_name, config, hook_name, *args, **kwargs)
         for hook_name in get_submodule_names(
             importlib.import_module(f'borgmatic.hooks.{hook_type.value}')
         )

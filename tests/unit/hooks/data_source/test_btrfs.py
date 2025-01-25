@@ -242,7 +242,6 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -300,7 +299,6 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -356,7 +354,6 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -397,7 +394,6 @@ def test_dump_data_sources_with_dry_run_skips_snapshot_and_patterns_update():
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -422,7 +418,6 @@ def test_dump_data_sources_without_matching_subvolumes_skips_snapshot_and_patter
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -485,7 +480,6 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
         module.dump_data_sources(
             hook_config=config['btrfs'],
             config=config,
-            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -595,7 +589,6 @@ def test_remove_data_source_dumps_deletes_snapshots():
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -613,7 +606,6 @@ def test_remove_data_source_dumps_without_hook_configuration_bails():
     module.remove_data_source_dumps(
         hook_config=None,
         config={'source_directories': '/mnt/subvolume'},
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -632,7 +624,6 @@ def test_remove_data_source_dumps_with_get_subvolumes_file_not_found_error_bails
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -653,7 +644,6 @@ def test_remove_data_source_dumps_with_get_subvolumes_called_process_error_bails
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -717,7 +707,6 @@ def test_remove_data_source_dumps_with_dry_run_skips_deletes():
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=True,
     )
@@ -736,7 +725,6 @@ def test_remove_data_source_dumps_without_subvolumes_skips_deletes():
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -780,7 +768,6 @@ def test_remove_data_source_without_snapshots_skips_deletes():
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -844,7 +831,6 @@ def test_remove_data_source_dumps_with_delete_snapshot_file_not_found_error_bail
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -910,7 +896,6 @@ def test_remove_data_source_dumps_with_delete_snapshot_called_process_error_bail
     module.remove_data_source_dumps(
         hook_config=config['btrfs'],
         config=config,
-        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )

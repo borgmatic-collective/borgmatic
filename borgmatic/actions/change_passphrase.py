@@ -25,7 +25,7 @@ def run_change_passphrase(
         )
     ):
         logger.info(
-            f'{repository.get("label", repository["path"])}: Changing repository passphrase'
+            'Changing repository passphrase'
         )
         borgmatic.borg.change_passphrase.change_passphrase(
             repository['path'],

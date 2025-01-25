@@ -71,10 +71,10 @@ def render_dump_metadata(dump):
     return metadata
 
 
-def get_configured_data_source(config, restore_dump, log_prefix):
+def get_configured_data_source(config, restore_dump):
     '''
     Search in the given configuration dict for dumps corresponding to the given dump to restore. If
-    there are multiple matches, error. Log using the given log prefix.
+    there are multiple matches, error.
 
     Return the found data source as a data source configuration dict or None if not found.
     '''
@@ -91,7 +91,6 @@ def get_configured_data_source(config, restore_dump, log_prefix):
             borgmatic.hooks.dispatch.call_hook(
                 function_name='get_default_port',
                 config=config,
-                log_prefix=log_prefix,
                 hook_name=hook_name,
             ),
         )
@@ -174,13 +173,12 @@ def restore_single_dump(
     )
 
     logger.info(
-        f'{repository.get("label", repository["path"])}: Restoring data source {dump_metadata}'
+        f'Restoring data source {dump_metadata}'
     )
 
     dump_patterns = borgmatic.hooks.dispatch.call_hooks(
         'make_data_source_dump_patterns',
         config,
-        repository['path'],
         borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
         borgmatic_runtime_directory,
         data_source['name'],
@@ -227,7 +225,6 @@ def restore_single_dump(
     borgmatic.hooks.dispatch.call_hook(
         function_name='restore_data_source_dump',
         config=config,
-        log_prefix=repository['path'],
         hook_name=hook_name,
         data_source=data_source,
         dry_run=global_arguments.dry_run,
@@ -319,7 +316,7 @@ def collect_dumps_from_archive(
             break
         else:
             logger.warning(
-                f'{repository}: Ignoring invalid data source dump path "{dump_path}" in archive {archive}'
+                f'Ignoring invalid data source dump path "{dump_path}" in archive {archive}'
             )
 
     return dumps_from_archive
@@ -444,16 +441,14 @@ def run_restore(
     ):
         return
 
-    log_prefix = repository.get('label', repository['path'])
-    logger.info(f'{log_prefix}: Restoring data sources from archive {restore_arguments.archive}')
+    logger.info(f'Restoring data sources from archive {restore_arguments.archive}')
 
     with borgmatic.config.paths.Runtime_directory(
-        config, log_prefix
+        config
     ) as borgmatic_runtime_directory:
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
-            repository['path'],
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
@@ -494,7 +489,6 @@ def run_restore(
             found_data_source = get_configured_data_source(
                 config,
                 restore_dump,
-                log_prefix=repository['path'],
             )
 
             # For a dump that wasn't found via an exact match in the configuration, try to fallback
@@ -503,7 +497,6 @@ def run_restore(
                 found_data_source = get_configured_data_source(
                     config,
                     Dump(restore_dump.hook_name, 'all', restore_dump.hostname, restore_dump.port),
-                    log_prefix=repository['path'],
                 )
 
                 if not found_data_source:
@@ -531,7 +524,6 @@ def run_restore(
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,
-            repository['path'],
             borgmatic.hooks.dispatch.Hook_type.DATA_SOURCE,
             borgmatic_runtime_directory,
             global_arguments.dry_run,
