@@ -205,8 +205,8 @@ properties:
         description: |
             Deprecated. Only used for locating database dumps and bootstrap
             metadata within backup archives created prior to deprecation.
-            Replaced by borgmatic_runtime_directory and
-            borgmatic_state_directory. Defaults to ~/.borgmatic
+            Replaced by user_runtime_directory and user_state_directory.
+            Defaults to ~/.borgmatic
         example: /tmp/borgmatic
     user_runtime_directory:
         type: string
