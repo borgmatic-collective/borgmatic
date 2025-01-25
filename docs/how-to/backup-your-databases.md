@@ -58,7 +58,7 @@ mariadb_databases:
 
 As part of each backup, borgmatic streams a database dump for each configured
 database directly to Borg, so it's included in the backup without consuming
-additional disk space. (The exceptions are the PostgreSQL/MongoDB "directory"
+additional disk space. (The exceptions are the PostgreSQL/MongoDB `directory`
 dump formats, which can't stream and therefore do consume temporary disk
 space. Additionally, prior to borgmatic 1.5.3, all database dumps consumed
 temporary disk space.)
@@ -261,10 +261,13 @@ hooks:
 
 ... where `my_pg_container` is the name of your database container. In this
 example, you'd also need to set the `pg_restore_command` and `psql_command`
-options. If you choose to use the `pg_dump` command within the container
-though, note that it will output the database dump to a file inside the
-container. So you'll have to mount the [runtime directory](#runtime-directory)
-from your host into the container using the same directory structure.
+options.
+
+If you choose to use the `pg_dump` command within the container, and you're
+using the `directory` format in particular, you'll also need to mount the
+[runtime directory](#runtime-directory) from your host into the container at the
+same path. Otherwise, the `directory` format dump will remain locked away inside
+the database container where Borg can't read it.
 
 For example, with Docker Compose and a runtime directory located at
 `/run/user/1000`:
