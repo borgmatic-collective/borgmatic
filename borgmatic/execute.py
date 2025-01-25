@@ -6,6 +6,8 @@ import select
 import subprocess
 import textwrap
 
+import borgmatic.logger
+
 logger = logging.getLogger(__name__)
 
 
@@ -309,13 +311,18 @@ def execute_command(
     if not run_to_completion:
         return process
 
-    log_outputs(
-        (process,),
-        (input_file, output_file),
-        output_log_level,
-        borg_local_path,
-        borg_exit_codes,
-    )
+    try:
+        original_log_prefix = borgmatic.logger.get_log_prefix()
+        borgmatic.logger.set_log_prefix(None)  # Log command output without any prefix.
+        log_outputs(
+            (process,),
+            (input_file, output_file),
+            output_log_level,
+            borg_local_path,
+            borg_exit_codes,
+        )
+    finally:
+        borgmatic.logger.set_log_prefix(original_log_prefix)
 
 
 def execute_command_and_capture_output(

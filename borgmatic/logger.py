@@ -186,6 +186,20 @@ def add_custom_log_levels():  # pragma: no cover
     add_logging_level('DISABLED', DISABLED)
 
 
+def get_log_prefix():
+    '''
+    Return the log prefix (as set with set_log_prefix()) for the first log handler. If there is no
+    such prefix, return None.
+    '''
+    for handler in logging.getLogger().handlers:
+        defaults = handler.formatter._style._defaults
+
+        if not defaults:
+            return None
+
+        return defaults.get('prefix').rstrip().rstrip(':')
+
+
 def set_log_prefix(prefix):
     '''
     Given a prefix string, set it onto the formatter defaults for every logging handler so that it
