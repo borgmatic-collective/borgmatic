@@ -17,14 +17,14 @@ def make_dump_path(base_directory):  # pragma: no cover
     return dump.make_data_source_dump_path(base_directory, 'sqlite_databases')
 
 
-def get_default_port(databases, config, log_prefix):  # pragma: no cover
+def get_default_port(databases, config):  # pragma: no cover
     return None  # SQLite doesn't use a port.
 
 
-def use_streaming(databases, config, log_prefix):
+def use_streaming(databases, config):
     '''
-    Given a sequence of SQLite database configuration dicts, a configuration dict (ignored), and a
-    log prefix (ignored), return whether streaming will be using during dumps.
+    Given a sequence of SQLite database configuration dicts, a configuration dict (ignored), return
+    whether streaming will be using during dumps.
     '''
     return any(databases)
 
@@ -32,7 +32,6 @@ def use_streaming(databases, config, log_prefix):
 def dump_data_sources(
     databases,
     config,
-    log_prefix,
     config_paths,
     borgmatic_runtime_directory,
     patterns,
@@ -41,7 +40,7 @@ def dump_data_sources(
     '''
     Dump the given SQLite databases to a named pipe. The databases are supplied as a sequence of
     configuration dicts, as per the configuration schema. Use the given borgmatic runtime directory
-    to construct the destination path and the given log prefix in any log entries.
+    to construct the destination path.
 
     Return a sequence of subprocess.Popen instances for the dump processes ready to spew to a named
     pipe. But if this is a dry run, then don't actually dump anything and return an empty sequence.
@@ -51,7 +50,7 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
     processes = []
 
-    logger.info(f'{log_prefix}: Dumping SQLite databases{dry_run_label}')
+    logger.info(f'Dumping SQLite databases{dry_run_label}')
 
     for database in databases:
         database_path = database['path']
@@ -60,7 +59,7 @@ def dump_data_sources(
             logger.warning('The "all" database name has no meaning for SQLite databases')
         if not os.path.exists(database_path):
             logger.warning(
-                f'{log_prefix}: No SQLite database at {database_path}; an empty database will be created and dumped'
+                f'No SQLite database at {database_path}; an empty database will be created and dumped'
             )
 
         dump_path = make_dump_path(borgmatic_runtime_directory)
@@ -68,7 +67,7 @@ def dump_data_sources(
 
         if os.path.exists(dump_filename):
             logger.warning(
-                f'{log_prefix}: Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
+                f'Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
             )
             continue
 
@@ -80,7 +79,7 @@ def dump_data_sources(
             shlex.quote(dump_filename),
         )
         logger.debug(
-            f'{log_prefix}: Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
+            f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
         )
         if dry_run:
             continue
@@ -99,25 +98,25 @@ def dump_data_sources(
 
 
 def remove_data_source_dumps(
-    databases, config, log_prefix, borgmatic_runtime_directory, dry_run
+    databases, config, borgmatic_runtime_directory, dry_run
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
-    borgmatic runtime directory to construct the destination path and the log prefix in any log
-    entries. If this is a dry run, then don't actually remove anything.
+    borgmatic runtime directory to construct the destination path. If this is a dry run, then don't
+    actually remove anything.
     '''
     dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'SQLite', log_prefix, dry_run
+        make_dump_path(borgmatic_runtime_directory), 'SQLite', dry_run
     )
 
 
 def make_data_source_dump_patterns(
-    databases, config, log_prefix, borgmatic_runtime_directory, name=None
+    databases, config, borgmatic_runtime_directory, name=None
 ):  # pragma: no cover
     '''
-    Given a sequence of configurations dicts, a configuration dict, a prefix to log with, the
-    borgmatic runtime directory, and a database name to match, return the corresponding glob
-    patterns to match the database dump in an archive.
+    Given a sequence of configurations dicts, a configuration dict, the borgmatic runtime directory,
+    and a database name to match, return the corresponding glob patterns to match the database dump
+    in an archive.
     '''
     borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
 
@@ -135,7 +134,6 @@ def make_data_source_dump_patterns(
 def restore_data_source_dump(
     hook_config,
     config,
-    log_prefix,
     data_source,
     dry_run,
     extract_process,
@@ -144,22 +142,22 @@ def restore_data_source_dump(
 ):
     '''
     Restore a database from the given extract stream. The database is supplied as a data source
-    configuration dict, but the given hook configuration is ignored. The given log prefix is used
-    for any log entries. If this is a dry run, then don't actually restore anything. Trigger the
-    given active extract process (an instance of subprocess.Popen) to produce output to consume.
+    configuration dict, but the given hook configuration is ignored. If this is a dry run, then
+    don't actually restore anything. Trigger the given active extract process (an instance of
+    subprocess.Popen) to produce output to consume.
     '''
     dry_run_label = ' (dry run; not actually restoring anything)' if dry_run else ''
     database_path = connection_params['restore_path'] or data_source.get(
         'restore_path', data_source.get('path')
     )
 
-    logger.debug(f'{log_prefix}: Restoring SQLite database at {database_path}{dry_run_label}')
+    logger.debug(f'Restoring SQLite database at {database_path}{dry_run_label}')
     if dry_run:
         return
 
     try:
         os.remove(database_path)
-        logger.warning(f'{log_prefix}: Removed existing SQLite database at {database_path}')
+        logger.warning(f'Removed existing SQLite database at {database_path}')
     except FileNotFoundError:  # pragma: no cover
         pass
 

@@ -23,7 +23,7 @@ def run_delete(
     if delete_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, delete_arguments.repository
     ):
-        logger.answer(f'{repository.get("label", repository["path"])}: Deleting archives')
+        logger.answer('Deleting archives')
 
         archive_name = (
             borgmatic.borg.repo_list.resolve_archive_name(

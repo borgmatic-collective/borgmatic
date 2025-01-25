@@ -88,8 +88,8 @@ class Multi_stream_handler(logging.Handler):
 
 
 class Console_no_color_formatter(logging.Formatter):
-    def format(self, record):  # pragma: no cover
-        return record.msg
+    def __init__(self, *args, **kwargs):
+        super(Console_no_color_formatter, self).__init__('{prefix}{message}', style='{', defaults={'prefix': ''}, *args, **kwargs)
 
 
 class Color(enum.Enum):
@@ -102,6 +102,9 @@ class Color(enum.Enum):
 
 
 class Console_color_formatter(logging.Formatter):
+    def __init__(self, *args, **kwargs):
+        super(Console_color_formatter, self).__init__('{prefix}{message}', style='{', defaults={'prefix': ''}, *args, **kwargs)
+
     def format(self, record):
         add_custom_log_levels()
 
@@ -118,7 +121,7 @@ class Console_color_formatter(logging.Formatter):
             .value
         )
 
-        return color_text(color, record.msg)
+        return color_text(color, super(Console_color_formatter, self).format(record))
 
 
 def ansi_escape_code(color):  # pragma: no cover
@@ -177,6 +180,16 @@ def add_custom_log_levels():  # pragma: no cover
     '''
     add_logging_level('ANSWER', ANSWER)
     add_logging_level('DISABLED', DISABLED)
+
+
+def set_log_prefix(prefix):
+    '''
+    Given a prefix string, set it onto the formatter defaults for every logging handler so that it
+    shows up in every subsequent logging message. For this to work, this relies on each logging
+    formatter to be initialized with "{prefix}" somewhere in its logging format.
+    '''
+    for handler in logging.getLogger().handlers:
+        handler.formatter._style._defaults = {'prefix': f'{prefix}: ' if prefix else ''}
 
 
 def configure_logging(
@@ -242,7 +255,7 @@ def configure_logging(
         if syslog_path:
             syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
             syslog_handler.setFormatter(
-                logging.Formatter('borgmatic: {levelname} {message}', style='{')  # noqa: FS003
+                logging.Formatter('borgmatic: {levelname} {prefix}{message}', style='{', defaults={'prefix': ''})  # noqa: FS003
             )
             syslog_handler.setLevel(syslog_log_level)
             handlers.append(syslog_handler)
@@ -251,7 +264,7 @@ def configure_logging(
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
             logging.Formatter(
-                log_file_format or '[{asctime}] {levelname}: {message}', style='{'  # noqa: FS003
+                log_file_format or '[{asctime}] {levelname}: {prefix}{message}', style='{', defaults={'prefix': ''}  # noqa: FS003
             )
         )
         file_handler.setLevel(log_file_log_level)

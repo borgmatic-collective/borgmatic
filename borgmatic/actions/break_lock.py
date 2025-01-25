@@ -22,7 +22,7 @@ def run_break_lock(
         repository, break_lock_arguments.repository
     ):
         logger.info(
-            f'{repository.get("label", repository["path"])}: Breaking repository and cache locks'
+            'Breaking repository and cache locks'
         )
         borgmatic.borg.break_lock.break_lock(
             repository['path'],

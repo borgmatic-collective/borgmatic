@@ -34,7 +34,7 @@ def run_extract(
         repository, extract_arguments.repository
     ):
         logger.info(
-            f'{repository.get("label", repository["path"])}: Extracting archive {extract_arguments.archive}'
+            f'Extracting archive {extract_arguments.archive}'
         )
         borgmatic.borg.extract.extract_archive(
             global_arguments.dry_run,

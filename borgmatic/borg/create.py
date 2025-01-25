@@ -20,13 +20,11 @@ from borgmatic.execute import (
 logger = logging.getLogger(__name__)
 
 
-def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patterns_file=None):
+def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=None):
     '''
     Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a named
     temporary file in the given borgmatic runtime directory and return the file object so it can
     continue to exist on disk as long as the caller needs it.
-
-    Use the given log prefix in any logging.
 
     If an optional open pattern file is given, append to it instead of making a new temporary file.
     Return None if no patterns are provided.
@@ -43,7 +41,7 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patte
         f'{pattern.type.value} {pattern.style.value}{":" if pattern.style.value else ""}{pattern.path}'
         for pattern in patterns
     )
-    logger.debug(f'{log_prefix}: Writing patterns to {patterns_file.name}:\n{patterns_output}')
+    logger.debug(f'Writing patterns to {patterns_file.name}:\n{patterns_output}')
 
     patterns_file.write(patterns_output)
     patterns_file.flush()
@@ -217,9 +215,7 @@ def make_base_create_command(
     if config.get('source_directories_must_exist', False):
         check_all_root_patterns_exist(patterns)
 
-    patterns_file = write_patterns_file(
-        patterns, borgmatic_runtime_directory, log_prefix=repository_path
-    )
+    patterns_file = write_patterns_file(patterns, borgmatic_runtime_directory)
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
     chunker_params = config.get('chunker_params', None)
@@ -334,7 +330,6 @@ def make_base_create_command(
                     for special_file_path in special_file_paths
                 ),
                 borgmatic_runtime_directory,
-                log_prefix=repository_path,
                 patterns_file=patterns_file,
             )
 

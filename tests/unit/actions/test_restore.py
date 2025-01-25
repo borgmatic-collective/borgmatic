@@ -194,7 +194,6 @@ def test_get_configured_data_source_matches_data_source_with_restore_dump():
             'postgresql_databases': [{'name': 'foo'}, {'name': 'bar'}],
         },
         restore_dump=module.Dump('postgresql_databases', 'bar'),
-        log_prefix='test',
     ) == {'name': 'bar'}
 
 
@@ -206,7 +205,6 @@ def test_get_configured_data_source_matches_nothing_when_nothing_configured():
         module.get_configured_data_source(
             config={},
             restore_dump=module.Dump('postgresql_databases', 'quux'),
-            log_prefix='test',
         )
         is None
     )
@@ -222,7 +220,6 @@ def test_get_configured_data_source_matches_nothing_when_restore_dump_does_not_m
                 'postgresql_databases': [{'name': 'foo'}],
             },
             restore_dump=module.Dump('postgresql_databases', 'quux'),
-            log_prefix='test',
         )
         is None
     )
@@ -250,7 +247,6 @@ def test_get_configured_data_source_with_multiple_matching_data_sources_errors()
                 ],
             },
             restore_dump=module.Dump('postgresql_databases', 'bar'),
-            log_prefix='test',
         )
 
 
@@ -291,7 +287,6 @@ def test_restore_single_dump_extracts_and_restores_single_file_dump():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
-        log_prefix=object,
         hook_name=object,
         data_source=object,
         dry_run=object,
@@ -334,7 +329,6 @@ def test_restore_single_dump_extracts_and_restores_directory_dump():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
-        log_prefix=object,
         hook_name=object,
         data_source=object,
         dry_run=object,
@@ -377,7 +371,6 @@ def test_restore_single_dump_with_directory_dump_error_cleans_up_temporary_direc
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
-        log_prefix=object,
         hook_name=object,
         data_source=object,
         dry_run=object,
@@ -419,7 +412,6 @@ def test_restore_single_dump_with_directory_dump_and_dry_run_skips_directory_mov
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').with_args(
         function_name='restore_data_source_dump',
         config=object,
-        log_prefix=object,
         hook_name=object,
         data_source=object,
         dry_run=object,
@@ -1064,17 +1056,14 @@ def test_run_restore_restores_data_source_configured_with_all_name():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-        log_prefix=object,
     ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='bar'),
-        log_prefix=object,
     ).and_return(None)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='all'),
-        log_prefix=object,
     ).and_return({'name': 'bar'})
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
@@ -1148,17 +1137,14 @@ def test_run_restore_skips_missing_data_source():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-        log_prefix=object,
     ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='bar'),
-        log_prefix=object,
     ).and_return(None)
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='all'),
-        log_prefix=object,
     ).and_return(None)
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
@@ -1232,12 +1218,10 @@ def test_run_restore_restores_data_sources_from_different_hooks():
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='postgresql_databases', data_source_name='foo'),
-        log_prefix=object,
     ).and_return({'name': 'foo'})
     flexmock(module).should_receive('get_configured_data_source').with_args(
         config=object,
         restore_dump=module.Dump(hook_name='mysql_databases', data_source_name='foo'),
-        log_prefix=object,
     ).and_return({'name': 'bar'})
     flexmock(module).should_receive('restore_single_dump').with_args(
         repository=object,
