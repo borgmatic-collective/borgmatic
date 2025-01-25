@@ -203,6 +203,7 @@ def test_use_streaming_true_for_any_non_directory_format_databases():
     assert module.use_streaming(
         databases=[{'format': 'stuff'}, {'format': 'directory'}, {}],
         config=flexmock(),
+        log_prefix=flexmock(),
     )
 
 
@@ -210,11 +211,12 @@ def test_use_streaming_false_for_all_directory_format_databases():
     assert not module.use_streaming(
         databases=[{'format': 'directory'}, {'format': 'directory'}],
         config=flexmock(),
+        log_prefix=flexmock(),
     )
 
 
 def test_use_streaming_false_for_no_databases():
-    assert not module.use_streaming(databases=[], config=flexmock())
+    assert not module.use_streaming(databases=[], config=flexmock(), log_prefix=flexmock())
 
 
 def test_dump_data_sources_runs_pg_dump_for_each_database():

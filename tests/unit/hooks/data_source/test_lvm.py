@@ -220,6 +220,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -245,6 +246,7 @@ def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -315,6 +317,7 @@ def test_dump_data_sources_uses_snapshot_size_for_snapshot():
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -395,6 +398,7 @@ def test_dump_data_sources_uses_custom_commands():
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -446,6 +450,7 @@ def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patte
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -513,6 +518,7 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -566,6 +572,7 @@ def test_dump_data_sources_with_missing_snapshot_errors():
         module.dump_data_sources(
             hook_config=config['lvm'],
             config=config,
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -721,6 +728,7 @@ def test_remove_data_source_dumps_unmounts_and_remove_snapshots():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -737,6 +745,7 @@ def test_remove_data_source_dumps_bails_for_missing_lvm_configuration():
     module.remove_data_source_dumps(
         hook_config=None,
         config={'source_directories': '/mnt/lvolume'},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -754,6 +763,7 @@ def test_remove_data_source_dumps_bails_for_missing_lsblk_command():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -773,6 +783,7 @@ def test_remove_data_source_dumps_bails_for_lsblk_command_error():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -817,6 +828,7 @@ def test_remove_data_source_dumps_with_missing_snapshot_directory_skips_unmount(
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -874,6 +886,7 @@ def test_remove_data_source_dumps_with_missing_snapshot_mount_path_skips_unmount
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -931,6 +944,7 @@ def test_remove_data_source_dumps_with_successful_mount_point_removal_skips_unmo
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -974,6 +988,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -1017,6 +1032,7 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -1060,6 +1076,7 @@ def test_remove_data_source_dumps_bails_for_missing_lvs_command():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -1105,6 +1122,7 @@ def test_remove_data_source_dumps_bails_for_lvs_command_error():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -1147,6 +1165,7 @@ def test_remove_data_source_with_dry_run_skips_snapshot_unmount_and_delete():
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
         config=config,
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=True,
     )

@@ -38,7 +38,7 @@ def run_compact(
     )
     if borgmatic.borg.feature.available(borgmatic.borg.feature.Feature.COMPACT, local_borg_version):
         logger.info(
-            f'Compacting segments{dry_run_label}'
+            f'{repository.get("label", repository["path"])}: Compacting segments{dry_run_label}'
         )
         borgmatic.borg.compact.compact_segments(
             global_arguments.dry_run,
@@ -54,9 +54,8 @@ def run_compact(
         )
     else:  # pragma: nocover
         logger.info(
-            'Skipping compact (only available/needed in Borg 1.2+)'
+            f'{repository.get("label", repository["path"])}: Skipping compact (only available/needed in Borg 1.2+)'
         )
-
     borgmatic.hooks.command.execute_hook(
         config.get('after_compact'),
         config.get('umask'),

@@ -1,6 +1,3 @@
-1.9.9.dev0
- * #635: Log the repository path or label on every relevant log message, not just some logs.
-
 1.9.8
  * #979: Fix root patterns so they don't have an invalid "sh:" prefix before getting passed to Borg.
  * Expand the recent contributors documentation section to include ticket submitters—not just code

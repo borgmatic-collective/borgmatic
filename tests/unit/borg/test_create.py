@@ -17,12 +17,13 @@ def test_write_patterns_file_writes_pattern_lines():
     module.write_patterns_file(
         [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.SHELL)],
         borgmatic_runtime_directory='/run/user/0',
+        log_prefix='test.yaml',
     )
 
 
 def test_write_patterns_file_with_empty_exclude_patterns_does_not_raise():
     module.write_patterns_file(
-        [], borgmatic_runtime_directory='/run/user/0'
+        [], borgmatic_runtime_directory='/run/user/0', log_prefix='test.yaml'
     )
 
 
@@ -35,6 +36,7 @@ def test_write_patterns_file_appends_to_existing():
     module.write_patterns_file(
         [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE)],
         borgmatic_runtime_directory='/run/user/0',
+        log_prefix='test.yaml',
         patterns_file=patterns_file,
     )
 

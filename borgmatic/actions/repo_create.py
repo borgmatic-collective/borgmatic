@@ -23,7 +23,7 @@ def run_repo_create(
     ):
         return
 
-    logger.info('Creating repository')
+    logger.info(f'{repository.get("label", repository["path"])}: Creating repository')
     borgmatic.borg.repo_create.create_repository(
         global_arguments.dry_run,
         repository['path'],

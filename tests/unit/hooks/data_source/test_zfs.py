@@ -154,6 +154,7 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
         module.dump_data_sources(
             hook_config={},
             config={'source_directories': '/mnt/dataset', 'zfs': {}},
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -176,6 +177,7 @@ def test_dump_data_sources_with_no_datasets_skips_snapshots():
         module.dump_data_sources(
             hook_config={},
             config={'patterns': flexmock(), 'zfs': {}},
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -225,6 +227,7 @@ def test_dump_data_sources_uses_custom_commands():
                 'patterns': flexmock(),
                 'zfs': hook_config,
             },
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -249,6 +252,7 @@ def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patter
         module.dump_data_sources(
             hook_config={},
             config={'patterns': ('R /mnt/dataset',), 'zfs': {}},
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -291,6 +295,7 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
         module.dump_data_sources(
             hook_config={},
             config={'patterns': ('R /mnt/dataset',), 'zfs': {}},
+            log_prefix='test',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=patterns,
@@ -333,6 +338,7 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
     module.remove_data_source_dumps(
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -360,6 +366,7 @@ def test_remove_data_source_dumps_use_custom_commands():
     module.remove_data_source_dumps(
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -374,6 +381,7 @@ def test_remove_data_source_dumps_bails_for_missing_hook_configuration():
     module.remove_data_source_dumps(
         hook_config=None,
         config={'source_directories': '/mnt/dataset'},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -389,6 +397,7 @@ def test_remove_data_source_dumps_bails_for_missing_zfs_command():
     module.remove_data_source_dumps(
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -406,6 +415,7 @@ def test_remove_data_source_dumps_bails_for_zfs_command_error():
     module.remove_data_source_dumps(
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -429,6 +439,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
     module.remove_data_source_dumps(
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -452,6 +463,7 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
     module.remove_data_source_dumps(
         hook_config=hook_config,
         config={'source_directories': '/mnt/dataset', 'zfs': hook_config},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -476,6 +488,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_directories_that_are_no
     module.remove_data_source_dumps(
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -505,6 +518,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
     module.remove_data_source_dumps(
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -534,6 +548,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
     module.remove_data_source_dumps(
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -556,6 +571,7 @@ def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
     module.remove_data_source_dumps(
         hook_config={},
         config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=True,
     )

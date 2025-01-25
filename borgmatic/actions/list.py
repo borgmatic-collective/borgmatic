@@ -27,9 +27,9 @@ def run_list(
     ):
         if not list_arguments.json:
             if list_arguments.find_paths:  # pragma: no cover
-                logger.answer('Searching archives')
+                logger.answer(f'{repository.get("label", repository["path"])}: Searching archives')
             elif not list_arguments.archive:  # pragma: no cover
-                logger.answer('Listing archives')
+                logger.answer(f'{repository.get("label", repository["path"])}: Listing archives')
 
         archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],

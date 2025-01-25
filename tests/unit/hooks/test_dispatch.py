@@ -6,7 +6,7 @@ from flexmock import flexmock
 from borgmatic.hooks import dispatch as module
 
 
-def hook_function(hook_config, config, thing, value):
+def hook_function(hook_config, config, log_prefix, thing, value):
     '''
     This test function gets mocked out below.
     '''

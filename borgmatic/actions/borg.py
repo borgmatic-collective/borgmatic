@@ -23,7 +23,7 @@ def run_borg(
         repository, borg_arguments.repository
     ):
         logger.info(
-            'Running arbitrary Borg command'
+            f'{repository.get("label", repository["path"])}: Running arbitrary Borg command'
         )
         archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],

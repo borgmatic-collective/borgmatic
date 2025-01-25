@@ -10,7 +10,7 @@ import borgmatic.config.paths
 logger = logging.getLogger(__name__)
 
 
-def use_streaming(hook_config, config):  # pragma: no cover
+def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
@@ -20,17 +20,18 @@ def use_streaming(hook_config, config):  # pragma: no cover
 def dump_data_sources(
     hook_config,
     config,
+    log_prefix,
     config_paths,
     borgmatic_runtime_directory,
     patterns,
     dry_run,
 ):
     '''
-    Given a bootstrap configuration dict, a configuration dict, the borgmatic configuration file
-    paths, the borgmatic runtime directory, the configured patterns, and whether this is a dry run,
-    create a borgmatic manifest file to store the paths of the configuration files used to create
-    the archive. But skip this if the bootstrap store_config_files option is False or if this is a
-    dry run.
+    Given a bootstrap configuration dict, a configuration dict, a log prefix, the borgmatic
+    configuration file paths, the borgmatic runtime directory, the configured patterns, and whether
+    this is a dry run, create a borgmatic manifest file to store the paths of the configuration
+    files used to create the archive. But skip this if the bootstrap store_config_files option is
+    False or if this is a dry run.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
     '''
@@ -63,11 +64,11 @@ def dump_data_sources(
     return []
 
 
-def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
     '''
-    Given a bootstrap configuration dict, a configuration dict, the borgmatic runtime directory, and
-    whether this is a dry run, then remove the manifest file created above. If this is a dry run,
-    then don't actually remove anything.
+    Given a bootstrap configuration dict, a configuration dict, a log prefix, the borgmatic runtime
+    directory, and whether this is a dry run, then remove the manifest file created above. If this
+    is a dry run, then don't actually remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
@@ -78,13 +79,13 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         'bootstrap',
     )
     logger.debug(
-        f'Looking for bootstrap manifest files to remove in {manifest_glob}{dry_run_label}'
+        f'{log_prefix}: Looking for bootstrap manifest files to remove in {manifest_glob}{dry_run_label}'
     )
 
     for manifest_directory in glob.glob(manifest_glob):
         manifest_file_path = os.path.join(manifest_directory, 'manifest.json')
         logger.debug(
-            f'Removing bootstrap manifest at {manifest_file_path}{dry_run_label}'
+            f'{log_prefix}: Removing bootstrap manifest at {manifest_file_path}{dry_run_label}'
         )
 
         if dry_run:
@@ -102,7 +103,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, borgmatic_runtime_directory, name=None
+    hook_config, config, log_prefix, borgmatic_runtime_directory, name=None
 ):  # pragma: no cover
     '''
     Restores are implemented via the separate, purpose-specific "bootstrap" action rather than the
@@ -114,6 +115,7 @@ def make_data_source_dump_patterns(
 def restore_data_source_dump(
     hook_config,
     config,
+    log_prefix,
     data_source,
     dry_run,
     extract_process,

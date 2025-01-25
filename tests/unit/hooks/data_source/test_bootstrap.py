@@ -24,6 +24,7 @@ def test_dump_data_sources_creates_manifest_file():
     module.dump_data_sources(
         hook_config=None,
         config={},
+        log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -39,6 +40,7 @@ def test_dump_data_sources_with_store_config_files_false_does_not_create_manifes
     module.dump_data_sources(
         hook_config=hook_config,
         config={'bootstrap': hook_config},
+        log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -53,6 +55,7 @@ def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
     module.dump_data_sources(
         hook_config=None,
         config={},
+        log_prefix='test',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -73,6 +76,7 @@ def test_remove_data_source_dumps_deletes_manifest_and_parent_directory():
     module.remove_data_source_dumps(
         hook_config=None,
         config={},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -89,6 +93,7 @@ def test_remove_data_source_dumps_with_dry_run_bails():
     module.remove_data_source_dumps(
         hook_config=None,
         config={},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=True,
     )
@@ -107,6 +112,7 @@ def test_remove_data_source_dumps_swallows_manifest_file_not_found_error():
     module.remove_data_source_dumps(
         hook_config=None,
         config={},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
@@ -127,6 +133,7 @@ def test_remove_data_source_dumps_swallows_manifest_parent_directory_not_found_e
     module.remove_data_source_dumps(
         hook_config=None,
         config={},
+        log_prefix='test',
         borgmatic_runtime_directory='/run/borgmatic',
         dry_run=False,
     )
