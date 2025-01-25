@@ -60,9 +60,7 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
     dry_run_label = ' (dry run; not actually running hooks)' if dry_run else ''
 
     context['configuration_filename'] = config_filename
-    commands = [
-        interpolate_context(description, command, context) for command in commands
-    ]
+    commands = [interpolate_context(description, command, context) for command in commands]
 
     if len(commands) == 1:
         logger.info(f'Running command for {description} hook{dry_run_label}')

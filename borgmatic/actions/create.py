@@ -286,9 +286,7 @@ def run_create(
     logger.info(f'Creating archive{dry_run_label}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    with borgmatic.config.paths.Runtime_directory(
-        config
-    ) as borgmatic_runtime_directory:
+    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,

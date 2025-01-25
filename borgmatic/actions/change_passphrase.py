@@ -24,9 +24,7 @@ def run_change_passphrase(
             repository, change_passphrase_arguments.repository
         )
     ):
-        logger.info(
-            'Changing repository passphrase'
-        )
+        logger.info('Changing repository passphrase')
         borgmatic.borg.change_passphrase.change_passphrase(
             repository['path'],
             config,

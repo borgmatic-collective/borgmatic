@@ -83,9 +83,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
 
     for manifest_directory in glob.glob(manifest_glob):
         manifest_file_path = os.path.join(manifest_directory, 'manifest.json')
-        logger.debug(
-            f'Removing bootstrap manifest at {manifest_file_path}{dry_run_label}'
-        )
+        logger.debug(f'Removing bootstrap manifest at {manifest_file_path}{dry_run_label}')
 
         if dry_run:
             continue

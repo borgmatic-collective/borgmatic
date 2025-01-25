@@ -9,9 +9,7 @@ from borgmatic.hooks.data_source import mariadb as module
 def test_database_names_to_dump_passes_through_name():
     extra_environment = flexmock()
 
-    names = module.database_names_to_dump(
-        {'name': 'foo'}, extra_environment, dry_run=False
-    )
+    names = module.database_names_to_dump({'name': 'foo'}, extra_environment, dry_run=False)
 
     assert names == ('foo',)
 
@@ -20,9 +18,7 @@ def test_database_names_to_dump_bails_for_dry_run():
     extra_environment = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
-    names = module.database_names_to_dump(
-        {'name': 'all'}, extra_environment, dry_run=True
-    )
+    names = module.database_names_to_dump({'name': 'all'}, extra_environment, dry_run=True)
 
     assert names == ()
 
@@ -34,16 +30,15 @@ def test_database_names_to_dump_queries_mariadb_for_database_names():
         extra_environment=extra_environment,
     ).and_return('foo\nbar\nmysql\n').once()
 
-    names = module.database_names_to_dump(
-        {'name': 'all'}, extra_environment, dry_run=False
-    )
+    names = module.database_names_to_dump({'name': 'all'}, extra_environment, dry_run=False)
 
     assert names == ('foo', 'bar')
 
 
 def test_use_streaming_true_for_any_databases():
     assert module.use_streaming(
-        databases=[flexmock(), flexmock()], config=flexmock(),
+        databases=[flexmock(), flexmock()],
+        config=flexmock(),
     )
 
 

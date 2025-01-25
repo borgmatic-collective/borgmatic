@@ -123,9 +123,7 @@ def remove_data_source_dumps(
     borgmatic_runtime_directory to construct the destination path. If this is a dry run, then don't
     actually remove anything.
     '''
-    dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'MongoDB', dry_run
-    )
+    dump.remove_data_source_dumps(make_dump_path(borgmatic_runtime_directory), 'MongoDB', dry_run)
 
 
 def make_data_source_dump_patterns(

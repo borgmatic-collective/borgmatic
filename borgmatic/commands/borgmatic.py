@@ -39,7 +39,13 @@ from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, validate
 from borgmatic.hooks import command, dispatch
 from borgmatic.hooks.monitoring import monitor
-from borgmatic.logger import DISABLED, add_custom_log_levels, configure_logging, should_do_markup, set_log_prefix
+from borgmatic.logger import (
+    DISABLED,
+    add_custom_log_levels,
+    configure_logging,
+    set_log_prefix,
+    should_do_markup,
+)
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -131,15 +137,11 @@ def run_configuration(config_filename, config, config_paths, arguments):
         try:
             while not repo_queue.empty():
                 repository, retry_num = repo_queue.get()
-                set_log_prefix(repository.get('label', repository['path'])) 
-                logger.debug(
-                    'Running actions for repository'
-                )
+                set_log_prefix(repository.get('label', repository['path']))
+                logger.debug('Running actions for repository')
                 timeout = retry_num * retry_wait
                 if timeout:
-                    logger.warning(
-                        f'Sleeping {timeout}s before next retry'
-                    )
+                    logger.warning(f'Sleeping {timeout}s before next retry')
                     time.sleep(timeout)
                 try:
                     yield from run_actions(
@@ -165,9 +167,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                                 log_command_error_output=True,
                             )
                         )
-                        logger.warning(
-                            f'Retrying... attempt {retry_num + 1}/{retries}'
-                        )
+                        logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
                         continue
 
                     if command.considered_soft_failure(error):
@@ -819,9 +819,11 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
 
     try:
         for config_filename, config in configs.items():
-            set_log_prefix(config_filename) 
+            set_log_prefix(config_filename)
             results = list(run_configuration(config_filename, config, config_paths, arguments))
-            error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
+            error_logs = tuple(
+                result for result in results if isinstance(result, logging.LogRecord)
+            )
 
             if error_logs:
                 yield from log_error_records('An error occurred')
@@ -837,7 +839,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 if results:
                     json_results.extend(results)
     finally:
-        set_log_prefix(None) 
+        set_log_prefix(None)
 
     if 'umount' in arguments:
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")

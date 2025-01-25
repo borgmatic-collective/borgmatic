@@ -101,9 +101,7 @@ def execute_dump_command(
         + ('--result-file', dump_filename)
     )
 
-    logger.debug(
-        f'Dumping MySQL database "{database_name}" to {dump_filename}{dry_run_label}'
-    )
+    logger.debug(f'Dumping MySQL database "{database_name}" to {dump_filename}{dry_run_label}')
     if dry_run:
         return None
 
@@ -154,9 +152,7 @@ def dump_data_sources(
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
         extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
-        dump_database_names = database_names_to_dump(
-            database, extra_environment, dry_run
-        )
+        dump_database_names = database_names_to_dump(database, extra_environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
@@ -208,9 +204,7 @@ def remove_data_source_dumps(
     borgmatic runtime directory to construct the destination path. If this is a dry run, then don't
     actually remove anything.
     '''
-    dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'MySQL', dry_run
-    )
+    dump.remove_data_source_dumps(make_dump_path(borgmatic_runtime_directory), 'MySQL', dry_run)
 
 
 def make_data_source_dump_patterns(

@@ -172,9 +172,7 @@ def restore_single_dump(
         Dump(hook_name, data_source['name'], data_source.get('hostname'), data_source.get('port'))
     )
 
-    logger.info(
-        f'Restoring data source {dump_metadata}'
-    )
+    logger.info(f'Restoring data source {dump_metadata}')
 
     dump_patterns = borgmatic.hooks.dispatch.call_hooks(
         'make_data_source_dump_patterns',
@@ -443,9 +441,7 @@ def run_restore(
 
     logger.info(f'Restoring data sources from archive {restore_arguments.archive}')
 
-    with borgmatic.config.paths.Runtime_directory(
-        config
-    ) as borgmatic_runtime_directory:
+    with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
         borgmatic.hooks.dispatch.call_hooks_even_if_unconfigured(
             'remove_data_source_dumps',
             config,

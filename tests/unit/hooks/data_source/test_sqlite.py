@@ -7,7 +7,8 @@ from borgmatic.hooks.data_source import sqlite as module
 
 def test_use_streaming_true_for_any_databases():
     assert module.use_streaming(
-        databases=[flexmock(), flexmock()], config=flexmock(),
+        databases=[flexmock(), flexmock()],
+        config=flexmock(),
     )
 
 

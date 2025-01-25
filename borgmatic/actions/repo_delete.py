@@ -21,8 +21,7 @@ def run_repo_delete(
         repository, repo_delete_arguments.repository
     ):
         logger.answer(
-            'Deleting repository'
-            + (' cache' if repo_delete_arguments.cache_only else '')
+            'Deleting repository' + (' cache' if repo_delete_arguments.cache_only else '')
         )
 
         borgmatic.borg.repo_delete.delete_repository(

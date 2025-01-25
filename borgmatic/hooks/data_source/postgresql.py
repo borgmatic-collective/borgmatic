@@ -137,9 +137,7 @@ def dump_data_sources(
     for database in databases:
         extra_environment = make_extra_environment(database)
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        dump_database_names = database_names_to_dump(
-            database, extra_environment, dry_run
-        )
+        dump_database_names = database_names_to_dump(database, extra_environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
@@ -350,9 +348,7 @@ def restore_data_source_dump(
         data_source, restore_connection_params=connection_params
     )
 
-    logger.debug(
-        f"Restoring PostgreSQL database {data_source['name']}{dry_run_label}"
-    )
+    logger.debug(f"Restoring PostgreSQL database {data_source['name']}{dry_run_label}")
     if dry_run:
         return
 

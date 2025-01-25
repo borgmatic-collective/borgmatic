@@ -762,9 +762,7 @@ def run_check(
         write_check_time(make_check_time_path(config, repository_id, 'extract'))
 
     if 'spot' in checks:
-        with borgmatic.config.paths.Runtime_directory(
-            config
-        ) as borgmatic_runtime_directory:
+        with borgmatic.config.paths.Runtime_directory(config) as borgmatic_runtime_directory:
             spot_check(
                 repository,
                 config,

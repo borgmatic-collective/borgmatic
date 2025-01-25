@@ -20,9 +20,7 @@ def test_interpolate_context_interpolates_variables():
     command = 'ls {foo}{baz} {baz}'  # noqa: FS003
     context = {'foo': 'bar', 'baz': 'quux'}
 
-    assert (
-        module.interpolate_context('pre-backup', command, context) == 'ls barquux quux'
-    )
+    assert module.interpolate_context('pre-backup', command, context) == 'ls barquux quux'
 
 
 def test_interpolate_context_escapes_interpolated_variables():
@@ -30,8 +28,7 @@ def test_interpolate_context_escapes_interpolated_variables():
     context = {'foo': 'bar', 'inject': 'hi; naughty-command'}
 
     assert (
-        module.interpolate_context('pre-backup', command, context)
-        == "ls bar 'hi; naughty-command'"
+        module.interpolate_context('pre-backup', command, context) == "ls bar 'hi; naughty-command'"
     )
 
 

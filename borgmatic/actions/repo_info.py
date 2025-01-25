@@ -25,9 +25,7 @@ def run_repo_info(
         repository, repo_info_arguments.repository
     ):
         if not repo_info_arguments.json:
-            logger.answer(
-                'Displaying repository summary information'
-            )
+            logger.answer('Displaying repository summary information')
 
         json_output = borgmatic.borg.repo_info.display_repository_info(
             repository['path'],

@@ -338,9 +338,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         ),
         'lvm_snapshots',
     )
-    logger.debug(
-        f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}'
-    )
+    logger.debug(f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}')
     umount_command = hook_config.get('umount_command', 'umount')
 
     for snapshots_directory in glob.glob(snapshots_glob):
@@ -364,9 +362,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                 if not os.path.isdir(snapshot_mount_path):
                     continue
 
-            logger.debug(
-                f'Unmounting LVM snapshot at {snapshot_mount_path}{dry_run_label}'
-            )
+            logger.debug(f'Unmounting LVM snapshot at {snapshot_mount_path}{dry_run_label}')
 
             if dry_run:
                 continue

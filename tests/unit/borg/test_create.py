@@ -21,9 +21,7 @@ def test_write_patterns_file_writes_pattern_lines():
 
 
 def test_write_patterns_file_with_empty_exclude_patterns_does_not_raise():
-    module.write_patterns_file(
-        [], borgmatic_runtime_directory='/run/user/0'
-    )
+    module.write_patterns_file([], borgmatic_runtime_directory='/run/user/0')
 
 
 def test_write_patterns_file_appends_to_existing():
