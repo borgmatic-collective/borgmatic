@@ -311,9 +311,7 @@ def execute_command(
     if not run_to_completion:
         return process
 
-    try:
-        original_log_prefix = borgmatic.logger.get_log_prefix()
-        borgmatic.logger.set_log_prefix(None)  # Log command output without any prefix.
+    with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
         log_outputs(
             (process,),
             (input_file, output_file),
@@ -321,8 +319,6 @@ def execute_command(
             borg_local_path,
             borg_exit_codes,
         )
-    finally:
-        borgmatic.logger.set_log_prefix(original_log_prefix)
 
 
 def execute_command_and_capture_output(

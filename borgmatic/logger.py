@@ -186,28 +186,52 @@ def add_custom_log_levels():  # pragma: no cover
     add_logging_level('DISABLED', DISABLED)
 
 
-def get_log_prefix():
+class Log_prefix:
     '''
-    Return the log prefix (as set with set_log_prefix()) for the first log handler. If there is no
-    such prefix, return None.
+    A Python context manager for setting a log prefix so that it shows up in every subsequent
+    logging message for the duration of the context manager. For this to work, it relies on each
+    logging formatter to be initialized with "{prefix}" somewhere in its logging format.
+
+    Example use as a context manager:
+
+        
+       with borgmatic.logger.Log_prefix('myprefix'):
+            do_something_that_logs()
+
+    For the scope of that "with" statement, any logs created are prefixed with "myprefix: ".
+    Afterwards, the prefix gets restored to whatever it was prior to the context manager.
     '''
-    for handler in logging.getLogger().handlers:
-        defaults = handler.formatter._style._defaults
+    def __init__(self, prefix):
+        '''
+        Given the desired log prefix, save it for use below. Set prefix to None to disable any
+        prefix from getting logged.
+        '''
+        self.prefix = prefix
+        self.original_prefix = None
 
-        if not defaults:
-            return None
+    def __enter__(self):
+        '''
+        Set the prefix onto the formatter defaults for every logging handler so that the prefix ends
+        up in every log message. But first, save off any original prefix so that it can be restored
+        below.
+        '''
+        try:
+            self.original_prefix = next(
+                handler.formatter._style._defaults.get('prefix').rstrip().rstrip(':')
+                for handler in logging.getLogger().handlers
+            )
+        except (StopIteration, AttributeError):
+            self.original_prefix = None
 
-        return defaults.get('prefix').rstrip().rstrip(':')
+        for handler in logging.getLogger().handlers:
+            handler.formatter._style._defaults = {'prefix': f'{self.prefix}: ' if self.prefix else ''}
 
-
-def set_log_prefix(prefix):
-    '''
-    Given a prefix string, set it onto the formatter defaults for every logging handler so that it
-    shows up in every subsequent logging message. For this to work, this relies on each logging
-    formatter to be initialized with "{prefix}" somewhere in its logging format.
-    '''
-    for handler in logging.getLogger().handlers:
-        handler.formatter._style._defaults = {'prefix': f'{prefix}: ' if prefix else ''}
+    def __exit__(self, exception, value, traceback):
+        '''
+        Restore any original prefix.
+        '''
+        for handler in logging.getLogger().handlers:
+            handler.formatter._style._defaults = {'prefix': f'{self.original_prefix}: ' if self.original_prefix else ''}
 
 
 def configure_logging(

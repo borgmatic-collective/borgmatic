@@ -41,9 +41,9 @@ from borgmatic.hooks import command, dispatch
 from borgmatic.hooks.monitoring import monitor
 from borgmatic.logger import (
     DISABLED,
+    Log_prefix,
     add_custom_log_levels,
     configure_logging,
-    set_log_prefix,
     should_do_markup,
 )
 from borgmatic.signals import configure_signals
@@ -134,10 +134,10 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 (repo, 0),
             )
 
-        try:
-            while not repo_queue.empty():
-                repository, retry_num = repo_queue.get()
-                set_log_prefix(repository.get('label', repository['path']))
+        while not repo_queue.empty():
+            repository, retry_num = repo_queue.get()
+
+            with Log_prefix(repository.get('label', repository['path'])):
                 logger.debug('Running actions for repository')
                 timeout = retry_num * retry_wait
                 if timeout:
@@ -179,8 +179,6 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     )
                     encountered_error = error
                     error_repository = repository['path']
-        finally:
-            set_log_prefix(config_filename)
 
     try:
         if monitoring_hooks_are_activated:
@@ -817,9 +815,8 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
     # Execute the actions corresponding to each configuration file.
     json_results = []
 
-    try:
-        for config_filename, config in configs.items():
-            set_log_prefix(config_filename)
+    for config_filename, config in configs.items():
+        with Log_prefix(config_filename):
             results = list(run_configuration(config_filename, config, config_paths, arguments))
             error_logs = tuple(
                 result for result in results if isinstance(result, logging.LogRecord)
@@ -838,8 +835,6 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 )
                 if results:
                     json_results.extend(results)
-    finally:
-        set_log_prefix(None)
 
     if 'umount' in arguments:
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
