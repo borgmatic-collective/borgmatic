@@ -298,8 +298,10 @@ def configure_logging(
             syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
             syslog_handler.setFormatter(
                 logging.Formatter(
-                    'borgmatic: {levelname} {prefix}{message}', style='{', defaults={'prefix': ''}
-                )  # noqa: FS003
+                    'borgmatic: {levelname} {prefix}{message}',  # noqa: FS003
+                    style='{',
+                    defaults={'prefix': ''},
+                )
             )
             syslog_handler.setLevel(syslog_log_level)
             handlers.append(syslog_handler)
@@ -308,9 +310,9 @@ def configure_logging(
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
             logging.Formatter(
-                log_file_format or '[{asctime}] {levelname}: {prefix}{message}',
+                log_file_format or '[{asctime}] {levelname}: {prefix}{message}',  # noqa: FS003
                 style='{',
-                defaults={'prefix': ''},  # noqa: FS003
+                defaults={'prefix': ''},
             )
         )
         file_handler.setLevel(log_file_log_level)

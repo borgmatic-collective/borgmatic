@@ -177,8 +177,9 @@ def test_multi_stream_handler_logs_to_handler_for_log_level():
 def test_console_color_formatter_format_includes_log_message():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
+    flexmock(module.logging.Formatter).should_receive('format')
     plain_message = 'uh oh'
-    record = flexmock(levelno=logging.CRITICAL, msg=plain_message)
+    record = flexmock(levelno=logging.CRITICAL)
 
     colored_message = module.Console_color_formatter().format(record)
 
@@ -409,7 +410,9 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
     flexmock(module.logging).should_receive('Formatter').with_args(
-        '{message}', style='{'  # noqa: FS003
+        '{message}',  # noqa: FS003
+        style='{',
+        defaults={'prefix': ''},
     ).once()
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
