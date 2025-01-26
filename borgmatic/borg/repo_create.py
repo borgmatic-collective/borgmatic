@@ -57,7 +57,7 @@ def create_repository(
                 f'Requested encryption mode "{encryption_mode}" does not match existing repository encryption mode "{repository_encryption_mode}"'
             )
 
-        logger.info(f'{repository_path}: Repository already exists. Skipping creation.')
+        logger.info('Repository already exists. Skipping creation.')
         return
     except subprocess.CalledProcessError as error:
         if error.returncode not in REPO_INFO_REPOSITORY_NOT_FOUND_EXIT_CODES:
@@ -91,7 +91,7 @@ def create_repository(
     )
 
     if dry_run:
-        logging.info(f'{repository_path}: Skipping repository creation (dry run)')
+        logging.info('Skipping repository creation (dry run)')
         return
 
     # Do not capture output here, so as to support interactive prompts.

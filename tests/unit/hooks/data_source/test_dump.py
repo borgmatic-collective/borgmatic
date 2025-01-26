@@ -48,21 +48,21 @@ def test_remove_data_source_dumps_removes_dump_path():
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.shutil).should_receive('rmtree').with_args('databases').once()
 
-    module.remove_data_source_dumps('databases', 'SuperDB', 'test.yaml', dry_run=False)
+    module.remove_data_source_dumps('databases', 'SuperDB', dry_run=False)
 
 
 def test_remove_data_source_dumps_with_dry_run_skips_removal():
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module.shutil).should_receive('rmtree').never()
 
-    module.remove_data_source_dumps('databases', 'SuperDB', 'test.yaml', dry_run=True)
+    module.remove_data_source_dumps('databases', 'SuperDB', dry_run=True)
 
 
 def test_remove_data_source_dumps_without_dump_path_present_skips_removal():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.shutil).should_receive('rmtree').never()
 
-    module.remove_data_source_dumps('databases', 'SuperDB', 'test.yaml', dry_run=False)
+    module.remove_data_source_dumps('databases', 'SuperDB', dry_run=False)
 
 
 def test_convert_glob_patterns_to_borg_pattern_makes_multipart_regular_expression():

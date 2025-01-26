@@ -41,7 +41,7 @@ def change_passphrase(
     )
 
     if global_arguments.dry_run:
-        logger.info(f'{repository_path}: Skipping change password (dry run)')
+        logger.info('Skipping change password (dry run)')
         return
 
     # If the original passphrase is set programmatically, then Borg won't prompt for a new one! So

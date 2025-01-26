@@ -161,7 +161,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                         )
                         tuple(  # Consume the generator so as to trigger logging.
                             log_error_records(
-                                f'{repository.get("label", repository["path"])}: Error running actions for repository',
+                                'Error running actions for repository',
                                 error,
                                 levelno=logging.WARNING,
                                 log_command_error_output=True,
@@ -194,7 +194,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
     except (OSError, CalledProcessError) as error:
         if not command.considered_soft_failure(error):
             encountered_error = error
-            yield from log_error_records(f'{repository["path"]}: Error pinging monitor', error)
+            yield from log_error_records('Error pinging monitor', error)
 
     if not encountered_error:
         try:

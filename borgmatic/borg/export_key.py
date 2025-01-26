@@ -60,7 +60,7 @@ def export_key(
     )
 
     if global_arguments.dry_run:
-        logger.info(f'{repository_path}: Skipping key export (dry run)')
+        logger.info('Skipping key export (dry run)')
         return
 
     execute_command(

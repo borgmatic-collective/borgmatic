@@ -27,10 +27,10 @@ def test_call_hook_invokes_module_function_with_arguments_and_returns_value():
         'borgmatic.hooks.monitoring.super_hook'
     ).and_return(test_module)
     flexmock(test_module).should_receive('hook_function').with_args(
-        config['super_hook'], config, 'prefix', 55, value=66
+        config['super_hook'], config, 55, value=66
     ).and_return(expected_return_value).once()
 
-    return_value = module.call_hook('hook_function', config, 'prefix', 'super_hook', 55, value=66)
+    return_value = module.call_hook('hook_function', config, 'super_hook', 55, value=66)
 
     assert return_value == expected_return_value
 
@@ -49,10 +49,10 @@ def test_call_hook_probes_config_with_databases_suffix():
         'borgmatic.hooks.monitoring.super_hook'
     ).and_return(test_module)
     flexmock(test_module).should_receive('hook_function').with_args(
-        config['super_hook_databases'], config, 'prefix', 55, value=66
+        config['super_hook_databases'], config, 55, value=66
     ).and_return(expected_return_value).once()
 
-    return_value = module.call_hook('hook_function', config, 'prefix', 'super_hook', 55, value=66)
+    return_value = module.call_hook('hook_function', config, 'super_hook', 55, value=66)
 
     assert return_value == expected_return_value
 
@@ -71,11 +71,11 @@ def test_call_hook_strips_databases_suffix_from_hook_name():
         'borgmatic.hooks.monitoring.super_hook'
     ).and_return(test_module)
     flexmock(test_module).should_receive('hook_function').with_args(
-        config['super_hook_databases'], config, 'prefix', 55, value=66
+        config['super_hook_databases'], config, 55, value=66
     ).and_return(expected_return_value).once()
 
     return_value = module.call_hook(
-        'hook_function', config, 'prefix', 'super_hook_databases', 55, value=66
+        'hook_function', config, 'super_hook_databases', 55, value=66
     )
 
     assert return_value == expected_return_value
@@ -95,10 +95,10 @@ def test_call_hook_without_hook_config_invokes_module_function_with_arguments_an
         'borgmatic.hooks.monitoring.super_hook'
     ).and_return(test_module)
     flexmock(test_module).should_receive('hook_function').with_args(
-        None, config, 'prefix', 55, value=66
+        None, config, 55, value=66
     ).and_return(expected_return_value).once()
 
-    return_value = module.call_hook('hook_function', config, 'prefix', 'super_hook', 55, value=66)
+    return_value = module.call_hook('hook_function', config, 'super_hook', 55, value=66)
 
     assert return_value == expected_return_value
 
@@ -118,7 +118,7 @@ def test_call_hook_without_corresponding_module_raises():
     flexmock(test_module).should_receive('hook_function').never()
 
     with pytest.raises(ValueError):
-        module.call_hook('hook_function', config, 'prefix', 'super_hook', 55, value=66)
+        module.call_hook('hook_function', config, 'super_hook', 55, value=66)
 
 
 def test_call_hook_skips_non_hook_modules():
@@ -134,7 +134,7 @@ def test_call_hook_skips_non_hook_modules():
         'borgmatic.hooks.monitoring.not_a_hook'
     ).and_return(not_a_hook_module)
 
-    return_value = module.call_hook('hook_function', config, 'prefix', 'not_a_hook', 55, value=66)
+    return_value = module.call_hook('hook_function', config, 'not_a_hook', 55, value=66)
 
     assert return_value is None
 
@@ -152,7 +152,7 @@ def test_call_hooks_calls_each_hook_and_collects_return_values():
         expected_return_values['super_hook']
     ).and_return(expected_return_values['other_hook'])
 
-    return_values = module.call_hooks('do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55)
+    return_values = module.call_hooks('do_stuff', config, module.Hook_type.MONITORING, 55)
 
     assert return_values == expected_return_values
 
@@ -168,7 +168,7 @@ def test_call_hooks_calls_skips_return_values_for_unconfigured_hooks():
     ).and_return(['super_hook', 'other_hook'])
     flexmock(module).should_receive('call_hook').and_return(expected_return_values['super_hook'])
 
-    return_values = module.call_hooks('do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55)
+    return_values = module.call_hooks('do_stuff', config, module.Hook_type.MONITORING, 55)
 
     assert return_values == expected_return_values
 
@@ -186,7 +186,7 @@ def test_call_hooks_calls_treats_null_hook_as_optionless():
         expected_return_values['super_hook']
     ).and_return(expected_return_values['other_hook'])
 
-    return_values = module.call_hooks('do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55)
+    return_values = module.call_hooks('do_stuff', config, module.Hook_type.MONITORING, 55)
 
     assert return_values == expected_return_values
 
@@ -204,7 +204,7 @@ def test_call_hooks_calls_looks_up_databases_suffix_in_config():
         expected_return_values['super_hook']
     ).and_return(expected_return_values['other_hook'])
 
-    return_values = module.call_hooks('do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55)
+    return_values = module.call_hooks('do_stuff', config, module.Hook_type.MONITORING, 55)
 
     assert return_values == expected_return_values
 
@@ -223,7 +223,7 @@ def test_call_hooks_even_if_unconfigured_calls_each_hook_and_collects_return_val
     ).and_return(expected_return_values['other_hook'])
 
     return_values = module.call_hooks_even_if_unconfigured(
-        'do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55
+        'do_stuff', config, module.Hook_type.MONITORING, 55
     )
 
     assert return_values == expected_return_values
@@ -243,7 +243,7 @@ def test_call_hooks_even_if_unconfigured_calls_each_hook_configured_or_not_and_c
     ).and_return(expected_return_values['other_hook'])
 
     return_values = module.call_hooks_even_if_unconfigured(
-        'do_stuff', config, 'prefix', module.Hook_type.MONITORING, 55
+        'do_stuff', config, module.Hook_type.MONITORING, 55
     )
 
     assert return_values == expected_return_values

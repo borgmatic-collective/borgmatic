@@ -68,7 +68,6 @@ def test_dump_data_sources_dumps_each_database():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -98,7 +97,6 @@ def test_dump_data_sources_dumps_with_password():
     assert module.dump_data_sources(
         [database],
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -123,7 +121,6 @@ def test_dump_data_sources_dumps_all_databases_at_once():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -151,7 +148,6 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -175,7 +171,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
         extra_environment=None,
     ).and_return(('foo\nbar')).once()
 
-    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+    assert module.database_names_to_dump(database, None, '') == ('foo', 'bar')
 
 
 def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
@@ -196,7 +192,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
         ),
     ).and_return(('foo\nbar')).once()
 
-    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+    assert module.database_names_to_dump(database, None, '') == ('foo', 'bar')
 
 
 def test_execute_dump_command_runs_mariadb_dump():
@@ -455,7 +451,6 @@ def test_dump_data_sources_errors_for_missing_all_databases():
         assert module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -475,7 +470,6 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -500,7 +494,6 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
@@ -529,7 +522,6 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -560,7 +552,6 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -598,7 +589,6 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -627,7 +617,6 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -677,7 +666,6 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -729,7 +717,6 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -751,7 +738,6 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),

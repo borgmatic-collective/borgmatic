@@ -31,7 +31,6 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -62,7 +61,6 @@ def test_dump_data_sources_dumps_each_database():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -100,7 +98,6 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -129,7 +126,6 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -160,7 +156,6 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -185,7 +180,6 @@ def test_dump_data_sources_does_not_dump_if_dry_run():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -214,7 +208,6 @@ def test_restore_data_source_dump_restores_database():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -244,7 +237,6 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'database'},
         dry_run=False,
         extract_process=extract_process,
@@ -274,7 +266,6 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -293,7 +284,6 @@ def test_restore_data_source_dump_does_not_restore_database_if_dry_run():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'database'},
         dry_run=True,
         extract_process=extract_process,

@@ -295,12 +295,12 @@ def make_base_create_command(
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not config.get('read_special'):
         logger.warning(
-            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+            'Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
         borg_environment = environment.make_environment(config)
         working_directory = borgmatic.config.paths.get_working_directory(config)
 
-        logger.debug(f'{repository_path}: Collecting special file paths')
+        logger.debug('Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             dry_run,
             create_flags + create_positional_arguments,
@@ -318,7 +318,7 @@ def make_base_create_command(
                 placeholder=' ...',
             )
             logger.warning(
-                f'{repository_path}: Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
+                f'Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
             )
             patterns_file = write_patterns_file(
                 tuple(
