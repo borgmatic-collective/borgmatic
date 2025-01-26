@@ -16,7 +16,7 @@ def initialize_monitor(
 
 
 DATA_SOURCE_NAME_URL_PATTERN = re.compile(
-    '^(?P<protocol>.*)://(?P<username>.*)@(?P<hostname>.*)/(?P<project_id>.*)$'
+    '^(?P<protocol>.+)://(?P<username>.+)@(?P<hostname>.+)/(?P<project_id>.+)$'
 )
 
 
