@@ -88,7 +88,7 @@ class Multi_stream_handler(logging.Handler):
 
 
 class Console_no_color_formatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # pragma: no cover
         super(Console_no_color_formatter, self).__init__(
             '{prefix}{message}', style='{', defaults={'prefix': ''}, *args, **kwargs
         )
@@ -188,7 +188,8 @@ def add_custom_log_levels():  # pragma: no cover
 
 def get_log_prefix():
     '''
-    Return the current log prefix from the defaults for the formatter on the first logging handler.
+    Return the current log prefix from the defaults for the formatter on the first logging handler,
+    set by set_log_prefix(). Return None if no such prefix exists.
     '''
     try:
         return next(
@@ -219,13 +220,14 @@ class Log_prefix:
 
     Example use as a context manager:
 
-        
+
        with borgmatic.logger.Log_prefix('myprefix'):
             do_something_that_logs()
 
     For the scope of that "with" statement, any logs created are prefixed with "myprefix: ".
     Afterwards, the prefix gets restored to whatever it was prior to the context manager.
     '''
+
     def __init__(self, prefix):
         '''
         Given the desired log prefix, save it for use below. Set prefix to None to disable any

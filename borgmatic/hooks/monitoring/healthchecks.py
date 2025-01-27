@@ -55,9 +55,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
     if 'states' in hook_config and state.name.lower() not in hook_config['states']:
-        logger.info(
-            f'Skipping Healthchecks {state.name.lower()} ping due to configured states'
-        )
+        logger.info(f'Skipping Healthchecks {state.name.lower()} ping due to configured states')
         return
 
     ping_url_is_uuid = re.search(r'\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', ping_url)
@@ -68,9 +66,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if hook_config.get('create_slug'):
         if ping_url_is_uuid:
-            logger.warning(
-                'Healthchecks UUIDs do not support auto provisionning; ignoring'
-            )
+            logger.warning('Healthchecks UUIDs do not support auto provisionning; ignoring')
         else:
             ping_url = f'{ping_url}?create=1'
 

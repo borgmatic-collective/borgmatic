@@ -84,9 +84,7 @@ def test_runtime_directory_with_relative_config_option_errors():
     config = {'user_runtime_directory': 'run', 'borgmatic_source_directory': '/nope'}
 
     with pytest.raises(ValueError):
-        with module.Runtime_directory(
-            config
-        ) as borgmatic_runtime_directory:  # noqa: F841
+        with module.Runtime_directory(config) as borgmatic_runtime_directory:  # noqa: F841
             pass
 
 

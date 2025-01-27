@@ -74,9 +74,7 @@ def test_call_hook_strips_databases_suffix_from_hook_name():
         config['super_hook_databases'], config, 55, value=66
     ).and_return(expected_return_value).once()
 
-    return_value = module.call_hook(
-        'hook_function', config, 'super_hook_databases', 55, value=66
-    )
+    return_value = module.call_hook('hook_function', config, 'super_hook_databases', 55, value=66)
 
     assert return_value == expected_return_value
 

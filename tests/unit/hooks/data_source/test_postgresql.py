@@ -61,25 +61,19 @@ def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_individual_database_name_with_format():
     database = {'name': 'foo', 'format': 'custom'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_all_without_format():
     database = {'name': 'all'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
-        'all',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('all',)
 
 
 def test_database_names_to_dump_with_all_and_format_and_dry_run_bails():
@@ -166,9 +160,7 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
         'foo,test,\ntemplate0,test,blah'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
@@ -194,9 +186,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
         extra_environment=object,
     ).and_return('foo,text').once()
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_use_streaming_true_for_any_non_directory_format_databases():

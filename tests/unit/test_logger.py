@@ -228,6 +228,67 @@ def test_add_logging_level_skips_global_setting_if_already_set():
     module.add_logging_level('PLAID', 99)
 
 
+def test_get_log_prefix_gets_prefix_from_first_handler():
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[
+                flexmock(
+                    formatter=flexmock(
+                        _style=flexmock(_defaults=flexmock(get=lambda name: 'myprefix: '))
+                    )
+                ),
+                flexmock(),
+            ],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    assert module.get_log_prefix() == 'myprefix'
+
+
+def test_get_log_prefix_with_no_handlers_does_not_raise():
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    assert module.get_log_prefix() == None
+
+
+def test_get_log_prefix_with_no_formatters_does_not_raise():
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[
+                flexmock(),
+                flexmock(),
+            ],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    assert module.get_log_prefix() == None
+
+
+def test_get_log_prefix_with_no_prefix_does_not_raise():
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[
+                flexmock(
+                    formatter=flexmock(
+                        _style=flexmock(_defaults=flexmock(get=lambda name: None))
+                    )
+                ),
+                flexmock(),
+            ],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    assert module.get_log_prefix() == None
+
+
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
