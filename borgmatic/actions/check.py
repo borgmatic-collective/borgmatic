@@ -443,7 +443,7 @@ def collect_spot_check_archive_paths(
             config,
             local_borg_version,
             global_arguments,
-            path_format='{type} {path}{NL}',  # noqa: FS003
+            path_format='{type} {path}{NUL}',  # noqa: FS003
             local_path=local_path,
             remote_path=remote_path,
         )
@@ -540,7 +540,7 @@ def compare_spot_check_hashes(
                     local_borg_version,
                     global_arguments,
                     list_paths=source_sample_paths_subset,
-                    path_format='{xxh64} {path}{NL}',  # noqa: FS003
+                    path_format='{xxh64} {path}{NUL}',  # noqa: FS003
                     local_path=local_path,
                     remote_path=remote_path,
                 )

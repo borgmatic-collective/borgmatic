@@ -1,4 +1,5 @@
 1.9.9.dev0
+ * #981: Fix "spot" check file count delta error.
  * #982: Fix for borgmatic "exclude_patterns" and "exclude_from" recursing into excluded
    subdirectories.
 
