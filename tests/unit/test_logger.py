@@ -276,9 +276,7 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
         flexmock(
             handlers=[
                 flexmock(
-                    formatter=flexmock(
-                        _style=flexmock(_defaults=flexmock(get=lambda name: None))
-                    )
+                    formatter=flexmock(_style=flexmock(_defaults=flexmock(get=lambda name: None)))
                 ),
                 flexmock(),
             ],
@@ -287,6 +285,79 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
     )
 
     assert module.get_log_prefix() == None
+
+
+def test_set_log_prefix_updates_all_handlers():
+    styles = (
+        flexmock(_defaults=None),
+        flexmock(_defaults=None),
+    )
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[
+                flexmock(
+                    formatter=flexmock(
+                        _style=styles[0],
+                    )
+                ),
+                flexmock(
+                    formatter=flexmock(
+                        _style=styles[1],
+                    )
+                ),
+            ],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    module.set_log_prefix('myprefix')
+
+    for style in styles:
+        assert style._defaults == {'prefix': 'myprefix: '}
+
+
+def test_set_log_prefix_skips_handlers_without_a_formatter():
+    style = flexmock(_defaults=None)
+
+    flexmock(module.logging).should_receive('getLogger').and_return(
+        flexmock(
+            handlers=[
+                flexmock(
+                    formatter=None,
+                ),
+                flexmock(),
+                flexmock(
+                    formatter=flexmock(
+                        _style=style,
+                    )
+                ),
+            ],
+            removeHandler=lambda handler: None,
+        )
+    )
+
+    module.set_log_prefix('myprefix')
+
+    assert style._defaults == {'prefix': 'myprefix: '}
+
+
+def test_log_prefix_sets_prefix_and_then_restores_no_prefix_after():
+    flexmock(module).should_receive('get_log_prefix').and_return(None)
+    flexmock(module).should_receive('set_log_prefix').with_args('myprefix').once()
+    flexmock(module).should_receive('set_log_prefix').with_args(None).once()
+
+    with module.Log_prefix('myprefix'):
+        pass
+
+
+def test_log_prefix_sets_prefix_and_then_restores_original_prefix_after():
+    flexmock(module).should_receive('get_log_prefix').and_return('original')
+    flexmock(module).should_receive('set_log_prefix').with_args('myprefix').once()
+    flexmock(module).should_receive('set_log_prefix').with_args('original').once()
+
+    with module.Log_prefix('myprefix'):
+        pass
 
 
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():

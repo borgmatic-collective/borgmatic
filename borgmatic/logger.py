@@ -203,7 +203,7 @@ def get_log_prefix():
 def set_log_prefix(prefix):
     '''
     Given a log prefix as a string, set it into the defaults for the formatters on all logging
-    handlers.
+    handlers. Note that this overwrites any existing defaults.
     '''
     for handler in logging.getLogger().handlers:
         try:
