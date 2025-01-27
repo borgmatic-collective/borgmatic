@@ -29,15 +29,15 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     '''
     if state not in MONITOR_STATE_TO_CRONITOR:
         logger.debug(
-            f'{config_filename}: Ignoring unsupported monitoring {state.name.lower()} in Cronitor hook'
+            f'Ignoring unsupported monitoring {state.name.lower()} in Cronitor hook'
         )
         return
 
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
     ping_url = f"{hook_config['ping_url']}/{MONITOR_STATE_TO_CRONITOR[state]}"
 
-    logger.info(f'{config_filename}: Pinging Cronitor {state.name.lower()}{dry_run_label}')
-    logger.debug(f'{config_filename}: Using Cronitor ping URL {ping_url}')
+    logger.info(f'Pinging Cronitor {state.name.lower()}{dry_run_label}')
+    logger.debug(f'Using Cronitor ping URL {ping_url}')
 
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
@@ -46,11 +46,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
-            logger.warning(f'{config_filename}: Cronitor error: {error}')
+            logger.warning(f'Cronitor error: {error}')
 
 
 def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
+    ping_url_or_uuid, config, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.

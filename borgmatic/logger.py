@@ -186,6 +186,31 @@ def add_custom_log_levels():  # pragma: no cover
     add_logging_level('DISABLED', DISABLED)
 
 
+def get_log_prefix():
+    '''
+    Return the current log prefix from the defaults for the formatter on the first logging handler.
+    '''
+    try:
+        return next(
+            handler.formatter._style._defaults.get('prefix').rstrip().rstrip(':')
+            for handler in logging.getLogger().handlers
+        )
+    except (StopIteration, AttributeError):
+        return None
+
+
+def set_log_prefix(prefix):
+    '''
+    Given a log prefix as a string, set it into the defaults for the formatters on all logging
+    handlers.
+    '''
+    for handler in logging.getLogger().handlers:
+        try:
+            handler.formatter._style._defaults = {'prefix': f'{prefix}: ' if prefix else ''}
+        except AttributeError:
+            pass
+
+
 class Log_prefix:
     '''
     A Python context manager for setting a log prefix so that it shows up in every subsequent
@@ -215,23 +240,14 @@ class Log_prefix:
         up in every log message. But first, save off any original prefix so that it can be restored
         below.
         '''
-        try:
-            self.original_prefix = next(
-                handler.formatter._style._defaults.get('prefix').rstrip().rstrip(':')
-                for handler in logging.getLogger().handlers
-            )
-        except (StopIteration, AttributeError):
-            self.original_prefix = None
-
-        for handler in logging.getLogger().handlers:
-            handler.formatter._style._defaults = {'prefix': f'{self.prefix}: ' if self.prefix else ''}
+        self.original_prefix = get_log_prefix()
+        set_log_prefix(self.prefix)
 
     def __exit__(self, exception, value, traceback):
         '''
         Restore any original prefix.
         '''
-        for handler in logging.getLogger().handlers:
-            handler.formatter._style._defaults = {'prefix': f'{self.original_prefix}: ' if self.original_prefix else ''}
+        set_log_prefix(self.original_prefix)
 
 
 def configure_logging(

@@ -44,16 +44,16 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     value = state_config.get('value')
     headers = {'Content-Type': 'application/json-rpc'}
 
-    logger.info(f'{config_filename}: Updating Zabbix{dry_run_label}')
-    logger.debug(f'{config_filename}: Using Zabbix URL: {server}')
+    logger.info(f'Updating Zabbix{dry_run_label}')
+    logger.debug(f'Using Zabbix URL: {server}')
 
     if server is None:
-        logger.warning(f'{config_filename}: Server missing for Zabbix')
+        logger.warning('Server missing for Zabbix')
         return
 
     # Determine the Zabbix method used to store the value: itemid or host/key
     if itemid is not None:
-        logger.info(f'{config_filename}: Updating {itemid} on Zabbix')
+        logger.info(f'Updating {itemid} on Zabbix')
         data = {
             'jsonrpc': '2.0',
             'method': 'history.push',
@@ -62,7 +62,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         }
 
     elif (host and key) is not None:
-        logger.info(f'{config_filename}: Updating Host:{host} and Key:{key} on Zabbix')
+        logger.info(f'Updating Host:{host} and Key:{key} on Zabbix')
         data = {
             'jsonrpc': '2.0',
             'method': 'history.push',
@@ -71,23 +71,23 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         }
 
     elif host is not None:
-        logger.warning(f'{config_filename}: Key missing for Zabbix')
+        logger.warning('Key missing for Zabbix')
         return
 
     elif key is not None:
-        logger.warning(f'{config_filename}: Host missing for Zabbix.')
+        logger.warning('Host missing for Zabbix')
         return
     else:
-        logger.warning(f'{config_filename}: No zabbix itemid or host/key provided.')
+        logger.warning('No Zabbix itemid or host/key provided')
         return
 
     # Determine the authentication method: API key or username/password
     if api_key is not None:
-        logger.info(f'{config_filename}: Using API key auth for Zabbix')
+        logger.info('Using API key auth for Zabbix')
         headers['Authorization'] = 'Bearer ' + api_key
 
     elif (username and password) is not None:
-        logger.info(f'{config_filename}: Using user/pass auth with user {username} for Zabbix')
+        logger.info('Using user/pass auth with user {username} for Zabbix')
         auth_data = {
             'jsonrpc': '2.0',
             'method': 'user.login',
@@ -102,18 +102,18 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
-                logger.warning(f'{config_filename}: Zabbix error: {error}')
+                logger.warning(f'Zabbix error: {error}')
                 return
 
     elif username is not None:
-        logger.warning(f'{config_filename}: Password missing for Zabbix authentication')
+        logger.warning('Password missing for Zabbix authentication')
         return
 
     elif password is not None:
-        logger.warning(f'{config_filename}: Username missing for Zabbix authentication')
+        logger.warning('Username missing for Zabbix authentication')
         return
     else:
-        logger.warning(f'{config_filename}: Authentication data missing for Zabbix')
+        logger.warning('Authentication data missing for Zabbix')
         return
 
     if not dry_run:
@@ -123,11 +123,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
-            logger.warning(f'{config_filename}: Zabbix error: {error}')
+            logger.warning(f'Zabbix error: {error}')
 
 
 def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
+    ping_url_or_uuid, config, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.

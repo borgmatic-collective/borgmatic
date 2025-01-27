@@ -139,10 +139,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, Loki_log_handler):
             if state in MONITOR_STATE_TO_LOKI.keys():
-                handler.raw(f'{config_filename}: {MONITOR_STATE_TO_LOKI[state]} backup')
+                handler.raw(f'{MONITOR_STATE_TO_LOKI[state]} backup')
 
 
-def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger.
     '''

@@ -14,7 +14,7 @@ def test_destroy_monitor_removes_apprise_handler():
         )
     )
 
-    module.destroy_monitor(flexmock(), flexmock(), flexmock(), flexmock(), flexmock())
+    module.destroy_monitor(flexmock(), flexmock(), flexmock(), flexmock())
 
     assert logger.handlers == original_handlers
 
@@ -23,6 +23,6 @@ def test_destroy_monitor_without_apprise_handler_does_not_raise():
     logger = logging.getLogger()
     original_handlers = list(logger.handlers)
 
-    module.destroy_monitor(flexmock(), flexmock(), flexmock(), flexmock(), flexmock())
+    module.destroy_monitor(flexmock(), flexmock(), flexmock(), flexmock())
 
     assert logger.handlers == original_handlers

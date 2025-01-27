@@ -29,12 +29,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     '''
     if state != monitor.State.FAIL:
         logger.debug(
-            f'{config_filename}: Ignoring unsupported monitoring {state.name.lower()} in PagerDuty hook',
+            f'Ignoring unsupported monitoring {state.name.lower()} in PagerDuty hook',
         )
         return
 
     dry_run_label = ' (dry run; not actually sending)' if dry_run else ''
-    logger.info(f'{config_filename}: Sending failure event to PagerDuty {dry_run_label}')
+    logger.info(f'Sending failure event to PagerDuty {dry_run_label}')
 
     if dry_run:
         return
@@ -61,7 +61,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             },
         }
     )
-    logger.debug(f'{config_filename}: Using PagerDuty payload: {payload}')
+    logger.debug(f'Using PagerDuty payload: {payload}')
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
@@ -69,11 +69,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:
-        logger.warning(f'{config_filename}: PagerDuty error: {error}')
+        logger.warning(f'PagerDuty error: {error}')
 
 
 def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
+    ping_url_or_uuid, config, monitoring_log_level, dry_run
 ):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
