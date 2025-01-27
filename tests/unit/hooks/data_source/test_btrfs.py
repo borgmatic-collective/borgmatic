@@ -218,7 +218,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -227,7 +227,7 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
     ).and_return(
         Pattern(
             '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -256,13 +256,13 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
         Pattern('/mnt/subvol2/.borgmatic-1234/mnt/subvol2'),
         Pattern(
             '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
     ]
@@ -288,7 +288,7 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -314,7 +314,7 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
     ]
@@ -344,7 +344,7 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -370,7 +370,7 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
     ]
@@ -461,7 +461,7 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
     ).and_return(
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -470,7 +470,7 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
     ).and_return(
         Pattern(
             '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         )
     )
@@ -499,13 +499,13 @@ def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
         Pattern('/mnt/subvol1/.borgmatic-1234/mnt/subvol1'),
         Pattern(
             '/mnt/subvol1/.borgmatic-1234/mnt/subvol1/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
         Pattern('/mnt/subvol2/.borgmatic-1234/mnt/subvol2'),
         Pattern(
             '/mnt/subvol2/.borgmatic-1234/mnt/subvol2/.borgmatic-1234',
-            Pattern_type.EXCLUDE,
+            Pattern_type.NO_RECURSE,
             Pattern_style.FNMATCH,
         ),
     ]

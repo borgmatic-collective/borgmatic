@@ -151,7 +151,7 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
             subvolume_path.lstrip(os.path.sep),
             snapshot_directory,
         ),
-        borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+        borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
         borgmatic.borg.pattern.Pattern_style.FNMATCH,
     )
 
