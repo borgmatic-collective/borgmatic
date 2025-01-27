@@ -85,7 +85,7 @@ def database_names_to_dump(database, extra_environment, dry_run):
         + (('--username', database['username']) if 'username' in database else ())
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
-    logger.debug(f'Querying for "all" PostgreSQL databases to dump')
+    logger.debug('Querying for "all" PostgreSQL databases to dump')
     list_output = execute_command_and_capture_output(
         list_command, extra_environment=extra_environment
     )

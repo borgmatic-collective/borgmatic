@@ -49,7 +49,7 @@ def database_names_to_dump(database, extra_environment, dry_run):
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
-    logger.debug(f'Querying for "all" MySQL databases to dump')
+    logger.debug('Querying for "all" MySQL databases to dump')
     show_output = execute_command_and_capture_output(
         show_command, extra_environment=extra_environment
     )

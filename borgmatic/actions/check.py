@@ -709,7 +709,7 @@ def run_check(
         **hook_context,
     )
 
-    logger.info(f'Running consistency checks')
+    logger.info('Running consistency checks')
 
     repository_id = borgmatic.borg.check.get_repository_id(
         repository['path'],

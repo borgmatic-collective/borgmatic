@@ -176,7 +176,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                         continue
 
                     yield from log_error_records(
-                        f'Error running actions for repository',
+                        'Error running actions for repository',
                         error,
                     )
                     encountered_error = error

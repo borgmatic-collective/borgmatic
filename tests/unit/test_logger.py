@@ -254,7 +254,7 @@ def test_get_log_prefix_with_no_handlers_does_not_raise():
         )
     )
 
-    assert module.get_log_prefix() == None
+    assert module.get_log_prefix() is None
 
 
 def test_get_log_prefix_with_no_formatters_does_not_raise():
@@ -268,7 +268,7 @@ def test_get_log_prefix_with_no_formatters_does_not_raise():
         )
     )
 
-    assert module.get_log_prefix() == None
+    assert module.get_log_prefix() is None
 
 
 def test_get_log_prefix_with_no_prefix_does_not_raise():
@@ -284,7 +284,7 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
         )
     )
 
-    assert module.get_log_prefix() == None
+    assert module.get_log_prefix() is None
 
 
 def test_set_log_prefix_updates_all_handlers():
