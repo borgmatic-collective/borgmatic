@@ -62,7 +62,7 @@ def collect_patterns(config):
             )
             + tuple(
                 parse_pattern(
-                    f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {exclude_line.strip()}',
+                    f'{borgmatic.borg.pattern.Pattern_type.NO_RECURSE.value} {exclude_line.strip()}',
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for exclude_line in config.get('exclude_patterns', ())
@@ -76,7 +76,7 @@ def collect_patterns(config):
             )
             + tuple(
                 parse_pattern(
-                    f'{borgmatic.borg.pattern.Pattern_type.EXCLUDE.value} {exclude_line.strip()}',
+                    f'{borgmatic.borg.pattern.Pattern_type.NO_RECURSE.value} {exclude_line.strip()}',
                     borgmatic.borg.pattern.Pattern_style.FNMATCH,
                 )
                 for filename in config.get('exclude_from', ())

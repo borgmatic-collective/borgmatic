@@ -34,14 +34,16 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=Non
 
     if patterns_file is None:
         patterns_file = tempfile.NamedTemporaryFile('w', dir=borgmatic_runtime_directory)
+        operation_name = 'Writing'
     else:
         patterns_file.write('\n')
+        operation_name = 'Appending'
 
     patterns_output = '\n'.join(
         f'{pattern.type.value} {pattern.style.value}{":" if pattern.style.value else ""}{pattern.path}'
         for pattern in patterns
     )
-    logger.debug(f'Writing patterns to {patterns_file.name}:\n{patterns_output}')
+    logger.debug(f'{operation_name} patterns to {patterns_file.name}:\n{patterns_output}')
 
     patterns_file.write(patterns_output)
     patterns_file.flush()
@@ -324,7 +326,7 @@ def make_base_create_command(
                 tuple(
                     borgmatic.borg.pattern.Pattern(
                         special_file_path,
-                        borgmatic.borg.pattern.Pattern_type.EXCLUDE,
+                        borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
                         borgmatic.borg.pattern.Pattern_style.FNMATCH,
                     )
                     for special_file_path in special_file_paths

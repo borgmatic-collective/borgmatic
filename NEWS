@@ -1,5 +1,8 @@
 1.9.9.dev0
  * #635: Log the repository path or label on every relevant log message, not just some logs.
+ * #981: Fix "spot" check file count delta error.
+ * #982: Fix for borgmatic "exclude_patterns" and "exclude_from" recursing into excluded
+   subdirectories.
 
 1.9.8
  * #979: Fix root patterns so they don't have an invalid "sh:" prefix before getting passed to Borg.

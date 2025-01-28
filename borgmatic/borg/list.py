@@ -131,7 +131,7 @@ def capture_archive_listing(
             borg_local_path=local_path,
             borg_exit_codes=config.get('borg_exit_codes'),
         )
-        .strip('\n')
+        .strip('\0')
         .split('\0')
     )
 

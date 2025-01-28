@@ -48,9 +48,9 @@ def test_collect_patterns_parses_config_patterns():
 
 def test_collect_patterns_converts_exclude_patterns():
     assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}) == (
-        Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
-        Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
-        Pattern('**/baz', Pattern_type.EXCLUDE, Pattern_style.SHELL),
+        Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
+        Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
+        Pattern('**/baz', Pattern_type.NO_RECURSE, Pattern_style.SHELL),
     )
 
 
@@ -90,22 +90,22 @@ def test_collect_patterns_reads_config_exclude_from_file():
         io.StringIO('/bar\n# comment\n\n   \n/baz')
     )
     flexmock(module).should_receive('parse_pattern').with_args(
-        '- /foo', default_style=Pattern_style.FNMATCH
-    ).and_return(Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
+        '! /foo', default_style=Pattern_style.FNMATCH
+    ).and_return(Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
     flexmock(module).should_receive('parse_pattern').with_args(
-        '- /bar', default_style=Pattern_style.FNMATCH
-    ).and_return(Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
+        '! /bar', default_style=Pattern_style.FNMATCH
+    ).and_return(Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
     flexmock(module).should_receive('parse_pattern').with_args('# comment').never()
     flexmock(module).should_receive('parse_pattern').with_args('').never()
     flexmock(module).should_receive('parse_pattern').with_args('   ').never()
     flexmock(module).should_receive('parse_pattern').with_args(
-        '- /baz', default_style=Pattern_style.FNMATCH
-    ).and_return(Pattern('/baz', Pattern_type.EXCLUDE, Pattern_style.FNMATCH))
+        '! /baz', default_style=Pattern_style.FNMATCH
+    ).and_return(Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH))
 
     assert module.collect_patterns({'exclude_from': ['file1.txt', 'file2.txt']}) == (
-        Pattern('/foo', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
-        Pattern('/bar', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
-        Pattern('/baz', Pattern_type.EXCLUDE, Pattern_style.FNMATCH),
+        Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
+        Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
+        Pattern('/baz', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
     )
 
 

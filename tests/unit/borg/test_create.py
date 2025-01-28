@@ -661,7 +661,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
         (
             Pattern(
                 '/dev/null',
-                Pattern_type.EXCLUDE,
+                Pattern_type.NO_RECURSE,
                 Pattern_style.FNMATCH,
             ),
         ),
@@ -711,7 +711,7 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
         (
             Pattern(
                 '/dev/null',
-                Pattern_type.EXCLUDE,
+                Pattern_type.NO_RECURSE,
                 Pattern_style.FNMATCH,
             ),
         ),
