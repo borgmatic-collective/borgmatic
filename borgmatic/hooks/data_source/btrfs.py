@@ -21,9 +21,9 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
-def get_filesystem_mount_points(findmnt_command):
+def get_subvolume_mount_points(findmnt_command):
     '''
-    Given a findmnt command to run, get all top-level Btrfs filesystem mount points.
+    Given a findmnt command to run, get all sorted Btrfs subvolume mount points.
     '''
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
         tuple(findmnt_command.split(' '))
@@ -37,40 +37,12 @@ def get_filesystem_mount_points(findmnt_command):
 
     try:
         return tuple(
-            filesystem['target'] for filesystem in json.loads(findmnt_output)['filesystems']
+            sorted(filesystem['target'] for filesystem in json.loads(findmnt_output)['filesystems'])
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
     except KeyError as error:
         raise ValueError(f'Invalid {findmnt_command} output: Missing key "{error}"')
-
-
-def get_subvolumes_for_filesystem(btrfs_command, filesystem_mount_point):
-    '''
-    Given a Btrfs command to run and a Btrfs filesystem mount point, get the sorted subvolumes for
-    that filesystem. Include the filesystem itself.
-    '''
-    btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-        tuple(btrfs_command.split(' '))
-        + (
-            'subvolume',
-            'list',
-            filesystem_mount_point,
-        )
-    )
-
-    if not filesystem_mount_point.strip():
-        return ()
-
-    return (filesystem_mount_point,) + tuple(
-        sorted(
-            subvolume_path
-            for line in btrfs_output.splitlines()
-            for subvolume_subpath in (line.rstrip().split(' ')[-1],)
-            for subvolume_path in (os.path.join(filesystem_mount_point, subvolume_subpath),)
-            if subvolume_subpath.strip()
-        )
-    )
 
 
 Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
@@ -89,20 +61,16 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     candidate_patterns = set(patterns or ())
     subvolumes = []
 
-    # For each filesystem mount point, find its subvolumes and match them against the given patterns
-    # to find the subvolumes to backup. And within this loop, sort the subvolumes from longest to
-    # shortest mount points, so longer mount points get a whack at the candidate pattern piñata
-    # before their parents do. (Patterns are consumed during this process, so no two subvolumes end
-    # up with the same contained patterns.)
-    for mount_point in get_filesystem_mount_points(findmnt_command):
+    # For each subvolume mount point, match it against the given patterns to find the subvolumes to
+    # backup. Sort the subvolumes from longest to shortest mount points, so longer mount points get
+    # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
+    # this process, so no two subvolumes end up with the same contained patterns.)
+    for mount_point in reversed(get_subvolume_mount_points(findmnt_command)):
         subvolumes.extend(
-            Subvolume(subvolume_path, contained_patterns)
-            for subvolume_path in reversed(
-                get_subvolumes_for_filesystem(btrfs_command, mount_point)
-            )
+            Subvolume(mount_point, contained_patterns)
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
-                    subvolume_path, candidate_patterns
+                    mount_point, candidate_patterns
                 ),
             )
             if patterns is None or contained_patterns
