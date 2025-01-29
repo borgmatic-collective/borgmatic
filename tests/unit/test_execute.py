@@ -186,6 +186,7 @@ def test_execute_command_calls_full_command():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command)
@@ -207,6 +208,7 @@ def test_execute_command_calls_full_command_with_output_file():
         env=None,
         cwd=None,
     ).and_return(flexmock(stderr=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, output_file=output_file)
@@ -222,6 +224,7 @@ def test_execute_command_calls_full_command_without_capturing_output():
         full_command, stdin=None, stdout=None, stderr=None, shell=False, env=None, cwd=None
     ).and_return(flexmock(wait=lambda: 0)).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, output_file=module.DO_NOT_CAPTURE)
@@ -243,6 +246,7 @@ def test_execute_command_calls_full_command_with_input_file():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, input_file=input_file)
@@ -263,6 +267,7 @@ def test_execute_command_calls_full_command_with_shell():
         env=None,
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, shell=True)
@@ -283,6 +288,7 @@ def test_execute_command_calls_full_command_with_extra_environment():
         env={'a': 'b', 'c': 'd'},
         cwd=None,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, extra_environment={'c': 'd'})
@@ -303,6 +309,7 @@ def test_execute_command_calls_full_command_with_working_directory():
         env=None,
         cwd='/working',
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command(full_command, working_directory='/working')
@@ -324,6 +331,7 @@ def test_execute_command_without_run_to_completion_returns_process():
         env=None,
         cwd=None,
     ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     assert module.execute_command(full_command, run_to_completion=False) == process

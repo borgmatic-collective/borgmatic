@@ -43,7 +43,7 @@ def compact_segments(
     )
 
     if dry_run:
-        logging.info(f'{repository_path}: Skipping compact (dry run)')
+        logging.info('Skipping compact (dry run)')
         return
 
     execute_command(

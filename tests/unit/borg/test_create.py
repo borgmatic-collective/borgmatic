@@ -17,14 +17,11 @@ def test_write_patterns_file_writes_pattern_lines():
     module.write_patterns_file(
         [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE, Pattern_style.SHELL)],
         borgmatic_runtime_directory='/run/user/0',
-        log_prefix='test.yaml',
     )
 
 
 def test_write_patterns_file_with_empty_exclude_patterns_does_not_raise():
-    module.write_patterns_file(
-        [], borgmatic_runtime_directory='/run/user/0', log_prefix='test.yaml'
-    )
+    module.write_patterns_file([], borgmatic_runtime_directory='/run/user/0')
 
 
 def test_write_patterns_file_appends_to_existing():
@@ -36,7 +33,6 @@ def test_write_patterns_file_appends_to_existing():
     module.write_patterns_file(
         [Pattern('/foo'), Pattern('/foo/bar', Pattern_type.INCLUDE)],
         borgmatic_runtime_directory='/run/user/0',
-        log_prefix='test.yaml',
         patterns_file=patterns_file,
     )
 
@@ -647,7 +643,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
     patterns_file = flexmock(name='patterns')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('write_patterns_file').with_args(
-        patterns, '/run/borgmatic', object
+        patterns, '/run/borgmatic'
     ).and_return(patterns_file)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
@@ -670,7 +666,6 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
             ),
         ),
         '/run/borgmatic',
-        'repo',
         patterns_file=patterns_file,
     ).and_return(patterns_file).once()
     flexmock(module).should_receive('make_exclude_flags').and_return(())
@@ -698,7 +693,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
 def test_make_base_create_command_without_patterns_and_with_stream_processes_ignores_read_special_false_and_excludes_special_files():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('write_patterns_file').with_args(
-        [], '/run/borgmatic', object
+        [], '/run/borgmatic'
     ).and_return(None)
     flexmock(module).should_receive('make_list_filter_flags').and_return('FOO')
     flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
@@ -721,7 +716,6 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
             ),
         ),
         '/run/borgmatic',
-        'repo',
         patterns_file=None,
     ).and_return(flexmock(name='patterns')).once()
     flexmock(module).should_receive('make_exclude_flags').and_return(())

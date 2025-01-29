@@ -379,7 +379,6 @@ def test_destroy_monitor_does_not_raise():
     module.destroy_monitor(
         hook_config={},
         config={},
-        config_filename='test.yaml',
         monitoring_log_level=1,
         dry_run=False,
     )

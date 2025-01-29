@@ -28,7 +28,7 @@ def generate_configuration(config_path, repository_path):
     config_file.close()
 
 
-def test_override_get_normalized():
+def test_override_gets_normalized():
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
 

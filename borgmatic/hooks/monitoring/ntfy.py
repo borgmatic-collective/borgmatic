@@ -37,8 +37,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         base_url = hook_config.get('server', 'https://ntfy.sh')
         topic = hook_config.get('topic')
 
-        logger.info(f'{config_filename}: Pinging ntfy topic {topic}{dry_run_label}')
-        logger.debug(f'{config_filename}: Using Ntfy ping URL {base_url}/{topic}')
+        logger.info(f'Pinging ntfy topic {topic}{dry_run_label}')
+        logger.debug(f'Using Ntfy ping URL {base_url}/{topic}')
 
         headers = {
             'X-Title': state_config.get('title'),
@@ -55,20 +55,16 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if access_token is not None:
             if username or password:
                 logger.warning(
-                    f'{config_filename}: ntfy access_token is set but so is username/password, only using access_token'
+                    'ntfy access_token is set but so is username/password, only using access_token'
                 )
             auth = requests.auth.HTTPBasicAuth('', access_token)
         elif (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)
-            logger.info(f'{config_filename}: Using basic auth with user {username} for ntfy')
+            logger.info(f'Using basic auth with user {username} for ntfy')
         elif username is not None:
-            logger.warning(
-                f'{config_filename}: Password missing for ntfy authentication, defaulting to no auth'
-            )
+            logger.warning('Password missing for ntfy authentication, defaulting to no auth')
         elif password is not None:
-            logger.warning(
-                f'{config_filename}: Username missing for ntfy authentication, defaulting to no auth'
-            )
+            logger.warning('Username missing for ntfy authentication, defaulting to no auth')
 
         if not dry_run:
             logging.getLogger('urllib3').setLevel(logging.ERROR)
@@ -77,12 +73,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:
-                logger.warning(f'{config_filename}: ntfy error: {error}')
+                logger.warning(f'ntfy error: {error}')
 
 
-def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

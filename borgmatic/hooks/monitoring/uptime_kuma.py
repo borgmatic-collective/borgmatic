@@ -28,10 +28,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     status = 'down' if state.name.lower() == 'fail' else 'up'
     push_url = hook_config.get('push_url', 'https://example.uptime.kuma/api/push/abcd1234')
     query = f'status={status}&msg={state.name.lower()}'
-    logger.info(
-        f'{config_filename}: Pushing Uptime Kuma push_url {push_url}?{query} {dry_run_label}'
-    )
-    logger.debug(f'{config_filename}: Full Uptime Kuma state URL {push_url}?{query}')
+    logger.info(f'Pushing Uptime Kuma push_url {push_url}?{query} {dry_run_label}')
+    logger.debug(f'Full Uptime Kuma state URL {push_url}?{query}')
 
     if dry_run:
         return
@@ -43,12 +41,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:
-        logger.warning(f'{config_filename}: Uptime Kuma error: {error}')
+        logger.warning(f'Uptime Kuma error: {error}')
 
 
-def destroy_monitor(
-    push_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def destroy_monitor(push_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

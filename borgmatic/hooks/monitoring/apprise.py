@@ -66,12 +66,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     )
 
     if not hook_config.get('services'):
-        logger.info(f'{config_filename}: No Apprise services to ping')
+        logger.info('No Apprise services to ping')
         return
 
     dry_run_string = ' (dry run; not actually pinging)' if dry_run else ''
     labels_string = ', '.join(map(operator.itemgetter('label'), hook_config.get('services')))
-    logger.info(f'{config_filename}: Pinging Apprise services: {labels_string}{dry_run_string}')
+    logger.info(f'Pinging Apprise services: {labels_string}{dry_run_string}')
 
     apprise_object = apprise.Apprise()
     apprise_object.add(list(map(operator.itemgetter('url'), hook_config.get('services'))))
@@ -100,10 +100,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     )
 
     if result is False:
-        logger.warning(f'{config_filename}: Error sending some Apprise notifications')
+        logger.warning('Error sending some Apprise notifications')
 
 
-def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.

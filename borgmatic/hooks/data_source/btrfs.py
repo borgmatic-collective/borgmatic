@@ -14,7 +14,7 @@ import borgmatic.hooks.data_source.snapshot
 logger = logging.getLogger(__name__)
 
 
-def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
+def use_streaming(hook_config, config):  # pragma: no cover
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
@@ -179,26 +179,24 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
 def dump_data_sources(
     hook_config,
     config,
-    log_prefix,
     config_paths,
     borgmatic_runtime_directory,
     patterns,
     dry_run,
 ):
     '''
-    Given a Btrfs configuration dict, a configuration dict, a log prefix, the borgmatic
-    configuration file paths, the borgmatic runtime directory, the configured patterns, and whether
-    this is a dry run, auto-detect and snapshot any Btrfs subvolume mount points listed in the given
-    patterns. Also update those patterns, replacing subvolume mount points with corresponding
-    snapshot directories so they get stored in the Borg archive instead. Use the log prefix in any
-    log entries.
+    Given a Btrfs configuration dict, a configuration dict, the borgmatic configuration file paths,
+    the borgmatic runtime directory, the configured patterns, and whether this is a dry run,
+    auto-detect and snapshot any Btrfs subvolume mount points listed in the given patterns. Also
+    update those patterns, replacing subvolume mount points with corresponding snapshot directories
+    so they get stored in the Borg archive instead.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
     If this is a dry run, then don't actually snapshot anything.
     '''
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-    logger.info(f'{log_prefix}: Snapshotting Btrfs subvolumes{dry_run_label}')
+    logger.info(f'Snapshotting Btrfs subvolumes{dry_run_label}')
 
     # Based on the configured patterns, determine Btrfs subvolumes to backup.
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
@@ -206,11 +204,11 @@ def dump_data_sources(
     subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)
 
     if not subvolumes:
-        logger.warning(f'{log_prefix}: No Btrfs subvolumes found to snapshot{dry_run_label}')
+        logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
 
     # Snapshot each subvolume, rewriting patterns to use their snapshot paths.
     for subvolume in subvolumes:
-        logger.debug(f'{log_prefix}: Creating Btrfs snapshot for {subvolume.path} subvolume')
+        logger.debug(f'Creating Btrfs snapshot for {subvolume.path} subvolume')
 
         snapshot_path = make_snapshot_path(subvolume.path)
 
@@ -248,12 +246,11 @@ def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover
     )
 
 
-def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
     '''
-    Given a Btrfs configuration dict, a configuration dict, a log prefix, the borgmatic runtime
-    directory, and whether this is a dry run, delete any Btrfs snapshots created by borgmatic. Use
-    the log prefix in any log entries. If this is a dry run or Btrfs isn't configured in borgmatic's
-    configuration, then don't actually remove anything.
+    Given a Btrfs configuration dict, a configuration dict, the borgmatic runtime directory, and
+    whether this is a dry run, delete any Btrfs snapshots created by borgmatic. If this is a dry run
+    or Btrfs isn't configured in borgmatic's configuration, then don't actually remove anything.
     '''
     if hook_config is None:
         return
@@ -266,10 +263,10 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     try:
         all_subvolumes = get_subvolumes(btrfs_command, findmnt_command)
     except FileNotFoundError as error:
-        logger.debug(f'{log_prefix}: Could not find "{error.filename}" command')
+        logger.debug(f'Could not find "{error.filename}" command')
         return
     except subprocess.CalledProcessError as error:
-        logger.debug(f'{log_prefix}: {error}')
+        logger.debug(error)
         return
 
     # Reversing the sorted subvolumes ensures that we remove longer mount point paths of child
@@ -281,14 +278,14 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         )
 
         logger.debug(
-            f'{log_prefix}: Looking for snapshots to remove in {subvolume_snapshots_glob}{dry_run_label}'
+            f'Looking for snapshots to remove in {subvolume_snapshots_glob}{dry_run_label}'
         )
 
         for snapshot_path in glob.glob(subvolume_snapshots_glob):
             if not os.path.isdir(snapshot_path):
                 continue
 
-            logger.debug(f'{log_prefix}: Deleting Btrfs snapshot {snapshot_path}{dry_run_label}')
+            logger.debug(f'Deleting Btrfs snapshot {snapshot_path}{dry_run_label}')
 
             if dry_run:
                 continue
@@ -296,10 +293,10 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
             try:
                 delete_snapshot(btrfs_command, snapshot_path)
             except FileNotFoundError:
-                logger.debug(f'{log_prefix}: Could not find "{btrfs_command}" command')
+                logger.debug(f'Could not find "{btrfs_command}" command')
                 return
             except subprocess.CalledProcessError as error:
-                logger.debug(f'{log_prefix}: {error}')
+                logger.debug(error)
                 return
 
             # Strip off the subvolume path from the end of the snapshot path and then delete the
@@ -308,7 +305,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, log_prefix, borgmatic_runtime_directory, name=None
+    hook_config, config, borgmatic_runtime_directory, name=None
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
@@ -319,7 +316,6 @@ def make_data_source_dump_patterns(
 def restore_data_source_dump(
     hook_config,
     config,
-    log_prefix,
     data_source,
     dry_run,
     extract_process,

@@ -23,11 +23,9 @@ def run_mount(
         repository, mount_arguments.repository
     ):
         if mount_arguments.archive:
-            logger.info(
-                f'{repository.get("label", repository["path"])}: Mounting archive {mount_arguments.archive}'
-            )
+            logger.info(f'Mounting archive {mount_arguments.archive}')
         else:  # pragma: nocover
-            logger.info(f'{repository.get("label", repository["path"])}: Mounting repository')
+            logger.info('Mounting repository')
 
         borgmatic.borg.mount.mount_archive(
             repository['path'],

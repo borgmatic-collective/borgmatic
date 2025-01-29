@@ -65,8 +65,8 @@ def test_ping_monitor_adds_log_message():
             assert any(
                 map(
                     lambda log: log
-                    == f'{config_filename}: {module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup',
-                    map(lambda x: x[1], handler.buffer.root['streams'][0]['values']),
+                    == f'{module.MONITOR_STATE_TO_LOKI[module.monitor.State.FINISH]} backup',
+                    map(lambda value: value[1], handler.buffer.root['streams'][0]['values']),
                 )
             )
             return
@@ -82,7 +82,7 @@ def test_destroy_monitor_removes_log_handler():
     config_filename = 'test.yaml'
     dry_run = True
     module.initialize_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
-    module.destroy_monitor(hook_config, flexmock(), config_filename, flexmock(), dry_run)
+    module.destroy_monitor(hook_config, flexmock(), flexmock(), dry_run)
 
     for handler in tuple(logging.getLogger().handlers):
         if isinstance(handler, module.Loki_log_handler):

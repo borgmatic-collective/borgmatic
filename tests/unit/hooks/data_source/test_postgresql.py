@@ -61,32 +61,26 @@ def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_individual_database_name_with_format():
     database = {'name': 'foo', 'format': 'custom'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_all_without_format():
     database = {'name': 'all'}
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
-        'all',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('all',)
 
 
 def test_database_names_to_dump_with_all_and_format_and_dry_run_bails():
     database = {'name': 'all', 'format': 'custom'}
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=True) == ()
+    assert module.database_names_to_dump(database, flexmock(), dry_run=True) == ()
 
 
 def test_database_names_to_dump_with_all_and_format_lists_databases():
@@ -95,7 +89,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases():
         'foo,test,\nbar,test,"stuff and such"'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -119,7 +113,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -141,7 +135,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -154,7 +148,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_options
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -166,9 +160,7 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
         'foo,test,\ntemplate0,test,blah'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
@@ -194,16 +186,13 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
         extra_environment=object,
     ).and_return('foo,text').once()
 
-    assert module.database_names_to_dump(database, flexmock(), flexmock(), dry_run=False) == (
-        'foo',
-    )
+    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_use_streaming_true_for_any_non_directory_format_databases():
     assert module.use_streaming(
         databases=[{'format': 'stuff'}, {'format': 'directory'}, {}],
         config=flexmock(),
-        log_prefix=flexmock(),
     )
 
 
@@ -211,12 +200,11 @@ def test_use_streaming_false_for_all_directory_format_databases():
     assert not module.use_streaming(
         databases=[{'format': 'directory'}, {'format': 'directory'}],
         config=flexmock(),
-        log_prefix=flexmock(),
     )
 
 
 def test_use_streaming_false_for_no_databases():
-    assert not module.use_streaming(databases=[], config=flexmock(), log_prefix=flexmock())
+    assert not module.use_streaming(databases=[], config=flexmock())
 
 
 def test_dump_data_sources_runs_pg_dump_for_each_database():
@@ -255,7 +243,6 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -275,7 +262,6 @@ def test_dump_data_sources_raises_when_no_database_names_to_dump():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -292,7 +278,6 @@ def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
     module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -318,7 +303,6 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -346,7 +330,6 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -392,7 +375,6 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -436,7 +418,6 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -480,7 +461,6 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -520,7 +500,6 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -563,7 +542,6 @@ def test_dump_data_sources_runs_pg_dump_with_options():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -593,7 +571,6 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -635,7 +612,6 @@ def test_dump_data_sources_runs_non_default_pg_dump():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -682,7 +658,6 @@ def test_restore_data_source_dump_runs_pg_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
@@ -745,7 +720,6 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -806,7 +780,6 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -886,7 +859,6 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
@@ -966,7 +938,6 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -1028,7 +999,6 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -1068,7 +1038,6 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'all'},
         dry_run=False,
         extract_process=extract_process,
@@ -1113,7 +1082,6 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -1183,7 +1151,6 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -1208,7 +1175,6 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
@@ -1261,7 +1227,6 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=None,
@@ -1318,7 +1283,6 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=None,

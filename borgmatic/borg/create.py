@@ -20,13 +20,11 @@ from borgmatic.execute import (
 logger = logging.getLogger(__name__)
 
 
-def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patterns_file=None):
+def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=None):
     '''
     Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a named
     temporary file in the given borgmatic runtime directory and return the file object so it can
     continue to exist on disk as long as the caller needs it.
-
-    Use the given log prefix in any logging.
 
     If an optional open pattern file is given, append to it instead of making a new temporary file.
     Return None if no patterns are provided.
@@ -45,9 +43,7 @@ def write_patterns_file(patterns, borgmatic_runtime_directory, log_prefix, patte
         f'{pattern.type.value} {pattern.style.value}{":" if pattern.style.value else ""}{pattern.path}'
         for pattern in patterns
     )
-    logger.debug(
-        f'{log_prefix}: {operation_name} patterns to {patterns_file.name}:\n{patterns_output}'
-    )
+    logger.debug(f'{operation_name} patterns to {patterns_file.name}:\n{patterns_output}')
 
     patterns_file.write(patterns_output)
     patterns_file.flush()
@@ -221,9 +217,7 @@ def make_base_create_command(
     if config.get('source_directories_must_exist', False):
         check_all_root_patterns_exist(patterns)
 
-    patterns_file = write_patterns_file(
-        patterns, borgmatic_runtime_directory, log_prefix=repository_path
-    )
+    patterns_file = write_patterns_file(patterns, borgmatic_runtime_directory)
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
     chunker_params = config.get('chunker_params', None)
@@ -303,12 +297,12 @@ def make_base_create_command(
     # cause Borg to hang. But skip this if the user has explicitly set the "read_special" to True.
     if stream_processes and not config.get('read_special'):
         logger.warning(
-            f'{repository_path}: Ignoring configured "read_special" value of false, as true is needed for database hooks.'
+            'Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
         borg_environment = environment.make_environment(config)
         working_directory = borgmatic.config.paths.get_working_directory(config)
 
-        logger.debug(f'{repository_path}: Collecting special file paths')
+        logger.debug('Collecting special file paths')
         special_file_paths = collect_special_file_paths(
             dry_run,
             create_flags + create_positional_arguments,
@@ -326,7 +320,7 @@ def make_base_create_command(
                 placeholder=' ...',
             )
             logger.warning(
-                f'{repository_path}: Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
+                f'Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
             )
             patterns_file = write_patterns_file(
                 tuple(
@@ -338,7 +332,6 @@ def make_base_create_command(
                     for special_file_path in special_file_paths
                 ),
                 borgmatic_runtime_directory,
-                log_prefix=repository_path,
                 patterns_file=patterns_file,
             )
 

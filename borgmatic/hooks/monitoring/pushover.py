@@ -35,14 +35,14 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     token = hook_config.get('token')
     user = hook_config.get('user')
 
-    logger.info(f'{config_filename}: Updating Pushover{dry_run_label}')
+    logger.info(f'Updating Pushover{dry_run_label}')
 
     if state_config.get('priority') == EMERGENCY_PRIORITY:
         if 'expire' not in state_config:
-            logger.info(f'{config_filename}: Setting expire to default (10 min).')
+            logger.info('Setting expire to default (10 min)')
             state_config['expire'] = 600
         if 'retry' not in state_config:
-            logger.info(f'{config_filename}: Setting retry to default (30 sec).')
+            logger.info('Setting retry to default (30 sec)')
             state_config['retry'] = 30
     else:
         if 'expire' in state_config or 'retry' in state_config:
@@ -75,12 +75,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
-            logger.warning(f'{config_filename}: Pushover error: {error}')
+            logger.warning(f'Pushover error: {error}')
 
 
-def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

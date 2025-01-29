@@ -237,7 +237,7 @@ def list_archive(
 
     # For each archive listed by Borg, run list on the contents of that archive.
     for archive in archive_lines:
-        logger.answer(f'{repository_path}: Listing archive {archive}')
+        logger.answer(f'Listing archive {archive}')
 
         archive_arguments = copy.copy(list_arguments)
         archive_arguments.archive = archive

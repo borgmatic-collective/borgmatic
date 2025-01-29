@@ -46,14 +46,14 @@ def create_named_pipe_for_dump(dump_path):
     os.mkfifo(dump_path, mode=0o600)
 
 
-def remove_data_source_dumps(dump_path, data_source_type_name, log_prefix, dry_run):
+def remove_data_source_dumps(dump_path, data_source_type_name, dry_run):
     '''
     Remove all data source dumps in the given dump directory path (including the directory itself).
     If this is a dry run, then don't actually remove anything.
     '''
     dry_run_label = ' (dry run; not actually removing anything)' if dry_run else ''
 
-    logger.debug(f'{log_prefix}: Removing {data_source_type_name} data source dumps{dry_run_label}')
+    logger.debug(f'Removing {data_source_type_name} data source dumps{dry_run_label}')
 
     if dry_run:
         return

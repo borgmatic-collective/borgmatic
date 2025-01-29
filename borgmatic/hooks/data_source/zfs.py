@@ -13,7 +13,7 @@ import borgmatic.hooks.data_source.snapshot
 logger = logging.getLogger(__name__)
 
 
-def use_streaming(hook_config, config, log_prefix):  # pragma: no cover
+def use_streaming(hook_config, config):  # pragma: no cover
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
@@ -189,26 +189,25 @@ def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
 def dump_data_sources(
     hook_config,
     config,
-    log_prefix,
     config_paths,
     borgmatic_runtime_directory,
     patterns,
     dry_run,
 ):
     '''
-    Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic configuration
-    file paths, the borgmatic runtime directory, the configured patterns, and whether this is a dry
-    run, auto-detect and snapshot any ZFS dataset mount points listed in the given patterns and any
+    Given a ZFS configuration dict, a configuration dict, the borgmatic configuration file paths,
+    the borgmatic runtime directory, the configured patterns, and whether this is a dry run,
+    auto-detect and snapshot any ZFS dataset mount points listed in the given patterns and any
     dataset with a borgmatic-specific user property. Also update those patterns, replacing dataset
     mount points with corresponding snapshot directories so they get stored in the Borg archive
-    instead. Use the log prefix in any log entries.
+    instead.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
     If this is a dry run, then don't actually snapshot anything.
     '''
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-    logger.info(f'{log_prefix}: Snapshotting ZFS datasets{dry_run_label}')
+    logger.info(f'Snapshotting ZFS datasets{dry_run_label}')
 
     # List ZFS datasets to get their mount points.
     zfs_command = hook_config.get('zfs_command', 'zfs')
@@ -219,12 +218,12 @@ def dump_data_sources(
     normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
 
     if not requested_datasets:
-        logger.warning(f'{log_prefix}: No ZFS datasets found to snapshot{dry_run_label}')
+        logger.warning(f'No ZFS datasets found to snapshot{dry_run_label}')
 
     for dataset in requested_datasets:
         full_snapshot_name = f'{dataset.name}@{snapshot_name}'
         logger.debug(
-            f'{log_prefix}: Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+            f'Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
         )
 
         if not dry_run:
@@ -239,7 +238,7 @@ def dump_data_sources(
         )
 
         logger.debug(
-            f'{log_prefix}: Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+            f'Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
         )
 
         if dry_run:
@@ -306,12 +305,12 @@ def get_all_snapshots(zfs_command):
     return tuple(line.rstrip() for line in list_output.splitlines())
 
 
-def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_directory, dry_run):
+def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):
     '''
-    Given a ZFS configuration dict, a configuration dict, a log prefix, the borgmatic runtime
-    directory, and whether this is a dry run, unmount and destroy any ZFS snapshots created by
-    borgmatic. Use the log prefix in any log entries. If this is a dry run or ZFS isn't configured
-    in borgmatic's configuration, then don't actually remove anything.
+    Given a ZFS configuration dict, a configuration dict, the borgmatic runtime directory, and
+    whether this is a dry run, unmount and destroy any ZFS snapshots created by borgmatic. If this
+    is a dry run or ZFS isn't configured in borgmatic's configuration, then don't actually remove
+    anything.
     '''
     if hook_config is None:
         return
@@ -324,10 +323,10 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
     try:
         dataset_mount_points = get_all_dataset_mount_points(zfs_command)
     except FileNotFoundError:
-        logger.debug(f'{log_prefix}: Could not find "{zfs_command}" command')
+        logger.debug(f'Could not find "{zfs_command}" command')
         return
     except subprocess.CalledProcessError as error:
-        logger.debug(f'{log_prefix}: {error}')
+        logger.debug(error)
         return
 
     snapshots_glob = os.path.join(
@@ -336,9 +335,7 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         ),
         'zfs_snapshots',
     )
-    logger.debug(
-        f'{log_prefix}: Looking for snapshots to remove in {snapshots_glob}{dry_run_label}'
-    )
+    logger.debug(f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}')
     umount_command = hook_config.get('umount_command', 'umount')
 
     for snapshots_directory in glob.glob(snapshots_glob):
@@ -363,18 +360,16 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
                 if not os.path.isdir(snapshot_mount_path):
                     continue
 
-            logger.debug(
-                f'{log_prefix}: Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}'
-            )
+            logger.debug(f'Unmounting ZFS snapshot at {snapshot_mount_path}{dry_run_label}')
 
             if not dry_run:
                 try:
                     unmount_snapshot(umount_command, snapshot_mount_path)
                 except FileNotFoundError:
-                    logger.debug(f'{log_prefix}: Could not find "{umount_command}" command')
+                    logger.debug(f'Could not find "{umount_command}" command')
                     return
                 except subprocess.CalledProcessError as error:
-                    logger.debug(f'{log_prefix}: {error}')
+                    logger.debug(error)
                     return
 
         if not dry_run:
@@ -388,14 +383,14 @@ def remove_data_source_dumps(hook_config, config, log_prefix, borgmatic_runtime_
         if not full_snapshot_name.split('@')[-1].startswith(BORGMATIC_SNAPSHOT_PREFIX):
             continue
 
-        logger.debug(f'{log_prefix}: Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
+        logger.debug(f'Destroying ZFS snapshot {full_snapshot_name}{dry_run_label}')
 
         if not dry_run:
             destroy_snapshot(zfs_command, full_snapshot_name)
 
 
 def make_data_source_dump_patterns(
-    hook_config, config, log_prefix, borgmatic_runtime_directory, name=None
+    hook_config, config, borgmatic_runtime_directory, name=None
 ):  # pragma: no cover
     '''
     Restores aren't implemented, because stored files can be extracted directly with "extract".
@@ -406,7 +401,6 @@ def make_data_source_dump_patterns(
 def restore_data_source_dump(
     hook_config,
     config,
-    log_prefix,
     data_source,
     dry_run,
     extract_process,

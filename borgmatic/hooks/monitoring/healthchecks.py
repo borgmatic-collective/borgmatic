@@ -55,9 +55,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''
 
     if 'states' in hook_config and state.name.lower() not in hook_config['states']:
-        logger.info(
-            f'{config_filename}: Skipping Healthchecks {state.name.lower()} ping due to configured states'
-        )
+        logger.info(f'Skipping Healthchecks {state.name.lower()} ping due to configured states')
         return
 
     ping_url_is_uuid = re.search(r'\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$', ping_url)
@@ -68,14 +66,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     if hook_config.get('create_slug'):
         if ping_url_is_uuid:
-            logger.warning(
-                f'{config_filename}: Healthchecks UUIDs do not support auto provisionning; ignoring'
-            )
+            logger.warning('Healthchecks UUIDs do not support auto provisionning; ignoring')
         else:
             ping_url = f'{ping_url}?create=1'
 
-    logger.info(f'{config_filename}: Pinging Healthchecks {state.name.lower()}{dry_run_label}')
-    logger.debug(f'{config_filename}: Using Healthchecks ping URL {ping_url}')
+    logger.info(f'Pinging Healthchecks {state.name.lower()}{dry_run_label}')
+    logger.debug(f'Using Healthchecks ping URL {ping_url}')
 
     if state in (monitor.State.FINISH, monitor.State.FAIL, monitor.State.LOG):
         payload = borgmatic.hooks.monitoring.logs.format_buffered_logs_for_payload(
@@ -93,10 +89,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:
-            logger.warning(f'{config_filename}: Healthchecks error: {error}')
+            logger.warning(f'Healthchecks error: {error}')
 
 
-def destroy_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
+def destroy_monitor(hook_config, config, monitoring_log_level, dry_run):
     '''
     Remove the monitor handler that was added to the root logger. This prevents the handler from
     getting reused by other instances of this monitor.

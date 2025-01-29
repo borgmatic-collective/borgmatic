@@ -39,7 +39,13 @@ from borgmatic.commands.arguments import parse_arguments
 from borgmatic.config import checks, collect, validate
 from borgmatic.hooks import command, dispatch
 from borgmatic.hooks.monitoring import monitor
-from borgmatic.logger import DISABLED, add_custom_log_levels, configure_logging, should_do_markup
+from borgmatic.logger import (
+    DISABLED,
+    Log_prefix,
+    add_custom_log_levels,
+    configure_logging,
+    should_do_markup,
+)
 from borgmatic.signals import configure_signals
 from borgmatic.verbosity import verbosity_to_log_level
 
@@ -86,12 +92,12 @@ def run_configuration(config_filename, config, config_paths, arguments):
 
     if skip_actions:
         logger.debug(
-            f"{config_filename}: Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
+            f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
         )
 
     try:
         local_borg_version = borg_version.local_borg_version(config, local_path)
-        logger.debug(f'{config_filename}: Borg {local_borg_version}')
+        logger.debug(f'Borg {local_borg_version}')
     except (OSError, CalledProcessError, ValueError) as error:
         yield from log_error_records(f'{config_filename}: Error getting local Borg version', error)
         return
@@ -101,8 +107,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
             dispatch.call_hooks(
                 'initialize_monitor',
                 config,
-                config_filename,
                 dispatch.Hook_type.MONITORING,
+                config_filename,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
@@ -110,14 +116,14 @@ def run_configuration(config_filename, config, config_paths, arguments):
             dispatch.call_hooks(
                 'ping_monitor',
                 config,
-                config_filename,
                 dispatch.Hook_type.MONITORING,
+                config_filename,
                 monitor.State.START,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
     except (OSError, CalledProcessError) as error:
-        if command.considered_soft_failure(config_filename, error):
+        if command.considered_soft_failure(error):
             return
 
         encountered_error = error
@@ -132,53 +138,49 @@ def run_configuration(config_filename, config, config_paths, arguments):
 
         while not repo_queue.empty():
             repository, retry_num = repo_queue.get()
-            logger.debug(
-                f'{repository.get("label", repository["path"])}: Running actions for repository'
-            )
-            timeout = retry_num * retry_wait
-            if timeout:
-                logger.warning(
-                    f'{repository.get("label", repository["path"])}: Sleeping {timeout}s before next retry'
-                )
-                time.sleep(timeout)
-            try:
-                yield from run_actions(
-                    arguments=arguments,
-                    config_filename=config_filename,
-                    config=config,
-                    config_paths=config_paths,
-                    local_path=local_path,
-                    remote_path=remote_path,
-                    local_borg_version=local_borg_version,
-                    repository=repository,
-                )
-            except (OSError, CalledProcessError, ValueError) as error:
-                if retry_num < retries:
-                    repo_queue.put(
-                        (repository, retry_num + 1),
+
+            with Log_prefix(repository.get('label', repository['path'])):
+                logger.debug('Running actions for repository')
+                timeout = retry_num * retry_wait
+                if timeout:
+                    logger.warning(f'Sleeping {timeout}s before next retry')
+                    time.sleep(timeout)
+                try:
+                    yield from run_actions(
+                        arguments=arguments,
+                        config_filename=config_filename,
+                        config=config,
+                        config_paths=config_paths,
+                        local_path=local_path,
+                        remote_path=remote_path,
+                        local_borg_version=local_borg_version,
+                        repository=repository,
                     )
-                    tuple(  # Consume the generator so as to trigger logging.
-                        log_error_records(
-                            f'{repository.get("label", repository["path"])}: Error running actions for repository',
-                            error,
-                            levelno=logging.WARNING,
-                            log_command_error_output=True,
+                except (OSError, CalledProcessError, ValueError) as error:
+                    if retry_num < retries:
+                        repo_queue.put(
+                            (repository, retry_num + 1),
                         )
-                    )
-                    logger.warning(
-                        f'{repository.get("label", repository["path"])}: Retrying... attempt {retry_num + 1}/{retries}'
-                    )
-                    continue
+                        tuple(  # Consume the generator so as to trigger logging.
+                            log_error_records(
+                                'Error running actions for repository',
+                                error,
+                                levelno=logging.WARNING,
+                                log_command_error_output=True,
+                            )
+                        )
+                        logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
+                        continue
 
-                if command.considered_soft_failure(config_filename, error):
-                    continue
+                    if command.considered_soft_failure(error):
+                        continue
 
-                yield from log_error_records(
-                    f'{repository.get("label", repository["path"])}: Error running actions for repository',
-                    error,
-                )
-                encountered_error = error
-                error_repository = repository['path']
+                    yield from log_error_records(
+                        'Error running actions for repository',
+                        error,
+                    )
+                    encountered_error = error
+                    error_repository = repository['path']
 
     try:
         if monitoring_hooks_are_activated:
@@ -186,16 +188,16 @@ def run_configuration(config_filename, config, config_paths, arguments):
             dispatch.call_hooks(
                 'ping_monitor',
                 config,
-                config_filename,
                 dispatch.Hook_type.MONITORING,
+                config_filename,
                 monitor.State.LOG,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
     except (OSError, CalledProcessError) as error:
-        if not command.considered_soft_failure(config_filename, error):
+        if not command.considered_soft_failure(error):
             encountered_error = error
-            yield from log_error_records(f'{repository["path"]}: Error pinging monitor', error)
+            yield from log_error_records('Error pinging monitor', error)
 
     if not encountered_error:
         try:
@@ -203,8 +205,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 dispatch.call_hooks(
                     'ping_monitor',
                     config,
-                    config_filename,
                     dispatch.Hook_type.MONITORING,
+                    config_filename,
                     monitor.State.FINISH,
                     monitoring_log_level,
                     global_arguments.dry_run,
@@ -212,13 +214,12 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 dispatch.call_hooks(
                     'destroy_monitor',
                     config,
-                    config_filename,
                     dispatch.Hook_type.MONITORING,
                     monitoring_log_level,
                     global_arguments.dry_run,
                 )
         except (OSError, CalledProcessError) as error:
-            if command.considered_soft_failure(config_filename, error):
+            if command.considered_soft_failure(error):
                 return
 
             encountered_error = error
@@ -239,8 +240,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
             dispatch.call_hooks(
                 'ping_monitor',
                 config,
-                config_filename,
                 dispatch.Hook_type.MONITORING,
+                config_filename,
                 monitor.State.FAIL,
                 monitoring_log_level,
                 global_arguments.dry_run,
@@ -248,13 +249,12 @@ def run_configuration(config_filename, config, config_paths, arguments):
             dispatch.call_hooks(
                 'destroy_monitor',
                 config,
-                config_filename,
                 dispatch.Hook_type.MONITORING,
                 monitoring_log_level,
                 global_arguments.dry_run,
             )
         except (OSError, CalledProcessError) as error:
-            if command.considered_soft_failure(config_filename, error):
+            if command.considered_soft_failure(error):
                 return
 
             yield from log_error_records(f'{config_filename}: Error running on-error hook', error)
@@ -819,23 +819,27 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
 
     # Execute the actions corresponding to each configuration file.
     json_results = []
-    for config_filename, config in configs.items():
-        results = list(run_configuration(config_filename, config, config_paths, arguments))
-        error_logs = tuple(result for result in results if isinstance(result, logging.LogRecord))
 
-        if error_logs:
-            yield from log_error_records(f'{config_filename}: An error occurred')
-            yield from error_logs
-        else:
-            yield logging.makeLogRecord(
-                dict(
-                    levelno=logging.INFO,
-                    levelname='INFO',
-                    msg=f'{config_filename}: Successfully ran configuration file',
-                )
+    for config_filename, config in configs.items():
+        with Log_prefix(config_filename):
+            results = list(run_configuration(config_filename, config, config_paths, arguments))
+            error_logs = tuple(
+                result for result in results if isinstance(result, logging.LogRecord)
             )
-            if results:
-                json_results.extend(results)
+
+            if error_logs:
+                yield from log_error_records('An error occurred')
+                yield from error_logs
+            else:
+                yield logging.makeLogRecord(
+                    dict(
+                        levelno=logging.INFO,
+                        levelname='INFO',
+                        msg='Successfully ran configuration file',
+                    )
+                )
+                if results:
+                    json_results.extend(results)
 
     if 'umount' in arguments:
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")

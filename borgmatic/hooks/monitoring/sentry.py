@@ -38,15 +38,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     match = DATA_SOURCE_NAME_URL_PATTERN.match(data_source_name_url)
 
     if not match:
-        logger.warning(
-            'f{config_filename}: Invalid Sentry data source name URL: {data_source_name_url}'
-        )
+        logger.warning(f'Invalid Sentry data source name URL: {data_source_name_url}')
         return
 
     cron_url = f'{match.group("protocol")}://{match.group("hostname")}/api/{match.group("project_id")}/cron/{monitor_slug}/{match.group("username")}/'
 
-    logger.info(f'{config_filename}: Pinging Sentry {state.name.lower()}{dry_run_label}')
-    logger.debug(f'{config_filename}: Using Sentry cron URL {cron_url}')
+    logger.info(f'Pinging Sentry {state.name.lower()}{dry_run_label}')
+    logger.debug(f'Using Sentry cron URL {cron_url}')
 
     status = {
         'start': 'in_progress',
@@ -55,7 +53,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     }.get(state.name.lower())
 
     if not status:
-        logger.warning('f{config_filename}: Invalid Sentry state')
+        logger.warning('Invalid Sentry state')
         return
 
     if dry_run:
@@ -67,12 +65,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:
-        logger.warning(f'{config_filename}: Sentry error: {error}')
+        logger.warning(f'Sentry error: {error}')
 
 
-def destroy_monitor(
-    ping_url_or_uuid, config, config_filename, monitoring_log_level, dry_run
-):  # pragma: no cover
+def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover
     '''
     No destruction is necessary for this monitor.
     '''

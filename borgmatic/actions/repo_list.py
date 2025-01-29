@@ -25,7 +25,7 @@ def run_repo_list(
         repository, repo_list_arguments.repository
     ):
         if not repo_list_arguments.json:
-            logger.answer(f'{repository.get("label", repository["path"])}: Listing repository')
+            logger.answer('Listing repository')
 
         json_output = borgmatic.borg.repo_list.list_repository(
             repository['path'],

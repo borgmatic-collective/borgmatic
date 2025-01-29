@@ -8,50 +8,42 @@ from borgmatic.hooks.data_source import mysql as module
 
 def test_database_names_to_dump_passes_through_name():
     extra_environment = flexmock()
-    log_prefix = ''
 
-    names = module.database_names_to_dump(
-        {'name': 'foo'}, extra_environment, log_prefix, dry_run=False
-    )
+    names = module.database_names_to_dump({'name': 'foo'}, extra_environment, dry_run=False)
 
     assert names == ('foo',)
 
 
 def test_database_names_to_dump_bails_for_dry_run():
     extra_environment = flexmock()
-    log_prefix = ''
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
-    names = module.database_names_to_dump(
-        {'name': 'all'}, extra_environment, log_prefix, dry_run=True
-    )
+    names = module.database_names_to_dump({'name': 'all'}, extra_environment, dry_run=True)
 
     assert names == ()
 
 
 def test_database_names_to_dump_queries_mysql_for_database_names():
     extra_environment = flexmock()
-    log_prefix = ''
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('mysql', '--skip-column-names', '--batch', '--execute', 'show schemas'),
         extra_environment=extra_environment,
     ).and_return('foo\nbar\nmysql\n').once()
 
-    names = module.database_names_to_dump(
-        {'name': 'all'}, extra_environment, log_prefix, dry_run=False
-    )
+    names = module.database_names_to_dump({'name': 'all'}, extra_environment, dry_run=False)
 
     assert names == ('foo', 'bar')
 
 
 def test_use_streaming_true_for_any_databases():
     assert module.use_streaming(
-        databases=[flexmock(), flexmock()], config=flexmock(), log_prefix=flexmock()
+        databases=[flexmock(), flexmock()],
+        config=flexmock(),
     )
 
 
 def test_use_streaming_false_for_no_databases():
-    assert not module.use_streaming(databases=[], config=flexmock(), log_prefix=flexmock())
+    assert not module.use_streaming(databases=[], config=flexmock())
 
 
 def test_dump_data_sources_dumps_each_database():
@@ -65,7 +57,6 @@ def test_dump_data_sources_dumps_each_database():
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_dump_command').with_args(
             database={'name': name},
-            log_prefix=object,
             dump_path=object,
             database_names=(name,),
             extra_environment=object,
@@ -77,7 +68,6 @@ def test_dump_data_sources_dumps_each_database():
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -97,7 +87,6 @@ def test_dump_data_sources_dumps_with_password():
 
     flexmock(module).should_receive('execute_dump_command').with_args(
         database=database,
-        log_prefix=object,
         dump_path=object,
         database_names=('foo',),
         extra_environment={'MYSQL_PWD': 'trustsome1'},
@@ -108,7 +97,6 @@ def test_dump_data_sources_dumps_with_password():
     assert module.dump_data_sources(
         [database],
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -123,7 +111,6 @@ def test_dump_data_sources_dumps_all_databases_at_once():
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo', 'bar'))
     flexmock(module).should_receive('execute_dump_command').with_args(
         database={'name': 'all'},
-        log_prefix=object,
         dump_path=object,
         database_names=('foo', 'bar'),
         extra_environment=object,
@@ -134,7 +121,6 @@ def test_dump_data_sources_dumps_all_databases_at_once():
     assert module.dump_data_sources(
         databases,
         {},
-        'test.yaml',
         config_paths=('test.yaml',),
         borgmatic_runtime_directory='/run/borgmatic',
         patterns=[],
@@ -151,7 +137,6 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_dump_command').with_args(
             database={'name': name, 'format': 'sql'},
-            log_prefix=object,
             dump_path=object,
             database_names=(name,),
             extra_environment=object,
@@ -163,7 +148,6 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -187,7 +171,7 @@ def test_database_names_to_dump_runs_mysql_with_list_options():
         extra_environment=None,
     ).and_return(('foo\nbar')).once()
 
-    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+    assert module.database_names_to_dump(database, None, '') == ('foo', 'bar')
 
 
 def test_database_names_to_dump_runs_non_default_mysql_with_list_options():
@@ -208,7 +192,7 @@ def test_database_names_to_dump_runs_non_default_mysql_with_list_options():
         ),
     ).and_return(('foo\nbar')).once()
 
-    assert module.database_names_to_dump(database, None, 'test.yaml', '') == ('foo', 'bar')
+    assert module.database_names_to_dump(database, None, '') == ('foo', 'bar')
 
 
 def test_execute_dump_command_runs_mysqldump():
@@ -233,7 +217,6 @@ def test_execute_dump_command_runs_mysqldump():
     assert (
         module.execute_dump_command(
             database={'name': 'foo'},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -265,7 +248,6 @@ def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
     assert (
         module.execute_dump_command(
             database={'name': 'foo', 'add_drop_database': False},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -304,7 +286,6 @@ def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
     assert (
         module.execute_dump_command(
             database={'name': 'foo', 'hostname': 'database.example.org', 'port': 5433},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -339,7 +320,6 @@ def test_execute_dump_command_runs_mysqldump_with_username_and_password():
     assert (
         module.execute_dump_command(
             database={'name': 'foo', 'username': 'root', 'password': 'trustsome1'},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment={'MYSQL_PWD': 'trustsome1'},
@@ -373,7 +353,6 @@ def test_execute_dump_command_runs_mysqldump_with_options():
     assert (
         module.execute_dump_command(
             database={'name': 'foo', 'options': '--stuff=such'},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -409,7 +388,6 @@ def test_execute_dump_command_runs_non_default_mysqldump():
                 'name': 'foo',
                 'mysql_dump_command': 'custom_mysqldump',
             },  # Custom MySQL dump command specified
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -429,7 +407,6 @@ def test_execute_dump_command_with_duplicate_dump_skips_mysqldump():
     assert (
         module.execute_dump_command(
             database={'name': 'foo'},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -450,7 +427,6 @@ def test_execute_dump_command_with_dry_run_skips_mysqldump():
     assert (
         module.execute_dump_command(
             database={'name': 'foo'},
-            log_prefix='log',
             dump_path=flexmock(),
             database_names=('foo',),
             extra_environment=None,
@@ -473,7 +449,6 @@ def test_dump_data_sources_errors_for_missing_all_databases():
         assert module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -493,7 +468,6 @@ def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run
         module.dump_data_sources(
             databases,
             {},
-            'test.yaml',
             config_paths=('test.yaml',),
             borgmatic_runtime_directory='/run/borgmatic',
             patterns=[],
@@ -518,7 +492,6 @@ def test_restore_data_source_dump_runs_mysql_to_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
@@ -547,7 +520,6 @@ def test_restore_data_source_dump_runs_mysql_with_options():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -576,7 +548,6 @@ def test_restore_data_source_dump_runs_non_default_mysql_with_options():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -614,7 +585,6 @@ def test_restore_data_source_dump_runs_mysql_with_hostname_and_port():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -643,7 +613,6 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -693,7 +662,6 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
@@ -745,7 +713,6 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source=hook_config[0],
         dry_run=False,
         extract_process=extract_process,
@@ -767,7 +734,6 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     module.restore_data_source_dump(
         hook_config,
         {},
-        'test.yaml',
         data_source={'name': 'foo'},
         dry_run=True,
         extract_process=flexmock(),
