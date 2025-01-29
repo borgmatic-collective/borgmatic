@@ -60,7 +60,9 @@ class Background_web_server:
         self.expected_request_count = expected_request_count
 
     def __enter__(self):
-        self.thread = threading.Thread(target=lambda: serve_web_request(count=self.expected_request_count))
+        self.thread = threading.Thread(
+            target=lambda: serve_web_request(count=self.expected_request_count)
+        )
         self.thread.start()
 
     def __exit__(self, exception, value, traceback):
@@ -106,7 +108,7 @@ START_LOG_AND_FINISH = 3
             'zabbix:\n    itemid: 1\n    server: http://localhost:12345/zabbix/api_jsonrpc.php\n    api_key: mykey\n    states: [start, finish]',
             START_AND_FINISH,
         ),
-   ),
+    ),
 )
 def test_borgmatic_command(monitoring_hook_configuration, expected_request_count):
     # Create a Borg repository.
