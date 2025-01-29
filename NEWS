@@ -1,7 +1,9 @@
 1.9.9.dev0
- * #981: Fix "spot" check file count delta error.
+ * #981: Fix a "spot" check file count delta error.
  * #982: Fix for borgmatic "exclude_patterns" and "exclude_from" recursing into excluded
    subdirectories.
+ * #983: Fix the Btrfs hook to support subvolumes with names like "@home", different from their
+   mount points.
 
 1.9.8
  * #979: Fix root patterns so they don't have an invalid "sh:" prefix before getting passed to Borg.

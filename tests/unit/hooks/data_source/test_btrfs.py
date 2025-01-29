@@ -5,7 +5,7 @@ from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import btrfs as module
 
 
-def test_get_filesystem_mount_points_parses_findmnt_output():
+def test_get_subvolume_mount_points_parses_findmnt_output():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -28,113 +28,60 @@ def test_get_filesystem_mount_points_parses_findmnt_output():
         '''
     )
 
-    assert module.get_filesystem_mount_points('findmnt') == ('/mnt0', '/mnt1')
+    assert module.get_subvolume_mount_points('findmnt') == ('/mnt0', '/mnt1')
 
 
-def test_get_filesystem_mount_points_with_invalid_findmnt_json_errors():
+def test_get_subvolume_mount_points_with_invalid_findmnt_json_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return('{')
 
     with pytest.raises(ValueError):
-        module.get_filesystem_mount_points('findmnt')
+        module.get_subvolume_mount_points('findmnt')
 
 
-def test_get_filesystem_mount_points_with_findmnt_json_missing_filesystems_errors():
+def test_get_subvolume_mount_points_with_findmnt_json_missing_filesystems_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return('{"wtf": "something is wrong here"}')
 
     with pytest.raises(ValueError):
-        module.get_filesystem_mount_points('findmnt')
+        module.get_subvolume_mount_points('findmnt')
 
 
-def test_get_subvolumes_for_filesystem_parses_subvolume_list_output():
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
-    ).and_return(
-        'ID 270 gen 107 top level 5 path subvol1\nID 272 gen 74 top level 5 path subvol2\n'
-    )
+def test_get_subvolumes_collects_subvolumes_matching_patterns():
+    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
 
-    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == (
-        '/mnt',
-        '/mnt/subvol1',
-        '/mnt/subvol2',
-    )
-
-
-def test_get_subvolumes_for_filesystem_skips_empty_subvolume_paths():
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
-    ).and_return('\n \nID 272 gen 74 top level 5 path subvol2\n')
-
-    assert module.get_subvolumes_for_filesystem('btrfs', '/mnt') == ('/mnt', '/mnt/subvol2')
-
-
-def test_get_subvolumes_for_filesystem_skips_empty_filesystem_mount_points():
-    flexmock(module.borgmatic.execute).should_receive(
-        'execute_command_and_capture_output'
-    ).and_return(
-        'ID 270 gen 107 top level 5 path subvol1\nID 272 gen 74 top level 5 path subvol2\n'
-    )
-
-    assert module.get_subvolumes_for_filesystem('btrfs', ' ') == ()
-
-
-def test_get_subvolumes_collects_subvolumes_matching_patterns_from_all_filesystems():
-    flexmock(module).should_receive('get_filesystem_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('get_subvolumes_for_filesystem').with_args(
-        'btrfs', '/mnt1'
-    ).and_return(('/one', '/two'))
-    flexmock(module).should_receive('get_subvolumes_for_filesystem').with_args(
-        'btrfs', '/mnt2'
-    ).and_return(('/three', '/four'))
-
-    for path in ('/one', '/four'):
-        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_patterns'
-        ).with_args(path, object).and_return((Pattern(path),))
-    for path in ('/two', '/three'):
-        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_patterns'
-        ).with_args(path, object).and_return(())
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt1', object).and_return((Pattern('/mnt1'),))
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt2', object).and_return(())
 
     assert module.get_subvolumes(
         'btrfs',
         'findmnt',
         patterns=[
-            Pattern('/one'),
-            Pattern('/four'),
-            Pattern('/five'),
-            Pattern('/six'),
-            Pattern('/mnt2'),
+            Pattern('/mnt1'),
             Pattern('/mnt3'),
         ],
-    ) == (
-        module.Subvolume('/four', contained_patterns=(Pattern('/four'),)),
-        module.Subvolume('/one', contained_patterns=(Pattern('/one'),)),
-    )
+    ) == (module.Subvolume('/mnt1', contained_patterns=(Pattern('/mnt1'),)),)
 
 
-def test_get_subvolumes_without_patterns_collects_all_subvolumes_from_all_filesystems():
-    flexmock(module).should_receive('get_filesystem_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('get_subvolumes_for_filesystem').with_args(
-        'btrfs', '/mnt1'
-    ).and_return(('/one', '/two'))
-    flexmock(module).should_receive('get_subvolumes_for_filesystem').with_args(
-        'btrfs', '/mnt2'
-    ).and_return(('/three', '/four'))
+def test_get_subvolumes_without_patterns_collects_all_subvolumes():
+    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
 
-    for path in ('/one', '/two', '/three', '/four'):
-        flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
-            'get_contained_patterns'
-        ).with_args(path, object).and_return((Pattern(path),))
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt1', object).and_return((Pattern('/mnt1'),))
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt2', object).and_return((Pattern('/mnt2'),))
 
     assert module.get_subvolumes('btrfs', 'findmnt') == (
-        module.Subvolume('/four', contained_patterns=(Pattern('/four'),)),
-        module.Subvolume('/one', contained_patterns=(Pattern('/one'),)),
-        module.Subvolume('/three', contained_patterns=(Pattern('/three'),)),
-        module.Subvolume('/two', contained_patterns=(Pattern('/two'),)),
+        module.Subvolume('/mnt1', contained_patterns=(Pattern('/mnt1'),)),
+        module.Subvolume('/mnt2', contained_patterns=(Pattern('/mnt2'),)),
     )
 
 
