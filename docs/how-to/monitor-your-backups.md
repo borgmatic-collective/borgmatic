@@ -478,22 +478,18 @@ your Loki API push URL. Here's an example:
 ```yaml
 loki:
     url: http://localhost:3100/loki/api/v1/push
+
+    labels:
+        app: borgmatic
+        hostname: example.org
 ```
 
 With this configuration, borgmatic sends its logs to your Loki instance as any
 of the `create`, `prune`, `compact`, or `check` actions are run. Then, after
 the actions complete, borgmatic notifies Loki of success or failure.
 
-This hook supports sending arbitrary labels to Loki. For instance:
-
-```yaml
-loki:
-    url: http://localhost:3100/loki/api/v1/push
-
-    labels:
-        app: borgmatic
-        hostname: example.org
-```
+This hook supports sending arbitrary labels to Loki. At least one label is
+required.
 
 There are also a few placeholders you can optionally use as label values:
 
