@@ -1,5 +1,7 @@
 1.9.9.dev0
  * #635: Log the repository path or label on every relevant log message, not just some logs.
+ * #961: Add a passcommand hook so borgmatic can collect the encryption passphrase once and pass it
+   to Borg multiple times.
  * #981: Fix a "spot" check file count delta error.
  * #982: Fix for borgmatic "exclude_patterns" and "exclude_from" recursing into excluded
    subdirectories.
