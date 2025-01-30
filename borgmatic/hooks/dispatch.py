@@ -3,6 +3,7 @@ import importlib
 import logging
 import pkgutil
 
+import borgmatic.hooks.credential
 import borgmatic.hooks.data_source
 import borgmatic.hooks.monitoring
 
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Hook_type(enum.Enum):
+    CREDENTIAL = 'credential'
     DATA_SOURCE = 'data_source'
     MONITORING = 'monitoring'
 
@@ -40,7 +42,7 @@ def call_hook(function_name, config, hook_name, *args, **kwargs):
     module_name = hook_name.split('_databases')[0]
 
     # Probe for a data source or monitoring hook module corresponding to the hook name.
-    for parent_module in (borgmatic.hooks.data_source, borgmatic.hooks.monitoring):
+    for parent_module in (borgmatic.hooks.credential, borgmatic.hooks.data_source, borgmatic.hooks.monitoring):
         if module_name not in get_submodule_names(parent_module):
             continue
 
@@ -62,8 +64,8 @@ def call_hook(function_name, config, hook_name, *args, **kwargs):
 def call_hooks(function_name, config, hook_type, *args, **kwargs):
     '''
     Given a configuration dict, call the requested function of the Python module corresponding to
-    each hook of the given hook type (either "data_source" or "monitoring"). Supply each call with
-    the configuration for that hook, and any given args and kwargs.
+    each hook of the given hook type ("credential", "data_source", or "monitoring"). Supply each
+    call with the configuration for that hook, and any given args and kwargs.
 
     Collect any return values into a dict from module name to return value. Note that the module
     name is the name of the hook module itself, which might be different from the hook configuration
@@ -88,9 +90,9 @@ def call_hooks(function_name, config, hook_type, *args, **kwargs):
 def call_hooks_even_if_unconfigured(function_name, config, hook_type, *args, **kwargs):
     '''
     Given a configuration dict, call the requested function of the Python module corresponding to
-    each hook of the given hook type (either "data_source" or "monitoring"). Supply each call with
-    the configuration for that hook and any given args and kwargs. Collect any return values into a
-    dict from hook name to return value.
+    each hook of the given hook type ("credential", "data_source", or "monitoring"). Supply each
+    call with the configuration for that hook and any given args and kwargs. Collect any return
+    values into a dict from hook name to return value.
 
     Raise AttributeError if the function name is not found in the module.
     Raise anything else that a called function raises. An error stops calls to subsequent functions.

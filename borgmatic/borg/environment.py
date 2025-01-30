@@ -1,5 +1,7 @@
 import os
 
+import borgmatic.hooks.dispatch
+
 OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_base_directory': 'BORG_BASE_DIR',
     'borg_config_directory': 'BORG_CONFIG_DIR',
@@ -7,7 +9,6 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_files_cache_ttl': 'BORG_FILES_CACHE_TTL',
     'borg_security_directory': 'BORG_SECURITY_DIR',
     'borg_keys_directory': 'BORG_KEYS_DIR',
-    'encryption_passcommand': 'BORG_PASSCOMMAND',
     'encryption_passphrase': 'BORG_PASSPHRASE',
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
@@ -35,6 +36,24 @@ def make_environment(config):
 
         if value:
             environment[environment_variable_name] = str(value)
+
+    passphrase = borgmatic.hooks.dispatch.call_hook(
+        function_name='load_credential',
+        config=config,
+        hook_name='passcommand',
+        credential_name='encryption_passphrase',
+    )
+
+    # If the passcommand produced a passphrase, send it to Borg via an anonymous pipe.
+    if passphrase:
+        read_file_descriptor, write_file_descriptor = os.pipe()
+        os.write(write_file_descriptor, passphrase.encode('utf-8'))
+        os.close(write_file_descriptor)
+
+        # This, plus subprocess.Popen(..., close_fds=False) in execute.py, is necessary for the Borg
+        # child process to inherit the file descriptor.
+        os.set_inheritable(read_file_descriptor, True)
+        environment['BORG_PASSPHRASE_FD'] = str(read_file_descriptor)
 
     for (
         option_name,

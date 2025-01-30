@@ -307,6 +307,8 @@ def execute_command(
         shell=shell,
         env=environment,
         cwd=working_directory,
+        # Necessary for the passcommand credential hook to work.
+        close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
     )
     if not run_to_completion:
         return process
@@ -354,6 +356,8 @@ def execute_command_and_capture_output(
             shell=shell,
             env=environment,
             cwd=working_directory,
+            # Necessary for the passcommand credential hook to work.
+            close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
         )
     except subprocess.CalledProcessError as error:
         if (
@@ -414,6 +418,8 @@ def execute_command_with_processes(
             shell=shell,
             env=environment,
             cwd=working_directory,
+            # Necessary for the passcommand credential hook to work.
+            close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
         )
     except (subprocess.CalledProcessError, OSError):
         # Something has gone wrong. So vent each process' output buffer to prevent it from hanging.
