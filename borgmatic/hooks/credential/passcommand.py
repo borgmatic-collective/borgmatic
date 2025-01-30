@@ -36,7 +36,7 @@ def load_credential(hook_config, config, credential_name):
     '''
     Given the hook configuration dict, the configuration dict, and a credential name to load, call
     the configured passcommand to produce and return an encryption passphrase. In effect, we're
-    doing an end-run around Borg by invoking its passcommand ourself. This allows us to pass the
+    doing an end-run around Borg by invoking its passcommand ourselves. This allows us to pass the
     resulting passphrase to multiple different Borg invocations without the user having to be
     prompted multiple times.
 
