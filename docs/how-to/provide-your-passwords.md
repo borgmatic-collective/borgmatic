@@ -24,10 +24,28 @@ or security reasons, read on.
 borgmatic supports calling another application such as a password manager to 
 obtain the Borg passphrase to a repository.
 
-For example, to ask the *Pass* password manager to provide the passphrase:
+For example, to ask the [Pass](https://www.passwordstore.org/) password manager
+to provide the passphrase:
+
 ```yaml
-encryption_passcommand: pass path/to/borg-repokey
+encryption_passcommand: pass path/to/borg-passphrase
 ```
+
+Another example for [KeePassXC](https://keepassxc.org/):
+
+```yaml
+encryption_passcommand: keepassxc-cli show --show-protected --attributes Password credentials.kdbx borg_passphrase
+```
+
+... where `borg_passphrase` is the title of the KeePassXC entry containing your
+Borg encryption passphrase in its `Password` field.
+
+<span class="minilink minilink-addedin">New in version 1.9.9</span> Instead of
+letting Borg run the passcommand—potentially mulitple times since borgmatic runs
+Borg multiple times—borgmatic now runs the passcommand itself and passes it
+securely to Borg via an anonymous pipe. This means you should only ever get
+prompted for your password manager's passphrase at most once per borgmatic run.
+
 
 ### Using systemd service credentials
 
