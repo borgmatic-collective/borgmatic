@@ -5,8 +5,6 @@ import subprocess
 import sys
 import tempfile
 
-import pytest
-
 
 def generate_configuration(config_path, repository_path):
     '''
@@ -59,7 +57,6 @@ def test_borgmatic_command():
 
         assert len(parsed_output) == 1
         assert len(parsed_output[0]['archives']) == 1
-        archive_name = parsed_output[0]['archives'][0]['archive']
     finally:
         os.chdir(original_working_directory)
         shutil.rmtree(temporary_directory)
