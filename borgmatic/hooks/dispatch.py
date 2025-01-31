@@ -42,7 +42,11 @@ def call_hook(function_name, config, hook_name, *args, **kwargs):
     module_name = hook_name.split('_databases')[0]
 
     # Probe for a data source or monitoring hook module corresponding to the hook name.
-    for parent_module in (borgmatic.hooks.credential, borgmatic.hooks.data_source, borgmatic.hooks.monitoring):
+    for parent_module in (
+        borgmatic.hooks.credential,
+        borgmatic.hooks.data_source,
+        borgmatic.hooks.monitoring,
+    ):
         if module_name not in get_submodule_names(parent_module):
             continue
 
