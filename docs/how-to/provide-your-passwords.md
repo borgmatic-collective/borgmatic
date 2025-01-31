@@ -41,10 +41,11 @@ encryption_passcommand: keepassxc-cli show --show-protected --attributes Passwor
 Borg encryption passphrase in its `Password` field.
 
 <span class="minilink minilink-addedin">New in version 1.9.9</span> Instead of
-letting Borg run the passcommand—potentially mulitple times since borgmatic runs
-Borg multiple times—borgmatic now runs the passcommand itself and passes it
-securely to Borg via an anonymous pipe. This means you should only ever get
-prompted for your password manager's passphrase at most once per borgmatic run.
+letting Borg run the passcommand—potentially multiple times since borgmatic runs
+Borg multiple times—borgmatic now runs the passcommand itself and passes the
+resulting passprhase securely to Borg via an anonymous pipe. This means you
+should only ever get prompted for your password manager's passphrase at most
+once per borgmatic run.
 
 
 ### Using systemd service credentials

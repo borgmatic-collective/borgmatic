@@ -2,10 +2,8 @@ import functools
 import logging
 import shlex
 
-
 import borgmatic.config.paths
 import borgmatic.execute
-
 
 logger = logging.getLogger(__name__)
 
