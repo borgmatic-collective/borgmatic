@@ -18,6 +18,9 @@ def test_call_hook_invokes_module_function_with_arguments_and_returns_value():
     expected_return_value = flexmock()
     test_module = sys.modules[__name__]
     flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
+    flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
@@ -39,6 +42,9 @@ def test_call_hook_probes_config_with_databases_suffix():
     config = {'super_hook_databases': flexmock(), 'other_hook': flexmock()}
     expected_return_value = flexmock()
     test_module = sys.modules[__name__]
+    flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])
@@ -62,6 +68,9 @@ def test_call_hook_strips_databases_suffix_from_hook_name():
     expected_return_value = flexmock()
     test_module = sys.modules[__name__]
     flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
+    flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
@@ -84,6 +93,9 @@ def test_call_hook_without_hook_config_invokes_module_function_with_arguments_an
     expected_return_value = flexmock()
     test_module = sys.modules[__name__]
     flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
+    flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
@@ -105,6 +117,9 @@ def test_call_hook_without_corresponding_module_raises():
     config = {'super_hook': flexmock(), 'other_hook': flexmock()}
     test_module = sys.modules[__name__]
     flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
+    flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
@@ -121,6 +136,9 @@ def test_call_hook_without_corresponding_module_raises():
 
 def test_call_hook_skips_non_hook_modules():
     config = {'not_a_hook': flexmock(), 'other_hook': flexmock()}
+    flexmock(module).should_receive('get_submodule_names').with_args(
+        module.borgmatic.hooks.credential
+    ).and_return(['other_hook'])
     flexmock(module).should_receive('get_submodule_names').with_args(
         module.borgmatic.hooks.data_source
     ).and_return(['other_hook'])

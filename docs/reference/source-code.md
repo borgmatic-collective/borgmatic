@@ -18,6 +18,7 @@ you get started. Starting at the top level, we have:
    * [commands](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/commands): Looking to add a new flag or action? Start here. This contains borgmatic's entry point, argument parsing, and shell completion. 
    * [config](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/config): Code responsible for loading, normalizing, and validating borgmatic's configuration. Interested in adding a new configuration option? Check out `schema.yaml` here.
    * [hooks](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks): Looking to add a new database, filesystem, or monitoring integration? Start here.
+     * [credential](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks/credential): Credential hooks—for loading passphrases and secrets from external providers.
      * [data_source](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks/data_source): Database and filesystem hooks—anything that produces data or files to go into a backup archive.
      * [monitoring](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/borgmatic/hooks/monitoring): Monitoring hooks—integrations with third-party or self-hosted monitoring services.
  * [docs](https://projects.torsion.org/borgmatic-collective/borgmatic/src/branch/main/docs): How-to and reference documentation, including the document you're reading now.
