@@ -4,7 +4,9 @@ from borgmatic.borg import environment as module
 
 
 def test_make_environment_with_passcommand_should_call_it_and_set_passphrase_file_descriptor_in_environment():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return('passphrase')
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return('passphrase')
     flexmock(module.os).should_receive('pipe').and_return((3, 4))
     flexmock(module.os).should_receive('write')
     flexmock(module.os).should_receive('close')
@@ -17,7 +19,9 @@ def test_make_environment_with_passcommand_should_call_it_and_set_passphrase_fil
 
 
 def test_make_environment_with_passphrase_should_set_environment():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'encryption_passphrase': 'pass'})
@@ -26,7 +30,9 @@ def test_make_environment_with_passphrase_should_set_environment():
 
 
 def test_make_environment_with_ssh_command_should_set_environment():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'ssh_command': 'ssh -C'})
@@ -35,7 +41,9 @@ def test_make_environment_with_ssh_command_should_set_environment():
 
 
 def test_make_environment_without_configuration_sets_certain_environment_variables():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({})
@@ -49,7 +57,9 @@ def test_make_environment_without_configuration_sets_certain_environment_variabl
 
 
 def test_make_environment_without_configuration_does_not_set_certain_environment_variables_if_already_set():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').with_args(
         'BORG_RELOCATED_REPO_ACCESS_IS_OK'
@@ -63,7 +73,9 @@ def test_make_environment_without_configuration_does_not_set_certain_environment
 
 
 def test_make_environment_with_relocated_repo_access_true_should_set_environment_yes():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'relocated_repo_access_is_ok': True})
@@ -72,7 +84,9 @@ def test_make_environment_with_relocated_repo_access_true_should_set_environment
 
 
 def test_make_environment_with_relocated_repo_access_false_should_set_environment_no():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'relocated_repo_access_is_ok': False})
@@ -81,7 +95,9 @@ def test_make_environment_with_relocated_repo_access_false_should_set_environmen
 
 
 def test_make_environment_check_i_know_what_i_am_doing_true_should_set_environment_YES():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'check_i_know_what_i_am_doing': True})
@@ -90,7 +106,9 @@ def test_make_environment_check_i_know_what_i_am_doing_true_should_set_environme
 
 
 def test_make_environment_check_i_know_what_i_am_doing_false_should_set_environment_NO():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'check_i_know_what_i_am_doing': False})
@@ -99,7 +117,9 @@ def test_make_environment_check_i_know_what_i_am_doing_false_should_set_environm
 
 
 def test_make_environment_with_integer_variable_value():
-    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').and_return(None)
+    flexmock(module.borgmatic.borg.passcommand).should_receive(
+        'get_passphrase_from_passcommand'
+    ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
     environment = module.make_environment({'borg_files_cache_ttl': 40})

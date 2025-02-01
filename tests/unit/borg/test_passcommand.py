@@ -1,7 +1,6 @@
-import pytest
 from flexmock import flexmock
 
-from borgmatic.hooks.credential import passcommand as module
+from borgmatic.borg import passcommand as module
 
 
 def test_run_passcommand_with_passphrase_configured_bails():
@@ -24,12 +23,7 @@ def test_run_passcommand_without_passphrase_configured_executes_passcommand():
     )
 
 
-def test_load_credential_with_unknown_credential_name_errors():
-    with pytest.raises(ValueError):
-        module.load_credential(hook_config={}, config={}, credential_name='wtf')
-
-
-def test_load_credential_with_configured_passcommand_runs_it():
+def test_get_passphrase_from_passcommand_with_configured_passcommand_runs_it():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -38,16 +32,14 @@ def test_load_credential_with_configured_passcommand_runs_it():
     ).and_return('passphrase').once()
 
     assert (
-        module.load_credential(
-            hook_config={},
-            config={'encryption_passcommand': 'command'},
-            credential_name='encryption_passphrase',
+        module.get_passphrase_from_passcommand(
+            {'encryption_passcommand': 'command'},
         )
         == 'passphrase'
     )
 
 
-def test_load_credential_with_configured_passphrase_and_passcommand_detects_passphrase():
+def test_get_passphrase_from_passcommand_with_configured_passphrase_and_passcommand_detects_passphrase():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -56,10 +48,8 @@ def test_load_credential_with_configured_passphrase_and_passcommand_detects_pass
     ).and_return(None).once()
 
     assert (
-        module.load_credential(
-            hook_config={},
-            config={'encryption_passphrase': 'passphrase', 'encryption_passcommand': 'command'},
-            credential_name='encryption_passphrase',
+        module.get_passphrase_from_passcommand(
+            {'encryption_passphrase': 'passphrase', 'encryption_passcommand': 'command'},
         )
         is None
     )

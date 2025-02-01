@@ -1,6 +1,6 @@
 import os
 
-import borgmatic.hooks.dispatch
+import borgmatic.borg.passcommand
 
 OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_base_directory': 'BORG_BASE_DIR',
@@ -37,12 +37,7 @@ def make_environment(config):
         if value:
             environment[environment_variable_name] = str(value)
 
-    passphrase = borgmatic.hooks.dispatch.call_hook(
-        function_name='load_credential',
-        config=config,
-        hook_name='passcommand',
-        credential_name='encryption_passphrase',
-    )
+    passphrase = borgmatic.borg.passcommand.get_passphrase_from_passcommand(config)
 
     # If the passcommand produced a passphrase, send it to Borg via an anonymous pipe.
     if passphrase:

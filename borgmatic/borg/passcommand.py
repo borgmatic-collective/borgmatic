@@ -30,24 +30,15 @@ def run_passcommand(passcommand, passphrase_configured, working_directory):
     )
 
 
-def load_credential(hook_config, config, credential_name):
+def get_passphrase_from_passcommand(config):
     '''
-    Given the hook configuration dict, the configuration dict, and a credential name to load, call
-    the configured passcommand to produce and return an encryption passphrase. In effect, we're
-    doing an end-run around Borg by invoking its passcommand ourselves. This allows us to pass the
-    resulting passphrase to multiple different Borg invocations without the user having to be
-    prompted multiple times.
+    Given the configuration dict, call the configured passcommand to produce and return an
+    encryption passphrase. In effect, we're doing an end-run around Borg by invoking its passcommand
+    ourselves. This allows us to pass the resulting passphrase to multiple different Borg
+    invocations without the user having to be prompted multiple times.
 
     If no passcommand is configured, then return None.
-
-    The credential name must be "encryption_passphrase"; that's the only supported credential with
-    this particular hook.
     '''
-    if credential_name != 'encryption_passphrase':
-        raise ValueError(
-            f'Credential name "{credential_name}" is not supported for the passphrase credential hook'
-        )
-
     passcommand = config.get('encryption_passcommand')
 
     if not passcommand:
