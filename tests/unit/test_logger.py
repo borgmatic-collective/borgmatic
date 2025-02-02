@@ -360,6 +360,78 @@ def test_log_prefix_sets_prefix_and_then_restores_original_prefix_after():
         pass
 
 
+def test_delayed_logging_handler_should_flush_without_targets_returns_false():
+    handler = module.Delayed_logging_handler()
+
+    assert handler.shouldFlush(flexmock()) is False
+
+
+def test_delayed_logging_handler_should_flush_with_targets_returns_true():
+    handler = module.Delayed_logging_handler()
+    handler.targets = [flexmock()]
+
+    assert handler.shouldFlush(flexmock()) is True
+
+
+def test_delayed_logging_handler_flush_without_targets_does_not_raise():
+    handler = module.Delayed_logging_handler()
+    flexmock(handler).should_receive('acquire')
+    flexmock(handler).should_receive('release')
+
+    handler.flush()
+
+
+def test_delayed_logging_handler_flush_with_empty_buffer_does_not_raise():
+    handler = module.Delayed_logging_handler()
+    flexmock(handler).should_receive('acquire')
+    flexmock(handler).should_receive('release')
+    handler.targets = [flexmock()]
+
+    handler.flush()
+
+
+def test_delayed_logging_handler_flush_forwards_each_record_to_each_target():
+    handler = module.Delayed_logging_handler()
+    flexmock(handler).should_receive('acquire')
+    flexmock(handler).should_receive('release')
+    handler.targets = [flexmock(), flexmock()]
+    handler.buffer = [flexmock(), flexmock()]
+    handler.targets[0].should_receive('handle').with_args(handler.buffer[0]).once()
+    handler.targets[1].should_receive('handle').with_args(handler.buffer[0]).once()
+    handler.targets[0].should_receive('handle').with_args(handler.buffer[1]).once()
+    handler.targets[1].should_receive('handle').with_args(handler.buffer[1]).once()
+
+    handler.flush()
+
+    assert handler.buffer == []
+
+
+def test_flush_delayed_logging_without_handlers_does_not_raise():
+    root_logger = flexmock(handlers=[])
+    root_logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(root_logger)
+
+    module.flush_delayed_logging([flexmock()])
+
+
+def test_flush_delayed_logging_without_delayed_logging_handler_does_not_raise():
+    root_logger = flexmock(handlers=[flexmock()])
+    root_logger.should_receive('removeHandler')
+    flexmock(module.logging).should_receive('getLogger').and_return(root_logger)
+
+    module.flush_delayed_logging([flexmock()])
+
+
+def test_flush_delayed_logging_flushes_delayed_logging_handler():
+    delayed_logging_handler = module.Delayed_logging_handler()
+    root_logger = flexmock(handlers=[delayed_logging_handler])
+    flexmock(module.logging).should_receive('getLogger').and_return(root_logger)
+    flexmock(delayed_logging_handler).should_receive('flush').once()
+    root_logger.should_receive('removeHandler')
+
+    module.flush_delayed_logging([flexmock()])
+
+
 def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
@@ -369,6 +441,7 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_linux(
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
     flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -390,6 +463,7 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_macos(
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
     flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -412,6 +486,7 @@ def test_configure_logging_with_syslog_log_level_probes_for_log_socket_on_freebs
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
     flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -434,6 +509,7 @@ def test_configure_logging_without_syslog_log_level_skips_syslog():
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -451,6 +527,7 @@ def test_configure_logging_skips_syslog_if_not_found():
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -469,6 +546,7 @@ def test_configure_logging_skips_log_file_if_log_file_logging_is_disabled():
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -490,6 +568,7 @@ def test_configure_logging_to_log_file_instead_of_syslog():
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -517,6 +596,7 @@ def test_configure_logging_to_both_log_file_and_syslog():
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -553,6 +633,7 @@ def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
     flexmock(module).should_receive('interactive_console').and_return(False)
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.DEBUG, handlers=list
     )
@@ -580,6 +661,7 @@ def test_configure_logging_skips_log_file_if_argument_is_none():
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )
@@ -599,6 +681,7 @@ def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)
 
+    flexmock(module).should_receive('flush_delayed_logging')
     flexmock(module.logging).should_receive('basicConfig').with_args(
         level=logging.INFO, handlers=list
     )

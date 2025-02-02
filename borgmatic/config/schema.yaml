@@ -751,12 +751,112 @@ properties:
             Restrict the number of checked archives to the last n. Applies only
             to the "archives" check. Defaults to checking all archives.
         example: 3
-    color:
-        type: boolean
+    logging:
+        type: object
+        additionalProperties: false
+        properties:
+            console:
+                type: object
+                additionalProperties: false
+                properties:
+                    verbosity:
+                        type: integer
+                        enum:
+                            - -2
+                            - -1
+                            - 0
+                            - 1
+                            - 2
+                        description: |
+                            Display verbose progress to the console: -2
+                            (disabled), -1 (errors only), 0 (responses to
+                            actions, the default), 1 (info about steps borgmatic
+                            is taking), or 2 (debug).
+                        example: 2
+                    color:
+                        type: boolean
+                        description: |
+                            Apply color to console output. Can be overridden with --no-color
+                            command-line flag. Defaults to true.
+                        example: false
+            syslog:
+                type: object
+                additionalProperties: false
+                properties:
+                    verbosity:
+                        type: integer
+                        enum:
+                            - -2
+                            - -1
+                            - 0
+                            - 1
+                            - 2
+                        description: |
+                            Log verbose progress to syslog: -2 (disabled, the
+                            default), -1 (errors only), 0 (responses to
+                            actions), 1 (info about steps borgmatic is taking),
+                            or 2 (debug).
+                        example: 2
+            file:
+                type: object
+                required: ['path']
+                additionalProperties: false
+                properties:
+                    verbosity:
+                        type: integer
+                        enum:
+                            - -2
+                            - -1
+                            - 0
+                            - 1
+                            - 2
+                        description: |
+                            Log verbose progress to file: -2 (disabled), -1
+                            (errors only), 0 (responses to actions), 1 (info
+                            about steps borgmatic is taking, the default), or 2
+                            (debug).
+                        example: 2
+                    path:
+                        type: string
+                        description: |
+                            Write log messages to this file instead of syslog.
+                        example: /var/log/borgmatic/logfile.txt
+                    format:
+                        type: string
+                        description: |
+                            Python format string used for log messages written
+                            to the log file.
+                        example: "%(asctime)s %(message)s"
+                            
+            monitoring:
+                type: object
+                additionalProperties: false
+                properties:
+                    verbosity:
+                        type: integer
+                        enum:
+                            - -2
+                            - -1
+                            - 0
+                            - 1
+                            - 2
+                        description: |
+                            When a monitoring integration supporting logging is
+                            configured, log verbose progress to it: -2
+                            (disabled), -1 (errors only), responses to actions
+                            (0), 1 (info about steps borgmatic is taking, the
+                            default), or 2 (debug).
+                        example: 2
+            json:
+                type: boolean
+                description: |
+                    Write Borg log messages and console output as one JSON
+                    object per log line instead of formatted text. Defaults to
+                    false.
+                example: true
         description: |
-            Apply color to console output. Can be overridden with --no-color
-            command-line flag. Defaults to true.
-        example: false
+            Settings for where to log borgmatic progress and how verbose those
+            logs should be.
     skip_actions:
         type: array
         items:

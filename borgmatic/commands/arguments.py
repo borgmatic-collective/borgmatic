@@ -349,12 +349,12 @@ def make_parsers():
     global_group.add_argument(
         '--log-file-format',
         type=str,
-        help='Log format string used for log messages written to the log file',
+        help='Python format string used for log messages written to the log file',
     )
     global_group.add_argument(
         '--log-json',
         action='store_true',
-        help='Write log messages and console output as one JSON object per log line instead of formatted text',
+        help='Write Borg log messages and console output as one JSON object per log line instead of formatted text',
     )
     global_group.add_argument(
         '--override',
