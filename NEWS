@@ -8,6 +8,9 @@
    subdirectories.
  * #983: Fix the Btrfs hook to support subvolumes with names like "@home", different from their
    mount points.
+ * #985: Change the default value for the "--original-hostname" flag from "localhost" to no host
+   specified. This way, the "restore" action works without a hostname if there's a single matching
+   dump.
 
 1.9.8
  * #979: Fix root patterns so they don't have an invalid "sh:" prefix before getting passed to Borg.

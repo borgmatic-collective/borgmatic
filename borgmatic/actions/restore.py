@@ -57,7 +57,7 @@ def render_dump_metadata(dump):
     Given a Dump instance, make a display string describing it for use in log messages.
     '''
     name = 'unspecified' if dump.data_source_name is UNSPECIFIED else dump.data_source_name
-    hostname = dump.hostname or 'localhost'
+    hostname = dump.hostname or UNSPECIFIED
     port = None if dump.port is UNSPECIFIED else dump.port
 
     if port:
@@ -343,12 +343,15 @@ def get_dumps_to_restore(restore_arguments, dumps_from_archive):
                     else UNSPECIFIED
                 ),
                 data_source_name=name,
-                hostname=restore_arguments.original_hostname or 'localhost',
+                hostname=restore_arguments.original_hostname or UNSPECIFIED,
                 port=restore_arguments.original_port,
             )
-            for name in restore_arguments.data_sources
+            for name in restore_arguments.data_sources or (UNSPECIFIED,)
         }
-        if restore_arguments.data_sources
+        if restore_arguments.hook
+        or restore_arguments.data_sources
+        or restore_arguments.original_hostname
+        or restore_arguments.original_port
         else {
             Dump(
                 hook_name=UNSPECIFIED,

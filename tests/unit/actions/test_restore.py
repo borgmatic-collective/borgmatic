@@ -575,11 +575,11 @@ def test_get_dumps_to_restore_gets_requested_dumps_found_in_archive():
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'bar'),
+        module.Dump(module.UNSPECIFIED, 'bar', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'bar'),
     ).and_return(True)
 
@@ -644,11 +644,11 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_finds_all_archive_dump
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'bar'),
+        module.Dump(module.UNSPECIFIED, 'bar', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'bar'),
     ).and_return(True)
 
@@ -673,11 +673,11 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_reques
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'bar'),
+        module.Dump(module.UNSPECIFIED, 'bar', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'bar'),
     ).and_return(True)
 
@@ -698,11 +698,11 @@ def test_get_dumps_to_restore_with_all_in_requested_dumps_plus_additional_reques
 def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('mariadb_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('render_dump_metadata').and_return('test')
@@ -725,7 +725,7 @@ def test_get_dumps_to_restore_raises_for_multiple_matching_dumps_in_archive():
 def test_get_dumps_to_restore_raises_for_all_in_requested_dumps_and_requested_dumps_missing_from_archive():
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump(module.UNSPECIFIED, 'foo'),
+        module.Dump(module.UNSPECIFIED, 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
     flexmock(module).should_receive('render_dump_metadata').and_return('test')
@@ -750,7 +750,7 @@ def test_get_dumps_to_restore_with_requested_hook_name_filters_dumps_found_in_ar
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
 
@@ -775,7 +775,7 @@ def test_get_dumps_to_restore_with_requested_shortened_hook_name_filters_dumps_f
     }
     flexmock(module).should_receive('dumps_match').and_return(False)
     flexmock(module).should_receive('dumps_match').with_args(
-        module.Dump('postgresql_databases', 'foo'),
+        module.Dump('postgresql_databases', 'foo', hostname=module.UNSPECIFIED),
         module.Dump('postgresql_databases', 'foo'),
     ).and_return(True)
 
