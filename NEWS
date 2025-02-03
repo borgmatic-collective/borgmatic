@@ -1,16 +1,16 @@
 1.9.9
  * #635: Log the repository path or label on every relevant log message, not just some logs.
  * #961: When the "encryption_passcommand" option is set, call the command once from borgmatic to
-   collect the encryption passphrase and pass it to Borg multiple times. See the documentation for
-   more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+   collect the encryption passphrase and then pass it to Borg multiple times. See the documentation
+   for more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * #981: Fix a "spot" check file count delta error.
  * #982: Fix for borgmatic "exclude_patterns" and "exclude_from" recursing into excluded
    subdirectories.
- * #983: Fix the Btrfs hook to support subvolumes with names like "@home", different from their
+ * #983: Fix the Btrfs hook to support subvolumes with names like "@home" different from their
    mount points.
  * #985: Change the default value for the "--original-hostname" flag from "localhost" to no host
    specified. This way, the "restore" action works without a hostname if there's a single matching
-   dump.
+   database dump.
 
 1.9.8
  * #979: Fix root patterns so they don't have an invalid "sh:" prefix before getting passed to Borg.
