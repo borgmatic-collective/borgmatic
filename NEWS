@@ -1,3 +1,6 @@
+1.9.10.dev0
+ * #987: Fix a "list" action error when the "encryption_passcommand" option is set.
+
 1.9.9
  * #635: Log the repository path or label on every relevant log message, not just some logs.
  * #961: When the "encryption_passcommand" option is set, call the command once from borgmatic to

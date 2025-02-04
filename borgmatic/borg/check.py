@@ -152,7 +152,6 @@ def check_archives(
     max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
     umask = config.get('umask')
 
-    borg_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
     full_command = (
@@ -178,7 +177,7 @@ def check_archives(
         execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
@@ -186,7 +185,7 @@ def check_archives(
     else:
         execute_command(
             full_command,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,

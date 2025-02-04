@@ -140,7 +140,6 @@ def list_repository(
     return JSON output).
     '''
     borgmatic.logger.add_custom_log_levels()
-    borg_environment = environment.make_environment(config)
 
     main_command = make_repo_list_command(
         repository_path,
@@ -165,7 +164,7 @@ def list_repository(
 
     json_listing = execute_command_and_capture_output(
         json_command,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
@@ -179,7 +178,7 @@ def list_repository(
     execute_command(
         main_command,
         output_log_level=logging.ANSWER,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,

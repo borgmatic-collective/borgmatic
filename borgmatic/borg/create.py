@@ -122,15 +122,14 @@ def collect_special_file_paths(
     config,
     local_path,
     working_directory,
-    borg_environment,
     borgmatic_runtime_directory,
 ):
     '''
     Given a dry-run flag, a Borg create command as a tuple, a configuration dict, a local Borg path,
-    a working directory, a dict of environment variables to pass to Borg, and the borgmatic runtime
-    directory, collect the paths for any special files (character devices, block devices, and named
-    pipes / FIFOs) that Borg would encounter during a create. These are all paths that could cause
-    Borg to hang if its --read-special flag is used.
+    a working directory, and the borgmatic runtime directory, collect the paths for any special
+    files (character devices, block devices, and named pipes / FIFOs) that Borg would encounter
+    during a create. These are all paths that could cause Borg to hang if its --read-special flag is
+    used.
 
     Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
     its own special files there for database dumps. And if the borgmatic runtime directory is
@@ -144,7 +143,7 @@ def collect_special_file_paths(
         + ('--dry-run', '--list'),
         capture_stderr=True,
         working_directory=working_directory,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
@@ -299,7 +298,6 @@ def make_base_create_command(
         logger.warning(
             'Ignoring configured "read_special" value of false, as true is needed for database hooks.'
         )
-        borg_environment = environment.make_environment(config)
         working_directory = borgmatic.config.paths.get_working_directory(config)
 
         logger.debug('Collecting special file paths')
@@ -309,7 +307,6 @@ def make_base_create_command(
             config,
             local_path,
             working_directory,
-            borg_environment,
             borgmatic_runtime_directory=borgmatic_runtime_directory,
         )
 
@@ -396,8 +393,6 @@ def create_archive(
     # the terminal directly.
     output_file = DO_NOT_CAPTURE if progress else None
 
-    borg_environment = environment.make_environment(config)
-
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
         + (('--stats',) if stats and not json and not dry_run else ())
@@ -414,7 +409,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -422,7 +417,7 @@ def create_archive(
         return execute_command_and_capture_output(
             create_flags + create_positional_arguments,
             working_directory=working_directory,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -432,7 +427,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )

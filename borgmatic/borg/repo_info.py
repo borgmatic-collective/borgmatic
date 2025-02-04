@@ -50,14 +50,13 @@ def display_repository_info(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    extra_environment = environment.make_environment(config)
     working_directory = borgmatic.config.paths.get_working_directory(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
     if repo_info_arguments.json:
         return execute_command_and_capture_output(
             full_command,
-            extra_environment=extra_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
@@ -66,7 +65,7 @@ def display_repository_info(
         execute_command(
             full_command,
             output_log_level=logging.ANSWER,
-            extra_environment=extra_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,

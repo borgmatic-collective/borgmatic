@@ -44,7 +44,6 @@ def extract_last_archive_dry_run(
         return
 
     list_flag = ('--list',) if logger.isEnabledFor(logging.DEBUG) else ()
-    borg_environment = environment.make_environment(config)
     full_extract_command = (
         (local_path, 'extract', '--dry-run')
         + (('--remote-path', remote_path) if remote_path else ())
@@ -59,7 +58,7 @@ def extract_last_archive_dry_run(
 
     execute_command(
         full_extract_command,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
@@ -144,7 +143,6 @@ def extract_archive(
         + (tuple(paths) if paths else ())
     )
 
-    borg_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
     full_destination_path = (
         os.path.join(working_directory or '', destination_path) if destination_path else None
@@ -156,7 +154,7 @@ def extract_archive(
         return execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=full_destination_path,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
@@ -168,7 +166,7 @@ def extract_archive(
             full_command,
             output_file=subprocess.PIPE,
             run_to_completion=False,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=full_destination_path,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
@@ -178,7 +176,7 @@ def extract_archive(
     # if the restore paths don't exist in the archive.
     execute_command(
         full_command,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         working_directory=full_destination_path,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,

@@ -106,8 +106,6 @@ def capture_archive_listing(
     format to use for the output, and local and remote Borg paths, capture the
     output of listing that archive and return it as a list of file paths.
     '''
-    borg_environment = environment.make_environment(config)
-
     return tuple(
         execute_command_and_capture_output(
             make_list_command(
@@ -126,7 +124,7 @@ def capture_archive_listing(
                 local_path,
                 remote_path,
             ),
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=borgmatic.config.paths.get_working_directory(config),
             borg_local_path=local_path,
             borg_exit_codes=config.get('borg_exit_codes'),
@@ -194,7 +192,6 @@ def list_archive(
             'The --json flag on the list action is not supported when using the --archive/--find flags.'
         )
 
-    borg_environment = environment.make_environment(config)
     borg_exit_codes = config.get('borg_exit_codes')
 
     # If there are any paths to find (and there's not a single archive already selected), start by
@@ -224,7 +221,7 @@ def list_archive(
                     local_path,
                     remote_path,
                 ),
-                extra_environment=borg_environment,
+                extra_environment=environment.make_environment(config),
                 working_directory=borgmatic.config.paths.get_working_directory(config),
                 borg_local_path=local_path,
                 borg_exit_codes=borg_exit_codes,
@@ -260,7 +257,7 @@ def list_archive(
         execute_command(
             main_command,
             output_log_level=logging.ANSWER,
-            extra_environment=borg_environment,
+            extra_environment=environment.make_environment(config),
             working_directory=borgmatic.config.paths.get_working_directory(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
