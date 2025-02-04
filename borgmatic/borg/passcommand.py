@@ -47,4 +47,4 @@ def get_passphrase_from_passcommand(config):
     passphrase = config.get('encryption_passphrase')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    return run_passcommand(passcommand, bool(passphrase), working_directory)
+    return run_passcommand(passcommand, bool(passphrase is not None), working_directory)

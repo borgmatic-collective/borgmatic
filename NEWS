@@ -1,5 +1,7 @@
 1.9.10.dev0
  * #987: Fix a "list" action error when the "encryption_passcommand" option is set.
+ * #987: When both "encryption_passcommand" and "encryption_passphrase" are configured, prefer
+   "encryption_passphrase" even if it's an empty value.
 
 1.9.9
  * #635: Log the repository path or label on every relevant log message, not just some logs.
