@@ -30,4 +30,3 @@ regex
 requests==2.32.2
 ruamel.yaml>0.15.0
 toml==0.10.2
-typed-ast

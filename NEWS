@@ -7,6 +7,7 @@
    refused to run checks in this situation.
  * #989: Fix the log message code to avoid using Python 3.10+ logging features. Now borgmatic will
    work with Python 3.9 again.
+ * Add support for Python 3.13.
 
 1.9.9
  * #635: Log the repository path or label on every relevant log message, not just some logs.
