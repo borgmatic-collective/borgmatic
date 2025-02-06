@@ -632,8 +632,8 @@ properties:
                               long-running repository check into multiple
                               partial checks. Defaults to no interruption. Only
                               applies to the "repository" check, does not check
-                              the repository index, and is not compatible with a
-                              simultaneous "archives" check or "--repair" flag.
+                              the repository index and is not compatible with
+                              the "--repair" flag.
                           example: 3600
                 - required:
                     - name

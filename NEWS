@@ -2,6 +2,9 @@
  * #987: Fix a "list" action error when the "encryption_passcommand" option is set.
  * #987: When both "encryption_passcommand" and "encryption_passphrase" are configured, prefer
    "encryption_passphrase" even if it's an empty value.
+ * #988: With the "max_duration" option or the "--max-duration" flag, run the archives and
+   repository checks separately so they don't interfere with one another. Previously, borgmatic
+   refused to run checks in this situation.
  * #989: Fix the log message code to avoid using Python 3.10+ logging features. Now borgmatic will
    work with Python 3.9 again.
 

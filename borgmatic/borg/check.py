@@ -64,15 +64,11 @@ def make_check_name_flags(checks, archive_filter_flags):
 
         ('--repository-only',)
 
-    However, if both "repository" and "archives" are in checks, then omit them from the returned
-    flags because Borg does both checks by default. If "data" is in checks, that implies "archives".
+    However, if both "repository" and "archives" are in checks, then omit the "only" flags from the
+    returned flags because Borg does both checks by default. Note that a "data" check only works
+    along with an "archives" check.
     '''
-    if 'data' in checks:
-        data_flags = ('--verify-data',)
-        checks.update({'archives'})
-    else:
-        data_flags = ()
-
+    data_flags = ('--verify-data',) if 'data' in checks else ()
     common_flags = (archive_filter_flags if 'archives' in checks else ()) + data_flags
 
     if {'repository', 'archives'}.issubset(checks):
@@ -142,49 +138,50 @@ def check_archives(
     except StopIteration:
         repository_check_config = {}
 
-    if check_arguments.max_duration and 'archives' in checks:
-        raise ValueError('The archives check cannot run when the --max-duration flag is used')
-    if repository_check_config.get('max_duration') and 'archives' in checks:
-        raise ValueError(
-            'The archives check cannot run when the repository check has the max_duration option set'
-        )
-
     max_duration = check_arguments.max_duration or repository_check_config.get('max_duration')
+
     umask = config.get('umask')
-
     borg_exit_codes = config.get('borg_exit_codes')
-
-    full_command = (
-        (local_path, 'check')
-        + (('--repair',) if check_arguments.repair else ())
-        + (('--max-duration', str(max_duration)) if max_duration else ())
-        + make_check_name_flags(checks, archive_filter_flags)
-        + (('--remote-path', remote_path) if remote_path else ())
-        + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if global_arguments.log_json else ())
-        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + verbosity_flags
-        + (('--progress',) if check_arguments.progress else ())
-        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
-        + flags.make_repository_flags(repository_path, local_borg_version)
-    )
-
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
-    # The Borg repair option triggers an interactive prompt, which won't work when output is
-    # captured. And progress messes with the terminal directly.
-    if check_arguments.repair or check_arguments.progress:
-        execute_command(
-            full_command,
-            output_file=DO_NOT_CAPTURE,
-            extra_environment=environment.make_environment(config),
-            working_directory=working_directory,
-            borg_local_path=local_path,
-            borg_exit_codes=borg_exit_codes,
+    if 'data' in checks:
+        checks.add('archives')
+
+    grouped_checks = (checks,)
+
+    # If max_duration is set, then archives and repository checks need to be run separately, as Borg
+    # doesn't support --max-duration along with an archives checks.
+    if max_duration and 'archives' in checks and 'repository' in checks:
+        checks.remove('repository')
+        grouped_checks = (checks, {'repository'})
+
+    for checks_subset in grouped_checks:
+        full_command = (
+            (local_path, 'check')
+            + (('--repair',) if check_arguments.repair else ())
+            + (
+                ('--max-duration', str(max_duration))
+                if max_duration and 'repository' in checks_subset
+                else ()
+            )
+            + make_check_name_flags(checks_subset, archive_filter_flags)
+            + (('--remote-path', remote_path) if remote_path else ())
+            + (('--umask', str(umask)) if umask else ())
+            + (('--log-json',) if global_arguments.log_json else ())
+            + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+            + verbosity_flags
+            + (('--progress',) if check_arguments.progress else ())
+            + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+            + flags.make_repository_flags(repository_path, local_borg_version)
         )
-    else:
+
         execute_command(
             full_command,
+            # The Borg repair option triggers an interactive prompt, which won't work when output is
+            # captured. And progress messes with the terminal directly.
+            output_file=(
+                DO_NOT_CAPTURE if check_arguments.repair or check_arguments.progress else None
+            ),
             extra_environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
