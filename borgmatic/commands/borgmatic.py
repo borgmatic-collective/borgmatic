@@ -533,15 +533,20 @@ def run_actions(
     )
 
 
-def load_configurations(config_filenames, overrides=None, resolve_env=True):
+def load_configurations(
+    config_filenames, overrides=None, resolve_env=True, resolve_credentials=True
+):
     '''
-    Given a sequence of configuration filenames, load and validate each configuration file. Return
-    the results as a tuple of: dict of configuration filename to corresponding parsed configuration,
-    a sequence of paths for all loaded configuration files (including includes), and a sequence of
-    logging.LogRecord instances containing any parse errors.
+    Given a sequence of configuration filenames, a sequence of configuration file override strings
+    in the form of "option.suboption=value", whether to resolve environment variables, and whether
+    to resolve credentials, load and validate each configuration file. Return the results as a tuple
+    of: dict of configuration filename to corresponding parsed configuration, a sequence of paths
+    for all loaded configuration files (including includes), and a sequence of logging.LogRecord
+    instances containing any parse errors.
 
     Log records are returned here instead of being logged directly because logging isn't yet
-    initialized at this point!
+    initialized at this point! (Although with the Delayed_logging_handler now in place, maybe this
+    approach could change.)
     '''
     # Dict mapping from config filename to corresponding parsed config dict.
     configs = collections.OrderedDict()
@@ -563,7 +568,11 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
         )
         try:
             configs[config_filename], paths, parse_logs = validate.parse_configuration(
-                config_filename, validate.schema_filename(), overrides, resolve_env
+                config_filename,
+                validate.schema_filename(),
+                overrides,
+                resolve_env,
+                resolve_credentials,
             )
             config_paths.update(paths)
             logs.extend(parse_logs)
@@ -907,9 +916,13 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         print(borgmatic.commands.completion.fish.fish_completion())
         sys.exit(0)
 
+    validate = bool('validate' in arguments)
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, config_paths, parse_logs = load_configurations(
-        config_filenames, global_arguments.overrides, global_arguments.resolve_env
+        config_filenames,
+        global_arguments.overrides,
+        resolve_env=global_arguments.resolve_env and not validate,
+        resolve_credentials=not validate,
     )
     configuration_parse_errors = (
         (max(log.levelno for log in parse_logs) >= logging.CRITICAL) if parse_logs else False
