@@ -228,16 +228,12 @@ def test_add_logging_level_skips_global_setting_if_already_set():
     module.add_logging_level('PLAID', 99)
 
 
-def test_get_log_prefix_gets_prefix_from_first_handler():
+def test_get_log_prefix_gets_prefix_from_first_handler_formatter_with_prefix():
     flexmock(module.logging).should_receive('getLogger').and_return(
         flexmock(
             handlers=[
-                flexmock(
-                    formatter=flexmock(
-                        _style=flexmock(_defaults=flexmock(get=lambda name: 'myprefix: '))
-                    )
-                ),
-                flexmock(),
+                flexmock(formatter=flexmock()),
+                flexmock(formatter=flexmock(prefix='myprefix')),
             ],
             removeHandler=lambda handler: None,
         )
@@ -261,8 +257,8 @@ def test_get_log_prefix_with_no_formatters_does_not_raise():
     flexmock(module.logging).should_receive('getLogger').and_return(
         flexmock(
             handlers=[
-                flexmock(),
-                flexmock(),
+                flexmock(formatter=None),
+                flexmock(formatter=None),
             ],
             removeHandler=lambda handler: None,
         )
@@ -276,9 +272,8 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
         flexmock(
             handlers=[
                 flexmock(
-                    formatter=flexmock(_style=flexmock(_defaults=flexmock(get=lambda name: None)))
+                    formatter=flexmock(),
                 ),
-                flexmock(),
             ],
             removeHandler=lambda handler: None,
         )
@@ -287,24 +282,20 @@ def test_get_log_prefix_with_no_prefix_does_not_raise():
     assert module.get_log_prefix() is None
 
 
-def test_set_log_prefix_updates_all_handlers():
-    styles = (
-        flexmock(_defaults=None),
-        flexmock(_defaults=None),
+def test_set_log_prefix_updates_all_handler_formatters():
+    formatters = (
+        flexmock(prefix=None),
+        flexmock(prefix=None),
     )
 
     flexmock(module.logging).should_receive('getLogger').and_return(
         flexmock(
             handlers=[
                 flexmock(
-                    formatter=flexmock(
-                        _style=styles[0],
-                    )
+                    formatter=formatters[0],
                 ),
                 flexmock(
-                    formatter=flexmock(
-                        _style=styles[1],
-                    )
+                    formatter=formatters[1],
                 ),
             ],
             removeHandler=lambda handler: None,
@@ -313,12 +304,12 @@ def test_set_log_prefix_updates_all_handlers():
 
     module.set_log_prefix('myprefix')
 
-    for style in styles:
-        assert style._defaults == {'prefix': 'myprefix: '}
+    for formatter in formatters:
+        assert formatter.prefix == 'myprefix'
 
 
 def test_set_log_prefix_skips_handlers_without_a_formatter():
-    style = flexmock(_defaults=None)
+    formatter = flexmock(prefix=None)
 
     flexmock(module.logging).should_receive('getLogger').and_return(
         flexmock(
@@ -326,11 +317,8 @@ def test_set_log_prefix_skips_handlers_without_a_formatter():
                 flexmock(
                     formatter=None,
                 ),
-                flexmock(),
                 flexmock(
-                    formatter=flexmock(
-                        _style=style,
-                    )
+                    formatter=formatter,
                 ),
             ],
             removeHandler=lambda handler: None,
@@ -339,7 +327,7 @@ def test_set_log_prefix_skips_handlers_without_a_formatter():
 
     module.set_log_prefix('myprefix')
 
-    assert style._defaults == {'prefix': 'myprefix: '}
+    assert formatter.prefix == 'myprefix'
 
 
 def test_log_prefix_sets_prefix_and_then_restores_no_prefix_after():
@@ -621,10 +609,8 @@ def test_configure_logging_to_both_log_file_and_syslog():
 def test_configure_logging_to_log_file_formats_with_custom_log_format():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.ANSWER
-    flexmock(module.logging).should_receive('Formatter').with_args(
+    flexmock(module).should_receive('Log_prefix_formatter').with_args(
         '{message}',  # noqa: FS003
-        style='{',
-        defaults={'prefix': ''},
     ).once()
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').and_return(fake_formatter)
@@ -676,7 +662,7 @@ def test_configure_logging_uses_console_no_color_formatter_if_color_disabled():
     flexmock(module.logging).ANSWER = module.ANSWER
     fake_formatter = flexmock()
     flexmock(module).should_receive('Console_color_formatter').never()
-    flexmock(module).should_receive('Console_no_color_formatter').and_return(fake_formatter)
+    flexmock(module).should_receive('Log_prefix_formatter').and_return(fake_formatter)
     multi_stream_handler = flexmock(setLevel=lambda level: None, level=logging.INFO)
     multi_stream_handler.should_receive('setFormatter').with_args(fake_formatter).once()
     flexmock(module).should_receive('Multi_stream_handler').and_return(multi_stream_handler)

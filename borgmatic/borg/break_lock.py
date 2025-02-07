@@ -34,10 +34,9 @@ def break_lock(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    borg_environment = environment.make_environment(config)
     execute_command(
         full_command,
-        extra_environment=borg_environment,
+        extra_environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

@@ -28,6 +28,9 @@ def make_environment(config):
     '''
     Given a borgmatic configuration dict, return its options converted to a Borg environment
     variable dict.
+
+    Do not reuse this environment across multiple Borg invocations, because it can include
+    references to resources like anonymous pipes for passphrases—which can only be consumed once.
     '''
     environment = {}
 

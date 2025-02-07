@@ -53,3 +53,19 @@ def test_get_passphrase_from_passcommand_with_configured_passphrase_and_passcomm
         )
         is None
     )
+
+
+def test_get_passphrase_from_passcommand_with_configured_blank_passphrase_and_passcommand_detects_passphrase():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        '/working'
+    )
+    flexmock(module).should_receive('run_passcommand').with_args(
+        'command', True, '/working'
+    ).and_return(None).once()
+
+    assert (
+        module.get_passphrase_from_passcommand(
+            {'encryption_passphrase': '', 'encryption_passcommand': 'command'},
+        )
+        is None
+    )

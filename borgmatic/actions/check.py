@@ -386,13 +386,12 @@ def collect_spot_check_source_paths(
             stream_processes=stream_processes,
         )
     )
-    borg_environment = borgmatic.borg.environment.make_environment(config)
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
     paths_output = borgmatic.execute.execute_command_and_capture_output(
         create_flags + create_positional_arguments,
         capture_stderr=True,
-        extra_environment=borg_environment,
+        extra_environment=borgmatic.borg.environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

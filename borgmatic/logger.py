@@ -87,11 +87,16 @@ class Multi_stream_handler(logging.Handler):
             handler.setLevel(level)
 
 
-class Console_no_color_formatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):  # pragma: no cover
-        super(Console_no_color_formatter, self).__init__(
-            '{prefix}{message}', style='{', defaults={'prefix': ''}, *args, **kwargs
-        )
+class Log_prefix_formatter(logging.Formatter):
+    def __init__(self, fmt='{prefix}{message}', style='{', *args, **kwargs):  # pragma: no cover
+        self.prefix = None
+
+        super(Log_prefix_formatter, self).__init__(fmt=fmt, style=style, *args, **kwargs)
+
+    def format(self, record):  # pragma: no cover
+        record.prefix = f'{self.prefix}: ' if self.prefix else ''
+
+        return super(Log_prefix_formatter, self).format(record)
 
 
 class Color(enum.Enum):
@@ -105,8 +110,9 @@ class Color(enum.Enum):
 
 class Console_color_formatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
+        self.prefix = None
         super(Console_color_formatter, self).__init__(
-            '{prefix}{message}', style='{', defaults={'prefix': ''}, *args, **kwargs
+            '{prefix}{message}', style='{', *args, **kwargs
         )
 
     def format(self, record):
@@ -124,6 +130,7 @@ class Console_color_formatter(logging.Formatter):
             .get(record.levelno)
             .value
         )
+        record.prefix = f'{self.prefix}: ' if self.prefix else ''
 
         return color_text(color, super(Console_color_formatter, self).format(record))
 
@@ -188,28 +195,32 @@ def add_custom_log_levels():  # pragma: no cover
 
 def get_log_prefix():
     '''
-    Return the current log prefix from the defaults for the formatter on the first logging handler,
-    set by set_log_prefix(). Return None if no such prefix exists.
+    Return the current log prefix set by set_log_prefix(). Return None if no such prefix exists.
+
+    It would be a whole lot easier to use logger.Formatter(defaults=...) instead, but that argument
+    doesn't exist until Python 3.10+.
     '''
     try:
-        return next(
-            handler.formatter._style._defaults.get('prefix').rstrip().rstrip(':')
+        formatter = next(
+            handler.formatter
             for handler in logging.getLogger().handlers
+            if handler.formatter
+            if hasattr(handler.formatter, 'prefix')
         )
-    except (StopIteration, AttributeError):
+    except StopIteration:
         return None
+
+    return formatter.prefix
 
 
 def set_log_prefix(prefix):
     '''
-    Given a log prefix as a string, set it into the defaults for the formatters on all logging
-    handlers. Note that this overwrites any existing defaults.
+    Given a log prefix as a string, set it into the each handler's formatter so that it can inject
+    the prefix into each logged record.
     '''
     for handler in logging.getLogger().handlers:
-        try:
-            handler.formatter._style._defaults = {'prefix': f'{prefix}: ' if prefix else ''}
-        except AttributeError:
-            pass
+        if handler.formatter and hasattr(handler.formatter, 'prefix'):
+            handler.formatter.prefix = prefix
 
 
 class Log_prefix:
@@ -351,7 +362,7 @@ def configure_logging(
     if color_enabled:
         console_handler.setFormatter(Console_color_formatter())
     else:
-        console_handler.setFormatter(Console_no_color_formatter())
+        console_handler.setFormatter(Log_prefix_formatter())
 
     console_handler.setLevel(console_log_level)
     handlers = [console_handler]
@@ -369,10 +380,8 @@ def configure_logging(
         if syslog_path:
             syslog_handler = logging.handlers.SysLogHandler(address=syslog_path)
             syslog_handler.setFormatter(
-                logging.Formatter(
+                Log_prefix_formatter(
                     'borgmatic: {levelname} {prefix}{message}',  # noqa: FS003
-                    style='{',
-                    defaults={'prefix': ''},
                 )
             )
             syslog_handler.setLevel(syslog_log_level)
@@ -381,10 +390,8 @@ def configure_logging(
     if log_file and log_file_log_level != logging.DISABLED:
         file_handler = logging.handlers.WatchedFileHandler(log_file)
         file_handler.setFormatter(
-            logging.Formatter(
+            Log_prefix_formatter(
                 log_file_format or '[{asctime}] {levelname}: {prefix}{message}',  # noqa: FS003
-                style='{',
-                defaults={'prefix': ''},
             )
         )
         file_handler.setLevel(log_file_log_level)
