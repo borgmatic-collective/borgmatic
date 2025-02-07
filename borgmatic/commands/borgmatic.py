@@ -43,6 +43,7 @@ from borgmatic.logger import (
     DISABLED,
     Log_prefix,
     add_custom_log_levels,
+    configure_delayed_logging,
     configure_logging,
     should_do_markup,
 )
@@ -880,6 +881,7 @@ def exit_with_help_link():  # pragma: no cover
 
 def main(extra_summary_logs=[]):  # pragma: no cover
     configure_signals()
+    configure_delayed_logging()
 
     try:
         arguments = parse_arguments(*sys.argv[1:])

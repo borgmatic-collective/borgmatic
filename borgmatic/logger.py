@@ -263,6 +263,62 @@ class Log_prefix:
         set_log_prefix(self.original_prefix)
 
 
+class Delayed_logging_handler(logging.handlers.BufferingHandler):
+    '''
+    A logging handler that buffers logs and doesn't flush them until explicitly flushed (after
+    target handlers are actually set). It's useful for holding onto messages logged before logging
+    is configured, ensuring those records eventually make their way to the relevant logging
+    handlers.
+    '''
+
+    def __init__(self):
+        super(Delayed_logging_handler, self).__init__(capacity=0)
+
+        self.targets = None
+
+    def shouldFlush(self, record):
+        return self.targets is not None
+
+    def flush(self):
+        self.acquire()
+
+        try:
+            if not self.targets:
+                return
+
+            for record in self.buffer:
+                for target in self.targets:
+                    target.handle(record)
+
+            self.buffer.clear()
+        finally:
+            self.release()
+
+
+def configure_delayed_logging():  # pragma: no cover
+    '''
+    Configure a delayed logging handler to buffer anything that gets logged until we're ready to
+    deal with it.
+    '''
+    logging.basicConfig(
+        level=logging.DEBUG,
+        handlers=[Delayed_logging_handler()],
+    )
+
+
+def flush_delayed_logging(target_handlers):
+    '''
+    Flush any previously buffered logs to our "real" logging handlers.
+    '''
+    root_logger = logging.getLogger()
+
+    if root_logger.handlers and isinstance(root_logger.handlers[0], Delayed_logging_handler):
+        delayed_handler = root_logger.handlers[0]
+        delayed_handler.targets = target_handlers
+        delayed_handler.flush()
+        root_logger.removeHandler(delayed_handler)
+
+
 def configure_logging(
     console_log_level,
     syslog_log_level=None,
@@ -310,7 +366,6 @@ def configure_logging(
         console_handler.setFormatter(Log_prefix_formatter())
 
     console_handler.setLevel(console_log_level)
-
     handlers = [console_handler]
 
     if syslog_log_level != logging.DISABLED:
@@ -342,6 +397,8 @@ def configure_logging(
         )
         file_handler.setLevel(log_file_log_level)
         handlers.append(file_handler)
+
+    flush_delayed_logging(handlers)
 
     logging.basicConfig(
         level=min(handler.level for handler in handlers),
