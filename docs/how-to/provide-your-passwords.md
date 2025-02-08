@@ -50,52 +50,85 @@ once per borgmatic run.
 
 ### Using systemd service credentials
 
-Borgmatic supports using encrypted [credentials](https://systemd.io/CREDENTIALS/).
+borgmatic supports using encrypted [systemd
+credentials](https://systemd.io/CREDENTIALS/). To use this feature, start by
+saving your password as an encrypted credential to
+`/etc/credstore.encrypted/borgmatic.pw`, e.g.,
 
-Save your password as an encrypted credential to `/etc/credstore.encrypted/borgmatic.pw`, e.g.,
-
+```bash
+systemd-ask-password -n | systemd-creds encrypt - /etc/credstore.encrypted/borgmatic.pw
 ```
-# systemd-ask-password -n | systemd-creds encrypt - /etc/credstore.encrypted/borgmatic.pw
-```
 
-Then uncomment or use the following in your configuration file:
+Then use the following in your configuration file:
 
 ```yaml
-encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw"
+encryption_passphrase: !credential systemd borgmatic.pw
 ```
 
+<span class="minilink minilink-addedin">Prior to version 1.9.10</span> You can
+accomplish the same thing with this configuration:
+
+```yaml
+encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw
+```
 Note that the name `borgmatic.pw` is hardcoded in the systemd service file.
 
-To use multiple different passwords, save them as encrypted credentials to `/etc/credstore.encrypted/borgmatic/`, e.g.,
+You can use the `!credential` tag for any option value in a borgmatic
+configuration file. So for example, use `!credential` to load systemd
+credentials for database or monitoring passwords:
 
+```yaml
+postgresql_databases:
+    - name: invoices
+      username: postgres
+      password: !credential systemd borgmatic_db1
 ```
-# mkdir /etc/credstore.encrypted/borgmatic
-# systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_backupserver1 - /etc/credstore.encrypted/borgmatic/backupserver1
-# systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_pw2 - /etc/credstore.encrypted/borgmatic/pw2
+
+But first you'll need to modify the borgmatic systemd service file to support
+loading multiple credentials (assuming you need to load more than one or
+anything not named `borgmatic.pw`).
+
+To do this, save each encrypted credentials to
+`/etc/credstore.encrypted/borgmatic/`. E.g.,
+
+```bash
+mkdir /etc/credstore.encrypted/borgmatic
+systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_backupserver1 - /etc/credstore.encrypted/borgmatic/backupserver1
+systemd-ask-password -n | systemd-creds encrypt --name=borgmatic_pw2 - /etc/credstore.encrypted/borgmatic/pw2
 ...
 ```
 
-Ensure that the file names, (e.g. `backupserver1`) match the corresponding part of
-the `--name` option *after* the underscore (_), and that the part *before* 
+Ensure that the file names, (e.g. `backupserver1`) match the corresponding part
+of the `--name` option *after* the underscore (_), and that the part *before*
 the underscore matches the directory name (e.g. `borgmatic`).
 
 Then, uncomment the appropriate line in the systemd service file:
 
 ```
-# systemctl edit borgmatic.service
+systemctl edit borgmatic.service
 ...
 # Load multiple encrypted credentials.
 LoadCredentialEncrypted=borgmatic:/etc/credstore.encrypted/borgmatic/
 ```
 
-Finally, use the following in your configuration file:
+Finally, use something like the following in your borgmatic configuration file
+for each option value you'd like to load from systemd:
 
-```
-encryption_passcommand: "cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1"
+```yaml
+encryption_passphrase: !credential systemd borgmatic_backupserver1
 ```
 
-Adjust `borgmatic_backupserver1` according to the name given to the credential 
-and the directory set in the service file.
+<span class="minilink minilink-addedin">Prior to version 1.9.10</span> Use the
+following instead, but only for the `encryption_passcommand` option and
+not other options:
+
+```yaml
+encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1
+```
+
+Adjust `borgmatic_backupserver1` according to the name of the credential and the
+directory set in the service file.
+
 
 ### Environment variable interpolation
 
