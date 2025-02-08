@@ -1114,7 +1114,17 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
     )
 
 
-def test_load_configurations_collects_parsed_configurations_and_logs():
+@pytest.mark.parametrize(
+    'resolve_env,resolve_credentials',
+    (
+        (True, True),
+        (False, True),
+        (True, False),
+    ),
+)
+def test_load_configurations_collects_parsed_configurations_and_logs(
+    resolve_env, resolve_credentials
+):
     configuration = flexmock()
     other_configuration = flexmock()
     test_expected_logs = [flexmock(), flexmock()]
@@ -1123,7 +1133,13 @@ def test_load_configurations_collects_parsed_configurations_and_logs():
         configuration, ['/tmp/test.yaml'], test_expected_logs
     ).and_return(other_configuration, ['/tmp/other.yaml'], other_expected_logs)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml', 'other.yaml')))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            ('test.yaml', 'other.yaml'),
+            resolve_env=resolve_env,
+            resolve_credentials=resolve_credentials,
+        )
+    )
 
     assert configs == {'test.yaml': configuration, 'other.yaml': other_configuration}
     assert config_paths == ['/tmp/other.yaml', '/tmp/test.yaml']

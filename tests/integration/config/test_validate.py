@@ -283,3 +283,33 @@ def test_parse_configuration_applies_normalization_after_environment_variable_in
     }
     assert config_paths == {'/tmp/config.yaml'}
     assert logs
+
+
+def test_parse_configuration_interpolates_credentials():
+    mock_config_and_schema(
+        '''
+        source_directories:
+            - /home
+
+        repositories:
+            - path: hostname.borg
+
+        encryption_passphrase: !credential systemd mycredential
+        '''
+    )
+    flexmock(os.environ).should_receive('get').replace_with(lambda variable_name: '/var')
+    credential_stream = io.StringIO('password')
+    credential_stream.name = '/var/mycredential'
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('/var/mycredential').and_return(credential_stream)
+
+    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+
+    assert config == {
+        'source_directories': ['/home'],
+        'repositories': [{'path': 'hostname.borg'}],
+        'encryption_passphrase': 'password',
+        'bootstrap': {},
+    }
+    assert config_paths == {'/tmp/config.yaml'}
+    assert logs == []

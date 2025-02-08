@@ -4,7 +4,9 @@ import borgmatic.hooks.dispatch
 def resolve_credentials(config, item=None):
     '''
     Resolves values like "!credential hookname credentialname" from the given configuration by
-    calling relevant hooks to get the actual credential values.
+    calling relevant hooks to get the actual credential values. The item parameter is used to
+    support recursing through the config hierarchy; it represents the current piece of config being
+    looked at.
 
     Raise ValueError if the config could not be parsed or the credential could not be loaded.
     '''

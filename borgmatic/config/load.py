@@ -69,7 +69,7 @@ def include_configuration(loader, filename_node, include_directory, config_paths
         ]
 
     raise ValueError(
-        'The value given for the !include tag is not supported; use a single filename or a list of filenames instead'
+        'The value given for the !include tag is invalid; use a single filename or a list of filenames instead'
     )
 
 
@@ -116,9 +116,7 @@ def reserialize_tag_node(loader, tag_node):
     if isinstance(tag_node.value, str):
         return f'{tag_node.tag} {tag_node.value}'
 
-    raise ValueError(
-        f'The value given for the {tag_node.tag} tag is not supported; use a string instead'
-    )
+    raise ValueError(f'The value given for the {tag_node.tag} tag is invalid; use a string instead')
 
 
 class Include_constructor(ruamel.yaml.SafeConstructor):
