@@ -2,6 +2,8 @@ import logging
 
 import requests
 
+import borgmatic.hooks.credential.tag
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,8 +34,12 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     state_config = hook_config.get(state.name.lower(), {})
 
-    token = hook_config.get('token')
-    user = hook_config.get('user')
+    try:
+        token = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('token'))
+        user = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('user'))
+    except ValueError as error:
+        logger.warning(f'Pushover credential error: {error}')
+        return
 
     logger.info(f'Updating Pushover{dry_run_label}')
 

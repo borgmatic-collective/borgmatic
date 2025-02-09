@@ -5,7 +5,6 @@ import jsonschema
 import ruamel.yaml
 
 import borgmatic.config
-import borgmatic.config.credential
 from borgmatic.config import constants, environment, load, normalize, override
 
 
@@ -86,14 +85,14 @@ def apply_logical_validation(config_filename, parsed_configuration):
 
 
 def parse_configuration(
-    config_filename, schema_filename, overrides=None, resolve_env=True, resolve_credentials=True
+    config_filename, schema_filename, overrides=None, resolve_env=True
 ):
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
     rendition of JSON Schema format, a sequence of configuration file override strings in the form
-    of "option.suboption=value", whether to resolve environment variables, and whether to resolve
-    credentials, return the parsed configuration as a data structure of nested dicts and lists
-    corresponding to the schema. Example return value:
+    of "option.suboption=value", and whether to resolve environment variables, return the parsed
+    configuration as a data structure of nested dicts and lists corresponding to the schema. Example
+    return value:
 
         {
             'source_directories': ['/home', '/etc'],
@@ -121,9 +120,6 @@ def parse_configuration(
 
     if resolve_env:
         environment.resolve_env_variables(config)
-
-    if resolve_credentials:
-        borgmatic.config.credential.resolve_credentials(config)
 
     logs = normalize.normalize(config_filename, config)
 

@@ -534,15 +534,15 @@ def run_actions(
 
 
 def load_configurations(
-    config_filenames, overrides=None, resolve_env=True, resolve_credentials=True
+    config_filenames, overrides=None, resolve_env=True
 ):
     '''
     Given a sequence of configuration filenames, a sequence of configuration file override strings
-    in the form of "option.suboption=value", whether to resolve environment variables, and whether
-    to resolve credentials, load and validate each configuration file. Return the results as a tuple
-    of: dict of configuration filename to corresponding parsed configuration, a sequence of paths
-    for all loaded configuration files (including includes), and a sequence of logging.LogRecord
-    instances containing any parse errors.
+    in the form of "option.suboption=value", and whether to resolve environment variables, load and
+    validate each configuration file. Return the results as a tuple of: dict of configuration
+    filename to corresponding parsed configuration, a sequence of paths for all loaded configuration
+    files (including includes), and a sequence of logging.LogRecord instances containing any parse
+    errors.
 
     Log records are returned here instead of being logged directly because logging isn't yet
     initialized at this point! (Although with the Delayed_logging_handler now in place, maybe this
@@ -572,7 +572,6 @@ def load_configurations(
                 validate.schema_filename(),
                 overrides,
                 resolve_env,
-                resolve_credentials,
             )
             config_paths.update(paths)
             logs.extend(parse_logs)
@@ -922,7 +921,6 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         config_filenames,
         global_arguments.overrides,
         resolve_env=global_arguments.resolve_env and not validate,
-        resolve_credentials=not validate,
     )
     configuration_parse_errors = (
         (max(log.levelno for log in parse_logs) >= logging.CRITICAL) if parse_logs else False

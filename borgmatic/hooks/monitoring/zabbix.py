@@ -2,6 +2,8 @@ import logging
 
 import requests
 
+import borgmatic.hooks.credential.tag
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,10 +36,15 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         },
     )
 
+    try:
+        username = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('username'))
+        password = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('password'))
+        api_key = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('api_key'))
+    except ValueError as error:
+        logger.warning(f'Zabbix credential error: {error}')
+        return
+
     server = hook_config.get('server')
-    username = hook_config.get('username')
-    password = hook_config.get('password')
-    api_key = hook_config.get('api_key')
     itemid = hook_config.get('itemid')
     host = hook_config.get('host')
     key = hook_config.get('key')

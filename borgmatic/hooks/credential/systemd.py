@@ -30,6 +30,6 @@ def load_credential(hook_config, config, credential_name):
         with open(os.path.join(credentials_directory, credential_name)) as credential_file:
             return credential_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
-        logger.error(error)
+        logger.warning(error)
 
         raise ValueError(f'Cannot load credential "{credential_name}" from file: {error.filename}')
