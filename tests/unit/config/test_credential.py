@@ -16,7 +16,7 @@ def test_resolve_credentials_passes_through_string_without_credential_tag():
 def test_resolve_credentials_passes_through_none():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').never()
 
-    assert module.resolve_credentials(config=flexmock(), item=None) == None
+    assert module.resolve_credentials(config=flexmock(), item=None) is None
 
 
 def test_resolve_credentials_with_invalid_credential_tag_raises():

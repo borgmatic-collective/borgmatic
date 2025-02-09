@@ -1,6 +1,5 @@
 import borgmatic.hooks.dispatch
 
-
 UNSPECIFIED = object()
 
 
