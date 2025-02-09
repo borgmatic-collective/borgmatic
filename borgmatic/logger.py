@@ -269,6 +269,10 @@ class Delayed_logging_handler(logging.handlers.BufferingHandler):
     target handlers are actually set). It's useful for holding onto messages logged before logging
     is configured, ensuring those records eventually make their way to the relevant logging
     handlers.
+
+    When flushing, don't forward log records to a target handler if the record's log level is below
+    that of the handler. This recreates the standard logging behavior of, say, logging.DEBUG records
+    getting suppressed if a handler's level is only set to logging.INFO.
     '''
 
     def __init__(self):
@@ -288,7 +292,8 @@ class Delayed_logging_handler(logging.handlers.BufferingHandler):
 
             for record in self.buffer:
                 for target in self.targets:
-                    target.handle(record)
+                    if record.levelno >= target.level:
+                        target.handle(record)
 
             self.buffer.clear()
         finally:

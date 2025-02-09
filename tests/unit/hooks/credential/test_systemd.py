@@ -1,8 +1,8 @@
 import io
 import sys
 
-from flexmock import flexmock
 import pytest
+from flexmock import flexmock
 
 from borgmatic.hooks.credential import systemd as module
 

@@ -1,14 +1,22 @@
 import pytest
 from flexmock import flexmock
 
-
 from borgmatic.config import credential as module
 
 
-def test_resolve_credentials_ignores_string_without_credential_tag():
+def test_resolve_credentials_passes_through_string_without_credential_tag():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').never()
 
-    module.resolve_credentials(config=flexmock(), item='!no credentials here')
+    assert (
+        module.resolve_credentials(config=flexmock(), item='!no credentials here')
+        == '!no credentials here'
+    )
+
+
+def test_resolve_credentials_passes_through_none():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hook').never()
+
+    assert module.resolve_credentials(config=flexmock(), item=None) == None
 
 
 def test_resolve_credentials_with_invalid_credential_tag_raises():

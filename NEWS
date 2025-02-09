@@ -10,6 +10,8 @@
    refused to run checks in this situation.
  * #989: Fix the log message code to avoid using Python 3.10+ logging features. Now borgmatic will
    work with Python 3.9 again.
+ * Capture and delay any log records produced before logging is fully configured, so early log
+   records don't get lost.
  * Add support for Python 3.13.
 
 1.9.9

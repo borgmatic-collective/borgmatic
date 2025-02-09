@@ -1,7 +1,10 @@
 import borgmatic.hooks.dispatch
 
 
-def resolve_credentials(config, item=None):
+UNSPECIFIED = object()
+
+
+def resolve_credentials(config, item=UNSPECIFIED):
     '''
     Resolves values like "!credential hookname credentialname" from the given configuration by
     calling relevant hooks to get the actual credential values. The item parameter is used to
@@ -10,7 +13,7 @@ def resolve_credentials(config, item=None):
 
     Raise ValueError if the config could not be parsed or the credential could not be loaded.
     '''
-    if not item:
+    if item is UNSPECIFIED:
         item = config
 
     if isinstance(item, str):

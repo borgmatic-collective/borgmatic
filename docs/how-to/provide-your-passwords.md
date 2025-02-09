@@ -129,6 +129,12 @@ encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1
 Adjust `borgmatic_backupserver1` according to the name of the credential and the
 directory set in the service file.
 
+Be aware that when using this systemd `!credential` feature, you can no longer
+run borgmatic outside of its systemd service, as the credentials are only
+available from within the context of that service. The one exception is
+`borgmatic config validate`, which doesn't actually load any credentials and
+should continue working anywhere.
+
 
 ### Environment variable interpolation
 
