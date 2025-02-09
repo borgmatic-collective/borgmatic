@@ -71,11 +71,13 @@ accomplish the same thing with this configuration:
 ```yaml
 encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw
 ```
+
 Note that the name `borgmatic.pw` is hardcoded in the systemd service file.
 
-You can use the `!credential` tag for any option value in a borgmatic
-configuration file. So for example, use `!credential` to load systemd
-credentials for database or monitoring passwords:
+The `!credential` tag works for several different options in a borgmatic
+configuration file besides just `encryption_passphrase`. For instance, the
+username, password, and API token options within database and monitoring hooks
+support `!credential`. For example:
 
 ```yaml
 postgresql_databases:
@@ -84,11 +86,15 @@ postgresql_databases:
       password: !credential systemd borgmatic_db1
 ```
 
-But first you'll need to modify the borgmatic systemd service file to support
-loading multiple credentials (assuming you need to load more than one or
-anything not named `borgmatic.pw`).
+For specifics about which options are supported, see the
+[configuration
+reference](https://torsion.org/borgmatic/docs/reference/configuration/).
 
-To do this, save each encrypted credentials to
+To use these credentials, you'll need to modify the borgmatic systemd service
+file to support loading multiple credentials (assuming you need to load more
+than one or anything not named `borgmatic.pw`).
+
+Start by saving each encrypted credentials to
 `/etc/credstore.encrypted/borgmatic/`. E.g.,
 
 ```bash
@@ -129,11 +135,15 @@ encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1
 Adjust `borgmatic_backupserver1` according to the name of the credential and the
 directory set in the service file.
 
-Be aware that when using this systemd `!credential` feature, you can no longer
-run borgmatic outside of its systemd service, as the credentials are only
-available from within the context of that service. The one exception is
-`borgmatic config validate`, which doesn't actually load any credentials and
-should continue working anywhere.
+Be aware that when using this systemd `!credential` feature, you may no longer
+be able to run certain borgmatic actions outside of the systemd service, as the
+credentials are only available from within the context of that service. So for
+instance, `borgmatic list` necessarily relies on the `encryption_passphrase` in
+order to access the Borg repository, but it shouldn't need to load any
+credentials for your database or monitoring hooks.
+
+The one exception is `borgmatic config validate`, which doesn't actually load
+any credentials and should continue working anywhere.
 
 
 ### Environment variable interpolation
