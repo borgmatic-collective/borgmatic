@@ -84,9 +84,7 @@ def apply_logical_validation(config_filename, parsed_configuration):
             )
 
 
-def parse_configuration(
-    config_filename, schema_filename, overrides=None, resolve_env=True
-):
+def parse_configuration(config_filename, schema_filename, overrides=None, resolve_env=True):
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
     rendition of JSON Schema format, a sequence of configuration file override strings in the form

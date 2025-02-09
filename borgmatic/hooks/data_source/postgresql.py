@@ -7,6 +7,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.tag
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
@@ -33,11 +34,14 @@ def make_extra_environment(database, restore_connection_params=None):
 
     try:
         if restore_connection_params:
-            extra['PGPASSWORD'] = restore_connection_params.get('password') or database.get(
-                'restore_password', database['password']
+            extra['PGPASSWORD'] = borgmatic.hooks.credential.tag.resolve_credential(
+                restore_connection_params.get('password')
+                or database.get('restore_password', database['password'])
             )
         else:
-            extra['PGPASSWORD'] = database['password']
+            extra['PGPASSWORD'] = borgmatic.hooks.credential.tag.resolve_credential(
+                database['password']
+            )
     except (AttributeError, KeyError):
         pass
 
@@ -82,7 +86,11 @@ def database_names_to_dump(database, extra_environment, dry_run):
         + ('--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only')
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--username', database['username']) if 'username' in database else ())
+        + (
+            ('--username', borgmatic.hooks.credential.tag.resolve_credential(database['username']))
+            if 'username' in database
+            else ()
+        )
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
@@ -174,7 +182,12 @@ def dump_data_sources(
                 + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
                 + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
                 + (
-                    ('--username', shlex.quote(database['username']))
+                    (
+                        '--username',
+                        shlex.quote(
+                            borgmatic.hooks.credential.tag.resolve_credential(database['username'])
+                        ),
+                    )
                     if 'username' in database
                     else ()
                 )
@@ -290,8 +303,9 @@ def restore_data_source_dump(
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
-    username = connection_params['username'] or data_source.get(
-        'restore_username', data_source.get('username')
+    username = borgmatic.hooks.credential.tag.resolve_credential(
+        connection_params['username']
+        or data_source.get('restore_username', data_source.get('username'))
     )
 
     all_databases = bool(data_source['name'] == 'all')

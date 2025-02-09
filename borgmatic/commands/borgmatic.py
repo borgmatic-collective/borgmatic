@@ -533,9 +533,7 @@ def run_actions(
     )
 
 
-def load_configurations(
-    config_filenames, overrides=None, resolve_env=True
-):
+def load_configurations(config_filenames, overrides=None, resolve_env=True):
     '''
     Given a sequence of configuration filenames, a sequence of configuration file override strings
     in the form of "option.suboption=value", and whether to resolve environment variables, load and

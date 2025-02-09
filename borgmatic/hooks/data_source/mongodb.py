@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.tag
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -98,8 +99,26 @@ def build_dump_command(database, dump_filename, dump_format):
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
         + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
         + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
-        + (('--username', shlex.quote(database['username'])) if 'username' in database else ())
-        + (('--password', shlex.quote(database['password'])) if 'password' in database else ())
+        + (
+            (
+                '--username',
+                shlex.quote(
+                    borgmatic.hooks.credential.tag.resolve_credential(database['username'])
+                ),
+            )
+            if 'username' in database
+            else ()
+        )
+        + (
+            (
+                '--password',
+                shlex.quote(
+                    borgmatic.hooks.credential.tag.resolve_credential(database['password'])
+                ),
+            )
+            if 'password' in database
+            else ()
+        )
         + (
             ('--authenticationDatabase', shlex.quote(database['authentication_database']))
             if 'authentication_database' in database
@@ -198,11 +217,11 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
         'restore_hostname', database.get('hostname')
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get(
-        'restore_username', database.get('username')
+    username = borgmatic.hooks.credential.tag.resolve_credential(
+        connection_params['username'] or database.get('restore_username', database.get('username'))
     )
-    password = connection_params['password'] or database.get(
-        'restore_password', database.get('password')
+    password = borgmatic.hooks.credential.tag.resolve_credential(
+        connection_params['password'] or database.get('restore_password', database.get('password'))
     )
 
     command = ['mongorestore']
@@ -217,9 +236,9 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     if port:
         command.extend(('--port', str(port)))
     if username:
-        command.extend(('--username', username))
+        command.extend(('--username', borgmatic.hooks.credential.tag.resolve_credential(username)))
     if password:
-        command.extend(('--password', password))
+        command.extend(('--password', borgmatic.hooks.credential.tag.resolve_credential(password)))
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:

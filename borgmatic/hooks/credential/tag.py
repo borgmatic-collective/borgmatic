@@ -22,8 +22,6 @@ def resolve_credential(tag):
         except ValueError:
             raise ValueError(f'Cannot load credential with invalid syntax "{tag}"')
 
-        return borgmatic.hooks.dispatch.call_hook(
-            'load_credential', {}, hook_name, credential_name
-        )
+        return borgmatic.hooks.dispatch.call_hook('load_credential', {}, hook_name, credential_name)
 
     return tag
