@@ -1,4 +1,4 @@
-1.9.10.dev0
+1.9.10
  * #966: Add a "!credential" tag for loading systemd credentials into borgmatic configuration
    files. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
