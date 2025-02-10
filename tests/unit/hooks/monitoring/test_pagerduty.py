@@ -86,6 +86,23 @@ def test_ping_monitor_with_connection_error_logs_warning():
     )
 
 
+def test_ping_monitor_with_credential_error_logs_warning():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').and_raise(
+        ValueError
+    )
+    flexmock(module.requests).should_receive('post').never()
+    flexmock(module.logger).should_receive('warning')
+
+    module.ping_monitor(
+        {'integration_key': 'abc123'},
+        {},
+        'config.yaml',
+        module.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
+
+
 def test_ping_monitor_with_other_error_logs_warning():
     response = flexmock(ok=False)
     flexmock(module.borgmatic.hooks.credential.tag).should_receive(

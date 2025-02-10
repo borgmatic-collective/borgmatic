@@ -520,3 +520,22 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_and_push_po
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_ping_monitor_with_credential_error_bails():
+    hook_config = {'server': SERVER, 'itemid': ITEMID, 'username': USERNAME, 'password': PASSWORD}
+
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').and_raise(
+        ValueError
+    )
+    flexmock(module.requests).should_receive('post').never()
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitoring.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )

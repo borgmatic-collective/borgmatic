@@ -562,3 +562,25 @@ def test_ping_monitor_push_post_error_bails():
         monitoring_log_level=1,
         dry_run=False,
     )
+
+
+def test_ping_monitor_credential_error_bails():
+    hook_config = hook_config = {
+        'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
+        'user': '983hfe0of902lkjfa2amanfgui',
+    }
+
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').and_raise(
+        ValueError
+    )
+    flexmock(module.requests).should_receive('post').never()
+    flexmock(module.logger).should_receive('warning').once()
+
+    module.ping_monitor(
+        hook_config,
+        {},
+        'config.yaml',
+        borgmatic.hooks.monitoring.monitor.State.FAIL,
+        monitoring_log_level=1,
+        dry_run=False,
+    )
