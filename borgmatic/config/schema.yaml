@@ -250,7 +250,7 @@ properties:
             repositories that were initialized with passphrase/repokey/keyfile
             encryption. Quote the value if it contains punctuation, so it parses
             correctly. And backslash any quote or backslash literals as well.
-            Defaults to not set.
+            Defaults to not set. Supports the "!credential" tag.
         example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     checkpoint_interval:
         type: integer
@@ -989,13 +989,13 @@ properties:
                         Username with which to connect to the database. Defaults
                         to the username of the current user. You probably want
                         to specify the "postgres" superuser here when the
-                        database name is "all".
+                        database name is "all". Supports the "!credential" tag.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "!credential" tag.
                     example: dbuser
                 password:
                     type: string
@@ -1003,13 +1003,14 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if PostgreSQL is configured to
                         trust the configured username without a password or you
-                        create a ~/.pgpass file.
+                        create a ~/.pgpass file. Supports the "!credential" tag.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "!credential" tag.
                     example: trustsome1
                 no_owner:
                     type: boolean
@@ -1169,13 +1170,14 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Defaults
-                        to the username of the current user.
+                        to the username of the current user. Supports the
+                        "!credential" tag.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "!credential" tag.
                     example: dbuser
                 password:
                     type: string
@@ -1183,6 +1185,14 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if MariaDB is configured to
                         trust the configured username without a password.
+                        Supports the "!credential" tag.
+                    example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option. Supports the
+                        "!credential" tag.
                     example: trustsome1
                 mariadb_dump_command:
                     type: string
@@ -1201,12 +1211,6 @@ properties:
                         run a specific mariadb version (e.g., one inside a
                         running container). Defaults to "mariadb".
                     example: docker exec mariadb_container mariadb           
-                restore_password:
-                    type: string
-                    description: |
-                        Password with which to connect to the restore database.
-                        Defaults to the "password" option.
-                    example: trustsome1
                 format:
                     type: string
                     enum: ['sql']
@@ -1295,13 +1299,14 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Defaults
-                        to the username of the current user.
+                        to the username of the current user. Supports the
+                        "!credential" tag.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "!credential" tag.
                     example: dbuser
                 password:
                     type: string
@@ -1309,12 +1314,14 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if MySQL is configured to
                         trust the configured username without a password.
+                        Supports the "!credential" tag.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "!credential" tag.
                     example: trustsome1
                 mysql_dump_command:
                     type: string
@@ -1451,25 +1458,28 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Skip it
-                        if no authentication is needed.
+                        if no authentication is needed. Supports the
+                        "!credential" tag.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "!credential" tag.
                     example: dbuser
                 password:
                     type: string
                     description: |
                         Password with which to connect to the database. Skip it
-                        if no authentication is needed.
+                        if no authentication is needed. Supports the
+                        "!credential" tag.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "!credential" tag.
                     example: trustsome1
                 authentication_database:
                     type: string
@@ -1528,18 +1538,20 @@ properties:
             username:
                 type: string
                 description: |
-                    The username used for authentication.
+                    The username used for authentication. Supports the
+                    "!credential" tag.
                 example: testuser
             password:
                 type: string
                 description: |
-                    The password used for authentication.
+                    The password used for authentication. Supports the
+                    "!credential" tag.
                 example: fakepassword
             access_token:
                 type: string
                 description: |
                     An ntfy access token to authenticate with instead of
-                    username/password.
+                    username/password. Supports the "!credential" tag.
                 example: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
             start:
                 type: object
@@ -1634,14 +1646,16 @@ properties:
             token:
                 type: string
                 description: |
-                    Your application's API token.
+                    Your application's API token. Supports the "!credential"
+                    tag.
                 example: 7ms6TXHpTokTou2P6x4SodDeentHRa
             user:
                 type: string
                 description: |
-                    Your user/group key (or that of your target user), viewable 
-                    when logged into your dashboard: often referred to as 
+                    Your user/group key (or that of your target user), viewable
+                    when logged into your dashboard: often referred to as
                     USER_KEY in Pushover documentation and code examples.
+                    Supports the "!credential" tag.
                 example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
             start:
                 type: object
@@ -1915,19 +1929,19 @@ properties:
                 type: string
                 description: |
                     The username used for authentication. Not needed if using
-                    an API key.
+                    an API key. Supports the "!credential" tag.
                 example: testuser
             password:
                 type: string
                 description: |
                     The password used for authentication. Not needed if using
-                    an API key.
+                    an API key. Supports the "!credential" tag.
                 example: fakepassword
             api_key:
                 type: string
                 description: |
                     The API key used for authentication. Not needed if using
-                    an username/password.
+                    an username/password. Supports the "!credential" tag.
                 example: fakekey
             start:
                 type: object
@@ -2208,7 +2222,7 @@ properties:
                 type: string
                 description: |
                     PagerDuty integration key used to notify PagerDuty
-                    when a backup errors.
+                    when a backup errors. Supports the "!credential" tag.
                 example: a177cad45bd374409f78906a810a3074
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an

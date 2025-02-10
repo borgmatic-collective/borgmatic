@@ -5,6 +5,7 @@ import platform
 
 import requests
 
+import borgmatic.hooks.credential.tag
 from borgmatic.hooks.monitoring import monitor
 
 logger = logging.getLogger(__name__)
@@ -39,11 +40,19 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if dry_run:
         return
 
+    try:
+        integration_key = borgmatic.hooks.credential.tag.resolve_credential(
+            hook_config.get('integration_key')
+        )
+    except ValueError as error:
+        logger.warning(f'PagerDuty credential error: {error}')
+        return
+
     hostname = platform.node()
     local_timestamp = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()
     payload = json.dumps(
         {
-            'routing_key': hook_config['integration_key'],
+            'routing_key': integration_key,
             'event_action': 'trigger',
             'payload': {
                 'summary': f'backup failed on {hostname}',

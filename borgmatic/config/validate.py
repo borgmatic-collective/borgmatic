@@ -88,8 +88,9 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
     rendition of JSON Schema format, a sequence of configuration file override strings in the form
-    of "option.suboption=value", return the parsed configuration as a data structure of nested dicts
-    and lists corresponding to the schema. Example return value:
+    of "option.suboption=value", and whether to resolve environment variables, return the parsed
+    configuration as a data structure of nested dicts and lists corresponding to the schema. Example
+    return value:
 
         {
             'source_directories': ['/home', '/etc'],
@@ -124,6 +125,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
         validator = jsonschema.Draft7Validator(schema)
     except AttributeError:  # pragma: no cover
         validator = jsonschema.Draft4Validator(schema)
+
     validation_errors = tuple(validator.iter_errors(config))
 
     if validation_errors:

@@ -382,9 +382,25 @@ def test_delayed_logging_handler_flush_forwards_each_record_to_each_target():
     handler = module.Delayed_logging_handler()
     flexmock(handler).should_receive('acquire')
     flexmock(handler).should_receive('release')
-    handler.targets = [flexmock(), flexmock()]
-    handler.buffer = [flexmock(), flexmock()]
+    handler.targets = [flexmock(level=logging.DEBUG), flexmock(level=logging.DEBUG)]
+    handler.buffer = [flexmock(levelno=logging.DEBUG), flexmock(levelno=logging.DEBUG)]
     handler.targets[0].should_receive('handle').with_args(handler.buffer[0]).once()
+    handler.targets[1].should_receive('handle').with_args(handler.buffer[0]).once()
+    handler.targets[0].should_receive('handle').with_args(handler.buffer[1]).once()
+    handler.targets[1].should_receive('handle').with_args(handler.buffer[1]).once()
+
+    handler.flush()
+
+    assert handler.buffer == []
+
+
+def test_delayed_logging_handler_flush_skips_forwarding_when_log_record_is_too_low_for_target():
+    handler = module.Delayed_logging_handler()
+    flexmock(handler).should_receive('acquire')
+    flexmock(handler).should_receive('release')
+    handler.targets = [flexmock(level=logging.INFO), flexmock(level=logging.DEBUG)]
+    handler.buffer = [flexmock(levelno=logging.DEBUG), flexmock(levelno=logging.INFO)]
+    handler.targets[0].should_receive('handle').with_args(handler.buffer[0]).never()
     handler.targets[1].should_receive('handle').with_args(handler.buffer[0]).once()
     handler.targets[0].should_receive('handle').with_args(handler.buffer[1]).once()
     handler.targets[1].should_receive('handle').with_args(handler.buffer[1]).once()

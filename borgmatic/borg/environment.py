@@ -1,6 +1,7 @@
 import os
 
 import borgmatic.borg.passcommand
+import borgmatic.hooks.credential.tag
 
 OPTION_TO_ENVIRONMENT_VARIABLE = {
     'borg_base_directory': 'BORG_BASE_DIR',
@@ -13,6 +14,8 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'ssh_command': 'BORG_RSH',
     'temporary_directory': 'TMPDIR',
 }
+
+CREDENTIAL_OPTIONS = {'encryption_passphrase'}
 
 DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE = {
     'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
@@ -37,7 +40,10 @@ def make_environment(config):
     for option_name, environment_variable_name in OPTION_TO_ENVIRONMENT_VARIABLE.items():
         value = config.get(option_name)
 
-        if value:
+        if option_name in CREDENTIAL_OPTIONS and value is not None:
+            value = borgmatic.hooks.credential.tag.resolve_credential(value)
+
+        if value is not None:
             environment[environment_variable_name] = str(value)
 
     passphrase = borgmatic.borg.passcommand.get_passphrase_from_passcommand(config)

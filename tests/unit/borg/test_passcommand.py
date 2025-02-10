@@ -4,6 +4,7 @@ from borgmatic.borg import passcommand as module
 
 
 def test_run_passcommand_with_passphrase_configured_bails():
+    module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.execute).should_receive('execute_command_and_capture_output').never()
 
     assert (
@@ -13,6 +14,7 @@ def test_run_passcommand_with_passphrase_configured_bails():
 
 
 def test_run_passcommand_without_passphrase_configured_executes_passcommand():
+    module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return('passphrase').once()
@@ -24,6 +26,7 @@ def test_run_passcommand_without_passphrase_configured_executes_passcommand():
 
 
 def test_get_passphrase_from_passcommand_with_configured_passcommand_runs_it():
+    module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -40,6 +43,7 @@ def test_get_passphrase_from_passcommand_with_configured_passcommand_runs_it():
 
 
 def test_get_passphrase_from_passcommand_with_configured_passphrase_and_passcommand_detects_passphrase():
+    module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -56,6 +60,7 @@ def test_get_passphrase_from_passcommand_with_configured_passphrase_and_passcomm
 
 
 def test_get_passphrase_from_passcommand_with_configured_blank_passphrase_and_passcommand_detects_passphrase():
+    module.run_passcommand.cache_clear()
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working'
     )
@@ -68,4 +73,20 @@ def test_get_passphrase_from_passcommand_with_configured_blank_passphrase_and_pa
             {'encryption_passphrase': '', 'encryption_passcommand': 'command'},
         )
         is None
+    )
+
+
+def test_run_passcommand_caches_passcommand_after_first_call():
+    module.run_passcommand.cache_clear()
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return('passphrase').once()
+
+    assert (
+        module.run_passcommand('passcommand', passphrase_configured=False, working_directory=None)
+        == 'passphrase'
+    )
+    assert (
+        module.run_passcommand('passcommand', passphrase_configured=False, working_directory=None)
+        == 'passphrase'
     )

@@ -2,6 +2,8 @@ import logging
 
 import requests
 
+import borgmatic.hooks.credential.tag
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,9 +49,20 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             'X-Tags': state_config.get('tags'),
         }
 
-        username = hook_config.get('username')
-        password = hook_config.get('password')
-        access_token = hook_config.get('access_token')
+        try:
+            username = borgmatic.hooks.credential.tag.resolve_credential(
+                hook_config.get('username')
+            )
+            password = borgmatic.hooks.credential.tag.resolve_credential(
+                hook_config.get('password')
+            )
+            access_token = borgmatic.hooks.credential.tag.resolve_credential(
+                hook_config.get('access_token')
+            )
+        except ValueError as error:
+            logger.warning(f'Ntfy credential error: {error}')
+            return
+
         auth = None
 
         if access_token is not None:

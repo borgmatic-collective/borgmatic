@@ -5,6 +5,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.tag
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
@@ -45,7 +46,11 @@ def database_names_to_dump(database, extra_environment, dry_run):
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (('--user', database['username']) if 'username' in database else ())
+        + (
+            ('--user', borgmatic.hooks.credential.tag.resolve_credential(database['username']))
+            if 'username' in database
+            else ()
+        )
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
@@ -95,7 +100,11 @@ def execute_dump_command(
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (('--user', database['username']) if 'username' in database else ())
+        + (
+            ('--user', borgmatic.hooks.credential.tag.resolve_credential(database['username']))
+            if 'username' in database
+            else ()
+        )
         + ('--databases',)
         + database_names
         + ('--result-file', dump_filename)
@@ -151,7 +160,11 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
+        extra_environment = (
+            {'MYSQL_PWD': borgmatic.hooks.credential.tag.resolve_credential(database['password'])}
+            if 'password' in database
+            else None
+        )
         dump_database_names = database_names_to_dump(database, extra_environment, dry_run)
 
         if not dump_database_names:
@@ -250,11 +263,13 @@ def restore_data_source_dump(
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
-    username = connection_params['username'] or data_source.get(
-        'restore_username', data_source.get('username')
+    username = borgmatic.hooks.credential.tag.resolve_credential(
+        connection_params['username']
+        or data_source.get('restore_username', data_source.get('username'))
     )
-    password = connection_params['password'] or data_source.get(
-        'restore_password', data_source.get('password')
+    password = borgmatic.hooks.credential.tag.resolve_credential(
+        connection_params['password']
+        or data_source.get('restore_password', data_source.get('password'))
     )
 
     mysql_restore_command = tuple(

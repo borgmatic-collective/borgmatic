@@ -56,6 +56,8 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 
 ## Integrations
 
+### Data
+
 <a href="https://www.postgresql.org/"><img src="docs/static/postgresql.png" alt="PostgreSQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.mysql.com/"><img src="docs/static/mysql.png" alt="MySQL" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://mariadb.com/"><img src="docs/static/mariadb.png" alt="MariaDB" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
@@ -65,6 +67,11 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://btrfs.readthedocs.io/"><img src="docs/static/btrfs.png" alt="Btrfs" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sourceware.org/lvm2/"><img src="docs/static/lvm.png" alt="LVM" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://rclone.org"><img src="docs/static/rclone.png" alt="rclone" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+<a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+
+
+### Monitoring
+
 <a href="https://healthchecks.io/"><img src="docs/static/healthchecks.png" alt="Healthchecks" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://uptime.kuma.pet/"><img src="docs/static/uptimekuma.png" alt="Uptime Kuma" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://cronitor.io/"><img src="docs/static/cronitor.png" alt="Cronitor" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
@@ -76,7 +83,11 @@ borgmatic is powered by [Borg Backup](https://www.borgbackup.org/).
 <a href="https://github.com/caronc/apprise/wiki"><img src="docs/static/apprise.png" alt="Apprise" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://www.zabbix.com/"><img src="docs/static/zabbix.png" alt="Zabbix" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 <a href="https://sentry.io/"><img src="docs/static/sentry.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
-<a href="https://www.borgbase.com/?utm_source=borgmatic"><img src="docs/static/borgbase.png" alt="BorgBase" height="60px" style="margin-bottom:20px; margin-right:20px;"></a>
+
+
+### Credentials
+
+<a href="https://systemd.io/"><img src="docs/static/systemd.png" alt="Sentry" height="40px" style="margin-bottom:20px; margin-right:20px;"></a>
 
 
 ## Getting started
