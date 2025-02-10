@@ -289,11 +289,7 @@ def restore_data_source_dump(
         + (('--protocol', 'tcp') if hostname or port else ())
         + (('--user', username) if username else ())
     )
-    extra_environment = (
-        {'MYSQL_PWD': borgmatic.hooks.credential.tag.resolve_credential(password)}
-        if password
-        else None
-    )
+    extra_environment = {'MYSQL_PWD': password} if password else None
 
     logger.debug(f"Restoring MariaDB database {data_source['name']}{dry_run_label}")
     if dry_run:

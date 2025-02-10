@@ -236,9 +236,9 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     if port:
         command.extend(('--port', str(port)))
     if username:
-        command.extend(('--username', borgmatic.hooks.credential.tag.resolve_credential(username)))
+        command.extend(('--username', username))
     if password:
-        command.extend(('--password', borgmatic.hooks.credential.tag.resolve_credential(password)))
+        command.extend(('--password', password))
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:

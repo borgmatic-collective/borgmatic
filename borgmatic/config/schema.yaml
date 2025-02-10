@@ -1646,7 +1646,8 @@ properties:
             token:
                 type: string
                 description: |
-                    Your application's API token. Supports the "!credential" tag.
+                    Your application's API token. Supports the "!credential"
+                    tag.
                 example: 7ms6TXHpTokTou2P6x4SodDeentHRa
             user:
                 type: string

@@ -57,7 +57,7 @@ AUTH_HEADERS_API_KEY = {
 AUTH_HEADERS_USERNAME_PASSWORD = {'Content-Type': 'application/json-rpc'}
 
 
-def test_ping_monitor_with_non_matching_state_exits_early():
+def test_ping_monitor_with_non_matching_state_bails():
     hook_config = {'api_key': API_KEY}
     flexmock(module.requests).should_receive('post').never()
 
@@ -71,10 +71,13 @@ def test_ping_monitor_with_non_matching_state_exits_early():
     )
 
 
-def test_ping_monitor_config_with_api_key_only_exit_early():
+def test_ping_monitor_config_with_api_key_only_bails():
     # This test should exit early since only providing an API KEY is not enough
     # for the hook to work
     hook_config = {'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -88,10 +91,13 @@ def test_ping_monitor_config_with_api_key_only_exit_early():
     )
 
 
-def test_ping_monitor_config_with_host_only_exit_early():
+def test_ping_monitor_config_with_host_only_bails():
     # This test should exit early since only providing a HOST is not enough
     # for the hook to work
     hook_config = {'host': HOST}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -105,10 +111,13 @@ def test_ping_monitor_config_with_host_only_exit_early():
     )
 
 
-def test_ping_monitor_config_with_key_only_exit_early():
+def test_ping_monitor_config_with_key_only_bails():
     # This test should exit early since only providing a KEY is not enough
     # for the hook to work
     hook_config = {'key': KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -122,10 +131,13 @@ def test_ping_monitor_config_with_key_only_exit_early():
     )
 
 
-def test_ping_monitor_config_with_server_only_exit_early():
+def test_ping_monitor_config_with_server_only_bails():
     # This test should exit early since only providing a SERVER is not enough
     # for the hook to work
     hook_config = {'server': SERVER}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -139,9 +151,12 @@ def test_ping_monitor_config_with_server_only_exit_early():
     )
 
 
-def test_ping_monitor_config_user_password_no_zabbix_data_exit_early():
+def test_ping_monitor_config_user_password_no_zabbix_data_bails():
     # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {'server': SERVER, 'username': USERNAME, 'password': PASSWORD}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -155,9 +170,12 @@ def test_ping_monitor_config_user_password_no_zabbix_data_exit_early():
     )
 
 
-def test_ping_monitor_config_api_key_no_zabbix_data_exit_early():
+def test_ping_monitor_config_api_key_no_zabbix_data_bails():
     # This test should exit early since there are HOST/KEY or ITEMID provided to publish data to
     hook_config = {'server': SERVER, 'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -171,10 +189,13 @@ def test_ping_monitor_config_api_key_no_zabbix_data_exit_early():
     )
 
 
-def test_ping_monitor_config_itemid_no_auth_data_exit_early():
+def test_ping_monitor_config_itemid_no_auth_data_bails():
     # This test should exit early since there is no authentication provided
     # and Zabbix requires authentication to use it's API
     hook_config = {'server': SERVER, 'itemid': ITEMID}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -188,10 +209,13 @@ def test_ping_monitor_config_itemid_no_auth_data_exit_early():
     )
 
 
-def test_ping_monitor_config_host_and_key_no_auth_data_exit_early():
+def test_ping_monitor_config_host_and_key_no_auth_data_bails():
     # This test should exit early since there is no authentication provided
     # and Zabbix requires authentication to use it's API
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -209,6 +233,9 @@ def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
     # This test should simulate a successful POST to a Zabbix server. This test uses API_KEY
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY, 'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
         f'{SERVER}',
         headers=AUTH_HEADERS_API_KEY,
@@ -226,8 +253,11 @@ def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
     )
 
 
-def test_ping_monitor_config_host_and_missing_key_exits_early():
+def test_ping_monitor_config_host_and_missing_key_bails():
     hook_config = {'server': SERVER, 'host': HOST, 'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -241,8 +271,11 @@ def test_ping_monitor_config_host_and_missing_key_exits_early():
     )
 
 
-def test_ping_monitor_config_key_and_missing_host_exits_early():
+def test_ping_monitor_config_key_and_missing_host_bails():
     hook_config = {'server': SERVER, 'key': KEY, 'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -267,6 +300,9 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
         'password': PASSWORD,
     }
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -296,7 +332,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
     )
 
 
-def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_auth_post_error_exits_early():
+def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_auth_post_error_bails():
     hook_config = {
         'server': SERVER,
         'host': HOST,
@@ -305,6 +341,9 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_a
         'password': PASSWORD,
     }
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     auth_response = flexmock(ok=False)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -335,7 +374,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_a
     )
 
 
-def test_ping_monitor_config_host_and_key_with_username_and_missing_password_exits_early():
+def test_ping_monitor_config_host_and_key_with_username_and_missing_password_bails():
     hook_config = {
         'server': SERVER,
         'host': HOST,
@@ -343,6 +382,9 @@ def test_ping_monitor_config_host_and_key_with_username_and_missing_password_exi
         'username': USERNAME,
     }
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -356,7 +398,7 @@ def test_ping_monitor_config_host_and_key_with_username_and_missing_password_exi
     )
 
 
-def test_ping_monitor_config_host_and_key_with_passing_and_missing_username_exits_early():
+def test_ping_monitor_config_host_and_key_with_password_and_missing_username_bails():
     hook_config = {
         'server': SERVER,
         'host': HOST,
@@ -364,6 +406,9 @@ def test_ping_monitor_config_host_and_key_with_passing_and_missing_username_exit
         'password': PASSWORD,
     }
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -381,6 +426,9 @@ def test_ping_monitor_config_itemid_with_api_key_auth_data_successful():
     # This test should simulate a successful POST to a Zabbix server. This test uses API_KEY
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'api_key': API_KEY}
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
         f'{SERVER}',
         headers=AUTH_HEADERS_API_KEY,
@@ -403,6 +451,9 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_successful(
     # to authenticate and HOST/KEY to know which item to populate in Zabbix.
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'username': USERNAME, 'password': PASSWORD}
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -432,9 +483,12 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_successful(
     )
 
 
-def test_ping_monitor_config_itemid_with_username_password_auth_data_and_push_post_error_exits_early():
+def test_ping_monitor_config_itemid_with_username_password_auth_data_and_push_post_error_bails():
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'username': USERNAME, 'password': PASSWORD}
 
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}

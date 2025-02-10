@@ -1115,16 +1115,10 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
 
 
 @pytest.mark.parametrize(
-    'resolve_env,resolve_credentials',
-    (
-        (True, True),
-        (False, True),
-        (True, False),
-    ),
+    'resolve_env',
+    ((True, False),),
 )
-def test_load_configurations_collects_parsed_configurations_and_logs(
-    resolve_env, resolve_credentials
-):
+def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env):
     configuration = flexmock()
     other_configuration = flexmock()
     test_expected_logs = [flexmock(), flexmock()]
@@ -1137,7 +1131,6 @@ def test_load_configurations_collects_parsed_configurations_and_logs(
         module.load_configurations(
             ('test.yaml', 'other.yaml'),
             resolve_env=resolve_env,
-            resolve_credentials=resolve_credentials,
         )
     )
 

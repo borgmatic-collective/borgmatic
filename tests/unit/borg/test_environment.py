@@ -24,6 +24,10 @@ def test_make_environment_with_passphrase_should_set_environment():
     ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
+
     environment = module.make_environment({'encryption_passphrase': 'pass'})
 
     assert environment.get('BORG_PASSPHRASE') == 'pass'

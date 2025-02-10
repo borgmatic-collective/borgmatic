@@ -4,6 +4,9 @@ from borgmatic.hooks.monitoring import pagerduty as module
 
 
 def test_ping_monitor_ignores_start_state():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
 
     module.ping_monitor(
@@ -17,6 +20,9 @@ def test_ping_monitor_ignores_start_state():
 
 
 def test_ping_monitor_ignores_finish_state():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
 
     module.ping_monitor(
@@ -30,6 +36,9 @@ def test_ping_monitor_ignores_finish_state():
 
 
 def test_ping_monitor_calls_api_for_fail_state():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -43,6 +52,9 @@ def test_ping_monitor_calls_api_for_fail_state():
 
 
 def test_ping_monitor_dry_run_does_not_call_api():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
 
     module.ping_monitor(
@@ -56,6 +68,9 @@ def test_ping_monitor_dry_run_does_not_call_api():
 
 
 def test_ping_monitor_with_connection_error_logs_warning():
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').and_raise(
         module.requests.exceptions.ConnectionError
     )
@@ -73,6 +88,9 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
 def test_ping_monitor_with_other_error_logs_warning():
     response = flexmock(ok=False)
+    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value: value)
     response.should_receive('raise_for_status').and_raise(
         module.requests.exceptions.RequestException
     )

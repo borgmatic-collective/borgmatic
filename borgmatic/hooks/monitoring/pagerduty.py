@@ -41,7 +41,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         return
 
     try:
-        inegration_key = borgmatic.hooks.credential.tag.resolve_credential(
+        integration_key = borgmatic.hooks.credential.tag.resolve_credential(
             hook_config.get('integration_key')
         )
     except ValueError as error:
