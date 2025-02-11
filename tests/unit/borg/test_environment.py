@@ -24,7 +24,7 @@ def test_make_environment_with_passphrase_should_set_environment():
     ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
 
@@ -39,11 +39,11 @@ def test_make_environment_with_credential_tag_passphrase_should_load_it_and_set_
     ).and_return(None)
     flexmock(module.os).should_receive('pipe').never()
     flexmock(module.os.environ).should_receive('get').and_return(None)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').with_args(
-        '!credential systemd pass'
-    ).and_return('pass')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).with_args('{credential systemd pass}').and_return('pass')
 
-    environment = module.make_environment({'encryption_passphrase': '!credential systemd pass'})
+    environment = module.make_environment({'encryption_passphrase': '{credential systemd pass}'})
 
     assert environment.get('BORG_PASSPHRASE') == 'pass'
 

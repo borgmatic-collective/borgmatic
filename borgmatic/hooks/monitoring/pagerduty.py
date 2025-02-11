@@ -5,7 +5,7 @@ import platform
 
 import requests
 
-import borgmatic.hooks.credential.tag
+import borgmatic.hooks.credential.parse
 from borgmatic.hooks.monitoring import monitor
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         return
 
     try:
-        integration_key = borgmatic.hooks.credential.tag.resolve_credential(
+        integration_key = borgmatic.hooks.credential.parse.resolve_credential(
             hook_config.get('integration_key')
         )
     except ValueError as error:

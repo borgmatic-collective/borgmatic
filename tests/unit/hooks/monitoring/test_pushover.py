@@ -11,7 +11,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     should be auto populated with the default value which is the state name.
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -41,7 +41,7 @@ def test_ping_monitor_config_with_minimum_config_start_state_backup_not_send_to_
     'start' state. Only the 'fail' state is enabled by default.
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -69,7 +69,7 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
         'user': '983hfe0of902lkjfa2amanfgui',
         'states': {'start', 'fail', 'finish'},
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -105,7 +105,7 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
         'states': {'start', 'fail', 'finish'},
         'start': {'message': 'custom start message'},
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -140,7 +140,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'states': {'start', 'fail', 'finish'},
         'start': {'priority': 2},
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -178,7 +178,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'states': {'start', 'fail', 'finish'},
         'start': {'priority': 2, 'expire': 600},
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -216,7 +216,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
         'states': {'start', 'fail', 'finish'},
         'start': {'priority': 2, 'retry': 30},
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -257,7 +257,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_high_decl
         'start': {'priority': 1, 'expire': 30, 'retry': 30},
     }
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -312,7 +312,7 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
             'url_title': 'Login to ticketing system',
         },
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -378,7 +378,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
             'url_title': 'Login to ticketing system',
         },
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -449,7 +449,7 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
             'url_title': 'Login to ticketing system',
         },
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -485,7 +485,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
     should be auto populated with the default value which is the state name.
     '''
     hook_config = {'token': 'ksdjfwoweijfvwoeifvjmwghagy92', 'user': '983hfe0of902lkjfa2amanfgui'}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -509,7 +509,7 @@ def test_ping_monitor_config_incorrect_state_exit_early():
         'token': 'ksdjfwoweijfvwoeifvjmwghagy92',
         'user': '983hfe0of902lkjfa2amanfgui',
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.logger).should_receive('warning').never()
@@ -535,7 +535,7 @@ def test_ping_monitor_push_post_error_bails():
         'user': '983hfe0of902lkjfa2amanfgui',
     }
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     push_response = flexmock(ok=False)
@@ -570,9 +570,9 @@ def test_ping_monitor_credential_error_bails():
         'user': '983hfe0of902lkjfa2amanfgui',
     }
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').and_raise(
-        ValueError
-    )
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_raise(ValueError)
     flexmock(module.requests).should_receive('post').never()
     flexmock(module.logger).should_receive('warning').once()
 

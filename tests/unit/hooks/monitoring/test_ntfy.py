@@ -36,7 +36,7 @@ def return_default_message_headers(state=Enum):
 
 def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -60,7 +60,7 @@ def test_ping_monitor_with_access_token_hits_hosted_ntfy_on_fail():
         'topic': topic,
         'access_token': 'abc123',
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -86,7 +86,7 @@ def test_ping_monitor_with_username_password_and_access_token_ignores_username_p
         'password': 'fakepassword',
         'access_token': 'abc123',
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -112,7 +112,7 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
         'username': 'testuser',
         'password': 'fakepassword',
     }
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -133,7 +133,7 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
 
 def test_ping_monitor_with_password_but_no_username_warns():
     hook_config = {'topic': topic, 'password': 'fakepassword'}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -155,7 +155,7 @@ def test_ping_monitor_with_password_but_no_username_warns():
 
 def test_ping_monitor_with_username_but_no_password_warns():
     hook_config = {'topic': topic, 'username': 'testuser'}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -177,7 +177,7 @@ def test_ping_monitor_with_username_but_no_password_warns():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
@@ -194,7 +194,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_start():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
@@ -211,7 +211,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_finish():
 
 def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
     hook_config = {'topic': topic, 'server': custom_base_url}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -232,7 +232,7 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
 
 def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').never()
@@ -249,7 +249,7 @@ def test_ping_monitor_minimal_config_does_not_hit_hosted_ntfy_on_fail_dry_run():
 
 def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
     hook_config = {'topic': topic, 'fail': custom_message_config}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -268,7 +268,7 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
 
 def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
     hook_config = {'topic': topic, 'states': ['start', 'fail']}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -289,7 +289,7 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
 
 def test_ping_monitor_with_connection_error_logs_warning():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.requests).should_receive('post').with_args(
@@ -311,9 +311,9 @@ def test_ping_monitor_with_connection_error_logs_warning():
 
 def test_ping_monitor_with_credential_error_logs_warning():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive('resolve_credential').and_raise(
-        ValueError
-    )
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_raise(ValueError)
     flexmock(module.requests).should_receive('post').never()
     flexmock(module.logger).should_receive('warning').once()
 
@@ -329,7 +329,7 @@ def test_ping_monitor_with_credential_error_logs_warning():
 
 def test_ping_monitor_with_other_error_logs_warning():
     hook_config = {'topic': topic}
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     response = flexmock(ok=False)

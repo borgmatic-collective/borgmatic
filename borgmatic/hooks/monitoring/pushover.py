@@ -2,7 +2,7 @@ import logging
 
 import requests
 
-import borgmatic.hooks.credential.tag
+import borgmatic.hooks.credential.parse
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     state_config = hook_config.get(state.name.lower(), {})
 
     try:
-        token = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('token'))
-        user = borgmatic.hooks.credential.tag.resolve_credential(hook_config.get('user'))
+        token = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('token'))
+        user = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('user'))
     except ValueError as error:
         logger.warning(f'Pushover credential error: {error}')
         return

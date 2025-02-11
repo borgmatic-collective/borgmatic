@@ -225,20 +225,6 @@ def test_load_configuration_merges_multiple_file_include():
     assert config_paths == {'config.yaml', '/tmp/include1.yaml', '/tmp/include2.yaml', 'other.yaml'}
 
 
-def test_load_configuration_passes_through_credential_tag():
-    builtins = flexmock(sys.modules['builtins'])
-    flexmock(module.os).should_receive('getcwd').and_return('/tmp')
-    flexmock(module.os.path).should_receive('isabs').and_return(False)
-    flexmock(module.os.path).should_receive('exists').and_return(True)
-    config_file = io.StringIO('key: !credential foo bar')
-    config_file.name = 'config.yaml'
-    builtins.should_receive('open').with_args('config.yaml').and_return(config_file)
-    config_paths = {'other.yaml'}
-
-    assert module.load_configuration('config.yaml', config_paths) == {'key': '!credential foo bar'}
-    assert config_paths == {'config.yaml', 'other.yaml'}
-
-
 def test_load_configuration_with_retain_tag_merges_include_but_keeps_local_values():
     builtins = flexmock(sys.modules['builtins'])
     flexmock(module.os).should_receive('getcwd').and_return('/tmp')

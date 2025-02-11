@@ -1,6 +1,6 @@
 1.9.10
- * #966: Add a "!credential" tag for loading systemd credentials into borgmatic configuration
-   files. See the documentation for more information:
+ * #966: Add a "{credential ...}" syntax for loading systemd credentials into borgmatic
+   configuration files. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * #987: Fix a "list" action error when the "encryption_passcommand" option is set.
  * #987: When both "encryption_passcommand" and "encryption_passphrase" are configured, prefer

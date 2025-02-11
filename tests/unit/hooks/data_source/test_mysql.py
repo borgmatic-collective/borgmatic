@@ -16,7 +16,7 @@ def test_database_names_to_dump_passes_through_name():
 
 def test_database_names_to_dump_bails_for_dry_run():
     extra_environment = flexmock()
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_and_capture_output').never()
@@ -28,7 +28,7 @@ def test_database_names_to_dump_bails_for_dry_run():
 
 def test_database_names_to_dump_queries_mysql_for_database_names():
     extra_environment = flexmock()
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
@@ -87,7 +87,7 @@ def test_dump_data_sources_dumps_with_password():
     database = {'name': 'foo', 'username': 'root', 'password': 'trustsome1'}
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
@@ -208,7 +208,7 @@ def test_execute_dump_command_runs_mysqldump():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -243,7 +243,7 @@ def test_execute_dump_command_runs_mysqldump_without_add_drop_database():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -277,7 +277,7 @@ def test_execute_dump_command_runs_mysqldump_with_hostname_and_port():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -318,7 +318,7 @@ def test_execute_dump_command_runs_mysqldump_with_username_and_password():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -355,7 +355,7 @@ def test_execute_dump_command_runs_mysqldump_with_options():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -391,7 +391,7 @@ def test_execute_dump_command_runs_non_default_mysqldump():
     process = flexmock()
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -447,7 +447,7 @@ def test_execute_dump_command_with_duplicate_dump_skips_mysqldump():
 def test_execute_dump_command_with_dry_run_skips_mysqldump():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
     flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
@@ -470,7 +470,7 @@ def test_execute_dump_command_with_dry_run_skips_mysqldump():
 def test_dump_data_sources_errors_for_missing_all_databases():
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -492,7 +492,7 @@ def test_dump_data_sources_errors_for_missing_all_databases():
 def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -517,7 +517,7 @@ def test_restore_data_source_dump_runs_mysql_to_restore():
     hook_config = [{'name': 'foo'}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -548,7 +548,7 @@ def test_restore_data_source_dump_runs_mysql_with_options():
     hook_config = [{'name': 'foo', 'restore_options': '--harder'}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -579,7 +579,7 @@ def test_restore_data_source_dump_runs_non_default_mysql_with_options():
     hook_config = [{'name': 'foo', 'mysql_command': 'custom_mysql', 'restore_options': '--harder'}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -610,7 +610,7 @@ def test_restore_data_source_dump_runs_mysql_with_hostname_and_port():
     hook_config = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -650,7 +650,7 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
     hook_config = [{'name': 'foo', 'username': 'root', 'password': 'trustsome1'}]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -691,7 +691,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     ]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -745,7 +745,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     ]
     extract_process = flexmock(stdout=flexmock())
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -786,7 +786,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
 def test_restore_data_source_dump_with_dry_run_skips_restore():
     hook_config = [{'name': 'foo'}]
 
-    flexmock(module.borgmatic.hooks.credential.tag).should_receive(
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value: value)
     flexmock(module).should_receive('execute_command_with_processes').never()

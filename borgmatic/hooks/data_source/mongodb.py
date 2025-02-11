@@ -4,7 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
-import borgmatic.hooks.credential.tag
+import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -103,7 +103,7 @@ def build_dump_command(database, dump_filename, dump_format):
             (
                 '--username',
                 shlex.quote(
-                    borgmatic.hooks.credential.tag.resolve_credential(database['username'])
+                    borgmatic.hooks.credential.parse.resolve_credential(database['username'])
                 ),
             )
             if 'username' in database
@@ -113,7 +113,7 @@ def build_dump_command(database, dump_filename, dump_format):
             (
                 '--password',
                 shlex.quote(
-                    borgmatic.hooks.credential.tag.resolve_credential(database['password'])
+                    borgmatic.hooks.credential.parse.resolve_credential(database['password'])
                 ),
             )
             if 'password' in database
@@ -217,10 +217,10 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
         'restore_hostname', database.get('hostname')
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = borgmatic.hooks.credential.tag.resolve_credential(
+    username = borgmatic.hooks.credential.parse.resolve_credential(
         connection_params['username'] or database.get('restore_username', database.get('username'))
     )
-    password = borgmatic.hooks.credential.tag.resolve_credential(
+    password = borgmatic.hooks.credential.parse.resolve_credential(
         connection_params['password'] or database.get('restore_password', database.get('password'))
     )
 

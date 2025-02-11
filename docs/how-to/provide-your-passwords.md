@@ -62,7 +62,7 @@ systemd-ask-password -n | systemd-creds encrypt - /etc/credstore.encrypted/borgm
 Then use the following in your configuration file:
 
 ```yaml
-encryption_passphrase: !credential systemd borgmatic.pw
+encryption_passphrase: "{credential systemd borgmatic.pw}"
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.9.10</span> You can
@@ -74,16 +74,16 @@ encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic.pw
 
 Note that the name `borgmatic.pw` is hardcoded in the systemd service file.
 
-The `!credential` tag works for several different options in a borgmatic
+The `{credential ...}` syntax works for several different options in a borgmatic
 configuration file besides just `encryption_passphrase`. For instance, the
 username, password, and API token options within database and monitoring hooks
-support `!credential`. For example:
+support `{credential ...}`:
 
 ```yaml
 postgresql_databases:
     - name: invoices
       username: postgres
-      password: !credential systemd borgmatic_db1
+      password: "{credential systemd borgmatic_db1}"
 ```
 
 For specifics about which options are supported, see the
@@ -121,7 +121,7 @@ Finally, use something like the following in your borgmatic configuration file
 for each option value you'd like to load from systemd:
 
 ```yaml
-encryption_passphrase: !credential systemd borgmatic_backupserver1
+encryption_passphrase: "{credential systemd borgmatic_backupserver1}"
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.9.10</span> Use the
@@ -135,12 +135,12 @@ encryption_passcommand: cat ${CREDENTIALS_DIRECTORY}/borgmatic_backupserver1
 Adjust `borgmatic_backupserver1` according to the name of the credential and the
 directory set in the service file.
 
-Be aware that when using this systemd `!credential` feature, you may no longer
-be able to run certain borgmatic actions outside of the systemd service, as the
-credentials are only available from within the context of that service. So for
-instance, `borgmatic list` necessarily relies on the `encryption_passphrase` in
-order to access the Borg repository, but it shouldn't need to load any
-credentials for your database or monitoring hooks.
+Be aware that when using this systemd `{credential ...}` feature, you may no
+longer be able to run certain borgmatic actions outside of the systemd service,
+as the credentials are only available from within the context of that service.
+So for instance, `borgmatic list` necessarily relies on the
+`encryption_passphrase` in order to access the Borg repository, but `list`
+shouldn't need to load any credentials for your database or monitoring hooks.
 
 The one exception is `borgmatic config validate`, which doesn't actually load
 any credentials and should continue working anywhere.

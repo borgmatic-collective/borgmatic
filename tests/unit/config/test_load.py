@@ -43,17 +43,3 @@ def test_probe_and_include_file_with_relative_path_and_missing_files_raises():
 
     with pytest.raises(FileNotFoundError):
         module.probe_and_include_file('include.yaml', ['/etc', '/var'], config_paths=set())
-
-
-def test_reserialize_tag_node_turns_it_into_string():
-    assert (
-        module.reserialize_tag_node(loader=flexmock(), tag_node=flexmock(tag='!tag', value='value'))
-        == '!tag value'
-    )
-
-
-def test_reserialize_tag_node_with_invalid_value_raises():
-    with pytest.raises(ValueError):
-        assert module.reserialize_tag_node(
-            loader=flexmock(), tag_node=flexmock(tag='!tag', value=['value'])
-        )

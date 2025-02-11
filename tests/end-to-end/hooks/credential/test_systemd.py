@@ -23,7 +23,7 @@ def generate_configuration(config_path, repository_path):
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
-        + '\nencryption_passphrase: !credential systemd mycredential'
+        + '\nencryption_passphrase: "{credential systemd mycredential}"'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)

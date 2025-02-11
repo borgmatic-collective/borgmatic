@@ -5,7 +5,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
-import borgmatic.hooks.credential.tag
+import borgmatic.hooks.credential.parse
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
@@ -47,7 +47,7 @@ def database_names_to_dump(database, extra_environment, dry_run):
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
         + (
-            ('--user', borgmatic.hooks.credential.tag.resolve_credential(database['username']))
+            ('--user', borgmatic.hooks.credential.parse.resolve_credential(database['username']))
             if 'username' in database
             else ()
         )
@@ -102,7 +102,7 @@ def execute_dump_command(
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
         + (
-            ('--user', borgmatic.hooks.credential.tag.resolve_credential(database['username']))
+            ('--user', borgmatic.hooks.credential.parse.resolve_credential(database['username']))
             if 'username' in database
             else ()
         )
@@ -162,7 +162,7 @@ def dump_data_sources(
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
         extra_environment = (
-            {'MYSQL_PWD': borgmatic.hooks.credential.tag.resolve_credential(database['password'])}
+            {'MYSQL_PWD': borgmatic.hooks.credential.parse.resolve_credential(database['password'])}
             if 'password' in database
             else None
         )
@@ -264,11 +264,11 @@ def restore_data_source_dump(
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
-    username = borgmatic.hooks.credential.tag.resolve_credential(
+    username = borgmatic.hooks.credential.parse.resolve_credential(
         connection_params['username']
         or data_source.get('restore_username', data_source.get('username'))
     )
-    password = borgmatic.hooks.credential.tag.resolve_credential(
+    password = borgmatic.hooks.credential.parse.resolve_credential(
         connection_params['password']
         or data_source.get('restore_password', data_source.get('password'))
     )

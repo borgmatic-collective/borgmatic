@@ -104,21 +104,6 @@ def raise_omit_node_error(loader, node):
     )
 
 
-def reserialize_tag_node(loader, tag_node):
-    '''
-    Given a ruamel.yaml loader and a node for a tag and value, convert the node back into a string
-    of the form "!tagname value" and return it. The idea is that downstream code, rather than this
-    file's YAML loading logic, should be responsible for interpreting this particular tag—since the
-    downstream code actually understands the meaning behind the tag.
-
-    Raise ValueError if the tag node's value isn't a string.
-    '''
-    if isinstance(tag_node.value, str):
-        return f'{tag_node.tag} {tag_node.value}'
-
-    raise ValueError(f'The value given for the {tag_node.tag} tag is invalid; use a string instead')
-
-
 class Include_constructor(ruamel.yaml.SafeConstructor):
     '''
     A YAML "constructor" (a ruamel.yaml concept) that supports a custom "!include" tag for including
@@ -137,7 +122,6 @@ class Include_constructor(ruamel.yaml.SafeConstructor):
                 config_paths=config_paths,
             ),
         )
-        self.add_constructor('!credential', reserialize_tag_node)
 
         # These are catch-all error handlers for tags that don't get applied and removed by
         # deep_merge_nodes() below.
