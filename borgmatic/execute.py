@@ -430,13 +430,14 @@ def execute_command_with_processes(
                 process.kill()
         raise
 
-    captured_outputs = log_outputs(
-        tuple(processes) + (command_process,),
-        (input_file, output_file),
-        output_log_level,
-        borg_local_path,
-        borg_exit_codes,
-    )
+    with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.
+        captured_outputs = log_outputs(
+            tuple(processes) + (command_process,),
+            (input_file, output_file),
+            output_log_level,
+            borg_local_path,
+            borg_exit_codes,
+        )
 
     if output_log_level is None:
         return captured_outputs.get(command_process)

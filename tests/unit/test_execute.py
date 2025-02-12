@@ -554,6 +554,7 @@ def test_execute_command_with_processes_calls_full_command():
         cwd=None,
         close_fds=True,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(full_command, processes)
@@ -577,6 +578,7 @@ def test_execute_command_with_processes_returns_output_with_output_log_level_non
         cwd=None,
         close_fds=True,
     ).and_return(process).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs').and_return({process: 'out'})
 
     output = module.execute_command_with_processes(full_command, processes, output_log_level=None)
@@ -600,6 +602,7 @@ def test_execute_command_with_processes_calls_full_command_with_output_file():
         cwd=None,
         close_fds=True,
     ).and_return(flexmock(stderr=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(full_command, processes, output_file=output_file)
@@ -623,6 +626,7 @@ def test_execute_command_with_processes_calls_full_command_without_capturing_out
         close_fds=True,
     ).and_return(flexmock(wait=lambda: 0)).once()
     flexmock(module).should_receive('interpret_exit_code').and_return(module.Exit_status.SUCCESS)
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
@@ -648,6 +652,7 @@ def test_execute_command_with_processes_calls_full_command_with_input_file():
         cwd=None,
         close_fds=True,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(full_command, processes, input_file=input_file)
@@ -670,6 +675,7 @@ def test_execute_command_with_processes_calls_full_command_with_shell():
         cwd=None,
         close_fds=True,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(full_command, processes, shell=True)
@@ -692,6 +698,7 @@ def test_execute_command_with_processes_calls_full_command_with_extra_environmen
         cwd=None,
         close_fds=True,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
@@ -716,6 +723,7 @@ def test_execute_command_with_processes_calls_full_command_with_working_director
         cwd='/working',
         close_fds=True,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
@@ -740,6 +748,7 @@ def test_execute_command_with_processes_with_BORG_PASSPHRASE_FD_leaves_file_desc
         cwd=None,
         close_fds=False,
     ).and_return(flexmock(stdout=None)).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs')
 
     output = module.execute_command_with_processes(
@@ -769,6 +778,7 @@ def test_execute_command_with_processes_kills_processes_on_error():
         cwd=None,
         close_fds=True,
     ).and_raise(subprocess.CalledProcessError(1, full_command, 'error')).once()
+    flexmock(module.borgmatic.logger).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('log_outputs').never()
 
     with pytest.raises(subprocess.CalledProcessError):
