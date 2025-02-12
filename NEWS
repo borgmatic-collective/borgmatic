@@ -1,4 +1,4 @@
-1.9.11
+1.9.11.dev0
  * Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the documentation for
    more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
 1.9.10
