@@ -19,17 +19,17 @@ def load_credential(hook_config, config, credential_parameters):
     the secret file cannot be read.
     '''
     try:
-        (secert_name,) = credential_parameters
+        (secret_name,) = credential_parameters
     except ValueError:
         raise ValueError(f'Cannot load invalid secret name: "{' '.join(credential_parameters)}"')
 
-    if not SECRET_NAME_PATTERN.match(SECRET_NAME):
-        raise ValueError(f'Cannot load invalid secret name: "{credential_name}"')
+    if not SECRET_NAME_PATTERN.match(secret_name):
+        raise ValueError(f'Cannot load invalid secret name: "{secret_name}"')
 
     try:
-        with open(os.path.join(SECRETS_DIRECTORY, credential_name)) as credential_file:
-            return credential_file.read().rstrip(os.linesep)
+        with open(os.path.join(SECRETS_DIRECTORY, secret_name)) as secret_file:
+            return secret_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
         logger.warning(error)
 
-        raise ValueError(f'Cannot load credential "{credential_name}" from file: {error.filename}')
+        raise ValueError(f'Cannot load secret "{secret_name}" from file: {error.filename}')
