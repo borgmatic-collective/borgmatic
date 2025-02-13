@@ -303,7 +303,6 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
             snapshot_parent_dir = snapshot_path.rsplit(subvolume.path, 1)[0]
             if os.path.isdir(snapshot_parent_dir):
                 shutil.rmtree(snapshot_parent_dir)
-                continue
 
 
 def make_data_source_dump_patterns(
