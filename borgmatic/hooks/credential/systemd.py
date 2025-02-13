@@ -5,29 +5,35 @@ import re
 logger = logging.getLogger(__name__)
 
 
-SECRET_NAME_PATTERN = re.compile(r'^\w+$')
-SECRETS_DIRECTORY = '/run/secrets'
+CREDENTIAL_NAME_PATTERN = re.compile(r'^\w+$')
 
 
 def load_credential(hook_config, config, credential_parameters):
     '''
     Given the hook configuration dict, the configuration dict, and a credential parameters tuple
-    containing a secret name to load, read the secret from the corresponding container secrets file
-    and return it.
+    containing a credential name to load, read the credential from the corresponding systemd
+    credential file and return it.
 
-    Raise ValueError if the credential parameters is not one element, the secret name is invalid, or
-    the secret file cannot be read.
+    Raise ValueError if the systemd CREDENTIALS_DIRECTORY environment variable is not set, the
+    credential name is invalid, or the credential file cannot be read.
     '''
     try:
-        (secert_name,) = credential_parameters
+        (credential_name,) = credential_parameters
     except ValueError:
-        raise ValueError(f'Cannot load invalid secret name: "{' '.join(credential_parameters)}"')
+        raise ValueError(f'Cannot load invalid credential name: "{' '.join(credential_parameters)}"')
 
-    if not SECRET_NAME_PATTERN.match(SECRET_NAME):
-        raise ValueError(f'Cannot load invalid secret name: "{credential_name}"')
+    credentials_directory = os.environ.get('CREDENTIALS_DIRECTORY')
+
+    if not credentials_directory:
+        raise ValueError(
+            f'Cannot load credential "{credential_name}" because the systemd CREDENTIALS_DIRECTORY environment variable is not set'
+        )
+
+    if not CREDENTIAL_NAME_PATTERN.match(credential_name):
+        raise ValueError(f'Cannot load invalid credential name "{credential_name}"')
 
     try:
-        with open(os.path.join(SECRETS_DIRECTORY, credential_name)) as credential_file:
+        with open(os.path.join(credentials_directory, credential_name)) as credential_file:
             return credential_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
         logger.warning(error)
