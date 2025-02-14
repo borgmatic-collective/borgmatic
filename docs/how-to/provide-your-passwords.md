@@ -191,6 +191,16 @@ For specifics about which options are supported, see the
 [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/).
 
+You can also optionally override the `/run/secrets` directory that borgmatic reads secrets from
+inside a container:
+
+```yaml
+container:
+    secrets_directory: /path/to/secrets
+```
+
+But you should only need to do this for development or testing purposes.
+
 
 ### KeePassXC passwords
 
@@ -235,6 +245,14 @@ postgresql_databases:
 For specifics about which options are supported, see the
 [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/).
+
+You can also optionally override the `keepassxc-cli` command that borgmatic calls to load
+passwords:
+
+```yaml
+keepassxc:
+    keepassxc_cli_command: /usr/local/bin/keepassxc-cli
+```
 
 
 ### File-based credentials

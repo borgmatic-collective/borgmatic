@@ -1,5 +1,6 @@
 import logging
 import os
+import shlex
 
 import borgmatic.execute
 
@@ -27,8 +28,8 @@ def load_credential(hook_config, config, credential_parameters):
         )
 
     return borgmatic.execute.execute_command_and_capture_output(
-        (
-            'keepassxc-cli',
+        tuple(shlex.split((hook_config or {}).get('keepassxc_cli_command', 'keepassxc-cli')))
+        + (
             'show',
             '--show-protected',
             '--attributes',

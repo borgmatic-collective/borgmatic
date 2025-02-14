@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 SECRET_NAME_PATTERN = re.compile(r'^\w+$')
-SECRETS_DIRECTORY = '/run/secrets'
+DEFAULT_SECRETS_DIRECTORY = '/run/secrets'
 
 
 def load_credential(hook_config, config, credential_parameters):
@@ -27,7 +27,11 @@ def load_credential(hook_config, config, credential_parameters):
         raise ValueError(f'Cannot load invalid secret name: "{secret_name}"')
 
     try:
-        with open(os.path.join(SECRETS_DIRECTORY, secret_name)) as secret_file:
+        with open(
+            os.path.join(
+                (hook_config or {}).get('secrets_directory', DEFAULT_SECRETS_DIRECTORY), secret_name
+            )
+        ) as secret_file:
             return secret_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
         logger.warning(error)

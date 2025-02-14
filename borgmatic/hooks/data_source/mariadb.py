@@ -176,7 +176,7 @@ def dump_data_sources(
             if 'password' in database
             else None
         )
-        dump_database_names = database_names_to_dump(database, extra_environment, dry_run)
+        dump_database_names = database_names_to_dump(database, config, extra_environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
