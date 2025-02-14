@@ -37,9 +37,15 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     )
 
     try:
-        username = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('username'))
-        password = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('password'))
-        api_key = borgmatic.hooks.credential.parse.resolve_credential(hook_config.get('api_key'))
+        username = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('username'), config
+        )
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('password'), config
+        )
+        api_key = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('api_key'), config
+        )
     except ValueError as error:
         logger.warning(f'Zabbix credential error: {error}')
         return

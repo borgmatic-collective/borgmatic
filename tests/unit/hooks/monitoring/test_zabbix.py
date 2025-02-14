@@ -77,7 +77,7 @@ def test_ping_monitor_config_with_api_key_only_bails():
     hook_config = {'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -97,7 +97,7 @@ def test_ping_monitor_config_with_host_only_bails():
     hook_config = {'host': HOST}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -117,7 +117,7 @@ def test_ping_monitor_config_with_key_only_bails():
     hook_config = {'key': KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -137,7 +137,7 @@ def test_ping_monitor_config_with_server_only_bails():
     hook_config = {'server': SERVER}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -156,7 +156,7 @@ def test_ping_monitor_config_user_password_no_zabbix_data_bails():
     hook_config = {'server': SERVER, 'username': USERNAME, 'password': PASSWORD}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -175,7 +175,7 @@ def test_ping_monitor_config_api_key_no_zabbix_data_bails():
     hook_config = {'server': SERVER, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -195,7 +195,7 @@ def test_ping_monitor_config_itemid_no_auth_data_bails():
     hook_config = {'server': SERVER, 'itemid': ITEMID}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -215,7 +215,7 @@ def test_ping_monitor_config_host_and_key_no_auth_data_bails():
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -235,7 +235,7 @@ def test_ping_monitor_config_host_and_key_with_api_key_auth_data_successful():
     hook_config = {'server': SERVER, 'host': HOST, 'key': KEY, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.requests).should_receive('post').with_args(
         f'{SERVER}',
         headers=AUTH_HEADERS_API_KEY,
@@ -257,7 +257,7 @@ def test_ping_monitor_config_host_and_missing_key_bails():
     hook_config = {'server': SERVER, 'host': HOST, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -275,7 +275,7 @@ def test_ping_monitor_config_key_and_missing_host_bails():
     hook_config = {'server': SERVER, 'key': KEY, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -302,7 +302,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_succe
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -343,7 +343,7 @@ def test_ping_monitor_config_host_and_key_with_username_password_auth_data_and_a
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     auth_response = flexmock(ok=False)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -384,7 +384,7 @@ def test_ping_monitor_config_host_and_key_with_username_and_missing_password_bai
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -408,7 +408,7 @@ def test_ping_monitor_config_host_and_key_with_password_and_missing_username_bai
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.logger).should_receive('warning').once()
     flexmock(module.requests).should_receive('post').never()
 
@@ -428,7 +428,7 @@ def test_ping_monitor_config_itemid_with_api_key_auth_data_successful():
     hook_config = {'server': SERVER, 'itemid': ITEMID, 'api_key': API_KEY}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.requests).should_receive('post').with_args(
         f'{SERVER}',
         headers=AUTH_HEADERS_API_KEY,
@@ -453,7 +453,7 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_successful(
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}
@@ -488,7 +488,7 @@ def test_ping_monitor_config_itemid_with_username_password_auth_data_and_push_po
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     auth_response = flexmock(ok=True)
     auth_response.should_receive('json').and_return(
         {'jsonrpc': '2.0', 'result': '3fe6ed01a69ebd79907a120bcd04e494', 'id': 1}

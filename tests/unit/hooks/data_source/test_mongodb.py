@@ -126,7 +126,7 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
     )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -247,9 +247,9 @@ def test_build_dump_command_with_username_injection_attack_gets_escaped():
     database = {'name': 'test', 'username': 'bob; naughty-command'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
 
-    command = module.build_dump_command(database, dump_filename='test', dump_format='archive')
+    command = module.build_dump_command(database, {}, dump_filename='test', dump_format='archive')
 
     assert "'bob; naughty-command'" in command
 
@@ -262,7 +262,7 @@ def test_restore_data_source_dump_runs_mongorestore():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive', '--drop'],
         processes=[extract_process],
@@ -296,7 +296,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -344,7 +344,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -398,7 +398,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -456,7 +456,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -502,7 +502,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_options():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive', '--drop', '--harder'],
         processes=[extract_process],
@@ -534,7 +534,7 @@ def test_restore_databases_dump_runs_mongorestore_with_schemas():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -574,7 +574,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--archive'],
         processes=[extract_process],
@@ -605,7 +605,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_data_source_dump(
@@ -631,7 +631,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ['mongorestore', '--dir', '/dump/path', '--drop'],
         processes=[],

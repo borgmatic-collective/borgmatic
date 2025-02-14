@@ -69,7 +69,7 @@ def dump_data_sources(
         if dry_run:
             continue
 
-        command = build_dump_command(database, dump_filename, dump_format)
+        command = build_dump_command(database, config, dump_filename, dump_format)
 
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
@@ -88,7 +88,7 @@ def dump_data_sources(
     return processes
 
 
-def build_dump_command(database, dump_filename, dump_format):
+def build_dump_command(database, config, dump_filename, dump_format):
     '''
     Return the mongodump command from a single database configuration.
     '''
@@ -103,7 +103,9 @@ def build_dump_command(database, dump_filename, dump_format):
             (
                 '--username',
                 shlex.quote(
-                    borgmatic.hooks.credential.parse.resolve_credential(database['username'])
+                    borgmatic.hooks.credential.parse.resolve_credential(
+                        database['username'], config
+                    )
                 ),
             )
             if 'username' in database
@@ -113,7 +115,9 @@ def build_dump_command(database, dump_filename, dump_format):
             (
                 '--password',
                 shlex.quote(
-                    borgmatic.hooks.credential.parse.resolve_credential(database['password'])
+                    borgmatic.hooks.credential.parse.resolve_credential(
+                        database['password'], config
+                    )
                 ),
             )
             if 'password' in database
@@ -192,7 +196,7 @@ def restore_data_source_dump(
         data_source.get('hostname'),
     )
     restore_command = build_restore_command(
-        extract_process, data_source, dump_filename, connection_params
+        extract_process, data_source, config, dump_filename, connection_params
     )
 
     logger.debug(f"Restoring MongoDB database {data_source['name']}{dry_run_label}")
@@ -209,7 +213,7 @@ def restore_data_source_dump(
     )
 
 
-def build_restore_command(extract_process, database, dump_filename, connection_params):
+def build_restore_command(extract_process, database, config, dump_filename, connection_params):
     '''
     Return the mongorestore command from a single database configuration.
     '''
@@ -218,10 +222,18 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
     username = borgmatic.hooks.credential.parse.resolve_credential(
-        connection_params['username'] or database.get('restore_username', database.get('username'))
+        (
+            connection_params['username']
+            or database.get('restore_username', database.get('username'))
+        ),
+        config,
     )
     password = borgmatic.hooks.credential.parse.resolve_credential(
-        connection_params['password'] or database.get('restore_password', database.get('password'))
+        (
+            connection_params['password']
+            or database.get('restore_password', database.get('password'))
+        ),
+        config,
     )
 
     command = ['mongorestore']
