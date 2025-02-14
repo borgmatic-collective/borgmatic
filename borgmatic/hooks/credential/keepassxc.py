@@ -1,6 +1,5 @@
 import logging
 import os
-import shlex
 
 import borgmatic.execute
 
@@ -18,10 +17,14 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         (database_path, attribute_name) = credential_parameters
     except ValueError:
-        raise ValueError(f'Cannot load credential with invalid KeePassXC database path and attribute name: "{' '.join(credential_parameters)}"')
+        raise ValueError(
+            f'Cannot load credential with invalid KeePassXC database path and attribute name: "{' '.join(credential_parameters)}"'
+        )
 
     if not os.path.exists(database_path):
-        raise ValueError(f'Cannot load credential because KeePassXC database path does not exist: {database_path}')
+        raise ValueError(
+            f'Cannot load credential because KeePassXC database path does not exist: {database_path}'
+        )
 
     return borgmatic.execute.execute_command_and_capture_output(
         (

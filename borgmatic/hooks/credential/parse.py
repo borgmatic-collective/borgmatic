@@ -7,9 +7,7 @@ import borgmatic.hooks.dispatch
 IS_A_HOOK = False
 
 
-CREDENTIAL_PATTERN = re.compile(
-    r'\{credential( +(?P<contents>.*))?\}'
-)
+CREDENTIAL_PATTERN = re.compile(r'\{credential( +(?P<hook_and_parameters>.*))?\}')
 
 
 @functools.cache
@@ -31,12 +29,12 @@ def resolve_credential(value):
     if not matcher:
         return value
 
-    contents = matcher.group('contents')
-    
-    if not contents:
+    hook_and_parameters = matcher.group('hook_and_parameters')
+
+    if not hook_and_parameters:
         raise ValueError(f'Cannot load credential with invalid syntax "{value}"')
 
-    (hook_name, *credential_parameters) = shlex.split(contents)
+    (hook_name, *credential_parameters) = shlex.split(hook_and_parameters)
 
     if not credential_parameters:
         raise ValueError(f'Cannot load credential with invalid syntax "{value}"')

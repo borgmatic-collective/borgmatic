@@ -1,8 +1,5 @@
 import logging
 import os
-import shlex
-
-import borgmatic.execute
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +15,7 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         (credential_path,) = credential_parameters
     except ValueError:
-        raise ValueError(f'Cannot load credential with invalid credential path: "{' '.join(credential_parameters)}"')
+        raise ValueError(f'Cannot load invalid credential: "{' '.join(credential_parameters)}"')
 
     try:
         with open(credential_path) as credential_file:
@@ -26,4 +23,4 @@ def load_credential(hook_config, config, credential_parameters):
     except (FileNotFoundError, OSError) as error:
         logger.warning(error)
 
-        raise ValueError(f'Cannot load credential "{credential_name}" from file: {error.filename}')
+        raise ValueError(f'Cannot load credential file: {error.filename}')

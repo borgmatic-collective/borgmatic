@@ -1,0 +1,38 @@
+import pytest
+from flexmock import flexmock
+
+from borgmatic.hooks.credential import keepassxc as module
+
+
+@pytest.mark.parametrize('credential_parameters', ((), ('foo',), ('foo', 'bar', 'baz')))
+def test_load_credential_with_invalid_credential_parameters_raises(credential_parameters):
+    flexmock(module.borgmatic.execute).should_receive('execute_command_and_capture_output').never()
+
+    with pytest.raises(ValueError):
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=credential_parameters
+        )
+
+
+def test_load_credential_with_missing_database_raises():
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.execute).should_receive('execute_command_and_capture_output').never()
+
+    with pytest.raises(ValueError):
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=('database.kdbx', 'mypassword')
+        )
+
+
+def test_load_credential_with_present_database_fetches_password_from_keepassxc():
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return('password').once()
+
+    assert (
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=('database.kdbx', 'mypassword')
+        )
+        == 'password'
+    )
