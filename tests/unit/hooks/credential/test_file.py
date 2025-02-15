@@ -38,6 +38,24 @@ def test_load_credential_reads_named_credential_from_file():
     )
 
 
+def test_load_credential_reads_named_credential_from_file_using_working_directory():
+    credential_stream = io.StringIO('password')
+    credential_stream.name = '/working/credentials/mycredential'
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('/working/credentials/mycredential').and_return(
+        credential_stream
+    )
+
+    assert (
+        module.load_credential(
+            hook_config={},
+            config={'working_directory': '/working'},
+            credential_parameters=('credentials/mycredential',),
+        )
+        == 'password'
+    )
+
+
 def test_load_credential_with_file_not_found_error_raises():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('/credentials/mycredential').and_raise(

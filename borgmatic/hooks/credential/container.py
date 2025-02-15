@@ -29,7 +29,9 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         with open(
             os.path.join(
-                (hook_config or {}).get('secrets_directory', DEFAULT_SECRETS_DIRECTORY), secret_name
+                config.get('working_directory', ''),
+                (hook_config or {}).get('secrets_directory', DEFAULT_SECRETS_DIRECTORY),
+                secret_name,
             )
         ) as secret_file:
             return secret_file.read().rstrip(os.linesep)

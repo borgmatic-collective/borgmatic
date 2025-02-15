@@ -49,6 +49,23 @@ def test_load_credential_with_custom_secrets_directory_looks_there_for_secret_fi
     )
 
 
+def test_load_credential_with_custom_secrets_directory_prefixes_it_with_working_directory():
+    config = {'container': {'secrets_directory': 'secrets'}, 'working_directory': '/working'}
+    credential_stream = io.StringIO('password')
+    credential_stream.name = '/working/secrets/mysecret'
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('/working/secrets/mysecret').and_return(
+        credential_stream
+    )
+
+    assert (
+        module.load_credential(
+            hook_config=config['container'], config=config, credential_parameters=('mysecret',)
+        )
+        == 'password'
+    )
+
+
 def test_load_credential_with_file_not_found_error_raises():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('/run/secrets/mysecret').and_raise(FileNotFoundError)
