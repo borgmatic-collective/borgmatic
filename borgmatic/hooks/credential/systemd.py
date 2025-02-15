@@ -8,14 +8,22 @@ logger = logging.getLogger(__name__)
 CREDENTIAL_NAME_PATTERN = re.compile(r'^\w+$')
 
 
-def load_credential(hook_config, config, credential_name):
+def load_credential(hook_config, config, credential_parameters):
     '''
-    Given the hook configuration dict, the configuration dict, and a credential name to load, read
-    the credential from the corresponding systemd credential file and return it.
+    Given the hook configuration dict, the configuration dict, and a credential parameters tuple
+    containing a credential name to load, read the credential from the corresponding systemd
+    credential file and return it.
 
     Raise ValueError if the systemd CREDENTIALS_DIRECTORY environment variable is not set, the
     credential name is invalid, or the credential file cannot be read.
     '''
+    try:
+        (credential_name,) = credential_parameters
+    except ValueError:
+        raise ValueError(
+            f'Cannot load invalid credential name: "{' '.join(credential_parameters)}"'
+        )
+
     credentials_directory = os.environ.get('CREDENTIALS_DIRECTORY')
 
     if not credentials_directory:

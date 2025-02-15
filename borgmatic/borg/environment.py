@@ -41,7 +41,7 @@ def make_environment(config):
         value = config.get(option_name)
 
         if option_name in CREDENTIAL_OPTIONS and value is not None:
-            value = borgmatic.hooks.credential.parse.resolve_credential(value)
+            value = borgmatic.hooks.credential.parse.resolve_credential(value, config)
 
         if value is not None:
             environment[environment_variable_name] = str(value)

@@ -26,9 +26,9 @@ def test_make_extra_environment_maps_options_to_environment():
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
 
-    extra_env = module.make_extra_environment(database)
+    extra_env = module.make_extra_environment(database, {})
 
     assert extra_env == expected
 
@@ -37,10 +37,10 @@ def test_make_extra_environment_with_cli_password_sets_correct_password():
     database = {'name': 'foo', 'restore_password': 'trustsome1', 'password': 'anotherpassword'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
 
     extra = module.make_extra_environment(
-        database, restore_connection_params={'password': 'clipassword'}
+        database, {}, restore_connection_params={'password': 'clipassword'}
     )
 
     assert extra['PGPASSWORD'] == 'clipassword'
@@ -50,7 +50,7 @@ def test_make_extra_environment_without_cli_password_or_configured_password_does
     database = {'name': 'foo'}
 
     extra = module.make_extra_environment(
-        database, restore_connection_params={'username': 'someone'}
+        database, {}, restore_connection_params={'username': 'someone'}
     )
 
     assert 'PGPASSWORD' not in extra
@@ -59,7 +59,7 @@ def test_make_extra_environment_without_cli_password_or_configured_password_does
 def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
     database = {'name': 'foo'}
 
-    extra = module.make_extra_environment(database)
+    extra = module.make_extra_environment(database, {})
 
     assert 'PGSSLMODE' not in extra
 
@@ -67,41 +67,41 @@ def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
 def test_database_names_to_dump_passes_through_individual_database_name():
     database = {'name': 'foo'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_individual_database_name_with_format():
     database = {'name': 'foo', 'format': 'custom'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_passes_through_all_without_format():
     database = {'name': 'all'}
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('all',)
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('all',)
 
 
 def test_database_names_to_dump_with_all_and_format_and_dry_run_bails():
     database = {'name': 'all', 'format': 'custom'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=True) == ()
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=True) == ()
 
 
 def test_database_names_to_dump_with_all_and_format_lists_databases():
     database = {'name': 'all', 'format': 'custom'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         'foo,test,\nbar,test,"stuff and such"'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -111,7 +111,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
     database = {'name': 'all', 'format': 'custom', 'hostname': 'localhost', 'port': 1234}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'psql',
@@ -128,7 +128,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -138,7 +138,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
     database = {'name': 'all', 'format': 'custom', 'username': 'postgres'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'psql',
@@ -153,7 +153,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -163,13 +163,13 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_options
     database = {'name': 'all', 'format': 'custom', 'list_options': '--harder'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--harder'),
         extra_environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == (
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
         'foo',
         'bar',
     )
@@ -179,12 +179,12 @@ def test_database_names_to_dump_with_all_and_format_excludes_particular_database
     database = {'name': 'all', 'format': 'custom'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         'foo,test,\ntemplate0,test,blah'
     )
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
@@ -195,7 +195,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
     }
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         (
             'docker',
@@ -213,7 +213,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
         extra_environment=object,
     ).and_return('foo,text').once()
 
-    assert module.database_names_to_dump(database, flexmock(), dry_run=False) == ('foo',)
+    assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
 
 
 def test_use_streaming_true_for_any_non_directory_format_databases():
@@ -248,7 +248,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     for name, process in zip(('foo', 'bar'), processes):
@@ -355,7 +355,7 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
     flexmock(module).should_receive('execute_command').never()
 
@@ -384,7 +384,7 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -432,7 +432,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -478,7 +478,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -521,7 +521,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_parent_directory_for_dump')
     flexmock(module.dump).should_receive('create_named_pipe_for_dump').never()
 
@@ -566,7 +566,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -609,7 +609,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -641,7 +641,7 @@ def test_dump_data_sources_runs_non_default_pg_dump():
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -679,7 +679,7 @@ def test_restore_data_source_dump_runs_pg_restore():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -736,7 +736,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -801,7 +801,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return(
         {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
     )
@@ -875,7 +875,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return(
         {'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'}
     )
@@ -957,7 +957,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return(
         {'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'}
     )
@@ -1033,7 +1033,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -1090,7 +1090,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -1132,7 +1132,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -1186,7 +1186,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -1250,7 +1250,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -1277,7 +1277,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
@@ -1332,7 +1332,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
 
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
-    ).replace_with(lambda value: value)
+    ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')

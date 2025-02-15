@@ -6,11 +6,12 @@ import sys
 import tempfile
 
 
-def generate_configuration(config_path, repository_path):
+def generate_configuration(config_path, repository_path, secrets_directory):
     '''
     Generate borgmatic configuration into a file at the config path, and update the defaults so as
     to work for testing, including updating the source directories, injecting the given repository
-    path, and tacking on an encryption passphrase loaded from systemd.
+    path, and tacking on an encryption passphrase loaded from container secrets in the given secrets
+    directory.
     '''
     subprocess.check_call(f'borgmatic config generate --destination {config_path}'.split(' '))
     config = (
@@ -23,14 +24,15 @@ def generate_configuration(config_path, repository_path):
         .replace('- /home', f'- {config_path}')
         .replace('- /etc', '')
         .replace('- /var/log/syslog*', '')
-        + '\nencryption_passphrase: "{credential systemd mycredential}"'
+        + '\nencryption_passphrase: "{credential container mysecret}"'
+        + f'\ncontainer:\n    secrets_directory: {secrets_directory}'
     )
     config_file = open(config_path, 'w')
     config_file.write(config)
     config_file.close()
 
 
-def test_systemd_credential():
+def test_container_secret():
     # Create a Borg repository.
     temporary_directory = tempfile.mkdtemp()
     repository_path = os.path.join(temporary_directory, 'test.borg')
@@ -40,25 +42,22 @@ def test_systemd_credential():
 
     try:
         config_path = os.path.join(temporary_directory, 'test.yaml')
-        generate_configuration(config_path, repository_path)
+        generate_configuration(config_path, repository_path, secrets_directory=temporary_directory)
 
-        credential_path = os.path.join(temporary_directory, 'mycredential')
-        with open(credential_path, 'w') as credential_file:
-            credential_file.write('test')
+        secret_path = os.path.join(temporary_directory, 'mysecret')
+        with open(secret_path, 'w') as secret_file:
+            secret_file.write('test')
 
         subprocess.check_call(
             f'borgmatic -v 2 --config {config_path} repo-create --encryption repokey'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
         )
 
         # Run borgmatic to generate a backup archive, and then list it to make sure it exists.
         subprocess.check_call(
             f'borgmatic --config {config_path}'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
         )
         output = subprocess.check_output(
             f'borgmatic --config {config_path} list --json'.split(' '),
-            env=dict(os.environ, **{'CREDENTIALS_DIRECTORY': temporary_directory}),
         ).decode(sys.stdout.encoding)
         parsed_output = json.loads(output)
 

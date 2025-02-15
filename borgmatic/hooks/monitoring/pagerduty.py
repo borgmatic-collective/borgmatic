@@ -42,7 +42,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     try:
         integration_key = borgmatic.hooks.credential.parse.resolve_credential(
-            hook_config.get('integration_key')
+            hook_config.get('integration_key'), config
         )
     except ValueError as error:
         logger.warning(f'PagerDuty credential error: {error}')

@@ -51,13 +51,13 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
         try:
             username = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('username')
+                hook_config.get('username'), config
             )
             password = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('password')
+                hook_config.get('password'), config
             )
             access_token = borgmatic.hooks.credential.parse.resolve_credential(
-                hook_config.get('access_token')
+                hook_config.get('access_token'), config
             )
         except ValueError as error:
             logger.warning(f'Ntfy credential error: {error}')

@@ -2402,3 +2402,25 @@ properties:
         description: |
             Configuration for integration with Linux LVM (Logical Volume
             Manager).
+    container:
+        type: object
+        additionalProperties: false
+        properties:
+            secrets_directory:
+                type: string
+                description: |
+                    Secrets directory to use instead of "/run/secrets".
+                example: /path/to/secrets
+        description: |
+            Configuration for integration with Docker or Podman secrets.
+    keepassxc:
+        type: object
+        additionalProperties: false
+        properties:
+            keepassxc_cli_command:
+                type: string
+                description: |
+                    Command to use instead of "keepassxc-cli".
+                example: /usr/local/bin/keepassxc-cli
+        description: |
+            Configuration for integration with the KeePassXC password manager.

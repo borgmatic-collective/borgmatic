@@ -7,13 +7,23 @@ from flexmock import flexmock
 from borgmatic.hooks.credential import systemd as module
 
 
+@pytest.mark.parametrize('credential_parameters', ((), ('foo', 'bar')))
+def test_load_credential_with_invalid_credential_parameters_raises(credential_parameters):
+    flexmock(module.os.environ).should_receive('get').never()
+
+    with pytest.raises(ValueError):
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=credential_parameters
+        )
+
+
 def test_load_credential_without_credentials_directory_raises():
     flexmock(module.os.environ).should_receive('get').with_args('CREDENTIALS_DIRECTORY').and_return(
         None
     )
 
     with pytest.raises(ValueError):
-        module.load_credential(hook_config={}, config={}, credential_name='mycredential')
+        module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))
 
 
 def test_load_credential_with_invalid_credential_name_raises():
@@ -22,7 +32,9 @@ def test_load_credential_with_invalid_credential_name_raises():
     )
 
     with pytest.raises(ValueError):
-        module.load_credential(hook_config={}, config={}, credential_name='../../my!@#$credential')
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=('../../my!@#$credential',)
+        )
 
 
 def test_load_credential_reads_named_credential_from_file():
@@ -35,7 +47,7 @@ def test_load_credential_reads_named_credential_from_file():
     builtins.should_receive('open').with_args('/var/mycredential').and_return(credential_stream)
 
     assert (
-        module.load_credential(hook_config={}, config={}, credential_name='mycredential')
+        module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))
         == 'password'
     )
 
@@ -48,4 +60,4 @@ def test_load_credential_with_file_not_found_error_raises():
     builtins.should_receive('open').with_args('/var/mycredential').and_raise(FileNotFoundError)
 
     with pytest.raises(ValueError):
-        module.load_credential(hook_config={}, config={}, credential_name='mycredential')
+        module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))

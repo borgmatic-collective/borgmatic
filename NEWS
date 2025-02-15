@@ -1,6 +1,8 @@
 1.9.11.dev0
  * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
    databases are enabled.
+ * Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the documentation for
+   more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
 
 1.9.10
  * #966: Add a "{credential ...}" syntax for loading systemd credentials into borgmatic
