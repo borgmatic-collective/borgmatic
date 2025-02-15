@@ -299,9 +299,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                 logger.debug(error)
                 return
 
-            # Strip off the subvolume path from the end of the snapshot path and then delete the
-            # resulting directory.
-            shutil.rmtree(snapshot_path.rsplit(subvolume.path, 1)[0])
+            # Remove snapshot parent directory if it still exists (might not exist if snapshot was for '/')
+            snapshot_parent_dir = snapshot_path.rsplit(subvolume.path, 1)[0]
+            if os.path.isdir(snapshot_parent_dir):
+                shutil.rmtree(snapshot_parent_dir)
 
 
 def make_data_source_dump_patterns(
