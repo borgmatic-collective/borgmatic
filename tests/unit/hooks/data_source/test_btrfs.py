@@ -860,7 +860,7 @@ def test_remove_data_source_dumps_with_delete_snapshot_called_process_error_bail
     )
 
 
-def test_remove_data_source_dumps_with_root_subvolume():
+def test_remove_data_source_dumps_with_root_subvolume_skips_duplicate_removal():
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_return(
         (module.Subvolume('/', contained_patterns=(Pattern('/etc'),)),)

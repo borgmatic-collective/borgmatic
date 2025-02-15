@@ -3,6 +3,8 @@
    databases are enabled.
  * Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the documentation for
    more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+ * Fix another error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's
+   source directories.
 
 1.9.10
  * #966: Add a "{credential ...}" syntax for loading systemd credentials into borgmatic
