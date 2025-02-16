@@ -1,8 +1,9 @@
 1.9.11.dev0
  * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
    databases are enabled.
- * Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the documentation for
-   more information: https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+ * #795: Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * Fix another error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's
    source directories.
 
