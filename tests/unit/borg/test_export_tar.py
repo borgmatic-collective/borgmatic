@@ -23,7 +23,7 @@ def insert_execute_command_mock(
         command,
         output_file=None if capture else module.DO_NOT_CAPTURE,
         output_log_level=output_log_level,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=borg_local_path,
         borg_exit_codes=borg_exit_codes,

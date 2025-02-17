@@ -514,7 +514,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
     )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         full_command=object,
-        extra_environment=object,
+        environment=object,
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,
@@ -523,7 +523,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
     flexmock(module).should_receive('execute_command').with_args(
         full_command=object,
         output_log_level=object,
-        extra_environment=object,
+        environment=object,
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,

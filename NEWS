@@ -4,6 +4,8 @@
  * #795: Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+ * Send the "encryption_passphrase" option to Borg via an anonymous pipe, which is more secure than
+   using an environment variable.
  * Fix another error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's
    source directories.
 

@@ -18,7 +18,7 @@ def insert_execute_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         command,
         output_file=output_file,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=command[0],
         borg_exit_codes=borg_exit_codes,
@@ -342,7 +342,7 @@ def test_check_archives_with_progress_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--progress', 'repo'),
         output_file=module.DO_NOT_CAPTURE,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -377,7 +377,7 @@ def test_check_archives_with_repair_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--repair', 'repo'),
         output_file=module.DO_NOT_CAPTURE,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -412,7 +412,7 @@ def test_check_archives_with_max_duration_flag_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--max-duration', '33', 'repo'),
         output_file=None,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -447,7 +447,7 @@ def test_check_archives_with_max_duration_option_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--max-duration', '33', 'repo'),
         output_file=None,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -610,7 +610,7 @@ def test_check_archives_with_max_duration_flag_overrides_max_duration_option():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--max-duration', '44', 'repo'),
         output_file=None,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -963,7 +963,7 @@ def test_check_archives_with_match_archives_passes_through_to_borg():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'check', '--match-archives', 'foo-*', 'repo'),
         output_file=None,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,

@@ -45,7 +45,7 @@ def test_make_environment_with_pyinstaller_clears_LD_LIBRARY_PATH():
 def test_make_environment_with_pyinstaller_and_LD_LIBRARY_PATH_ORIG_copies_it_into_LD_LIBRARY_PATH():
     assert module.make_environment(
         {'LD_LIBRARY_PATH_ORIG': '/lib/lib/lib'}, sys_module=flexmock(frozen=True, _MEIPASS='yup')
-    ) == {'LD_LIBRARY_PATH': '/lib/lib/lib'}
+    ) == {'LD_LIBRARY_PATH_ORIG': '/lib/lib/lib', 'LD_LIBRARY_PATH': '/lib/lib/lib'}
 
 
 def test_execute_hook_invokes_each_command():
@@ -57,7 +57,7 @@ def test_execute_hook_invokes_each_command():
         [':'],
         output_log_level=logging.WARNING,
         shell=True,
-        extra_environment={},
+        environment={},
     ).once()
 
     module.execute_hook([':'], None, 'config.yaml', 'pre-backup', dry_run=False)
@@ -72,13 +72,13 @@ def test_execute_hook_with_multiple_commands_invokes_each_command():
         [':'],
         output_log_level=logging.WARNING,
         shell=True,
-        extra_environment={},
+        environment={},
     ).once()
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         ['true'],
         output_log_level=logging.WARNING,
         shell=True,
-        extra_environment={},
+        environment={},
     ).once()
 
     module.execute_hook([':', 'true'], None, 'config.yaml', 'pre-backup', dry_run=False)
@@ -95,7 +95,7 @@ def test_execute_hook_with_umask_sets_that_umask():
         [':'],
         output_log_level=logging.WARNING,
         shell=True,
-        extra_environment={},
+        environment={},
     )
 
     module.execute_hook([':'], 77, 'config.yaml', 'pre-backup', dry_run=False)
@@ -124,7 +124,7 @@ def test_execute_hook_on_error_logs_as_error():
         [':'],
         output_log_level=logging.ERROR,
         shell=True,
-        extra_environment={},
+        environment={},
     ).once()
 
     module.execute_hook([':'], None, 'config.yaml', 'on-error', dry_run=False)

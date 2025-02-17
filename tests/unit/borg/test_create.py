@@ -296,7 +296,7 @@ def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
         ('borg', 'create', '--dry-run', '--list'),
         capture_stderr=True,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return('Processing files ...\n- /foo\n+ /bar\n- /baz').once()
@@ -969,7 +969,7 @@ def test_create_archive_calls_borg_with_parameters():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1003,7 +1003,7 @@ def test_create_archive_calls_borg_with_environment():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=environment,
+        environment=environment,
     )
 
     module.create_archive(
@@ -1036,7 +1036,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_parameter():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
     insert_logging_mock(logging.INFO)
 
@@ -1066,7 +1066,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     )
@@ -1103,7 +1103,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
     insert_logging_mock(logging.DEBUG)
 
@@ -1133,7 +1133,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     )
@@ -1172,7 +1172,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
     insert_logging_mock(logging.INFO)
 
@@ -1209,7 +1209,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory='/working/dir',
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1244,7 +1244,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1278,7 +1278,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1316,7 +1316,7 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1350,7 +1350,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
     insert_logging_mock(logging.INFO)
 
@@ -1385,7 +1385,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1431,7 +1431,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         create_command,
@@ -1441,7 +1441,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(
@@ -1472,7 +1472,7 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return('[]')
@@ -1506,7 +1506,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'create', '--json') + REPO_ARCHIVE,
         working_directory=None,
-        extra_environment=None,
+        environment=None,
         borg_local_path='borg',
         borg_exit_codes=None,
     ).and_return('[]')
@@ -1547,7 +1547,7 @@ def test_create_archive_calls_borg_with_working_directory():
         borg_local_path='borg',
         borg_exit_codes=None,
         working_directory='/working/dir',
-        extra_environment=None,
+        environment=None,
     )
 
     module.create_archive(

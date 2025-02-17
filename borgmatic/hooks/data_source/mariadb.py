@@ -26,7 +26,7 @@ def make_dump_path(base_directory):  # pragma: no cover
 SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
 
 
-def database_names_to_dump(database, config, extra_environment, dry_run):
+def database_names_to_dump(database, config, environment, dry_run):
     '''
     Given a requested database config and a configuration dict, return the corresponding sequence of
     database names to dump. In the case of "all", query for the names of databases on the configured
@@ -58,9 +58,7 @@ def database_names_to_dump(database, config, extra_environment, dry_run):
         + ('--execute', 'show schemas')
     )
     logger.debug('Querying for "all" MariaDB databases to dump')
-    show_output = execute_command_and_capture_output(
-        show_command, extra_environment=extra_environment
-    )
+    show_output = execute_command_and_capture_output(show_command, environment=environment)
 
     return tuple(
         show_name
@@ -70,7 +68,7 @@ def database_names_to_dump(database, config, extra_environment, dry_run):
 
 
 def execute_dump_command(
-    database, config, dump_path, database_names, extra_environment, dry_run, dry_run_label
+    database, config, dump_path, database_names, environment, dry_run, dry_run_label
 ):
     '''
     Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
@@ -125,7 +123,7 @@ def execute_dump_command(
 
     return execute_command(
         dump_command,
-        extra_environment=extra_environment,
+        environment=environment,
         run_to_completion=False,
     )
 
@@ -167,16 +165,19 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        extra_environment = (
-            {
-                'MYSQL_PWD': borgmatic.hooks.credential.parse.resolve_credential(
-                    database['password'], config
-                )
-            }
-            if 'password' in database
-            else None
+        environment = dict(
+            os.environ,
+            **(
+                {
+                    'MYSQL_PWD': borgmatic.hooks.credential.parse.resolve_credential(
+                        database['password'], config
+                    )
+                }
+                if 'password' in database
+                else {}
+            ),
         )
-        dump_database_names = database_names_to_dump(database, config, extra_environment, dry_run)
+        dump_database_names = database_names_to_dump(database, config, environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
@@ -194,7 +195,7 @@ def dump_data_sources(
                         config,
                         dump_path,
                         (dump_name,),
-                        extra_environment,
+                        environment,
                         dry_run,
                         dry_run_label,
                     )
@@ -206,7 +207,7 @@ def dump_data_sources(
                     config,
                     dump_path,
                     dump_database_names,
-                    extra_environment,
+                    environment,
                     dry_run,
                     dry_run_label,
                 )
@@ -307,7 +308,7 @@ def restore_data_source_dump(
         + (('--protocol', 'tcp') if hostname or port else ())
         + (('--user', username) if username else ())
     )
-    extra_environment = {'MYSQL_PWD': password} if password else None
+    environment = dict(os.environ, **({'MYSQL_PWD': password} if password else {}))
 
     logger.debug(f"Restoring MariaDB database {data_source['name']}{dry_run_label}")
     if dry_run:
@@ -320,5 +321,5 @@ def restore_data_source_dump(
         [extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=extra_environment,
+        environment=environment,
     )

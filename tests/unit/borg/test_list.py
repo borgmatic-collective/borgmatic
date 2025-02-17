@@ -353,7 +353,7 @@ def test_list_archive_calls_borg_with_flags():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -419,7 +419,7 @@ def test_list_archive_calls_borg_with_local_path():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg2', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg2',
         borg_exit_codes=None,
@@ -469,7 +469,7 @@ def test_list_archive_calls_borg_using_exit_codes():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=borg_exit_codes,
@@ -507,7 +507,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'list', 'repo'),
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -520,7 +520,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive1') + glob_paths,
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -528,7 +528,7 @@ def test_list_archive_calls_borg_multiple_times_with_find_paths():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive2') + glob_paths,
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -576,7 +576,7 @@ def test_list_archive_calls_borg_with_archive():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -699,7 +699,7 @@ def test_list_archive_with_archive_ignores_archive_filter_flag(
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -759,7 +759,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('borg', 'repo-list', '--repo', 'repo'),
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -808,7 +808,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--repo', 'repo', 'archive1') + glob_paths,
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -816,7 +816,7 @@ def test_list_archive_with_find_paths_allows_archive_filter_flag_but_only_passes
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', '--repo', 'repo', 'archive2') + glob_paths,
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -875,7 +875,7 @@ def test_list_archive_calls_borg_with_working_directory():
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'list', 'repo::archive'),
         output_log_level=module.borgmatic.logger.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory='/working/dir',
         borg_local_path='borg',
         borg_exit_codes=None,

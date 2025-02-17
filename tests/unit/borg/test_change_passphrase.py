@@ -25,7 +25,7 @@ def insert_execute_command_mock(
         command,
         output_file=output_file,
         output_log_level=module.logging.ANSWER,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=command[0],
         borg_exit_codes=borg_exit_codes,

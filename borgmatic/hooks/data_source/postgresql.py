@@ -25,16 +25,16 @@ def make_dump_path(base_directory):  # pragma: no cover
     return dump.make_data_source_dump_path(base_directory, 'postgresql_databases')
 
 
-def make_extra_environment(database, config, restore_connection_params=None):
+def make_environment(database, config, restore_connection_params=None):
     '''
-    Make the extra_environment dict from the given database configuration. If restore connection
-    params are given, this is for a restore operation.
+    Make an environment dict from the current environment variables and the given database
+    configuration. If restore connection params are given, this is for a restore operation.
     '''
-    extra = dict()
+    environment = dict(os.environ)
 
     try:
         if restore_connection_params:
-            extra['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
+            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
                 (
                     restore_connection_params.get('password')
                     or database.get('restore_password', database['password'])
@@ -42,30 +42,30 @@ def make_extra_environment(database, config, restore_connection_params=None):
                 config,
             )
         else:
-            extra['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
+            environment['PGPASSWORD'] = borgmatic.hooks.credential.parse.resolve_credential(
                 database['password'], config
             )
     except (AttributeError, KeyError):
         pass
 
     if 'ssl_mode' in database:
-        extra['PGSSLMODE'] = database['ssl_mode']
+        environment['PGSSLMODE'] = database['ssl_mode']
     if 'ssl_cert' in database:
-        extra['PGSSLCERT'] = database['ssl_cert']
+        environment['PGSSLCERT'] = database['ssl_cert']
     if 'ssl_key' in database:
-        extra['PGSSLKEY'] = database['ssl_key']
+        environment['PGSSLKEY'] = database['ssl_key']
     if 'ssl_root_cert' in database:
-        extra['PGSSLROOTCERT'] = database['ssl_root_cert']
+        environment['PGSSLROOTCERT'] = database['ssl_root_cert']
     if 'ssl_crl' in database:
-        extra['PGSSLCRL'] = database['ssl_crl']
+        environment['PGSSLCRL'] = database['ssl_crl']
 
-    return extra
+    return environment
 
 
 EXCLUDED_DATABASE_NAMES = ('template0', 'template1')
 
 
-def database_names_to_dump(database, config, extra_environment, dry_run):
+def database_names_to_dump(database, config, environment, dry_run):
     '''
     Given a requested database config and a configuration dict, return the corresponding sequence of
     database names to dump. In the case of "all" when a database format is given, query for the
@@ -100,9 +100,7 @@ def database_names_to_dump(database, config, extra_environment, dry_run):
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
     )
     logger.debug('Querying for "all" PostgreSQL databases to dump')
-    list_output = execute_command_and_capture_output(
-        list_command, extra_environment=extra_environment
-    )
+    list_output = execute_command_and_capture_output(list_command, environment=environment)
 
     return tuple(
         row[0]
@@ -149,9 +147,9 @@ def dump_data_sources(
     logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
 
     for database in databases:
-        extra_environment = make_extra_environment(database, config)
+        environment = make_environment(database, config)
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        dump_database_names = database_names_to_dump(database, config, extra_environment, dry_run)
+        dump_database_names = database_names_to_dump(database, config, environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
@@ -225,7 +223,7 @@ def dump_data_sources(
                 execute_command(
                     command,
                     shell=True,
-                    extra_environment=extra_environment,
+                    environment=environment,
                 )
             else:
                 dump.create_named_pipe_for_dump(dump_filename)
@@ -233,7 +231,7 @@ def dump_data_sources(
                     execute_command(
                         command,
                         shell=True,
-                        extra_environment=extra_environment,
+                        environment=environment,
                         run_to_completion=False,
                     )
                 )
@@ -369,9 +367,7 @@ def restore_data_source_dump(
         )
     )
 
-    extra_environment = make_extra_environment(
-        data_source, config, restore_connection_params=connection_params
-    )
+    environment = make_environment(data_source, config, restore_connection_params=connection_params)
 
     logger.debug(f"Restoring PostgreSQL database {data_source['name']}{dry_run_label}")
     if dry_run:
@@ -384,6 +380,6 @@ def restore_data_source_dump(
         [extract_process] if extract_process else [],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout if extract_process else None,
-        extra_environment=extra_environment,
+        environment=environment,
     )
-    execute_command(analyze_command, extra_environment=extra_environment)
+    execute_command(analyze_command, environment=environment)

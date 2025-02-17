@@ -61,7 +61,7 @@ def run_arbitrary_borg(
         tuple(shlex.quote(part) for part in full_command),
         output_file=DO_NOT_CAPTURE,
         shell=True,
-        extra_environment=dict(
+        environment=dict(
             (environment.make_environment(config) or {}),
             **{
                 'BORG_REPO': repository_path,

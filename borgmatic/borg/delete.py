@@ -128,7 +128,7 @@ def delete_archives(
     borgmatic.execute.execute_command(
         command,
         output_log_level=logging.ANSWER,
-        extra_environment=borgmatic.borg.environment.make_environment(config),
+        environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

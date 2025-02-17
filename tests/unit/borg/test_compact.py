@@ -17,7 +17,7 @@ def insert_execute_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         compact_command,
         output_log_level=output_log_level,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=compact_command[0],
         borg_exit_codes=borg_exit_codes,

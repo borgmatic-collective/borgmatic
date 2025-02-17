@@ -36,7 +36,7 @@ def insert_repo_create_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         repo_create_command,
         output_file=module.DO_NOT_CAPTURE,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=repo_create_command[0],
         borg_exit_codes=borg_exit_codes,

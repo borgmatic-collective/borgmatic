@@ -88,7 +88,7 @@ def delete_repository(
             if repo_delete_arguments.force or repo_delete_arguments.cache_only
             else borgmatic.execute.DO_NOT_CAPTURE
         ),
-        extra_environment=borgmatic.borg.environment.make_environment(config),
+        environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

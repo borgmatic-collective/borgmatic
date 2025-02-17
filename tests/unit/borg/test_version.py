@@ -23,7 +23,7 @@ def insert_execute_command_and_capture_output_mock(
     )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         command,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=borg_local_path,
         borg_exit_codes=borg_exit_codes,

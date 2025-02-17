@@ -1,7 +1,6 @@
 import collections
 import enum
 import logging
-import os
 import select
 import subprocess
 import textwrap
@@ -243,6 +242,9 @@ def mask_command_secrets(full_command):
 MAX_LOGGED_COMMAND_LENGTH = 1000
 
 
+PREFIXES_OF_ENVIRONMENT_VARIABLES_TO_LOG = ('BORG_', 'PG', 'MARIADB_', 'MYSQL_')
+
+
 def log_command(full_command, input_file=None, output_file=None, environment=None):
     '''
     Log the given command (a sequence of command/argument strings), along with its input/output file
@@ -251,7 +253,14 @@ def log_command(full_command, input_file=None, output_file=None, environment=Non
     logger.debug(
         textwrap.shorten(
             ' '.join(
-                tuple(f'{key}=***' for key in (environment or {}).keys())
+                tuple(
+                    f'{key}=***'
+                    for key in (environment or {}).keys()
+                    if any(
+                        key.startswith(prefix)
+                        for prefix in PREFIXES_OF_ENVIRONMENT_VARIABLES_TO_LOG
+                    )
+                )
                 + mask_command_secrets(full_command)
             ),
             width=MAX_LOGGED_COMMAND_LENGTH,
@@ -274,7 +283,7 @@ def execute_command(
     output_file=None,
     input_file=None,
     shell=False,
-    extra_environment=None,
+    environment=None,
     working_directory=None,
     borg_local_path=None,
     borg_exit_codes=None,
@@ -284,18 +293,17 @@ def execute_command(
     Execute the given command (a sequence of command/argument strings) and log its output at the
     given log level. If an open output file object is given, then write stdout to the file and only
     log stderr. If an open input file object is given, then read stdin from the file. If shell is
-    True, execute the command within a shell. If an extra environment dict is given, then use it to
-    augment the current environment, and pass the result into the command. If a working directory is
-    given, use that as the present working directory when running the command. If a Borg local path
-    is given, and the command matches it (regardless of arguments), treat exit code 1 as a warning
-    instead of an error. But if Borg exit codes are given as a sequence of exit code configuration
-    dicts, then use that configuration to decide what's an error and what's a warning. If run to
-    completion is False, then return the process for the command without executing it to completion.
+    True, execute the command within a shell. If an environment variables dict is given, then pass
+    it into the command. If a working directory is given, use that as the present working directory
+    when running the command. If a Borg local path is given, and the command matches it (regardless
+    of arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are
+    given as a sequence of exit code configuration dicts, then use that configuration to decide
+    what's an error and what's a warning. If run to completion is False, then return the process for
+    the command without executing it to completion.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    log_command(full_command, input_file, output_file, extra_environment)
-    environment = {**os.environ, **extra_environment} if extra_environment else None
+    log_command(full_command, input_file, output_file, environment)
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command
 
@@ -308,7 +316,7 @@ def execute_command(
         env=environment,
         cwd=working_directory,
         # Necessary for the passcommand credential hook to work.
-        close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
+        close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
     )
     if not run_to_completion:
         return process
@@ -327,7 +335,7 @@ def execute_command_and_capture_output(
     full_command,
     capture_stderr=False,
     shell=False,
-    extra_environment=None,
+    environment=None,
     working_directory=None,
     borg_local_path=None,
     borg_exit_codes=None,
@@ -335,18 +343,16 @@ def execute_command_and_capture_output(
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
     output (stdout). If capture stderr is True, then capture and return stderr in addition to
-    stdout. If shell is True, execute the command within a shell. If an extra environment dict is
-    given, then use it to augment the current environment, and pass the result into the command. If
-    a working directory is given, use that as the present working directory when running the
-    command. If a Borg local path is given, and the command matches it (regardless of arguments),
-    treat exit code 1 as a warning instead of an error. But if Borg exit codes are given as a
-    sequence of exit code configuration dicts, then use that configuration to decide what's an error
-    and what's a warning.
+    stdout. If shell is True, execute the command within a shell. If an environment variables dict
+    is given, then pass it into the command. If a working directory is given, use that as the
+    present working directory when running the command. If a Borg local path is given, and the
+    command matches it (regardless of arguments), treat exit code 1 as a warning instead of an
+    error. But if Borg exit codes are given as a sequence of exit code configuration dicts, then use
+    that configuration to decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    log_command(full_command, environment=extra_environment)
-    environment = {**os.environ, **extra_environment} if extra_environment else None
+    log_command(full_command, environment=environment)
     command = ' '.join(full_command) if shell else full_command
 
     try:
@@ -357,7 +363,7 @@ def execute_command_and_capture_output(
             env=environment,
             cwd=working_directory,
             # Necessary for the passcommand credential hook to work.
-            close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
+            close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
         )
     except subprocess.CalledProcessError as error:
         if (
@@ -377,7 +383,7 @@ def execute_command_with_processes(
     output_file=None,
     input_file=None,
     shell=False,
-    extra_environment=None,
+    environment=None,
     working_directory=None,
     borg_local_path=None,
     borg_exit_codes=None,
@@ -391,19 +397,17 @@ def execute_command_with_processes(
     If an open output file object is given, then write stdout to the file and only log stderr. But
     if output log level is None, instead suppress logging and return the captured output for (only)
     the given command. If an open input file object is given, then read stdin from the file. If
-    shell is True, execute the command within a shell. If an extra environment dict is given, then
-    use it to augment the current environment, and pass the result into the command. If a working
-    directory is given, use that as the present working directory when running the command. If a
-    Borg local path is given, then for any matching command or process (regardless of arguments),
-    treat exit code 1 as a warning instead of an error. But if Borg exit codes are given as a
-    sequence of exit code configuration dicts, then use that configuration to decide what's an error
-    and what's a warning.
+    shell is True, execute the command within a shell. If an environment variables dict is given,
+    then pass it into the command. If a working directory is given, use that as the present working
+    directory when running the command. If a Borg local path is given, then for any matching command
+    or process (regardless of arguments), treat exit code 1 as a warning instead of an error. But if
+    Borg exit codes are given as a sequence of exit code configuration dicts, then use that
+    configuration to decide what's an error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command or in the
     upstream process.
     '''
-    log_command(full_command, input_file, output_file, extra_environment)
-    environment = {**os.environ, **extra_environment} if extra_environment else None
+    log_command(full_command, input_file, output_file, environment)
     do_not_capture = bool(output_file is DO_NOT_CAPTURE)
     command = ' '.join(full_command) if shell else full_command
 
@@ -419,7 +423,7 @@ def execute_command_with_processes(
             env=environment,
             cwd=working_directory,
             # Necessary for the passcommand credential hook to work.
-            close_fds=not bool((extra_environment or {}).get('BORG_PASSPHRASE_FD')),
+            close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
         )
     except (subprocess.CalledProcessError, OSError):
         # Something has gone wrong. So vent each process' output buffer to prevent it from hanging.

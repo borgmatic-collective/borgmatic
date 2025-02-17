@@ -143,7 +143,7 @@ def collect_special_file_paths(
         + ('--dry-run', '--list'),
         capture_stderr=True,
         working_directory=working_directory,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
@@ -409,7 +409,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -417,7 +417,7 @@ def create_archive(
         return execute_command_and_capture_output(
             create_flags + create_positional_arguments,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -427,7 +427,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )

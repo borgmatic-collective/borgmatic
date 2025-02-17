@@ -7,33 +7,33 @@ from borgmatic.hooks.data_source import mariadb as module
 
 
 def test_database_names_to_dump_passes_through_name():
-    extra_environment = flexmock()
+    environment = flexmock()
 
-    names = module.database_names_to_dump({'name': 'foo'}, {}, extra_environment, dry_run=False)
+    names = module.database_names_to_dump({'name': 'foo'}, {}, environment, dry_run=False)
 
     assert names == ('foo',)
 
 
 def test_database_names_to_dump_bails_for_dry_run():
-    extra_environment = flexmock()
+    environment = flexmock()
     flexmock(module).should_receive('execute_command_and_capture_output').never()
 
-    names = module.database_names_to_dump({'name': 'all'}, {}, extra_environment, dry_run=True)
+    names = module.database_names_to_dump({'name': 'all'}, {}, environment, dry_run=True)
 
     assert names == ()
 
 
 def test_database_names_to_dump_queries_mariadb_for_database_names():
-    extra_environment = flexmock()
+    environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('mariadb', '--skip-column-names', '--batch', '--execute', 'show schemas'),
-        extra_environment=extra_environment,
+        environment=environment,
     ).and_return('foo\nbar\nmysql\n').once()
 
-    names = module.database_names_to_dump({'name': 'all'}, {}, extra_environment, dry_run=False)
+    names = module.database_names_to_dump({'name': 'all'}, {}, environment, dry_run=False)
 
     assert names == ('foo', 'bar')
 
@@ -53,6 +53,7 @@ def test_dump_data_sources_dumps_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -66,7 +67,7 @@ def test_dump_data_sources_dumps_each_database():
             config={},
             dump_path=object,
             database_names=(name,),
-            extra_environment=object,
+            environment={'USER': 'root'},
             dry_run=object,
             dry_run_label=object,
         ).and_return(process).once()
@@ -88,6 +89,7 @@ def test_dump_data_sources_dumps_with_password():
     database = {'name': 'foo', 'username': 'root', 'password': 'trustsome1'}
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -100,7 +102,7 @@ def test_dump_data_sources_dumps_with_password():
         config={},
         dump_path=object,
         database_names=('foo',),
-        extra_environment={'MYSQL_PWD': 'trustsome1'},
+        environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
@@ -119,6 +121,7 @@ def test_dump_data_sources_dumps_all_databases_at_once():
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -128,7 +131,7 @@ def test_dump_data_sources_dumps_all_databases_at_once():
         config={},
         dump_path=object,
         database_names=('foo', 'bar'),
-        extra_environment=object,
+        environment={'USER': 'root'},
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
@@ -147,6 +150,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
     databases = [{'name': 'all', 'format': 'sql'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -158,7 +162,7 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             config={},
             dump_path=object,
             database_names=(name,),
-            extra_environment=object,
+            environment={'USER': 'root'},
             dry_run=object,
             dry_run_label=object,
         ).and_return(process).once()
@@ -187,7 +191,7 @@ def test_database_names_to_dump_runs_mariadb_with_list_options():
             '--execute',
             'show schemas',
         ),
-        extra_environment=None,
+        environment=None,
     ).and_return(('foo\nbar')).once()
 
     assert module.database_names_to_dump(database, {}, None, '') == ('foo', 'bar')
@@ -200,7 +204,7 @@ def test_database_names_to_dump_runs_non_default_mariadb_with_list_options():
         'mariadb_command': 'custom_mariadb',
     }
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        extra_environment=None,
+        environment=None,
         full_command=(
             'custom_mariadb',  # Custom MariaDB command
             '--defaults-extra-file=mariadb.cnf',
@@ -232,7 +236,7 @@ def test_execute_dump_command_runs_mariadb_dump():
             '--result-file',
             'dump',
         ),
-        extra_environment=None,
+        environment=None,
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -242,7 +246,7 @@ def test_execute_dump_command_runs_mariadb_dump():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=False,
             dry_run_label='',
         )
@@ -267,7 +271,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
             '--result-file',
             'dump',
         ),
-        extra_environment=None,
+        environment=None,
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -277,7 +281,7 @@ def test_execute_dump_command_runs_mariadb_dump_without_add_drop_database():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=False,
             dry_run_label='',
         )
@@ -309,7 +313,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
             '--result-file',
             'dump',
         ),
-        extra_environment=None,
+        environment=None,
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -319,7 +323,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_hostname_and_port():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=False,
             dry_run_label='',
         )
@@ -347,7 +351,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
             '--result-file',
             'dump',
         ),
-        extra_environment={'MYSQL_PWD': 'trustsome1'},
+        environment={'MYSQL_PWD': 'trustsome1'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -357,7 +361,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_username_and_password():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment={'MYSQL_PWD': 'trustsome1'},
+            environment={'MYSQL_PWD': 'trustsome1'},
             dry_run=False,
             dry_run_label='',
         )
@@ -384,7 +388,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
             '--result-file',
             'dump',
         ),
-        extra_environment=None,
+        environment=None,
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -394,7 +398,7 @@ def test_execute_dump_command_runs_mariadb_dump_with_options():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=False,
             dry_run_label='',
         )
@@ -421,7 +425,7 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
             '--result-file',
             'dump',
         ),
-        extra_environment=None,
+        environment=None,
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -435,7 +439,7 @@ def test_execute_dump_command_runs_non_default_mariadb_dump_with_options():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=False,
             dry_run_label='',
         )
@@ -455,7 +459,7 @@ def test_execute_dump_command_with_duplicate_dump_skips_mariadb_dump():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=True,
             dry_run_label='SO DRY',
         )
@@ -479,7 +483,7 @@ def test_execute_dump_command_with_dry_run_skips_mariadb_dump():
             config={},
             dump_path=flexmock(),
             database_names=('foo',),
-            extra_environment=None,
+            environment=None,
             dry_run=True,
             dry_run_label='SO DRY',
         )
@@ -490,6 +494,7 @@ def test_execute_dump_command_with_dry_run_skips_mariadb_dump():
 def test_dump_data_sources_errors_for_missing_all_databases():
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -512,6 +517,7 @@ def test_dump_data_sources_errors_for_missing_all_databases():
 def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -540,12 +546,13 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        environment={'USER': 'root'},
     ).once()
 
     module.restore_data_source_dump(
@@ -571,12 +578,13 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--harder'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        environment={'USER': 'root'},
     ).once()
 
     module.restore_data_source_dump(
@@ -604,12 +612,13 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('custom_mariadb', '--batch', '--harder'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        environment={'USER': 'root'},
     ).once()
 
     module.restore_data_source_dump(
@@ -635,6 +644,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -649,7 +659,7 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=None,
+        environment={'USER': 'root'},
     ).once()
 
     module.restore_data_source_dump(
@@ -675,12 +685,13 @@ def test_restore_data_source_dump_runs_mariadb_with_username_and_password():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--user', 'root'),
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'MYSQL_PWD': 'trustsome1'},
+        environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
     ).once()
 
     module.restore_data_source_dump(
@@ -716,6 +727,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -732,7 +744,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'MYSQL_PWD': 'clipassword'},
+        environment={'USER': 'root', 'MYSQL_PWD': 'clipassword'},
     ).once()
 
     module.restore_data_source_dump(
@@ -770,6 +782,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'mariadb',
@@ -786,7 +799,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'MYSQL_PWD': 'restorepass'},
+        environment={'USER': 'root', 'MYSQL_PWD': 'restorepass'},
     ).once()
 
     module.restore_data_source_dump(
@@ -811,6 +824,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').never()
 
     module.restore_data_source_dump(
