@@ -65,6 +65,11 @@ If you have multiple borgmatic configuration files with ZFS enabled, and you'd
 like particular datasets to be backed up only for particular configuration
 files, use the `source_directories` option instead of the user property.
 
+<span class="minilink minilink-addedin">New in version 1.9.11</span> borgmatic
+won't snapshot datasets with the `canmount=off` property, which is often set on
+datasets that only serve as a container for other datasets. Use `zfs get
+canmount datasetname` to see the `canmount` value for a dataset.
+
 During a backup, borgmatic automatically snapshots these discovered datasets
 (non-recursively), temporarily mounts the snapshots within its [runtime
 directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory),
