@@ -237,7 +237,9 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'lvm_snapshots',
-            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
+            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
+                MOUNT_POINT_HASH_LENGTH
+            ),
             logical_volume.mount_point.lstrip(os.path.sep),
         )
 

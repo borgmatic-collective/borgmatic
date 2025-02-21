@@ -64,7 +64,9 @@ def get_datasets_to_backup(zfs_command, patterns):
             (
                 Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
                 for line in list_output.splitlines()
-                for (dataset_name, mount_point, can_mount, user_property_value) in (line.rstrip().split('\t'),)
+                for (dataset_name, mount_point, can_mount, user_property_value) in (
+                    line.rstrip().split('\t'),
+                )
                 # Skip datasets that are marked "canmount=off", because mounting their snapshots will
                 # result in completely empty mount points—thereby preventing us from backing them up.
                 if can_mount == 'on'
@@ -104,7 +106,8 @@ def get_datasets_to_backup(zfs_command, patterns):
                         )
                     ),
                 )
-                if any(
+                if dataset.auto_backup
+                or any(
                     pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                     and pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
                     for pattern in contained_patterns
@@ -260,7 +263,9 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'zfs_snapshots',
-            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
+            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
+                MOUNT_POINT_HASH_LENGTH
+            ),
             dataset.mount_point.lstrip(os.path.sep),
         )
 
@@ -369,6 +374,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
     umount_command = hook_config.get('umount_command', 'umount')
 
     for snapshots_directory in glob.glob(snapshots_glob):
+        print('*** snapshots_glob:', snapshots_glob, 'snapshots_directory:', snapshots_directory)
         if not os.path.isdir(snapshots_directory):
             continue
 
@@ -376,6 +382,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         # child datasets before the shorter mount point paths of parent datasets.
         for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
+            print('*** snapshot_mount_path:', snapshot_mount_path)
             if not os.path.isdir(snapshot_mount_path):
                 continue
 
@@ -397,7 +404,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                     unmount_snapshot(umount_command, snapshot_mount_path)
                 except FileNotFoundError:
                     logger.debug(f'Could not find "{umount_command}" command')
-                    continue
+                    return
                 except subprocess.CalledProcessError as error:
                     logger.debug(error)
                     continue

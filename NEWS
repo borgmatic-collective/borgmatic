@@ -4,7 +4,7 @@
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
    databases are enabled.
- * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for patterns that come from
+ * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for root patterns that come from
    a borgmatic configuration option (e.g. "source_directories")—not from other hooks within
    borgmatic.
  * #1001: Fix a ZFS/LVM error due to colliding snapshot mount points for nested datasets or logical
