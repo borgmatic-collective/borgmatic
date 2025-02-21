@@ -4,7 +4,7 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.borg import create as module
-from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Pattern_type
 
 from ..test_verbosity import insert_logging_mock
 
@@ -663,6 +663,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
                 '/dev/null',
                 Pattern_type.NO_RECURSE,
                 Pattern_style.FNMATCH,
+                source=Pattern_source.INTERNAL,
             ),
         ),
         '/run/borgmatic',
@@ -713,6 +714,7 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
                 '/dev/null',
                 Pattern_type.NO_RECURSE,
                 Pattern_style.FNMATCH,
+                source=Pattern_source.INTERNAL,
             ),
         ),
         '/run/borgmatic',

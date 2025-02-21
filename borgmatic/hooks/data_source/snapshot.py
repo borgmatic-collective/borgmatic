@@ -1,5 +1,3 @@
-import logging
-
 import pathlib
 
 IS_A_HOOK = False

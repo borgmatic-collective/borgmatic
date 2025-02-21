@@ -3,7 +3,7 @@ import os
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import zfs as module
 
 
@@ -19,8 +19,8 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
         (
             Pattern(
                 '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                Pattern_type.ROOT,
+                source=Pattern_source.CONFIG,
             ),
         )
     )
@@ -33,18 +33,18 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
         patterns=(
             Pattern(
                 '/foo',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                Pattern_type.ROOT,
+                source=Pattern_source.CONFIG,
             ),
             Pattern(
                 '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                Pattern_type.ROOT,
+                source=Pattern_source.CONFIG,
             ),
             Pattern(
                 '/bar',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                Pattern_type.ROOT,
+                source=Pattern_source.CONFIG,
             ),
         ),
     ) == (
@@ -54,8 +54,8 @@ def test_get_datasets_to_backup_filters_datasets_by_patterns():
             contained_patterns=(
                 Pattern(
                     '/dataset',
-                    module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                    source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                    Pattern_type.ROOT,
+                    source=Pattern_source.CONFIG,
                 ),
             ),
         ),
@@ -74,8 +74,8 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
         (
             Pattern(
                 '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                Pattern_type.EXCLUDE,
+                source=Pattern_source.CONFIG,
             ),
         )
     )
@@ -83,26 +83,29 @@ def test_get_datasets_to_backup_skips_non_root_patterns():
         'get_contained_patterns'
     ).with_args('/other', object).and_return(())
 
-    assert module.get_datasets_to_backup(
-        'zfs',
-        patterns=(
-            Pattern(
-                '/foo',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+    assert (
+        module.get_datasets_to_backup(
+            'zfs',
+            patterns=(
+                Pattern(
+                    '/foo',
+                    Pattern_type.ROOT,
+                    source=Pattern_source.CONFIG,
+                ),
+                Pattern(
+                    '/dataset',
+                    Pattern_type.EXCLUDE,
+                    source=Pattern_source.CONFIG,
+                ),
+                Pattern(
+                    '/bar',
+                    Pattern_type.ROOT,
+                    source=Pattern_source.CONFIG,
+                ),
             ),
-            Pattern(
-                '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
-            ),
-            Pattern(
-                '/bar',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
-            ),
-        ),
-    ) == ()
+        )
+        == ()
+    )
 
 
 def test_get_datasets_to_backup_skips_non_config_patterns():
@@ -117,8 +120,8 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
         (
             Pattern(
                 '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+                Pattern_type.ROOT,
+                source=Pattern_source.HOOK,
             ),
         )
     )
@@ -126,26 +129,29 @@ def test_get_datasets_to_backup_skips_non_config_patterns():
         'get_contained_patterns'
     ).with_args('/other', object).and_return(())
 
-    assert module.get_datasets_to_backup(
-        'zfs',
-        patterns=(
-            Pattern(
-                '/foo',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+    assert (
+        module.get_datasets_to_backup(
+            'zfs',
+            patterns=(
+                Pattern(
+                    '/foo',
+                    Pattern_type.ROOT,
+                    source=Pattern_source.CONFIG,
+                ),
+                Pattern(
+                    '/dataset',
+                    Pattern_type.ROOT,
+                    source=Pattern_source.HOOK,
+                ),
+                Pattern(
+                    '/bar',
+                    Pattern_type.ROOT,
+                    source=Pattern_source.CONFIG,
+                ),
             ),
-            Pattern(
-                '/dataset',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
-            ),
-            Pattern(
-                '/bar',
-                module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
-            ),
-        ),
-    ) == ()
+        )
+        == ()
+    )
 
 
 def test_get_datasets_to_backup_filters_datasets_by_user_property():
@@ -169,9 +175,7 @@ def test_get_datasets_to_backup_filters_datasets_by_user_property():
             name='dataset',
             mount_point='/dataset',
             auto_backup=True,
-            contained_patterns=(
-                Pattern('/dataset', source=module.borgmatic.borg.pattern.Pattern_source.HOOK),
-            ),
+            contained_patterns=(Pattern('/dataset', source=Pattern_source.HOOK),),
         ),
     )
 

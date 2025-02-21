@@ -1,7 +1,7 @@
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import btrfs as module
 
 
@@ -54,8 +54,8 @@ def test_get_subvolumes_collects_subvolumes_matching_patterns():
 
     contained_pattern = Pattern(
         '/mnt1',
-        type=module.borgmatic.borg.pattern.Pattern_type.ROOT,
-        source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+        type=Pattern_type.ROOT,
+        source=Pattern_source.CONFIG,
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
@@ -83,8 +83,8 @@ def test_get_subvolumes_skips_non_root_patterns():
         (
             Pattern(
                 '/mnt1',
-                type=module.borgmatic.borg.pattern.Pattern_type.EXCLUDE,
-                source=module.borgmatic.borg.pattern.Pattern_source.CONFIG,
+                type=Pattern_type.EXCLUDE,
+                source=Pattern_source.CONFIG,
             ),
         )
     )
@@ -114,8 +114,8 @@ def test_get_subvolumes_skips_non_config_patterns():
         (
             Pattern(
                 '/mnt1',
-                type=module.borgmatic.borg.pattern.Pattern_type.ROOT,
-                source=module.borgmatic.borg.pattern.Pattern_source.HOOK,
+                type=Pattern_type.ROOT,
+                source=Pattern_source.HOOK,
             ),
         )
     )

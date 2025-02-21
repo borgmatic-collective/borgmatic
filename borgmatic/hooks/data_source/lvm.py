@@ -138,7 +138,7 @@ MOUNT_POINT_HASH_LENGTH = 10
 def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_directory):
     '''
     Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance and a Logical_volume
-    contianing it, return a new Pattern with its path rewritten to be in a snapshot directory based
+    containing it, return a new Pattern with its path rewritten to be in a snapshot directory based
     on both the given runtime directory and the given Logical_volume's mount point.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
@@ -158,7 +158,9 @@ def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_direc
         # volumes. For instance, without this, snapshotting a logical volume at /var and another at
         # /var/spool would result in overlapping snapshot patterns and therefore colliding mount
         # attempts.
-        hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
+        hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
+            MOUNT_POINT_HASH_LENGTH
+        ),
         '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
@@ -237,7 +239,7 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'lvm_snapshots',
-            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
+            hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
                 MOUNT_POINT_HASH_LENGTH
             ),
             logical_volume.mount_point.lstrip(os.path.sep),
