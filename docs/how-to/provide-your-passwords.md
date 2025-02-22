@@ -35,7 +35,7 @@ encryption_passcommand: pass path/to/borg-passphrase
 <span class="minilink minilink-addedin">New in version 1.9.9</span> Instead of
 letting Borg run the passcommand—potentially multiple times since borgmatic runs
 Borg multiple times—borgmatic now runs the passcommand itself and passes the
-resulting passprhase securely to Borg via an anonymous pipe. This means you
+resulting passphrase securely to Borg via an anonymous pipe. This means you
 should only ever get prompted for your password manager's passphrase at most
 once per borgmatic run.
 
