@@ -125,10 +125,10 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
             snapshot_directory,
             subvolume_path.lstrip(os.path.sep),
             snapshot_directory,
-            source=borgmatic.borg.pattern.Pattern_source.HOOK,
         ),
         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
         borgmatic.borg.pattern.Pattern_style.FNMATCH,
+        source=borgmatic.borg.pattern.Pattern_source.HOOK,
     )
 
 
