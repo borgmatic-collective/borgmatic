@@ -54,8 +54,8 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
  * For any dataset you'd like backed up, add its mount point to borgmatic's
    `source_directories` option.
  * <span class="minilink minilink-addedin">New in version 1.9.6</span> Or
-   include the mount point with borgmatic's `patterns` or `patterns_from`
-   options.
+   include the mount point as a root pattern with borgmatic's `patterns` or
+   `patterns_from` options.
  * Or set the borgmatic-specific user property
    `org.torsion.borgmatic:backup=auto` onto your dataset, e.g. by running `zfs
    set org.torsion.borgmatic:backup=auto datasetname`. Then borgmatic can find
@@ -152,7 +152,8 @@ For any subvolume you'd like backed up, add its path to borgmatic's
 `source_directories` option.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic snapshots these subvolumes (non-recursively) and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also
@@ -257,7 +258,8 @@ For any logical volume you'd like backed up, add its mount point to
 borgmatic's `source_directories` option.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic automatically snapshots these discovered logical volumes
 (non-recursively), temporarily mounts the snapshots within its [runtime
