@@ -55,6 +55,7 @@ def make_environment(config):
 
     if 'encryption_passphrase' in config:
         environment.pop('BORG_PASSPHRASE', None)
+        environment.pop('BORG_PASSCOMMAND', None)
 
     if 'encryption_passcommand' in config:
         environment.pop('BORG_PASSCOMMAND', None)

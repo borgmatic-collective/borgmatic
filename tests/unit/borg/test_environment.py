@@ -4,7 +4,9 @@ from borgmatic.borg import environment as module
 
 
 def test_make_environment_with_passcommand_should_call_it_and_set_passphrase_file_descriptor_in_environment():
-    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.os).should_receive('environ').and_return(
+        {'USER': 'root', 'BORG_PASSCOMMAND': 'nope'}
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).and_return(None)
@@ -18,12 +20,15 @@ def test_make_environment_with_passcommand_should_call_it_and_set_passphrase_fil
 
     environment = module.make_environment({'encryption_passcommand': 'command'})
 
+    assert environment.get('BORG_PASSPHRASE') is None
     assert environment.get('BORG_PASSCOMMAND') is None
     assert environment.get('BORG_PASSPHRASE_FD') == '3'
 
 
 def test_make_environment_with_passphrase_should_set_passphrase_file_descriptor_in_environment():
-    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.os).should_receive('environ').and_return(
+        {'USER': 'root', 'BORG_PASSPHRASE': 'nope', 'BORG_PASSCOMMAND': 'nope'}
+    )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
@@ -38,6 +43,7 @@ def test_make_environment_with_passphrase_should_set_passphrase_file_descriptor_
     environment = module.make_environment({'encryption_passphrase': 'pass'})
 
     assert environment.get('BORG_PASSPHRASE') is None
+    assert environment.get('BORG_PASSCOMMAND') is None
     assert environment.get('BORG_PASSPHRASE_FD') == '3'
 
 
