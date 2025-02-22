@@ -288,7 +288,7 @@ def test_warn_for_aggressive_archive_flags_with_glob_archives_and_json_missing_a
 
 
 def test_omit_flag_removes_flag_from_arguments():
-    module.omit_flag(('borg', 'create', '--flag', '--other'), '--flag') == (
+    assert module.omit_flag(('borg', 'create', '--flag', '--other'), '--flag') == (
         'borg',
         'create',
         '--other',
@@ -296,11 +296,17 @@ def test_omit_flag_removes_flag_from_arguments():
 
 
 def test_omit_flag_without_flag_present_passes_through_arguments():
-    module.omit_flag(('borg', 'create', '--other'), '--flag') == ('borg', 'create', '--other')
+    assert module.omit_flag(('borg', 'create', '--other'), '--flag') == (
+        'borg',
+        'create',
+        '--other',
+    )
 
 
 def test_omit_flag_and_value_removes_flag_and_value_from_arguments():
-    module.omit_flag(('borg', 'create', '--flag', 'value', '--other'), '--flag') == (
+    assert module.omit_flag_and_value(
+        ('borg', 'create', '--flag', 'value', '--other'), '--flag'
+    ) == (
         'borg',
         'create',
         '--other',
@@ -308,7 +314,7 @@ def test_omit_flag_and_value_removes_flag_and_value_from_arguments():
 
 
 def test_omit_flag_and_value_with_equals_sign_removes_flag_and_value_from_arguments():
-    module.omit_flag(('borg', 'create', '--flag=value', '--other'), '--flag') == (
+    assert module.omit_flag_and_value(('borg', 'create', '--flag=value', '--other'), '--flag') == (
         'borg',
         'create',
         '--other',
@@ -316,4 +322,8 @@ def test_omit_flag_and_value_with_equals_sign_removes_flag_and_value_from_argume
 
 
 def test_omit_flag_and_value_without_flag_present_passes_through_arguments():
-    module.omit_flag(('borg', 'create', '--other'), '--flag') == ('borg', 'create', '--other')
+    assert module.omit_flag_and_value(('borg', 'create', '--other'), '--flag') == (
+        'borg',
+        'create',
+        '--other',
+    )
