@@ -14,24 +14,23 @@ def make_dump_path(base_directory):  # pragma: no cover
     '''
     Given a base directory, make the corresponding dump path.
     '''
-    return dump.make_data_source_dump_path(base_directory, 'infludb_databases')
+    return dump.make_data_source_dump_path(base_directory, 'influxdb_databases')
 
 
-def get_default_port(databases, config, log_prefix):  # pragma: no cover
+def get_default_port(databases, config):  # pragma: no cover
     return 8086
 
 
-def use_streaming(databases, config, log_prefix):
+def use_streaming(databases, config):
     '''
     Return whether dump streaming is used for this hook. (Spoiler: It isn't.)
     '''
-    return False
+    return True
 
 
 def dump_data_sources(
     databases,
     config,
-    log_prefix,
     config_paths,
     borgmatic_runtime_directory,
     patterns,
@@ -50,7 +49,7 @@ def dump_data_sources(
     '''
     dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
-    logger.info(f'{log_prefix}: Dumping InfluxDB databases{dry_run_label}')
+    logger.info(f'Dumping InfluxDB databases{dry_run_label}')
 
     processes = []
     for database in databases:
@@ -61,22 +60,17 @@ def dump_data_sources(
             database.get('hostname'),
             database.get('port'),
         )
-        dump_format = database.get('format', 'archive')
 
         logger.debug(
-            f'{log_prefix}: Dumping InfluxDB database {name} to {dump_filename}{dry_run_label}',
+            f'Dumping InfluxDB database {name} to {dump_filename}{dry_run_label}',
         )
+
+        command = build_dump_command(database, dump_filename)
         if dry_run:
             continue
 
-        command = build_dump_command(database, dump_filename, dump_format)
-
-        if dump_format == 'directory':
-            dump.create_parent_directory_for_dump(dump_filename)
-            execute_command(command, shell=True)
-        else:
-            dump.create_named_pipe_for_dump(dump_filename)
-            processes.append(execute_command(command, shell=True, run_to_completion=False))
+        dump.create_named_pipe_for_dump(dump_filename)
+        processes.append(execute_command(command, shell=True, run_to_completion=False))
 
     if not dry_run:
         patterns.append(
@@ -88,16 +82,23 @@ def dump_data_sources(
     return processes
 
 
-def build_dump_command(database, dump_filename, dump_format):
+def build_dump_command(database, dump_filename):
     '''
     Return the backup command.
     '''
-    hostname = connection_params['hostname'] or database.get(
+    hostname = database.get(
         'dump_hostname', database.get('hostname')
     )
-    token = connection_params['token'] or database.get('token')
+    token = database.get('token')
+    skip_verify = database.get('skip_verify')
+    http_debug = database.get('http_debug')
+    hostname = database.get('hostname')
+    influx_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('influx_command') or 'influx')
+    )
     return (
-        ('influx-cli', 'backup',)
+        influx_command
+        + ('backup',)
         + (('--skip-verify',) if skip_verify else ())
         + (('--http-debug',) if http_debug else ())
         + (('--host', shlex.quote(str(hostname))) if hostname else ())
@@ -112,7 +113,7 @@ def build_dump_command(database, dump_filename, dump_format):
 
 
 def remove_data_source_dumps(
-    databases, config, log_prefix, borgmatic_runtime_directory, dry_run
+    databases, config, borgmatic_runtime_directory, dry_run
 ):  # pragma: no cover
     '''
     Remove all database dump files for this hook regardless of the given databases. Use the
@@ -120,27 +121,22 @@ def remove_data_source_dumps(
     entries. If this is a dry run, then don't actually remove anything.
     '''
     dump.remove_data_source_dumps(
-        make_dump_path(borgmatic_runtime_directory), 'InfluxDB', log_prefix, dry_run
+        make_dump_path(borgmatic_runtime_directory), 'InfluxDB', dry_run
     )
 
 
 def make_data_source_dump_patterns(
-    databases, config, log_prefix, borgmatic_runtime_directory, name=None
+    databases, config, borgmatic_runtime_directory, name=None
 ):  # pragma: no cover
     '''
     Given a sequence of configurations dicts, a configuration dict, a prefix to log with, the
     borgmatic runtime directory, and a database name to match, return the corresponding glob
     patterns to match the database dump in an archive.
     '''
-    borgmatic_source_directory = borgmatic.config.paths.get_borgmatic_source_directory(config)
-
     return (
         dump.make_data_source_dump_filename(make_dump_path('borgmatic'), name, hostname='*'),
         dump.make_data_source_dump_filename(
             make_dump_path(borgmatic_runtime_directory), name, hostname='*'
-        ),
-        dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_source_directory), name, hostname='*'
         ),
     )
 
@@ -148,7 +144,6 @@ def make_data_source_dump_patterns(
 def restore_data_source_dump(
     hook_config,
     config,
-    log_prefix,
     data_source,
     dry_run,
     extract_process,
@@ -175,7 +170,7 @@ def restore_data_source_dump(
         extract_process, data_source, dump_filename, connection_params
     )
 
-    logger.debug(f"{log_prefix}: Restoring InfluxDB database {data_source['name']}{dry_run_label}")
+    logger.debug(f"Restoring InfluxDB database {data_source['name']}{dry_run_label}")
     if dry_run:
         return
 
@@ -198,41 +193,32 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     org_id = database.get('org_id')
     org_name = database.get('org_name')
     bucket_name = database.get('bucket_name')
-    new_bucket = database.get('new_bucket')
+    restore_bucket = database.get('restore_bucket')
     new_org = database.get('new_org')
     configs_path = database.get('configs_path')
     active_config = database.get('active_config')
     skip_verify = database.get('skip_verify')
     http_debug = database.get('http_debug')
     full = database.get('full')
+    influx_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('influx_command') or 'influx')
+    )
 
-    command = ['influx-cli', 'restore']
-    if hostname:
-        command.extend(('--host', hostname))
-    if token:
-        command.extend(('--token', token))
-    if org_id:
-        command.extend(('--org-id', str(org_id)))
-    if org_name:
-        command.extend(('--org', org_name))
-    if bucket_id:
-        command.extend(('--bucket-id', str(bucket_id)))
-    if bucket_name:
-        command.extend(('--bucket', bucket_name))
-    if new_bucket:
-        command.extend(('--new-bucket', new_bucket))
-    if new_org:
-        command.extend(('--new-org', new_org))
-    if configs_path:
-        command.extend(('--configs-path', configs_path))
-    if active_config:
-        command.extend(('--active-config', active_config))
-    if skip_verify:
-        command.extend(('--skip-verify',))
-    if http_debug:
-        command.extend(('--http-debug',))
-    if full:
-        command.extend(('--full',))
-    command.extend((dump_filename,))
-
-    return command
+    return (
+        influx_command
+        + ('restore',)
+        + (('--host', hostname) if hostname else ())
+        + (('--token', token) if token else ())
+        + (('--org-id', str(org_id)) if org_id else ())
+        + (('--org', org_name) if org_name else ())
+        + (('--bucket-id', str(bucket_id)) if bucket_id else ())
+        + (('--bucket', bucket_name) if bucket_name else ())
+        + (('--new-bucket', restore_bucket) if restore_bucket else ())
+        + (('--new-org', new_org) if new_org else ())
+        + (('--configs-path', configs_path) if configs_path else ())
+        + (('--active-config', active_config) if active_config else ())
+        + (('--skip-verify',) if skip_verify else ())
+        + (('--http-debug',) if http_debug else ())
+        + (('--full',) if full else ())
+        + (dump_filename,)
+    )

@@ -953,6 +953,10 @@ properties:
                 - token
             additionalProperties: false
             properties:
+                influx_command:
+                    type: string
+                    description: |
+                        The InfluxDB executable to use. Defaults to `influx`.
                 token:
                     type: string
                     description: |
@@ -960,7 +964,7 @@ properties:
                 hostname:
                     type: string
                     description: |
-                        HTTP address of InfluxDB.
+                        HTTP address of InfluxDB. Defaults to http://127.0.0.1:8086.
                     default: http://127.0.0.1:8086
                     example: https://example.com:8086
                 org_id:
@@ -987,7 +991,7 @@ properties:
                     type: string
                     description: |
                         Config name to use for command.
-                new_bucket:
+                restore_bucket:
                     type: string
                     description: |
                         New name to use for the restored bucket.
@@ -1015,6 +1019,9 @@ properties:
                     description: |
                         Compression to use for local backup files, either 'none' or 'gzip' (default: gzip).
                     default: gzip
+                    enum:
+                        - none
+                        - gzip
     postgresql_databases:
         type: array
         items:
