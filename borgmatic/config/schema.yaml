@@ -965,7 +965,6 @@ properties:
                     type: string
                     description: |
                         HTTP address of InfluxDB. Defaults to http://127.0.0.1:8086.
-                    default: http://127.0.0.1:8086
                     example: https://example.com:8086
                 org_id:
                     type: number
@@ -1003,22 +1002,21 @@ properties:
                     type: boolean
                     description: |
                         Skip TLS certificate chain and host name verification.
-                    default: false
+                        Defaults to false.
                 http_debug:
                     type: boolean
                     description: |
                         Enable debug logging for HTTP requests.
-                    default: false
                 full:
                     type: boolean
                     description: |
                         Fully restore and replace all data on server.
-                    default: false
+                        Defaults to false.
                 compression:
                     type: string
                     description: |
-                        Compression to use for local backup files, either 'none' or 'gzip' (default: gzip).
-                    default: gzip
+                        Compression to use for local backup files, either 'none' or 'gzip'.
+                        Defaults to gzip.
                     enum:
                         - none
                         - gzip
