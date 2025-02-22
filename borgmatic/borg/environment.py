@@ -27,7 +27,7 @@ DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
 def make_environment(config):
     '''
     Given a borgmatic configuration dict, convert it to a Borg environment variable dict, merge it
-    with a copy of the current environment variables and return the result.
+    with a copy of the current environment variables, and return the result.
 
     Do not reuse this environment across multiple Borg invocations, because it can include
     references to resources like anonymous pipes for passphrases—which can only be consumed once.
@@ -40,8 +40,8 @@ def make_environment(config):
 
     In borgmatic, we want to simulate this precedence order, but there are some additional
     complications. First, values can come from either configuration or from environment variables
-    set outside borgmatic and configured options should take precedence. Second, when borgmatic gets
-    a passphrase—directly from configuration or indirectly via a credential hook or a passcommand—we
+    set outside borgmatic; configured options should take precedence. Second, when borgmatic gets a
+    passphrase—directly from configuration or indirectly via a credential hook or a passcommand—we
     want to pass that passphrase to Borg via an anonymous pipe (+ BORG_PASSPHRASE_FD), since that's
     more secure than using an environment variable (BORG_PASSPHRASE).
     '''
