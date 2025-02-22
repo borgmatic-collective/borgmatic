@@ -374,7 +374,6 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
     umount_command = hook_config.get('umount_command', 'umount')
 
     for snapshots_directory in glob.glob(snapshots_glob):
-        print('*** snapshots_glob:', snapshots_glob, 'snapshots_directory:', snapshots_directory)
         if not os.path.isdir(snapshots_directory):
             continue
 
@@ -382,7 +381,6 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         # child datasets before the shorter mount point paths of parent datasets.
         for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            print('*** snapshot_mount_path:', snapshot_mount_path)
             if not os.path.isdir(snapshot_mount_path):
                 continue
 
