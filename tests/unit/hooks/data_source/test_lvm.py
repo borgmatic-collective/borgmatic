@@ -824,6 +824,7 @@ def test_remove_data_source_dumps_unmounts_and_remove_snapshots():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -985,6 +986,72 @@ def test_remove_data_source_dumps_with_missing_snapshot_mount_path_skips_unmount
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2'
     ).and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
+    flexmock(module.shutil).should_receive('rmtree')
+    flexmock(module).should_receive('unmount_snapshot').with_args(
+        'umount',
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume1',
+    ).never()
+    flexmock(module).should_receive('unmount_snapshot').with_args(
+        'umount',
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2',
+    ).once()
+    flexmock(module).should_receive('get_snapshots').and_return(
+        (
+            module.Snapshot('lvolume1_borgmatic-1234', '/dev/lvolume1'),
+            module.Snapshot('lvolume2_borgmatic-1234', '/dev/lvolume2'),
+        ),
+    )
+    flexmock(module).should_receive('remove_snapshot').with_args('lvremove', '/dev/lvolume1').once()
+    flexmock(module).should_receive('remove_snapshot').with_args('lvremove', '/dev/lvolume2').once()
+
+    module.remove_data_source_dumps(
+        hook_config=config['lvm'],
+        config=config,
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
+def test_remove_data_source_dumps_with_empty_snapshot_mount_path_skips_unmount():
+    config = {'lvm': {}}
+    flexmock(module).should_receive('get_logical_volumes').and_return(
+        (
+            module.Logical_volume(
+                name='lvolume1',
+                device_path='/dev/lvolume1',
+                mount_point='/mnt/lvolume1',
+                contained_patterns=(Pattern('/mnt/lvolume1/subdir'),),
+            ),
+            module.Logical_volume(
+                name='lvolume2',
+                device_path='/dev/lvolume2',
+                mount_point='/mnt/lvolume2',
+                contained_patterns=(Pattern('/mnt/lvolume2'),),
+            ),
+        )
+    )
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return('/run/borgmatic')
+    flexmock(module.glob).should_receive('glob').replace_with(
+        lambda path: [path.replace('*', 'b33f')]
+    )
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/lvm_snapshots/b33f'
+    ).and_return(True)
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume1'
+    ).and_return(True)
+    flexmock(module.os).should_receive('listdir').with_args(
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume1'
+    ).and_return([])
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2'
+    ).and_return(True)
+    flexmock(module.os).should_receive('listdir').with_args(
+        '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2'
+    ).and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1044,6 +1111,7 @@ def test_remove_data_source_dumps_with_successful_mount_point_removal_skips_unmo
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2'
     ).and_return(True).and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1095,6 +1163,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1115,7 +1184,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
     )
 
 
-def test_remove_data_source_dumps_bails_for_umount_command_error():
+def test_remove_data_source_dumps_swallows_umount_command_error():
     config = {'lvm': {}}
     flexmock(module).should_receive('get_logical_volumes').and_return(
         (
@@ -1140,6 +1209,7 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1148,9 +1218,15 @@ def test_remove_data_source_dumps_bails_for_umount_command_error():
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
         '/run/borgmatic/lvm_snapshots/b33f/mnt/lvolume2',
-    ).never()
-    flexmock(module).should_receive('get_snapshots').never()
-    flexmock(module).should_receive('remove_snapshot').never()
+    ).once()
+    flexmock(module).should_receive('get_snapshots').and_return(
+        (
+            module.Snapshot('lvolume1_borgmatic-1234', '/dev/lvolume1'),
+            module.Snapshot('lvolume2_borgmatic-1234', '/dev/lvolume2'),
+        ),
+    )
+    flexmock(module).should_receive('remove_snapshot').with_args('lvremove', '/dev/lvolume1').once()
+    flexmock(module).should_receive('remove_snapshot').with_args('lvremove', '/dev/lvolume2').once()
 
     module.remove_data_source_dumps(
         hook_config=config['lvm'],
@@ -1185,6 +1261,7 @@ def test_remove_data_source_dumps_bails_for_missing_lvs_command():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1230,6 +1307,7 @@ def test_remove_data_source_dumps_bails_for_lvs_command_error():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount',
@@ -1275,6 +1353,7 @@ def test_remove_data_source_with_dry_run_skips_snapshot_unmount_and_delete():
     ).and_return('/run/borgmatic')
     flexmock(module.glob).should_receive('glob').replace_with(lambda path: [path])
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree').never()
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_snapshots').and_return(

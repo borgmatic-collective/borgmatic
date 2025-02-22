@@ -381,7 +381,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         # child datasets before the shorter mount point paths of parent datasets.
         for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            if not os.path.isdir(snapshot_mount_path):
+
+            # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
+            # dataset and therefore there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
                 continue
 
             # This might fail if the path is already mounted, but we swallow errors here since we'll
@@ -408,7 +411,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                     continue
 
         if not dry_run:
-            shutil.rmtree(snapshots_directory, ignore_errors=True)
+            shutil.rmtree(snapshots_directory)
 
     # Destroy snapshots.
     full_snapshot_names = get_all_snapshots(zfs_command)

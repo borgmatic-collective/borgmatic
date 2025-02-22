@@ -477,6 +477,7 @@ def test_remove_data_source_dumps_unmounts_and_destroys_snapshots():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         'umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
@@ -505,6 +506,7 @@ def test_remove_data_source_dumps_use_custom_commands():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
@@ -580,6 +582,7 @@ def test_remove_data_source_dumps_bails_for_missing_umount_command():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
@@ -605,6 +608,7 @@ def test_remove_data_source_dumps_swallows_umount_command_error():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').with_args(
         '/usr/local/bin/umount', '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
@@ -665,6 +669,41 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_no
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
     ).and_return(False)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
+    flexmock(module.shutil).should_receive('rmtree')
+    flexmock(module).should_receive('unmount_snapshot').never()
+    flexmock(module).should_receive('get_all_snapshots').and_return(
+        ('dataset@borgmatic-1234', 'dataset@other', 'other@other', 'invalid')
+    )
+    flexmock(module).should_receive('destroy_snapshot').with_args(
+        'zfs', 'dataset@borgmatic-1234'
+    ).once()
+
+    module.remove_data_source_dumps(
+        hook_config={},
+        config={'source_directories': '/mnt/dataset', 'zfs': {}},
+        borgmatic_runtime_directory='/run/borgmatic',
+        dry_run=False,
+    )
+
+
+def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_that_are_empty():
+    flexmock(module).should_receive('get_all_dataset_mount_points').and_return(('/mnt/dataset',))
+    flexmock(module.borgmatic.config.paths).should_receive(
+        'replace_temporary_subdirectory_with_glob'
+    ).and_return('/run/borgmatic')
+    flexmock(module.glob).should_receive('glob').replace_with(
+        lambda path: [path.replace('*', 'b33f')]
+    )
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/b33f'
+    ).and_return(True)
+    flexmock(module.os.path).should_receive('isdir').with_args(
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+    ).and_return(True)
+    flexmock(module.os).should_receive('listdir').with_args(
+        '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
+    ).and_return([])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
@@ -696,6 +735,7 @@ def test_remove_data_source_dumps_skips_unmount_snapshot_mount_paths_after_rmtre
     flexmock(module.os.path).should_receive('isdir').with_args(
         '/run/borgmatic/zfs_snapshots/b33f/mnt/dataset'
     ).and_return(True).and_return(False)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree')
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(
@@ -722,6 +762,7 @@ def test_remove_data_source_dumps_with_dry_run_skips_unmount_and_destroy():
         lambda path: [path.replace('*', 'b33f')]
     )
     flexmock(module.os.path).should_receive('isdir').and_return(True)
+    flexmock(module.os).should_receive('listdir').and_return(['file.txt'])
     flexmock(module.shutil).should_receive('rmtree').never()
     flexmock(module).should_receive('unmount_snapshot').never()
     flexmock(module).should_receive('get_all_snapshots').and_return(

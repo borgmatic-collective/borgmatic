@@ -376,7 +376,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
             snapshot_mount_path = os.path.join(
                 snapshots_directory, logical_volume.mount_point.lstrip(os.path.sep)
             )
-            if not os.path.isdir(snapshot_mount_path):
+
+            # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
+            # logical volume and therefore there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
                 continue
 
             # This might fail if the directory is already mounted, but we swallow errors here since
@@ -401,7 +404,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                 return
             except subprocess.CalledProcessError as error:
                 logger.debug(error)
-                return
+                continue
 
         if not dry_run:
             shutil.rmtree(snapshots_directory)
