@@ -49,7 +49,7 @@ def resolve_archive_name(
 
     output = execute_command_and_capture_output(
         full_command,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
@@ -164,7 +164,7 @@ def list_repository(
 
     json_listing = execute_command_and_capture_output(
         json_command,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
@@ -178,7 +178,7 @@ def list_repository(
     execute_command(
         main_command,
         output_log_level=logging.ANSWER,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,

@@ -66,7 +66,7 @@ def mount_archive(
         execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=config.get('borg_exit_codes'),
@@ -75,7 +75,7 @@ def mount_archive(
 
     execute_command(
         full_command,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

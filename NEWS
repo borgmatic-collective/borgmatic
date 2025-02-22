@@ -4,6 +4,8 @@
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
    databases are enabled.
+ * #998: Send the "encryption_passphrase" option to Borg via an anonymous pipe, which is more secure
+   than using an environment variable.
  * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for root patterns that come from
    a borgmatic configuration option (e.g. "source_directories")—not from other hooks within
    borgmatic.

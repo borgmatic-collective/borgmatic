@@ -182,7 +182,7 @@ def check_archives(
             output_file=(
                 DO_NOT_CAPTURE if check_arguments.repair or check_arguments.progress else None
             ),
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,

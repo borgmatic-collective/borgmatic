@@ -98,7 +98,7 @@ def create_repository(
     execute_command(
         repo_create_command,
         output_file=DO_NOT_CAPTURE,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

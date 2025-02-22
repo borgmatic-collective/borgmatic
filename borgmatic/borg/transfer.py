@@ -57,7 +57,7 @@ def transfer_archives(
         full_command,
         output_log_level=logging.ANSWER,
         output_file=DO_NOT_CAPTURE if transfer_arguments.progress else None,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

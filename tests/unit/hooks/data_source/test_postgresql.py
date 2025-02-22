@@ -6,7 +6,7 @@ from flexmock import flexmock
 from borgmatic.hooks.data_source import postgresql as module
 
 
-def test_make_extra_environment_maps_options_to_environment():
+def test_make_environment_maps_options_to_environment():
     database = {
         'name': 'foo',
         'password': 'pass',
@@ -17,6 +17,7 @@ def test_make_extra_environment_maps_options_to_environment():
         'ssl_crl': 'crl.crl',
     }
     expected = {
+        'USER': 'root',
         'PGPASSWORD': 'pass',
         'PGSSLMODE': 'require',
         'PGSSLCERT': 'cert.crt',
@@ -24,44 +25,44 @@ def test_make_extra_environment_maps_options_to_environment():
         'PGSSLROOTCERT': 'root.crt',
         'PGSSLCRL': 'crl.crl',
     }
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
 
-    extra_env = module.make_extra_environment(database, {})
-
-    assert extra_env == expected
+    assert module.make_environment(database, {}) == expected
 
 
-def test_make_extra_environment_with_cli_password_sets_correct_password():
+def test_make_environment_with_cli_password_sets_correct_password():
     database = {'name': 'foo', 'restore_password': 'trustsome1', 'password': 'anotherpassword'}
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
 
-    extra = module.make_extra_environment(
+    environment = module.make_environment(
         database, {}, restore_connection_params={'password': 'clipassword'}
     )
 
-    assert extra['PGPASSWORD'] == 'clipassword'
+    assert environment['PGPASSWORD'] == 'clipassword'
 
 
-def test_make_extra_environment_without_cli_password_or_configured_password_does_not_set_password():
+def test_make_environment_without_cli_password_or_configured_password_does_not_set_password():
     database = {'name': 'foo'}
 
-    extra = module.make_extra_environment(
+    environment = module.make_environment(
         database, {}, restore_connection_params={'username': 'someone'}
     )
 
-    assert 'PGPASSWORD' not in extra
+    assert 'PGPASSWORD' not in environment
 
 
-def test_make_extra_environment_without_ssl_mode_does_not_set_ssl_mode():
+def test_make_environment_without_ssl_mode_does_not_set_ssl_mode():
     database = {'name': 'foo'}
 
-    extra = module.make_extra_environment(database, {})
+    environment = module.make_environment(database, {})
 
-    assert 'PGSSLMODE' not in extra
+    assert 'PGSSLMODE' not in environment
 
 
 def test_database_names_to_dump_passes_through_individual_database_name():
@@ -125,7 +126,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_hostnam
             '--port',
             '1234',
         ),
-        extra_environment=object,
+        environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
@@ -150,7 +151,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_usernam
             '--username',
             'postgres',
         ),
-        extra_environment=object,
+        environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
@@ -166,7 +167,7 @@ def test_database_names_to_dump_with_all_and_format_lists_databases_with_options
     ).replace_with(lambda value, config: value)
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         ('psql', '--list', '--no-password', '--no-psqlrc', '--csv', '--tuples-only', '--harder'),
-        extra_environment=object,
+        environment=object,
     ).and_return('foo,test,\nbar,test,"stuff and such"')
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == (
@@ -210,7 +211,7 @@ def test_database_names_to_dump_with_all_and_psql_command_uses_custom_command():
             '--csv',
             '--tuples-only',
         ),
-        extra_environment=object,
+        environment=object,
     ).and_return('foo,text').once()
 
     assert module.database_names_to_dump(database, {}, flexmock(), dry_run=False) == ('foo',)
@@ -237,7 +238,7 @@ def test_use_streaming_false_for_no_databases():
 def test_dump_data_sources_runs_pg_dump_for_each_database():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
         ('bar',)
@@ -265,7 +266,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
                 f'databases/localhost/{name}',
             ),
             shell=True,
-            extra_environment={'PGSSLMODE': 'disable'},
+            environment={'PGSSLMODE': 'disable'},
             run_to_completion=False,
         ).and_return(process).once()
 
@@ -284,7 +285,7 @@ def test_dump_data_sources_runs_pg_dump_for_each_database():
 
 def test_dump_data_sources_raises_when_no_database_names_to_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
@@ -301,7 +302,7 @@ def test_dump_data_sources_raises_when_no_database_names_to_dump():
 
 def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(())
 
@@ -317,7 +318,7 @@ def test_dump_data_sources_does_not_raise_when_no_database_names_to_dump():
 
 def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
         ('bar',)
@@ -344,7 +345,7 @@ def test_dump_data_sources_with_duplicate_dump_skips_pg_dump():
 
 def test_dump_data_sources_with_dry_run_skips_pg_dump():
     databases = [{'name': 'foo'}, {'name': 'bar'}]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
         ('bar',)
@@ -375,7 +376,7 @@ def test_dump_data_sources_with_dry_run_skips_pg_dump():
 def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -404,7 +405,7 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
             'databases/database.example.org/foo',
         ),
         shell=True,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -421,7 +422,7 @@ def test_dump_data_sources_runs_pg_dump_with_hostname_and_port():
 def test_dump_data_sources_runs_pg_dump_with_username_and_password():
     databases = [{'name': 'foo', 'username': 'postgres', 'password': 'trustsome1'}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return(
+    flexmock(module).should_receive('make_environment').and_return(
         {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
     )
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -450,7 +451,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -467,7 +468,7 @@ def test_dump_data_sources_runs_pg_dump_with_username_and_password():
 def test_dump_data_sources_with_username_injection_attack_gets_escaped():
     databases = [{'name': 'foo', 'username': 'postgres; naughty-command', 'password': 'trustsome1'}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return(
+    flexmock(module).should_receive('make_environment').and_return(
         {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
     )
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -496,7 +497,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -512,7 +513,7 @@ def test_dump_data_sources_with_username_injection_attack_gets_escaped():
 
 def test_dump_data_sources_runs_pg_dump_with_directory_format():
     databases = [{'name': 'foo', 'format': 'directory'}]
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -538,7 +539,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
             'foo',
         ),
         shell=True,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).and_return(flexmock()).once()
 
     assert (
@@ -557,7 +558,7 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
 def test_dump_data_sources_runs_pg_dump_with_options():
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -583,7 +584,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -600,7 +601,7 @@ def test_dump_data_sources_runs_pg_dump_with_options():
 def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
     databases = [{'name': 'all'}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('all',))
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -615,7 +616,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
     flexmock(module).should_receive('execute_command').with_args(
         ('pg_dumpall', '--no-password', '--clean', '--if-exists', '>', 'databases/localhost/all'),
         shell=True,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -632,7 +633,7 @@ def test_dump_data_sources_runs_pg_dumpall_for_all_databases():
 def test_dump_data_sources_runs_non_default_pg_dump():
     databases = [{'name': 'foo', 'pg_dump_command': 'special_pg_dump --compress *'}]
     process = flexmock()
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -659,7 +660,7 @@ def test_dump_data_sources_runs_non_default_pg_dump():
             'databases/localhost/foo',
         ),
         shell=True,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
         run_to_completion=False,
     ).and_return(process).once()
 
@@ -680,7 +681,7 @@ def test_restore_data_source_dump_runs_pg_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -696,7 +697,7 @@ def test_restore_data_source_dump_runs_pg_restore():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -709,7 +710,7 @@ def test_restore_data_source_dump_runs_pg_restore():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -737,7 +738,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -757,7 +758,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -774,7 +775,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_hostname_and_port():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -802,7 +803,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return(
+    flexmock(module).should_receive('make_environment').and_return(
         {'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'}
     )
     flexmock(module).should_receive('make_dump_path')
@@ -822,7 +823,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -837,7 +838,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_username_and_password():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'trustsome1', 'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -876,7 +877,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return(
+    flexmock(module).should_receive('make_environment').and_return(
         {'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'}
     )
     flexmock(module).should_receive('make_dump_path')
@@ -900,7 +901,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -919,7 +920,7 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'clipassword', 'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -958,7 +959,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return(
+    flexmock(module).should_receive('make_environment').and_return(
         {'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'}
     )
     flexmock(module).should_receive('make_dump_path')
@@ -982,7 +983,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1001,7 +1002,7 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
+        environment={'PGPASSWORD': 'restorepassword', 'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1034,7 +1035,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1051,7 +1052,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1065,7 +1066,7 @@ def test_restore_data_source_dump_runs_pg_restore_with_options():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1091,7 +1092,7 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1103,11 +1104,11 @@ def test_restore_data_source_dump_runs_psql_for_all_database_dump():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         ('psql', '--no-password', '--no-psqlrc', '--quiet', '--command', 'ANALYZE'),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1133,7 +1134,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1141,7 +1142,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1154,7 +1155,7 @@ def test_restore_data_source_dump_runs_psql_for_plain_database_dump():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1187,7 +1188,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1208,7 +1209,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
         processes=[extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1226,7 +1227,7 @@ def test_restore_data_source_dump_runs_non_default_pg_restore_and_psql():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1251,7 +1252,7 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
     flexmock(module).should_receive('execute_command_with_processes').never()
@@ -1278,7 +1279,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1295,7 +1296,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1308,7 +1309,7 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(
@@ -1333,7 +1334,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
-    flexmock(module).should_receive('make_extra_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('/dump/path')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
@@ -1354,7 +1355,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
         processes=[],
         output_log_level=logging.DEBUG,
         input_file=None,
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
     flexmock(module).should_receive('execute_command').with_args(
         (
@@ -1367,7 +1368,7 @@ def test_restore_data_source_dump_with_schemas_restores_schemas():
             '--command',
             'ANALYZE',
         ),
-        extra_environment={'PGSSLMODE': 'disable'},
+        environment={'PGSSLMODE': 'disable'},
     ).once()
 
     module.restore_data_source_dump(

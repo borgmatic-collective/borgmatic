@@ -30,16 +30,18 @@ def interpolate_context(hook_description, command, context):
 
 def make_environment(current_environment, sys_module=sys):
     '''
-    Given the existing system environment as a map from environment variable name to value, return
-    (in the same form) any extra environment variables that should be used when running command
-    hooks.
+    Given the existing system environment as a map from environment variable name to value, return a
+    copy of it, augmented with any extra environment variables that should be used when running
+    command hooks.
     '''
+    environment = dict(current_environment)
+
     # Detect whether we're running within a PyInstaller bundle. If so, set or clear LD_LIBRARY_PATH
     # based on the value of LD_LIBRARY_PATH_ORIG. This prevents library version information errors.
     if getattr(sys_module, 'frozen', False) and hasattr(sys_module, '_MEIPASS'):
-        return {'LD_LIBRARY_PATH': current_environment.get('LD_LIBRARY_PATH_ORIG', '')}
+        environment['LD_LIBRARY_PATH'] = environment.get('LD_LIBRARY_PATH_ORIG', '')
 
-    return {}
+    return environment
 
 
 def execute_hook(commands, umask, config_filename, description, dry_run, **context):
@@ -85,7 +87,7 @@ def execute_hook(commands, umask, config_filename, description, dry_run, **conte
                 [command],
                 output_log_level=(logging.ERROR if description == 'on-error' else logging.WARNING),
                 shell=True,
-                extra_environment=make_environment(os.environ),
+                environment=make_environment(os.environ),
             )
     finally:
         if original_umask:

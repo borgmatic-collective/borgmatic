@@ -370,9 +370,9 @@ def test_delete_archives_calls_borg_delete_with_working_directory():
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
     command = flexmock()
     flexmock(module).should_receive('make_delete_command').and_return(command)
-    extra_environment = flexmock()
+    environment = flexmock()
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
-        extra_environment
+        environment
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir'
@@ -380,7 +380,7 @@ def test_delete_archives_calls_borg_delete_with_working_directory():
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
         command,
         output_log_level=logging.ANSWER,
-        extra_environment=extra_environment,
+        environment=environment,
         working_directory='/working/dir',
         borg_local_path='borg',
         borg_exit_codes=None,
