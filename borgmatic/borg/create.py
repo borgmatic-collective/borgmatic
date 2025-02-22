@@ -167,7 +167,7 @@ def collect_special_file_paths(
             path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
         }
 
-        # No paths to backup contain the runtime directory, so therefore it must've been excluded.
+        # If no paths to backup contain the runtime directory, it must've been excluded.
         if not paths_containing_runtime_directory and not dry_run:
             raise ValueError(
                 f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.'
@@ -336,6 +336,7 @@ def make_base_create_command(
                         special_file_path,
                         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
                         borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                        source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
                     )
                     for special_file_path in special_file_paths
                 ),

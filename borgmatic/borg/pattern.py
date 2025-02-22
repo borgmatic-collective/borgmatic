@@ -20,12 +20,31 @@ class Pattern_style(enum.Enum):
     PATH_FULL_MATCH = 'pf'
 
 
+class Pattern_source(enum.Enum):
+    '''
+    Where the pattern came from within borgmatic. This is important because certain use cases (like
+    filesystem snapshotting) only want to consider patterns that the user actually put in a
+    configuration file and not patterns from other sources.
+    '''
+
+    # The pattern is from a borgmatic configuration option, e.g. listed in "source_directories".
+    CONFIG = 'config'
+
+    # The pattern is generated internally within borgmatic, e.g. for special file excludes.
+    INTERNAL = 'internal'
+
+    # The pattern originates from within a borgmatic hook, e.g. a database hook that adds its dump
+    # directory.
+    HOOK = 'hook'
+
+
 Pattern = collections.namedtuple(
     'Pattern',
-    ('path', 'type', 'style', 'device'),
+    ('path', 'type', 'style', 'device', 'source'),
     defaults=(
         Pattern_type.ROOT,
         Pattern_style.NONE,
         None,
+        Pattern_source.HOOK,
     ),
 )

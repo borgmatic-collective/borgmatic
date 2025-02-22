@@ -5,16 +5,21 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.actions import create as module
-from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Pattern_type
 
 
 @pytest.mark.parametrize(
     'pattern_line,expected_pattern',
     (
-        ('R /foo', Pattern('/foo')),
-        ('P sh', Pattern('sh', Pattern_type.PATTERN_STYLE)),
-        ('+ /foo*', Pattern('/foo*', Pattern_type.INCLUDE)),
-        ('+ sh:/foo*', Pattern('/foo*', Pattern_type.INCLUDE, Pattern_style.SHELL)),
+        ('R /foo', Pattern('/foo', source=Pattern_source.CONFIG)),
+        ('P sh', Pattern('sh', Pattern_type.PATTERN_STYLE, source=Pattern_source.CONFIG)),
+        ('+ /foo*', Pattern('/foo*', Pattern_type.INCLUDE, source=Pattern_source.CONFIG)),
+        (
+            '+ sh:/foo*',
+            Pattern(
+                '/foo*', Pattern_type.INCLUDE, Pattern_style.SHELL, source=Pattern_source.CONFIG
+            ),
+        ),
     ),
 )
 def test_parse_pattern_transforms_pattern_line_to_instance(pattern_line, expected_pattern):
@@ -28,8 +33,8 @@ def test_parse_pattern_with_invalid_pattern_line_errors():
 
 def test_collect_patterns_converts_source_directories():
     assert module.collect_patterns({'source_directories': ['/foo', '/bar']}) == (
-        Pattern('/foo'),
-        Pattern('/bar'),
+        Pattern('/foo', source=Pattern_source.CONFIG),
+        Pattern('/bar', source=Pattern_source.CONFIG),
     )
 
 
@@ -48,9 +53,15 @@ def test_collect_patterns_parses_config_patterns():
 
 def test_collect_patterns_converts_exclude_patterns():
     assert module.collect_patterns({'exclude_patterns': ['/foo', '/bar', 'sh:**/baz']}) == (
-        Pattern('/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
-        Pattern('/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH),
-        Pattern('**/baz', Pattern_type.NO_RECURSE, Pattern_style.SHELL),
+        Pattern(
+            '/foo', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH, source=Pattern_source.CONFIG
+        ),
+        Pattern(
+            '/bar', Pattern_type.NO_RECURSE, Pattern_style.FNMATCH, source=Pattern_source.CONFIG
+        ),
+        Pattern(
+            '**/baz', Pattern_type.NO_RECURSE, Pattern_style.SHELL, source=Pattern_source.CONFIG
+        ),
     )
 
 

@@ -241,7 +241,8 @@ def dump_data_sources(
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'postgresql_databases')
+                os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
             )
         )
 

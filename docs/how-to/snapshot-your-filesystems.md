@@ -54,8 +54,8 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
  * For any dataset you'd like backed up, add its mount point to borgmatic's
    `source_directories` option.
  * <span class="minilink minilink-addedin">New in version 1.9.6</span> Or
-   include the mount point with borgmatic's `patterns` or `patterns_from`
-   options.
+   include the mount point as a root pattern with borgmatic's `patterns` or
+   `patterns_from` options.
  * Or set the borgmatic-specific user property
    `org.torsion.borgmatic:backup=auto` onto your dataset, e.g. by running `zfs
    set org.torsion.borgmatic:backup=auto datasetname`. Then borgmatic can find
@@ -64,6 +64,11 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
 If you have multiple borgmatic configuration files with ZFS enabled, and you'd
 like particular datasets to be backed up only for particular configuration
 files, use the `source_directories` option instead of the user property.
+
+<span class="minilink minilink-addedin">New in version 1.9.11</span> borgmatic
+won't snapshot datasets with the `canmount=off` property, which is often set on
+datasets that only serve as a container for other datasets. Use `zfs get
+canmount datasetname` to see the `canmount` value for a dataset.
 
 During a backup, borgmatic automatically snapshots these discovered datasets
 (non-recursively), temporarily mounts the snapshots within its [runtime
@@ -147,7 +152,8 @@ For any subvolume you'd like backed up, add its path to borgmatic's
 `source_directories` option.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic snapshots these subvolumes (non-recursively) and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also
@@ -252,7 +258,8 @@ For any logical volume you'd like backed up, add its mount point to
 borgmatic's `source_directories` option.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic automatically snapshots these discovered logical volumes
 (non-recursively), temporarily mounts the snapshots within its [runtime

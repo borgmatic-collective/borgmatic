@@ -11,10 +11,10 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     paths, but there's a parent directory (logical volume, dataset, subvolume, etc.) at /var, then
     /var is what we want to snapshot.
 
-    For this to work, a candidate pattern path can't have any globs or other non-literal characters
-    in the initial portion of the path that matches the parent directory. For instance, a parent
-    directory of /var would match a candidate pattern path of /var/log/*/data, but not a pattern
-    path like /v*/log/*/data.
+    For this function to work, a candidate pattern path can't have any globs or other non-literal
+    characters in the initial portion of the path that matches the parent directory. For instance, a
+    parent directory of /var would match a candidate pattern path of /var/log/*/data, but not a
+    pattern path like /v*/log/*/data.
 
     The one exception is that if a regular expression pattern path starts with "^", that will get
     stripped off for purposes of matching against a parent directory.
@@ -31,8 +31,10 @@ def get_contained_patterns(parent_directory, candidate_patterns):
         candidate
         for candidate in candidate_patterns
         for candidate_path in (pathlib.PurePath(candidate.path.lstrip('^')),)
-        if pathlib.PurePath(parent_directory) == candidate_path
-        or pathlib.PurePath(parent_directory) in candidate_path.parents
+        if (
+            pathlib.PurePath(parent_directory) == candidate_path
+            or pathlib.PurePath(parent_directory) in candidate_path.parents
+        )
     )
     candidate_patterns -= set(contained_patterns)
 

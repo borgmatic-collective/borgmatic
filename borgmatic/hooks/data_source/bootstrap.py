@@ -55,9 +55,17 @@ def dump_data_sources(
             manifest_file,
         )
 
-    patterns.extend(borgmatic.borg.pattern.Pattern(config_path) for config_path in config_paths)
+    patterns.extend(
+        borgmatic.borg.pattern.Pattern(
+            config_path, source=borgmatic.borg.pattern.Pattern_source.HOOK
+        )
+        for config_path in config_paths
+    )
     patterns.append(
-        borgmatic.borg.pattern.Pattern(os.path.join(borgmatic_runtime_directory, 'bootstrap'))
+        borgmatic.borg.pattern.Pattern(
+            os.path.join(borgmatic_runtime_directory, 'bootstrap'),
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        )
     )
 
     return []
