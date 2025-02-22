@@ -710,7 +710,8 @@ zabbix:
         - fail
 ```
 
-This hook requires the Zabbix server be running version 7.0+
+This hook requires the Zabbix server be running version 7.0. ([Support for Zabbix
+7.2+](https://projects.torsion.org/borgmatic-collective/borgmatic/issues/1003) is planned.)
 
 
 ### Authentication methods
