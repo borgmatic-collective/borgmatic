@@ -185,6 +185,12 @@ def test_any_parent_directories_treats_unrelated_paths_as_non_match():
 
 
 def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_list():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments
+    )
     flexmock(module.environment).should_receive('make_environment').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         'Processing files ...\n- /foo\n+ /bar\n- /baz'
@@ -204,6 +210,12 @@ def test_collect_special_file_paths_parses_special_files_from_borg_dry_run_file_
 
 
 def test_collect_special_file_paths_skips_borgmatic_runtime_directory():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments
+    )
     flexmock(module.environment).should_receive('make_environment').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         '+ /foo\n- /run/borgmatic/bar\n- /baz'
@@ -231,6 +243,12 @@ def test_collect_special_file_paths_skips_borgmatic_runtime_directory():
 
 
 def test_collect_special_file_paths_with_borgmatic_runtime_directory_missing_from_paths_output_errors():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments
+    )
     flexmock(module.environment).should_receive('make_environment').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         '+ /foo\n- /bar\n- /baz'
@@ -251,6 +269,12 @@ def test_collect_special_file_paths_with_borgmatic_runtime_directory_missing_fro
 
 
 def test_collect_special_file_paths_with_dry_run_and_borgmatic_runtime_directory_missing_from_paths_output_does_not_raise():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments
+    )
     flexmock(module.environment).should_receive('make_environment').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         '+ /foo\n- /bar\n- /baz'
@@ -270,6 +294,12 @@ def test_collect_special_file_paths_with_dry_run_and_borgmatic_runtime_directory
 
 
 def test_collect_special_file_paths_excludes_non_special_files():
+    flexmock(module.flags).should_receive('omit_flag').replace_with(
+        lambda arguments, flag: arguments
+    )
+    flexmock(module.flags).should_receive('omit_flag_and_value').replace_with(
+        lambda arguments, flag: arguments
+    )
     flexmock(module.environment).should_receive('make_environment').and_return(None)
     flexmock(module).should_receive('execute_command_and_capture_output').and_return(
         '+ /foo\n+ /bar\n+ /baz'
@@ -288,30 +318,6 @@ def test_collect_special_file_paths_excludes_non_special_files():
         working_directory=None,
         borgmatic_runtime_directory='/run/borgmatic',
     ) == ('/foo', '/baz')
-
-
-def test_collect_special_file_paths_omits_exclude_no_dump_flag_from_command():
-    flexmock(module.environment).should_receive('make_environment').and_return(None)
-    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
-        ('borg', 'create', '--dry-run', '--list'),
-        capture_stderr=True,
-        working_directory=None,
-        environment=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    ).and_return('Processing files ...\n- /foo\n+ /bar\n- /baz').once()
-    flexmock(module).should_receive('special_file').and_return(True)
-    flexmock(module.os.path).should_receive('exists').and_return(False)
-    flexmock(module).should_receive('any_parent_directories').never()
-
-    module.collect_special_file_paths(
-        dry_run=False,
-        create_command=('borg', 'create', '--exclude-nodump'),
-        config={},
-        local_path='borg',
-        working_directory=None,
-        borgmatic_runtime_directory='/run/borgmatic',
-    )
 
 
 DEFAULT_ARCHIVE_NAME = '{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}'  # noqa: FS003

@@ -6,6 +6,8 @@
    databases are enabled.
  * #998: Send the "encryption_passphrase" option to Borg via an anonymous pipe, which is more secure
    than using an environment variable.
+ * #999: Fix a runtime directory error from a conflict between "extra_borg_options" and special file
+   detection.
  * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for root patterns that come from
    a borgmatic configuration option (e.g. "source_directories")—not from other hooks within
    borgmatic.

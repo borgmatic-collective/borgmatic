@@ -156,3 +156,44 @@ def warn_for_aggressive_archive_flags(json_command, json_output):
         logger.debug(f'Cannot parse JSON output from archive command: {error}')
     except (TypeError, KeyError):
         logger.debug('Cannot parse JSON output from archive command: No "archives" key found')
+
+
+def omit_flag(arguments, flag):
+    '''
+    Given a sequence of Borg command-line arguments, return them with the given (valueless) flag
+    omitted. For instance, if the flag is "--flag" and arguments is:
+
+        ('borg', 'create', '--flag', '--other-flag')
+
+    ... then return:
+
+        ('borg', 'create', '--other-flag')
+    '''
+    return tuple(argument for argument in arguments if argument != flag)
+
+
+def omit_flag_and_value(arguments, flag):
+    '''
+    Given a sequence of Borg command-line arguments, return them with the given flag and its
+    corresponding value omitted. For instance, if the flag is "--flag" and arguments is:
+
+        ('borg', 'create', '--flag', 'value', '--other-flag')
+
+    ... or:
+
+        ('borg', 'create', '--flag=value', '--other-flag')
+
+    ... then return:
+
+        ('borg', 'create', '--other-flag')
+    '''
+    # This works by zipping together a list of overlapping pairwise arguments. E.g., ('one', 'two',
+    # 'three', 'four') becomes ((None, 'one'), ('one, 'two'), ('two', 'three'), ('three', 'four')).
+    # This makes it easy to "look back" at the previous arguments so we can exclude both a flag and
+    # its value.
+    return tuple(
+        argument
+        for (previous_argument, argument) in zip((None,) + arguments, arguments)
+        if flag not in (previous_argument, argument)
+        if not argument.startswith(f'{flag}=')
+    )

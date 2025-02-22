@@ -140,9 +140,10 @@ def collect_special_file_paths(
     consume any database dumps and therefore borgmatic will hang when it tries to do so.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
-    # files including any named pipe we've created.
+    # files including any named pipe we've created. And omit "--filter" because that can break the
+    # paths output parsing below such that path lines no longer start with th expected "- ".
     paths_output = execute_command_and_capture_output(
-        tuple(argument for argument in create_command if argument != '--exclude-nodump')
+        flags.omit_flag_and_value(flags.omit_flag(create_command, '--exclude-nodump'), '--filter')
         + ('--dry-run', '--list'),
         capture_stderr=True,
         working_directory=working_directory,
