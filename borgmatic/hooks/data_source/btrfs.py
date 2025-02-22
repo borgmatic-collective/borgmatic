@@ -54,7 +54,9 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     between the current Btrfs filesystem and subvolume mount points and the paths of any patterns.
     The idea is that these pattern paths represent the requested subvolumes to snapshot.
 
-    If patterns is None, then return all subvolumes, sorted by path.
+    Only include subvolumes that contain at least one root pattern sourced from borgmatic
+    configuration (as opposed to generated elsewhere in borgmatic). But if patterns is None, then
+    return all subvolumes instead, sorted by path.
 
     Return the result as a sequence of matching subvolume mount points.
     '''
@@ -73,7 +75,12 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
                     mount_point, candidate_patterns
                 ),
             )
-            if patterns is None or contained_patterns
+            if patterns is None
+            or any(
+                pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                and pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
+                for pattern in contained_patterns
+            )
         )
 
     return tuple(sorted(subvolumes, key=lambda subvolume: subvolume.path))
@@ -121,6 +128,7 @@ def make_snapshot_exclude_pattern(subvolume_path):  # pragma: no cover
         ),
         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
         borgmatic.borg.pattern.Pattern_style.FNMATCH,
+        source=borgmatic.borg.pattern.Pattern_source.HOOK,
     )
 
 
@@ -153,6 +161,7 @@ def make_borg_snapshot_pattern(subvolume_path, pattern):
         pattern.type,
         pattern.style,
         pattern.device,
+        source=borgmatic.borg.pattern.Pattern_source.HOOK,
     )
 
 
@@ -198,7 +207,8 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'Snapshotting Btrfs subvolumes{dry_run_label}')
 
-    # Based on the configured patterns, determine Btrfs subvolumes to backup.
+    # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
+    # patterns that came from actual user configuration (as opposed to, say, other hooks).
     btrfs_command = hook_config.get('btrfs_command', 'btrfs')
     findmnt_command = hook_config.get('findmnt_command', 'findmnt')
     subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)

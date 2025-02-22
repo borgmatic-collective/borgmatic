@@ -36,6 +36,7 @@ def parse_pattern(pattern_line, default_style=borgmatic.borg.pattern.Pattern_sty
         path,
         borgmatic.borg.pattern.Pattern_type(pattern_type),
         borgmatic.borg.pattern.Pattern_style(pattern_style),
+        source=borgmatic.borg.pattern.Pattern_source.CONFIG,
     )
 
 
@@ -51,7 +52,9 @@ def collect_patterns(config):
     try:
         return (
             tuple(
-                borgmatic.borg.pattern.Pattern(source_directory)
+                borgmatic.borg.pattern.Pattern(
+                    source_directory, source=borgmatic.borg.pattern.Pattern_source.CONFIG
+                )
                 for source_directory in config.get('source_directories', ())
             )
             + tuple(
@@ -144,6 +147,7 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                         pattern.type,
                         pattern.style,
                         pattern.device,
+                        pattern.source,
                     )
                     for expanded_path in expand_directory(pattern.path, working_directory)
                 )
@@ -178,6 +182,7 @@ def device_map_patterns(patterns, working_directory=None):
                 and os.path.exists(full_path)
                 else None
             ),
+            source=pattern.source,
         )
         for pattern in patterns
         for full_path in (os.path.join(working_directory or '', pattern.path),)

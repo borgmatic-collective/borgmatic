@@ -132,9 +132,12 @@ def collect_special_file_paths(
     used.
 
     Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
-    its own special files there for database dumps. And if the borgmatic runtime directory is
-    configured to be excluded from the files Borg backs up, error, because this means Borg won't be
-    able to consume any database dumps and therefore borgmatic will hang.
+    its own special files there for database dumps and we don't want those omitted.
+
+    Additionally, if the borgmatic runtime directory is not contained somewhere in the files Borg
+    plans to backup, that means the user must have excluded the runtime directory (e.g. via
+    "exclude_patterns" or similar). Therefore, raise, because this means Borg won't be able to
+    consume any database dumps and therefore borgmatic will hang when it tries to do so.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created.
@@ -148,25 +151,33 @@ def collect_special_file_paths(
         borg_exit_codes=config.get('borg_exit_codes'),
     )
 
+    # These are all the individual files that Borg is planning to backup as determined by the Borg
+    # create dry run above.
     paths = tuple(
         path_line.split(' ', 1)[1]
         for path_line in paths_output.split('\n')
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
-    skip_paths = {}
+
+    # These are the subset of those files that contain the borgmatic runtime directory.
+    paths_containing_runtime_directory = {}
 
     if os.path.exists(borgmatic_runtime_directory):
-        skip_paths = {
+        paths_containing_runtime_directory = {
             path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
         }
 
-        if not skip_paths and not dry_run:
+        # If no paths to backup contain the runtime directory, it must've been excluded.
+        if not paths_containing_runtime_directory and not dry_run:
             raise ValueError(
                 f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.'
             )
 
     return tuple(
-        path for path in paths if special_file(path, working_directory) if path not in skip_paths
+        path
+        for path in paths
+        if special_file(path, working_directory)
+        if path not in paths_containing_runtime_directory
     )
 
 
@@ -325,6 +336,7 @@ def make_base_create_command(
                         special_file_path,
                         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
                         borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                        source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
                     )
                     for special_file_path in special_file_paths
                 ),

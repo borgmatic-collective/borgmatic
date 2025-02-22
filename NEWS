@@ -1,9 +1,15 @@
 1.9.11.dev0
- * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
-   databases are enabled.
  * #795: Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the
    documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+ * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
+   databases are enabled.
+ * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for root patterns that come from
+   a borgmatic configuration option (e.g. "source_directories")—not from other hooks within
+   borgmatic.
+ * #1001: Fix a ZFS/LVM error due to colliding snapshot mount points for nested datasets or logical
+   volumes.
+ * #1001: Don't try to snapshot ZFS datasets that have the "canmount=off" property.
  * Send the "encryption_passphrase" option to Borg via an anonymous pipe, which is more secure than
    using an environment variable.
  * Fix another error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's

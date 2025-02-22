@@ -1,7 +1,7 @@
 import pytest
 from flexmock import flexmock
 
-from borgmatic.borg.pattern import Pattern, Pattern_style, Pattern_type
+from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Pattern_type
 from borgmatic.hooks.data_source import btrfs as module
 
 
@@ -52,9 +52,14 @@ def test_get_subvolume_mount_points_with_findmnt_json_missing_filesystems_errors
 def test_get_subvolumes_collects_subvolumes_matching_patterns():
     flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
 
+    contained_pattern = Pattern(
+        '/mnt1',
+        type=Pattern_type.ROOT,
+        source=Pattern_source.CONFIG,
+    )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
-    ).with_args('/mnt1', object).and_return((Pattern('/mnt1'),))
+    ).with_args('/mnt1', object).and_return((contained_pattern,))
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
     ).with_args('/mnt2', object).and_return(())
@@ -66,7 +71,69 @@ def test_get_subvolumes_collects_subvolumes_matching_patterns():
             Pattern('/mnt1'),
             Pattern('/mnt3'),
         ],
-    ) == (module.Subvolume('/mnt1', contained_patterns=(Pattern('/mnt1'),)),)
+    ) == (module.Subvolume('/mnt1', contained_patterns=(contained_pattern,)),)
+
+
+def test_get_subvolumes_skips_non_root_patterns():
+    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
+
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt1', object).and_return(
+        (
+            Pattern(
+                '/mnt1',
+                type=Pattern_type.EXCLUDE,
+                source=Pattern_source.CONFIG,
+            ),
+        )
+    )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt2', object).and_return(())
+
+    assert (
+        module.get_subvolumes(
+            'btrfs',
+            'findmnt',
+            patterns=[
+                Pattern('/mnt1'),
+                Pattern('/mnt3'),
+            ],
+        )
+        == ()
+    )
+
+
+def test_get_subvolumes_skips_non_config_patterns():
+    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
+
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt1', object).and_return(
+        (
+            Pattern(
+                '/mnt1',
+                type=Pattern_type.ROOT,
+                source=Pattern_source.HOOK,
+            ),
+        )
+    )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).with_args('/mnt2', object).and_return(())
+
+    assert (
+        module.get_subvolumes(
+            'btrfs',
+            'findmnt',
+            patterns=[
+                Pattern('/mnt1'),
+                Pattern('/mnt3'),
+            ],
+        )
+        == ()
+    )
 
 
 def test_get_subvolumes_without_patterns_collects_all_subvolumes():
