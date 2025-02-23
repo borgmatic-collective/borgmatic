@@ -220,11 +220,27 @@ def test_get_datasets_to_backup_with_invalid_list_output_raises():
         module.get_datasets_to_backup('zfs', patterns=(Pattern('/foo'), Pattern('/bar')))
 
 
-def test_get_all_dataset_mount_points_does_not_filter_datasets():
+def test_get_all_dataset_mount_points_omits_none():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
-        '/dataset\n/other',
+        '/dataset\nnone\n/other',
+    )
+    flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
+        'get_contained_patterns'
+    ).and_return((Pattern('/dataset'),))
+
+    assert module.get_all_dataset_mount_points('zfs') == (
+        ('/dataset'),
+        ('/other'),
+    )
+
+
+def test_get_all_dataset_mount_points_omits_duplicates():
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        '/dataset\n/other\n/dataset\n/other',
     )
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'

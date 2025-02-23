@@ -1,3 +1,6 @@
+1.9.13.dev0
+ * 
+
 1.9.12
  * #1005: Fix the credential hooks to avoid using Python 3.12+ string features. Now borgmatic will
    work with Python 3.9, 3.10, and 3.11 again.

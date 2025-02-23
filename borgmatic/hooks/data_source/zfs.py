@@ -134,7 +134,16 @@ def get_all_dataset_mount_points(zfs_command):
         )
     )
 
-    return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
+    return tuple(
+        sorted(
+            {
+                mount_point
+                for line in list_output.splitlines()
+                for mount_point in (line.rstrip(),)
+                if mount_point != 'none'
+            }
+        )
+    )
 
 
 def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
@@ -411,7 +420,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                     continue
 
         if not dry_run:
-            shutil.rmtree(snapshots_directory)
+            shutil.rmtree(snapshots_directory, ignore_errors=True)
 
     # Destroy snapshots.
     full_snapshot_names = get_all_snapshots(zfs_command)
