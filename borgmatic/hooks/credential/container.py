@@ -21,7 +21,9 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         (secret_name,) = credential_parameters
     except ValueError:
-        raise ValueError(f'Cannot load invalid secret name: "{' '.join(credential_parameters)}"')
+        name = ' '.join(credential_parameters)
+
+        raise ValueError(f'Cannot load invalid secret name: "{name}"')
 
     if not SECRET_NAME_PATTERN.match(secret_name):
         raise ValueError(f'Cannot load invalid secret name: "{secret_name}"')

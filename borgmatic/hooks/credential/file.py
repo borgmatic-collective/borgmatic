@@ -15,7 +15,9 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         (credential_path,) = credential_parameters
     except ValueError:
-        raise ValueError(f'Cannot load invalid credential: "{' '.join(credential_parameters)}"')
+        name = ' '.join(credential_parameters)
+
+        raise ValueError(f'Cannot load invalid credential: "{name}"')
 
     try:
         with open(
