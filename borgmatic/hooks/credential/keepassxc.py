@@ -18,8 +18,10 @@ def load_credential(hook_config, config, credential_parameters):
     try:
         (database_path, attribute_name) = credential_parameters
     except ValueError:
+        path_and_name = ' '.join(credential_parameters)
+
         raise ValueError(
-            f'Cannot load credential with invalid KeePassXC database path and attribute name: "{' '.join(credential_parameters)}"'
+            f'Cannot load credential with invalid KeePassXC database path and attribute name: "{path_and_name}"'
         )
 
     if not os.path.exists(database_path):
