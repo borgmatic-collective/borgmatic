@@ -420,7 +420,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                     continue
 
         if not dry_run:
-            shutil.rmtree(snapshots_directory, ignore_errors=True)
+            shutil.rmtree(snapshots_directory)
 
     # Destroy snapshots.
     full_snapshot_names = get_all_snapshots(zfs_command)
