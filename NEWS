@@ -1,5 +1,5 @@
 1.9.13.dev0
- * 
+ * #1001: Fix a ZFS error during snapshot cleanup.
 
 1.9.12
  * #1005: Fix the credential hooks to avoid using Python 3.12+ string features. Now borgmatic will
