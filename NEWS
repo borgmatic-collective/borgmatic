@@ -1,5 +1,6 @@
 1.9.13.dev0
  * #1001: Fix a ZFS error during snapshot cleanup.
+ * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
 
 1.9.12
  * #1005: Fix the credential hooks to avoid using Python 3.12+ string features. Now borgmatic will
