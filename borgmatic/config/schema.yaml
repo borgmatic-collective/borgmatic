@@ -2200,6 +2200,12 @@ properties:
                     - start
                     - finish
                     - fail
+            verify_tls:
+                type: boolean
+                description: |
+                    Verify the TLS certificate of the push URL host. Defaults to
+                    true.
+                example: false
         description: |
             Configuration for a monitoring integration with Uptime Kuma using
             the Push monitor type.
