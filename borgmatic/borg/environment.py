@@ -74,7 +74,7 @@ def make_environment(config):
         os.write(write_file_descriptor, passphrase.encode('utf-8'))
         os.close(write_file_descriptor)
 
-        # This, plus subprocess.Popen(..., close_fds=False) in execute.py, is necessary for the Borg
+        # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the Borg
         # child process to inherit the file descriptor.
         os.set_inheritable(read_file_descriptor, True)
         environment['BORG_PASSPHRASE_FD'] = str(read_file_descriptor)

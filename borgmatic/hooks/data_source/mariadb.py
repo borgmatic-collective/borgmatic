@@ -26,11 +26,56 @@ def make_dump_path(base_directory):  # pragma: no cover
 SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
 
 
-def database_names_to_dump(database, config, environment, dry_run):
+def make_defaults_file_pipe(username=None, password=None):
     '''
-    Given a requested database config and a configuration dict, return the corresponding sequence of
-    database names to dump. In the case of "all", query for the names of databases on the configured
-    host and return them, excluding any system databases that will cause problems during restore.
+    Given a database username and/or password, write it to an anonymous pipe and return its file
+    descriptor for passing to an executed command. The idea is that this is a more secure way to
+    transmit credentials to a database client than using an environment variable.
+
+    If no username or password are given, then return None.
+
+    Do not and use this value for multiple different command invocations. That will not work because
+    each pipe is "used up" once read.
+    '''
+    values = '\n'.join(
+        (
+            (f'user={username}' if username is not None else ''),
+            (f'password={password}' if password is not None else ''),
+        )
+    ).strip()
+
+    if not values:
+        return None
+
+    fields_message = ' and '.join(
+        field_name for field_name in
+        (
+            (f'username ({username})' if username is not None else None),
+            ('password' if password is not None else None),
+        )
+        if field_name is not None
+    )
+    logger.debug(f'Writing database {fields_message} to defaults extra file pipe')
+
+    read_file_descriptor, write_file_descriptor = os.pipe()
+    os.write(
+        write_file_descriptor, f'[client]\n{values}'.encode('utf-8')
+    )
+    os.close(write_file_descriptor)
+
+    # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
+    # client child process to inherit the file descriptor.
+    os.set_inheritable(read_file_descriptor, True)
+
+    return read_file_descriptor
+
+
+def database_names_to_dump(database, config, username, password, environment, dry_run):
+    '''
+    Given a requested database config, a configuration dict, a database username and password, an
+    environment dict, and whether this is a dry run, return the corresponding sequence of database
+    names to dump. In the case of "all", query for the names of databases on the configured host and
+    return them, excluding any system databases that will cause problems during restore.
     '''
     if database['name'] != 'all':
         return (database['name'],)
@@ -40,24 +85,20 @@ def database_names_to_dump(database, config, environment, dry_run):
     mariadb_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mariadb_command') or 'mariadb')
     )
+    defaults_file_descriptor = make_defaults_file_pipe(username, password)
     show_command = (
         mariadb_show_command
+        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (
-            (
-                '--user',
-                borgmatic.hooks.credential.parse.resolve_credential(database['username'], config),
-            )
-            if 'username' in database
-            else ()
-        )
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
+
     logger.debug('Querying for "all" MariaDB databases to dump')
+
     show_output = execute_command_and_capture_output(show_command, environment=environment)
 
     return tuple(
@@ -68,7 +109,7 @@ def database_names_to_dump(database, config, environment, dry_run):
 
 
 def execute_dump_command(
-    database, config, dump_path, database_names, environment, dry_run, dry_run_label
+    database, config, username, password, dump_path, database_names, environment, dry_run, dry_run_label
 ):
     '''
     Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
@@ -95,21 +136,15 @@ def execute_dump_command(
         shlex.quote(part)
         for part in shlex.split(database.get('mariadb_dump_command') or 'mariadb-dump')
     )
+    defaults_file_descriptor = make_defaults_file_pipe(username, password)
     dump_command = (
         mariadb_dump_command
+        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (
-            (
-                '--user',
-                borgmatic.hooks.credential.parse.resolve_credential(database['username'], config),
-            )
-            if 'username' in database
-            else ()
-        )
         + ('--databases',)
         + database_names
         + ('--result-file', dump_filename)
@@ -165,19 +200,10 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        environment = dict(
-            os.environ,
-            **(
-                {
-                    'MYSQL_PWD': borgmatic.hooks.credential.parse.resolve_credential(
-                        database['password'], config
-                    )
-                }
-                if 'password' in database
-                else {}
-            ),
-        )
-        dump_database_names = database_names_to_dump(database, config, environment, dry_run)
+        username = borgmatic.hooks.credential.parse.resolve_credential(database.get('username'), config)
+        password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
+        environment = dict(os.environ)
+        dump_database_names = database_names_to_dump(database, config, username, password, environment, dry_run)
 
         if not dump_database_names:
             if dry_run:
@@ -193,6 +219,8 @@ def dump_data_sources(
                     execute_dump_command(
                         renamed_database,
                         config,
+                        username,
+                        password,
                         dump_path,
                         (dump_name,),
                         environment,
@@ -205,6 +233,8 @@ def dump_data_sources(
                 execute_dump_command(
                     database,
                     config,
+                    username,
+                    password,
                     dump_path,
                     dump_database_names,
                     environment,
@@ -296,8 +326,10 @@ def restore_data_source_dump(
     mariadb_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mariadb_command') or 'mariadb')
     )
+    defaults_file_descriptor = make_defaults_file_pipe(username, password)
     restore_command = (
         mariadb_restore_command
+        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
         + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
@@ -307,9 +339,8 @@ def restore_data_source_dump(
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
-        + (('--user', username) if username else ())
     )
-    environment = dict(os.environ, **({'MYSQL_PWD': password} if password else {}))
+    environment = dict(os.environ)
 
     logger.debug(f"Restoring MariaDB database {data_source['name']}{dry_run_label}")
     if dry_run:
