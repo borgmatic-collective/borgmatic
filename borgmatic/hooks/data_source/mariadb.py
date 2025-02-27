@@ -34,7 +34,7 @@ def make_defaults_file_pipe(username=None, password=None):
 
     If no username or password are given, then return None.
 
-    Do not and use this value for multiple different command invocations. That will not work because
+    Do not use this value for multiple different command invocations. That will not work because
     each pipe is "used up" once read.
     '''
     values = '\n'.join(
