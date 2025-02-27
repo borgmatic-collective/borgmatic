@@ -1907,6 +1907,8 @@ properties:
     zabbix:
         type: object
         additionalProperties: false
+        required:
+            - server
         properties:
             itemid:
                 type: integer
@@ -1929,7 +1931,8 @@ properties:
             server:
                 type: string
                 description: |
-                    The address of your Zabbix instance.
+                    The API endpoint URL of your Zabbix instance, usually ending
+                    with "/api_jsonrpc.php". Required.
                 example: https://zabbix.your-domain.com
             username:
                 type: string
