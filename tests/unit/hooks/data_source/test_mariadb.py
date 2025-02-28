@@ -631,6 +631,9 @@ def test_restore_data_source_dump_runs_mariadb_to_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive(
+        'make_defaults_file_pipe'
+    ).with_args(None, None).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch'),
@@ -663,6 +666,9 @@ def test_restore_data_source_dump_runs_mariadb_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive(
+        'make_defaults_file_pipe'
+    ).with_args(None, None).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('mariadb', '--batch', '--harder'),
@@ -697,6 +703,9 @@ def test_restore_data_source_dump_runs_non_default_mariadb_with_options():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive(
+        'make_defaults_file_pipe'
+    ).with_args(None, None).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         ('custom_mariadb', '--batch', '--harder'),
@@ -729,6 +738,9 @@ def test_restore_data_source_dump_runs_mariadb_with_hostname_and_port():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive(
+        'make_defaults_file_pipe'
+    ).with_args(None, None).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
@@ -916,6 +928,9 @@ def test_restore_data_source_dump_with_dry_run_skips_restore():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive(
+        'make_defaults_file_pipe'
+    ).with_args(None, None).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module).should_receive('execute_command_with_processes').never()
 
