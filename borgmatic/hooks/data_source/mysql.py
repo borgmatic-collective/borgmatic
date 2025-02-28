@@ -42,17 +42,15 @@ def database_names_to_dump(database, config, username, password, environment, dr
     mysql_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
-        username, password
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('list_options'))
     )
     show_command = (
         mysql_show_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
         )
-        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
+        + extra_options
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
@@ -106,17 +104,15 @@ def execute_dump_command(
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
-        username, password
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('options'))
     )
     dump_command = (
         mysql_dump_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
         )
-        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -308,22 +304,16 @@ def restore_data_source_dump(
     mysql_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
-        username, password
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('restore_options'))
     )
     restore_command = (
         mysql_restore_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
         )
+        + extra_options
         + ('--batch',)
-        + (
-            tuple(data_source['restore_options'].split(' '))
-            if 'restore_options' in data_source
-            else ()
-        )
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())

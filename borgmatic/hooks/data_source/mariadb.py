@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import re
 import shlex
 
 import borgmatic.borg.pattern
@@ -23,19 +24,46 @@ def make_dump_path(base_directory):  # pragma: no cover
     return dump.make_data_source_dump_path(base_directory, 'mariadb_databases')
 
 
-SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
+DEFAULTS_EXTRA_FILE_FLAG_PATTERN = re.compile('^--defaults-extra-file=(?P<filename>.*)$')
 
 
-def make_defaults_file_pipe(username=None, password=None):
+def parse_extra_options(extra_options):
     '''
-    Given a database username and/or password, write it to an anonymous pipe and return its file
-    descriptor for passing to an executed command. The idea is that this is a more secure way to
-    transmit credentials to a database client than using an environment variable.
+    Given an extra options string, split the options into a tuple and return it. Additionally, if
+    the first option is "--defaults-extra-file=...", then remove it from the options and return the
+    filename.
 
-    If no username or password are given, then return None.
+    So the return value is a tuple of: (parsed options, defaults extra filename).
 
-    Do not use this value for multiple different command invocations. That will not work because
-    each pipe is "used up" once read.
+    The intent is to support downstream merging of multiple "--defaults-extra-file"s, as
+    MariaDB/MySQL only allows one at a time.
+    '''
+    split_extra_options = tuple(shlex.split(extra_options)) if extra_options else ()
+
+    if not split_extra_options:
+        return (split_extra_options, None)
+
+    match = DEFAULTS_EXTRA_FILE_FLAG_PATTERN.match(split_extra_options[0])
+
+    if not match:
+        return (split_extra_options, None)
+
+    return (split_extra_options[1:], match.group('filename'))
+
+
+def make_defaults_file_options(username=None, password=None, defaults_extra_filename=None):
+    '''
+    Given a database username and/or password, write it to an anonymous pipe and return the flags
+    for passing that file descriptor to an executed command. The idea is that this is a more secure
+    way to transmit credentials to a database client than using an environment variable.
+
+    If no username or password are given, then return the options for the given defaults extra
+    filename (if any). But if there is a username and/or password and a defaults extra filename is
+    given, then "!include" it from the generated file, effectively allowing multiple defaults extra
+    files.
+
+    Do not use the returned value for multiple different command invocations. That will not work
+    because each pipe is "used up" once read.
     '''
     values = '\n'.join(
         (
@@ -45,7 +73,10 @@ def make_defaults_file_pipe(username=None, password=None):
     ).strip()
 
     if not values:
-        return None
+        if defaults_extra_filename:
+            return (f'--defaults-extra-file={defaults_extra_filename}',)
+
+        return ()
 
     fields_message = ' and '.join(
         field_name
@@ -55,17 +86,20 @@ def make_defaults_file_pipe(username=None, password=None):
         )
         if field_name is not None
     )
-    logger.debug(f'Writing database {fields_message} to defaults extra file pipe')
+    include_message = f' (including {defaults_extra_filename})' if defaults_extra_filename else ''
+    logger.debug(f'Writing database {fields_message} to defaults extra file pipe{include_message}')
+
+    include = f'!include {defaults_extra_filename}\n' if defaults_extra_filename else ''
 
     read_file_descriptor, write_file_descriptor = os.pipe()
-    os.write(write_file_descriptor, f'[client]\n{values}'.encode('utf-8'))
+    os.write(write_file_descriptor, f'{include}[client]\n{values}'.encode('utf-8'))
     os.close(write_file_descriptor)
 
     # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
     # client child process to inherit the file descriptor.
     os.set_inheritable(read_file_descriptor, True)
 
-    return read_file_descriptor
+    return (f'--defaults-extra-file=/dev/fd/{read_file_descriptor}',)
 
 
 def database_names_to_dump(database, config, username, password, environment, dry_run):
@@ -83,15 +117,73 @@ def database_names_to_dump(database, config, username, password, environment, dr
     mariadb_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mariadb_command') or 'mariadb')
     )
-    defaults_file_descriptor = make_defaults_file_pipe(username, password)
+    extra_options, defaults_extra_filename = parse_extra_options(database.get('list_options'))
     show_command = (
         mariadb_show_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
+        + make_defaults_file_options(username, password, defaults_extra_filename)
+        + extra_options
+        + (('--host', database['hostname']) if 'hostname' in database else ())
+        + (('--port', str(database['port'])) if 'port' in database else ())
+        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + ('--skip-column-names', '--batch')
+        + ('--execute', 'show schemas')
+    )
+
+    logger.debug('Querying for "all" MariaDB databases to dump')
+
+    show_output = execute_command_and_capture_output(show_command, environment=environment)
+
+    return tuple(
+        show_name
+        for show_name in show_output.strip().splitlines()
+        if show_name not in SYSTEM_DATABASE_NAMES
+    )
+
+
+SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
+
+
+def execute_dump_command(
+    database,
+    config,
+    username,
+    password,
+    dump_path,
+    database_names,
+    environment,
+    dry_run,
+    dry_run_label,
+):
+    '''
+    Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
+    pipe constructed from the given dump path and database name.
+
+    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
+    this is a dry run, then don't actually dump anything and return None.
+    '''
+    database_name = database['name']
+    dump_filename = dump.make_data_source_dump_filename(
+        dump_path,
+        database['name'],
+        database.get('hostname'),
+        database.get('port'),
+    )
+
+    if os.path.exists(dump_filename):
+        logger.warning(
+            f'Skipping duplicate dump of MariaDB database "{database_name}" to {dump_filename}'
         )
-        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
+        return None
+
+    mariadb_dump_command = tuple(
+        shlex.quote(part)
+        for part in shlex.split(database.get('mariadb_dump_command') or 'mariadb-dump')
+    )
+    extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
+    dump_command = (
+        mariadb_dump_command
+        + make_defaults_file_options(username, password, defaults_extra_filename)
+        + extra_options
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
@@ -146,15 +238,11 @@ def execute_dump_command(
         shlex.quote(part)
         for part in shlex.split(database.get('mariadb_dump_command') or 'mariadb-dump')
     )
-    defaults_file_descriptor = make_defaults_file_pipe(username, password)
+    extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
     dump_command = (
         mariadb_dump_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
-        )
-        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + make_defaults_file_options(username, password, defaults_extra_filename)
+        + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -346,20 +434,12 @@ def restore_data_source_dump(
     mariadb_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mariadb_command') or 'mariadb')
     )
-    defaults_file_descriptor = make_defaults_file_pipe(username, password)
+    extra_options, defaults_extra_filename = parse_extra_options(database.get('restore_options'))
     restore_command = (
         mariadb_restore_command
-        + (
-            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
-            if defaults_file_descriptor
-            else ()
-        )
+        + make_defaults_file_options(username, password, defaults_extra_filename)
+        + extra_options
         + ('--batch',)
-        + (
-            tuple(data_source['restore_options'].split(' '))
-            if 'restore_options' in data_source
-            else ()
-        )
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
