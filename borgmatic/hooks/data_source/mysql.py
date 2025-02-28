@@ -42,10 +42,16 @@ def database_names_to_dump(database, config, username, password, environment, dr
     mysql_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(username, password)
+    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
+        username, password
+    )
     show_command = (
         mysql_show_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -66,7 +72,15 @@ def database_names_to_dump(database, config, username, password, environment, dr
 
 
 def execute_dump_command(
-    database, config, username, password, dump_path, database_names, environment, dry_run, dry_run_label
+    database,
+    config,
+    username,
+    password,
+    dump_path,
+    database_names,
+    environment,
+    dry_run,
+    dry_run_label,
 ):
     '''
     Kick off a dump for the given MySQL/MariaDB database (provided as a configuration dict) to a
@@ -92,10 +106,16 @@ def execute_dump_command(
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(username, password)
+    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
+        username, password
+    )
     dump_command = (
         mysql_dump_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -156,10 +176,16 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        username = borgmatic.hooks.credential.parse.resolve_credential(database.get('username'), config)
-        password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
+        username = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('username'), config
+        )
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('password'), config
+        )
         environment = dict(os.environ)
-        dump_database_names = database_names_to_dump(database, config, username, password, environment, dry_run)
+        dump_database_names = database_names_to_dump(
+            database, config, username, password, environment, dry_run
+        )
 
         if not dump_database_names:
             if dry_run:
@@ -282,10 +308,16 @@ def restore_data_source_dump(
     mysql_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
-    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(username, password)
+    defaults_file_descriptor = borgmatic.hooks.data_source.mariadb.make_defaults_file_pipe(
+        username, password
+    )
     restore_command = (
         mysql_restore_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))

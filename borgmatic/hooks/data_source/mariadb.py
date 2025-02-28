@@ -48,8 +48,8 @@ def make_defaults_file_pipe(username=None, password=None):
         return None
 
     fields_message = ' and '.join(
-        field_name for field_name in
-        (
+        field_name
+        for field_name in (
             (f'username ({username})' if username is not None else None),
             ('password' if password is not None else None),
         )
@@ -58,9 +58,7 @@ def make_defaults_file_pipe(username=None, password=None):
     logger.debug(f'Writing database {fields_message} to defaults extra file pipe')
 
     read_file_descriptor, write_file_descriptor = os.pipe()
-    os.write(
-        write_file_descriptor, f'[client]\n{values}'.encode('utf-8')
-    )
+    os.write(write_file_descriptor, f'[client]\n{values}'.encode('utf-8'))
     os.close(write_file_descriptor)
 
     # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
@@ -88,7 +86,11 @@ def database_names_to_dump(database, config, username, password, environment, dr
     defaults_file_descriptor = make_defaults_file_pipe(username, password)
     show_command = (
         mariadb_show_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
@@ -109,7 +111,15 @@ def database_names_to_dump(database, config, username, password, environment, dr
 
 
 def execute_dump_command(
-    database, config, username, password, dump_path, database_names, environment, dry_run, dry_run_label
+    database,
+    config,
+    username,
+    password,
+    dump_path,
+    database_names,
+    environment,
+    dry_run,
+    dry_run_label,
 ):
     '''
     Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
@@ -139,7 +149,11 @@ def execute_dump_command(
     defaults_file_descriptor = make_defaults_file_pipe(username, password)
     dump_command = (
         mariadb_dump_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + (tuple(database['options'].split(' ')) if 'options' in database else ())
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
@@ -200,10 +214,16 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        username = borgmatic.hooks.credential.parse.resolve_credential(database.get('username'), config)
-        password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
+        username = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('username'), config
+        )
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('password'), config
+        )
         environment = dict(os.environ)
-        dump_database_names = database_names_to_dump(database, config, username, password, environment, dry_run)
+        dump_database_names = database_names_to_dump(
+            database, config, username, password, environment, dry_run
+        )
 
         if not dump_database_names:
             if dry_run:
@@ -329,7 +349,11 @@ def restore_data_source_dump(
     defaults_file_descriptor = make_defaults_file_pipe(username, password)
     restore_command = (
         mariadb_restore_command
-        + ((f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',) if defaults_file_descriptor else ())
+        + (
+            (f'--defaults-extra-file=/dev/fd/{defaults_file_descriptor}',)
+            if defaults_file_descriptor
+            else ()
+        )
         + ('--batch',)
         + (
             tuple(data_source['restore_options'].split(' '))
