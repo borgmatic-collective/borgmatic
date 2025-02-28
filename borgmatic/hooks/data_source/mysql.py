@@ -305,7 +305,7 @@ def restore_data_source_dump(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
     extra_options, defaults_extra_filename = (
-        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('restore_options'))
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(data_source.get('restore_options'))
     )
     restore_command = (
         mysql_restore_command

@@ -41,7 +41,7 @@ def parse_extra_options(extra_options):
     split_extra_options = tuple(shlex.split(extra_options)) if extra_options else ()
 
     if not split_extra_options:
-        return (split_extra_options, None)
+        return ((), None)
 
     match = DEFAULTS_EXTRA_FILE_FLAG_PATTERN.match(split_extra_options[0])
 
@@ -434,7 +434,7 @@ def restore_data_source_dump(
     mariadb_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mariadb_command') or 'mariadb')
     )
-    extra_options, defaults_extra_filename = parse_extra_options(database.get('restore_options'))
+    extra_options, defaults_extra_filename = parse_extra_options(data_source.get('restore_options'))
     restore_command = (
         mariadb_restore_command
         + make_defaults_file_options(username, password, defaults_extra_filename)
