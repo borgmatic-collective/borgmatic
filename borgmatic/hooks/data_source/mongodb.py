@@ -89,11 +89,35 @@ def dump_data_sources(
     return processes
 
 
+def make_password_config_file(password):
+    '''
+    Given a database password, write it as a MongoDB configuration file to an anonymous pipe and
+    return its filename. The idea is that this is a more secure way to transmit a password to
+    MongoDB than providing it directly on the command-line.
+
+    Do not use the returned value for multiple different command invocations. That will not work
+    because each pipe is "used up" once read.
+    '''
+    logger.debug('Writing MongoDB password to configuration file pipe')
+
+    read_file_descriptor, write_file_descriptor = os.pipe()
+    os.write(write_file_descriptor, f'password: {password}'.encode('utf-8'))
+    os.close(write_file_descriptor)
+
+    # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
+    # client child process to inherit the file descriptor.
+    os.set_inheritable(read_file_descriptor, True)
+
+    return f'/dev/fd/{read_file_descriptor}'
+
+
 def build_dump_command(database, config, dump_filename, dump_format):
     '''
     Return the mongodump command from a single database configuration.
     '''
     all_databases = database['name'] == 'all'
+
+    password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
 
     return (
         ('mongodump',)
@@ -112,18 +136,7 @@ def build_dump_command(database, config, dump_filename, dump_format):
             if 'username' in database
             else ()
         )
-        + (
-            (
-                '--password',
-                shlex.quote(
-                    borgmatic.hooks.credential.parse.resolve_credential(
-                        database['password'], config
-                    )
-                ),
-            )
-            if 'password' in database
-            else ()
-        )
+        + (('--config', make_password_config_file(password)) if password else ())
         + (
             ('--authenticationDatabase', shlex.quote(database['authentication_database']))
             if 'authentication_database' in database
@@ -251,7 +264,7 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
     if username:
         command.extend(('--username', username))
     if password:
-        command.extend(('--password', password))
+        command.extend(('--config', make_password_config_file(password)))
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:

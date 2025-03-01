@@ -3,6 +3,8 @@
  * #1003: In the Zabbix monitoring hook, support Zabbix 7.2's authentication changes.
  * #1009: Send database passwords to MariaDB and MySQL via anonymous pipe, which is more secure than
    using an environment variable.
+ * #1013: Send database passwords to MongoDB via anonymous pipe, which is more secure than using
+   "--password" on the command-line.
  * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
 
 1.9.12

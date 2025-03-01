@@ -127,6 +127,9 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('make_password_config_file').with_args('trustsome1').and_return(
+        '/dev/fd/99'
+    )
     flexmock(module.dump).should_receive('create_named_pipe_for_dump')
 
     flexmock(module).should_receive('execute_command').with_args(
@@ -134,8 +137,8 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
             'mongodump',
             '--username',
             'mongo',
-            '--password',
-            'trustsome1',
+            '--config',
+            '/dev/fd/99',
             '--authenticationDatabase',
             'admin',
             '--db',
@@ -243,6 +246,22 @@ def test_dump_data_sources_runs_mongodumpall_for_all_databases():
     ) == [process]
 
 
+def test_make_password_config_file_writes_password_to_pipe():
+    read_file_descriptor = 99
+    write_file_descriptor = flexmock()
+
+    flexmock(module.os).should_receive('pipe').and_return(
+        (read_file_descriptor, write_file_descriptor)
+    )
+    flexmock(module.os).should_receive('write').with_args(
+        write_file_descriptor, b'password: trustsome1'
+    ).once()
+    flexmock(module.os).should_receive('close')
+    flexmock(module.os).should_receive('set_inheritable')
+
+    assert module.make_password_config_file('trustsome1') == '/dev/fd/99'
+
+
 def test_build_dump_command_with_username_injection_attack_gets_escaped():
     database = {'name': 'test', 'username': 'bob; naughty-command'}
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -345,6 +364,9 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('make_password_config_file').with_args('trustsome1').and_return(
+        '/dev/fd/99'
+    )
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -352,8 +374,8 @@ def test_restore_data_source_dump_runs_mongorestore_with_username_and_password()
             '--drop',
             '--username',
             'mongo',
-            '--password',
-            'trustsome1',
+            '--config',
+            '/dev/fd/99',
             '--authenticationDatabase',
             'admin',
         ],
@@ -399,6 +421,9 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('make_password_config_file').with_args(
+        'clipassword'
+    ).and_return('/dev/fd/99')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -410,8 +435,8 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
             'cliport',
             '--username',
             'cliusername',
-            '--password',
-            'clipassword',
+            '--config',
+            '/dev/fd/99',
             '--authenticationDatabase',
             'admin',
         ],
@@ -457,6 +482,9 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
     ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('make_password_config_file').with_args(
+        'restorepass'
+    ).and_return('/dev/fd/99')
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         [
             'mongorestore',
@@ -468,8 +496,8 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
             'restoreport',
             '--username',
             'restoreuser',
-            '--password',
-            'restorepass',
+            '--config',
+            '/dev/fd/99',
             '--authenticationDatabase',
             'admin',
         ],
