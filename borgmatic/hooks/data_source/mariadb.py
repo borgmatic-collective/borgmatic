@@ -184,65 +184,6 @@ def execute_dump_command(
         mariadb_dump_command
         + make_defaults_file_options(username, password, defaults_extra_filename)
         + extra_options
-        + (('--host', database['hostname']) if 'hostname' in database else ())
-        + (('--port', str(database['port'])) if 'port' in database else ())
-        + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + ('--skip-column-names', '--batch')
-        + ('--execute', 'show schemas')
-    )
-
-    logger.debug('Querying for "all" MariaDB databases to dump')
-
-    show_output = execute_command_and_capture_output(show_command, environment=environment)
-
-    return tuple(
-        show_name
-        for show_name in show_output.strip().splitlines()
-        if show_name not in SYSTEM_DATABASE_NAMES
-    )
-
-
-def execute_dump_command(
-    database,
-    config,
-    username,
-    password,
-    dump_path,
-    database_names,
-    environment,
-    dry_run,
-    dry_run_label,
-):
-    '''
-    Kick off a dump for the given MariaDB database (provided as a configuration dict) to a named
-    pipe constructed from the given dump path and database name.
-
-    Return a subprocess.Popen instance for the dump process ready to spew to a named pipe. But if
-    this is a dry run, then don't actually dump anything and return None.
-    '''
-    database_name = database['name']
-    dump_filename = dump.make_data_source_dump_filename(
-        dump_path,
-        database['name'],
-        database.get('hostname'),
-        database.get('port'),
-    )
-
-    if os.path.exists(dump_filename):
-        logger.warning(
-            f'Skipping duplicate dump of MariaDB database "{database_name}" to {dump_filename}'
-        )
-        return None
-
-    mariadb_dump_command = tuple(
-        shlex.quote(part)
-        for part in shlex.split(database.get('mariadb_dump_command') or 'mariadb-dump')
-    )
-    extra_options, defaults_extra_filename = parse_extra_options(database.get('options'))
-    dump_command = (
-        mariadb_dump_command
-        + make_defaults_file_options(username, password, defaults_extra_filename)
-        + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
