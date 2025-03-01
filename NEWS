@@ -1,6 +1,8 @@
 1.9.13.dev0
  * #1001: Fix a ZFS error during snapshot cleanup.
  * #1003: In the Zabbix monitoring hook, support Zabbix 7.2's authentication changes.
+ * #1009: Send database passwords to MariaDB and MySQL via anonymous pipe, which is more secure than
+   using an environment variable.
  * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
 
 1.9.12
