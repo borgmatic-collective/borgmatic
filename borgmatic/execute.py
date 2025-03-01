@@ -266,8 +266,8 @@ def log_command(full_command, input_file=None, output_file=None, environment=Non
             width=MAX_LOGGED_COMMAND_LENGTH,
             placeholder=' ...',
         )
-        + (f" < {getattr(input_file, 'name', '')}" if input_file else '')
-        + (f" > {getattr(output_file, 'name', '')}" if output_file else '')
+        + (f" < {getattr(input_file, 'name', input_file)}" if input_file else '')
+        + (f" > {getattr(output_file, 'name', output_file)}" if output_file else '')
     )
 
 
@@ -315,8 +315,8 @@ def execute_command(
         shell=shell,
         env=environment,
         cwd=working_directory,
-        # Necessary for the passcommand credential hook to work.
-        close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
+        # Necessary for passing credentials via anonymous pipe.
+        close_fds=False,
     )
     if not run_to_completion:
         return process
@@ -333,6 +333,7 @@ def execute_command(
 
 def execute_command_and_capture_output(
     full_command,
+    input_file=None,
     capture_stderr=False,
     shell=False,
     environment=None,
@@ -342,28 +343,30 @@ def execute_command_and_capture_output(
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
-    output (stdout). If capture stderr is True, then capture and return stderr in addition to
-    stdout. If shell is True, execute the command within a shell. If an environment variables dict
-    is given, then pass it into the command. If a working directory is given, use that as the
-    present working directory when running the command. If a Borg local path is given, and the
-    command matches it (regardless of arguments), treat exit code 1 as a warning instead of an
-    error. But if Borg exit codes are given as a sequence of exit code configuration dicts, then use
-    that configuration to decide what's an error and what's a warning.
+    output (stdout). If an input file descriptor is given, then pipe it to the command's stdin. If
+    capture stderr is True, then capture and return stderr in addition to stdout. If shell is True,
+    execute the command within a shell. If an environment variables dict is given, then pass it into
+    the command. If a working directory is given, use that as the present working directory when
+    running the command. If a Borg local path is given, and the command matches it (regardless of
+    arguments), treat exit code 1 as a warning instead of an error. But if Borg exit codes are given
+    as a sequence of exit code configuration dicts, then use that configuration to decide what's an
+    error and what's a warning.
 
     Raise subprocesses.CalledProcessError if an error occurs while running the command.
     '''
-    log_command(full_command, environment=environment)
+    log_command(full_command, input_file, environment=environment)
     command = ' '.join(full_command) if shell else full_command
 
     try:
         output = subprocess.check_output(
             command,
+            stdin=input_file,
             stderr=subprocess.STDOUT if capture_stderr else None,
             shell=shell,
             env=environment,
             cwd=working_directory,
-            # Necessary for the passcommand credential hook to work.
-            close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
+            # Necessary for passing credentials via anonymous pipe.
+            close_fds=False,
         )
     except subprocess.CalledProcessError as error:
         if (
@@ -422,8 +425,8 @@ def execute_command_with_processes(
             shell=shell,
             env=environment,
             cwd=working_directory,
-            # Necessary for the passcommand credential hook to work.
-            close_fds=not bool((environment or {}).get('BORG_PASSPHRASE_FD')),
+            # Necessary for passing credentials via anonymous pipe.
+            close_fds=False,
         )
     except (subprocess.CalledProcessError, OSError):
         # Something has gone wrong. So vent each process' output buffer to prevent it from hanging.
