@@ -159,6 +159,7 @@ def dump_data_sources(
 
         for database_name in dump_database_names:
             dump_format = database.get('format', None if database_name == 'all' else 'custom')
+            compression = database.get('compression')
             default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
             dump_command = tuple(
                 shlex.quote(part)
@@ -199,6 +200,7 @@ def dump_data_sources(
                 )
                 + (('--no-owner',) if database.get('no_owner', False) else ())
                 + (('--format', shlex.quote(dump_format)) if dump_format else ())
+                + (('--compress', shlex.quote(str(compression))) if compression is not None else ())
                 + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
                 + (
                     tuple(shlex.quote(option) for option in database['options'].split(' '))

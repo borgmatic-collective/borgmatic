@@ -1040,6 +1040,17 @@ properties:
                         individual databases. See the pg_dump documentation for
                         more about formats.
                     example: directory
+                compression:
+                    type: ["string", "integer"]
+                    description: |
+                        Database dump compression level (integer) or method
+                        ("gzip", "lz4", "zstd", or "none") and optional
+                        colon-separated detail. Defaults to moderate "gzip" for
+                        "custom" and "directory" formats and no compression for
+                        the "plain" format. Compression is not supported for the
+                        "tar" format. Be aware that Borg does its own
+                        compression as well, so you may not need it in both
+                        places.
                 ssl_mode:
                     type: string
                     enum: ['disable', 'allow', 'prefer',

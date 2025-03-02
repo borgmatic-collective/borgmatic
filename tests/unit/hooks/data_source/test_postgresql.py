@@ -555,6 +555,100 @@ def test_dump_data_sources_runs_pg_dump_with_directory_format():
     )
 
 
+def test_dump_data_sources_runs_pg_dump_with_string_compression():
+    databases = [{'name': 'foo', 'compression': 'winrar'}]
+    processes = [flexmock()]
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/foo'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'pg_dump',
+            '--no-password',
+            '--clean',
+            '--if-exists',
+            '--format',
+            'custom',
+            '--compress',
+            'winrar',
+            'foo',
+            '>',
+            'databases/localhost/foo',
+        ),
+        shell=True,
+        environment={'PGSSLMODE': 'disable'},
+        run_to_completion=False,
+    ).and_return(processes[0]).once()
+
+    assert (
+        module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=False,
+        )
+        == processes
+    )
+
+
+def test_dump_data_sources_runs_pg_dump_with_integer_compression():
+    databases = [{'name': 'foo', 'compression': 0}]
+    processes = [flexmock()]
+    flexmock(module).should_receive('make_environment').and_return({'PGSSLMODE': 'disable'})
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',))
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/foo'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'pg_dump',
+            '--no-password',
+            '--clean',
+            '--if-exists',
+            '--format',
+            'custom',
+            '--compress',
+            '0',
+            'foo',
+            '>',
+            'databases/localhost/foo',
+        ),
+        shell=True,
+        environment={'PGSSLMODE': 'disable'},
+        run_to_completion=False,
+    ).and_return(processes[0]).once()
+
+    assert (
+        module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=False,
+        )
+        == processes
+    )
+
+
 def test_dump_data_sources_runs_pg_dump_with_options():
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
     process = flexmock()
