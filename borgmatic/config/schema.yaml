@@ -1051,6 +1051,7 @@ properties:
                         "tar" format. Be aware that Borg does its own
                         compression as well, so you may not need it in both
                         places.
+                    example: none
                 ssl_mode:
                     type: string
                     enum: ['disable', 'allow', 'prefer',

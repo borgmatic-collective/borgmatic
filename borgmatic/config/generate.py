@@ -41,6 +41,7 @@ def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
     '''
     schema_type = schema.get('type')
     example = schema.get('example')
+
     if example is not None:
         return example
 
