@@ -205,12 +205,12 @@ Volume Manager) and sending those snapshots to Borg for backup. LVM isn't
 itself a filesystem, but it can take snapshots at the layer right below your
 filesystem.
 
-Note that, due to borg being a file-level backup, this feature is really only
+Note that, due to Borg being a file-level backup, this feature is really only
 suitable for filesystems, not whole disk or raw images containing multiple
 filesystems (for example, if you're using a LVM volume to run a Windows
-KVM that contains an MBR, partitions, etc.)
+KVM that contains an MBR, partitions, etc.).
 
-In those cases, you can omit the `lvm:` option, and use borg's own support for
+In those cases, you can omit the `lvm:` option and use Borg's own support for
 [image backup](https://borgbackup.readthedocs.io/en/stable/deployment/image-backup.html).
 
 To use this feature, first you need one or more mounted LVM logical volumes.
