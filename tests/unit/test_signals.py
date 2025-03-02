@@ -26,7 +26,7 @@ def test_handle_signal_bails_on_recursion():
 def test_handle_signal_exits_on_sigterm():
     signal_number = module.signal.SIGTERM
     frame = flexmock(f_back=flexmock(f_code=flexmock(co_name='something')))
-    flexmock(module.os).should_receive('getpgrp').and_return(flexmock)
+    flexmock(module.os).should_receive('getpgrp').and_return(flexmock())
     flexmock(module.os).should_receive('killpg')
     flexmock(module.sys).should_receive('exit').with_args(
         module.EXIT_CODE_FROM_SIGNAL + signal_number
@@ -38,8 +38,10 @@ def test_handle_signal_exits_on_sigterm():
 def test_handle_signal_raises_on_sigint():
     signal_number = module.signal.SIGINT
     frame = flexmock(f_back=flexmock(f_code=flexmock(co_name='something')))
-    flexmock(module.os).should_receive('getpgrp').and_return(flexmock)
-    flexmock(module.os).should_receive('killpg')
+    process_group = flexmock()
+    flexmock(module.os).should_receive('getpgrp').and_return(process_group)
+    flexmock(module.os).should_receive('killpg').with_args(process_group, module.signal.SIGINT)
+    flexmock(module.os).should_receive('killpg').with_args(process_group, module.signal.SIGTERM)
     flexmock(module.sys).should_receive('exit').never()
 
     with pytest.raises(KeyboardInterrupt):

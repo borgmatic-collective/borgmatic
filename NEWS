@@ -6,6 +6,7 @@
    using an environment variable.
  * #1013: Send database passwords to MongoDB via anonymous pipe, which is more secure than using
    "--password" on the command-line.
+ * #1015: When ctrl-C is pressed, ensure Borg actually exits.
  * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
 
 1.9.12
