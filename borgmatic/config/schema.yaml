@@ -1210,6 +1210,20 @@ properties:
                         Defaults to the "password" option. Supports the
                         "{credential ...}" syntax.
                     example: trustsome1
+                tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and server. The default varies based on the
+                        MariaDB version.
+                    example: false
+                restore_tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and restore server. The default varies based on
+                        the MariaDB version.
+                    example: false
                 mariadb_dump_command:
                     type: string
                     description: |
@@ -1340,6 +1354,20 @@ properties:
                         Defaults to the "password" option. Supports the
                         "{credential ...}" syntax.
                     example: trustsome1
+                tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and server. The default varies based on the
+                        MySQL installation.
+                    example: false
+                restore_tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and restore server. The default varies based on
+                        the MySQL installation.
+                    example: false
                 mysql_dump_command:
                     type: string
                     description: |

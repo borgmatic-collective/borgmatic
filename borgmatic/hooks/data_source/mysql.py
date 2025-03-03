@@ -54,6 +54,8 @@ def database_names_to_dump(database, config, username, password, environment, dr
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--ssl',) if database.get('tls') is True else ())
+        + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
@@ -117,6 +119,8 @@ def execute_dump_command(
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--ssl',) if database.get('tls') is True else ())
+        + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--databases',)
         + database_names
         + ('--result-file', dump_filename)
@@ -286,6 +290,7 @@ def restore_data_source_dump(
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
+    tls = data_source.get('restore_tls', data_source.get('tls'))
     username = borgmatic.hooks.credential.parse.resolve_credential(
         (
             connection_params['username']
@@ -317,6 +322,8 @@ def restore_data_source_dump(
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
+        + (('--ssl',) if tls is True else ())
+        + (('--skip-ssl',) if tls is False else ())
     )
     environment = dict(os.environ)
 

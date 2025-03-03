@@ -8,6 +8,8 @@
    "--password" on the command-line!
  * #1015: When ctrl-C is pressed, more strongly encourage Borg to actually exit.
  * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
+ * Add "tls" options to the MariaDB and MySQL database hooks to enable or disable TLS encryption
+   between client and server.
 
 1.9.12
  * #1005: Fix the credential hooks to avoid using Python 3.12+ string features. Now borgmatic will
