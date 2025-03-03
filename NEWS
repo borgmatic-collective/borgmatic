@@ -1,4 +1,4 @@
-1.9.13.dev0
+1.9.13
  * #975: Add a "compression" option to the PostgreSQL database hook.
  * #1001: Fix a ZFS error during snapshot cleanup.
  * #1003: In the Zabbix monitoring hook, support Zabbix 7.2's authentication changes.
