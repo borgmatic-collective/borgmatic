@@ -1,3 +1,6 @@
+1.9.14.dev0
+ * #936: Clarify Zabbix monitoring hook documentation about creating items.
+
 1.9.13
  * #975: Add a "compression" option to the PostgreSQL database hook.
  * #1001: Fix a ZFS error during snapshot cleanup.

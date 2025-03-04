@@ -724,11 +724,19 @@ Authentication can be accomplished via `api_key` or both `username` and
 
 ### Items
 
-The item to be updated can be chosen by either declaring the `itemid` or both
-`host` and `key`. If all three are declared, only `itemid` is used.
+borgmatic writes its monitoring updates to a particular Zabbix item, which
+you'll need to create in advance. In the Zabbix web UI, [make a new item with a
+Type of "Zabbix
+trapper"](https://www.zabbix.com/documentation/current/en/manual/config/items/itemtypes/trapper)
+and a named Key. The "Type of information" for the item should be "Text", and
+"History" designates how much data you want to retain.
 
-Keep in mind that `host` is referring to the "Host name" on the Zabbix server
-and not the "Visual name".
+When configuring borgmatic with this item to be updated, you can either declare
+the `itemid` or both `host` and `key`. If all three are declared, only `itemid`
+is used.
+
+Keep in mind that `host` refers to the "Host name" on the Zabbix server and not
+the "Visual name".
 
 
 ## Scripting borgmatic
