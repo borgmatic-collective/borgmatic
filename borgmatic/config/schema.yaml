@@ -2279,6 +2279,12 @@ properties:
                     PagerDuty integration key used to notify PagerDuty when a
                     backup errors. Supports the "{credential ...}" syntax.
                 example: a177cad45bd374409f78906a810a3074
+            send_logs:
+                type: boolean
+                description: |
+                    Send borgmatic logs to PagerDuty when a backup errors.
+                    Defaults to true.
+                example: false
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
             account at https://www.pagerduty.com if you'd like to use this

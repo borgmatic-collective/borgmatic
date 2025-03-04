@@ -64,7 +64,7 @@ def get_handler(identifier):
 def format_buffered_logs_for_payload(identifier):
     '''
     Get the handler previously added to the root logger, and slurp buffered logs out of it to
-    send to Healthchecks.
+    send to the monitoring service.
     '''
     try:
         buffering_handler = get_handler(identifier)

@@ -1,4 +1,7 @@
 1.9.14.dev0
+ * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
+   incident UI. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook
  * #936: Clarify Zabbix monitoring hook documentation about creating items.
 
 1.9.13

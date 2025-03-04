@@ -292,6 +292,27 @@ If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
 
 
+### Sending logs
+
+<span class="minilink minilink-addedin">New in version 1.9.14</span> borgmatic
+logs are included in the payload data sent to PagerDuty. This means that
+(truncated) borgmatic logs, including error messages, show up in the PagerDuty
+incident UI and corresponding notification emails.
+
+You can customize the verbosity of the logs that are sent with borgmatic's
+`--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
+use. See `borgmatic create --help` for more information.
+
+If you don't want any logs sent, you can disable this feature by setting
+`send_logs` to `false`:
+
+```yaml
+pagerduty:
+    integration_key: a177cad45bd374409f78906a810a3074
+    send_logs: false
+```
+
+
 ## Pushover hook
 
 <span class="minilink minilink-addedin">New in version 1.9.2</span>
