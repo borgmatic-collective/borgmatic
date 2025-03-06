@@ -65,10 +65,12 @@ def make_defaults_file_options(username=None, password=None, defaults_extra_file
     Do not use the returned value for multiple different command invocations. That will not work
     because each pipe is "used up" once read.
     '''
+    escaped_password = None if password is None else password.replace('\\', '\\\\')
+
     values = '\n'.join(
         (
             (f'user={username}' if username is not None else ''),
-            (f"password='{password}'" if password is not None else ''),
+            (f'password="{escaped_password}"' if escaped_password is not None else ''),
         )
     ).strip()
 

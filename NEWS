@@ -3,6 +3,7 @@
    incident UI. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook
  * #936: Clarify Zabbix monitoring hook documentation about creating items.
+ * #1017: Fix a regression in which some MariaDB/MySQL passwords were not escaped correctly.
 
 1.9.13
  * #975: Add a "compression" option to the PostgreSQL database hook.
