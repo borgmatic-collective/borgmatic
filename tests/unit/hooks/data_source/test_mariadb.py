@@ -36,7 +36,7 @@ def test_make_defaults_file_option_with_username_and_password_writes_them_to_fil
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\nuser=root\npassword=trustsome1'
+        write_descriptor, b"[client]\nuser=root\npassword='trustsome1'"
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -68,7 +68,7 @@ def test_make_defaults_file_pipe_with_only_password_writes_it_to_file_descriptor
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'[client]\npassword=trustsome1'
+        write_descriptor, b"[client]\npassword='trustsome1'"
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
@@ -84,7 +84,7 @@ def test_make_defaults_file_option_with_defaults_extra_filename_includes_it_in_f
 
     flexmock(module.os).should_receive('pipe').and_return(read_descriptor, write_descriptor)
     flexmock(module.os).should_receive('write').with_args(
-        write_descriptor, b'!include extra.cnf\n[client]\nuser=root\npassword=trustsome1'
+        write_descriptor, b"!include extra.cnf\n[client]\nuser=root\npassword='trustsome1'"
     ).once()
     flexmock(module.os).should_receive('close')
     flexmock(module.os).should_receive('set_inheritable')
