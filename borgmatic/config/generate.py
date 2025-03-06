@@ -1,5 +1,6 @@
 import collections
 import io
+import itertools
 import os
 import re
 
@@ -24,20 +25,28 @@ def insert_newline_before_comment(config, field_name):
 def get_properties(schema):
     '''
     Given a schema dict, return its properties. But if it's got sub-schemas with multiple different
-    potential properties, returned their merged properties instead.
+    potential properties, returned their merged properties instead (interleaved so the first
+    properties of each sub-schema come first). The idea is that the user should see all possible
+    options even if they're not all possible together.
     '''
     if 'oneOf' in schema:
         return dict(
-            collections.ChainMap(*[sub_schema['properties'] for sub_schema in schema['oneOf']])
+            item
+            for item in itertools.chain(
+                *itertools.zip_longest(
+                    *[sub_schema['properties'].items() for sub_schema in schema['oneOf']]
+                )
+            )
+            if item is not None
         )
 
     return schema['properties']
 
 
-def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
+def schema_to_sample_configuration(schema, source_config, level=0, parent_is_sequence=False):
     '''
-    Given a loaded configuration schema, generate and return sample config for it. Include comments
-    for each option based on the schema "description".
+    Given a loaded configuration schema and a source configuration, generate and return sample
+    config for the schema. Include comments for each option based on the schema "description".
     '''
     schema_type = schema.get('type')
     example = schema.get('example')
@@ -47,19 +56,22 @@ def schema_to_sample_configuration(schema, level=0, parent_is_sequence=False):
 
     if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
         config = ruamel.yaml.comments.CommentedSeq(
-            [schema_to_sample_configuration(schema['items'], level, parent_is_sequence=True)]
+            [schema_to_sample_configuration(schema['items'], source_config, level, parent_is_sequence=True)]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif schema_type == 'object' or (isinstance(schema_type, list) and 'object' in schema_type):
+        if source_config and isinstance(source_config, list) and isinstance(source_config[0], dict):
+            source_config = dict(collections.ChainMap(*source_config))
+
         config = ruamel.yaml.comments.CommentedMap(
             [
-                (field_name, schema_to_sample_configuration(sub_schema, level + 1))
+                (field_name, schema_to_sample_configuration(sub_schema, source_config.get(field_name, {}), level + 1))
                 for field_name, sub_schema in get_properties(schema).items()
             ]
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
         add_comments_to_configuration_object(
-            config, schema, indent=indent, skip_first=parent_is_sequence
+            config, schema, source_config, indent=indent, skip_first=parent_is_sequence
         )
     else:
         raise ValueError(f'Schema at level {level} is unsupported: {schema}')
@@ -179,14 +191,19 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         return
 
 
-REQUIRED_KEYS = {'source_directories', 'repositories', 'keep_daily'}
+DEFAULT_KEYS = {'source_directories', 'repositories', 'keep_daily'}
 COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
 
-def add_comments_to_configuration_object(config, schema, indent=0, skip_first=False):
+def add_comments_to_configuration_object(config, schema, source_config, indent=0, skip_first=False):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
-    config mapping, before each field. Indent the comment the given number of characters.
+    configuration dict, putting them before each field. Indent the comment the given number of
+    characters.
+
+    And a sentinel for commenting out options that are neither in DEFAULT_KEYS nor the the given
+    source configuration dict. The idea is that any options used in the source configuration should
+    stay active in the generated configuration.
     '''
     for index, field_name in enumerate(config.keys()):
         if skip_first and index == 0:
@@ -195,10 +212,10 @@ def add_comments_to_configuration_object(config, schema, indent=0, skip_first=Fa
         field_schema = get_properties(schema).get(field_name, {})
         description = field_schema.get('description', '').strip()
 
-        # If this is an optional key, add an indicator to the comment flagging it to be commented
+        # If this isn't a default key, add an indicator to the comment flagging it to be commented
         # out from the sample configuration. This sentinel is consumed by downstream processing that
         # does the actual commenting out.
-        if field_name not in REQUIRED_KEYS:
+        if field_name not in DEFAULT_KEYS and field_name not in source_config:
             description = (
                 '\n'.join((description, COMMENTED_OUT_SENTINEL))
                 if description
@@ -218,21 +235,6 @@ def add_comments_to_configuration_object(config, schema, indent=0, skip_first=Fa
 RUAMEL_YAML_COMMENTS_INDEX = 1
 
 
-def remove_commented_out_sentinel(config, field_name):
-    '''
-    Given a configuration CommentedMap and a top-level field name in it, remove any "commented out"
-    sentinel found at the end of its YAML comments. This prevents the given field name from getting
-    commented out by downstream processing that consumes the sentinel.
-    '''
-    try:
-        last_comment_value = config.ca.items[field_name][RUAMEL_YAML_COMMENTS_INDEX][-1].value
-    except KeyError:
-        return
-
-    if last_comment_value == f'# {COMMENTED_OUT_SENTINEL}\n':
-        config.ca.items[field_name][RUAMEL_YAML_COMMENTS_INDEX].pop()
-
-
 def merge_source_configuration_into_destination(destination_config, source_config):
     '''
     Deep merge the given source configuration dict into the destination configuration CommentedMap,
@@ -247,12 +249,6 @@ def merge_source_configuration_into_destination(destination_config, source_confi
         return source_config
 
     for field_name, source_value in source_config.items():
-        # Since this key/value is from the source configuration, leave it uncommented and remove any
-        # sentinel that would cause it to get commented out.
-        remove_commented_out_sentinel(
-            ruamel.yaml.comments.CommentedMap(destination_config), field_name
-        )
-
         # This is a mapping. Recurse for this key/value.
         if isinstance(source_value, collections.abc.Mapping):
             destination_config[field_name] = merge_source_configuration_into_destination(
@@ -298,7 +294,7 @@ def generate_sample_configuration(
         normalize.normalize(source_filename, source_config)
 
     destination_config = merge_source_configuration_into_destination(
-        schema_to_sample_configuration(schema), source_config
+        schema_to_sample_configuration(schema, source_config), source_config
     )
 
     if dry_run:

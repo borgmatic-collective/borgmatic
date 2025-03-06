@@ -5,6 +5,7 @@ import shlex
 import sys
 
 import borgmatic.execute
+import borgmatic.logger
 
 logger = logging.getLogger(__name__)
 
@@ -44,54 +45,83 @@ def make_environment(current_environment, sys_module=sys):
     return environment
 
 
-def execute_hook(commands, umask, config_filename, description, dry_run, **context):
+def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_names=None):
     '''
-    Given a list of hook commands to execute, a umask to execute with (or None), a config filename,
-    a hook description, and whether this is a dry run, run the given commands. Or, don't run them
-    if this is a dry run.
+    Given a sequence of command hook dicts from configuration and one or more filters (before name,
+    after name, calling hook name, or a sequence of action names), filter down the command hooks to
+    just the ones that match the given filters.
+    '''
+    return tuple(
+        hook_config
+        for hook_config in command_hooks
+        for config_hook_names in (hook_config.get('hooks'),)
+        for config_action_names in (hook_config.get('when'),)
+        if before is None or hook_config.get('before') == before
+        if after is None or hook_config.get('after') == after
+        if hook_name is None or config_hook_names is None or hook_name in config_hook_names
+        if action_names is None or config_action_names is None or set(config_action_names or ()).intersection(set(action_names))
+    )
+
+
+def execute_hooks(command_hooks, umask, dry_run, **context):
+    '''
+    Given a sequence of command hook dicts from configuration, a umask to execute with (or None),
+    and whether this is a dry run, run the commands for each hook. Or don't run them if this is a
+    dry run.
 
     The context contains optional values interpolated by name into the hook commands.
 
-    Raise ValueError if the umask cannot be parsed.
+    Raise ValueError if the umask cannot be parsed or a hook is invalid.
     Raise subprocesses.CalledProcessError if an error occurs in a hook.
     '''
-    if not commands:
-        logger.debug(f'No commands to run for {description} hook')
-        return
+    borgmatic.logger.add_custom_log_levels()
 
     dry_run_label = ' (dry run; not actually running hooks)' if dry_run else ''
 
-    context['configuration_filename'] = config_filename
-    commands = [interpolate_context(description, command, context) for command in commands]
+    for hook_config in command_hooks:
+        commands = hook_config.get('run')
 
-    if len(commands) == 1:
-        logger.info(f'Running command for {description} hook{dry_run_label}')
-    else:
-        logger.info(
-            f'Running {len(commands)} commands for {description} hook{dry_run_label}',
-        )
+        if 'before' in hook_config:
+            description = f'before {hook_config.get("before")}'
+        elif 'after' in hook_config:
+            description = f'after {hook_config.get("after")}'
+        else:
+            raise ValueError('Invalid hook configuration: {hook_config}')
 
-    if umask:
-        parsed_umask = int(str(umask), 8)
-        logger.debug(f'Set hook umask to {oct(parsed_umask)}')
-        original_umask = os.umask(parsed_umask)
-    else:
-        original_umask = None
+        if not commands:
+            logger.debug(f'No commands to run for {description} hook')
+            return
 
-    try:
-        for command in commands:
-            if dry_run:
-                continue
+        commands = [interpolate_context(description, command, context) for command in commands]
 
-            borgmatic.execute.execute_command(
-                [command],
-                output_log_level=(logging.ERROR if description == 'on-error' else logging.WARNING),
-                shell=True,
-                environment=make_environment(os.environ),
+        if len(commands) == 1:
+            logger.info(f'Running command for {description} hook{dry_run_label}')
+        else:
+            logger.info(
+                f'Running {len(commands)} commands for {description} hook{dry_run_label}',
             )
-    finally:
-        if original_umask:
-            os.umask(original_umask)
+
+        if umask:
+            parsed_umask = int(str(umask), 8)
+            logger.debug(f'Setting hook umask to {oct(parsed_umask)}')
+            original_umask = os.umask(parsed_umask)
+        else:
+            original_umask = None
+
+        try:
+            for command in commands:
+                if dry_run:
+                    continue
+
+                borgmatic.execute.execute_command(
+                    [command],
+                    output_log_level=(logging.ERROR if hook_config.get('after') == 'error' else logging.ANSWER),
+                    shell=True,
+                    environment=make_environment(os.environ),
+                )
+        finally:
+            if original_umask:
+                os.umask(original_umask)
 
 
 def considered_soft_failure(error):

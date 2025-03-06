@@ -682,7 +682,6 @@ def run_check(
     config_filename,
     repository,
     config,
-    hook_context,
     local_borg_version,
     check_arguments,
     global_arguments,
@@ -698,15 +697,6 @@ def run_check(
         repository, check_arguments.repository
     ):
         return
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_check'),
-        config.get('umask'),
-        config_filename,
-        'pre-check',
-        global_arguments.dry_run,
-        **hook_context,
-    )
 
     logger.info('Running consistency checks')
 
@@ -772,12 +762,3 @@ def run_check(
                 borgmatic_runtime_directory,
             )
         write_check_time(make_check_time_path(config, repository_id, 'spot'))
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_check'),
-        config.get('umask'),
-        config_filename,
-        'post-check',
-        global_arguments.dry_run,
-        **hook_context,
-    )

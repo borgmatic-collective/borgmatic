@@ -170,38 +170,6 @@ def test_add_comments_to_configuration_object_with_skip_first_does_not_raise():
     module.add_comments_to_configuration_object(config, schema, skip_first=True)
 
 
-def test_remove_commented_out_sentinel_keeps_other_comments():
-    field_name = 'foo'
-    config = module.ruamel.yaml.comments.CommentedMap([(field_name, 33)])
-    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.\nCOMMENT_OUT')
-
-    module.remove_commented_out_sentinel(config, field_name)
-
-    comments = config.ca.items[field_name][module.RUAMEL_YAML_COMMENTS_INDEX]
-    assert len(comments) == 1
-    assert comments[0].value == '# Actual comment.\n'
-
-
-def test_remove_commented_out_sentinel_without_sentinel_keeps_other_comments():
-    field_name = 'foo'
-    config = module.ruamel.yaml.comments.CommentedMap([(field_name, 33)])
-    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.')
-
-    module.remove_commented_out_sentinel(config, field_name)
-
-    comments = config.ca.items[field_name][module.RUAMEL_YAML_COMMENTS_INDEX]
-    assert len(comments) == 1
-    assert comments[0].value == '# Actual comment.\n'
-
-
-def test_remove_commented_out_sentinel_on_unknown_field_does_not_raise():
-    field_name = 'foo'
-    config = module.ruamel.yaml.comments.CommentedMap([(field_name, 33)])
-    config.yaml_set_comment_before_after_key(key=field_name, before='Actual comment.')
-
-    module.remove_commented_out_sentinel(config, 'unknown')
-
-
 def test_generate_sample_configuration_does_not_raise():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml').and_return('')

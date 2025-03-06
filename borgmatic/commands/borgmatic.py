@@ -96,6 +96,13 @@ def run_configuration(config_filename, config, config_paths, arguments):
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
         )
 
+    command.execute_hooks(
+        command.filter_hooks(config.get('commands'), before='configuration', action_names=arguments.keys()),
+        config.get('umask'),
+        global_arguments.dry_run,
+        configuration_filename=config_filename,
+    )
+
     try:
         local_borg_version = borg_version.local_borg_version(config, local_path)
         logger.debug(f'Borg {local_borg_version}')
@@ -226,18 +233,26 @@ def run_configuration(config_filename, config, config_paths, arguments):
             encountered_error = error
             yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
 
+    if encountered_error:
+        command.execute_hooks(
+            command.filter_hooks(config.get('commands'), after='error', action_names=arguments.keys()),
+            config.get('umask'),
+            global_arguments.dry_run,
+            configuration_filename=config_filename,
+            repository=error_repository,
+            error=encountered_error,
+            output=getattr(encountered_error, 'output', ''),
+        )
+
+    command.execute_hooks(
+        command.filter_hooks(config.get('commands'), after='configuration', action_names=arguments.keys()),
+        config.get('umask'),
+        global_arguments.dry_run,
+        configuration_filename=config_filename,
+    )
+
     if encountered_error and using_primary_action:
         try:
-            command.execute_hook(
-                config.get('on_error'),
-                config.get('umask'),
-                config_filename,
-                'on-error',
-                global_arguments.dry_run,
-                repository=error_repository,
-                error=encountered_error,
-                output=getattr(encountered_error, 'output', ''),
-            )
             dispatch.call_hooks(
                 'ping_monitor',
                 config,
@@ -289,6 +304,7 @@ def run_actions(
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
     hook_context = {
+        'configuration_filename': config_filename,
         'repository_label': repository.get('label', ''),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
@@ -297,16 +313,24 @@ def run_actions(
     }
     skip_actions = set(get_skip_actions(config, arguments))
 
-    command.execute_hook(
-        config.get('before_actions'),
+    command.execute_hooks(
+        command.filter_hooks(config.get('commands'), before='repository', action_names=arguments.keys()),
         config.get('umask'),
-        config_filename,
-        'pre-actions',
         global_arguments.dry_run,
         **hook_context,
     )
 
     for action_name, action_arguments in arguments.items():
+        if action_name == 'global':
+            continue
+
+        command.execute_hooks(
+            command.filter_hooks(config.get('commands'), before='action', action_names=arguments.keys()),
+            config.get('umask'),
+            global_arguments.dry_run,
+            **hook_context,
+        )
+
         if action_name == 'repo-create' and action_name not in skip_actions:
             borgmatic.actions.repo_create.run_repo_create(
                 repository,
@@ -333,7 +357,6 @@ def run_actions(
                 repository,
                 config,
                 config_paths,
-                hook_context,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -346,7 +369,6 @@ def run_actions(
                 config_filename,
                 repository,
                 config,
-                hook_context,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -359,7 +381,6 @@ def run_actions(
                 config_filename,
                 repository,
                 config,
-                hook_context,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -373,7 +394,6 @@ def run_actions(
                     config_filename,
                     repository,
                     config,
-                    hook_context,
                     local_borg_version,
                     action_arguments,
                     global_arguments,
@@ -385,7 +405,6 @@ def run_actions(
                 config_filename,
                 repository,
                 config,
-                hook_context,
                 local_borg_version,
                 action_arguments,
                 global_arguments,
@@ -523,11 +542,16 @@ def run_actions(
                 remote_path,
             )
 
-    command.execute_hook(
-        config.get('after_actions'),
+        command.execute_hooks(
+            command.filter_hooks(config.get('commands'), after='action', action_names=arguments.keys()),
+            config.get('umask'),
+            global_arguments.dry_run,
+            **hook_context,
+        )
+
+    command.execute_hooks(
+        command.filter_hooks(config.get('commands'), after='repository', action_names=arguments.keys()),
         config.get('umask'),
-        config_filename,
-        'post-actions',
         global_arguments.dry_run,
         **hook_context,
     )
@@ -813,12 +837,11 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
     if 'create' in arguments:
         try:
             for config_filename, config in configs.items():
-                command.execute_hook(
-                    config.get('before_everything'),
+                command.execute_hooks(
+                    command.filter_hooks(config.get('commands'), before='everything', action_names=arguments.keys()),
                     config.get('umask'),
-                    config_filename,
-                    'pre-everything',
                     arguments['global'].dry_run,
+                    configuration_filename=config_filename,
                 )
         except (CalledProcessError, ValueError, OSError) as error:
             yield from log_error_records('Error running pre-everything hook', error)
@@ -865,12 +888,11 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
     if 'create' in arguments:
         try:
             for config_filename, config in configs.items():
-                command.execute_hook(
-                    config.get('after_everything'),
+                command.execute_hooks(
+                    command.filter_hooks(config.get('commands'), after='everything', action_names=arguments.keys()),
                     config.get('umask'),
-                    config_filename,
-                    'post-everything',
                     arguments['global'].dry_run,
+                    configuration_filename=config_filename,
                 )
         except (CalledProcessError, ValueError, OSError) as error:
             yield from log_error_records('Error running post-everything hook', error)

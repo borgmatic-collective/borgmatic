@@ -3,6 +3,7 @@ import importlib
 import logging
 import pkgutil
 
+import borgmatic.hooks.command
 import borgmatic.hooks.credential
 import borgmatic.hooks.data_source
 import borgmatic.hooks.monitoring
@@ -62,7 +63,20 @@ def call_hook(function_name, config, hook_name, *args, **kwargs):
 
     logger.debug(f'Calling {hook_name} hook function {function_name}')
 
-    return getattr(module, function_name)(hook_config, config, *args, **kwargs)
+    borgmatic.hooks.command.execute_hooks(
+        borgmatic.hooks.command.filter_hooks(config.get('commands'), before=function_name, hook_name=hook_name),
+        config.get('umask'),
+        dry_run=False,  # FIXME: Need to get this from somewhere.
+    )
+
+    try:
+        return getattr(module, function_name)(hook_config, config, *args, **kwargs)
+    finally:
+        borgmatic.hooks.command.execute_hooks(
+            borgmatic.hooks.command.filter_hooks(config.get('commands'), after=function_name, hook_name=hook_name),
+            config.get('umask'),
+            dry_run=False,  # FIXME: Need to get this from somewhere.
+        )
 
 
 def call_hooks(function_name, config, hook_type, *args, **kwargs):
