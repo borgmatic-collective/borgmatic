@@ -46,7 +46,7 @@ def test_make_defaults_file_option_with_username_and_password_writes_them_to_fil
     )
 
 
-def test_make_defaults_file_option_escapes_password_containing_backslash():
+def test_make_defaults_file_escapes_password_containing_backslash():
     read_descriptor = 99
     write_descriptor = flexmock()
 
