@@ -960,7 +960,6 @@ properties:
                               - configuration
                               - everything
                               - dump_data_sources
-                              - restore_data_source_dump
                           description: |
                               Name for the point in borgmatic's execution before
                               which the commands should be run (required if
@@ -975,8 +974,6 @@ properties:
                               files.
                                * "dump_data_sources" runs before each data
                               source is dumped.
-                               * "restore_data_source_dumps" runs before each
-                              data source is restored.
                           example: action
                       hooks:
                           type: array
@@ -985,9 +982,8 @@ properties:
                           description: |
                               List of names of other hooks that this command
                               hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for
-                              "dump_data_sources" and
-                              "restore_data_source_dumps" hooks.
+                              relevant type. Only supported for the
+                              "dump_data_sources" hook.
                           example: postgresql
                       when:
                           type: array
@@ -1016,10 +1012,10 @@ properties:
                                   - key
                                   - borg
                           description: |
-                              List of actions for which the commands will be run. Defaults to
-                              running for all actions. Ignored for "dump_data_sources" and
-                              "restore_data_source_dump", which by their nature only run for
-                              particular actions.
+                              List of actions for which the commands will be
+                              run. Defaults to running for all actions. Ignored
+                              for "dump_data_sources", which by its nature only
+                              runs for particular actions.
                           example: [create, prune, compact, check]
                       run:
                           type: array
@@ -1042,7 +1038,6 @@ properties:
                               - everything
                               - error
                               - dump_data_sources
-                              - restore_data_source_dump
                           description: |
                               Name for the point in borgmatic's execution after
                               which the commands should be run (required if
@@ -1058,8 +1053,6 @@ properties:
                                * "error" runs after an error occurs.
                                * "dump_data_sources" runs after each data
                               source is dumped.
-                               * "restore_data_source_dumps" runs after each
-                              data source is restored.
                           example: action
                       hooks:
                           type: array
@@ -1068,9 +1061,8 @@ properties:
                           description: |
                               List of names of other hooks that this command
                               hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for
-                              "dump_data_sources" and
-                              "restore_data_source_dumps" hooks.
+                              relevant type. Only supported for the
+                              "dump_data_sources" hook.
                           example: postgresql
                       when:
                           type: array
