@@ -98,7 +98,7 @@ def normalize_commands(config_filename, config):
         for preposition in ('before', 'after'):
             option_name = f'{preposition}_{"backup" if action_name == "create" else action_name}'
             commands = config.pop(option_name, None)
-            
+
             if not commands:
                 continue
 

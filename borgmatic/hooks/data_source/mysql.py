@@ -5,6 +5,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.command
 import borgmatic.hooks.credential.parse
 import borgmatic.hooks.data_source.mariadb
 from borgmatic.execute import (
@@ -169,71 +170,78 @@ def dump_data_sources(
     Also append the the parent directory of the database dumps to the given patterns list, so the
     dumps actually get backed up.
     '''
-    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
-    processes = []
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='dump_data_sources',
+        hook_name='mysql',
+        umask=config.get('umask'),
+        dry_run=dry_run,
+    ):
+        dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+        processes = []
 
-    logger.info(f'Dumping MySQL databases{dry_run_label}')
+        logger.info(f'Dumping MySQL databases{dry_run_label}')
 
-    for database in databases:
-        dump_path = make_dump_path(borgmatic_runtime_directory)
-        username = borgmatic.hooks.credential.parse.resolve_credential(
-            database.get('username'), config
-        )
-        password = borgmatic.hooks.credential.parse.resolve_credential(
-            database.get('password'), config
-        )
-        environment = dict(os.environ)
-        dump_database_names = database_names_to_dump(
-            database, config, username, password, environment, dry_run
-        )
+        for database in databases:
+            dump_path = make_dump_path(borgmatic_runtime_directory)
+            username = borgmatic.hooks.credential.parse.resolve_credential(
+                database.get('username'), config
+            )
+            password = borgmatic.hooks.credential.parse.resolve_credential(
+                database.get('password'), config
+            )
+            environment = dict(os.environ)
+            dump_database_names = database_names_to_dump(
+                database, config, username, password, environment, dry_run
+            )
 
-        if not dump_database_names:
-            if dry_run:
-                continue
+            if not dump_database_names:
+                if dry_run:
+                    continue
 
-            raise ValueError('Cannot find any MySQL databases to dump.')
+                raise ValueError('Cannot find any MySQL databases to dump.')
 
-        if database['name'] == 'all' and database.get('format'):
-            for dump_name in dump_database_names:
-                renamed_database = copy.copy(database)
-                renamed_database['name'] = dump_name
+            if database['name'] == 'all' and database.get('format'):
+                for dump_name in dump_database_names:
+                    renamed_database = copy.copy(database)
+                    renamed_database['name'] = dump_name
+                    processes.append(
+                        execute_dump_command(
+                            renamed_database,
+                            config,
+                            username,
+                            password,
+                            dump_path,
+                            (dump_name,),
+                            environment,
+                            dry_run,
+                            dry_run_label,
+                        )
+                    )
+            else:
                 processes.append(
                     execute_dump_command(
-                        renamed_database,
+                        database,
                         config,
                         username,
                         password,
                         dump_path,
-                        (dump_name,),
+                        dump_database_names,
                         environment,
                         dry_run,
                         dry_run_label,
                     )
                 )
-        else:
-            processes.append(
-                execute_dump_command(
-                    database,
-                    config,
-                    username,
-                    password,
-                    dump_path,
-                    dump_database_names,
-                    environment,
-                    dry_run,
-                    dry_run_label,
+
+        if not dry_run:
+            patterns.append(
+                borgmatic.borg.pattern.Pattern(
+                    os.path.join(borgmatic_runtime_directory, 'mysql_databases'),
+                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
                 )
             )
 
-    if not dry_run:
-        patterns.append(
-            borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'mysql_databases'),
-                source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
-        )
-
-    return [process for process in processes if process]
+        return [process for process in processes if process]
 
 
 def remove_data_source_dumps(

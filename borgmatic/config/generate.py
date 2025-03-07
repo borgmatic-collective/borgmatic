@@ -56,7 +56,11 @@ def schema_to_sample_configuration(schema, source_config, level=0, parent_is_seq
 
     if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
         config = ruamel.yaml.comments.CommentedSeq(
-            [schema_to_sample_configuration(schema['items'], source_config, level, parent_is_sequence=True)]
+            [
+                schema_to_sample_configuration(
+                    schema['items'], source_config, level, parent_is_sequence=True
+                )
+            ]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif schema_type == 'object' or (isinstance(schema_type, list) and 'object' in schema_type):
@@ -65,7 +69,12 @@ def schema_to_sample_configuration(schema, source_config, level=0, parent_is_seq
 
         config = ruamel.yaml.comments.CommentedMap(
             [
-                (field_name, schema_to_sample_configuration(sub_schema, source_config.get(field_name, {}), level + 1))
+                (
+                    field_name,
+                    schema_to_sample_configuration(
+                        sub_schema, source_config.get(field_name, {}), level + 1
+                    ),
+                )
                 for field_name, sub_schema in get_properties(schema).items()
             ]
         )

@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.command
 import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
@@ -48,45 +49,53 @@ def dump_data_sources(
     Also append the the parent directory of the database dumps to the given patterns list, so the
     dumps actually get backed up.
     '''
-    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='dump_data_sources',
+        hook_name='mongodb',
+        umask=config.get('umask'),
+        dry_run=dry_run,
+    ):
+        dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 
-    logger.info(f'Dumping MongoDB databases{dry_run_label}')
+        logger.info(f'Dumping MongoDB databases{dry_run_label}')
 
-    processes = []
-    for database in databases:
-        name = database['name']
-        dump_filename = dump.make_data_source_dump_filename(
-            make_dump_path(borgmatic_runtime_directory),
-            name,
-            database.get('hostname'),
-            database.get('port'),
-        )
-        dump_format = database.get('format', 'archive')
+        processes = []
 
-        logger.debug(
-            f'Dumping MongoDB database {name} to {dump_filename}{dry_run_label}',
-        )
-        if dry_run:
-            continue
-
-        command = build_dump_command(database, config, dump_filename, dump_format)
-
-        if dump_format == 'directory':
-            dump.create_parent_directory_for_dump(dump_filename)
-            execute_command(command, shell=True)
-        else:
-            dump.create_named_pipe_for_dump(dump_filename)
-            processes.append(execute_command(command, shell=True, run_to_completion=False))
-
-    if not dry_run:
-        patterns.append(
-            borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),
-                source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        for database in databases:
+            name = database['name']
+            dump_filename = dump.make_data_source_dump_filename(
+                make_dump_path(borgmatic_runtime_directory),
+                name,
+                database.get('hostname'),
+                database.get('port'),
             )
-        )
+            dump_format = database.get('format', 'archive')
 
-    return processes
+            logger.debug(
+                f'Dumping MongoDB database {name} to {dump_filename}{dry_run_label}',
+            )
+            if dry_run:
+                continue
+
+            command = build_dump_command(database, config, dump_filename, dump_format)
+
+            if dump_format == 'directory':
+                dump.create_parent_directory_for_dump(dump_filename)
+                execute_command(command, shell=True)
+            else:
+                dump.create_named_pipe_for_dump(dump_filename)
+                processes.append(execute_command(command, shell=True, run_to_completion=False))
+
+        if not dry_run:
+            patterns.append(
+                borgmatic.borg.pattern.Pattern(
+                    os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),
+                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
+                )
+            )
+
+        return processes
 
 
 def make_password_config_file(password):

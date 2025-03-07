@@ -97,7 +97,9 @@ def run_configuration(config_filename, config, config_paths, arguments):
         )
 
     command.execute_hooks(
-        command.filter_hooks(config.get('commands'), before='configuration', action_names=arguments.keys()),
+        command.filter_hooks(
+            config.get('commands'), before='configuration', action_names=arguments.keys()
+        ),
         config.get('umask'),
         global_arguments.dry_run,
         configuration_filename=config_filename,
@@ -235,7 +237,9 @@ def run_configuration(config_filename, config, config_paths, arguments):
 
     if encountered_error:
         command.execute_hooks(
-            command.filter_hooks(config.get('commands'), after='error', action_names=arguments.keys()),
+            command.filter_hooks(
+                config.get('commands'), after='error', action_names=arguments.keys()
+            ),
             config.get('umask'),
             global_arguments.dry_run,
             configuration_filename=config_filename,
@@ -245,7 +249,9 @@ def run_configuration(config_filename, config, config_paths, arguments):
         )
 
     command.execute_hooks(
-        command.filter_hooks(config.get('commands'), after='configuration', action_names=arguments.keys()),
+        command.filter_hooks(
+            config.get('commands'), after='configuration', action_names=arguments.keys()
+        ),
         config.get('umask'),
         global_arguments.dry_run,
         configuration_filename=config_filename,
@@ -314,7 +320,9 @@ def run_actions(
     skip_actions = set(get_skip_actions(config, arguments))
 
     command.execute_hooks(
-        command.filter_hooks(config.get('commands'), before='repository', action_names=arguments.keys()),
+        command.filter_hooks(
+            config.get('commands'), before='repository', action_names=arguments.keys()
+        ),
         config.get('umask'),
         global_arguments.dry_run,
         **hook_context,
@@ -325,7 +333,9 @@ def run_actions(
             continue
 
         command.execute_hooks(
-            command.filter_hooks(config.get('commands'), before='action', action_names=arguments.keys()),
+            command.filter_hooks(
+                config.get('commands'), before='action', action_names=arguments.keys()
+            ),
             config.get('umask'),
             global_arguments.dry_run,
             **hook_context,
@@ -543,14 +553,18 @@ def run_actions(
             )
 
         command.execute_hooks(
-            command.filter_hooks(config.get('commands'), after='action', action_names=arguments.keys()),
+            command.filter_hooks(
+                config.get('commands'), after='action', action_names=arguments.keys()
+            ),
             config.get('umask'),
             global_arguments.dry_run,
             **hook_context,
         )
 
     command.execute_hooks(
-        command.filter_hooks(config.get('commands'), after='repository', action_names=arguments.keys()),
+        command.filter_hooks(
+            config.get('commands'), after='repository', action_names=arguments.keys()
+        ),
         config.get('umask'),
         global_arguments.dry_run,
         **hook_context,
@@ -838,7 +852,9 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
         try:
             for config_filename, config in configs.items():
                 command.execute_hooks(
-                    command.filter_hooks(config.get('commands'), before='everything', action_names=arguments.keys()),
+                    command.filter_hooks(
+                        config.get('commands'), before='everything', action_names=arguments.keys()
+                    ),
                     config.get('umask'),
                     arguments['global'].dry_run,
                     configuration_filename=config_filename,
@@ -889,7 +905,9 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
         try:
             for config_filename, config in configs.items():
                 command.execute_hooks(
-                    command.filter_hooks(config.get('commands'), after='everything', action_names=arguments.keys()),
+                    command.filter_hooks(
+                        config.get('commands'), after='everything', action_names=arguments.keys()
+                    ),
                     config.get('umask'),
                     arguments['global'].dry_run,
                     configuration_filename=config_filename,

@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.command
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -47,55 +48,62 @@ def dump_data_sources(
     Also append the the parent directory of the database dumps to the given patterns list, so the
     dumps actually get backed up.
     '''
-    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
-    processes = []
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='dump_data_sources',
+        hook_name='sqlite',
+        umask=config.get('umask'),
+        dry_run=dry_run,
+    ):
+        dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+        processes = []
 
-    logger.info(f'Dumping SQLite databases{dry_run_label}')
+        logger.info(f'Dumping SQLite databases{dry_run_label}')
 
-    for database in databases:
-        database_path = database['path']
+        for database in databases:
+            database_path = database['path']
 
-        if database['name'] == 'all':
-            logger.warning('The "all" database name has no meaning for SQLite databases')
-        if not os.path.exists(database_path):
-            logger.warning(
-                f'No SQLite database at {database_path}; an empty database will be created and dumped'
+            if database['name'] == 'all':
+                logger.warning('The "all" database name has no meaning for SQLite databases')
+            if not os.path.exists(database_path):
+                logger.warning(
+                    f'No SQLite database at {database_path}; an empty database will be created and dumped'
+                )
+
+            dump_path = make_dump_path(borgmatic_runtime_directory)
+            dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
+
+            if os.path.exists(dump_filename):
+                logger.warning(
+                    f'Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
+                )
+                continue
+
+            command = (
+                'sqlite3',
+                shlex.quote(database_path),
+                '.dump',
+                '>',
+                shlex.quote(dump_filename),
+            )
+            logger.debug(
+                f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
+            )
+            if dry_run:
+                continue
+
+            dump.create_named_pipe_for_dump(dump_filename)
+            processes.append(execute_command(command, shell=True, run_to_completion=False))
+
+        if not dry_run:
+            patterns.append(
+                borgmatic.borg.pattern.Pattern(
+                    os.path.join(borgmatic_runtime_directory, 'sqlite_databases'),
+                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
+                )
             )
 
-        dump_path = make_dump_path(borgmatic_runtime_directory)
-        dump_filename = dump.make_data_source_dump_filename(dump_path, database['name'])
-
-        if os.path.exists(dump_filename):
-            logger.warning(
-                f'Skipping duplicate dump of SQLite database at {database_path} to {dump_filename}'
-            )
-            continue
-
-        command = (
-            'sqlite3',
-            shlex.quote(database_path),
-            '.dump',
-            '>',
-            shlex.quote(dump_filename),
-        )
-        logger.debug(
-            f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
-        )
-        if dry_run:
-            continue
-
-        dump.create_named_pipe_for_dump(dump_filename)
-        processes.append(execute_command(command, shell=True, run_to_completion=False))
-
-    if not dry_run:
-        patterns.append(
-            borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'sqlite_databases'),
-                source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
-        )
-
-    return processes
+        return processes
 
 
 def remove_data_source_dumps(

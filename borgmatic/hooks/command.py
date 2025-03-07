@@ -59,7 +59,9 @@ def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_
         if before is None or hook_config.get('before') == before
         if after is None or hook_config.get('after') == after
         if hook_name is None or config_hook_names is None or hook_name in config_hook_names
-        if action_names is None or config_action_names is None or set(config_action_names or ()).intersection(set(action_names))
+        if action_names is None
+        or config_action_names is None
+        or set(config_action_names or ()).intersection(set(action_names))
     )
 
 
@@ -115,13 +117,77 @@ def execute_hooks(command_hooks, umask, dry_run, **context):
 
                 borgmatic.execute.execute_command(
                     [command],
-                    output_log_level=(logging.ERROR if hook_config.get('after') == 'error' else logging.ANSWER),
+                    output_log_level=(
+                        logging.ERROR if hook_config.get('after') == 'error' else logging.ANSWER
+                    ),
                     shell=True,
                     environment=make_environment(os.environ),
                 )
         finally:
             if original_umask:
                 os.umask(original_umask)
+
+
+class Before_after_hooks:
+    '''
+    A Python context manager for executing command hooks both before and after the wrapped code.
+
+    Example use as a context manager:
+
+
+       with borgmatic.hooks.command.Before_after_hooks(
+           command_hooks=config.get('commands'),
+           before_after='do_stuff',
+           hook_name='myhook',
+           umask=config.get('umask'),
+           dry_run=dry_run,
+       ):
+            do()
+            some()
+            stuff()
+
+    With that context manager in place, "before" command hooks execute before the wrapped code runs,
+    and "after" command hooks execute after the wrapped code completes.
+    '''
+
+    def __init__(self, command_hooks, before_after, hook_name, umask, dry_run, **context):
+        '''
+        Given a sequence of command hook configuration dicts, the before/after name, the name of the
+        calling hook, a umask to run commands with, a dry run flag, and any context for the executed
+        commands, save those data points for use below.
+        '''
+        self.command_hooks = command_hooks
+        self.before_after = before_after
+        self.hook_name = hook_name
+        self.umask = umask
+        self.dry_run = dry_run
+        self.context = context
+
+    def __enter__(self):
+        '''
+        Run the configured "before" command hooks that match the initialized data points.
+        '''
+        execute_hooks(
+            borgmatic.hooks.command.filter_hooks(
+                self.command_hooks, before=self.before_after, hook_name=self.hook_name
+            ),
+            self.umask,
+            self.dry_run,
+            **self.context,
+        )
+
+    def __exit__(self, exception, value, traceback):
+        '''
+        Run the configured "after" command hooks that match the initialized data points.
+        '''
+        execute_hooks(
+            borgmatic.hooks.command.filter_hooks(
+                self.command_hooks, after=self.before_after, hook_name=self.hook_name
+            ),
+            self.umask,
+            self.dry_run,
+            **self.context,
+        )
 
 
 def considered_soft_failure(error):
