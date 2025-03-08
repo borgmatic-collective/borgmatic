@@ -138,9 +138,9 @@ class Before_after_hooks:
        with borgmatic.hooks.command.Before_after_hooks(
            command_hooks=config.get('commands'),
            before_after='do_stuff',
-           hook_name='myhook',
            umask=config.get('umask'),
            dry_run=dry_run,
+           hook_name='myhook',
        ):
             do()
             some()
@@ -150,17 +150,27 @@ class Before_after_hooks:
     and "after" command hooks execute after the wrapped code completes.
     '''
 
-    def __init__(self, command_hooks, before_after, hook_name, umask, dry_run, **context):
+    def __init__(
+        self,
+        command_hooks,
+        before_after,
+        umask,
+        dry_run,
+        hook_name=None,
+        action_names=None,
+        **context,
+    ):
         '''
-        Given a sequence of command hook configuration dicts, the before/after name, the name of the
-        calling hook, a umask to run commands with, a dry run flag, and any context for the executed
-        commands, save those data points for use below.
+        Given a sequence of command hook configuration dicts, the before/after name, a umask to run
+        commands with, a dry run flag, the name of the calling hook, a sequence of action names, and
+        any context for the executed commands, save those data points for use below.
         '''
         self.command_hooks = command_hooks
         self.before_after = before_after
-        self.hook_name = hook_name
         self.umask = umask
         self.dry_run = dry_run
+        self.hook_name = hook_name
+        self.action_names = action_names
         self.context = context
 
     def __enter__(self):
@@ -169,7 +179,10 @@ class Before_after_hooks:
         '''
         execute_hooks(
             borgmatic.hooks.command.filter_hooks(
-                self.command_hooks, before=self.before_after, hook_name=self.hook_name
+                self.command_hooks,
+                before=self.before_after,
+                hook_name=self.hook_name,
+                action_names=self.action_names,
             ),
             self.umask,
             self.dry_run,
@@ -182,7 +195,10 @@ class Before_after_hooks:
         '''
         execute_hooks(
             borgmatic.hooks.command.filter_hooks(
-                self.command_hooks, after=self.before_after, hook_name=self.hook_name
+                self.command_hooks,
+                after=self.before_after,
+                hook_name=self.hook_name,
+                action_names=self.action_names,
             ),
             self.umask,
             self.dry_run,

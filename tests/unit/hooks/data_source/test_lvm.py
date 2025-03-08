@@ -282,6 +282,9 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
 
 
 def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     logical_volumes = (
@@ -351,6 +354,9 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
 
 
 def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(())
@@ -373,6 +379,9 @@ def test_dump_data_sources_with_no_logical_volumes_skips_snapshots():
 
 
 def test_dump_data_sources_uses_snapshot_size_for_snapshot():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {'snapshot_size': '1000PB'}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     logical_volumes = (
@@ -448,6 +457,9 @@ def test_dump_data_sources_uses_snapshot_size_for_snapshot():
 
 
 def test_dump_data_sources_uses_custom_commands():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {
         'lvm': {
             'lsblk_command': '/usr/local/bin/lsblk',
@@ -534,6 +546,9 @@ def test_dump_data_sources_uses_custom_commands():
 
 
 def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(
@@ -585,6 +600,9 @@ def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patte
 
 
 def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {}}
     patterns = [Pattern('/hmm')]
     logical_volumes = (
@@ -655,6 +673,9 @@ def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained
 
 
 def test_dump_data_sources_with_missing_snapshot_errors():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     config = {'lvm': {}}
     patterns = [Pattern('/mnt/lvolume1/subdir'), Pattern('/mnt/lvolume2')]
     flexmock(module).should_receive('get_logical_volumes').and_return(

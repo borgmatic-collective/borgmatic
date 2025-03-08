@@ -52,9 +52,9 @@ def dump_data_sources(
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
         before_after='dump_data_sources',
-        hook_name='mongodb',
         umask=config.get('umask'),
         dry_run=dry_run,
+        hook_name='mongodb',
     ):
         dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
 

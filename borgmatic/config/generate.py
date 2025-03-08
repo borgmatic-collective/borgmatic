@@ -43,10 +43,13 @@ def get_properties(schema):
     return schema['properties']
 
 
-def schema_to_sample_configuration(schema, source_config, level=0, parent_is_sequence=False):
+def schema_to_sample_configuration(schema, source_config=None, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema and a source configuration, generate and return sample
     config for the schema. Include comments for each option based on the schema "description".
+
+    If a source config is given, walk it alongside the given schema so that both can be taken into
+    account when commenting out particular options in add_comments_to_configuration_object().
     '''
     schema_type = schema.get('type')
     example = schema.get('example')
@@ -72,7 +75,7 @@ def schema_to_sample_configuration(schema, source_config, level=0, parent_is_seq
                 (
                     field_name,
                     schema_to_sample_configuration(
-                        sub_schema, source_config.get(field_name, {}), level + 1
+                        sub_schema, (source_config or {}).get(field_name, {}), level + 1
                     ),
                 )
                 for field_name, sub_schema in get_properties(schema).items()
@@ -204,7 +207,9 @@ DEFAULT_KEYS = {'source_directories', 'repositories', 'keep_daily'}
 COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
 
-def add_comments_to_configuration_object(config, schema, source_config, indent=0, skip_first=False):
+def add_comments_to_configuration_object(
+    config, schema, source_config=None, indent=0, skip_first=False
+):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
     configuration dict, putting them before each field. Indent the comment the given number of
@@ -224,7 +229,9 @@ def add_comments_to_configuration_object(config, schema, source_config, indent=0
         # If this isn't a default key, add an indicator to the comment flagging it to be commented
         # out from the sample configuration. This sentinel is consumed by downstream processing that
         # does the actual commenting out.
-        if field_name not in DEFAULT_KEYS and field_name not in source_config:
+        if field_name not in DEFAULT_KEYS and (
+            source_config is None or field_name not in source_config
+        ):
             description = (
                 '\n'.join((description, COMMENTED_OUT_SENTINEL))
                 if description

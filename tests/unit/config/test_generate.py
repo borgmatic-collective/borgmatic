@@ -133,7 +133,6 @@ def test_schema_to_sample_configuration_with_unsupported_schema_raises():
 def test_merge_source_configuration_into_destination_inserts_map_fields():
     destination_config = {'foo': 'dest1', 'bar': 'dest2'}
     source_config = {'foo': 'source1', 'baz': 'source2'}
-    flexmock(module).should_receive('remove_commented_out_sentinel')
     flexmock(module).should_receive('ruamel.yaml.comments.CommentedSeq').replace_with(list)
 
     module.merge_source_configuration_into_destination(destination_config, source_config)
@@ -144,7 +143,6 @@ def test_merge_source_configuration_into_destination_inserts_map_fields():
 def test_merge_source_configuration_into_destination_inserts_nested_map_fields():
     destination_config = {'foo': {'first': 'dest1', 'second': 'dest2'}, 'bar': 'dest3'}
     source_config = {'foo': {'first': 'source1'}}
-    flexmock(module).should_receive('remove_commented_out_sentinel')
     flexmock(module).should_receive('ruamel.yaml.comments.CommentedSeq').replace_with(list)
 
     module.merge_source_configuration_into_destination(destination_config, source_config)
@@ -155,7 +153,6 @@ def test_merge_source_configuration_into_destination_inserts_nested_map_fields()
 def test_merge_source_configuration_into_destination_inserts_sequence_fields():
     destination_config = {'foo': ['dest1', 'dest2'], 'bar': ['dest3'], 'baz': ['dest4']}
     source_config = {'foo': ['source1'], 'bar': ['source2', 'source3']}
-    flexmock(module).should_receive('remove_commented_out_sentinel')
     flexmock(module).should_receive('ruamel.yaml.comments.CommentedSeq').replace_with(list)
 
     module.merge_source_configuration_into_destination(destination_config, source_config)
@@ -170,7 +167,6 @@ def test_merge_source_configuration_into_destination_inserts_sequence_fields():
 def test_merge_source_configuration_into_destination_inserts_sequence_of_maps():
     destination_config = {'foo': [{'first': 'dest1', 'second': 'dest2'}], 'bar': 'dest3'}
     source_config = {'foo': [{'first': 'source1'}, {'other': 'source2'}]}
-    flexmock(module).should_receive('remove_commented_out_sentinel')
     flexmock(module).should_receive('ruamel.yaml.comments.CommentedSeq').replace_with(list)
 
     module.merge_source_configuration_into_destination(destination_config, source_config)

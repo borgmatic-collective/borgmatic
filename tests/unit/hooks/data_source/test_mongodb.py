@@ -24,6 +24,9 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_runs_mongodump_for_each_database():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -53,6 +56,9 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
 
 
 def test_dump_data_sources_with_dry_run_skips_mongodump():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -75,6 +81,9 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
 
 def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -111,6 +120,9 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
 
 
 def test_dump_data_sources_runs_mongodump_with_username_and_password():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [
         {
             'name': 'foo',
@@ -162,6 +174,9 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
 
 
 def test_dump_data_sources_runs_mongodump_with_directory_format():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'foo', 'format': 'directory'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -189,6 +204,9 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
 
 
 def test_dump_data_sources_runs_mongodump_with_options():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -222,6 +240,9 @@ def test_dump_data_sources_runs_mongodump_with_options():
 
 
 def test_dump_data_sources_runs_mongodumpall_for_all_databases():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')

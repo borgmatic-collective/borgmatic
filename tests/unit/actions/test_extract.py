@@ -7,7 +7,6 @@ def test_run_extract_calls_hooks():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').and_return(True)
     flexmock(module.borgmatic.borg.extract).should_receive('extract_archive')
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     extract_arguments = flexmock(
         paths=flexmock(),
         progress=flexmock(),
@@ -22,7 +21,6 @@ def test_run_extract_calls_hooks():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         extract_arguments=extract_arguments,
         global_arguments=global_arguments,

@@ -41,9 +41,9 @@ def dump_data_sources(
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
         before_after='dump_data_sources',
-        hook_name='bootstrap',
         umask=config.get('umask'),
         dry_run=dry_run,
+        hook_name='bootstrap',
     ):
         borgmatic_manifest_path = os.path.join(
             borgmatic_runtime_directory, 'bootstrap', 'manifest.json'

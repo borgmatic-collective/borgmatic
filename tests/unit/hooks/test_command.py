@@ -48,43 +48,35 @@ def test_make_environment_with_pyinstaller_and_LD_LIBRARY_PATH_ORIG_copies_it_in
     ) == {'LD_LIBRARY_PATH_ORIG': '/lib/lib/lib', 'LD_LIBRARY_PATH': '/lib/lib/lib'}
 
 
-def test_execute_hook_invokes_each_command():
+LOGGING_ANSWER = flexmock()
+
+
+def test_execute_hooks_invokes_each_hook_and_command():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module).should_receive('interpolate_context').replace_with(
         lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
-    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        [':'],
-        output_log_level=logging.WARNING,
-        shell=True,
-        environment={},
-    ).once()
 
-    module.execute_hook([':'], None, 'config.yaml', 'pre-backup', dry_run=False)
+    for command in ('foo', 'bar', 'baz'):
+        flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+            [command],
+            output_log_level=LOGGING_ANSWER,
+            shell=True,
+            environment={},
+        ).once()
 
-
-def test_execute_hook_with_multiple_commands_invokes_each_command():
-    flexmock(module).should_receive('interpolate_context').replace_with(
-        lambda hook_description, command, context: command
+    module.execute_hooks(
+        [{'before': 'create', 'run': ['foo']}, {'before': 'create', 'run': ['bar', 'baz']}],
+        umask=None,
+        dry_run=False,
     )
-    flexmock(module).should_receive('make_environment').and_return({})
-    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        [':'],
-        output_log_level=logging.WARNING,
-        shell=True,
-        environment={},
-    ).once()
-    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        ['true'],
-        output_log_level=logging.WARNING,
-        shell=True,
-        environment={},
-    ).once()
-
-    module.execute_hook([':', 'true'], None, 'config.yaml', 'pre-backup', dry_run=False)
 
 
-def test_execute_hook_with_umask_sets_that_umask():
+def test_execute_hooks_with_umask_sets_that_umask():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module).should_receive('interpolate_context').replace_with(
         lambda hook_description, command, context: command
     )
@@ -92,42 +84,46 @@ def test_execute_hook_with_umask_sets_that_umask():
     flexmock(module.os).should_receive('umask').with_args(0o22).once()
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        [':'],
-        output_log_level=logging.WARNING,
+        ['foo'],
+        output_log_level=logging.ANSWER,
         shell=True,
         environment={},
     )
 
-    module.execute_hook([':'], 77, 'config.yaml', 'pre-backup', dry_run=False)
+    module.execute_hooks([{'before': 'create', 'run': ['foo']}], umask=77, dry_run=False)
 
 
-def test_execute_hook_with_dry_run_skips_commands():
+def test_execute_hooks_with_dry_run_skips_commands():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module).should_receive('interpolate_context').replace_with(
         lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
-    module.execute_hook([':', 'true'], None, 'config.yaml', 'pre-backup', dry_run=True)
+    module.execute_hooks([{'before': 'create', 'run': ['foo']}], umask=None, dry_run=True)
 
 
-def test_execute_hook_with_empty_commands_does_not_raise():
-    module.execute_hook([], None, 'config.yaml', 'post-backup', dry_run=False)
+def test_execute_hooks_with_empty_commands_does_not_raise():
+    module.execute_hooks([], umask=None, dry_run=True)
 
 
-def test_execute_hook_on_error_logs_as_error():
+def test_execute_hooks_with_error_logs_as_error():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module).should_receive('interpolate_context').replace_with(
         lambda hook_description, command, context: command
     )
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
-        [':'],
+        ['foo'],
         output_log_level=logging.ERROR,
         shell=True,
         environment={},
     ).once()
 
-    module.execute_hook([':'], None, 'config.yaml', 'on-error', dry_run=False)
+    module.execute_hooks([{'after': 'error', 'run': ['foo']}], umask=None, dry_run=False)
 
 
 def test_considered_soft_failure_treats_soft_fail_exit_code_as_soft_fail():

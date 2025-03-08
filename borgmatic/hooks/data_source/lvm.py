@@ -201,9 +201,9 @@ def dump_data_sources(
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
         function_name='dump_data_sources',
-        hook_name='lvm',
         umask=config.get('umask'),
         dry_run=dry_run,
+        hook_name='lvm',
     ):
         dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
         logger.info(f'Snapshotting LVM logical volumes{dry_run_label}')

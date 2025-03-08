@@ -134,6 +134,7 @@ def normalize_commands(config_filename, config):
             config.setdefault('commands', []).append(
                 {
                     preposition: 'everything',
+                    'when': ['create'],
                     'run': commands,
                 }
             )
