@@ -225,15 +225,24 @@ def test_expand_patterns_considers_none_as_no_patterns():
     assert module.expand_patterns(None) == ()
 
 
-def test_expand_patterns_only_considers_root_patterns():
-    flexmock(module).should_receive('expand_directory').with_args('~/foo', None).and_return(
-        ['/root/foo']
+def test_expand_patterns_expands_tildes_and_globs_in_root_patterns():
+    flexmock(module.os.path).should_receive('expanduser').never()
+    flexmock(module).should_receive('expand_directory').and_return(
+        ['/root/foo/one', '/root/foo/two']
     )
-    flexmock(module).should_receive('expand_directory').with_args('bar*', None).never()
 
-    paths = module.expand_patterns((Pattern('~/foo'), Pattern('bar*', Pattern_type.INCLUDE)))
+    paths = module.expand_patterns((Pattern('~/foo/*'),))
 
-    assert paths == (Pattern('/root/foo'), Pattern('bar*', Pattern_type.INCLUDE))
+    assert paths == (Pattern('/root/foo/one'), Pattern('/root/foo/two'))
+
+
+def test_expand_patterns_expands_only_tildes_in_non_root_patterns():
+    flexmock(module).should_receive('expand_directory').never()
+    flexmock(module.os.path).should_receive('expanduser').and_return('/root/bar/*')
+
+    paths = module.expand_patterns((Pattern('~/bar/*', Pattern_type.INCLUDE),))
+
+    assert paths == (Pattern('/root/bar/*', Pattern_type.INCLUDE),)
 
 
 def test_device_map_patterns_gives_device_id_per_path():
