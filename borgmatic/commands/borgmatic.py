@@ -830,7 +830,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 configuration_filename=config_filename,
             )
     except (CalledProcessError, ValueError, OSError) as error:
-        yield from log_error_records('Error running pre-everything hook', error)
+        yield from log_error_records('Error running before everything hook', error)
         return
 
     # Execute the actions corresponding to each configuration file.
@@ -882,7 +882,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 configuration_filename=config_filename,
             )
     except (CalledProcessError, ValueError, OSError) as error:
-        yield from log_error_records('Error running post-everything hook', error)
+        yield from log_error_records('Error running after everything hook', error)
 
 
 def exit_with_help_link():  # pragma: no cover

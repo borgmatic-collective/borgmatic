@@ -262,7 +262,7 @@ def test_add_comments_to_configuration_sequence_of_maps_without_description_does
     module.add_comments_to_configuration_sequence(config, schema)
 
 
-def test_add_comments_to_configuration_object_does_not_raise():
+def test_add_comments_to_configuration_comments_out_non_default_options():
     # Ensure that it can deal with fields both in the schema and missing from the schema.
     config = module.ruamel.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
     schema = {
@@ -272,12 +272,43 @@ def test_add_comments_to_configuration_object_does_not_raise():
 
     module.add_comments_to_configuration_object(config, schema)
 
+    assert 'COMMENT_OUT' in config.ca.items['foo'][1][-1]._value
+    assert 'COMMENT_OUT' in config.ca.items['bar'][1][-1]._value
+    assert 'baz' not in config.ca.items
 
-def test_add_comments_to_configuration_object_with_skip_first_does_not_raise():
-    config = module.ruamel.yaml.comments.CommentedMap([('foo', 33)])
-    schema = {'type': 'object', 'properties': {'foo': {'description': 'Foo'}}}
+
+def test_add_comments_to_configuration_comments_out_non_source_config_options():
+    # Ensure that it can deal with fields both in the schema and missing from the schema.
+    config = module.ruamel.yaml.comments.CommentedMap(
+        [('repositories', 33), ('bar', 44), ('baz', 55)]
+    )
+    schema = {
+        'type': 'object',
+        'properties': {
+            'repositories': {'description': 'repositories'},
+            'bar': {'description': 'Bar'},
+        },
+    }
+
+    module.add_comments_to_configuration_object(config, schema)
+
+    assert 'repositories' in config.ca.items
+    assert 'COMMENT_OUT' in config.ca.items['bar'][1][-1]._value
+    assert 'baz' not in config.ca.items
+
+
+def test_add_comments_to_configuration_object_with_skip_first_does_not_comment_out_first_option():
+    config = module.ruamel.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
+    schema = {
+        'type': 'object',
+        'properties': {'foo': {'description': 'Foo'}, 'bar': {'description': 'Bar'}},
+    }
 
     module.add_comments_to_configuration_object(config, schema, skip_first=True)
+
+    assert 'foo' not in config.ca.items
+    assert 'COMMENT_OUT' in config.ca.items['bar'][1][-1]._value
+    assert 'baz' not in config.ca.items
 
 
 def test_generate_sample_configuration_does_not_raise():
