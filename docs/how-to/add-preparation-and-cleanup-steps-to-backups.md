@@ -7,12 +7,13 @@ eleventyNavigation:
 ---
 ## Preparation and cleanup hooks
 
-If you find yourself performing preparation tasks before your backup runs, or
-cleanup work afterwards, borgmatic hooks may be of interest. Hooks are shell
-commands that borgmatic executes for you at various points as it runs, and
-they're configured in the `hooks` section of your configuration file. But if
-you're looking to backup a database, it's probably easier to use the [database
-backup
+If you find yourself performing preparation tasks before your backup runs or
+cleanup work afterwards, borgmatic command hooks may be of interest. These are
+custom shell commands you can configure borgmatic to execute at various points
+as it runs.
+
+But if you're looking to backup a database, it's probably easier to use the
+[database backup
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.
 
