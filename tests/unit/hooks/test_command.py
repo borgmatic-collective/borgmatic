@@ -1,6 +1,7 @@
 import logging
 import subprocess
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic.hooks import command as module
@@ -46,6 +47,245 @@ def test_make_environment_with_pyinstaller_and_LD_LIBRARY_PATH_ORIG_copies_it_in
     assert module.make_environment(
         {'LD_LIBRARY_PATH_ORIG': '/lib/lib/lib'}, sys_module=flexmock(frozen=True, _MEIPASS='yup')
     ) == {'LD_LIBRARY_PATH_ORIG': '/lib/lib/lib', 'LD_LIBRARY_PATH': '/lib/lib/lib'}
+
+
+@pytest.mark.parametrize(
+    'hooks,filters,expected_hooks',
+    (
+        (
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'after': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'repository',
+                    'run': ['baz'],
+                },
+            ),
+            {},
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'after': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'repository',
+                    'run': ['baz'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'after': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'repository',
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'before': 'action',
+            },
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'after': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'after': 'repository',
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'after': 'action',
+            },
+            (
+                {
+                    'after': 'action',
+                    'run': ['foo'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'hooks': ['postgresql'],
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'dump_data_sources',
+                    'hooks': ['lvm'],
+                    'run': ['bar'],
+                },
+                {
+                    'after': 'dump_data_sources',
+                    'hooks': ['lvm'],
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'before': 'dump_data_sources',
+                'hook_name': 'lvm',
+            },
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'hooks': ['lvm'],
+                    'run': ['bar'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'dump_data_sources',
+                    'run': ['bar'],
+                },
+                {
+                    'after': 'dump_data_sources',
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'before': 'dump_data_sources',
+                'hook_name': 'lvm',
+            },
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'dump_data_sources',
+                    'run': ['bar'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'hooks': ['postgresql', 'zfs', 'lvm'],
+                    'run': ['foo'],
+                },
+            ),
+            {
+                'before': 'dump_data_sources',
+                'hook_name': 'lvm',
+            },
+            (
+                {
+                    'before': 'dump_data_sources',
+                    'hooks': ['postgresql', 'zfs', 'lvm'],
+                    'run': ['foo'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'action',
+                    'when': ['create'],
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'action',
+                    'when': ['prune'],
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'action',
+                    'when': ['compact'],
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'before': 'action',
+                'action_names': ['create', 'compact', 'extract'],
+            },
+            (
+                {
+                    'before': 'action',
+                    'when': ['create'],
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'action',
+                    'when': ['compact'],
+                    'run': ['baz'],
+                },
+            ),
+        ),
+        (
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'action',
+                    'run': ['baz'],
+                },
+            ),
+            {
+                'before': 'action',
+                'action_names': ['create', 'compact', 'extract'],
+            },
+            (
+                {
+                    'before': 'action',
+                    'run': ['foo'],
+                },
+                {
+                    'before': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'before': 'action',
+                    'run': ['baz'],
+                },
+            ),
+        ),
+    ),
+)
+def test_filter_hooks(hooks, filters, expected_hooks):
+    assert module.filter_hooks(hooks, **filters) == expected_hooks
 
 
 LOGGING_ANSWER = flexmock()
@@ -124,6 +364,79 @@ def test_execute_hooks_with_error_logs_as_error():
     ).once()
 
     module.execute_hooks([{'after': 'error', 'run': ['foo']}], umask=None, dry_run=False)
+
+
+def test_execute_hooks_with_before_or_after_raises():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module).should_receive('interpolate_context').never()
+    flexmock(module).should_receive('make_environment').never()
+    flexmock(module.borgmatic.execute).should_receive('execute_command').never()
+
+    with pytest.raises(ValueError):
+        module.execute_hooks(
+            [
+                {'erstwhile': 'create', 'run': ['foo']},
+                {'erstwhile': 'create', 'run': ['bar', 'baz']},
+            ],
+            umask=None,
+            dry_run=False,
+        )
+
+
+def test_execute_hooks_without_commands_to_run_does_not_raise():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module).should_receive('interpolate_context').replace_with(
+        lambda hook_description, command, context: command
+    )
+    flexmock(module).should_receive('make_environment').and_return({})
+
+    for command in ('foo', 'bar'):
+        flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+            [command],
+            output_log_level=LOGGING_ANSWER,
+            shell=True,
+            environment={},
+        ).once()
+
+    module.execute_hooks(
+        [{'before': 'create', 'run': []}, {'before': 'create', 'run': ['foo', 'bar']}],
+        umask=None,
+        dry_run=False,
+    )
+
+
+def test_before_after_hooks_calls_command_hooks():
+    commands = [
+        {'before': 'repository', 'run': ['foo', 'bar']},
+        {'after': 'repository', 'run': ['baz']},
+    ]
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        before='action',
+        hook_name='myhook',
+        action_names=['create'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        after='action',
+        hook_name='myhook',
+        action_names=['create'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('execute_hooks').twice()
+
+    with module.Before_after_hooks(
+        command_hooks=commands,
+        before_after='action',
+        umask=1234,
+        dry_run=False,
+        hook_name='myhook',
+        action_names=['create'],
+        context1='stuff',
+        context2='such',
+    ):
+        pass
 
 
 def test_considered_soft_failure_treats_soft_fail_exit_code_as_soft_fail():

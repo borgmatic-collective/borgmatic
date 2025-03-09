@@ -88,11 +88,11 @@ def execute_hooks(command_hooks, umask, dry_run, **context):
         elif 'after' in hook_config:
             description = f'after {hook_config.get("after")}'
         else:
-            raise ValueError('Invalid hook configuration: {hook_config}')
+            raise ValueError(f'Invalid hook configuration: {hook_config}')
 
         if not commands:
             logger.debug(f'No commands to run for {description} hook')
-            return
+            continue
 
         commands = [interpolate_context(description, command, context) for command in commands]
 
@@ -133,7 +133,6 @@ class Before_after_hooks:
     A Python context manager for executing command hooks both before and after the wrapped code.
 
     Example use as a context manager:
-
 
        with borgmatic.hooks.command.Before_after_hooks(
            command_hooks=config.get('commands'),

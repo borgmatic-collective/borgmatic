@@ -16,6 +16,116 @@ def test_insert_newline_before_comment_does_not_raise():
     module.insert_newline_before_comment(config, field_name)
 
 
+def test_schema_to_sample_configuration_comments_out_non_default_options():
+    schema = {
+        'type': 'object',
+        'properties': dict(
+            [
+                ('field1', {'example': 'Example 1'}),
+                ('field2', {'example': 'Example 2'}),
+                ('source_directories', {'example': 'Example 3'}),
+            ]
+        ),
+    }
+
+    config = module.schema_to_sample_configuration(schema)
+
+    assert config == dict(
+        [
+            ('field1', 'Example 1'),
+            ('field2', 'Example 2'),
+            ('source_directories', 'Example 3'),
+        ]
+    )
+    assert 'COMMENT_OUT' in config.ca.items['field1'][1][-1]._value
+    assert 'COMMENT_OUT' in config.ca.items['field2'][1][-1]._value
+    assert 'source_directories' not in config.ca.items
+
+
+def test_schema_to_sample_configuration_comments_out_non_source_config_options():
+    schema = {
+        'type': 'object',
+        'properties': dict(
+            [
+                ('field1', {'example': 'Example 1'}),
+                ('field2', {'example': 'Example 2'}),
+                ('field3', {'example': 'Example 3'}),
+            ]
+        ),
+    }
+    source_config = {'field3': 'value'}
+
+    config = module.schema_to_sample_configuration(schema, source_config)
+
+    assert config == dict(
+        [
+            ('field1', 'Example 1'),
+            ('field2', 'Example 2'),
+            ('field3', 'Example 3'),
+        ]
+    )
+    assert 'COMMENT_OUT' in config.ca.items['field1'][1][-1]._value
+    assert 'COMMENT_OUT' in config.ca.items['field2'][1][-1]._value
+    assert 'field3' not in config.ca.items
+
+
+def test_schema_to_sample_configuration_comments_out_non_default_options_in_sequence_of_maps():
+    schema = {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'properties': dict(
+                [
+                    ('field1', {'example': 'Example 1'}),
+                    ('field2', {'example': 'Example 2'}),
+                    ('source_directories', {'example': 'Example 3'}),
+                ]
+            ),
+        },
+    }
+
+    config = module.schema_to_sample_configuration(schema)
+
+    assert config == [
+        dict(
+            [('field1', 'Example 1'), ('field2', 'Example 2'), ('source_directories', 'Example 3')]
+        )
+    ]
+
+    # The first field in a sequence does not get commented.
+    assert 'field1' not in config[0].ca.items
+    assert 'COMMENT_OUT' in config[0].ca.items['field2'][1][-1]._value
+    assert 'source_directories' not in config[0].ca.items
+
+
+def test_schema_to_sample_configuration_comments_out_non_source_config_options_in_sequence_of_maps():
+    schema = {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'properties': dict(
+                [
+                    ('field1', {'example': 'Example 1'}),
+                    ('field2', {'example': 'Example 2'}),
+                    ('field3', {'example': 'Example 3'}),
+                ]
+            ),
+        },
+    }
+    source_config = [{'field3': 'value'}]
+
+    config = module.schema_to_sample_configuration(schema, source_config)
+
+    assert config == [
+        dict([('field1', 'Example 1'), ('field2', 'Example 2'), ('field3', 'Example 3')])
+    ]
+
+    # The first field in a sequence does not get commented.
+    assert 'field1' not in config[0].ca.items
+    assert 'COMMENT_OUT' in config[0].ca.items['field2'][1][-1]._value
+    assert 'field3' not in config[0].ca.items
+
+
 def test_comment_out_line_skips_blank_line():
     line = '    \n'
 

@@ -58,7 +58,7 @@ def normalize_sections(config_filename, config):
     return []
 
 
-def make_command_hook_deprecation_log(config_filename, option_name):
+def make_command_hook_deprecation_log(config_filename, option_name):  # pragma: no cover
     '''
     Given a configuration filename and the name of a configuration option, return a deprecation
     warning log for it.
