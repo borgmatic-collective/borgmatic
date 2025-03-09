@@ -130,8 +130,11 @@ def expand_directory(directory, working_directory):
 def expand_patterns(patterns, working_directory=None, skip_paths=None):
     '''
     Given a sequence of borgmatic.borg.pattern.Pattern instances and an optional working directory,
-    expand tildes and globs in each root pattern. Return all the resulting patterns (not just the
-    root patterns) as a tuple.
+    expand tildes and globs in each root pattern and expand just tildes in each non-root pattern.
+    The idea is that non-root patterns may be regular expressions or other pattern styles containing
+    "*" that borgmatic should not expand as a shell glob.
+
+    Return all the resulting patterns as a tuple.
 
     If a set of paths are given to skip, then don't expand any patterns matching them.
     '''
@@ -153,7 +156,15 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                 )
                 if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                 and pattern.path not in (skip_paths or ())
-                else (pattern,)
+                else (
+                    borgmatic.borg.pattern.Pattern(
+                        os.path.expanduser(pattern.path),
+                        pattern.type,
+                        pattern.style,
+                        pattern.device,
+                        pattern.source,
+                    ),
+                )
             )
             for pattern in patterns
         )
