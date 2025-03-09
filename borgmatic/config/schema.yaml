@@ -961,8 +961,8 @@ properties:
                               - everything
                               - dump_data_sources
                           description: |
-                              Name for the point in borgmatic's execution before
-                              which the commands should be run (required if
+                              Name for the point in borgmatic's execution that
+                              the commands should be run before (required if
                               "after" isn't set):
                                * "action" runs before each action for each
                               repository.
@@ -1039,8 +1039,8 @@ properties:
                               - error
                               - dump_data_sources
                           description: |
-                              Name for the point in borgmatic's execution after
-                              which the commands should be run (required if
+                              Name for the point in borgmatic's execution that
+                              the commands should be run after (required if
                               "before" isn't set):
                                * "action" runs after each action for each
                               repository.

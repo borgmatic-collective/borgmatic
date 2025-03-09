@@ -17,7 +17,97 @@ But if you're looking to backup a database, it's probably easier to use the
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.
 
-You can specify `before_backup` hooks to perform preparation steps before
+<span class="minilink minilink-addedin">New in version 1.9.14</span> You can
+configure command hooks via a list of `commands:` in your borgmatic
+configuration file. For example:
+
+```yaml
+commands:
+    - before: action
+      when:
+          - create
+      run:
+          - echo "Before create!"
+    - after: action
+      when:
+          - create
+          - prune
+      run:
+          - echo "After create and/or prune!"
+```
+
+If A `run:` command contains a special YAML character such as a colon, you may
+need to quote the entire string (or use a [multiline
+string](https://yaml-multiline.info/)) to avoid an error:
+
+```yaml
+commands:
+    - before: action
+      when:
+          - create
+      run:
+    - "echo Backup: start"
+```
+
+Each command has the following options:
+
+ * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before/after, one of:
+    * `action` runs before each action for each repository. (Replaces the deprecated `before_create`, `after_prune`, etc.)
+    * `repository` runs before/after all actions for each repository. (Replaces the deprecated `before_actions`/`after_actions`.)
+    * `configuration` runs before/after all actions and repositories in the current configuration file.
+    * `everything` runs before/after all configuration files. (Replaces the deprecated `before_everything`/`after_everything`.)
+ * `when`: List of actions for which the commands will be run. Defaults to running for all actions.
+ * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
+
+There's also another command hook that works a little differently:
+
+```yaml
+commands:
+    - before: dump_data_sources
+      hooks:
+          - postgresql
+      run:
+          - echo "Right before the PostgreSQL database dump!"
+```
+
+This command hook has the following options:
+
+ * `before` or `after`: `dump_data_sources`
+ * `hooks`: List of names of other hooks that this command hook applies to. Defaults to all hooks of the relevant type.
+ * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
+
+
+### Order of execution
+
+Here's a way of visualizing how all of these command hooks slot into borgmatic's
+execution.
+
+Let's say you've got a borgmatic configuration file with a configured
+repository. And suppose you configure several command hooks and then run
+borgmatic for the `create` and `prune` actions. Here's the order of execution:
+
+ * Trigger `before: everything` (from all configuration files).
+    * Trigger `before: configuration` (from the first configuration file).
+        * Trigger `before: repository` (for the first repository).
+            * Trigger `before: action` for `create`.
+            * Run the `create` action.
+            * Trigger `after: action` for `create`.
+            * Trigger `before: action` for `prune`.
+            * Run the `prune` action.
+            * Trigger `after: action` for `prune`.
+        * Trigger `after: repository` (for the first repository).
+    * Trigger `after: configuration` (from the first configuration file).
+ * Trigger `after: everything` (from all configuration files).
+
+You can imagine how this would be extended to multiple repositories and/or
+configuration files.
+
+
+### Deprecated command hooks
+
+<span class="minilink minilink-addedin">Prior to version 1.9.14</span> The
+command hooks worked a little differently. In these older versions of borgmatic,
+you can specify `before_backup` hooks to perform preparation steps before
 running backups and specify `after_backup` hooks to perform cleanup steps
 afterwards. Here's an example:
 
