@@ -8,24 +8,23 @@ eleventyNavigation:
 ## Preparation and cleanup hooks
 
 If you find yourself performing preparation tasks before your backup runs or
-cleanup work afterwards, borgmatic command hooks may be of interest. These are
-custom shell commands you can configure borgmatic to execute at various points
-as it runs.
+doing cleanup work afterwards, borgmatic command hooks may be of interest. These
+are custom shell commands you can configure borgmatic to execute at various
+points as it runs.
 
-But if you're looking to backup a database, it's probably easier to use the
+(But if you're looking to backup a database, it's probably easier to use the
 [database backup
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
-instead.
+instead.)
 
-<span class="minilink minilink-addedin">New in version 1.9.14</span> You can
-configure command hooks via a list of `commands:` in your borgmatic
+<span class="minilink minilink-addedin">New in version 1.9.14</span> Command
+hooks are now configured via a list of `commands:` in your borgmatic
 configuration file. For example:
 
 ```yaml
 commands:
     - before: action
-      when:
-          - create
+      when: [create]
       run:
           - echo "Before create!"
     - after: action
@@ -36,27 +35,27 @@ commands:
           - echo "After create and/or prune!"
 ```
 
-If A `run:` command contains a special YAML character such as a colon, you may
+If a `run:` command contains a special YAML character such as a colon, you may
 need to quote the entire string (or use a [multiline
 string](https://yaml-multiline.info/)) to avoid an error:
 
 ```yaml
 commands:
     - before: action
-      when:
-          - create
+      when: [create]
       run:
-    - "echo Backup: start"
+          - "echo Backup: start"
 ```
 
-Each command has the following options:
+Each command in the `commands:` list has the following options:
 
- * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before/after, one of:
-    * `action` runs before each action for each repository. (Replaces the deprecated `before_create`, `after_prune`, etc.)
-    * `repository` runs before/after all actions for each repository. (Replaces the deprecated `before_actions`/`after_actions`.)
-    * `configuration` runs before/after all actions and repositories in the current configuration file.
-    * `everything` runs before/after all configuration files. (Replaces the deprecated `before_everything`/`after_everything`.)
- * `when`: List of actions for which the commands will be run. Defaults to running for all actions.
+ * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
+    * `action` runs before each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
+    * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
+    * `configuration` runs before or after all actions and repositories in the current configuration file.
+    * `everything` runs before or after all configuration files. This replaces the deprecated `before_everything` and `after_everything`.
+    * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
+ * `when`: Actions (`create`, `prune`, etc.) for which the commands will be run. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
 There's also another command hook that works a little differently:
@@ -64,8 +63,7 @@ There's also another command hook that works a little differently:
 ```yaml
 commands:
     - before: dump_data_sources
-      hooks:
-          - postgresql
+      hooks: [postgresql]
       run:
           - echo "Right before the PostgreSQL database dump!"
 ```
@@ -73,8 +71,8 @@ commands:
 This command hook has the following options:
 
  * `before` or `after`: `dump_data_sources`
- * `hooks`: List of names of other hooks that this command hook applies to. Defaults to all hooks of the relevant type.
- * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
+ * `hooks`: Names of other hooks that this command hook applies to, e.g. `postgresql`, `mariadb`, `zfs`, `btrfs`, etc. Defaults to all hooks of the relevant type.
+ * `run`: One or more shell commands or scripts to run when this command hook is triggered.
 
 
 ### Order of execution
@@ -86,20 +84,23 @@ Let's say you've got a borgmatic configuration file with a configured
 repository. And suppose you configure several command hooks and then run
 borgmatic for the `create` and `prune` actions. Here's the order of execution:
 
- * Trigger `before: everything` (from all configuration files).
-    * Trigger `before: configuration` (from the first configuration file).
-        * Trigger `before: repository` (for the first repository).
-            * Trigger `before: action` for `create`.
-            * Run the `create` action.
-            * Trigger `after: action` for `create`.
-            * Trigger `before: action` for `prune`.
-            * Run the `prune` action.
-            * Trigger `after: action` for `prune`.
-        * Trigger `after: repository` (for the first repository).
-    * Trigger `after: configuration` (from the first configuration file).
- * Trigger `after: everything` (from all configuration files).
+ * Run `before: everything` hooks (from all configuration files).
+    * Run `before: configuration` hooks (from the first configuration file).
+        * Run `before: repository` hooks (for the first repository).
+            * Run `before: action` hooks for `create`.
+                * Run `before: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
+                * Actually dump data sources (e.g. PostgreSQL databases).
+                * Run `after: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
+            * Actually run the `create` action.
+            * Run `after: action` hooks for `create`.
+            * Run `before: action` hooks for `prune`.
+            * Actually run the `prune` action.
+            * Run `after: action` hooks for `prune`.
+        * Run `after: repository` hooks (for the first repository).
+    * Run `after: configuration` hooks (from the first configuration file).
+ * Run `after: everything` hooks (from all configuration files).
 
-You can imagine how this would be extended to multiple repositories and/or
+This same order of execution extends to multiple repositories and/or
 configuration files.
 
 
@@ -151,17 +152,17 @@ rather than once per repository.)
 
 ## Variable interpolation
 
-The before and after action hooks support interpolating particular runtime
-variables into the hook command. Here's an example that assumes you provide a
-separate shell script:
+The command action hooks support interpolating particular runtime variables into
+the commands that are run. Here's an example that assumes you provide a separate
+shell script:
 
 ```yaml
-after_prune:
-    - record-prune.sh "{configuration_filename}" "{repository}"
+commands:
+    - after: action
+      when: [prune]
+      run:
+          - record-prune.sh "{configuration_filename}" "{repository}"
 ```
-
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `hooks:` section of your configuration.
 
 In this example, when the hook is triggered, borgmatic interpolates runtime
 values into the hook command: the borgmatic configuration filename and the
@@ -178,6 +179,10 @@ variables you can use here:
  * `repository_label` <span class="minilink minilink-addedin">New in version
    1.8.12</span>: label of the current repository as configured in the current
    borgmatic configuration file
+
+Not all command hooks support all variables. For instance, the `everything` and
+`configuration` hooks don't support repository variables because those hooks
+don't run in the context of a single repository.
 
 Note that you can also interpolate in [arbitrary environment
 variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).

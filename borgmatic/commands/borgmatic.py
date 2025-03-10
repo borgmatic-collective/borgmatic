@@ -102,6 +102,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
         umask=config.get('umask'),
         dry_run=global_arguments.dry_run,
         action_names=arguments.keys(),
+        configuration_filename=config_filename,
+        log_file=arguments['global'].log_file,
     ):
         try:
             local_borg_version = borg_version.local_borg_version(config, local_path)
@@ -828,6 +830,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 config.get('umask'),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
+                log_file=arguments['global'].log_file,
             )
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running before everything hook', error)
@@ -880,6 +883,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 config.get('umask'),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
+                log_file=arguments['global'].log_file,
             )
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running after everything hook', error)
