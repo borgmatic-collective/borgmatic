@@ -63,7 +63,7 @@ def test_get_subvolume_property_with_true_output_returns_true_bool():
         'execute_command_and_capture_output'
     ).and_return('ro=true')
 
-    assert module.get_subvolume_property('btrfs', '/foo', 'ro') == True
+    assert module.get_subvolume_property('btrfs', '/foo', 'ro') is True
 
 
 def test_get_subvolume_property_with_false_output_returns_false_bool():
@@ -71,7 +71,7 @@ def test_get_subvolume_property_with_false_output_returns_false_bool():
         'execute_command_and_capture_output'
     ).and_return('ro=false')
 
-    assert module.get_subvolume_property('btrfs', '/foo', 'ro') == False
+    assert module.get_subvolume_property('btrfs', '/foo', 'ro') is False
 
 
 def test_get_subvolume_property_passes_through_general_value():
