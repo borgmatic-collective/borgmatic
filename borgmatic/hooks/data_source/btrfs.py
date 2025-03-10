@@ -48,6 +48,47 @@ def get_subvolume_mount_points(findmnt_command):
 Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), defaults=((),))
 
 
+def get_subvolume_property(btrfs_command, subvolume_path, property_name):
+    output = borgmatic.execute.execute_command_and_capture_output(
+        tuple(btrfs_command.split(' '))
+        + (
+            'property',
+            'get',
+            '-t',  # Type.
+            'subvol',
+            subvolume_path,
+            property_name,
+        ),
+    )
+
+    try:
+        value = output.strip().split('=')[1]
+    except IndexError:
+        raise ValueError(f'Invalid {btrfs_command} property output')
+
+    return {
+        'true': True,
+        'false': False,
+    }.get(value, value)
+
+
+def omit_read_only_subvolume_mount_points(btrfs_command, subvolume_paths):
+    '''
+    Given a Btrfs command to run and a sequence of Btrfs subvolume mount points, filter them down to
+    just those that are read-write. The idea is that Btrfs can't actually snapshot a read-only
+    subvolume, so we should just ignore them.
+    '''
+    retained_subvolume_paths = []
+
+    for subvolume_path in subvolume_paths:
+        if get_subvolume_property(btrfs_command, subvolume_path, 'ro'):
+            logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
+        else:
+            retained_subvolume_paths.append(subvolume_path)
+
+    return tuple(retained_subvolume_paths)
+
+
 def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     '''
     Given a Btrfs command to run and a sequence of configured patterns, find the intersection
@@ -67,7 +108,11 @@ def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     # backup. Sort the subvolumes from longest to shortest mount points, so longer mount points get
     # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
     # this process, so no two subvolumes end up with the same contained patterns.)
-    for mount_point in reversed(get_subvolume_mount_points(findmnt_command)):
+    for mount_point in reversed(
+        omit_read_only_subvolume_mount_points(
+            btrfs_command, get_subvolume_mount_points(findmnt_command)
+        )
+    ):
         subvolumes.extend(
             Subvolume(mount_point, contained_patterns)
             for contained_patterns in (

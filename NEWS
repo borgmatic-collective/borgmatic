@@ -7,6 +7,8 @@
  * #1017: Fix a regression in which some MariaDB/MySQL passwords were not escaped correctly.
  * #1021: Fix a regression in which the "exclude_patterns" option didn't expand "~" (the user's
    home directory). This fix means that all "patterns" and "patterns_from" also now expand "~".
+ * #1023: Fix an error in the Btrfs hook when attempting to snapshot a read-only subvolume. Now,
+   read-only subvolumes are ignored since Btrfs can't actually snapshot them.
 
 1.9.13
  * #975: Add a "compression" option to the PostgreSQL database hook.
