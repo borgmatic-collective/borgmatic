@@ -148,8 +148,9 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 #### Subvolume discovery
 
-For any subvolume you'd like backed up, add its path to borgmatic's
-`source_directories` option.
+For any read-write subvolume you'd like backed up, add its path to borgmatic's
+`source_directories` option. Btrfs does not support snapshotting read-only
+subvolumes.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
 the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
