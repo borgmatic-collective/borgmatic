@@ -17,7 +17,7 @@ points as it runs.
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.)
 
-<span class="minilink minilink-addedin">New in version 1.9.14</span> Command
+<span class="minilink minilink-addedin">New in version 2.0.0</span> Command
 hooks are now configured via a list of `commands:` in your borgmatic
 configuration file. For example:
 
@@ -106,7 +106,7 @@ configuration files.
 
 ### Deprecated command hooks
 
-<span class="minilink minilink-addedin">Prior to version 1.9.14</span> The
+<span class="minilink minilink-addedin">Prior to version 2.0.0</span> The
 command hooks worked a little differently. In these older versions of borgmatic,
 you can specify `before_backup` hooks to perform preparation steps before
 running backups and specify `after_backup` hooks to perform cleanup steps
