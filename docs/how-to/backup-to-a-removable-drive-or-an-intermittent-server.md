@@ -138,7 +138,7 @@ There are some caveats you should be aware of with this feature.
    current repository, for instance so you can have multiple repositories in a
    single configuration file, have a look at [command hook variable
    interpolation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
-   And there's always still the option of puting anything that you don't want
+   And there's always still the option of putting anything that you don't want
    soft-failed (like always-online cloud backups) in separate configuration
    files from your soft-failing repositories.
  * The soft failure doesn't have to test anything related to a repository. You
