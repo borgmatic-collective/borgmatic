@@ -38,8 +38,13 @@ commands:
           - echo "Something went wrong!"
 ```
 
-If a `run:` command contains a special YAML character such as a colon, you may
-need to quote the entire string (or use a [multiline
+If you're coming from an older version of borgmatic, there is tooling to help
+you [upgrade your
+configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration)
+to this new command hook format.
+
+Note that if a `run:` command contains a special YAML character such as a colon,
+you may need to quote the entire string (or use a [multiline
 string](https://yaml-multiline.info/)) to avoid an error:
 
 ```yaml
@@ -61,8 +66,8 @@ Each command in the `commands:` list has the following options:
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
-Note that borgmatic does not run `error` hooks if an error occurs within an
-`everything` hook.
+borgmatic does not run `error` hooks if an error occurs within an `everything`
+hook.
 
 There's also another command hook that works a little differently:
 
