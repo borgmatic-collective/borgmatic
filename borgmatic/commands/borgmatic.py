@@ -85,7 +85,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
     retries = config.get('retries', 0)
     retry_wait = config.get('retry_wait', 0)
     encountered_error = None
-    error_repository = ''
+    error_repository = None
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
     monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
@@ -192,7 +192,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                             error,
                         )
                         encountered_error = error
-                        error_repository = repository['path']
+                        error_repository = repository
 
         try:
             if monitoring_hooks_are_activated:
@@ -246,7 +246,9 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     config.get('umask'),
                     global_arguments.dry_run,
                     configuration_filename=config_filename,
-                    repository=error_repository,
+                    log_file=arguments['global'].log_file,
+                    repository=error_repository.get('path', '') if error_repository else '',
+                    repository_label=error_repository.get('label', '') if error_repository else '',
                     error=encountered_error,
                     output=getattr(encountered_error, 'output', ''),
                 )

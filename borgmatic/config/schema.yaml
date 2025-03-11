@@ -1091,10 +1091,11 @@ properties:
                                   - key
                                   - borg
                           description: |
-                              List of actions for which the commands will be
-                              run. Defaults to running for all actions. Ignored
-                              for "dump_data_sources", which by its nature only
-                              runs for "create".
+                              Only trigger the hook when borgmatic is run with
+                              particular actions listed here. Defaults to
+                              running for all actions. Ignored for
+                              "dump_data_sources", which by its nature only runs
+                              for "create".
                           example: [create, prune, compact, check]
                       run:
                           type: array
