@@ -32,7 +32,7 @@ commands:
           - create
           - prune
       run:
-          - echo "After create and/or prune!"
+          - echo "After create or prune!"
     - after: error
       run:
           - echo "Something went wrong!"
