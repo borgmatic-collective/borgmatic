@@ -200,7 +200,7 @@ def dump_data_sources(
     '''
     with borgmatic.hooks.command.Before_after_hooks(
         command_hooks=config.get('commands'),
-        function_name='dump_data_sources',
+        before_after='dump_data_sources',
         umask=config.get('umask'),
         dry_run=dry_run,
         hook_name='lvm',
