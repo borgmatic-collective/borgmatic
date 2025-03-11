@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import shlex
+import subprocess
 import sys
 
 import borgmatic.execute
@@ -53,7 +54,7 @@ def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_
     '''
     return tuple(
         hook_config
-        for hook_config in command_hooks
+        for hook_config in command_hooks or ()
         for config_hook_names in (hook_config.get('hooks'),)
         for config_action_names in (hook_config.get('when'),)
         if before is None or hook_config.get('before') == before
@@ -97,7 +98,7 @@ def execute_hooks(command_hooks, umask, dry_run, **context):
         commands = [interpolate_context(description, command, context) for command in commands]
 
         if len(commands) == 1:
-            logger.info(f'Running command for {description} hook{dry_run_label}')
+            logger.info(f'Running {description} command hook{dry_run_label}')
         else:
             logger.info(
                 f'Running {len(commands)} commands for {description} hook{dry_run_label}',
@@ -176,33 +177,45 @@ class Before_after_hooks:
         '''
         Run the configured "before" command hooks that match the initialized data points.
         '''
-        execute_hooks(
-            borgmatic.hooks.command.filter_hooks(
-                self.command_hooks,
-                before=self.before_after,
-                hook_name=self.hook_name,
-                action_names=self.action_names,
-            ),
-            self.umask,
-            self.dry_run,
-            **self.context,
-        )
+        try:
+            execute_hooks(
+                borgmatic.hooks.command.filter_hooks(
+                    self.command_hooks,
+                    before=self.before_after,
+                    hook_name=self.hook_name,
+                    action_names=self.action_names,
+                ),
+                self.umask,
+                self.dry_run,
+                **self.context,
+            )
+        except (OSError, subprocess.CalledProcessError) as error:
+            if considered_soft_failure(error):
+                return
+
+            raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
     def __exit__(self, exception, value, traceback):
         '''
         Run the configured "after" command hooks that match the initialized data points.
         '''
-        execute_hooks(
-            borgmatic.hooks.command.filter_hooks(
-                self.command_hooks,
-                after=self.before_after,
-                hook_name=self.hook_name,
-                action_names=self.action_names,
-            ),
-            self.umask,
-            self.dry_run,
-            **self.context,
-        )
+        try:
+            execute_hooks(
+                borgmatic.hooks.command.filter_hooks(
+                    self.command_hooks,
+                    after=self.before_after,
+                    hook_name=self.hook_name,
+                    action_names=self.action_names,
+                ),
+                self.umask,
+                self.dry_run,
+                **self.context,
+            )
+        except (OSError, subprocess.CalledProcessError) as error:
+            if considered_soft_failure(error):
+                return
+
+            raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
 
 def considered_soft_failure(error):

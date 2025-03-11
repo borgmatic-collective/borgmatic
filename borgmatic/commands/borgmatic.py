@@ -207,9 +207,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     global_arguments.dry_run,
                 )
         except (OSError, CalledProcessError) as error:
-            if not command.considered_soft_failure(error):
-                encountered_error = error
-                yield from log_error_records('Error pinging monitor', error)
+            encountered_error = error
+            yield from log_error_records('Error pinging monitor', error)
 
         if not encountered_error:
             try:
@@ -231,27 +230,35 @@ def run_configuration(config_filename, config, config_paths, arguments):
                         global_arguments.dry_run,
                     )
             except (OSError, CalledProcessError) as error:
-                if command.considered_soft_failure(error):
-                    return
-
                 encountered_error = error
                 yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
+            else:
+                return
 
-        if encountered_error:
-            try:
-                command.execute_hooks(
-                    command.filter_hooks(
-                        config.get('commands'), after='error', action_names=arguments.keys()
-                    ),
-                    config.get('umask'),
-                    global_arguments.dry_run,
-                    configuration_filename=config_filename,
-                    log_file=arguments['global'].log_file,
-                    repository=error_repository.get('path', '') if error_repository else '',
-                    repository_label=error_repository.get('label', '') if error_repository else '',
-                    error=encountered_error,
-                    output=getattr(encountered_error, 'output', ''),
-                )
+        try:
+            command.execute_hooks(
+                command.filter_hooks(
+                    config.get('commands'), after='error', action_names=arguments.keys()
+                ),
+                config.get('umask'),
+                global_arguments.dry_run,
+                configuration_filename=config_filename,
+                log_file=arguments['global'].log_file,
+                repository=error_repository.get('path', '') if error_repository else '',
+                repository_label=error_repository.get('label', '') if error_repository else '',
+                error=encountered_error,
+                output=getattr(encountered_error, 'output', ''),
+            )
+        except (OSError, CalledProcessError) as error:
+            if command.considered_soft_failure(error):
+                return
+
+            yield from log_error_records(
+                f'{config_filename}: Error running after error hook', error
+            )
+
+        try:
+            if monitoring_hooks_are_activated:
                 dispatch.call_hooks(
                     'ping_monitor',
                     config,
@@ -268,13 +275,8 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     monitoring_log_level,
                     global_arguments.dry_run,
                 )
-            except (OSError, CalledProcessError) as error:
-                if command.considered_soft_failure(error):
-                    return
-
-                yield from log_error_records(
-                    f'{config_filename}: Error running after error hook', error
-                )
+        except (OSError, CalledProcessError) as error:
+            yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
 
 
 def run_actions(
@@ -843,24 +845,33 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
 
     for config_filename, config in configs.items():
         with Log_prefix(config_filename):
-            results = list(run_configuration(config_filename, config, config_paths, arguments))
-            error_logs = tuple(
-                result for result in results if isinstance(result, logging.LogRecord)
-            )
-
-            if error_logs:
-                yield from log_error_records('An error occurred')
-                yield from error_logs
-            else:
-                yield logging.makeLogRecord(
-                    dict(
-                        levelno=logging.INFO,
-                        levelname='INFO',
-                        msg='Successfully ran configuration file',
-                    )
+            try:
+                results = list(run_configuration(config_filename, config, config_paths, arguments))
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records(
+                    'Error running configuration file',
+                    error,
+                    levelno=logging.CRITICAL,
+                    log_command_error_output=True,
                 )
-                if results:
-                    json_results.extend(results)
+            else:
+                error_logs = tuple(
+                    result for result in results if isinstance(result, logging.LogRecord)
+                )
+
+                if error_logs:
+                    yield from log_error_records('An error occurred')
+                    yield from error_logs
+                else:
+                    yield logging.makeLogRecord(
+                        dict(
+                            levelno=logging.INFO,
+                            levelname='INFO',
+                            msg='Successfully ran configuration file',
+                        )
+                    )
+                    if results:
+                        json_results.extend(results)
 
     if 'umount' in arguments:
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
