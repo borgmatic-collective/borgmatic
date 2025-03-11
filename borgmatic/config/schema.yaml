@@ -796,8 +796,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before all
-            the actions for each repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before all the actions for each
+            repository.
         example:
             - "echo Starting actions."
     before_backup:
@@ -805,8 +806,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            creating a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before creating a backup, run once
+            per repository.
         example:
             - "echo Starting a backup."
     before_prune:
@@ -814,8 +816,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            pruning, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before pruning, run once per
+            repository.
         example:
             - "echo Starting pruning."
     before_compact:
@@ -823,8 +826,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            compaction, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before compaction, run once per
+            repository.
         example:
             - "echo Starting compaction."
     before_check:
@@ -832,8 +836,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            consistency checks, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before consistency checks, run once
+            per repository.
         example:
             - "echo Starting checks."
     before_extract:
@@ -841,8 +846,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            extracting a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before extracting a backup, run once
+            per repository.
         example:
             - "echo Starting extracting."
     after_backup:
@@ -850,8 +856,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            creating a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after creating a backup, run once per
+            repository.
         example:
             - "echo Finished a backup."
     after_compact:
@@ -859,8 +866,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            compaction, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after compaction, run once per
+            repository.
         example:
             - "echo Finished compaction."
     after_prune:
@@ -868,8 +876,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            pruning, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after pruning, run once per
+            repository.
         example:
             - "echo Finished pruning."
     after_check:
@@ -877,8 +886,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            consistency checks, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after consistency checks, run once
+            per repository.
         example:
             - "echo Finished checks."
     after_extract:
@@ -886,8 +896,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            extracting a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after extracting a backup, run once
+            per repository.
         example:
             - "echo Finished extracting."
     after_actions:
@@ -895,8 +906,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after all
-            actions for each repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after all actions for each
+            repository.
         example:
             - "echo Finished actions."
     on_error:
@@ -904,9 +916,10 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute when an
-            exception occurs during a "create", "prune", "compact", or "check"
-            action or an associated before/after hook.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute when an exception occurs during a
+            "create", "prune", "compact", or "check" action or an associated
+            before/after hook.
         example:
             - "echo Error during create/prune/compact/check."
     before_everything:
@@ -914,10 +927,10 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            running all actions (if one of them is "create"). These are
-            collected from all configuration files and then run once before all
-            of them (prior to all actions).
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before running all actions (if one of
+            them is "create"). These are collected from all configuration files
+            and then run once before all of them (prior to all actions).
         example:
             - "echo Starting actions."
     after_everything:
@@ -925,12 +938,178 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            running all actions (if one of them is "create"). These are
-            collected from all configuration files and then run once after all
-            of them (after any action).
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after running all actions (if one of
+            them is "create"). These are collected from all configuration files
+            and then run once after all of them (after any action).
         example:
             - "echo Completed actions."
+    commands:
+        type: array
+        items:
+            type: object
+            oneOf:
+                - required: [before, run]
+                  additionalProperties: false
+                  properties:
+                      before:
+                          type: string
+                          enum:
+                              - action
+                              - repository
+                              - configuration
+                              - everything
+                              - dump_data_sources
+                          description: |
+                              Name for the point in borgmatic's execution that
+                              the commands should be run before (required if
+                              "after" isn't set):
+                               * "action" runs before each action for each
+                              repository.
+                               * "repository" runs before all actions for each
+                              repository.
+                               * "configuration" runs before all actions and
+                              repositories in the current configuration file.
+                               * "everything" runs before all configuration
+                              files.
+                               * "dump_data_sources" runs before each data
+                              source is dumped.
+                          example: action
+                      hooks:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of names of other hooks that this command
+                              hook applies to. Defaults to all hooks of the
+                              relevant type. Only supported for the
+                              "dump_data_sources" hook.
+                          example: postgresql
+                      when:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - repo-create
+                                  - transfer
+                                  - prune
+                                  - compact
+                                  - create
+                                  - check
+                                  - delete
+                                  - extract
+                                  - config
+                                  - export-tar
+                                  - mount
+                                  - umount
+                                  - repo-delete
+                                  - restore
+                                  - repo-list
+                                  - list
+                                  - repo-info
+                                  - info
+                                  - break-lock
+                                  - key
+                                  - borg
+                          description: |
+                              List of actions for which the commands will be
+                              run. Defaults to running for all actions. Ignored
+                              for "dump_data_sources", which by its nature only
+                              runs for "create".
+                          example: [create, prune, compact, check]
+                      run:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of one or more shell commands or scripts to
+                              run when this command hook is triggered. Required.
+                          example:
+                              - "echo Doing stuff."
+                - required: [after, run]
+                  additionalProperties: false
+                  properties:
+                      after:
+                          type: string
+                          enum:
+                              - action
+                              - repository
+                              - configuration
+                              - everything
+                              - error
+                              - dump_data_sources
+                          description: |
+                              Name for the point in borgmatic's execution that
+                              the commands should be run after (required if
+                              "before" isn't set):
+                               * "action" runs after each action for each
+                              repository.
+                               * "repository" runs after all actions for each
+                              repository.
+                               * "configuration" runs after all actions and
+                              repositories in the current configuration file.
+                               * "everything" runs after all configuration
+                              files.
+                               * "error" runs after an error occurs.
+                               * "dump_data_sources" runs after each data
+                              source is dumped.
+                          example: action
+                      hooks:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of names of other hooks that this command
+                              hook applies to. Defaults to all hooks of the
+                              relevant type. Only supported for the
+                              "dump_data_sources" hook.
+                          example: postgresql
+                      when:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - repo-create
+                                  - transfer
+                                  - prune
+                                  - compact
+                                  - create
+                                  - check
+                                  - delete
+                                  - extract
+                                  - config
+                                  - export-tar
+                                  - mount
+                                  - umount
+                                  - repo-delete
+                                  - restore
+                                  - repo-list
+                                  - list
+                                  - repo-info
+                                  - info
+                                  - break-lock
+                                  - key
+                                  - borg
+                          description: |
+                              Only trigger the hook when borgmatic is run with
+                              particular actions listed here. Defaults to
+                              running for all actions. Ignored for
+                              "dump_data_sources", which by its nature only runs
+                              for "create".
+                          example: [create, prune, compact, check]
+                      run:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of one or more shell commands or scripts to
+                              run when this command hook is triggered. Required.
+                          example:
+                              - "echo Doing stuff."
+        description: |
+            List of one or more command hooks to execute, triggered at
+            particular points during borgmatic's execution. For each command
+            hook, specify one of "before" or "after", not both.
     bootstrap:
         type: object
         properties:

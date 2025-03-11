@@ -9,6 +9,7 @@ import subprocess
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.command
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -249,41 +250,48 @@ def dump_data_sources(
 
     If this is a dry run, then don't actually snapshot anything.
     '''
-    dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-    logger.info(f'Snapshotting Btrfs subvolumes{dry_run_label}')
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='dump_data_sources',
+        umask=config.get('umask'),
+        dry_run=dry_run,
+        hook_name='btrfs',
+    ):
+        dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
+        logger.info(f'Snapshotting Btrfs subvolumes{dry_run_label}')
 
-    # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
-    # patterns that came from actual user configuration (as opposed to, say, other hooks).
-    btrfs_command = hook_config.get('btrfs_command', 'btrfs')
-    findmnt_command = hook_config.get('findmnt_command', 'findmnt')
-    subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)
+        # Based on the configured patterns, determine Btrfs subvolumes to backup. Only consider those
+        # patterns that came from actual user configuration (as opposed to, say, other hooks).
+        btrfs_command = hook_config.get('btrfs_command', 'btrfs')
+        findmnt_command = hook_config.get('findmnt_command', 'findmnt')
+        subvolumes = get_subvolumes(btrfs_command, findmnt_command, patterns)
 
-    if not subvolumes:
-        logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
+        if not subvolumes:
+            logger.warning(f'No Btrfs subvolumes found to snapshot{dry_run_label}')
 
-    # Snapshot each subvolume, rewriting patterns to use their snapshot paths.
-    for subvolume in subvolumes:
-        logger.debug(f'Creating Btrfs snapshot for {subvolume.path} subvolume')
+        # Snapshot each subvolume, rewriting patterns to use their snapshot paths.
+        for subvolume in subvolumes:
+            logger.debug(f'Creating Btrfs snapshot for {subvolume.path} subvolume')
 
-        snapshot_path = make_snapshot_path(subvolume.path)
+            snapshot_path = make_snapshot_path(subvolume.path)
 
-        if dry_run:
-            continue
+            if dry_run:
+                continue
 
-        snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
+            snapshot_subvolume(btrfs_command, subvolume.path, snapshot_path)
 
-        for pattern in subvolume.contained_patterns:
-            snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
+            for pattern in subvolume.contained_patterns:
+                snapshot_pattern = make_borg_snapshot_pattern(subvolume.path, pattern)
 
-            # Attempt to update the pattern in place, since pattern order matters to Borg.
-            try:
-                patterns[patterns.index(pattern)] = snapshot_pattern
-            except ValueError:
-                patterns.append(snapshot_pattern)
+                # Attempt to update the pattern in place, since pattern order matters to Borg.
+                try:
+                    patterns[patterns.index(pattern)] = snapshot_pattern
+                except ValueError:
+                    patterns.append(snapshot_pattern)
 
-        patterns.append(make_snapshot_exclude_pattern(subvolume.path))
+            patterns.append(make_snapshot_exclude_pattern(subvolume.path))
 
-    return []
+        return []
 
 
 def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover

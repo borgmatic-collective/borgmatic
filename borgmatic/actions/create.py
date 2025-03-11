@@ -272,7 +272,6 @@ def run_create(
     repository,
     config,
     config_paths,
-    hook_context,
     local_borg_version,
     create_arguments,
     global_arguments,
@@ -289,15 +288,6 @@ def run_create(
         repository, create_arguments.repository
     ):
         return
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_backup'),
-        config.get('umask'),
-        config_filename,
-        'pre-backup',
-        global_arguments.dry_run,
-        **hook_context,
-    )
 
     logger.info(f'Creating archive{dry_run_label}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
@@ -354,12 +344,3 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_backup'),
-        config.get('umask'),
-        config_filename,
-        'post-backup',
-        global_arguments.dry_run,
-        **hook_context,
-    )

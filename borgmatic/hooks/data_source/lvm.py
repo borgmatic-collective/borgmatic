@@ -10,6 +10,7 @@ import subprocess
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
+import borgmatic.hooks.command
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -197,77 +198,84 @@ def dump_data_sources(
 
     If this is a dry run, then don't actually snapshot anything.
     '''
-    dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-    logger.info(f'Snapshotting LVM logical volumes{dry_run_label}')
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        function_name='dump_data_sources',
+        umask=config.get('umask'),
+        dry_run=dry_run,
+        hook_name='lvm',
+    ):
+        dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
+        logger.info(f'Snapshotting LVM logical volumes{dry_run_label}')
 
-    # List logical volumes to get their mount points, but only consider those patterns that came
-    # from actual user configuration (as opposed to, say, other hooks).
-    lsblk_command = hook_config.get('lsblk_command', 'lsblk')
-    requested_logical_volumes = get_logical_volumes(lsblk_command, patterns)
+        # List logical volumes to get their mount points, but only consider those patterns that came
+        # from actual user configuration (as opposed to, say, other hooks).
+        lsblk_command = hook_config.get('lsblk_command', 'lsblk')
+        requested_logical_volumes = get_logical_volumes(lsblk_command, patterns)
 
-    # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
-    snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
-    normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
+        # Snapshot each logical volume, rewriting source directories to use the snapshot paths.
+        snapshot_suffix = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+        normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
 
-    if not requested_logical_volumes:
-        logger.warning(f'No LVM logical volumes found to snapshot{dry_run_label}')
+        if not requested_logical_volumes:
+            logger.warning(f'No LVM logical volumes found to snapshot{dry_run_label}')
 
-    for logical_volume in requested_logical_volumes:
-        snapshot_name = f'{logical_volume.name}_{snapshot_suffix}'
-        logger.debug(
-            f'Creating LVM snapshot {snapshot_name} of {logical_volume.mount_point}{dry_run_label}'
-        )
-
-        if not dry_run:
-            snapshot_logical_volume(
-                hook_config.get('lvcreate_command', 'lvcreate'),
-                snapshot_name,
-                logical_volume.device_path,
-                hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
+        for logical_volume in requested_logical_volumes:
+            snapshot_name = f'{logical_volume.name}_{snapshot_suffix}'
+            logger.debug(
+                f'Creating LVM snapshot {snapshot_name} of {logical_volume.mount_point}{dry_run_label}'
             )
 
-        # Get the device path for the snapshot we just created.
-        try:
-            snapshot = get_snapshots(
-                hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
-            )[0]
-        except IndexError:
-            raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
+            if not dry_run:
+                snapshot_logical_volume(
+                    hook_config.get('lvcreate_command', 'lvcreate'),
+                    snapshot_name,
+                    logical_volume.device_path,
+                    hook_config.get('snapshot_size', DEFAULT_SNAPSHOT_SIZE),
+                )
 
-        # Mount the snapshot into a particular named temporary directory so that the snapshot ends
-        # up in the Borg archive at the "original" logical volume mount point path.
-        snapshot_mount_path = os.path.join(
-            normalized_runtime_directory,
-            'lvm_snapshots',
-            hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
-                MOUNT_POINT_HASH_LENGTH
-            ),
-            logical_volume.mount_point.lstrip(os.path.sep),
-        )
-
-        logger.debug(
-            f'Mounting LVM snapshot {snapshot_name} at {snapshot_mount_path}{dry_run_label}'
-        )
-
-        if dry_run:
-            continue
-
-        mount_snapshot(
-            hook_config.get('mount_command', 'mount'), snapshot.device_path, snapshot_mount_path
-        )
-
-        for pattern in logical_volume.contained_patterns:
-            snapshot_pattern = make_borg_snapshot_pattern(
-                pattern, logical_volume, normalized_runtime_directory
-            )
-
-            # Attempt to update the pattern in place, since pattern order matters to Borg.
+            # Get the device path for the snapshot we just created.
             try:
-                patterns[patterns.index(pattern)] = snapshot_pattern
-            except ValueError:
-                patterns.append(snapshot_pattern)
+                snapshot = get_snapshots(
+                    hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
+                )[0]
+            except IndexError:
+                raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
 
-    return []
+            # Mount the snapshot into a particular named temporary directory so that the snapshot ends
+            # up in the Borg archive at the "original" logical volume mount point path.
+            snapshot_mount_path = os.path.join(
+                normalized_runtime_directory,
+                'lvm_snapshots',
+                hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
+                    MOUNT_POINT_HASH_LENGTH
+                ),
+                logical_volume.mount_point.lstrip(os.path.sep),
+            )
+
+            logger.debug(
+                f'Mounting LVM snapshot {snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+            )
+
+            if dry_run:
+                continue
+
+            mount_snapshot(
+                hook_config.get('mount_command', 'mount'), snapshot.device_path, snapshot_mount_path
+            )
+
+            for pattern in logical_volume.contained_patterns:
+                snapshot_pattern = make_borg_snapshot_pattern(
+                    pattern, logical_volume, normalized_runtime_directory
+                )
+
+                # Attempt to update the pattern in place, since pattern order matters to Borg.
+                try:
+                    patterns[patterns.index(pattern)] = snapshot_pattern
+                except ValueError:
+                    patterns.append(snapshot_pattern)
+
+        return []
 
 
 def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover

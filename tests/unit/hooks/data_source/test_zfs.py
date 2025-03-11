@@ -296,6 +296,9 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
 
 
 def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     dataset = flexmock(
         name='dataset',
         mount_point='/mnt/dataset',
@@ -338,6 +341,9 @@ def test_dump_data_sources_snapshots_and_mounts_and_updates_patterns():
 
 
 def test_dump_data_sources_with_no_datasets_skips_snapshots():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('get_datasets_to_backup').and_return(())
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_dataset').never()
@@ -360,6 +366,9 @@ def test_dump_data_sources_with_no_datasets_skips_snapshots():
 
 
 def test_dump_data_sources_uses_custom_commands():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     dataset = flexmock(
         name='dataset',
         mount_point='/mnt/dataset',
@@ -409,6 +418,9 @@ def test_dump_data_sources_uses_custom_commands():
 
 
 def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     flexmock(module).should_receive('get_datasets_to_backup').and_return(
         (flexmock(name='dataset', mount_point='/mnt/dataset'),)
     )
@@ -433,6 +445,9 @@ def test_dump_data_sources_with_dry_run_skips_commands_and_does_not_touch_patter
 
 
 def test_dump_data_sources_ignores_mismatch_between_given_patterns_and_contained_patterns():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     dataset = flexmock(
         name='dataset',
         mount_point='/mnt/dataset',

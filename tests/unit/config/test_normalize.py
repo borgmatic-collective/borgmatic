@@ -127,6 +127,114 @@ def test_normalize_sections_with_only_scalar_raises():
     'config,expected_config,produces_logs',
     (
         (
+            {'before_actions': ['foo', 'bar'], 'after_actions': ['baz']},
+            {
+                'commands': [
+                    {'before': 'repository', 'run': ['foo', 'bar']},
+                    {'after': 'repository', 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_backup': ['foo', 'bar'], 'after_backup': ['baz']},
+            {
+                'commands': [
+                    {'before': 'action', 'when': ['create'], 'run': ['foo', 'bar']},
+                    {'after': 'action', 'when': ['create'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_prune': ['foo', 'bar'], 'after_prune': ['baz']},
+            {
+                'commands': [
+                    {'before': 'action', 'when': ['prune'], 'run': ['foo', 'bar']},
+                    {'after': 'action', 'when': ['prune'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_compact': ['foo', 'bar'], 'after_compact': ['baz']},
+            {
+                'commands': [
+                    {'before': 'action', 'when': ['compact'], 'run': ['foo', 'bar']},
+                    {'after': 'action', 'when': ['compact'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_check': ['foo', 'bar'], 'after_check': ['baz']},
+            {
+                'commands': [
+                    {'before': 'action', 'when': ['check'], 'run': ['foo', 'bar']},
+                    {'after': 'action', 'when': ['check'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_extract': ['foo', 'bar'], 'after_extract': ['baz']},
+            {
+                'commands': [
+                    {'before': 'action', 'when': ['extract'], 'run': ['foo', 'bar']},
+                    {'after': 'action', 'when': ['extract'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'on_error': ['foo', 'bar']},
+            {
+                'commands': [
+                    {
+                        'after': 'error',
+                        'when': ['create', 'prune', 'compact', 'check'],
+                        'run': ['foo', 'bar'],
+                    },
+                ]
+            },
+            True,
+        ),
+        (
+            {'before_everything': ['foo', 'bar'], 'after_everything': ['baz']},
+            {
+                'commands': [
+                    {'before': 'everything', 'when': ['create'], 'run': ['foo', 'bar']},
+                    {'after': 'everything', 'when': ['create'], 'run': ['baz']},
+                ]
+            },
+            True,
+        ),
+        (
+            {'other': 'options', 'unrelated_to': 'commands'},
+            {'other': 'options', 'unrelated_to': 'commands'},
+            False,
+        ),
+    ),
+)
+def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
+    config, expected_config, produces_logs
+):
+    flexmock(module).should_receive('make_command_hook_deprecation_log').and_return(flexmock())
+
+    logs = module.normalize_commands('test.yaml', config)
+
+    assert config == expected_config
+
+    if produces_logs:
+        assert logs
+    else:
+        assert logs == []
+
+
+@pytest.mark.parametrize(
+    'config,expected_config,produces_logs',
+    (
+        (
             {'exclude_if_present': '.nobackup'},
             {'exclude_if_present': ['.nobackup']},
             True,
@@ -262,6 +370,7 @@ def test_normalize_applies_hard_coded_normalization_to_config(
     config, expected_config, produces_logs
 ):
     flexmock(module).should_receive('normalize_sections').and_return([])
+    flexmock(module).should_receive('normalize_commands').and_return([])
 
     logs = module.normalize('test.yaml', config)
     expected_config.setdefault('bootstrap', {})
@@ -276,6 +385,7 @@ def test_normalize_applies_hard_coded_normalization_to_config(
 
 def test_normalize_config_with_borgmatic_source_directory_warns():
     flexmock(module).should_receive('normalize_sections').and_return([])
+    flexmock(module).should_receive('normalize_commands').and_return([])
 
     logs = module.normalize('test.yaml', {'borgmatic_source_directory': '~/.borgmatic'})
 

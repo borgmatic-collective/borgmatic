@@ -58,6 +58,90 @@ def normalize_sections(config_filename, config):
     return []
 
 
+def make_command_hook_deprecation_log(config_filename, option_name):  # pragma: no cover
+    '''
+    Given a configuration filename and the name of a configuration option, return a deprecation
+    warning log for it.
+    '''
+    return logging.makeLogRecord(
+        dict(
+            levelno=logging.WARNING,
+            levelname='WARNING',
+            msg=f'{config_filename}: {option_name} is deprecated and support will be removed from a future release. Use commands: instead.',
+        )
+    )
+
+
+def normalize_commands(config_filename, config):
+    '''
+    Given a configuration filename and a configuration dict, transform any "before_*"- and
+    "after_*"-style command hooks into "commands:".
+    '''
+    logs = []
+
+    # Normalize "before_actions" and "after_actions".
+    for preposition in ('before', 'after'):
+        option_name = f'{preposition}_actions'
+        commands = config.pop(option_name, None)
+
+        if commands:
+            logs.append(make_command_hook_deprecation_log(config_filename, option_name))
+            config.setdefault('commands', []).append(
+                {
+                    preposition: 'repository',
+                    'run': commands,
+                }
+            )
+
+    # Normalize "before_backup", "before_prune", "after_backup", "after_prune", etc.
+    for action_name in ('create', 'prune', 'compact', 'check', 'extract'):
+        for preposition in ('before', 'after'):
+            option_name = f'{preposition}_{"backup" if action_name == "create" else action_name}'
+            commands = config.pop(option_name, None)
+
+            if not commands:
+                continue
+
+            logs.append(make_command_hook_deprecation_log(config_filename, option_name))
+            config.setdefault('commands', []).append(
+                {
+                    preposition: 'action',
+                    'when': [action_name],
+                    'run': commands,
+                }
+            )
+
+    # Normalize "on_error".
+    commands = config.pop('on_error', None)
+
+    if commands:
+        logs.append(make_command_hook_deprecation_log(config_filename, 'on_error'))
+        config.setdefault('commands', []).append(
+            {
+                'after': 'error',
+                'when': ['create', 'prune', 'compact', 'check'],
+                'run': commands,
+            }
+        )
+
+    # Normalize "before_everything" and "after_everything".
+    for preposition in ('before', 'after'):
+        option_name = f'{preposition}_everything'
+        commands = config.pop(option_name, None)
+
+        if commands:
+            logs.append(make_command_hook_deprecation_log(config_filename, option_name))
+            config.setdefault('commands', []).append(
+                {
+                    preposition: 'everything',
+                    'when': ['create'],
+                    'run': commands,
+                }
+            )
+
+    return logs
+
+
 def normalize(config_filename, config):
     '''
     Given a configuration filename and a configuration dict of its loaded contents, apply particular
@@ -67,6 +151,7 @@ def normalize(config_filename, config):
     Raise ValueError the configuration cannot be normalized.
     '''
     logs = normalize_sections(config_filename, config)
+    logs += normalize_commands(config_filename, config)
 
     if config.get('borgmatic_source_directory'):
         logs.append(

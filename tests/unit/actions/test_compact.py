@@ -8,7 +8,6 @@ def test_compact_actions_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').once()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     compact_arguments = flexmock(
         repository=None, progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
     )
@@ -18,7 +17,6 @@ def test_compact_actions_calls_hooks_for_configured_repository():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={},
-        hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,
         global_arguments=global_arguments,
@@ -44,7 +42,6 @@ def test_compact_runs_with_selected_repository():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={},
-        hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,
         global_arguments=global_arguments,
@@ -70,7 +67,6 @@ def test_compact_bails_if_repository_does_not_match():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={},
-        hook_context={},
         local_borg_version=None,
         compact_arguments=compact_arguments,
         global_arguments=global_arguments,

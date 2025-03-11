@@ -85,7 +85,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
     retries = config.get('retries', 0)
     retry_wait = config.get('retry_wait', 0)
     encountered_error = None
-    error_repository = ''
+    error_repository = None
     using_primary_action = {'create', 'prune', 'compact', 'check'}.intersection(arguments)
     monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
     monitoring_hooks_are_activated = using_primary_action and monitoring_log_level != DISABLED
@@ -96,111 +96,167 @@ def run_configuration(config_filename, config, config_paths, arguments):
             f"Skipping {'/'.join(skip_actions)} action{'s' if len(skip_actions) > 1 else ''} due to configured skip_actions"
         )
 
-    try:
-        local_borg_version = borg_version.local_borg_version(config, local_path)
-        logger.debug(f'Borg {local_borg_version}')
-    except (OSError, CalledProcessError, ValueError) as error:
-        yield from log_error_records(f'{config_filename}: Error getting local Borg version', error)
-        return
-
-    try:
-        if monitoring_hooks_are_activated:
-            dispatch.call_hooks(
-                'initialize_monitor',
-                config,
-                dispatch.Hook_type.MONITORING,
-                config_filename,
-                monitoring_log_level,
-                global_arguments.dry_run,
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='configuration',
+        umask=config.get('umask'),
+        dry_run=global_arguments.dry_run,
+        action_names=arguments.keys(),
+        configuration_filename=config_filename,
+        log_file=arguments['global'].log_file or '',
+    ):
+        try:
+            local_borg_version = borg_version.local_borg_version(config, local_path)
+            logger.debug(f'Borg {local_borg_version}')
+        except (OSError, CalledProcessError, ValueError) as error:
+            yield from log_error_records(
+                f'{config_filename}: Error getting local Borg version', error
             )
-
-            dispatch.call_hooks(
-                'ping_monitor',
-                config,
-                dispatch.Hook_type.MONITORING,
-                config_filename,
-                monitor.State.START,
-                monitoring_log_level,
-                global_arguments.dry_run,
-            )
-    except (OSError, CalledProcessError) as error:
-        if command.considered_soft_failure(error):
             return
 
-        encountered_error = error
-        yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
+        try:
+            if monitoring_hooks_are_activated:
+                dispatch.call_hooks(
+                    'initialize_monitor',
+                    config,
+                    dispatch.Hook_type.MONITORING,
+                    config_filename,
+                    monitoring_log_level,
+                    global_arguments.dry_run,
+                )
 
-    if not encountered_error:
-        repo_queue = Queue()
-        for repo in config['repositories']:
-            repo_queue.put(
-                (repo, 0),
-            )
+                dispatch.call_hooks(
+                    'ping_monitor',
+                    config,
+                    dispatch.Hook_type.MONITORING,
+                    config_filename,
+                    monitor.State.START,
+                    monitoring_log_level,
+                    global_arguments.dry_run,
+                )
+        except (OSError, CalledProcessError) as error:
+            if command.considered_soft_failure(error):
+                return
 
-        while not repo_queue.empty():
-            repository, retry_num = repo_queue.get()
+            encountered_error = error
+            yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
 
-            with Log_prefix(repository.get('label', repository['path'])):
-                logger.debug('Running actions for repository')
-                timeout = retry_num * retry_wait
-                if timeout:
-                    logger.warning(f'Sleeping {timeout}s before next retry')
-                    time.sleep(timeout)
-                try:
-                    yield from run_actions(
-                        arguments=arguments,
-                        config_filename=config_filename,
-                        config=config,
-                        config_paths=config_paths,
-                        local_path=local_path,
-                        remote_path=remote_path,
-                        local_borg_version=local_borg_version,
-                        repository=repository,
-                    )
-                except (OSError, CalledProcessError, ValueError) as error:
-                    if retry_num < retries:
-                        repo_queue.put(
-                            (repository, retry_num + 1),
+        if not encountered_error:
+            repo_queue = Queue()
+            for repo in config['repositories']:
+                repo_queue.put(
+                    (repo, 0),
+                )
+
+            while not repo_queue.empty():
+                repository, retry_num = repo_queue.get()
+
+                with Log_prefix(repository.get('label', repository['path'])):
+                    logger.debug('Running actions for repository')
+                    timeout = retry_num * retry_wait
+                    if timeout:
+                        logger.warning(f'Sleeping {timeout}s before next retry')
+                        time.sleep(timeout)
+                    try:
+                        yield from run_actions(
+                            arguments=arguments,
+                            config_filename=config_filename,
+                            config=config,
+                            config_paths=config_paths,
+                            local_path=local_path,
+                            remote_path=remote_path,
+                            local_borg_version=local_borg_version,
+                            repository=repository,
                         )
-                        tuple(  # Consume the generator so as to trigger logging.
-                            log_error_records(
-                                'Error running actions for repository',
-                                error,
-                                levelno=logging.WARNING,
-                                log_command_error_output=True,
+                    except (OSError, CalledProcessError, ValueError) as error:
+                        if retry_num < retries:
+                            repo_queue.put(
+                                (repository, retry_num + 1),
                             )
+                            tuple(  # Consume the generator so as to trigger logging.
+                                log_error_records(
+                                    'Error running actions for repository',
+                                    error,
+                                    levelno=logging.WARNING,
+                                    log_command_error_output=True,
+                                )
+                            )
+                            logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
+                            continue
+
+                        if command.considered_soft_failure(error):
+                            continue
+
+                        yield from log_error_records(
+                            'Error running actions for repository',
+                            error,
                         )
-                        logger.warning(f'Retrying... attempt {retry_num + 1}/{retries}')
-                        continue
+                        encountered_error = error
+                        error_repository = repository
 
-                    if command.considered_soft_failure(error):
-                        continue
-
-                    yield from log_error_records(
-                        'Error running actions for repository',
-                        error,
-                    )
-                    encountered_error = error
-                    error_repository = repository['path']
-
-    try:
-        if monitoring_hooks_are_activated:
-            # Send logs irrespective of error.
-            dispatch.call_hooks(
-                'ping_monitor',
-                config,
-                dispatch.Hook_type.MONITORING,
-                config_filename,
-                monitor.State.LOG,
-                monitoring_log_level,
-                global_arguments.dry_run,
-            )
-    except (OSError, CalledProcessError) as error:
-        if not command.considered_soft_failure(error):
+        try:
+            if monitoring_hooks_are_activated:
+                # Send logs irrespective of error.
+                dispatch.call_hooks(
+                    'ping_monitor',
+                    config,
+                    dispatch.Hook_type.MONITORING,
+                    config_filename,
+                    monitor.State.LOG,
+                    monitoring_log_level,
+                    global_arguments.dry_run,
+                )
+        except (OSError, CalledProcessError) as error:
             encountered_error = error
             yield from log_error_records('Error pinging monitor', error)
 
-    if not encountered_error:
+        if not encountered_error:
+            try:
+                if monitoring_hooks_are_activated:
+                    dispatch.call_hooks(
+                        'ping_monitor',
+                        config,
+                        dispatch.Hook_type.MONITORING,
+                        config_filename,
+                        monitor.State.FINISH,
+                        monitoring_log_level,
+                        global_arguments.dry_run,
+                    )
+                    dispatch.call_hooks(
+                        'destroy_monitor',
+                        config,
+                        dispatch.Hook_type.MONITORING,
+                        monitoring_log_level,
+                        global_arguments.dry_run,
+                    )
+            except (OSError, CalledProcessError) as error:
+                encountered_error = error
+                yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
+            else:
+                return
+
+        try:
+            command.execute_hooks(
+                command.filter_hooks(
+                    config.get('commands'), after='error', action_names=arguments.keys()
+                ),
+                config.get('umask'),
+                global_arguments.dry_run,
+                configuration_filename=config_filename,
+                log_file=arguments['global'].log_file or '',
+                repository=error_repository.get('path', '') if error_repository else '',
+                repository_label=error_repository.get('label', '') if error_repository else '',
+                error=encountered_error,
+                output=getattr(encountered_error, 'output', ''),
+            )
+        except (OSError, CalledProcessError) as error:
+            if command.considered_soft_failure(error):
+                return
+
+            yield from log_error_records(
+                f'{config_filename}: Error running after error hook', error
+            )
+
         try:
             if monitoring_hooks_are_activated:
                 dispatch.call_hooks(
@@ -208,7 +264,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     config,
                     dispatch.Hook_type.MONITORING,
                     config_filename,
-                    monitor.State.FINISH,
+                    monitor.State.FAIL,
                     monitoring_log_level,
                     global_arguments.dry_run,
                 )
@@ -220,45 +276,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     global_arguments.dry_run,
                 )
         except (OSError, CalledProcessError) as error:
-            if command.considered_soft_failure(error):
-                return
-
-            encountered_error = error
             yield from log_error_records(f'{config_filename}: Error pinging monitor', error)
-
-    if encountered_error and using_primary_action:
-        try:
-            command.execute_hook(
-                config.get('on_error'),
-                config.get('umask'),
-                config_filename,
-                'on-error',
-                global_arguments.dry_run,
-                repository=error_repository,
-                error=encountered_error,
-                output=getattr(encountered_error, 'output', ''),
-            )
-            dispatch.call_hooks(
-                'ping_monitor',
-                config,
-                dispatch.Hook_type.MONITORING,
-                config_filename,
-                monitor.State.FAIL,
-                monitoring_log_level,
-                global_arguments.dry_run,
-            )
-            dispatch.call_hooks(
-                'destroy_monitor',
-                config,
-                dispatch.Hook_type.MONITORING,
-                monitoring_log_level,
-                global_arguments.dry_run,
-            )
-        except (OSError, CalledProcessError) as error:
-            if command.considered_soft_failure(error):
-                return
-
-            yield from log_error_records(f'{config_filename}: Error running on-error hook', error)
 
 
 def run_actions(
@@ -289,6 +307,7 @@ def run_actions(
     global_arguments = arguments['global']
     dry_run_label = ' (dry run; not making any changes)' if global_arguments.dry_run else ''
     hook_context = {
+        'configuration_filename': config_filename,
         'repository_label': repository.get('label', ''),
         'log_file': global_arguments.log_file if global_arguments.log_file else '',
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
@@ -297,240 +316,236 @@ def run_actions(
     }
     skip_actions = set(get_skip_actions(config, arguments))
 
-    command.execute_hook(
-        config.get('before_actions'),
-        config.get('umask'),
-        config_filename,
-        'pre-actions',
-        global_arguments.dry_run,
+    with borgmatic.hooks.command.Before_after_hooks(
+        command_hooks=config.get('commands'),
+        before_after='repository',
+        umask=config.get('umask'),
+        dry_run=global_arguments.dry_run,
+        action_names=arguments.keys(),
         **hook_context,
-    )
+    ):
+        for action_name, action_arguments in arguments.items():
+            if action_name == 'global':
+                continue
 
-    for action_name, action_arguments in arguments.items():
-        if action_name == 'repo-create' and action_name not in skip_actions:
-            borgmatic.actions.repo_create.run_repo_create(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'transfer' and action_name not in skip_actions:
-            borgmatic.actions.transfer.run_transfer(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'create' and action_name not in skip_actions:
-            yield from borgmatic.actions.create.run_create(
-                config_filename,
-                repository,
-                config,
-                config_paths,
-                hook_context,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                dry_run_label,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'prune' and action_name not in skip_actions:
-            borgmatic.actions.prune.run_prune(
-                config_filename,
-                repository,
-                config,
-                hook_context,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                dry_run_label,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'compact' and action_name not in skip_actions:
-            borgmatic.actions.compact.run_compact(
-                config_filename,
-                repository,
-                config,
-                hook_context,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                dry_run_label,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'check' and action_name not in skip_actions:
-            if checks.repository_enabled_for_checks(repository, config):
-                borgmatic.actions.check.run_check(
-                    config_filename,
-                    repository,
-                    config,
-                    hook_context,
-                    local_borg_version,
-                    action_arguments,
-                    global_arguments,
-                    local_path,
-                    remote_path,
-                )
-        elif action_name == 'extract' and action_name not in skip_actions:
-            borgmatic.actions.extract.run_extract(
-                config_filename,
-                repository,
-                config,
-                hook_context,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'export-tar' and action_name not in skip_actions:
-            borgmatic.actions.export_tar.run_export_tar(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'mount' and action_name not in skip_actions:
-            borgmatic.actions.mount.run_mount(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'restore' and action_name not in skip_actions:
-            borgmatic.actions.restore.run_restore(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'repo-list' and action_name not in skip_actions:
-            yield from borgmatic.actions.repo_list.run_repo_list(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'list' and action_name not in skip_actions:
-            yield from borgmatic.actions.list.run_list(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'repo-info' and action_name not in skip_actions:
-            yield from borgmatic.actions.repo_info.run_repo_info(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'info' and action_name not in skip_actions:
-            yield from borgmatic.actions.info.run_info(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'break-lock' and action_name not in skip_actions:
-            borgmatic.actions.break_lock.run_break_lock(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'export' and action_name not in skip_actions:
-            borgmatic.actions.export_key.run_export_key(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'change-passphrase' and action_name not in skip_actions:
-            borgmatic.actions.change_passphrase.run_change_passphrase(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'delete' and action_name not in skip_actions:
-            borgmatic.actions.delete.run_delete(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'repo-delete' and action_name not in skip_actions:
-            borgmatic.actions.repo_delete.run_repo_delete(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-        elif action_name == 'borg' and action_name not in skip_actions:
-            borgmatic.actions.borg.run_borg(
-                repository,
-                config,
-                local_borg_version,
-                action_arguments,
-                global_arguments,
-                local_path,
-                remote_path,
-            )
-
-    command.execute_hook(
-        config.get('after_actions'),
-        config.get('umask'),
-        config_filename,
-        'post-actions',
-        global_arguments.dry_run,
-        **hook_context,
-    )
+            with borgmatic.hooks.command.Before_after_hooks(
+                command_hooks=config.get('commands'),
+                before_after='action',
+                umask=config.get('umask'),
+                dry_run=global_arguments.dry_run,
+                action_names=arguments.keys(),
+                **hook_context,
+            ):
+                if action_name == 'repo-create' and action_name not in skip_actions:
+                    borgmatic.actions.repo_create.run_repo_create(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'transfer' and action_name not in skip_actions:
+                    borgmatic.actions.transfer.run_transfer(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'create' and action_name not in skip_actions:
+                    yield from borgmatic.actions.create.run_create(
+                        config_filename,
+                        repository,
+                        config,
+                        config_paths,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        dry_run_label,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'prune' and action_name not in skip_actions:
+                    borgmatic.actions.prune.run_prune(
+                        config_filename,
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        dry_run_label,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'compact' and action_name not in skip_actions:
+                    borgmatic.actions.compact.run_compact(
+                        config_filename,
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        dry_run_label,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'check' and action_name not in skip_actions:
+                    if checks.repository_enabled_for_checks(repository, config):
+                        borgmatic.actions.check.run_check(
+                            config_filename,
+                            repository,
+                            config,
+                            local_borg_version,
+                            action_arguments,
+                            global_arguments,
+                            local_path,
+                            remote_path,
+                        )
+                elif action_name == 'extract' and action_name not in skip_actions:
+                    borgmatic.actions.extract.run_extract(
+                        config_filename,
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'export-tar' and action_name not in skip_actions:
+                    borgmatic.actions.export_tar.run_export_tar(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'mount' and action_name not in skip_actions:
+                    borgmatic.actions.mount.run_mount(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'restore' and action_name not in skip_actions:
+                    borgmatic.actions.restore.run_restore(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'repo-list' and action_name not in skip_actions:
+                    yield from borgmatic.actions.repo_list.run_repo_list(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'list' and action_name not in skip_actions:
+                    yield from borgmatic.actions.list.run_list(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'repo-info' and action_name not in skip_actions:
+                    yield from borgmatic.actions.repo_info.run_repo_info(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'info' and action_name not in skip_actions:
+                    yield from borgmatic.actions.info.run_info(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'break-lock' and action_name not in skip_actions:
+                    borgmatic.actions.break_lock.run_break_lock(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'export' and action_name not in skip_actions:
+                    borgmatic.actions.export_key.run_export_key(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'change-passphrase' and action_name not in skip_actions:
+                    borgmatic.actions.change_passphrase.run_change_passphrase(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'delete' and action_name not in skip_actions:
+                    borgmatic.actions.delete.run_delete(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'repo-delete' and action_name not in skip_actions:
+                    borgmatic.actions.repo_delete.run_repo_delete(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'borg' and action_name not in skip_actions:
+                    borgmatic.actions.borg.run_borg(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
 
 
 def load_configurations(config_filenames, overrides=None, resolve_env=True):
@@ -810,43 +825,53 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
         )
         return
 
-    if 'create' in arguments:
-        try:
-            for config_filename, config in configs.items():
-                command.execute_hook(
-                    config.get('before_everything'),
-                    config.get('umask'),
-                    config_filename,
-                    'pre-everything',
-                    arguments['global'].dry_run,
-                )
-        except (CalledProcessError, ValueError, OSError) as error:
-            yield from log_error_records('Error running pre-everything hook', error)
-            return
+    try:
+        for config_filename, config in configs.items():
+            command.execute_hooks(
+                command.filter_hooks(
+                    config.get('commands'), before='everything', action_names=arguments.keys()
+                ),
+                config.get('umask'),
+                arguments['global'].dry_run,
+                configuration_filename=config_filename,
+                log_file=arguments['global'].log_file or '',
+            )
+    except (CalledProcessError, ValueError, OSError) as error:
+        yield from log_error_records('Error running before everything hook', error)
+        return
 
     # Execute the actions corresponding to each configuration file.
     json_results = []
 
     for config_filename, config in configs.items():
         with Log_prefix(config_filename):
-            results = list(run_configuration(config_filename, config, config_paths, arguments))
-            error_logs = tuple(
-                result for result in results if isinstance(result, logging.LogRecord)
-            )
-
-            if error_logs:
-                yield from log_error_records('An error occurred')
-                yield from error_logs
-            else:
-                yield logging.makeLogRecord(
-                    dict(
-                        levelno=logging.INFO,
-                        levelname='INFO',
-                        msg='Successfully ran configuration file',
-                    )
+            try:
+                results = list(run_configuration(config_filename, config, config_paths, arguments))
+            except (OSError, CalledProcessError, ValueError) as error:
+                yield from log_error_records(
+                    'Error running configuration file',
+                    error,
+                    levelno=logging.CRITICAL,
+                    log_command_error_output=True,
                 )
-                if results:
-                    json_results.extend(results)
+            else:
+                error_logs = tuple(
+                    result for result in results if isinstance(result, logging.LogRecord)
+                )
+
+                if error_logs:
+                    yield from log_error_records('An error occurred')
+                    yield from error_logs
+                else:
+                    yield logging.makeLogRecord(
+                        dict(
+                            levelno=logging.INFO,
+                            levelname='INFO',
+                            msg='Successfully ran configuration file',
+                        )
+                    )
+                    if results:
+                        json_results.extend(results)
 
     if 'umount' in arguments:
         logger.info(f"Unmounting mount point {arguments['umount'].mount_point}")
@@ -862,18 +887,19 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
     if json_results:
         sys.stdout.write(json.dumps(json_results))
 
-    if 'create' in arguments:
-        try:
-            for config_filename, config in configs.items():
-                command.execute_hook(
-                    config.get('after_everything'),
-                    config.get('umask'),
-                    config_filename,
-                    'post-everything',
-                    arguments['global'].dry_run,
-                )
-        except (CalledProcessError, ValueError, OSError) as error:
-            yield from log_error_records('Error running post-everything hook', error)
+    try:
+        for config_filename, config in configs.items():
+            command.execute_hooks(
+                command.filter_hooks(
+                    config.get('commands'), after='everything', action_names=arguments.keys()
+                ),
+                config.get('umask'),
+                arguments['global'].dry_run,
+                configuration_filename=config_filename,
+                log_file=arguments['global'].log_file or '',
+            )
+    except (CalledProcessError, ValueError, OSError) as error:
+        yield from log_error_records('Error running after everything hook', error)
 
 
 def exit_with_help_link():  # pragma: no cover

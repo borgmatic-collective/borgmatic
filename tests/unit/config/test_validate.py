@@ -202,6 +202,15 @@ def test_guard_configuration_contains_repository_does_not_raise_when_repository_
     )
 
 
+def test_guard_configuration_contains_repository_does_not_raise_when_repository_is_none():
+    flexmock(module).should_receive('repositories_match').never()
+
+    module.guard_configuration_contains_repository(
+        repository=None,
+        configurations={'config.yaml': {'repositories': [{'path': 'foo/bar', 'label': 'repo'}]}},
+    )
+
+
 def test_guard_configuration_contains_repository_errors_when_repository_does_not_match():
     flexmock(module).should_receive('repositories_match').and_return(False)
 

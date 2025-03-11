@@ -1405,7 +1405,6 @@ def test_run_check_checks_archives_for_configured_repository():
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
     flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').never()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -1419,7 +1418,6 @@ def test_run_check_checks_archives_for_configured_repository():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -1441,7 +1439,6 @@ def test_run_check_runs_configured_extract_check():
     flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -1455,7 +1452,6 @@ def test_run_check_runs_configured_extract_check():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -1480,7 +1476,6 @@ def test_run_check_runs_configured_spot_check():
     flexmock(module.borgmatic.actions.check).should_receive('spot_check').once()
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time')
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -1494,7 +1489,6 @@ def test_run_check_runs_configured_spot_check():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -1516,7 +1510,6 @@ def test_run_check_without_checks_runs_nothing_except_hooks():
     flexmock(module).should_receive('make_check_time_path')
     flexmock(module).should_receive('write_check_time').never()
     flexmock(module.borgmatic.borg.extract).should_receive('extract_last_archive_dry_run').never()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     check_arguments = flexmock(
         repository=None,
         progress=flexmock(),
@@ -1530,7 +1523,6 @@ def test_run_check_without_checks_runs_nothing_except_hooks():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -1569,7 +1561,6 @@ def test_run_check_checks_archives_in_selected_repository():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,
@@ -1597,7 +1588,6 @@ def test_run_check_bails_if_repository_does_not_match():
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={'repositories': ['repo']},
-        hook_context={},
         local_borg_version=None,
         check_arguments=check_arguments,
         global_arguments=global_arguments,

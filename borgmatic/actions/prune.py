@@ -11,7 +11,6 @@ def run_prune(
     config_filename,
     repository,
     config,
-    hook_context,
     local_borg_version,
     prune_arguments,
     global_arguments,
@@ -27,14 +26,6 @@ def run_prune(
     ):
         return
 
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_prune'),
-        config.get('umask'),
-        config_filename,
-        'pre-prune',
-        global_arguments.dry_run,
-        **hook_context,
-    )
     logger.info(f'Pruning archives{dry_run_label}')
     borgmatic.borg.prune.prune_archives(
         global_arguments.dry_run,
@@ -45,12 +36,4 @@ def run_prune(
         global_arguments,
         local_path=local_path,
         remote_path=remote_path,
-    )
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_prune'),
-        config.get('umask'),
-        config_filename,
-        'post-prune',
-        global_arguments.dry_run,
-        **hook_context,
     )

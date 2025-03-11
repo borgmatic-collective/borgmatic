@@ -12,7 +12,6 @@ def run_extract(
     config_filename,
     repository,
     config,
-    hook_context,
     local_borg_version,
     extract_arguments,
     global_arguments,
@@ -22,14 +21,6 @@ def run_extract(
     '''
     Run the "extract" action for the given repository.
     '''
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_extract'),
-        config.get('umask'),
-        config_filename,
-        'pre-extract',
-        global_arguments.dry_run,
-        **hook_context,
-    )
     if extract_arguments.repository is None or borgmatic.config.validate.repositories_match(
         repository, extract_arguments.repository
     ):
@@ -56,11 +47,3 @@ def run_extract(
             strip_components=extract_arguments.strip_components,
             progress=extract_arguments.progress,
         )
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_extract'),
-        config.get('umask'),
-        config_filename,
-        'post-extract',
-        global_arguments.dry_run,
-        **hook_context,
-    )

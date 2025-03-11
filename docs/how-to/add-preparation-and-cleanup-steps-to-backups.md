@@ -8,16 +8,118 @@ eleventyNavigation:
 ## Preparation and cleanup hooks
 
 If you find yourself performing preparation tasks before your backup runs or
-cleanup work afterwards, borgmatic command hooks may be of interest. These are
-custom shell commands you can configure borgmatic to execute at various points
-as it runs.
+doing cleanup work afterwards, borgmatic command hooks may be of interest. These
+are custom shell commands you can configure borgmatic to execute at various
+points as it runs.
 
-But if you're looking to backup a database, it's probably easier to use the
+(But if you're looking to backup a database, it's probably easier to use the
 [database backup
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
-instead.
+instead.)
 
-You can specify `before_backup` hooks to perform preparation steps before
+<span class="minilink minilink-addedin">New in version 2.0.0</span> Command
+hooks are now configured via a list of `commands:` in your borgmatic
+configuration file. For example:
+
+```yaml
+commands:
+    - before: action
+      when: [create]
+      run:
+          - echo "Before create!"
+    - after: action
+      when:
+          - create
+          - prune
+      run:
+          - echo "After create or prune!"
+    - after: error
+      run:
+          - echo "Something went wrong!"
+```
+
+If you're coming from an older version of borgmatic, there is tooling to help
+you [upgrade your
+configuration](https://torsion.org/borgmatic/docs/how-to/upgrade/#upgrading-your-configuration)
+to this new command hook format.
+
+Note that if a `run:` command contains a special YAML character such as a colon,
+you may need to quote the entire string (or use a [multiline
+string](https://yaml-multiline.info/)) to avoid an error:
+
+```yaml
+commands:
+    - before: action
+      when: [create]
+      run:
+          - "echo Backup: start"
+```
+
+Each command in the `commands:` list has the following options:
+
+ * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
+    * `action` runs before each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
+    * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
+    * `configuration` runs before or after all actions and repositories in the current configuration file.
+    * `everything` runs before or after all configuration files. This replaces the deprecated `before_everything` and `after_everything`.
+    * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
+ * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
+ * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
+
+borgmatic does not run `error` hooks if an error occurs within an `everything`
+hook.
+
+There's also another command hook that works a little differently:
+
+```yaml
+commands:
+    - before: dump_data_sources
+      hooks: [postgresql]
+      run:
+          - echo "Right before the PostgreSQL database dump!"
+```
+
+This command hook has the following options:
+
+ * `before` or `after`: `dump_data_sources`
+ * `hooks`: Names of other hooks that this command hook applies to, e.g. `postgresql`, `mariadb`, `zfs`, `btrfs`, etc. Defaults to all hooks of the relevant type.
+ * `run`: One or more shell commands or scripts to run when this command hook is triggered.
+
+
+### Order of execution
+
+Here's a way of visualizing how all of these command hooks slot into borgmatic's
+execution.
+
+Let's say you've got a borgmatic configuration file with a configured
+repository. And suppose you configure several command hooks and then run
+borgmatic for the `create` and `prune` actions. Here's the order of execution:
+
+ * Run `before: everything` hooks (from all configuration files).
+    * Run `before: configuration` hooks (from the first configuration file).
+        * Run `before: repository` hooks (for the first repository).
+            * Run `before: action` hooks for `create`.
+                * Run `before: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
+                * Actually dump data sources (e.g. PostgreSQL databases).
+                * Run `after: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
+            * Actually run the `create` action (e.g. `borg create`).
+            * Run `after: action` hooks for `create`.
+            * Run `before: action` hooks for `prune`.
+            * Actually run the `prune` action (e.g. `borg prune`).
+            * Run `after: action` hooks for `prune`.
+        * Run `after: repository` hooks (for the first repository).
+    * Run `after: configuration` hooks (from the first configuration file).
+ * Run `after: everything` hooks (from all configuration files).
+
+This same order of execution extends to multiple repositories and/or
+configuration files.
+
+
+### Deprecated command hooks
+
+<span class="minilink minilink-addedin">Prior to version 2.0.0</span> The
+command hooks worked a little differently. In these older versions of borgmatic,
+you can specify `before_backup` hooks to perform preparation steps before
 running backups and specify `after_backup` hooks to perform cleanup steps
 afterwards. Here's an example:
 
@@ -58,49 +160,13 @@ but not if an error occurs in a previous hook or in the backups themselves.
 (Prior to borgmatic 1.6.0, these hooks instead ran once per configuration file
 rather than once per repository.)
 
-
-## Variable interpolation
-
-The before and after action hooks support interpolating particular runtime
-variables into the hook command. Here's an example that assumes you provide a
-separate shell script:
-
-```yaml
-after_prune:
-    - record-prune.sh "{configuration_filename}" "{repository}"
-```
-
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `hooks:` section of your configuration.
-
-In this example, when the hook is triggered, borgmatic interpolates runtime
-values into the hook command: the borgmatic configuration filename and the
-paths of the current Borg repository. Here's the full set of supported
-variables you can use here:
-
- * `configuration_filename`: borgmatic configuration filename in which the
-   hook was defined
- * `log_file`
-   <span class="minilink minilink-addedin">New in version 1.7.12</span>:
-   path of the borgmatic log file, only set when the `--log-file` flag is used
- * `repository`: path of the current repository as configured in the current
-   borgmatic configuration file
- * `repository_label` <span class="minilink minilink-addedin">New in version
-   1.8.12</span>: label of the current repository as configured in the current
-   borgmatic configuration file
-
-Note that you can also interpolate in [arbitrary environment
-variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
-
-
-## Global hooks
-
 You can also use `before_everything` and `after_everything` hooks to perform
 global setup or cleanup:
 
 ```yaml
 before_everything:
     - set-up-stuff-globally
+
 after_everything:
     - clean-up-stuff-globally
 ```
@@ -118,13 +184,102 @@ but only if there is a `create` action. It runs even if an error occurs during
 a backup or a backup hook, but not if an error occurs during a
 `before_everything` hook.
 
+`on_error` hooks run when an error occurs, but only if there is a `create`,
+`prune`, `compact`, or `check` action. For instance, borgmatic can run
+configurable shell commands to fire off custom error notifications or take other
+actions, so you can get alerted as soon as something goes wrong. Here's a
+not-so-useful example:
 
-## Error hooks
+```yaml
+on_error:
+    - echo "Error while creating a backup or running a backup hook."
+```
 
-borgmatic also runs `on_error` hooks if an error occurs, either when creating
-a backup or running a backup hook. See the [monitoring and alerting
-documentation](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/)
-for more information.
+<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
+this option in the `hooks:` section of your configuration.
+
+The `on_error` hook supports interpolating particular runtime variables into
+the hook command. Here's an example that assumes you provide a separate shell
+script to handle the alerting:
+
+```yaml
+on_error:
+    - send-text-message.sh
+```
+
+borgmatic does not run `on_error` hooks if an error occurs within a
+`before_everything` or `after_everything` hook.
+
+
+## Variable interpolation
+
+The command action hooks support interpolating particular runtime variables into
+the commands that are run. Here's are a couple examples that assume you provide
+separate shell scripts:
+
+```yaml
+commands:
+    - after: action
+      when: [prune]
+      run:
+          - record-prune.sh {configuration_filename} {repository}
+    - after: error
+      when: [create]
+      run:
+          - send-text-message.sh {configuration_filename} {repository}
+```
+
+In this example, when the hook is triggered, borgmatic interpolates runtime
+values into each hook command: the borgmatic configuration filename and the
+paths of the current Borg repository.
+
+Here's the full set of supported variables you can use here:
+
+ * `configuration_filename`: borgmatic configuration filename in which the
+   hook was defined
+ * `log_file`
+   <span class="minilink minilink-addedin">New in version 1.7.12</span>:
+   path of the borgmatic log file, only set when the `--log-file` flag is used
+ * `repository`: path of the current repository as configured in the current
+   borgmatic configuration file, if applicable to the current hook
+ * `repository_label` <span class="minilink minilink-addedin">New in version
+   1.8.12</span>: label of the current repository as configured in the current
+   borgmatic configuration file, if applicable to the current hook
+ * `error`: the error message itself, only applies to `error` hooks
+ * `output`: output of the command that failed, only applies to `error` hooks
+   (may be blank if an error occurred without running a command)
+
+Not all command hooks support all variables. For instance, the `everything` and
+`configuration` hooks don't support repository variables because those hooks
+don't run in the context of a single repository. But the deprecated command
+hooks (`before_backup`, `on_error`, etc.) do generally support variable
+interpolation.
+
+borgmatic automatically escapes these interpolated values to prevent shell
+injection attacks. One implication is that you shouldn't wrap the interpolated
+values in your own quotes, as that will interfere with the quoting performed by
+borgmatic and result in your command receiving incorrect arguments. For
+instance, this won't work:
+
+```yaml
+commands:
+    - after: error
+      run:
+          # Don't do this! It won't work, as the {error} value is already quoted.
+          - send-text-message.sh "Uh oh: {error}"
+```
+
+Do this instead:
+
+```yaml
+commands:
+    - after: error
+      run:
+          - send-text-message.sh {error}
+```
+
+Note that you can also interpolate [arbitrary environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
 
 
 ## Hook output

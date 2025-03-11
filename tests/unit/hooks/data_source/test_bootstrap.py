@@ -6,6 +6,9 @@ from borgmatic.hooks.data_source import bootstrap as module
 
 
 def test_dump_data_sources_creates_manifest_file():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     flexmock(module.os).should_receive('makedirs')
 
     flexmock(module.importlib.metadata).should_receive('version').and_return('1.0.0')
@@ -32,6 +35,7 @@ def test_dump_data_sources_creates_manifest_file():
 
 
 def test_dump_data_sources_with_store_config_files_false_does_not_create_manifest_file():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').never()
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module.json).should_receive('dump').never()
     hook_config = {'store_config_files': False}
@@ -47,6 +51,9 @@ def test_dump_data_sources_with_store_config_files_false_does_not_create_manifes
 
 
 def test_dump_data_sources_with_dry_run_does_not_create_manifest_file():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
     flexmock(module.os).should_receive('makedirs').never()
     flexmock(module.json).should_receive('dump').never()
 

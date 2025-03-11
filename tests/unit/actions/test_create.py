@@ -433,7 +433,6 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
         flexmock()
     )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
@@ -456,7 +455,6 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
             repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
-            hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
             global_arguments=global_arguments,
@@ -476,7 +474,6 @@ def test_run_create_runs_with_selected_repository():
         flexmock()
     )
     flexmock(module.borgmatic.borg.create).should_receive('create_archive').once()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
@@ -499,7 +496,6 @@ def test_run_create_runs_with_selected_repository():
             repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
-            hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
             global_arguments=global_arguments,
@@ -532,7 +528,6 @@ def test_run_create_bails_if_repository_does_not_match():
             repository='repo',
             config={},
             config_paths=['/tmp/test.yaml'],
-            hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
             global_arguments=global_arguments,
@@ -556,7 +551,6 @@ def test_run_create_produces_json():
     )
     parsed_json = flexmock()
     flexmock(module.borgmatic.actions.json).should_receive('parse_json').and_return(parsed_json)
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return({})
     flexmock(module.borgmatic.hooks.dispatch).should_receive(
         'call_hooks_even_if_unconfigured'
@@ -579,7 +573,6 @@ def test_run_create_produces_json():
             repository={'path': 'repo'},
             config={},
             config_paths=['/tmp/test.yaml'],
-            hook_context={},
             local_borg_version=None,
             create_arguments=create_arguments,
             global_arguments=global_arguments,
