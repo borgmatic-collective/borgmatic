@@ -29,16 +29,13 @@ concept of "soft failure" come in.
 
 This feature leverages [borgmatic command
 hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
-so first familiarize yourself with them. The idea is that you write a simple
-test in the form of a borgmatic hook to see if backups should proceed or not.
+so familiarize yourself with them first. The idea is that you write a simple
+test in the form of a borgmatic command hook to see if backups should proceed or
+not.
 
 The way the test works is that if any of your hook commands return a special
 exit status of 75, that indicates to borgmatic that it's a temporary failure,
 and borgmatic should skip all subsequent actions for the current repository.
-
-<span class="minilink minilink-addedin">Prior to version 1.9.0</span> Soft
-failures skipped subsequent actions for *all* repositories in the
-configuration file, rather than just for the current repository.
 
 If you return any status besides 75, then it's a standard success or error.
 (Zero is success; anything else other than 75 is an error).
@@ -62,32 +59,36 @@ these options in the `location:` section of your configuration.
 <span class="minilink minilink-addedin">Prior to version 1.7.10</span> Omit
 the `path:` portion of the `repositories` list.
 
-Then, write a `before_backup` hook in that same configuration file that uses
-the external `findmnt` utility to see whether the drive is mounted before
-proceeding.
+Then, make a command hook in that same configuration file that uses the external
+`findmnt` utility to see whether the drive is mounted before proceeding.
 
 ```yaml
-before_backup:
+commands:
+    - before: repository
+      run:
+          - findmnt /mnt/removable > /dev/null || exit 75
+```
+
+<span class="minilink minilink-addedin">Prior to version 2.0.0</span> Use the
+deprecated `before_actions` hook instead:
+
+```yaml
+before_actions:
     - findmnt /mnt/removable > /dev/null || exit 75
 ```
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put this
 option in the `hooks:` section of your configuration.
 
+<span class="minilink minilink-addedin">Prior to version 1.7.0</span> Use
+`before_create` or similar instead of `before_actions`, which was introduced in
+borgmatic 1.7.0.
+
 What this does is check if the `findmnt` command errors when probing for a
 particular mount point. If it does error, then it returns exit code 75 to
 borgmatic. borgmatic logs the soft failure, skips all further actions for the
 current repository, and proceeds onward to any other repositories and/or
 configuration files you may have.
-
-If you'd prefer not to use a separate configuration file, and you'd rather
-have multiple repositories in a single configuration file, you can make your
-`before_backup` soft failure test [vary by
-repository](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
-That might require calling out to a separate script though.
-
-Note that `before_backup` only runs on the `create` action. See below about
-optionally using `before_actions` instead.
 
 You can imagine a similar check for the sometimes-online server case:
 
@@ -98,50 +99,50 @@ source_directories:
 repositories:
     - path: ssh://me@buddys-server.org/./backup.borg
 
-before_backup:
-    - ping -q -c 1 buddys-server.org > /dev/null || exit 75
+commands:
+    - before: repository
+      run:
+          - ping -q -c 1 buddys-server.org > /dev/null || exit 75
 ```
 
 Or to only run backups if the battery level is high enough:
 
 ```yaml
-before_backup:
-    - is_battery_percent_at_least.sh 25
+commands:
+    - before: repository
+      run:
+          - is_battery_percent_at_least.sh 25
 ```
 
-(Writing the battery script is left as an exercise to the reader.)
-
-<span class="minilink minilink-addedin">New in version 1.7.0</span> The
-`before_actions` and `after_actions` hooks run before/after all the actions
-(like `create`, `prune`, etc.) for each repository. So if you'd like your soft
-failure command hook to run regardless of action, consider using
-`before_actions` instead of `before_backup`.
+Writing the battery script is left as an exercise to the reader.
 
 
 ## Caveats and details
 
 There are some caveats you should be aware of with this feature.
 
- * You'll generally want to put a soft failure command in the `before_backup`
+ * You'll generally want to put a soft failure command in a `before` command
    hook, so as to gate whether the backup action occurs. While a soft failure is
-   also supported in the `after_backup` hook, returning a soft failure there
+   also supported in an `after` command hook, returning a soft failure there
    won't prevent any actions from occurring, because they've already occurred!
-   Similarly, you can return a soft failure from an `on_error` hook, but at
+   Similarly, you can return a soft failure from an `error` command hook, but at
    that point it's too late to prevent the error.
  * Returning a soft failure does prevent further commands in the same hook from
-   executing. So, like a standard error, it is an "early out". Unlike a standard
+   executing. So, like a standard error, it is an "early out." Unlike a standard
    error, borgmatic does not display it in angry red text or consider it a
    failure.
- * Any given soft failure only applies to the a single borgmatic repository
-   (as of borgmatic 1.9.0). So if you have other repositories you don't want
-   soft-failed, then make your soft fail test [vary by
-   repository](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation)—or
-   put anything that you don't want soft-failed (like always-online cloud
-   backups) in separate configuration files from your soft-failing
-   repositories.
+ * <span class="minilink minilink-addedin">New in version 1.9.0</span> Soft
+   failures in `action` or `before_*` command hooks only skip the current
+   repository rather than all repositories in a configuration file.
+ * If you're writing a soft failure script that you want to vary based on the
+   current repository, for instance so you can have multiple repositories in a
+   single configuration file, have a look at [command hook variable
+   interpolation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/#variable-interpolation).
+   And there's always still the option of puting anything that you don't want
+   soft-failed (like always-online cloud backups) in separate configuration
+   files from your soft-failing repositories.
  * The soft failure doesn't have to test anything related to a repository. You
-   can even perform a test to make sure that individual source directories are
-   mounted and available. Use your imagination!
- * The soft failure feature also works for before/after hooks for other
-   actions as well. But it is not implemented for `before_everything` or
-   `after_everything`.
+   can even perform a test that individual source directories are mounted and
+   available. Use your imagination!
+ * Soft failures are not currently implemented for `everything`,
+   `before_everything`, or `after_everything` command hooks.
