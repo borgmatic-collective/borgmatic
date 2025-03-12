@@ -256,7 +256,7 @@ class Log_prefix:
         self.original_prefix = get_log_prefix()
         set_log_prefix(self.prefix)
 
-    def __exit__(self, exception, value, traceback):
+    def __exit__(self, exception_type, exception, traceback):
         '''
         Restore any original prefix.
         '''

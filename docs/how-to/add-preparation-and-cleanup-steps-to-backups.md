@@ -61,13 +61,10 @@ Each command in the `commands:` list has the following options:
     * `action` runs before each action for each repository. This replaces the deprecated `before_create`, `after_prune`, etc.
     * `repository` runs before or after all actions for each repository. This replaces the deprecated `before_actions` and `after_actions`.
     * `configuration` runs before or after all actions and repositories in the current configuration file.
-    * `everything` runs before or after all configuration files. This replaces the deprecated `before_everything` and `after_everything`.
+    * `everything` runs before or after all configuration files. Errors here do not trigger `error` hooks or the `fail` state in monitoring hooks. This replaces the deprecated `before_everything` and `after_everything`.
     * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
-
-borgmatic does not run `error` hooks if an error occurs within an `everything`
-hook.
 
 There's also another command hook that works a little differently:
 

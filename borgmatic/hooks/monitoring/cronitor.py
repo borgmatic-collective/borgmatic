@@ -28,7 +28,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     filename in any log entries. If this is a dry run, then don't actually ping anything.
     '''
     if state not in MONITOR_STATE_TO_CRONITOR:
-        logger.debug(f'Ignoring unsupported monitoring {state.name.lower()} in Cronitor hook')
+        logger.debug(f'Ignoring unsupported monitoring state {state.name.lower()} in Cronitor hook')
         return
 
     dry_run_label = ' (dry run; not actually pinging)' if dry_run else ''

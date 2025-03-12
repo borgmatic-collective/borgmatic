@@ -134,7 +134,7 @@ class Runtime_directory:
         '''
         return self.runtime_path
 
-    def __exit__(self, exception, value, traceback):
+    def __exit__(self, exception_type, exception, traceback):
         '''
         Delete any temporary directory that was created as part of initialization.
         '''

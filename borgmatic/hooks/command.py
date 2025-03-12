@@ -195,7 +195,7 @@ class Before_after_hooks:
 
             raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
-    def __exit__(self, exception, value, traceback):
+    def __exit__(self, exception_type, exception, traceback):
         '''
         Run the configured "after" command hooks that match the initialized data points.
         '''
@@ -215,7 +215,7 @@ class Before_after_hooks:
             if considered_soft_failure(error):
                 return
 
-            raise ValueError(f'Error running before {self.before_after} hook: {error}')
+            raise ValueError(f'Error running after {self.before_after} hook: {error}')
 
 
 def considered_soft_failure(error):

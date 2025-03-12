@@ -46,7 +46,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     '''
     if state != monitor.State.FAIL:
         logger.debug(
-            f'Ignoring unsupported monitoring {state.name.lower()} in PagerDuty hook',
+            f'Ignoring unsupported monitoring state {state.name.lower()} in PagerDuty hook',
         )
         return
 
