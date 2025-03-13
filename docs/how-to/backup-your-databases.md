@@ -193,14 +193,14 @@ mysql_databases:
 
 ### Containers
 
-If your database is running within a container and borgmatic is too, no
+If your database server is running within a container and borgmatic is too, no
 problem—configure borgmatic to connect to the container's name on its exposed
 port. For instance:
 
 ```yaml
 postgresql_databases:
     - name: users
-      hostname: your-database-container-name
+      hostname: your-database-server-container-name
       port: 5433
       username: postgres
       password: trustsome1
@@ -210,21 +210,22 @@ postgresql_databases:
 these options in the `hooks:` section of your configuration.
 
 But what if borgmatic is running on the host? You can still connect to a
-database container if its ports are properly exposed to the host. For
+database server container if its ports are properly exposed to the host. For
 instance, when running the database container, you can specify `--publish
 127.0.0.1:5433:5432` so that it exposes the container's port 5432 to port 5433
-on the host (only reachable on localhost, in this case). Or the same thing
-with Docker Compose:
+on the host (only reachable on localhost, in this case). Or the same thing with
+Docker Compose:
 
 ```yaml
 services:
-   your-database-container-name:
+   your-database-server-container-name:
        image: postgres
        ports:
            - 127.0.0.1:5433:5432
 ```
 
-And then you can connect to the database from borgmatic running on the host:
+And then you can configure borgmatic running on the host to connect to the
+database:
 
 ```yaml
 hooks:
@@ -240,9 +241,9 @@ Alter the ports in these examples to suit your particular database system.
 
 Normally, borgmatic dumps a database by running a database dump command (e.g.
 `pg_dump`) on the host or wherever borgmatic is running, and this command
-connects to your containerized database via the given `hostname` and `port`.
-But if you don't have any database dump commands installed on your host and
-you'd rather use the commands inside your database container itself, borgmatic
+connects to your containerized database via the given `hostname` and `port`. But
+if you don't have any database dump commands installed on your host and you'd
+rather use the commands inside your running database container itself, borgmatic
 supports that too. For that, configure borgmatic to `exec` into your container
 to run the dump command.
 
@@ -259,9 +260,10 @@ hooks:
           pg_dump_command: docker exec my_pg_container pg_dump
 ```
 
-... where `my_pg_container` is the name of your database container. In this
-example, you'd also need to set the `pg_restore_command` and `psql_command`
-options.
+... where `my_pg_container` is the name of your running database container.
+Running `pg_dump` this way takes advantage of the localhost "trust"
+authentication within that container. In this example, you'd also need to set
+the `pg_restore_command` and `psql_command` options.
 
 If you choose to use the `pg_dump` command within the container, and you're
 using the `directory` format in particular, you'll also need to mount the
@@ -279,6 +281,24 @@ services:
     volumes:
       - /run/user/1000:/run/user/1000
 ```
+
+Another variation: If you're running borgmatic on the host but want to spin up a
+temporary `pg_dump` container whenever borgmatic dumps a database, for
+instance to make use of a `pg_dump` version not present on the host, try
+something like this:
+
+```yaml
+hooks:
+    postgresql_databases:
+        - name: users
+          hostname: your-database-hostname
+          username: postgres
+          password: trustsome1
+          pg_dump_command: docker run --rm --env PGPASSWORD postgres:17-alpine pg_dump
+```
+
+The `--env PGPASSWORD` is necessary here for borgmatic to provide your database
+password to the temporary `pg_dump` container.
 
 Similar command override options are available for (some of) the other
 supported database types as well. See the [configuration
