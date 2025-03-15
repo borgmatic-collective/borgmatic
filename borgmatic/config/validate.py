@@ -4,7 +4,7 @@ import os
 import jsonschema
 import ruamel.yaml
 
-import borgmatic.config
+import borgmatic.config.arguments
 from borgmatic.config import constants, environment, load, normalize, override
 
 
@@ -84,13 +84,15 @@ def apply_logical_validation(config_filename, parsed_configuration):
             )
 
 
-def parse_configuration(config_filename, schema_filename, overrides=None, resolve_env=True):
+def parse_configuration(config_filename, schema_filename, global_arguments, overrides=None, resolve_env=True):
     '''
     Given the path to a config filename in YAML format, the path to a schema filename in a YAML
-    rendition of JSON Schema format, a sequence of configuration file override strings in the form
-    of "option.suboption=value", and whether to resolve environment variables, return the parsed
-    configuration as a data structure of nested dicts and lists corresponding to the schema. Example
-    return value:
+    rendition of JSON Schema format, global arguments as an argparse.Namespace, a sequence of
+    configuration file override strings in the form of "option.suboption=value", and whether to
+    resolve environment variables, return the parsed configuration as a data structure of nested
+    dicts and lists corresponding to the schema. Example return value.
+
+    Example return value:
 
         {
             'source_directories': ['/home', '/etc'],
@@ -113,6 +115,7 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     except (ruamel.yaml.error.YAMLError, RecursionError) as error:
         raise Validation_error(config_filename, (str(error),))
 
+    borgmatic.config.arguments.apply_arguments_to_config(config, schema, global_arguments)
     override.apply_overrides(config, schema, overrides)
     constants.apply_constants(config, config.get('constants') if config else {})
 

@@ -36,9 +36,14 @@ properties:
             properties:
                 path:
                     type: string
+                    description: The local path or Borg URL of the repository.
                     example: ssh://user@backupserver/./{fqdn}
                 label:
                     type: string
+                    description: |
+                        An optional label for the repository, used in logging
+                        and to make selecting the repository easier on the
+                        command-line.
                     example: backupserver
         description: |
             A required list of local or remote repositories with paths and

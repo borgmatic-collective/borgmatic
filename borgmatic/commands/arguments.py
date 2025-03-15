@@ -1,5 +1,7 @@
 import collections
 import itertools
+import json
+import re
 import sys
 from argparse import ArgumentParser
 
@@ -282,12 +284,155 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-def make_parsers():
+def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
     '''
-    Build a global arguments parser, individual action parsers, and a combined parser containing
-    both. Return them as a tuple. The global parser is useful for parsing just global arguments
-    while ignoring actions, and the combined parser is handy for displaying help that includes
-    everything: global flags, a list of actions, etc.
+    Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
+    unparsed argument strings, convert the entire schema into corresponding command-line flags and
+    add them to the arguments group.
+
+    For instance, given a schema of:
+
+        {
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'object',
+                    'properties': {
+                        'bar': {'type': 'integer'}
+                    }
+                }
+            }
+        }
+
+    ... the following flag will be added to the arguments group:
+
+        --foo.bar
+
+    If "foo" is instead an array of objects, it will get added like this
+
+        --foo[0].bar
+
+    And if names are also passed in, they are considered to be the name components of an option
+    (e.g. "foo" and "bar") and are used to construct a resulting flag.
+    '''
+    if names is None:
+        names = ()
+
+    schema_type = schema.get('type')
+
+    # If this option has multiple types, just use the first one (that isn't "null").
+    if isinstance(schema_type, list):
+        try:
+            schema_type = next(single_type for single_type in schema_type if single_type != 'null')
+        except StopIteration:
+            raise ValueError(f'Unknown type in configuration schema: {schema_type}')
+
+    # If this is an "object" type, recurse for each child option ("property").
+    if schema_type in {'object', 'array'}:
+        properties = (
+            schema.get('items', {}).get('properties')
+            if schema_type == 'array'
+            else schema.get('properties')
+        )
+
+        if properties:
+            for name, child in properties.items():
+                add_arguments_from_schema(
+                    arguments_group,
+                    child,
+                    unparsed_arguments,
+                    names + ((name + '[0]',) if child.get('type') == 'array' else (name,)),
+                )
+
+        return
+
+    flag_name = '.'.join(names)
+    description = schema.get('description')
+    metavar = names[-1].upper()
+
+    if schema_type == 'array':
+        metavar = metavar.rstrip('S')
+
+    if description:
+        if schema_type == 'array':
+            items_schema = schema.get('items', {})
+
+            description += ' Can specify flag multiple times.'
+
+        if '[0]' in flag_name:
+            description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+
+        description = description.replace('%', '%%')
+
+    try:
+        argument_type = {'string': str, 'integer': int, 'boolean': bool, 'array': str}[schema_type]
+    except KeyError:
+        raise ValueError(f'Unknown type in configuration schema: {schema_type}')
+
+    arguments_group.add_argument(
+        f"--{flag_name.replace('_', '-')}",
+        type=argument_type,
+        metavar=metavar,
+        action='append' if schema_type == 'array' else None,
+        help=description,
+    )
+
+    # We want to support flags that can have arbitrary indices like:
+    #
+    #   --foo.bar[1].baz
+    #
+    # But argparse doesn't support that natively because the index can be an arbitrary number. We
+    # won't let that stop us though, will we? So, if the current flag name has an array component in
+    # it (e.g. a name with "[0]"), then make a pattern that would match the flag name regardless of
+    # the number that's in it. The idea is that we want to look for unparsed arguments that appear
+    # like the flag name, but instead of "[0]" they have, say, "[1]" or "[123]".
+    #
+    # Next, we check each unparsed argument against that pattern. If one of them matches, add an
+    # argument flag for it to the argument parser group. Example:
+    #
+    # Let's say flag_name is:
+    #
+    #     --foo.bar[0].baz
+    #
+    # ... then the regular expression pattern will be:
+    #
+    #     ^--foo\.bar\[\d+\]\.baz
+    #
+    # ... and, if that matches an unparsed argument of:
+    #
+    #     --foo.bar[1].baz
+    #
+    # ... then an argument flag will get added equal to that unparsed argument. And the unparsed
+    # argument will match it when parsing is performed! In this manner, we're using the actual user
+    # CLI input to inform what exact flags we support!
+    if '[0]' not in flag_name or '--help' in unparsed_arguments:
+        return
+
+    pattern = re.compile(f'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+    existing_flags = set(
+        itertools.chain(
+            *(group_action.option_strings for group_action in arguments_group._group_actions)
+        )
+    )
+
+    for unparsed in unparsed_arguments:
+        unparsed_flag_name = unparsed.split('=', 1)[0]
+
+        if pattern.match(unparsed_flag_name) and unparsed_flag_name not in existing_flags:
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                type=argument_type,
+                metavar=metavar,
+                help=description,
+            )
+
+
+def make_parsers(schema, unparsed_arguments):
+    '''
+    Given a configuration schema dict, build a global arguments parser, individual action parsers,
+    and a combined parser containing both. Return them as a tuple. The global parser is useful for
+    parsing just global arguments while ignoring actions, and the combined parser is handy for
+    displaying help that includes everything: global flags, a list of actions, etc.
     '''
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
@@ -388,6 +533,7 @@ def make_parsers():
         action='store_true',
         help='Display installed version number of borgmatic and exit',
     )
+    add_arguments_from_schema(global_group, schema, unparsed_arguments)
 
     global_plus_action_parser = ArgumentParser(
         description='''
@@ -1523,15 +1669,18 @@ def make_parsers():
     return global_parser, action_parsers, global_plus_action_parser
 
 
-def parse_arguments(*unparsed_arguments):
+def parse_arguments(schema, *unparsed_arguments):
     '''
-    Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as a dict mapping from action name (or "global") to an argparse.Namespace instance.
+    Given a configuration schema dict and the command-line arguments with which this script was
+    invoked, parse the arguments and return them as a dict mapping from action name (or "global") to
+    an argparse.Namespace instance.
 
     Raise ValueError if the arguments cannot be parsed.
     Raise SystemExit with an error code of 0 if "--help" was requested.
     '''
-    global_parser, action_parsers, global_plus_action_parser = make_parsers()
+    global_parser, action_parsers, global_plus_action_parser = make_parsers(
+        schema, unparsed_arguments
+    )
     arguments, remaining_action_arguments = parse_arguments_for_actions(
         unparsed_arguments, action_parsers.choices, global_parser
     )
