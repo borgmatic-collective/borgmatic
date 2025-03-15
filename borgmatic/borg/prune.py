@@ -75,7 +75,13 @@ def prune_archives(
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--stats',) if prune_arguments.stats and not dry_run else ())
+        + (
+            ('--stats',)
+            if prune_arguments.stats
+            and not dry_run
+            and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
+            else ()
+        )
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + flags.make_flags_from_arguments(
             prune_arguments,

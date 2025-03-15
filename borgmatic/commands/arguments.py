@@ -693,7 +693,7 @@ def make_parsers(schema, unparsed_arguments):
         dest='stats',
         default=False,
         action='store_true',
-        help='Display statistics of the pruned archive',
+        help='Display statistics of the pruned archive [Borg 1 only]',
     )
     prune_group.add_argument(
         '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
