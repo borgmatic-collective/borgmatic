@@ -1642,6 +1642,24 @@ properties:
                         Path to the SQLite database file to restore to. Defaults
                         to the "path" option.
                     example: /var/lib/sqlite/users.db
+                sqlite_command:
+                    type: string
+                    description: |
+                        Command to use instead of "sqlite3". This can be used
+                        to run a specific sqlite3 version (e.g., one inside 
+                        a running container). If you run it from within
+                        a container, make sure to mount your host's
+                        ".borgmatic" folder into the container using the same
+                        directory structure. Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
+                sqlite_restore_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead
+                        of "sqlite3". This can be used to run a specific 
+                        sqlite3 version (e.g., one inside a running container). 
+                        Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
     mongodb_databases:
         type: array
         items:
