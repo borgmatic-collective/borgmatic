@@ -79,13 +79,17 @@ def dump_data_sources(
                 )
                 continue
 
-            command = (
-                'sqlite3',
+            sqlite_command = tuple(
+                shlex.quote(part)
+                for part in shlex.split(database.get('sqlite_command') or 'sqlite3')
+            )
+            command = sqlite_command + (
                 shlex.quote(database_path),
                 '.dump',
                 '>',
                 shlex.quote(dump_filename),
             )
+
             logger.debug(
                 f'Dumping SQLite database at {database_path} to {dump_filename}{dry_run_label}'
             )
@@ -168,11 +172,11 @@ def restore_data_source_dump(
     except FileNotFoundError:  # pragma: no cover
         pass
 
-    restore_command = (
-        'sqlite3',
-        database_path,
+    sqlite_restore_command = tuple(
+        shlex.quote(part)
+        for part in shlex.split(data_source.get('sqlite_restore_command') or 'sqlite3')
     )
-
+    restore_command = sqlite_restore_command + (shlex.quote(database_path),)
     # Don't give Borg local path so as to error on warnings, as "borg extract" only gives a warning
     # if the restore paths don't exist in the archive.
     execute_command_with_processes(
