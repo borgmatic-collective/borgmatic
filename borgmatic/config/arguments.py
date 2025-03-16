@@ -10,14 +10,25 @@ LIST_INDEX_KEY_PATTERN = re.compile(r'^(?P<list_name>[a-zA-z-]+)\[(?P<index>\d+)
 def set_values(config, keys, value):
     '''
     Given a configuration dict, a sequence of parsed key strings, and a string value, descend into
-    the configuration hierarchy based on the keys to set the value into the right place.
+    the configuration hierarchy based on the given keys and set the value into the right place.
+    For example, consider these keys:
+
+        ('foo', 'bar', 'baz')
+
+    This looks up "foo" in the given configuration. And within that value, it looks up "bar". And
+    then within that value, it looks up "baz" and sets it to the given value. Another example:
+
+        ('mylist[0]', 'foo')
+
+    This looks for the zeroth element of "mylist" in the given configuration. And within that value,
+    it looks up "foo" and sets it to the given value. Finally:
     '''
     if not keys:
         return
 
     first_key = keys[0]
 
-    # Support "name[0]"-style list index syntax.
+    # Support "mylist[0]" list index syntax.
     match = LIST_INDEX_KEY_PATTERN.match(first_key)
 
     if match:
@@ -41,6 +52,7 @@ def set_values(config, keys, value):
 
     if len(keys) == 1:
         config[first_key] = value
+
         return
 
     if first_key not in config:
