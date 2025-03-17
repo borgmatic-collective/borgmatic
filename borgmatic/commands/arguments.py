@@ -1,11 +1,16 @@
 import collections
+import decimal
 import itertools
+import io
 import json
 import re
 import sys
 from argparse import ArgumentParser
 
 from borgmatic.config import collect
+import borgmatic.config.schema
+
+import ruamel.yaml
 
 ACTION_ALIASES = {
     'repo-create': ['rcreate', 'init', '-I'],
@@ -308,8 +313,9 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
         --foo.bar
 
-    If "foo" is instead an array of objects, it will get added like this
+    If "foo" is instead an array of objects, both of the following will get added:
 
+        --foo
         --foo[0].bar
 
     And if names are also passed in, they are considered to be the name components of an option
@@ -328,12 +334,8 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             raise ValueError(f'Unknown type in configuration schema: {schema_type}')
 
     # If this is an "object" type, recurse for each child option ("property").
-    if schema_type in {'object', 'array'}:
-        properties = (
-            schema.get('items', {}).get('properties')
-            if schema_type == 'array'
-            else schema.get('properties')
-        )
+    if schema_type == 'object':
+        properties = schema.get('properties')
 
         if properties:
             for name, child in properties.items():
@@ -341,23 +343,37 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                     arguments_group,
                     child,
                     unparsed_arguments,
-                    names + ((name + '[0]',) if child.get('type') == 'array' else (name,)),
+                    names + (name,)
                 )
 
         return
+
+    # If this is an "array" type, recurse for each child option of its items type. Don't return yet,
+    # so that a flag also gets added below for the array itself.
+    if schema_type == 'array':
+        properties = borgmatic.config.schema.get_properties(schema.get('items', {}))
+
+        if properties:
+            for name, child in properties.items():
+                add_arguments_from_schema(
+                    arguments_group,
+                    child,
+                    unparsed_arguments,
+                    names[:-1] + (f'{names[-1]}[0]',) + (name,)
+                )
 
     flag_name = '.'.join(names)
     description = schema.get('description')
     metavar = names[-1].upper()
 
-    if schema_type == 'array':
-        metavar = metavar.rstrip('S')
-
     if description:
         if schema_type == 'array':
-            items_schema = schema.get('items', {})
+            example_buffer = io.StringIO()
+            yaml = ruamel.yaml.YAML(typ='safe')
+            yaml.default_flow_style = True
+            yaml.dump(schema.get('example'), example_buffer)
 
-            description += ' Can specify flag multiple times.'
+            description += f' Example value: "{example_buffer.getvalue().strip()}"'
 
         if '[0]' in flag_name:
             description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
@@ -365,7 +381,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         description = description.replace('%', '%%')
 
     try:
-        argument_type = {'string': str, 'integer': int, 'boolean': bool, 'array': str}[schema_type]
+        argument_type = {'string': str, 'integer': int, 'number': decimal.Decimal, 'boolean': bool, 'array': str}[schema_type]
     except KeyError:
         raise ValueError(f'Unknown type in configuration schema: {schema_type}')
 
@@ -373,7 +389,6 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         f"--{flag_name.replace('_', '-')}",
         type=argument_type,
         metavar=metavar,
-        action='append' if schema_type == 'array' else None,
         help=description,
     )
 

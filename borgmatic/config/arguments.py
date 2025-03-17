@@ -21,7 +21,7 @@ def set_values(config, keys, value):
         ('mylist[0]', 'foo')
 
     This looks for the zeroth element of "mylist" in the given configuration. And within that value,
-    it looks up "foo" and sets it to the given value. Finally:
+    it looks up "foo" and sets it to the given value.
     '''
     if not keys:
         return
@@ -89,6 +89,22 @@ def type_for_option(schema, option_keys):
         return None
 
 
+def convert_value_type(value, option_type):
+    '''
+    Given a string value and its schema type as a string, determine its logical type (string,
+    boolean, integer, etc.), and return it converted to that type.
+
+    If the option type is a string, leave the value as a string so that special characters in it
+    don't get interpreted as YAML during conversion.
+
+    Raise ruamel.yaml.error.YAMLError if there's a parse issue with the YAML.
+    '''
+    if option_type == 'string':
+        return value
+
+    return ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
+
+
 def prepare_arguments_for_config(global_arguments, schema):
     '''
     Given global arguments as an argparse.Namespace and a configuration schema dict, parse each
@@ -125,11 +141,11 @@ def prepare_arguments_for_config(global_arguments, schema):
             prepared_values.append(
                 (
                     keys,
-                    value,
+                    convert_value_type(value, option_type),
                 )
             )
         except ruamel.yaml.error.YAMLError as error:
-            raise ValueError(f"Invalid override '{raw_override}': {error.problem}")
+            raise ValueError(f'Invalid override "{argument_name}": {error.problem}')
 
     return tuple(prepared_values)
 

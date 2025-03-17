@@ -326,7 +326,11 @@ def normalize(config_filename, config):
         config['repositories'] = []
 
         for repository_dict in repositories:
-            repository_path = repository_dict['path']
+            repository_path = repository_dict.get('path')
+
+            if repository_path is None:
+                continue
+
             if '~' in repository_path:
                 logs.append(
                     logging.makeLogRecord(

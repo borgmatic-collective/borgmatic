@@ -1,12 +1,12 @@
 import collections
 import io
-import itertools
 import os
 import re
 
 import ruamel.yaml
 
 from borgmatic.config import load, normalize
+import borgmatic.config.schema
 
 INDENT = 4
 SEQUENCE_INDENT = 2
@@ -20,27 +20,6 @@ def insert_newline_before_comment(config, field_name):
     config.ca.items[field_name][1].insert(
         0, ruamel.yaml.tokens.CommentToken('\n', ruamel.yaml.error.CommentMark(0), None)
     )
-
-
-def get_properties(schema):
-    '''
-    Given a schema dict, return its properties. But if it's got sub-schemas with multiple different
-    potential properties, returned their merged properties instead (interleaved so the first
-    properties of each sub-schema come first). The idea is that the user should see all possible
-    options even if they're not all possible together.
-    '''
-    if 'oneOf' in schema:
-        return dict(
-            item
-            for item in itertools.chain(
-                *itertools.zip_longest(
-                    *[sub_schema['properties'].items() for sub_schema in schema['oneOf']]
-                )
-            )
-            if item is not None
-        )
-
-    return schema['properties']
 
 
 def schema_to_sample_configuration(schema, source_config=None, level=0, parent_is_sequence=False):
@@ -78,7 +57,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
                         sub_schema, (source_config or {}).get(field_name, {}), level + 1
                     ),
                 )
-                for field_name, sub_schema in get_properties(schema).items()
+                for field_name, sub_schema in borgmatic.config.schema.get_properties(schema).items()
             ]
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
@@ -189,7 +168,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         return
 
     for field_name in config[0].keys():
-        field_schema = get_properties(schema['items']).get(field_name, {})
+        field_schema = borgmatic.config.schema.get_properties(schema['items']).get(field_name, {})
         description = field_schema.get('description')
 
         # No description to use? Skip it.
@@ -223,7 +202,7 @@ def add_comments_to_configuration_object(
         if skip_first and index == 0:
             continue
 
-        field_schema = get_properties(schema).get(field_name, {})
+        field_schema = borgmatic.config.schema.get_properties(schema).get(field_name, {})
         description = field_schema.get('description', '').strip()
 
         # If this isn't a default key, add an indicator to the comment flagging it to be commented

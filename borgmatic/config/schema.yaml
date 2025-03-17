@@ -53,8 +53,7 @@ properties:
             output of "borg help placeholders" for details. See ssh_command for
             SSH options like identity file or port. If systemd service is used,
             then add local repository paths in the systemd service file to the
-            ReadWritePaths list. Prior to borgmatic 1.7.10, repositories was a
-            list of plain path strings.
+            ReadWritePaths list.
         example:
             - path: ssh://user@backupserver/./sourcehostname.borg
               label: backupserver
@@ -738,6 +737,10 @@ properties:
             List of one or more consistency checks to run on a periodic basis
             (if "frequency" is set) or every time borgmatic runs checks (if
             "frequency" is omitted).
+        example:
+          - name: archives
+            frequency: 2 weeks
+          - name: repository
     check_repositories:
         type: array
         items:
@@ -1115,6 +1118,10 @@ properties:
             List of one or more command hooks to execute, triggered at
             particular points during borgmatic's execution. For each command
             hook, specify one of "before" or "after", not both.
+        example:
+            - before: action
+              when: [create]
+              run: [echo Backing up.]
     bootstrap:
         type: object
         properties:
@@ -1329,6 +1336,9 @@ properties:
             https://www.postgresql.org/docs/current/app-pgdump.html and
             https://www.postgresql.org/docs/current/libpq-ssl.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     mariadb_databases:
         type: array
         items:
@@ -1473,6 +1483,9 @@ properties:
             added to your source directories at runtime and streamed directly
             to Borg. Requires mariadb-dump/mariadb commands. See
             https://mariadb.com/kb/en/library/mysqldump/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     mysql_databases:
         type: array
         items:
@@ -1618,6 +1631,9 @@ properties:
             to Borg. Requires mysqldump/mysql commands. See
             https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     sqlite_databases:
         type: array
         items:
@@ -1647,6 +1663,15 @@ properties:
                         Path to the SQLite database file to restore to. Defaults
                         to the "path" option.
                     example: /var/lib/sqlite/users.db
+        description: |
+            List of one or more SQLite databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly to
+            Borg. Requires the sqlite3 command. See https://sqlite.org/cli.html
+            for details.
+        example:
+            - name: users
+              path: /var/lib/db.sqlite
     mongodb_databases:
         type: array
         items:
@@ -1749,6 +1774,9 @@ properties:
             to Borg. Requires mongodump/mongorestore commands. See
             https://docs.mongodb.com/database-tools/mongodump/ and
             https://docs.mongodb.com/database-tools/mongorestore/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     ntfy:
         type: object
         required: ['topic']
@@ -2231,9 +2259,13 @@ properties:
                     properties:
                         url:
                             type: string
+                            description: URL of this Apprise service.
                             example: "gotify://hostname/token"
                         label:
                             type: string
+                            description: |
+                                Label used in borgmatic logs for this Apprise
+                                service.
                             example: gotify
                 description: |
                     A list of Apprise services to publish to with URLs and
