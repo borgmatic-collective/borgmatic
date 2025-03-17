@@ -75,6 +75,3 @@ def test_get_properties_interleaves_oneof_list_properties():
             ('field3', {'example': 'Example 3'}),
         ]
     )
-
-
-

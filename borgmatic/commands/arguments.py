@@ -1,16 +1,16 @@
 import collections
 import decimal
-import itertools
 import io
+import itertools
 import json
 import re
 import sys
 from argparse import ArgumentParser
 
-from borgmatic.config import collect
-import borgmatic.config.schema
-
 import ruamel.yaml
+
+import borgmatic.config.schema
+from borgmatic.config import collect
 
 ACTION_ALIASES = {
     'repo-create': ['rcreate', 'init', '-I'],
@@ -340,10 +340,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         if properties:
             for name, child in properties.items():
                 add_arguments_from_schema(
-                    arguments_group,
-                    child,
-                    unparsed_arguments,
-                    names + (name,)
+                    arguments_group, child, unparsed_arguments, names + (name,)
                 )
 
         return
@@ -359,7 +356,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                     arguments_group,
                     child,
                     unparsed_arguments,
-                    names[:-1] + (f'{names[-1]}[0]',) + (name,)
+                    names[:-1] + (f'{names[-1]}[0]',) + (name,),
                 )
 
     flag_name = '.'.join(names)
@@ -381,7 +378,13 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         description = description.replace('%', '%%')
 
     try:
-        argument_type = {'string': str, 'integer': int, 'number': decimal.Decimal, 'boolean': bool, 'array': str}[schema_type]
+        argument_type = {
+            'string': str,
+            'integer': int,
+            'number': decimal.Decimal,
+            'boolean': bool,
+            'array': str,
+        }[schema_type]
     except KeyError:
         raise ValueError(f'Unknown type in configuration schema: {schema_type}')
 

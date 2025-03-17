@@ -5,8 +5,8 @@ import re
 
 import ruamel.yaml
 
-from borgmatic.config import load, normalize
 import borgmatic.config.schema
+from borgmatic.config import load, normalize
 
 INDENT = 4
 SEQUENCE_INDENT = 2

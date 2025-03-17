@@ -3,7 +3,6 @@ import re
 
 import ruamel.yaml
 
-
 LIST_INDEX_KEY_PATTERN = re.compile(r'^(?P<list_name>[a-zA-z-]+)\[(?P<index>\d+)\]$')
 
 

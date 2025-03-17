@@ -3,7 +3,6 @@ import logging
 
 import ruamel.yaml
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -139,7 +138,9 @@ def apply_overrides(config, schema, raw_overrides):
     overrides = parse_overrides(raw_overrides, schema)
 
     if overrides:
-        logger.warning("The --override flag is deprecated and will be removed from a future release. Instead, use a command-line flag corresponding to the configuration option you'd like to set.")
+        logger.warning(
+            "The --override flag is deprecated and will be removed from a future release. Instead, use a command-line flag corresponding to the configuration option you'd like to set."
+        )
 
     for keys, value in overrides:
         set_values(config, keys, value)
