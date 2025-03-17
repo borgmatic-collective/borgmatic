@@ -1279,11 +1279,11 @@ properties:
                         Command to use instead of "pg_dump" or "pg_dumpall".
                         This can be used to run a specific pg_dump version
                         (e.g., one inside a running container). If you run it
-                        from within a container, make sure to mount your
-                        host's ".borgmatic" folder into the container using
-                        the same directory structure. Defaults to "pg_dump"
-                        for single database dump or "pg_dumpall" to dump all
-                        databases.
+                        from within a container, make sure to mount the path in
+                        the "user_runtime_directory" option from the host into
+                        the container at the same location. Defaults to
+                        "pg_dump" for single database dump or "pg_dumpall" to
+                        dump all databases.
                     example: docker exec my_pg_container pg_dump
                 pg_restore_command:
                     type: string
@@ -1423,10 +1423,11 @@ properties:
                     description: |
                         Command to use instead of "mariadb-dump". This can be
                         used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mariadb-dump".
+                        inside a running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to
+                        "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
@@ -1568,12 +1569,12 @@ properties:
                 mysql_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mysqldump". This can be
-                        used to run a specific mysql_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mysqldump".
+                        Command to use instead of "mysqldump". This can be used
+                        to run a specific mysql_dump version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
@@ -1663,6 +1664,24 @@ properties:
                         Path to the SQLite database file to restore to. Defaults
                         to the "path" option.
                     example: /var/lib/sqlite/users.db
+                sqlite_command:
+                    type: string
+                    description: |
+                        Command to use instead of "sqlite3". This can be used to
+                        run a specific sqlite3 version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
+                sqlite_restore_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead
+                        of "sqlite3". This can be used to run a specific 
+                        sqlite3 version (e.g., one inside a running container). 
+                        Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
         description: |
             List of one or more SQLite databases to dump before creating a
             backup, run once per configuration file. The database dumps are
