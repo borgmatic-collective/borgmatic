@@ -1,3 +1,4 @@
+import decimal
 import itertools
 
 
@@ -20,3 +21,16 @@ def get_properties(schema):
         )
 
     return schema.get('properties', {})
+
+
+def parse_type(schema_type):
+    try:
+        return {
+            'string': str,
+            'integer': int,
+            'number': decimal.Decimal,
+            'boolean': bool,
+            'array': str,
+        }[schema_type]
+    except KeyError:
+        raise ValueError(f'Unknown type in configuration schema: {schema_type}')

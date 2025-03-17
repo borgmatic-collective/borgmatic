@@ -1,5 +1,4 @@
 import collections
-import decimal
 import io
 import itertools
 import json
@@ -377,16 +376,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
         description = description.replace('%', '%%')
 
-    try:
-        argument_type = {
-            'string': str,
-            'integer': int,
-            'number': decimal.Decimal,
-            'boolean': bool,
-            'array': str,
-        }[schema_type]
-    except KeyError:
-        raise ValueError(f'Unknown type in configuration schema: {schema_type}')
+    argument_type = borgmatic.config.schema.parse_type(schema_type)
 
     arguments_group.add_argument(
         f"--{flag_name.replace('_', '-')}",
