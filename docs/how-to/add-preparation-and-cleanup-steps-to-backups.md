@@ -78,7 +78,8 @@ commands:
 
 This command hook has the following options:
 
- * `before` or `after`: `dump_data_sources`
+ * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after:
+   * `dump_data_sources` runs before or after data sources are dumped (databases dumped or filesystems snapshotted) for each hook named in `hooks`.
  * `hooks`: Names of other hooks that this command hook applies to, e.g. `postgresql`, `mariadb`, `zfs`, `btrfs`, etc. Defaults to all hooks of the relevant type.
  * `run`: One or more shell commands or scripts to run when this command hook is triggered.
 
