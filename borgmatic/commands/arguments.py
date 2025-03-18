@@ -445,7 +445,10 @@ def make_parsers(schema, unparsed_arguments):
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
-    global_parser = ArgumentParser(add_help=False)
+    # allow_abbrev=False prevents the global parser from erroring about "ambiguous" options like
+    # --encryption. Such options are intended for an action parser rather than the global parser,
+    # and so we don't want to error on them here.
+    global_parser = ArgumentParser(allow_abbrev=False, add_help=False)
     global_group = global_parser.add_argument_group('global arguments')
 
     global_group.add_argument(
@@ -569,7 +572,6 @@ def make_parsers(schema, unparsed_arguments):
         '--encryption',
         dest='encryption_mode',
         help='Borg repository encryption mode',
-        required=True,
     )
     repo_create_group.add_argument(
         '--source-repository',

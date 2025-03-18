@@ -45,6 +45,14 @@ properties:
                         and to make selecting the repository easier on the
                         command-line.
                     example: backupserver
+                encryption:
+                    type: string
+                    description: |
+                        The encryption mode with which to create the repository,
+                        only used for the repo-create action. To see the
+                        available encryption modes, run "borg init --help" with
+                        Borg 1 or "borg repo-create --help" with Borg 2.
+                    example: repokey-blake2
         description: |
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to

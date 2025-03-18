@@ -24,13 +24,21 @@ def run_repo_create(
         return
 
     logger.info('Creating repository')
+
+    encryption_mode = repo_create_arguments.encryption_mode or repository.get('encryption')
+
+    if not encryption_mode:
+        raise ValueError(
+            'With the repo-create action, either the --encryption flag or the repository encryption option is required.'
+        )
+
     borgmatic.borg.repo_create.create_repository(
         global_arguments.dry_run,
         repository['path'],
         config,
         local_borg_version,
         global_arguments,
-        repo_create_arguments.encryption_mode,
+        encryption_mode,
         repo_create_arguments.source_repository,
         repo_create_arguments.copy_crypt_key,
         repo_create_arguments.append_only,
