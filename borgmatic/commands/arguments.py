@@ -288,6 +288,24 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
+# As a UX nicety, allow boolean options that have a default of false to have command-line flags
+# without values.
+DEFAULT_FALSE_FLAG_NAMES = {
+    'one_file_system',
+    'numeric_ids',
+    'read_special',
+    'exclude_caches',
+    'keep_exclude_tags',
+    'exclude_nodump',
+    'source_directories_must_exist',
+    'relocated_repo_access_is_ok',
+    'unknown_unencrypted_repo_access_is_ok',
+    'check_i_know_what_i_am_doing',
+    'postgresql_databases[0].no_owner',
+    'healthchecks.create_slug',
+}
+
+
 def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
     '''
     Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
@@ -377,13 +395,21 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         description = description.replace('%', '%%')
 
     argument_type = borgmatic.config.schema.parse_type(schema_type)
+    full_flag_name = f"--{flag_name.replace('_', '-')}"
 
-    arguments_group.add_argument(
-        f"--{flag_name.replace('_', '-')}",
-        type=argument_type,
-        metavar=metavar,
-        help=description,
-    )
+    if flag_name in DEFAULT_FALSE_FLAG_NAMES:
+        arguments_group.add_argument(
+            full_flag_name,
+            action='store_true',
+            help=description,
+        )
+    else:
+        arguments_group.add_argument(
+            full_flag_name,
+            type=argument_type,
+            metavar=metavar,
+            help=description,
+        )
 
     # We want to support flags that can have arbitrary indices like:
     #

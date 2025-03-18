@@ -1983,8 +1983,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -2058,8 +2058,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -2133,8 +2133,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
