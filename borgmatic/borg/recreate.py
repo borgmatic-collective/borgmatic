@@ -1,21 +1,18 @@
-import argparse
 import logging
 
 import borgmatic.borg.environment
-import borgmatic.borg.feature
-import borgmatic.borg.flags
-import borgmatic.borg.repo_delete
 import borgmatic.config.paths
 import borgmatic.execute
-from borgmatic.borg.create import make_exclude_flags, write_patterns_file
+from borgmatic.borg.create import make_exclude_flags
+from borgmatic.borg.flags import make_flags_from_arguments, make_repository_archive_flags
 
 logger = logging.getLogger(__name__)
 
 
 def make_recreate_command(
     repository,
+    archive,
     config,
-    patterns,
     local_borg_version,
     recreate_arguments,
     global_arguments,
@@ -23,30 +20,39 @@ def make_recreate_command(
     remote_path=None,
 ):
     '''
-    Given a repository path, configuration dict, patterns, and Borg options, return a command
-    list for recreating a Borg archive.
+    Given a local or remote repository path, an archive name, a configuration dict,
+    the local Borg version string, an argparse.Namespace of recreate arguments,
+    an argparse.Namespace of global arguments, optional local and remote Borg paths.
+
+    Returns the recreate command as a tuple of strings ready for execution.
     '''
-    verbosity_flags = ()
-    if logger.isEnabledFor(logging.DEBUG):
-        verbosity_flags = ('--debug', '--show-rc')
-    elif logger.isEnabledFor(logging.INFO):
-        verbosity_flags = ('--info',)
+    verbosity_flags = (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ()) + (
+        ('--info',) if logger.isEnabledFor(logging.INFO) else ()
+    )
 
-    command = [local_path, 'recreate', repository]
-    command.extend(verbosity_flags)
-    command.extend(global_arguments)
-    command.extend(recreate_arguments)
+    # handle both the recreate and global arguments
+    recreate_flags = make_flags_from_arguments(
+        recreate_arguments, excludes=('repository', 'archive')
+    )
+    global_flags = make_flags_from_arguments(global_arguments)
 
+    repo_archive_flags = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
-    command.extend(exclude_flags)
 
-    return command
+    return (
+        (local_path, 'recreate')
+        + repo_archive_flags
+        + verbosity_flags
+        + global_flags
+        + recreate_flags
+        + exclude_flags
+    )
 
 
 def recreate_archive(
     repository,
+    archive,
     config,
-    patterns,
     local_borg_version,
     recreate_arguments,
     global_arguments,
@@ -54,12 +60,16 @@ def recreate_archive(
     remote_path=None,
 ):
     '''
-    Recreate a Borg archive with the given repository and configuration.
+    Given a local or remote repository path, an archive name, a configuration dict,
+    the local Borg version string, an argparse.Namespace of recreate arguments,
+    an argparse.Namespace of global arguments, optional local and remote Borg paths.
+
+    Executes the recreate command with the given arguments.
     '''
     command = make_recreate_command(
         repository,
+        archive,
         config,
-        patterns,
         local_borg_version,
         recreate_arguments,
         global_arguments,
@@ -67,16 +77,12 @@ def recreate_archive(
         remote_path,
     )
 
-    patterns_file = write_patterns_file(patterns, borgmatic.config.paths.get_runtime_directory())
-    if patterns_file:
-        command.extend(['--patterns-from', patterns_file.name])
-
     borgmatic.execute.execute_command(
         command,
         output_log_level=logging.ANSWER,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
-        remote_path=remote_path, 
+        remote_path=remote_path,
         borg_local_path=local_path,
-        borg_exit_codes=config.get('borg_exit_codes')
-        )
+        borg_exit_codes=config.get('borg_exit_codes'),
+    )
