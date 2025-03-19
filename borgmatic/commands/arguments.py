@@ -305,6 +305,7 @@ DEFAULT_FALSE_FLAG_NAMES = {
     'healthchecks.create_slug',
     'repositories[0].append_only',
     'repositories[0].make_parent_dirs',
+    'progress',
 }
 
 

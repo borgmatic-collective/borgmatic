@@ -793,6 +793,12 @@ properties:
             Apply color to console output. Can be overridden with --no-color
             command-line flag. Defaults to true.
         example: false
+    progress:
+        type: boolean
+        description: |
+            Display progress as each file or archive is processed. Defaults to
+            false.
+        example: true
     skip_actions:
         type: array
         items:

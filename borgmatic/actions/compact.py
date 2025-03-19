@@ -37,7 +37,7 @@ def run_compact(
             global_arguments,
             local_path=local_path,
             remote_path=remote_path,
-            progress=compact_arguments.progress,
+            progress=compact_arguments.progress or config.get('progress'),
             cleanup_commits=compact_arguments.cleanup_commits,
             threshold=compact_arguments.threshold,
         )

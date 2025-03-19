@@ -327,7 +327,7 @@ def run_create(
             borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            progress=create_arguments.progress,
+            progress=create_arguments.progress or config.get('progress'),
             stats=create_arguments.stats,
             json=create_arguments.json,
             list_files=create_arguments.list_files,
