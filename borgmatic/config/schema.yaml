@@ -58,7 +58,8 @@ properties:
                     description: |
                         Whether the repository should be created append-only,
                         only used for the repo-create action. Defaults to false.
-                    example: false
+                    default: false
+                    example: true
                 storage_quota:
                     type: string
                     description: |
@@ -72,6 +73,7 @@ properties:
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
                         action. Defaults to false.
+                    default: false
                     example: true
         description: |
             A required list of local or remote repositories with paths and
@@ -101,12 +103,14 @@ properties:
         description: |
             Stay in same file system; do not cross mount points beyond the given
             source directories. Defaults to false.
+        default: false
         example: true
     numeric_ids:
         type: boolean
         description: |
             Only store/extract numeric user and group identifiers. Defaults to
             false.
+        default: false
         example: true
     atime:
         type: boolean
@@ -117,11 +121,13 @@ properties:
     ctime:
         type: boolean
         description: Store ctime into archive. Defaults to true.
+        default: true
         example: false
     birthtime:
         type: boolean
         description: |
             Store birthtime (creation date) into archive. Defaults to true.
+        default: true
         example: false
     read_special:
         type: boolean
@@ -131,13 +137,15 @@ properties:
             used when backing up special devices such as /dev/zero. Defaults to
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
-        example: false
+        default: false
+        example: true
     flags:
         type: boolean
         description: |
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
-        example: true
+        default: true
+        example: false
     files_cache:
         type: string
         description: |
@@ -210,6 +218,7 @@ properties:
             Exclude directories that contain a CACHEDIR.TAG file. See
             http://www.brynosaurus.com/cachedir/spec.html for details. Defaults
             to false.
+        default: false
         example: true
     exclude_if_present:
         type: array
@@ -226,11 +235,13 @@ properties:
             If true, the exclude_if_present filename is included in backups.
             Defaults to false, meaning that the exclude_if_present filename is
             omitted from backups.
+        default: false
         example: true
     exclude_nodump:
         type: boolean
         description: |
             Exclude files with the NODUMP flag. Defaults to false.
+        default: false
         example: true
     borgmatic_source_directory:
         type: string
@@ -262,6 +273,7 @@ properties:
         description: |
             If true, then source directories (and root pattern paths) must
             exist. If they don't, an error is raised. Defaults to false.
+        default: false
         example: true
     encryption_passcommand:
         type: string
@@ -458,19 +470,22 @@ properties:
         type: boolean
         description: |
             Bypass Borg error about a repository that has been moved. Defaults
-            to not bypassing.
+            to false.
+        default: false
         example: true
     unknown_unencrypted_repo_access_is_ok:
         type: boolean
         description: |
             Bypass Borg error about a previously unknown unencrypted repository.
-            Defaults to not bypassing.
+            Defaults to false.
+        default: false
         example: true
     check_i_know_what_i_am_doing:
         type: boolean
         description: |
             Bypass Borg confirmation about check with repair option. Defaults to
-            an interactive prompt from Borg.
+            false and an interactive prompt from Borg.
+        default: false
         example: true
     extra_borg_options:
         type: object
@@ -792,12 +807,14 @@ properties:
         description: |
             Apply color to console output. Can be overridden with --no-color
             command-line flag. Defaults to true.
+        default: true
         example: false
     progress:
         type: boolean
         description: |
             Display progress as each file or archive is processed. Defaults to
             false.
+        default: false
         example: true
     skip_actions:
         type: array
@@ -1166,6 +1183,7 @@ properties:
                     backup itself. Defaults to true. Changing this to false
                     prevents "borgmatic bootstrap" from extracting configuration
                     files from the backup.
+                default: true
                 example: false
         description: |
             Support for the "borgmatic bootstrap" action, used to extract
@@ -1250,6 +1268,7 @@ properties:
                         schema elements. These statements will fail unless the
                         initial connection to the database is made by a
                         superuser.
+                    default: false
                     example: true
                 format:
                     type: string
@@ -1488,6 +1507,7 @@ properties:
                         Use the "--add-drop-database" flag with mariadb-dump,
                         causing the database to be dropped right before restore.
                         Defaults to true.
+                    default: true
                     example: false
                 options:
                     type: string
@@ -1635,6 +1655,7 @@ properties:
                         Use the "--add-drop-database" flag with mysqldump,
                         causing the database to be dropped right before restore.
                         Defaults to true.
+                    default: true
                     example: false
                 options:
                     type: string
@@ -2335,6 +2356,7 @@ properties:
                 description: |
                     Send borgmatic logs to Apprise services as part the
                     "finish", "fail", and "log" states. Defaults to true.
+                default: true
                 example: false
             logs_size_limit:
                 type: integer
@@ -2440,12 +2462,14 @@ properties:
                 description: |
                     Verify the TLS certificate of the ping URL host. Defaults to
                     true.
+                default: true
                 example: false
             send_logs:
                 type: boolean
                 description: |
                     Send borgmatic logs to Healthchecks as part the "finish",
                     "fail", and "log" states. Defaults to true.
+                default: true
                 example: false
             ping_body_limit:
                 type: integer
@@ -2478,6 +2502,7 @@ properties:
                     the slug URL scheme (https://hc-ping.com/<ping-key>/<slug>
                     as opposed to https://hc-ping.com/<uuid>).
                     Defaults to false.
+                default: false
                 example: true
         description: |
             Configuration for a monitoring integration with Healthchecks. Create
@@ -2517,6 +2542,7 @@ properties:
                 description: |
                     Verify the TLS certificate of the push URL host. Defaults to
                     true.
+                default: true
                 example: false
         description: |
             Configuration for a monitoring integration with Uptime Kuma using
@@ -2553,6 +2579,7 @@ properties:
                 description: |
                     Send borgmatic logs to PagerDuty when a backup errors.
                     Defaults to true.
+                default: true
                 example: false
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
