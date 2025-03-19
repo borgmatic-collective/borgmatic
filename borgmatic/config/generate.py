@@ -22,6 +22,9 @@ def insert_newline_before_comment(config, field_name):
     )
 
 
+SCALAR_SCHEMA_TYPES = {'string', 'boolean', 'integer', 'number'}
+
+
 def schema_to_sample_configuration(schema, source_config=None, level=0, parent_is_sequence=False):
     '''
     Given a loaded configuration schema and a source configuration, generate and return sample
@@ -32,9 +35,6 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
     '''
     schema_type = schema.get('type')
     example = schema.get('example')
-
-    if example is not None:
-        return example
 
     if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
         config = ruamel.yaml.comments.CommentedSeq(
@@ -53,7 +53,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
             [
                 (
                     field_name,
-                    schema_to_sample_configuration(
+                    sub_schema.get('example') if field_name == 'source_directories' else schema_to_sample_configuration(
                         sub_schema, (source_config or {}).get(field_name, {}), level + 1
                     ),
                 )
@@ -64,6 +64,10 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         add_comments_to_configuration_object(
             config, schema, source_config, indent=indent, skip_first=parent_is_sequence
         )
+    elif isinstance(schema_type, list) and all(element_schema_type in SCALAR_SCHEMA_TYPES for element_schema_type in schema_type):
+        return example
+    elif schema_type in SCALAR_SCHEMA_TYPES:
+        return example
     else:
         raise ValueError(f'Schema at level {level} is unsupported: {schema}')
 

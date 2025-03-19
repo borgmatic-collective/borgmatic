@@ -93,11 +93,16 @@ def convert_value_type(value, option_type):
     Given a string value and its schema type as a string, determine its logical type (string,
     boolean, integer, etc.), and return it converted to that type.
 
-    If the option type is a string, leave the value as a string so that special characters in it
-    don't get interpreted as YAML during conversion.
+    If the destination option type is a string, then leave the value as-is so that special
+    characters in it don't get interpreted as YAML during conversion.
+
+    And if the source value isn't a string, return it as-is.
 
     Raise ruamel.yaml.error.YAMLError if there's a parse issue with the YAML.
     '''
+    if not isinstance(value, str):
+        return value
+
     if option_type == 'string':
         return value
 

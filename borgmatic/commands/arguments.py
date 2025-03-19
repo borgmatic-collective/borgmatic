@@ -303,6 +303,8 @@ DEFAULT_FALSE_FLAG_NAMES = {
     'check_i_know_what_i_am_doing',
     'postgresql_databases[0].no_owner',
     'healthchecks.create_slug',
+    'repositories[0].append_only',
+    'repositories[0].make_parent_dirs',
 }
 
 
@@ -401,6 +403,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
         arguments_group.add_argument(
             full_flag_name,
             action='store_true',
+            default=None,
             help=description,
         )
     else:

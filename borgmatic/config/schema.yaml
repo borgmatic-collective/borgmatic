@@ -53,6 +53,26 @@ properties:
                         available encryption modes, run "borg init --help" with
                         Borg 1 or "borg repo-create --help" with Borg 2.
                     example: repokey-blake2
+                append_only:
+                    type: boolean
+                    description: |
+                        Whether the repository should be created append-only,
+                        only used for the repo-create action. Defaults to false.
+                    example: false
+                storage_quota:
+                    type: string
+                    description: |
+                        The storage quota with which to create the repository,
+                        only used for the repo-create action. Defaults to no
+                        quota.
+                    example: 5G
+                make_parent_dirs:
+                    type: boolean
+                    description: |
+                        Whether any missing parent directories of the repository
+                        path should be created, only used for the repo-create
+                        action. Defaults to false.
+                    example: true
         description: |
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to
