@@ -288,6 +288,9 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
+OMITTED_FLAG_NAMES = {'progress', 'stats', 'list'}
+
+
 def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
     '''
     Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
@@ -375,6 +378,11 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
 
         description = description.replace('%', '%%')
+
+    # These options already have corresponding flags on individual actions (like "create
+    # --progress"), so don't bother adding them to the global flags.
+    if flag_name in OMITTED_FLAG_NAMES:
+        return
 
     argument_type = borgmatic.config.schema.parse_type(schema_type)
     full_flag_name = f"--{flag_name.replace('_', '-')}"

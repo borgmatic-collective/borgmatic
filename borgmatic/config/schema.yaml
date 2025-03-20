@@ -813,21 +813,24 @@ properties:
         type: boolean
         description: |
             Display progress as each file or archive is processed when running
-            supported actions. Defaults to false.
+            supported actions. Corresponds to the "--progress" flag on those
+            actions. Defaults to false.
         default: false
         example: true
     stats:
         type: boolean
         description: |
             Display statistics for an archive when running supported actions.
-            Defaults to false.
+            Corresponds to the "--stats" flag on those actions. Defaults to
+            false.
         default: false
         example: true
     list:
         type: boolean
         description: |
             Display details for each file or archive as it is processed when
-            running supported actions. Defaults to false.
+            running supported actions. Corresponds to the "--list" flag on those
+            actions. Defaults to false.
         default: false
         example: true
     skip_actions:
