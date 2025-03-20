@@ -49,33 +49,30 @@ properties:
                     type: string
                     description: |
                         The encryption mode with which to create the repository,
-                        only used for the repo-create action. Also set via the
-                        "--encryption" flag. To see the available encryption
-                        modes, run "borg init --help" with Borg 1 or "borg
-                        repo-create --help" with Borg 2.
+                        only used for the repo-create action. To see the
+                        available encryption modes, run "borg init --help" with
+                        Borg 1 or "borg repo-create --help" with Borg 2.
                     example: repokey-blake2
                 append_only:
                     type: boolean
                     description: |
                         Whether the repository should be created append-only,
-                        only used for the repo-create action. Also set via the
-                        "--append-only" flag. Defaults to false.
+                        only used for the repo-create action. Defaults to false.
                     default: false
                     example: true
                 storage_quota:
                     type: string
                     description: |
                         The storage quota with which to create the repository,
-                        only used for the repo-create action. Also set via the
-                        "--storage-quota" flag. Defaults to no quota.
+                        only used for the repo-create action. Defaults to no
+                        quota.
                     example: 5G
                 make_parent_dirs:
                     type: boolean
                     description: |
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
-                        action. Also set via the "--make-parent-dirs" flag.
-                        Defaults to false.
+                        action. Defaults to false.
                     default: false
                     example: true
         description: |
@@ -816,23 +813,21 @@ properties:
         type: boolean
         description: |
             Display progress as each file or archive is processed when running
-            supported actions. Also set via the "--progress" flag. Defaults to
-            false.
+            supported actions. Defaults to false.
         default: false
         example: true
     stats:
         type: boolean
         description: |
             Display statistics for an archive when running supported actions.
-            Also set via the "--stats" flag. Defaults to false.
+            Defaults to false.
         default: false
         example: true
     list:
         type: boolean
         description: |
             Display details for each file or archive as it is processed when
-            running supported actions. Also set via the "--list" flag. Defaults
-            to false.
+            running supported actions. Defaults to false.
         default: false
         example: true
     skip_actions:
