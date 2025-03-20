@@ -816,6 +816,13 @@ properties:
             false.
         default: false
         example: true
+    stats:
+        type: boolean
+        description: |
+            Display statistics of an archive when running supported actions.
+            Defaults to false.
+        default: false
+        example: true
     skip_actions:
         type: array
         items:

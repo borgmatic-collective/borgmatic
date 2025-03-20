@@ -66,6 +66,7 @@ def prune_archives(
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
+    stats = prune_arguments.stats or config.get('stats')
     extra_borg_options = config.get('extra_borg_options', {}).get('prune', '')
 
     full_command = (
@@ -77,7 +78,7 @@ def prune_archives(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--stats',)
-            if prune_arguments.stats
+            if stats
             and not dry_run
             and not feature.available(feature.Feature.NO_PRUNE_STATS, local_borg_version)
             else ()
@@ -94,7 +95,7 @@ def prune_archives(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if prune_arguments.stats or prune_arguments.list_archives:
+    if stats or prune_arguments.list_archives:
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO

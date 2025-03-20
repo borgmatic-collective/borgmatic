@@ -328,7 +328,7 @@ def run_create(
             local_path=local_path,
             remote_path=remote_path,
             progress=create_arguments.progress or config.get('progress'),
-            stats=create_arguments.stats,
+            stats=create_arguments.stats or config.get('stats'),
             json=create_arguments.json,
             list_files=create_arguments.list_files,
             stream_processes=stream_processes,
