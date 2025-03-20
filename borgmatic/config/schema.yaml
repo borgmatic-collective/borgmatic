@@ -1032,7 +1032,6 @@ properties:
                               - repository
                               - configuration
                               - everything
-                              - dump_data_sources
                           description: |
                               Name for the point in borgmatic's execution that
                               the commands should be run before (required if
@@ -1045,19 +1044,7 @@ properties:
                               repositories in the current configuration file.
                                * "everything" runs before all configuration
                               files.
-                               * "dump_data_sources" runs before each data
-                              source is dumped.
                           example: action
-                      hooks:
-                          type: array
-                          items:
-                              type: string
-                          description: |
-                              List of names of other hooks that this command
-                              hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for the
-                              "dump_data_sources" hook.
-                          example: postgresql
                       when:
                           type: array
                           items:
@@ -1086,9 +1073,7 @@ properties:
                                   - borg
                           description: |
                               List of actions for which the commands will be
-                              run. Defaults to running for all actions. Ignored
-                              for "dump_data_sources", which by its nature only
-                              runs for "create".
+                              run. Defaults to running for all actions.
                           example: [create, prune, compact, check]
                       run:
                           type: array
@@ -1110,7 +1095,6 @@ properties:
                               - configuration
                               - everything
                               - error
-                              - dump_data_sources
                           description: |
                               Name for the point in borgmatic's execution that
                               the commands should be run after (required if
@@ -1124,19 +1108,7 @@ properties:
                                * "everything" runs after all configuration
                               files.
                                * "error" runs after an error occurs.
-                               * "dump_data_sources" runs after each data
-                              source is dumped.
                           example: action
-                      hooks:
-                          type: array
-                          items:
-                              type: string
-                          description: |
-                              List of names of other hooks that this command
-                              hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for the
-                              "dump_data_sources" hook.
-                          example: postgresql
                       when:
                           type: array
                           items:
@@ -1166,9 +1138,7 @@ properties:
                           description: |
                               Only trigger the hook when borgmatic is run with
                               particular actions listed here. Defaults to
-                              running for all actions. Ignored for
-                              "dump_data_sources", which by its nature only runs
-                              for "create".
+                              running for all actions.
                           example: [create, prune, compact, check]
                       run:
                           type: array

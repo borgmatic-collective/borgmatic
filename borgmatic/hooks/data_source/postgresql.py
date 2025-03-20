@@ -7,7 +7,6 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
-import borgmatic.hooks.command
 import borgmatic.hooks.credential.parse
 from borgmatic.execute import (
     execute_command,
@@ -142,127 +141,112 @@ def dump_data_sources(
 
     Raise ValueError if the databases to dump cannot be determined.
     '''
-    with borgmatic.hooks.command.Before_after_hooks(
-        command_hooks=config.get('commands'),
-        before_after='dump_data_sources',
-        umask=config.get('umask'),
-        dry_run=dry_run,
-        hook_name='postgresql',
-    ):
-        dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
-        processes = []
+    dry_run_label = ' (dry run; not actually dumping anything)' if dry_run else ''
+    processes = []
 
-        logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
+    logger.info(f'Dumping PostgreSQL databases{dry_run_label}')
 
-        for database in databases:
-            environment = make_environment(database, config)
-            dump_path = make_dump_path(borgmatic_runtime_directory)
-            dump_database_names = database_names_to_dump(database, config, environment, dry_run)
+    for database in databases:
+        environment = make_environment(database, config)
+        dump_path = make_dump_path(borgmatic_runtime_directory)
+        dump_database_names = database_names_to_dump(database, config, environment, dry_run)
 
-            if not dump_database_names:
-                if dry_run:
-                    continue
+        if not dump_database_names:
+            if dry_run:
+                continue
 
-                raise ValueError('Cannot find any PostgreSQL databases to dump.')
+            raise ValueError('Cannot find any PostgreSQL databases to dump.')
 
-            for database_name in dump_database_names:
-                dump_format = database.get('format', None if database_name == 'all' else 'custom')
-                compression = database.get('compression')
-                default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
-                dump_command = tuple(
-                    shlex.quote(part)
-                    for part in shlex.split(database.get('pg_dump_command') or default_dump_command)
+        for database_name in dump_database_names:
+            dump_format = database.get('format', None if database_name == 'all' else 'custom')
+            compression = database.get('compression')
+            default_dump_command = 'pg_dumpall' if database_name == 'all' else 'pg_dump'
+            dump_command = tuple(
+                shlex.quote(part)
+                for part in shlex.split(database.get('pg_dump_command') or default_dump_command)
+            )
+            dump_filename = dump.make_data_source_dump_filename(
+                dump_path,
+                database_name,
+                database.get('hostname'),
+                database.get('port'),
+            )
+            if os.path.exists(dump_filename):
+                logger.warning(
+                    f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}'
                 )
-                dump_filename = dump.make_data_source_dump_filename(
-                    dump_path,
-                    database_name,
-                    database.get('hostname'),
-                    database.get('port'),
-                )
-                if os.path.exists(dump_filename):
-                    logger.warning(
-                        f'Skipping duplicate dump of PostgreSQL database "{database_name}" to {dump_filename}'
-                    )
-                    continue
+                continue
 
-                command = (
-                    dump_command
-                    + (
-                        '--no-password',
-                        '--clean',
-                        '--if-exists',
-                    )
-                    + (
-                        ('--host', shlex.quote(database['hostname']))
-                        if 'hostname' in database
-                        else ()
-                    )
-                    + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
-                    + (
-                        (
-                            '--username',
-                            shlex.quote(
-                                borgmatic.hooks.credential.parse.resolve_credential(
-                                    database['username'], config
-                                )
-                            ),
-                        )
-                        if 'username' in database
-                        else ()
-                    )
-                    + (('--no-owner',) if database.get('no_owner', False) else ())
-                    + (('--format', shlex.quote(dump_format)) if dump_format else ())
-                    + (
-                        ('--compress', shlex.quote(str(compression)))
-                        if compression is not None
-                        else ()
-                    )
-                    + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
-                    + (
-                        tuple(shlex.quote(option) for option in database['options'].split(' '))
-                        if 'options' in database
-                        else ()
-                    )
-                    + (() if database_name == 'all' else (shlex.quote(database_name),))
-                    # Use shell redirection rather than the --file flag to sidestep synchronization issues
-                    # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
-                    # format in a particular, a named destination is required, and redirection doesn't work.
-                    + (('>', shlex.quote(dump_filename)) if dump_format != 'directory' else ())
+            command = (
+                dump_command
+                + (
+                    '--no-password',
+                    '--clean',
+                    '--if-exists',
                 )
-
-                logger.debug(
-                    f'Dumping PostgreSQL database "{database_name}" to {dump_filename}{dry_run_label}'
+                + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
+                + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
+                + (
+                    (
+                        '--username',
+                        shlex.quote(
+                            borgmatic.hooks.credential.parse.resolve_credential(
+                                database['username'], config
+                            )
+                        ),
+                    )
+                    if 'username' in database
+                    else ()
                 )
-                if dry_run:
-                    continue
+                + (('--no-owner',) if database.get('no_owner', False) else ())
+                + (('--format', shlex.quote(dump_format)) if dump_format else ())
+                + (('--compress', shlex.quote(str(compression))) if compression is not None else ())
+                + (('--file', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
+                + (
+                    tuple(shlex.quote(option) for option in database['options'].split(' '))
+                    if 'options' in database
+                    else ()
+                )
+                + (() if database_name == 'all' else (shlex.quote(database_name),))
+                # Use shell redirection rather than the --file flag to sidestep synchronization issues
+                # when pg_dump/pg_dumpall tries to write to a named pipe. But for the directory dump
+                # format in a particular, a named destination is required, and redirection doesn't work.
+                + (('>', shlex.quote(dump_filename)) if dump_format != 'directory' else ())
+            )
 
-                if dump_format == 'directory':
-                    dump.create_parent_directory_for_dump(dump_filename)
+            logger.debug(
+                f'Dumping PostgreSQL database "{database_name}" to {dump_filename}{dry_run_label}'
+            )
+            if dry_run:
+                continue
+
+            if dump_format == 'directory':
+                dump.create_parent_directory_for_dump(dump_filename)
+                execute_command(
+                    command,
+                    shell=True,
+                    environment=environment,
+                )
+            else:
+                dump.create_named_pipe_for_dump(dump_filename)
+                processes.append(
                     execute_command(
                         command,
                         shell=True,
                         environment=environment,
+                        run_to_completion=False,
                     )
-                else:
-                    dump.create_named_pipe_for_dump(dump_filename)
-                    processes.append(
-                        execute_command(
-                            command,
-                            shell=True,
-                            environment=environment,
-                            run_to_completion=False,
-                        )
-                    )
-
-        if not dry_run:
-            patterns.append(
-                borgmatic.borg.pattern.Pattern(
-                    os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),
-                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
                 )
-            )
 
-        return processes
+    if not dry_run:
+        patterns.append(
+            borgmatic.borg.pattern.Pattern(
+                os.path.join(borgmatic_runtime_directory, 'postgresql_databases'),
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
+            )
+        )
+
+    return processes
 
 
 def remove_data_source_dumps(

@@ -237,9 +237,6 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_dumps_each_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -281,9 +278,6 @@ def test_dump_data_sources_dumps_each_database():
 
 
 def test_dump_data_sources_dumps_with_password():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     database = {'name': 'foo', 'username': 'root', 'password': 'trustsome1'}
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -318,9 +312,6 @@ def test_dump_data_sources_dumps_with_password():
 
 
 def test_dump_data_sources_dumps_all_databases_at_once():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -352,9 +343,6 @@ def test_dump_data_sources_dumps_all_databases_at_once():
 
 
 def test_dump_data_sources_dumps_all_databases_separately_when_format_configured():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'all', 'format': 'sql'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -862,9 +850,6 @@ def test_execute_dump_command_with_dry_run_skips_mariadb_dump():
 
 
 def test_dump_data_sources_errors_for_missing_all_databases():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
@@ -888,9 +873,6 @@ def test_dump_data_sources_errors_for_missing_all_databases():
 
 
 def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'all'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})

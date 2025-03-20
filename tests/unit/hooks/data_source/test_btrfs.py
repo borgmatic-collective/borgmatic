@@ -269,9 +269,6 @@ def test_make_borg_snapshot_pattern_includes_slashdot_hack_and_stripped_pattern_
 
 
 def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_return(
@@ -350,9 +347,6 @@ def test_dump_data_sources_snapshots_each_subvolume_and_updates_patterns():
 
 
 def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {'btrfs_command': '/usr/local/bin/btrfs'}}
     flexmock(module).should_receive('get_subvolumes').and_return(
@@ -406,9 +400,6 @@ def test_dump_data_sources_uses_custom_btrfs_command_in_commands():
 
 
 def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {'findmnt_command': '/usr/local/bin/findmnt'}}
     flexmock(module).should_receive('get_subvolumes').with_args(
@@ -464,9 +455,6 @@ def test_dump_data_sources_uses_custom_findmnt_command_in_commands():
 
 
 def test_dump_data_sources_with_dry_run_skips_snapshot_and_patterns_update():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_return(
@@ -495,9 +483,6 @@ def test_dump_data_sources_with_dry_run_skips_snapshot_and_patterns_update():
 
 
 def test_dump_data_sources_without_matching_subvolumes_skips_snapshot_and_patterns_update():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {}}
     flexmock(module).should_receive('get_subvolumes').and_return(())
@@ -522,9 +507,6 @@ def test_dump_data_sources_without_matching_subvolumes_skips_snapshot_and_patter
 
 
 def test_dump_data_sources_snapshots_adds_to_existing_exclude_patterns():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     patterns = [Pattern('/foo'), Pattern('/mnt/subvol1')]
     config = {'btrfs': {}, 'exclude_patterns': ['/bar']}
     flexmock(module).should_receive('get_subvolumes').and_return(

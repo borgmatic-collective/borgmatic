@@ -66,22 +66,10 @@ Each command in the `commands:` list has the following options:
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
-There's also another command hook that works a little differently:
-
-```yaml
-commands:
-    - before: dump_data_sources
-      hooks: [postgresql]
-      run:
-          - echo "Right before the PostgreSQL database dump!"
-```
-
-This command hook has the following options:
-
- * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after:
-   * `dump_data_sources` runs before or after data sources are dumped (databases dumped or filesystems snapshotted) for each hook named in `hooks`.
- * `hooks`: Names of other hooks that this command hook applies to, e.g. `postgresql`, `mariadb`, `zfs`, `btrfs`, etc. Defaults to all hooks of the relevant type.
- * `run`: One or more shell commands or scripts to run when this command hook is triggered.
+An `after` command hook runs even if an error occurs in the corresponding `before` hook or between
+those two hooks. This allows you to perform cleanup steps that correspond to `before` preparation
+commands—even when something goes wrong. This is a departure from the way that the deprecated
+`after_*` hooks worked.
 
 
 ### Order of execution
@@ -97,9 +85,6 @@ borgmatic for the `create` and `prune` actions. Here's the order of execution:
     * Run `before: configuration` hooks (from the first configuration file).
         * Run `before: repository` hooks (for the first repository).
             * Run `before: action` hooks for `create`.
-                * Run `before: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
-                * Actually dump data sources (e.g. PostgreSQL databases).
-                * Run `after: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
             * Actually run the `create` action (e.g. `borg create`).
             * Run `after: action` hooks for `create`.
             * Run `before: action` hooks for `prune`.

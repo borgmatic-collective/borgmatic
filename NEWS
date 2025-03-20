@@ -9,6 +9,9 @@
  * #790, #821: Deprecate all "before_*", "after_*" and "on_error" command hooks in favor of more
    flexible "commands:". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
+ * #790: BREAKING: Run a configured "after" command hook even if an error occurs first. This
+   allows you to perform cleanup steps that correspond to "before" preparation commands—even when
+   something goes wrong.
  * #836: Add a custom command option for the SQLite hook.
  * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
  * #1020: Document a database use case involving a temporary database client container:
