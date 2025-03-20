@@ -439,7 +439,7 @@ def test_before_after_hooks_calls_command_hooks():
         pass
 
 
-def test_before_after_hooks_with_before_error_raises_and_skips_after_hook():
+def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
         {'after': 'repository', 'run': ['baz']},
@@ -455,8 +455,8 @@ def test_before_after_hooks_with_before_error_raises_and_skips_after_hook():
         after='action',
         hook_name='myhook',
         action_names=['create'],
-    ).never()
-    flexmock(module).should_receive('execute_hooks').and_raise(OSError)
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('execute_hooks').and_raise(OSError).and_return(None)
     flexmock(module).should_receive('considered_soft_failure').and_return(False)
 
     with pytest.raises(ValueError):

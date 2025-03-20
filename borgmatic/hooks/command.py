@@ -193,6 +193,10 @@ class Before_after_hooks:
             if considered_soft_failure(error):
                 return
 
+            # Trigger the after hook manually, since raising here will prevent it from being run
+            # otherwise.
+            self.__exit__(None, None, None)
+
             raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
     def __exit__(self, exception_type, exception, traceback):

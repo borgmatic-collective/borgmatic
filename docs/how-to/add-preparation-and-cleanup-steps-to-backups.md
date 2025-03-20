@@ -66,6 +66,11 @@ Each command in the `commands:` list has the following options:
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
+An `after` command hook runs even if an error occurs in the corresponding `before` hook or between
+those two hooks. This allows you to perform cleanup steps that correspond to `before` preparation
+commands—even when something goes wrong. This is a departure from the way that the deprecated
+`after_*` hooks worked.
+
 There's also another command hook that works a little differently:
 
 ```yaml
