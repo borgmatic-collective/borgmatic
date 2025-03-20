@@ -20,6 +20,7 @@ import borgmatic.actions.create
 import borgmatic.actions.delete
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
+import borgmatic.actions.import_key
 import borgmatic.actions.extract
 import borgmatic.actions.info
 import borgmatic.actions.list
@@ -520,6 +521,16 @@ def run_actions(
                     )
                 elif action_name == 'export' and action_name not in skip_actions:
                     borgmatic.actions.export_key.run_export_key(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'import' and action_name not in skip_actions:
+                    borgmatic.actions.import_key.run_import_key(
                         repository,
                         config,
                         local_borg_version,
