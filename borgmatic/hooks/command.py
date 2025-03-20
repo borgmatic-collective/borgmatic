@@ -55,11 +55,9 @@ def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_
     return tuple(
         hook_config
         for hook_config in command_hooks or ()
-        for config_hook_names in (hook_config.get('hooks'),)
         for config_action_names in (hook_config.get('when'),)
         if before is None or hook_config.get('before') == before
         if after is None or hook_config.get('after') == after
-        if hook_name is None or config_hook_names is None or hook_name in config_hook_names
         if action_names is None
         or config_action_names is None
         or set(config_action_names or ()).intersection(set(action_names))

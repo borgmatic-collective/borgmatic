@@ -17,9 +17,6 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
@@ -44,9 +41,6 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
 
 
 def test_dump_data_sources_dumps_each_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},
         {'path': '/path/to/database2', 'name': 'database2'},
@@ -77,9 +71,6 @@ def test_dump_data_sources_dumps_each_database():
 
 
 def test_dump_data_sources_with_path_injection_attack_gets_escaped():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1; naughty-command', 'name': 'database1'},
     ]
@@ -117,9 +108,6 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
 
 
 def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_gets_escaped():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {
             'path': '/path/to/database1; naughty-command',
@@ -162,9 +150,6 @@ def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_ge
 
 
 def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},
     ]
@@ -193,9 +178,6 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
 
 
 def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1', 'name': 'all'},
     ]
@@ -226,9 +208,6 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
 
 
 def test_dump_data_sources_does_not_dump_if_dry_run():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')

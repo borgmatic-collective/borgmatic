@@ -9,7 +9,6 @@ import subprocess
 import borgmatic.borg.pattern
 import borgmatic.config.paths
 import borgmatic.execute
-import borgmatic.hooks.command
 import borgmatic.hooks.data_source.snapshot
 
 logger = logging.getLogger(__name__)
@@ -244,71 +243,64 @@ def dump_data_sources(
 
     If this is a dry run, then don't actually snapshot anything.
     '''
-    with borgmatic.hooks.command.Before_after_hooks(
-        command_hooks=config.get('commands'),
-        before_after='dump_data_sources',
-        umask=config.get('umask'),
-        dry_run=dry_run,
-        hook_name='zfs',
-    ):
-        dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
-        logger.info(f'Snapshotting ZFS datasets{dry_run_label}')
+    dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
+    logger.info(f'Snapshotting ZFS datasets{dry_run_label}')
 
-        # List ZFS datasets to get their mount points, but only consider those patterns that came from
-        # actual user configuration (as opposed to, say, other hooks).
-        zfs_command = hook_config.get('zfs_command', 'zfs')
-        requested_datasets = get_datasets_to_backup(zfs_command, patterns)
+    # List ZFS datasets to get their mount points, but only consider those patterns that came from
+    # actual user configuration (as opposed to, say, other hooks).
+    zfs_command = hook_config.get('zfs_command', 'zfs')
+    requested_datasets = get_datasets_to_backup(zfs_command, patterns)
 
-        # Snapshot each dataset, rewriting patterns to use the snapshot paths.
-        snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
-        normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
+    # Snapshot each dataset, rewriting patterns to use the snapshot paths.
+    snapshot_name = f'{BORGMATIC_SNAPSHOT_PREFIX}{os.getpid()}'
+    normalized_runtime_directory = os.path.normpath(borgmatic_runtime_directory)
 
-        if not requested_datasets:
-            logger.warning(f'No ZFS datasets found to snapshot{dry_run_label}')
+    if not requested_datasets:
+        logger.warning(f'No ZFS datasets found to snapshot{dry_run_label}')
 
-        for dataset in requested_datasets:
-            full_snapshot_name = f'{dataset.name}@{snapshot_name}'
-            logger.debug(
-                f'Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+    for dataset in requested_datasets:
+        full_snapshot_name = f'{dataset.name}@{snapshot_name}'
+        logger.debug(
+            f'Creating ZFS snapshot {full_snapshot_name} of {dataset.mount_point}{dry_run_label}'
+        )
+
+        if not dry_run:
+            snapshot_dataset(zfs_command, full_snapshot_name)
+
+        # Mount the snapshot into a particular named temporary directory so that the snapshot ends
+        # up in the Borg archive at the "original" dataset mount point path.
+        snapshot_mount_path = os.path.join(
+            normalized_runtime_directory,
+            'zfs_snapshots',
+            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
+                MOUNT_POINT_HASH_LENGTH
+            ),
+            dataset.mount_point.lstrip(os.path.sep),
+        )
+
+        logger.debug(
+            f'Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
+        )
+
+        if dry_run:
+            continue
+
+        mount_snapshot(
+            hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
+        )
+
+        for pattern in dataset.contained_patterns:
+            snapshot_pattern = make_borg_snapshot_pattern(
+                pattern, dataset, normalized_runtime_directory
             )
 
-            if not dry_run:
-                snapshot_dataset(zfs_command, full_snapshot_name)
+            # Attempt to update the pattern in place, since pattern order matters to Borg.
+            try:
+                patterns[patterns.index(pattern)] = snapshot_pattern
+            except ValueError:
+                patterns.append(snapshot_pattern)
 
-            # Mount the snapshot into a particular named temporary directory so that the snapshot ends
-            # up in the Borg archive at the "original" dataset mount point path.
-            snapshot_mount_path = os.path.join(
-                normalized_runtime_directory,
-                'zfs_snapshots',
-                hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
-                    MOUNT_POINT_HASH_LENGTH
-                ),
-                dataset.mount_point.lstrip(os.path.sep),
-            )
-
-            logger.debug(
-                f'Mounting ZFS snapshot {full_snapshot_name} at {snapshot_mount_path}{dry_run_label}'
-            )
-
-            if dry_run:
-                continue
-
-            mount_snapshot(
-                hook_config.get('mount_command', 'mount'), full_snapshot_name, snapshot_mount_path
-            )
-
-            for pattern in dataset.contained_patterns:
-                snapshot_pattern = make_borg_snapshot_pattern(
-                    pattern, dataset, normalized_runtime_directory
-                )
-
-                # Attempt to update the pattern in place, since pattern order matters to Borg.
-                try:
-                    patterns[patterns.index(pattern)] = snapshot_pattern
-                except ValueError:
-                    patterns.append(snapshot_pattern)
-
-        return []
+    return []
 
 
 def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
