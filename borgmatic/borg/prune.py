@@ -88,7 +88,7 @@ def prune_archives(
             prune_arguments,
             excludes=('repository', 'match_archives', 'stats', 'list_archives'),
         )
-        + (('--list',) if prune_arguments.list_archives else ())
+        + (('--list',) if prune_arguments.list_archives or config.get('list') else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())

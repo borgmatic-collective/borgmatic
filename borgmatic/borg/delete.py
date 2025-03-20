@@ -34,7 +34,7 @@ def make_delete_command(
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + borgmatic.borg.flags.make_flags('log-json', global_arguments.log_json)
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
-        + borgmatic.borg.flags.make_flags('list', delete_arguments.list_archives)
+        + borgmatic.borg.flags.make_flags('list', delete_arguments.list_archives or config.get('list'))
         + (
             (('--force',) + (('--force',) if delete_arguments.force >= 2 else ()))
             if delete_arguments.force

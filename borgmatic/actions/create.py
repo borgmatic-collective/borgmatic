@@ -330,7 +330,7 @@ def run_create(
             progress=create_arguments.progress or config.get('progress'),
             stats=create_arguments.stats or config.get('stats'),
             json=create_arguments.json,
-            list_files=create_arguments.list_files,
+            list_files=create_arguments.list_files or config.get('list'),
             stream_processes=stream_processes,
         )
 
