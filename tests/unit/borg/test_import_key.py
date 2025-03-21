@@ -3,7 +3,6 @@ import logging
 import pytest
 from flexmock import flexmock
 
-import borgmatic.logger
 from borgmatic.borg import import_key as module
 
 from ..test_verbosity import insert_logging_mock
@@ -12,7 +11,6 @@ from ..test_verbosity import insert_logging_mock
 def insert_execute_command_mock(
     command, input_file=module.DO_NOT_CAPTURE, working_directory=None, borg_exit_codes=None
 ):
-    borgmatic.logger.add_custom_log_levels()
 
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
@@ -21,7 +19,7 @@ def insert_execute_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         command,
         input_file=input_file,
-        output_log_level=module.logging.ANSWER,
+        output_log_level=module.logging.INFO,
         environment=None,
         working_directory=working_directory,
         borg_local_path=command[0],
@@ -30,6 +28,7 @@ def insert_execute_command_mock(
 
 
 def test_import_key_calls_borg_with_required_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', 'repo'))
@@ -44,6 +43,7 @@ def test_import_key_calls_borg_with_required_flags():
 
 
 def test_import_key_calls_borg_with_local_path():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg1', 'key', 'import', 'repo'))
@@ -59,6 +59,7 @@ def test_import_key_calls_borg_with_local_path():
 
 
 def test_import_key_calls_borg_using_exit_codes():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     borg_exit_codes = flexmock()
@@ -74,6 +75,7 @@ def test_import_key_calls_borg_using_exit_codes():
 
 
 def test_import_key_calls_borg_with_remote_path_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--remote-path', 'borg1', 'repo'))
@@ -89,6 +91,7 @@ def test_import_key_calls_borg_with_remote_path_flags():
 
 
 def test_import_key_calls_borg_with_umask_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--umask', '0770', 'repo'))
@@ -103,6 +106,7 @@ def test_import_key_calls_borg_with_umask_flags():
 
 
 def test_import_key_calls_borg_with_log_json_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--log-json', 'repo'))
@@ -117,6 +121,7 @@ def test_import_key_calls_borg_with_log_json_flags():
 
 
 def test_import_key_calls_borg_with_lock_wait_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--lock-wait', '5', 'repo'))
@@ -131,6 +136,7 @@ def test_import_key_calls_borg_with_lock_wait_flags():
 
 
 def test_import_key_with_log_info_calls_borg_with_info_parameter():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--info', 'repo'))
@@ -146,6 +152,7 @@ def test_import_key_with_log_info_calls_borg_with_info_parameter():
 
 
 def test_import_key_with_log_debug_calls_borg_with_debug_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--debug', '--show-rc', 'repo'))
@@ -161,6 +168,7 @@ def test_import_key_with_log_debug_calls_borg_with_debug_flags():
 
 
 def test_import_key_calls_borg_with_paper_flags():
+    flexmock(module.flags).should_receive('make_flags').and_return(('--paper',))
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', '--paper', 'repo'))
@@ -175,6 +183,7 @@ def test_import_key_calls_borg_with_paper_flags():
 
 
 def test_import_key_calls_borg_with_path_argument():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').with_args('source').and_return(True)
     insert_execute_command_mock(('borg', 'key', 'import', 'repo', 'source'), input_file=None)
@@ -189,11 +198,12 @@ def test_import_key_calls_borg_with_path_argument():
 
 
 def test_import_key_with_non_existent_path_raises():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module).should_receive('execute_command').never()
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ValueError):
         module.import_key(
             repository_path='repo',
             config={},
@@ -204,6 +214,7 @@ def test_import_key_with_non_existent_path_raises():
 
 
 def test_import_key_with_stdin_path_calls_borg_without_path_argument():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', 'repo'))
@@ -218,6 +229,7 @@ def test_import_key_with_stdin_path_calls_borg_without_path_argument():
 
 
 def test_import_key_with_dry_run_skips_borg_call():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     flexmock(module).should_receive('execute_command').never()
@@ -232,6 +244,7 @@ def test_import_key_with_dry_run_skips_borg_call():
 
 
 def test_import_key_calls_borg_with_working_directory():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').never()
     insert_execute_command_mock(('borg', 'key', 'import', 'repo'), working_directory='/working/dir')
@@ -246,6 +259,7 @@ def test_import_key_calls_borg_with_working_directory():
 
 
 def test_import_key_calls_borg_with_path_argument_and_working_directory():
+    flexmock(module.flags).should_receive('make_flags').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/source').and_return(
         True

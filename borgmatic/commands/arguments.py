@@ -1489,7 +1489,7 @@ def make_parsers():
     key_import_group.add_argument(
         '--paper',
         action='store_true',
-        help='Import interactively from a backup done with ``--paper``',
+        help='Import interactively from a backup done with --paper',
     )
     key_import_group.add_argument(
         '--repository',

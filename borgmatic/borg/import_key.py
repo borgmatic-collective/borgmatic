@@ -25,7 +25,7 @@ def import_key(
 
     If the path is empty or "-", then read the key from stdin.
 
-    Raise FileNotFoundError if the path is given and it does not exist.
+    Raise ValueError if the path is given and it does not exist.
     '''
     borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
@@ -34,7 +34,7 @@ def import_key(
 
     if import_arguments.path and import_arguments.path != '-':
         if not os.path.exists(os.path.join(working_directory or '', import_arguments.path)):
-            raise FileNotFoundError(f'Path {import_arguments.path} does not exist. Aborting.')
+            raise ValueError(f'Path {import_arguments.path} does not exist. Aborting.')
 
         input_file = None
     else:
@@ -63,7 +63,7 @@ def import_key(
     execute_command(
         full_command,
         input_file=input_file,
-        output_log_level=logging.ANSWER,
+        output_log_level=logging.INFO,
         environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
