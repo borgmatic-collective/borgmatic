@@ -710,7 +710,7 @@ def test_extract_archive_uses_configured_working_directory_in_repo_path_and_dest
     )
     flexmock(module.borgmatic.config.validate).should_receive(
         'normalize_repository_path'
-    ).with_args('/working/dir/repo').and_return('/working/dir/repo').once()
+    ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(
         dry_run=False,
@@ -733,7 +733,7 @@ def test_extract_archive_uses_configured_working_directory_in_repo_path_when_des
     )
     flexmock(module.borgmatic.config.validate).should_receive(
         'normalize_repository_path'
-    ).with_args('/working/dir/repo').and_return('/working/dir/repo').once()
+    ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(
         dry_run=False,
