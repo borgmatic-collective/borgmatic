@@ -19,6 +19,8 @@
  * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
  * #1020: Document a database use case involving a temporary database client container:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+ * #1037: Fix an error with the "extract" action when both a remote repository and a
+   "working_directory" are used.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
