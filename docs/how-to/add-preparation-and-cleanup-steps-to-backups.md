@@ -66,10 +66,15 @@ Each command in the `commands:` list has the following options:
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
-An `after` command hook runs even if an error occurs in the corresponding `before` hook or between
-those two hooks. This allows you to perform cleanup steps that correspond to `before` preparation
-commands—even when something goes wrong. This is a departure from the way that the deprecated
-`after_*` hooks worked.
+An `after` command hook runs even if an error occurs in the corresponding
+`before` hook or between those two hooks. This allows you to perform cleanup
+steps that correspond to `before` preparation commands—even when something goes
+wrong. This is a departure from the way that the deprecated `after_*` hooks
+worked in borgmatic prior to version 2.0.0.
+
+Additionally, when command hooks run, they respect the "working_directory"
+option if it is configured, meaning that the hook commands are run in that
+directory.
 
 
 ### Order of execution
@@ -104,7 +109,10 @@ configuration files.
 command hooks worked a little differently. In these older versions of borgmatic,
 you can specify `before_backup` hooks to perform preparation steps before
 running backups and specify `after_backup` hooks to perform cleanup steps
-afterwards. Here's an example:
+afterwards. These deprecated command hooks still work in version 2.0.0+,
+although see below about a few semantic differences starting in that version.
+
+Here's an example of these deprecated hooks:
 
 ```yaml
 before_backup:
@@ -128,6 +136,15 @@ instance, `before_prune` runs before a `prune` action for a repository, while
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 these options in the `hooks:` section of your configuration.
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span> An `after_*`
+command hook runs even if an error occurs in the corresponding `before_*` hook
+or between those two hooks. This allows you to perform cleanup steps that
+correspond to `before_*` preparation commands—even when something goes wrong.
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span> When command
+hooks run, they respect the "working_directory" option if it is configured,
+meaning that the hook commands are run in that directory.
 
 <span class="minilink minilink-addedin">New in version 1.7.0</span> The
 `before_actions` and `after_actions` hooks run before/after all the actions

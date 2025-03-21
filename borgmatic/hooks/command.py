@@ -64,11 +64,11 @@ def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_
     )
 
 
-def execute_hooks(command_hooks, umask, dry_run, **context):
+def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
     '''
-    Given a sequence of command hook dicts from configuration, a umask to execute with (or None),
-    and whether this is a dry run, run the commands for each hook. Or don't run them if this is a
-    dry run.
+    Given a sequence of command hook dicts from configuration, a umask to execute with (or None), a
+    working directory to execute with, and whether this is a dry run, run the commands for each
+    hook. Or don't run them if this is a dry run.
 
     The context contains optional values interpolated by name into the hook commands.
 
@@ -121,6 +121,7 @@ def execute_hooks(command_hooks, umask, dry_run, **context):
                     ),
                     shell=True,
                     environment=make_environment(os.environ),
+                    working_directory=working_directory,
                 )
         finally:
             if original_umask:
@@ -153,6 +154,7 @@ class Before_after_hooks:
         command_hooks,
         before_after,
         umask,
+        working_directory,
         dry_run,
         hook_name=None,
         action_names=None,
@@ -160,12 +162,14 @@ class Before_after_hooks:
     ):
         '''
         Given a sequence of command hook configuration dicts, the before/after name, a umask to run
-        commands with, a dry run flag, the name of the calling hook, a sequence of action names, and
-        any context for the executed commands, save those data points for use below.
+        commands with, a working directory to run commands with, a dry run flag, the name of the
+        calling hook, a sequence of action names, and any context for the executed commands, save
+        those data points for use below.
         '''
         self.command_hooks = command_hooks
         self.before_after = before_after
         self.umask = umask
+        self.working_directory = working_directory
         self.dry_run = dry_run
         self.hook_name = hook_name
         self.action_names = action_names
@@ -184,6 +188,7 @@ class Before_after_hooks:
                     action_names=self.action_names,
                 ),
                 self.umask,
+                self.working_directory,
                 self.dry_run,
                 **self.context,
             )
@@ -210,6 +215,7 @@ class Before_after_hooks:
                     action_names=self.action_names,
                 ),
                 self.umask,
+                self.working_directory,
                 self.dry_run,
                 **self.context,
             )
