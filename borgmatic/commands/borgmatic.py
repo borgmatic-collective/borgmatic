@@ -20,8 +20,8 @@ import borgmatic.actions.create
 import borgmatic.actions.delete
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
-import borgmatic.actions.import_key
 import borgmatic.actions.extract
+import borgmatic.actions.import_key
 import borgmatic.actions.info
 import borgmatic.actions.list
 import borgmatic.actions.mount

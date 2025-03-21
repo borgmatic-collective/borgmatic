@@ -27,7 +27,6 @@ def import_key(
 
     Raise ValueError if the path is given and it does not exist.
     '''
-    borgmatic.logger.add_custom_log_levels()
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
     working_directory = borgmatic.config.paths.get_working_directory(config)
