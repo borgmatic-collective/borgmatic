@@ -36,6 +36,7 @@ import borgmatic.actions.transfer
 import borgmatic.commands.completion.bash
 import borgmatic.commands.completion.fish
 import borgmatic.config.load
+import borgmatic.config.paths
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
 from borgmatic.commands.arguments import parse_arguments
@@ -210,6 +211,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 command_hooks=config.get('commands'),
                 before_after='configuration',
                 umask=config.get('umask'),
+                working_directory=borgmatic.config.paths.get_working_directory(config),
                 dry_run=global_arguments.dry_run,
                 action_names=arguments.keys(),
                 configuration_filename=config_filename,
@@ -289,6 +291,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 config.get('commands'), after='error', action_names=arguments.keys()
             ),
             config.get('umask'),
+            borgmatic.config.paths.get_working_directory(config),
             global_arguments.dry_run,
             configuration_filename=config_filename,
             log_file=arguments['global'].log_file or '',
@@ -345,6 +348,7 @@ def run_actions(
         command_hooks=config.get('commands'),
         before_after='repository',
         umask=config.get('umask'),
+        working_directory=borgmatic.config.paths.get_working_directory(config),
         dry_run=global_arguments.dry_run,
         action_names=arguments.keys(),
         **hook_context,
@@ -357,6 +361,7 @@ def run_actions(
                 command_hooks=config.get('commands'),
                 before_after='action',
                 umask=config.get('umask'),
+                working_directory=borgmatic.config.paths.get_working_directory(config),
                 dry_run=global_arguments.dry_run,
                 action_names=arguments.keys(),
                 **hook_context,
@@ -858,6 +863,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                     config.get('commands'), before='everything', action_names=arguments.keys()
                 ),
                 config.get('umask'),
+                borgmatic.config.paths.get_working_directory(config),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
                 log_file=arguments['global'].log_file or '',
@@ -912,6 +918,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                     config.get('commands'), after='everything', action_names=arguments.keys()
                 ),
                 config.get('umask'),
+                borgmatic.config.paths.get_working_directory(config),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
                 log_file=arguments['global'].log_file or '',

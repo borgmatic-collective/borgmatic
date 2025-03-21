@@ -190,11 +190,13 @@ def test_execute_hooks_invokes_each_hook_and_command():
             output_log_level=LOGGING_ANSWER,
             shell=True,
             environment={},
+            working_directory=None,
         ).once()
 
     module.execute_hooks(
         [{'before': 'create', 'run': ['foo']}, {'before': 'create', 'run': ['bar', 'baz']}],
         umask=None,
+        working_directory=None,
         dry_run=False,
     )
 
@@ -213,9 +215,35 @@ def test_execute_hooks_with_umask_sets_that_umask():
         output_log_level=logging.ANSWER,
         shell=True,
         environment={},
+        working_directory=None,
     )
 
-    module.execute_hooks([{'before': 'create', 'run': ['foo']}], umask=77, dry_run=False)
+    module.execute_hooks(
+        [{'before': 'create', 'run': ['foo']}], umask=77, working_directory=None, dry_run=False
+    )
+
+
+def test_execute_hooks_with_working_directory_executes_command_with_it():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
+    flexmock(module).should_receive('interpolate_context').replace_with(
+        lambda hook_description, command, context: command
+    )
+    flexmock(module).should_receive('make_environment').and_return({})
+    flexmock(module.borgmatic.execute).should_receive('execute_command').with_args(
+        ['foo'],
+        output_log_level=logging.ANSWER,
+        shell=True,
+        environment={},
+        working_directory='/working',
+    )
+
+    module.execute_hooks(
+        [{'before': 'create', 'run': ['foo']}],
+        umask=None,
+        working_directory='/working',
+        dry_run=False,
+    )
 
 
 def test_execute_hooks_with_dry_run_skips_commands():
@@ -227,11 +255,13 @@ def test_execute_hooks_with_dry_run_skips_commands():
     flexmock(module).should_receive('make_environment').and_return({})
     flexmock(module.borgmatic.execute).should_receive('execute_command').never()
 
-    module.execute_hooks([{'before': 'create', 'run': ['foo']}], umask=None, dry_run=True)
+    module.execute_hooks(
+        [{'before': 'create', 'run': ['foo']}], umask=None, working_directory=None, dry_run=True
+    )
 
 
 def test_execute_hooks_with_empty_commands_does_not_raise():
-    module.execute_hooks([], umask=None, dry_run=True)
+    module.execute_hooks([], umask=None, working_directory=None, dry_run=True)
 
 
 def test_execute_hooks_with_error_logs_as_error():
@@ -246,9 +276,12 @@ def test_execute_hooks_with_error_logs_as_error():
         output_log_level=logging.ERROR,
         shell=True,
         environment={},
+        working_directory=None,
     ).once()
 
-    module.execute_hooks([{'after': 'error', 'run': ['foo']}], umask=None, dry_run=False)
+    module.execute_hooks(
+        [{'after': 'error', 'run': ['foo']}], umask=None, working_directory=None, dry_run=False
+    )
 
 
 def test_execute_hooks_with_before_or_after_raises():
@@ -265,6 +298,7 @@ def test_execute_hooks_with_before_or_after_raises():
                 {'erstwhile': 'create', 'run': ['bar', 'baz']},
             ],
             umask=None,
+            working_directory=None,
             dry_run=False,
         )
 
@@ -283,11 +317,13 @@ def test_execute_hooks_without_commands_to_run_does_not_raise():
             output_log_level=LOGGING_ANSWER,
             shell=True,
             environment={},
+            working_directory=None,
         ).once()
 
     module.execute_hooks(
         [{'before': 'create', 'run': []}, {'before': 'create', 'run': ['foo', 'bar']}],
         umask=None,
+        working_directory=None,
         dry_run=False,
     )
 
@@ -315,6 +351,7 @@ def test_before_after_hooks_calls_command_hooks():
         command_hooks=commands,
         before_after='action',
         umask=1234,
+        working_directory='/working',
         dry_run=False,
         hook_name='myhook',
         action_names=['create'],
@@ -349,6 +386,7 @@ def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
             command_hooks=commands,
             before_after='action',
             umask=1234,
+            working_directory='/working',
             dry_run=False,
             hook_name='myhook',
             action_names=['create'],
@@ -382,6 +420,7 @@ def test_before_after_hooks_with_before_soft_failure_does_not_raise():
         command_hooks=commands,
         before_after='action',
         umask=1234,
+        working_directory='/working',
         dry_run=False,
         hook_name='myhook',
         action_names=['create'],
@@ -416,6 +455,7 @@ def test_before_after_hooks_with_after_error_raises():
             command_hooks=commands,
             before_after='action',
             umask=1234,
+            working_directory='/working',
             dry_run=False,
             hook_name='myhook',
             action_names=['create'],
@@ -449,6 +489,7 @@ def test_before_after_hooks_with_after_soft_failure_does_not_raise():
         command_hooks=commands,
         before_after='action',
         umask=1234,
+        working_directory='/working',
         dry_run=False,
         hook_name='myhook',
         action_names=['create'],
