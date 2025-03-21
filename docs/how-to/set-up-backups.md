@@ -311,7 +311,6 @@ Then, from the directory where you downloaded it:
 
 ```bash
 sudo mv borgmatic /etc/cron.d/borgmatic
-sudo chmod +x /etc/cron.d/borgmatic
 ```
 
 If borgmatic is installed at a different location than
