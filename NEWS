@@ -6,6 +6,7 @@
    action flags. For example, each entry in "repositories:" now has an "encryption" option that
    applies to the "repo-create" action. See the documentation for more information:
    https://torsion.org/borgmatic/docs/reference/configuration/
+ * #345: Add a "key import" action to import a repository key from backup.
  * #790, #821: Deprecate all "before_*", "after_*" and "on_error" command hooks in favor of more
    flexible "commands:". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/

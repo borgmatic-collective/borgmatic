@@ -72,7 +72,7 @@ steps that correspond to `before` preparation commands—even when something goe
 wrong. This is a departure from the way that the deprecated `after_*` hooks
 worked in borgmatic prior to version 2.0.0.
 
-Additionally, when command hooks run, they respect the "working_directory"
+Additionally, when command hooks run, they respect the `working_directory`
 option if it is configured, meaning that the hook commands are run in that
 directory.
 
@@ -143,7 +143,7 @@ or between those two hooks. This allows you to perform cleanup steps that
 correspond to `before_*` preparation commands—even when something goes wrong.
 
 <span class="minilink minilink-addedin">New in version 2.0.0</span> When command
-hooks run, they respect the "working_directory" option if it is configured,
+hooks run, they respect the `working_directory` option if it is configured,
 meaning that the hook commands are run in that directory.
 
 <span class="minilink minilink-addedin">New in version 1.7.0</span> The

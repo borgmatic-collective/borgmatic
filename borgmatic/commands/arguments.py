@@ -1654,6 +1654,31 @@ def make_parsers(schema, unparsed_arguments):
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    key_import_parser = key_parsers.add_parser(
+        'import',
+        help='Import a copy of the repository key from backup',
+        description='Import a copy of the repository key from backup',
+        add_help=False,
+    )
+    key_import_group = key_import_parser.add_argument_group('key import arguments')
+    key_import_group.add_argument(
+        '--paper',
+        action='store_true',
+        help='Import interactively from a backup done with --paper',
+    )
+    key_import_group.add_argument(
+        '--repository',
+        help='Path of repository to import the key from, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    key_import_group.add_argument(
+        '--path',
+        metavar='PATH',
+        help='Path to import the key from backup, defaults to stdin',
+    )
+    key_import_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
     key_change_passphrase_parser = key_parsers.add_parser(
         'change-passphrase',
         help='Change the passphrase protecting the repository key',
