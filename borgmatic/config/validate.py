@@ -138,16 +138,22 @@ def parse_configuration(config_filename, schema_filename, overrides=None, resolv
     return config, config_paths, logs
 
 
-def normalize_repository_path(repository):
+def normalize_repository_path(repository, base=None):
     '''
     Given a repository path, return the absolute path of it (for local repositories).
+    Optionally, use a base path for resolving relative paths, e.g. to the configured working directory.
     '''
     # A colon in the repository could mean that it's either a file:// URL or a remote repository.
     # If it's a remote repository, we don't want to normalize it. If it's a file:// URL, we do.
     if ':' not in repository:
-        return os.path.abspath(repository)
+        return (
+            os.path.abspath(os.path.join(base, repository)) if base else os.path.abspath(repository)
+        )
     elif repository.startswith('file://'):
-        return os.path.abspath(repository.partition('file://')[-1])
+        local_path = repository.partition('file://')[-1]
+        return (
+            os.path.abspath(os.path.join(base, local_path)) if base else os.path.abspath(local_path)
+        )
     else:
         return repository
 

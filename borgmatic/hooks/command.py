@@ -55,22 +55,20 @@ def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_
     return tuple(
         hook_config
         for hook_config in command_hooks or ()
-        for config_hook_names in (hook_config.get('hooks'),)
         for config_action_names in (hook_config.get('when'),)
         if before is None or hook_config.get('before') == before
         if after is None or hook_config.get('after') == after
-        if hook_name is None or config_hook_names is None or hook_name in config_hook_names
         if action_names is None
         or config_action_names is None
         or set(config_action_names or ()).intersection(set(action_names))
     )
 
 
-def execute_hooks(command_hooks, umask, dry_run, **context):
+def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
     '''
-    Given a sequence of command hook dicts from configuration, a umask to execute with (or None),
-    and whether this is a dry run, run the commands for each hook. Or don't run them if this is a
-    dry run.
+    Given a sequence of command hook dicts from configuration, a umask to execute with (or None), a
+    working directory to execute with, and whether this is a dry run, run the commands for each
+    hook. Or don't run them if this is a dry run.
 
     The context contains optional values interpolated by name into the hook commands.
 
@@ -123,6 +121,7 @@ def execute_hooks(command_hooks, umask, dry_run, **context):
                     ),
                     shell=True,
                     environment=make_environment(os.environ),
+                    working_directory=working_directory,
                 )
         finally:
             if original_umask:
@@ -155,6 +154,7 @@ class Before_after_hooks:
         command_hooks,
         before_after,
         umask,
+        working_directory,
         dry_run,
         hook_name=None,
         action_names=None,
@@ -162,12 +162,14 @@ class Before_after_hooks:
     ):
         '''
         Given a sequence of command hook configuration dicts, the before/after name, a umask to run
-        commands with, a dry run flag, the name of the calling hook, a sequence of action names, and
-        any context for the executed commands, save those data points for use below.
+        commands with, a working directory to run commands with, a dry run flag, the name of the
+        calling hook, a sequence of action names, and any context for the executed commands, save
+        those data points for use below.
         '''
         self.command_hooks = command_hooks
         self.before_after = before_after
         self.umask = umask
+        self.working_directory = working_directory
         self.dry_run = dry_run
         self.hook_name = hook_name
         self.action_names = action_names
@@ -186,12 +188,17 @@ class Before_after_hooks:
                     action_names=self.action_names,
                 ),
                 self.umask,
+                self.working_directory,
                 self.dry_run,
                 **self.context,
             )
         except (OSError, subprocess.CalledProcessError) as error:
             if considered_soft_failure(error):
                 return
+
+            # Trigger the after hook manually, since raising here will prevent it from being run
+            # otherwise.
+            self.__exit__(None, None, None)
 
             raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
@@ -208,6 +215,7 @@ class Before_after_hooks:
                     action_names=self.action_names,
                 ),
                 self.umask,
+                self.working_directory,
                 self.dry_run,
                 **self.context,
             )

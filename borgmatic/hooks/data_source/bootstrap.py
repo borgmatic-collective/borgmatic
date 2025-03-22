@@ -6,7 +6,6 @@ import os
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
-import borgmatic.hooks.command
 
 logger = logging.getLogger(__name__)
 
@@ -38,45 +37,38 @@ def dump_data_sources(
     if hook_config and hook_config.get('store_config_files') is False:
         return []
 
-    with borgmatic.hooks.command.Before_after_hooks(
-        command_hooks=config.get('commands'),
-        before_after='dump_data_sources',
-        umask=config.get('umask'),
-        dry_run=dry_run,
-        hook_name='bootstrap',
-    ):
-        borgmatic_manifest_path = os.path.join(
-            borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
-        )
+    borgmatic_manifest_path = os.path.join(
+        borgmatic_runtime_directory, 'bootstrap', 'manifest.json'
+    )
 
-        if dry_run:
-            return []
-
-        os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
-
-        with open(borgmatic_manifest_path, 'w') as manifest_file:
-            json.dump(
-                {
-                    'borgmatic_version': importlib.metadata.version('borgmatic'),
-                    'config_paths': config_paths,
-                },
-                manifest_file,
-            )
-
-        patterns.extend(
-            borgmatic.borg.pattern.Pattern(
-                config_path, source=borgmatic.borg.pattern.Pattern_source.HOOK
-            )
-            for config_path in config_paths
-        )
-        patterns.append(
-            borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'bootstrap'),
-                source=borgmatic.borg.pattern.Pattern_source.HOOK,
-            )
-        )
-
+    if dry_run:
         return []
+
+    os.makedirs(os.path.dirname(borgmatic_manifest_path), exist_ok=True)
+
+    with open(borgmatic_manifest_path, 'w') as manifest_file:
+        json.dump(
+            {
+                'borgmatic_version': importlib.metadata.version('borgmatic'),
+                'config_paths': config_paths,
+            },
+            manifest_file,
+        )
+
+    patterns.extend(
+        borgmatic.borg.pattern.Pattern(
+            config_path, source=borgmatic.borg.pattern.Pattern_source.HOOK
+        )
+        for config_path in config_paths
+    )
+    patterns.append(
+        borgmatic.borg.pattern.Pattern(
+            os.path.join(borgmatic_runtime_directory, 'bootstrap'),
+            source=borgmatic.borg.pattern.Pattern_source.HOOK,
+        )
+    )
+
+    return []
 
 
 def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, dry_run):

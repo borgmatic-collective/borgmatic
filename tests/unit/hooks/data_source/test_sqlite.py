@@ -17,9 +17,6 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
@@ -44,9 +41,6 @@ def test_dump_data_sources_logs_and_skips_if_dump_already_exists():
 
 
 def test_dump_data_sources_dumps_each_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},
         {'path': '/path/to/database2', 'name': 'database2'},
@@ -77,9 +71,6 @@ def test_dump_data_sources_dumps_each_database():
 
 
 def test_dump_data_sources_with_path_injection_attack_gets_escaped():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1; naughty-command', 'name': 'database1'},
     ]
@@ -116,10 +107,49 @@ def test_dump_data_sources_with_path_injection_attack_gets_escaped():
     )
 
 
-def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
+def test_dump_data_sources_runs_non_default_sqlite_with_path_injection_attack_gets_escaped():
+    databases = [
+        {
+            'path': '/path/to/database1; naughty-command',
+            'name': 'database1',
+            'sqlite_command': 'custom_sqlite *',
+        },
+    ]
+    processes = [flexmock()]
+
+    flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        '/run/borgmatic/database'
     )
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'custom_sqlite',  # custom sqlite command
+            "'*'",  # Should get shell escaped to prevent injection attacks.
+            "'/path/to/database1; naughty-command'",
+            '.dump',
+            '>',
+            '/run/borgmatic/database',
+        ),
+        shell=True,
+        run_to_completion=False,
+    ).and_return(processes[0])
+
+    assert (
+        module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=False,
+        )
+        == processes
+    )
+
+
+def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
     databases = [
         {'path': '/path/to/database1', 'name': 'database1'},
     ]
@@ -148,9 +178,6 @@ def test_dump_data_sources_with_non_existent_path_warns_and_dumps_database():
 
 
 def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {'path': '/path/to/database1', 'name': 'all'},
     ]
@@ -181,9 +208,6 @@ def test_dump_data_sources_with_name_all_warns_and_dumps_all_databases():
 
 
 def test_dump_data_sources_does_not_dump_if_dry_run():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'path': '/path/to/database', 'name': 'database'}]
 
     flexmock(module).should_receive('make_dump_path').and_return('/run/borgmatic')
@@ -234,6 +258,41 @@ def test_restore_data_source_dump_restores_database():
     )
 
 
+def test_restore_data_source_dump_runs_non_default_sqlite_restores_database():
+    hook_config = [
+        {
+            'path': '/path/to/database',
+            'name': 'database',
+            'sqlite_restore_command': 'custom_sqlite *',
+        },
+        {'name': 'other'},
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'custom_sqlite',
+            "'*'",  # Should get shell escaped to prevent injection attacks.
+            '/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    flexmock(module.os).should_receive('remove').once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        data_source=hook_config[0],
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
 def test_restore_data_source_dump_with_connection_params_uses_connection_params_for_restore():
     hook_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
@@ -263,6 +322,38 @@ def test_restore_data_source_dump_with_connection_params_uses_connection_params_
     )
 
 
+def test_restore_data_source_dump_runs_non_default_sqlite_with_connection_params_uses_connection_params_for_restore():
+    hook_config = [
+        {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'custom_sqlite',
+            'cli/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    flexmock(module.os).should_receive('remove').once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        data_source={
+            'name': 'database',
+            'sqlite_restore_command': 'custom_sqlite',
+        },
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': 'cli/path/to/database'},
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
 def test_restore_data_source_dump_without_connection_params_uses_restore_params_in_config_for_restore():
     hook_config = [
         {'path': '/path/to/database', 'name': 'database', 'restore_path': 'config/path/to/database'}
@@ -272,6 +363,40 @@ def test_restore_data_source_dump_without_connection_params_uses_restore_params_
     flexmock(module).should_receive('execute_command_with_processes').with_args(
         (
             'sqlite3',
+            'config/path/to/database',
+        ),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    flexmock(module.os).should_receive('remove').once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        data_source=hook_config[0],
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={'restore_path': None},
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
+def test_restore_data_source_dump_runs_non_default_sqlite_without_connection_params_uses_restore_params_in_config_for_restore():
+    hook_config = [
+        {
+            'path': '/path/to/database',
+            'name': 'database',
+            'sqlite_restore_command': 'custom_sqlite',
+            'restore_path': 'config/path/to/database',
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        (
+            'custom_sqlite',
             'config/path/to/database',
         ),
         processes=[extract_process],

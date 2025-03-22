@@ -66,21 +66,15 @@ Each command in the `commands:` list has the following options:
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
 
-There's also another command hook that works a little differently:
+An `after` command hook runs even if an error occurs in the corresponding
+`before` hook or between those two hooks. This allows you to perform cleanup
+steps that correspond to `before` preparation commands—even when something goes
+wrong. This is a departure from the way that the deprecated `after_*` hooks
+worked in borgmatic prior to version 2.0.0.
 
-```yaml
-commands:
-    - before: dump_data_sources
-      hooks: [postgresql]
-      run:
-          - echo "Right before the PostgreSQL database dump!"
-```
-
-This command hook has the following options:
-
- * `before` or `after`: `dump_data_sources`
- * `hooks`: Names of other hooks that this command hook applies to, e.g. `postgresql`, `mariadb`, `zfs`, `btrfs`, etc. Defaults to all hooks of the relevant type.
- * `run`: One or more shell commands or scripts to run when this command hook is triggered.
+Additionally, when command hooks run, they respect the `working_directory`
+option if it is configured, meaning that the hook commands are run in that
+directory.
 
 
 ### Order of execution
@@ -96,9 +90,6 @@ borgmatic for the `create` and `prune` actions. Here's the order of execution:
     * Run `before: configuration` hooks (from the first configuration file).
         * Run `before: repository` hooks (for the first repository).
             * Run `before: action` hooks for `create`.
-                * Run `before: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
-                * Actually dump data sources (e.g. PostgreSQL databases).
-                * Run `after: dump_data_sources` hooks (e.g. for the PostgreSQL hook).
             * Actually run the `create` action (e.g. `borg create`).
             * Run `after: action` hooks for `create`.
             * Run `before: action` hooks for `prune`.
@@ -118,7 +109,10 @@ configuration files.
 command hooks worked a little differently. In these older versions of borgmatic,
 you can specify `before_backup` hooks to perform preparation steps before
 running backups and specify `after_backup` hooks to perform cleanup steps
-afterwards. Here's an example:
+afterwards. These deprecated command hooks still work in version 2.0.0+,
+although see below about a few semantic differences starting in that version.
+
+Here's an example of these deprecated hooks:
 
 ```yaml
 before_backup:
@@ -142,6 +136,15 @@ instance, `before_prune` runs before a `prune` action for a repository, while
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 these options in the `hooks:` section of your configuration.
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span> An `after_*`
+command hook runs even if an error occurs in the corresponding `before_*` hook
+or between those two hooks. This allows you to perform cleanup steps that
+correspond to `before_*` preparation commands—even when something goes wrong.
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span> When command
+hooks run, they respect the `working_directory` option if it is configured,
+meaning that the hook commands are run in that directory.
 
 <span class="minilink minilink-addedin">New in version 1.7.0</span> The
 `before_actions` and `after_actions` hooks run before/after all the actions

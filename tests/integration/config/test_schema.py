@@ -14,7 +14,13 @@ def test_schema_line_length_stays_under_limit():
         assert len(line.rstrip('\n')) <= MAXIMUM_LINE_LENGTH
 
 
-ACTIONS_MODULE_NAMES_TO_OMIT = {'arguments', 'change_passphrase', 'export_key', 'json'}
+ACTIONS_MODULE_NAMES_TO_OMIT = {
+    'arguments',
+    'change_passphrase',
+    'export_key',
+    'import_key',
+    'json',
+}
 ACTIONS_MODULE_NAMES_TO_ADD = {'key', 'umount'}
 
 

@@ -1,9 +1,19 @@
 2.0.0.dev0
+ * #345: Add a "key import" action to import a repository key from backup.
  * #790, #821: Deprecate all "before_*", "after_*" and "on_error" command hooks in favor of more
    flexible "commands:". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
+ * #790: BREAKING: For both new and deprecated command hooks, run a configured "after" hook even if
+   an error occurs first. This allows you to perform cleanup steps that correspond to "before"
+   preparation commands—even when something goes wrong.
+ * #790: BREAKING: Run all command hooks (both new and deprecated) respecting the
+   "working_directory" option if configured, meaning that hook commands are run in that directory.
+ * #836: Add a custom command option for the SQLite hook.
+ * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
  * #1020: Document a database use case involving a temporary database client container:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+ * #1037: Fix an error with the "extract" action when both a remote repository and a
+   "working_directory" are used.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the

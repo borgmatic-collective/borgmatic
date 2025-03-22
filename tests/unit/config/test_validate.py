@@ -94,11 +94,38 @@ def test_normalize_repository_path_passes_through_remote_repository():
     module.normalize_repository_path(repository) == repository
 
 
+def test_normalize_repository_path_passes_through_remote_repository_with_base_dir():
+    repository = 'example.org:test.borg'
+
+    flexmock(module.os.path).should_receive('abspath').never()
+    module.normalize_repository_path(repository, '/working') == repository
+
+
 def test_normalize_repository_path_passes_through_file_repository():
     repository = 'file:///foo/bar/test.borg'
-    flexmock(module.os.path).should_receive('abspath').and_return('/foo/bar/test.borg')
+    flexmock(module.os.path).should_receive('abspath').with_args('/foo/bar/test.borg').and_return(
+        '/foo/bar/test.borg'
+    )
 
     module.normalize_repository_path(repository) == '/foo/bar/test.borg'
+
+
+def test_normalize_repository_path_passes_through_absolute_file_repository_with_base_dir():
+    repository = 'file:///foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').with_args('/foo/bar/test.borg').and_return(
+        '/foo/bar/test.borg'
+    )
+
+    module.normalize_repository_path(repository, '/working') == '/foo/bar/test.borg'
+
+
+def test_normalize_repository_path_resolves_relative_file_repository_with_base_dir():
+    repository = 'file://foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').with_args(
+        '/working/foo/bar/test.borg'
+    ).and_return('/working/foo/bar/test.borg')
+
+    module.normalize_repository_path(repository, '/working') == '/working/foo/bar/test.borg'
 
 
 def test_normalize_repository_path_passes_through_absolute_repository():
@@ -108,12 +135,30 @@ def test_normalize_repository_path_passes_through_absolute_repository():
     module.normalize_repository_path(repository) == repository
 
 
+def test_normalize_repository_path_passes_through_absolute_repository_with_base_dir():
+    repository = '/foo/bar/test.borg'
+    flexmock(module.os.path).should_receive('abspath').and_return(repository)
+
+    module.normalize_repository_path(repository, '/working') == repository
+
+
 def test_normalize_repository_path_resolves_relative_repository():
     repository = 'test.borg'
     absolute = '/foo/bar/test.borg'
-    flexmock(module.os.path).should_receive('abspath').and_return(absolute)
+    flexmock(module.os.path).should_receive('abspath').with_args(repository).and_return(absolute)
 
     module.normalize_repository_path(repository) == absolute
+
+
+def test_normalize_repository_path_resolves_relative_repository_with_base_dir():
+    repository = 'test.borg'
+    base = '/working'
+    absolute = '/working/test.borg'
+    flexmock(module.os.path).should_receive('abspath').with_args('/working/test.borg').and_return(
+        absolute
+    )
+
+    module.normalize_repository_path(repository, base) == absolute
 
 
 @pytest.mark.parametrize(

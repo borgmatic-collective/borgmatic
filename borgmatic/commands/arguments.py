@@ -547,7 +547,7 @@ def make_parsers():
         dest='stats',
         default=False,
         action='store_true',
-        help='Display statistics of the pruned archive',
+        help='Display statistics of the pruned archive [Borg 1 only]',
     )
     prune_group.add_argument(
         '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
@@ -1476,6 +1476,31 @@ def make_parsers():
         help='Path to export the key to, defaults to stdout (but be careful about dirtying the output with --verbosity)',
     )
     key_export_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    key_import_parser = key_parsers.add_parser(
+        'import',
+        help='Import a copy of the repository key from backup',
+        description='Import a copy of the repository key from backup',
+        add_help=False,
+    )
+    key_import_group = key_import_parser.add_argument_group('key import arguments')
+    key_import_group.add_argument(
+        '--paper',
+        action='store_true',
+        help='Import interactively from a backup done with --paper',
+    )
+    key_import_group.add_argument(
+        '--repository',
+        help='Path of repository to import the key from, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    key_import_group.add_argument(
+        '--path',
+        metavar='PATH',
+        help='Path to import the key from backup, defaults to stdin',
+    )
+    key_import_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

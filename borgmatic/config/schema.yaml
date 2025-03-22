@@ -959,7 +959,6 @@ properties:
                               - repository
                               - configuration
                               - everything
-                              - dump_data_sources
                           description: |
                               Name for the point in borgmatic's execution that
                               the commands should be run before (required if
@@ -972,19 +971,7 @@ properties:
                               repositories in the current configuration file.
                                * "everything" runs before all configuration
                               files.
-                               * "dump_data_sources" runs before each data
-                              source is dumped.
                           example: action
-                      hooks:
-                          type: array
-                          items:
-                              type: string
-                          description: |
-                              List of names of other hooks that this command
-                              hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for the
-                              "dump_data_sources" hook.
-                          example: postgresql
                       when:
                           type: array
                           items:
@@ -1013,9 +1000,7 @@ properties:
                                   - borg
                           description: |
                               List of actions for which the commands will be
-                              run. Defaults to running for all actions. Ignored
-                              for "dump_data_sources", which by its nature only
-                              runs for "create".
+                              run. Defaults to running for all actions.
                           example: [create, prune, compact, check]
                       run:
                           type: array
@@ -1037,7 +1022,6 @@ properties:
                               - configuration
                               - everything
                               - error
-                              - dump_data_sources
                           description: |
                               Name for the point in borgmatic's execution that
                               the commands should be run after (required if
@@ -1051,19 +1035,7 @@ properties:
                                * "everything" runs after all configuration
                               files.
                                * "error" runs after an error occurs.
-                               * "dump_data_sources" runs after each data
-                              source is dumped.
                           example: action
-                      hooks:
-                          type: array
-                          items:
-                              type: string
-                          description: |
-                              List of names of other hooks that this command
-                              hook applies to. Defaults to all hooks of the
-                              relevant type. Only supported for the
-                              "dump_data_sources" hook.
-                          example: postgresql
                       when:
                           type: array
                           items:
@@ -1093,9 +1065,7 @@ properties:
                           description: |
                               Only trigger the hook when borgmatic is run with
                               particular actions listed here. Defaults to
-                              running for all actions. Ignored for
-                              "dump_data_sources", which by its nature only runs
-                              for "create".
+                              running for all actions.
                           example: [create, prune, compact, check]
                       run:
                           type: array
@@ -1267,11 +1237,11 @@ properties:
                         Command to use instead of "pg_dump" or "pg_dumpall".
                         This can be used to run a specific pg_dump version
                         (e.g., one inside a running container). If you run it
-                        from within a container, make sure to mount your
-                        host's ".borgmatic" folder into the container using
-                        the same directory structure. Defaults to "pg_dump"
-                        for single database dump or "pg_dumpall" to dump all
-                        databases.
+                        from within a container, make sure to mount the path in
+                        the "user_runtime_directory" option from the host into
+                        the container at the same location. Defaults to
+                        "pg_dump" for single database dump or "pg_dumpall" to
+                        dump all databases.
                     example: docker exec my_pg_container pg_dump
                 pg_restore_command:
                     type: string
@@ -1408,10 +1378,11 @@ properties:
                     description: |
                         Command to use instead of "mariadb-dump". This can be
                         used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mariadb-dump".
+                        inside a running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to
+                        "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
@@ -1550,12 +1521,12 @@ properties:
                 mysql_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mysqldump". This can be
-                        used to run a specific mysql_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mysqldump".
+                        Command to use instead of "mysqldump". This can be used
+                        to run a specific mysql_dump version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
@@ -1642,6 +1613,24 @@ properties:
                         Path to the SQLite database file to restore to. Defaults
                         to the "path" option.
                     example: /var/lib/sqlite/users.db
+                sqlite_command:
+                    type: string
+                    description: |
+                        Command to use instead of "sqlite3". This can be used to
+                        run a specific sqlite3 version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
+                sqlite_restore_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead
+                        of "sqlite3". This can be used to run a specific 
+                        sqlite3 version (e.g., one inside a running container). 
+                        Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
     mongodb_databases:
         type: array
         items:
