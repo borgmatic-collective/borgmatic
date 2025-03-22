@@ -565,6 +565,12 @@ properties:
             not specified, borgmatic defaults to matching archives based on the
             archive_name_format (see above).
         example: sourcehostname
+    compact_threshold:
+        type: integer
+        description: |
+            Minimum saved space percentage threshold for compacting a segment,
+            defaults to 10.
+        example: 20
     checks:
         type: array
         items:

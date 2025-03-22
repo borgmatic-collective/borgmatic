@@ -39,7 +39,7 @@ def run_compact(
             remote_path=remote_path,
             progress=compact_arguments.progress or config.get('progress'),
             cleanup_commits=compact_arguments.cleanup_commits,
-            threshold=compact_arguments.threshold,
+            threshold=compact_arguments.threshold or config.get('compact_threshold'),
         )
     else:  # pragma: nocover
         logger.info('Skipping compact (only available/needed in Borg 1.2+)')
