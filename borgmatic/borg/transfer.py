@@ -56,7 +56,9 @@ def transfer_archives(
     return execute_command(
         full_command,
         output_log_level=logging.ANSWER,
-        output_file=DO_NOT_CAPTURE if (transfer_arguments.progress or config.get('progress')) else None,
+        output_file=(
+            DO_NOT_CAPTURE if (transfer_arguments.progress or config.get('progress')) else None
+        ),
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,

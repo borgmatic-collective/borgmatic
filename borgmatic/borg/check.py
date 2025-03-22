@@ -180,9 +180,7 @@ def check_archives(
             full_command,
             # The Borg repair option triggers an interactive prompt, which won't work when output is
             # captured. And progress messes with the terminal directly.
-            output_file=(
-                DO_NOT_CAPTURE if check_arguments.repair or progress else None
-            ),
+            output_file=(DO_NOT_CAPTURE if check_arguments.repair or progress else None),
             environment=environment.make_environment(config),
             working_directory=working_directory,
             borg_local_path=local_path,
