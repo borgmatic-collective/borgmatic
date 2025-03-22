@@ -17,6 +17,7 @@ import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
+import borgmatic.actions.recreate
 import borgmatic.actions.delete
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
@@ -394,6 +395,16 @@ def run_actions(
                         action_arguments,
                         global_arguments,
                         dry_run_label,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'recreate' and action_name not in skip_actions:
+                    borgmatic.actions.recreate.run_recreate(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
                         local_path,
                         remote_path,
                     )

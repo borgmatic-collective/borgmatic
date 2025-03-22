@@ -27,6 +27,7 @@ ACTION_ALIASES = {
     'break-lock': [],
     'key': [],
     'borg': [],
+    'recreate': [],
 }
 
 
@@ -1544,6 +1545,26 @@ def make_parsers():
         help='Options to pass to Borg, command first ("create", "list", etc). "--" is optional. To specify the repository or the archive, you must use --repository or --archive instead of providing them here.',
     )
     borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
+
+    recreate_parser = action_parsers.add_parser(
+        'recreate',
+        aliases=ACTION_ALIASES['recreate'],
+        help='Recreate an archive in a repository',
+        description='Recreate an archive in a repository',
+        add_help=False,
+    )
+    recreate_group = recreate_parser.add_argument_group('recreate arguments')
+    recreate_group.add_argument(
+        '--repository',
+        help='Path of the repository containing the archive',
+    )
+    recreate_group.add_argument(
+        '--archive',
+        help='Name of the archive to recreate',
+    )
+    recreate_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
 
     return global_parser, action_parsers, global_plus_action_parser
 

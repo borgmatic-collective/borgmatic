@@ -9,7 +9,7 @@ from borgmatic.borg.flags import make_flags_from_arguments, make_repository_arch
 logger = logging.getLogger(__name__)
 
 
-def make_recreate_command(
+def recreate_archive(
     repository,
     archive,
     config,
@@ -24,61 +24,30 @@ def make_recreate_command(
     the local Borg version string, an argparse.Namespace of recreate arguments,
     an argparse.Namespace of global arguments, optional local and remote Borg paths.
 
-    Returns the recreate command as a tuple of strings ready for execution.
+    Executes the recreate command with the given arguments.
     '''
-    verbosity_flags = (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ()) + (
-        ('--info',) if logger.isEnabledFor(logging.INFO) else ()
-    )
+    lock_wait = config.get('lock_wait', None)
 
-    # handle both the recreate and global arguments
-    recreate_flags = make_flags_from_arguments(
-        recreate_arguments, excludes=('repository', 'archive')
-    )
-    global_flags = make_flags_from_arguments(global_arguments)
-
-    repo_archive_flags = make_repository_archive_flags(repository, archive, local_borg_version)
+    repo_archive_arg = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
 
-    return (
+    recreate_cmd = (
         (local_path, 'recreate')
-        + repo_archive_flags
-        + verbosity_flags
-        + global_flags
-        + recreate_flags
+        + (('--remote-path', remote_path) if remote_path else ())
+        + repo_archive_arg
+        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
+        + (('--debug', '--show-rc', '--list') if logger.isEnabledFor(logging.DEBUG) else ())
         + exclude_flags
     )
 
-
-def recreate_archive(
-    repository,
-    archive,
-    config,
-    local_borg_version,
-    recreate_arguments,
-    global_arguments,
-    local_path='borg',
-    remote_path=None,
-):
-    '''
-    Given a local or remote repository path, an archive name, a configuration dict,
-    the local Borg version string, an argparse.Namespace of recreate arguments,
-    an argparse.Namespace of global arguments, optional local and remote Borg paths.
-
-    Executes the recreate command with the given arguments.
-    '''
-    command = make_recreate_command(
-        repository,
-        archive,
-        config,
-        local_borg_version,
-        recreate_arguments,
-        global_arguments,
-        local_path,
-        remote_path,
-    )
+    if global_arguments.dry_run:
+        logger.info('Skipping the archive recreation (dry run)')
+        return
 
     borgmatic.execute.execute_command(
-        command,
+        recreate_cmd,
         output_log_level=logging.ANSWER,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
