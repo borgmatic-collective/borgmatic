@@ -38,6 +38,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
 
     if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
         config = ruamel.yaml.comments.CommentedSeq(
+            example if schema['items'].get('type') in SCALAR_SCHEMA_TYPES else
             [
                 schema_to_sample_configuration(
                     schema['items'], source_config, level, parent_is_sequence=True
@@ -53,7 +54,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
             [
                 (
                     field_name,
-                    sub_schema.get('example') if field_name == 'source_directories' else schema_to_sample_configuration(
+                    schema_to_sample_configuration(
                         sub_schema, (source_config or {}).get(field_name, {}), level + 1
                     ),
                 )
