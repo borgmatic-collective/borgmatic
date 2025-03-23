@@ -297,7 +297,6 @@ def make_argument_description(schema, flag_name):
     an example or additional information as appropriate based on its type. Return the updated
     description for use in a command-line argument.
     '''
-    # FIXME: Argument descriptions are apparently broken right now.
     description = schema.get('description')
     schema_type = schema.get('type')
 
@@ -316,6 +315,8 @@ def make_argument_description(schema, flag_name):
         description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
 
     description = description.replace('%', '%%')
+
+    return description
 
 
 def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name):
