@@ -291,6 +291,91 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
 OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'stats', 'list'}
 
 
+def make_argument_description(schema, flag_name):
+    '''
+    Given a configuration schema dict and a flag name for it, extend the schema's description with
+    an example or additional information as appropriate based on its type. Return the updated
+    description for use in a command-line argument.
+    '''
+    description = schema.get('description')
+    schema_type = schema.get('type')
+
+    if not description:
+        return None
+
+    if schema_type == 'array':
+        example_buffer = io.StringIO()
+        yaml = ruamel.yaml.YAML(typ='safe')
+        yaml.default_flow_style = True
+        yaml.dump(schema.get('example'), example_buffer)
+
+        description += f' Example value: "{example_buffer.getvalue().strip()}"'
+
+    if '[0]' in flag_name:
+        description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+
+    description = description.replace('%', '%%')
+
+
+def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name):
+    '''
+    Given an argparse._ArgumentGroup instance, a configuration schema dict, a sequence of unparsed
+    argument strings, and a dotted flag name, convert the schema into corresponding command-line
+    array element flags that correspond to the given unparsed arguments.
+
+    Here's the background. We want to support flags that can have arbitrary indices like:
+    
+      --foo.bar[1].baz
+    
+    But argparse doesn't support that natively because the index can be an arbitrary number. We
+    won't let that stop us though, will we?
+
+    If the current flag name has an array component in it (e.g. a name with "[0]"), then make a
+    pattern that would match the flag name regardless of the number that's in it. The idea is that
+    we want to look for unparsed arguments that appear like the flag name, but instead of "[0]" they
+    have, say, "[1]" or "[123]".
+    
+    Next, we check each unparsed argument against that pattern. If one of them matches, add an
+    argument flag for it to the argument parser group. Example:
+    
+    Let's say flag_name is:
+    
+        --foo.bar[0].baz
+    
+    ... then the regular expression pattern will be:
+    
+        ^--foo\.bar\[\d+\]\.baz
+    
+    ... and, if that matches an unparsed argument of:
+    
+        --foo.bar[1].baz
+    
+    ... then an argument flag will get added equal to that unparsed argument. And the unparsed
+    argument will match it when parsing is performed! In this manner, we're using the actual user
+    CLI input to inform what exact flags we support!
+    '''
+    if '[0]' not in flag_name or '--help' in unparsed_arguments:
+        return
+
+    pattern = re.compile(f'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+    existing_flags = set(
+        itertools.chain(
+            *(group_action.option_strings for group_action in arguments_group._group_actions)
+        )
+    )
+
+    for unparsed in unparsed_arguments:
+        unparsed_flag_name = unparsed.split('=', 1)[0]
+
+        if pattern.match(unparsed_flag_name) and unparsed_flag_name not in existing_flags:
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                type=argument_type,
+                metavar=metavar,
+                help=description,
+            )
+
+
 def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
     '''
     Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
@@ -362,28 +447,14 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                 )
 
     flag_name = '.'.join(names)
-    description = schema.get('description')
     metavar = names[-1].upper()
 
-    if description:
-        if schema_type == 'array':
-            example_buffer = io.StringIO()
-            yaml = ruamel.yaml.YAML(typ='safe')
-            yaml.default_flow_style = True
-            yaml.dump(schema.get('example'), example_buffer)
-
-            description += f' Example value: "{example_buffer.getvalue().strip()}"'
-
-        if '[0]' in flag_name:
-            description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
-
-        description = description.replace('%', '%%')
-
-    # These options already have corresponding flags on individual actions (like "create
+    # Certain options already have corresponding flags on individual actions (like "create
     # --progress"), so don't bother adding them to the global flags.
     if flag_name in OMITTED_FLAG_NAMES:
         return
 
+    description = make_argument_description(schema, flag_name)
     argument_type = borgmatic.config.schema.parse_type(schema_type)
     full_flag_name = f"--{flag_name.replace('_', '-')}"
 
@@ -404,54 +475,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             help=description,
         )
 
-    # We want to support flags that can have arbitrary indices like:
-    #
-    #   --foo.bar[1].baz
-    #
-    # But argparse doesn't support that natively because the index can be an arbitrary number. We
-    # won't let that stop us though, will we? So, if the current flag name has an array component in
-    # it (e.g. a name with "[0]"), then make a pattern that would match the flag name regardless of
-    # the number that's in it. The idea is that we want to look for unparsed arguments that appear
-    # like the flag name, but instead of "[0]" they have, say, "[1]" or "[123]".
-    #
-    # Next, we check each unparsed argument against that pattern. If one of them matches, add an
-    # argument flag for it to the argument parser group. Example:
-    #
-    # Let's say flag_name is:
-    #
-    #     --foo.bar[0].baz
-    #
-    # ... then the regular expression pattern will be:
-    #
-    #     ^--foo\.bar\[\d+\]\.baz
-    #
-    # ... and, if that matches an unparsed argument of:
-    #
-    #     --foo.bar[1].baz
-    #
-    # ... then an argument flag will get added equal to that unparsed argument. And the unparsed
-    # argument will match it when parsing is performed! In this manner, we're using the actual user
-    # CLI input to inform what exact flags we support!
-    if '[0]' not in flag_name or '--help' in unparsed_arguments:
-        return
-
-    pattern = re.compile(f'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
-    existing_flags = set(
-        itertools.chain(
-            *(group_action.option_strings for group_action in arguments_group._group_actions)
-        )
-    )
-
-    for unparsed in unparsed_arguments:
-        unparsed_flag_name = unparsed.split('=', 1)[0]
-
-        if pattern.match(unparsed_flag_name) and unparsed_flag_name not in existing_flags:
-            arguments_group.add_argument(
-                unparsed_flag_name,
-                type=argument_type,
-                metavar=metavar,
-                help=description,
-            )
+    add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name)
 
 
 def make_parsers(schema, unparsed_arguments):

@@ -14,13 +14,13 @@ def set_values(config, keys, value):
 
         ('foo', 'bar', 'baz')
 
-    This looks up "foo" in the given configuration. And within that value, it looks up "bar". And
-    then within that value, it looks up "baz" and sets it to the given value. Another example:
+    This looks up "foo" in the given configuration dict. And within that, it looks up "bar". And
+    then within that, it looks up "baz" and sets it to the given value. Another example:
 
         ('mylist[0]', 'foo')
 
-    This looks for the zeroth element of "mylist" in the given configuration. And within that value,
-    it looks up "foo" and sets it to the given value.
+    This looks for the zeroth element of "mylist" in the given configuration. And within that, it
+    looks up "foo" and sets it to the given value.
     '''
     if not keys:
         return
