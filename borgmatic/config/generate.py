@@ -36,10 +36,10 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
     schema_type = schema.get('type')
     example = schema.get('example')
 
-    if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
+    if borgmatic.config.schema.compare_types(schema_type, {'array'}):
         config = ruamel.yaml.comments.CommentedSeq(
             example
-            if schema['items'].get('type') in SCALAR_SCHEMA_TYPES
+            if borgmatic.config.schema.compare_types(schema['items'].get('type'), SCALAR_SCHEMA_TYPES)
             else [
                 schema_to_sample_configuration(
                     schema['items'], source_config, level, parent_is_sequence=True
@@ -47,7 +47,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
             ]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
-    elif schema_type == 'object' or (isinstance(schema_type, list) and 'object' in schema_type):
+    elif borgmatic.config.schema.compare_types(schema_type, {'object'}):
         if source_config and isinstance(source_config, list) and isinstance(source_config[0], dict):
             source_config = dict(collections.ChainMap(*source_config))
 
@@ -66,11 +66,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         add_comments_to_configuration_object(
             config, schema, source_config, indent=indent, skip_first=parent_is_sequence
         )
-    elif isinstance(schema_type, list) and all(
-        element_schema_type in SCALAR_SCHEMA_TYPES for element_schema_type in schema_type
-    ):
-        return example
-    elif schema_type in SCALAR_SCHEMA_TYPES:
+    elif borgmatic.config.schema.compare_types(schema_type, SCALAR_SCHEMA_TYPES, match=all):
         return example
     else:
         raise ValueError(f'Schema at level {level} is unsupported: {schema}')

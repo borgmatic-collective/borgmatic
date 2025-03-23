@@ -39,3 +39,25 @@ def parse_type(schema_type):
         }[schema_type]
     except KeyError:
         raise ValueError(f'Unknown type in configuration schema: {schema_type}')
+
+
+def compare_types(schema_type, target_types, match=any):
+    '''
+    Given a schema type as a string or a list of strings (representing multiple types) and a set of
+    target type strings, return whether every schema type is in the set of target types.
+
+    If the schema type is a list of strings, use the given match function (such as any or all) to
+    compare elements.
+    '''
+    if isinstance(schema_type, list):
+        if match(
+            element_schema_type in target_types for element_schema_type in schema_type
+        ):
+            return True
+
+        return False
+
+    if schema_type in target_types:
+        return True
+
+    return False

@@ -297,6 +297,7 @@ def make_argument_description(schema, flag_name):
     an example or additional information as appropriate based on its type. Return the updated
     description for use in a command-line argument.
     '''
+    # FIXME: Argument descriptions are apparently broken right now.
     description = schema.get('description')
     schema_type = schema.get('type')
 
