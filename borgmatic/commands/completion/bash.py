@@ -1,5 +1,6 @@
 import borgmatic.commands.arguments
 import borgmatic.commands.completion.actions
+import borgmatic.commands.completion.flag
 
 
 def parser_flags(parser):
@@ -7,7 +8,11 @@ def parser_flags(parser):
     Given an argparse.ArgumentParser instance, return its argument flags in a space-separated
     string.
     '''
-    return ' '.join(option for action in parser._actions for option in action.option_strings)
+    return ' '.join(
+        flag_variant
+        for action in parser._actions for flag_name in action.option_strings
+        for flag_variant in borgmatic.commands.completion.flag.variants(flag_name)
+    )
 
 
 def bash_completion():
@@ -19,7 +24,10 @@ def bash_completion():
         unused_global_parser,
         action_parsers,
         global_plus_action_parser,
-    ) = borgmatic.commands.arguments.make_parsers()
+    ) = borgmatic.commands.arguments.make_parsers(
+        schema=borgmatic.config.validate.load_schema(borgmatic.config.validate.schema_filename()),
+        unparsed_arguments=(),
+    )
     global_flags = parser_flags(global_plus_action_parser)
 
     # Avert your eyes.

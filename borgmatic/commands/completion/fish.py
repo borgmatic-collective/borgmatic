@@ -4,6 +4,7 @@ from textwrap import dedent
 
 import borgmatic.commands.arguments
 import borgmatic.commands.completion.actions
+import borgmatic.config.validate
 
 
 def has_file_options(action: Action):
@@ -26,9 +27,11 @@ def has_choice_options(action: Action):
 def has_unknown_required_param_options(action: Action):
     '''
     A catch-all for options that take a required parameter, but we don't know what the parameter is.
-    This should be used last. These are actions that take something like a glob, a list of numbers, or a string.
+    This should be used last. These are actions that take something like a glob, a list of numbers,
+    or a string.
 
-    Actions that match this pattern should not show the normal arguments, because those are unlikely to be valid.
+    Actions that match this pattern should not show the normal arguments, because those are unlikely
+    to be valid.
     '''
     return (
         action.required is True
@@ -52,9 +55,9 @@ def has_exact_options(action: Action):
 
 def exact_options_completion(action: Action):
     '''
-    Given an argparse.Action instance, return a completion invocation that forces file completions, options completion,
-    or just that some value follow the action, if the action takes such an argument and was the last action on the
-    command line prior to the cursor.
+    Given an argparse.Action instance, return a completion invocation that forces file completions,
+    options completion, or just that some value follow the action, if the action takes such an
+    argument and was the last action on the command line prior to the cursor.
 
     Otherwise, return an empty string.
     '''
@@ -80,8 +83,9 @@ def exact_options_completion(action: Action):
 
 def dedent_strip_as_tuple(string: str):
     '''
-    Dedent a string, then strip it to avoid requiring your first line to have content, then return a tuple of the string.
-    Makes it easier to write multiline strings for completions when you join them with a tuple.
+    Dedent a string, then strip it to avoid requiring your first line to have content, then return a
+    tuple of the string. Makes it easier to write multiline strings for completions when you join
+    them with a tuple.
     '''
     return (dedent(string).strip('\n'),)
 
@@ -95,7 +99,10 @@ def fish_completion():
         unused_global_parser,
         action_parsers,
         global_plus_action_parser,
-    ) = borgmatic.commands.arguments.make_parsers()
+    ) = borgmatic.commands.arguments.make_parsers(
+        schema=borgmatic.config.validate.load_schema(borgmatic.config.validate.schema_filename()),
+        unparsed_arguments=(),
+    )
 
     all_action_parsers = ' '.join(action for action in action_parsers.choices.keys())
 
