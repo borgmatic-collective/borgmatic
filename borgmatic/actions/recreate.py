@@ -27,10 +27,9 @@ def run_recreate(
         else:
             logger.info('Recreating repository')
 
-        # collect and process patterns
-        patterns = collect_patterns(config)
+        # Collect and process patterns.
         processed_patterns = process_patterns(
-            patterns, borgmatic.config.paths.get_working_directory(config)
+            collect_patterns(config), borgmatic.config.paths.get_working_directory(config)
         )
 
         borgmatic.borg.recreate.recreate_archive(

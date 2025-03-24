@@ -1019,6 +1019,27 @@ def test_run_actions_runs_create():
     assert result == (expected,)
 
 
+def test_run_actions_runs_recreate():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+
+    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'recreate': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_with_skip_actions_skips_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['create'])

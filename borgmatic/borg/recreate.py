@@ -3,8 +3,8 @@ import logging
 import borgmatic.borg.environment
 import borgmatic.config.paths
 import borgmatic.execute
-from borgmatic.borg.create import make_exclude_flags
-from borgmatic.borg.flags import make_flags_from_arguments, make_repository_archive_flags
+from borgmatic.borg.create import make_exclude_flags, write_patterns_file, make_list_filter_flags
+from borgmatic.borg.flags import make_repository_archive_flags
 
 logger = logging.getLogger(__name__)
 
@@ -31,20 +31,31 @@ def recreate_archive(
 
     repo_archive_arg = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
-    # handle path from recreate_arguments
-    path_flag = ('--path', recreate_arguments.path) if recreate_arguments.path else ()
-    pattern_flags = ('--patterns-from', patterns) if patterns else ()
+
+    # Write patterns to a temporary file and use that file with --patterns-from.
+    patterns_file = write_patterns_file(
+        patterns, borgmatic.config.paths.get_working_directory(config)
+    )
 
     recreate_cmd = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
         + repo_archive_arg
-        + path_flag
+        + (('--path', recreate_arguments.path) if recreate_arguments.path else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--debug', '--show-rc', '--list') if logger.isEnabledFor(logging.DEBUG) else ())
-        + pattern_flags
+        + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (('--patterns-from', patterns_file.name) if patterns_file else ())
+        + (
+            (
+                '--list',
+                '--filter',
+                make_list_filter_flags(local_borg_version, global_arguments.dry_run),
+            )
+            if recreate_arguments.list
+            else ()
+        )
         + exclude_flags
     )
 
@@ -54,7 +65,7 @@ def recreate_archive(
 
     borgmatic.execute.execute_command(
         recreate_cmd,
-        output_log_level=logging.ANSWER,
+        output_log_level=logging.INFO,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         remote_path=remote_path,
