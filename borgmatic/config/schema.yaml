@@ -767,6 +767,7 @@ properties:
                 - prune
                 - compact
                 - create
+                - recreate
                 - check
                 - delete
                 - extract
@@ -982,6 +983,7 @@ properties:
                                   - prune
                                   - compact
                                   - create
+                                  - recreate
                                   - check
                                   - delete
                                   - extract
@@ -1046,6 +1048,7 @@ properties:
                                   - prune
                                   - compact
                                   - create
+                                  - recreate
                                   - check
                                   - delete
                                   - extract
