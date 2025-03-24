@@ -19,9 +19,11 @@ def load_credential(hook_config, config, credential_parameters):
 
         raise ValueError(f'Cannot load invalid credential: "{name}"')
 
+    expanded_credential_path = os.path.expanduser(credential_path)
+
     try:
         with open(
-            os.path.join(config.get('working_directory', ''), credential_path)
+            os.path.join(config.get('working_directory', ''), expanded_credential_path)
         ) as credential_file:
             return credential_file.read().rstrip(os.linesep)
     except (FileNotFoundError, OSError) as error:
