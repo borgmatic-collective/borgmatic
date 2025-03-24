@@ -2,6 +2,7 @@ import logging
 
 import borgmatic.borg.recreate
 import borgmatic.config.validate
+from borgmatic.actions.create import collect_patterns, process_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,12 @@ def run_recreate(
         else:
             logger.info('Recreating repository')
 
+        # collect and process patterns
+        patterns = collect_patterns(config)
+        processed_patterns = process_patterns(
+            patterns, borgmatic.config.paths.get_working_directory(config)
+        )
+
         borgmatic.borg.recreate.recreate_archive(
             repository['path'],
             borgmatic.borg.repo_list.resolve_archive_name(
@@ -43,4 +50,5 @@ def run_recreate(
             global_arguments,
             local_path=local_path,
             remote_path=remote_path,
+            patterns=processed_patterns,
         )

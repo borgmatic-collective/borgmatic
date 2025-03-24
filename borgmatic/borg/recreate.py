@@ -18,6 +18,7 @@ def recreate_archive(
     global_arguments,
     local_path,
     remote_path=None,
+    patterns=None,
 ):
     '''
     Given a local or remote repository path, an archive name, a configuration dict,
@@ -32,7 +33,7 @@ def recreate_archive(
     exclude_flags = make_exclude_flags(config)
     # handle path from recreate_arguments
     path_flag = ('--path', recreate_arguments.path) if recreate_arguments.path else ()
-
+    pattern_flags = ('--patterns-from', patterns) if patterns else ()
 
     recreate_cmd = (
         (local_path, 'recreate')
@@ -43,6 +44,7 @@ def recreate_archive(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc', '--list') if logger.isEnabledFor(logging.DEBUG) else ())
+        + pattern_flags
         + exclude_flags
     )
 
