@@ -39,7 +39,9 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
     if borgmatic.config.schema.compare_types(schema_type, {'array'}):
         config = ruamel.yaml.comments.CommentedSeq(
             example
-            if borgmatic.config.schema.compare_types(schema['items'].get('type'), SCALAR_SCHEMA_TYPES)
+            if borgmatic.config.schema.compare_types(
+                schema['items'].get('type'), SCALAR_SCHEMA_TYPES
+            )
             else [
                 schema_to_sample_configuration(
                     schema['items'], source_config, level, parent_is_sequence=True

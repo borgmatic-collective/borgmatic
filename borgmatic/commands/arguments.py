@@ -69,9 +69,9 @@ def get_subactions_for_actions(action_parsers):
 
 def omit_values_colliding_with_action_names(unparsed_arguments, parsed_arguments):
     '''
-    Given a sequence of string arguments and a dict from action name to parsed argparse.Namespace
-    arguments, return the string arguments with any values omitted that happen to be the same as
-    the name of a borgmatic action.
+    Given unparsed arguments as a sequence of strings and a dict from action name to parsed
+    argparse.Namespace arguments, return the string arguments with any values omitted that happen to
+    be the same as the name of a borgmatic action.
 
     This prevents, for instance, "check --only extract" from triggering the "extract" action.
     '''
@@ -320,15 +320,15 @@ def make_argument_description(schema, flag_name):
 
 
 def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name):
-    '''
+    r'''
     Given an argparse._ArgumentGroup instance, a configuration schema dict, a sequence of unparsed
     argument strings, and a dotted flag name, convert the schema into corresponding command-line
     array element flags that correspond to the given unparsed arguments.
 
     Here's the background. We want to support flags that can have arbitrary indices like:
-    
+
       --foo.bar[1].baz
-    
+
     But argparse doesn't support that natively because the index can be an arbitrary number. We
     won't let that stop us though, will we?
 
@@ -336,22 +336,22 @@ def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_ar
     pattern that would match the flag name regardless of the number that's in it. The idea is that
     we want to look for unparsed arguments that appear like the flag name, but instead of "[0]" they
     have, say, "[1]" or "[123]".
-    
+
     Next, we check each unparsed argument against that pattern. If one of them matches, add an
     argument flag for it to the argument parser group. Example:
-    
+
     Let's say flag_name is:
-    
+
         --foo.bar[0].baz
-    
+
     ... then the regular expression pattern will be:
-    
+
         ^--foo\.bar\[\d+\]\.baz
-    
+
     ... and, if that matches an unparsed argument of:
-    
+
         --foo.bar[1].baz
-    
+
     ... then an argument flag will get added equal to that unparsed argument. And the unparsed
     argument will match it when parsing is performed! In this manner, we're using the actual user
     CLI input to inform what exact flags we support!
@@ -359,7 +359,7 @@ def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_ar
     if '[0]' not in flag_name or '--help' in unparsed_arguments:
         return
 
-    pattern = re.compile(f'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+    pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
     existing_flags = set(
         itertools.chain(
             *(group_action.option_strings for group_action in arguments_group._group_actions)
@@ -409,9 +409,14 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
     And if names are also passed in, they are considered to be the name components of an option
     (e.g. "foo" and "bar") and are used to construct a resulting flag.
+
+    Bail if the schema is not a dict.
     '''
     if names is None:
         names = ()
+
+    if not isinstance(schema, dict):
+        return
 
     schema_type = schema.get('type')
 
@@ -449,13 +454,13 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                 )
 
     flag_name = '.'.join(names)
-    metavar = names[-1].upper()
 
     # Certain options already have corresponding flags on individual actions (like "create
     # --progress"), so don't bother adding them to the global flags.
-    if flag_name in OMITTED_FLAG_NAMES:
+    if not flag_name or flag_name in OMITTED_FLAG_NAMES:
         return
 
+    metavar = names[-1].upper()
     description = make_argument_description(schema, flag_name)
     argument_type = borgmatic.config.schema.parse_type(schema_type)
     full_flag_name = f"--{flag_name.replace('_', '-')}"
@@ -482,10 +487,11 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
 def make_parsers(schema, unparsed_arguments):
     '''
-    Given a configuration schema dict, build a global arguments parser, individual action parsers,
-    and a combined parser containing both. Return them as a tuple. The global parser is useful for
-    parsing just global arguments while ignoring actions, and the combined parser is handy for
-    displaying help that includes everything: global flags, a list of actions, etc.
+    Given a configuration schema dict and unparsed arguments as a sequence of strings, build a
+    global arguments parser, individual action parsers, and a combined parser containing both.
+    Return them as a tuple. The global parser is useful for parsing just global arguments while
+    ignoring actions, and the combined parser is handy for displaying help that includes everything:
+    global flags, a list of actions, etc.
     '''
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
@@ -1752,8 +1758,8 @@ def make_parsers(schema, unparsed_arguments):
 def parse_arguments(schema, *unparsed_arguments):
     '''
     Given a configuration schema dict and the command-line arguments with which this script was
-    invoked, parse the arguments and return them as a dict mapping from action name (or "global") to
-    an argparse.Namespace instance.
+    invoked and unparsed arguments as a sequence of strings, parse the arguments and return them as
+    a dict mapping from action name (or "global") to an argparse.Namespace instance.
 
     Raise ValueError if the arguments cannot be parsed.
     Raise SystemExit with an error code of 0 if "--help" was requested.

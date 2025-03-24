@@ -11,6 +11,3 @@ def variants(flag_name):
         return
 
     yield flag_name
-
-
-

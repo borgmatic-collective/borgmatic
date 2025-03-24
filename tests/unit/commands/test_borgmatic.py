@@ -1537,6 +1537,7 @@ def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env
     configs, config_paths, logs = tuple(
         module.load_configurations(
             ('test.yaml', 'other.yaml'),
+            global_arguments=flexmock(),
             resolve_env=resolve_env,
         )
     )
@@ -1549,7 +1550,9 @@ def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env
 def test_load_configurations_logs_warning_for_permission_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(PermissionError)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml',)))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(('test.yaml',), global_arguments=flexmock())
+    )
 
     assert configs == {}
     assert config_paths == []
@@ -1559,7 +1562,9 @@ def test_load_configurations_logs_warning_for_permission_error():
 def test_load_configurations_logs_critical_for_parse_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(ValueError)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml',)))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(('test.yaml',), global_arguments=flexmock())
+    )
 
     assert configs == {}
     assert config_paths == []

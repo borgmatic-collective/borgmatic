@@ -21,9 +21,9 @@ def test_schema_to_sample_configuration_comments_out_non_default_options():
         'type': 'object',
         'properties': dict(
             [
-                ('field1', {'example': 'Example 1'}),
-                ('field2', {'example': 'Example 2'}),
-                ('source_directories', {'example': 'Example 3'}),
+                ('field1', {'type': 'string', 'example': 'Example 1'}),
+                ('field2', {'type': 'string', 'example': 'Example 2'}),
+                ('source_directories', {'type': 'string', 'example': 'Example 3'}),
             ]
         ),
     }
@@ -47,9 +47,9 @@ def test_schema_to_sample_configuration_comments_out_non_source_config_options()
         'type': 'object',
         'properties': dict(
             [
-                ('field1', {'example': 'Example 1'}),
-                ('field2', {'example': 'Example 2'}),
-                ('field3', {'example': 'Example 3'}),
+                ('field1', {'type': 'string', 'example': 'Example 1'}),
+                ('field2', {'type': 'string', 'example': 'Example 2'}),
+                ('field3', {'type': 'string', 'example': 'Example 3'}),
             ]
         ),
     }
@@ -76,9 +76,9 @@ def test_schema_to_sample_configuration_comments_out_non_default_options_in_sequ
             'type': 'object',
             'properties': dict(
                 [
-                    ('field1', {'example': 'Example 1'}),
-                    ('field2', {'example': 'Example 2'}),
-                    ('source_directories', {'example': 'Example 3'}),
+                    ('field1', {'type': 'string', 'example': 'Example 1'}),
+                    ('field2', {'type': 'string', 'example': 'Example 2'}),
+                    ('source_directories', {'type': 'string', 'example': 'Example 3'}),
                 ]
             ),
         },
@@ -105,9 +105,9 @@ def test_schema_to_sample_configuration_comments_out_non_source_config_options_i
             'type': 'object',
             'properties': dict(
                 [
-                    ('field1', {'example': 'Example 1'}),
-                    ('field2', {'example': 'Example 2'}),
-                    ('field3', {'example': 'Example 3'}),
+                    ('field1', {'type': 'string', 'example': 'Example 1'}),
+                    ('field2', {'type': 'string', 'example': 'Example 2'}),
+                    ('field3', {'type': 'string', 'example': 'Example 3'}),
                 ]
             ),
         },

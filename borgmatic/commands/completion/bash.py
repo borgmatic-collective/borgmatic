@@ -1,6 +1,7 @@
 import borgmatic.commands.arguments
 import borgmatic.commands.completion.actions
 import borgmatic.commands.completion.flag
+import borgmatic.config.validate
 
 
 def parser_flags(parser):
@@ -10,7 +11,8 @@ def parser_flags(parser):
     '''
     return ' '.join(
         flag_variant
-        for action in parser._actions for flag_name in action.option_strings
+        for action in parser._actions
+        for flag_name in action.option_strings
         for flag_variant in borgmatic.commands.completion.flag.variants(flag_name)
     )
 

@@ -21,6 +21,18 @@ def schema_filename():
         return schema_path
 
 
+def load_schema(schema_path):
+    '''
+    Given a schema filename path, load the schema and return it as a dict.
+
+    Raise Validation_error if the schema could not be parsed.
+    '''
+    try:
+        return load.load_configuration(schema_path)
+    except (ruamel.yaml.error.YAMLError, RecursionError) as error:
+        raise Validation_error(schema_path, (str(error),))
+
+
 def format_json_error_path_element(path_element):
     '''
     Given a path element into a JSON data structure, format it for display as a string.

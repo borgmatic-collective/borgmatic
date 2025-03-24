@@ -58,7 +58,9 @@ def test_parse_configuration_transforms_file_into_mapping():
         '''
     )
 
-    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+    )
 
     assert config == {
         'source_directories': ['/home', '/etc'],
@@ -86,7 +88,9 @@ def test_parse_configuration_passes_through_quoted_punctuation():
         '''
     )
 
-    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+    )
 
     assert config == {
         'source_directories': [f'/home/{string.punctuation}'],
@@ -119,7 +123,7 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
         ''',
     )
 
-    module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock())
 
 
 def test_parse_configuration_inlines_include_inside_deprecated_section():
@@ -145,7 +149,9 @@ def test_parse_configuration_inlines_include_inside_deprecated_section():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+    )
 
     assert config == {
         'source_directories': ['/home'],
@@ -181,7 +187,9 @@ def test_parse_configuration_merges_include():
     include_file.name = 'include.yaml'
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
-    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+    )
 
     assert config == {
         'source_directories': ['/home'],
@@ -196,7 +204,9 @@ def test_parse_configuration_merges_include():
 
 def test_parse_configuration_raises_for_missing_config_file():
     with pytest.raises(FileNotFoundError):
-        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+        module.parse_configuration(
+            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        )
 
 
 def test_parse_configuration_raises_for_missing_schema_file():
@@ -208,14 +218,18 @@ def test_parse_configuration_raises_for_missing_schema_file():
     builtins.should_receive('open').with_args('/tmp/schema.yaml').and_raise(FileNotFoundError)
 
     with pytest.raises(FileNotFoundError):
-        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+        module.parse_configuration(
+            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        )
 
 
 def test_parse_configuration_raises_for_syntax_error():
     mock_config_and_schema('foo:\nbar')
 
     with pytest.raises(ValueError):
-        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+        module.parse_configuration(
+            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        )
 
 
 def test_parse_configuration_raises_for_validation_error():
@@ -228,7 +242,9 @@ def test_parse_configuration_raises_for_validation_error():
     )
 
     with pytest.raises(module.Validation_error):
-        module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+        module.parse_configuration(
+            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        )
 
 
 def test_parse_configuration_applies_overrides():
@@ -245,7 +261,10 @@ def test_parse_configuration_applies_overrides():
     )
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', overrides=['local_path=borg2']
+        '/tmp/config.yaml',
+        '/tmp/schema.yaml',
+        global_arguments=flexmock(),
+        overrides=['local_path=borg2'],
     )
 
     assert config == {
@@ -273,7 +292,9 @@ def test_parse_configuration_applies_normalization_after_environment_variable_in
     )
     flexmock(os).should_receive('getenv').replace_with(lambda variable_name, default: default)
 
-    config, config_paths, logs = module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml')
+    config, config_paths, logs = module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+    )
 
     assert config == {
         'source_directories': ['/home'],

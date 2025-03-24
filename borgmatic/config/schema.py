@@ -50,9 +50,7 @@ def compare_types(schema_type, target_types, match=any):
     compare elements.
     '''
     if isinstance(schema_type, list):
-        if match(
-            element_schema_type in target_types for element_schema_type in schema_type
-        ):
+        if match(element_schema_type in target_types for element_schema_type in schema_type):
             return True
 
         return False
