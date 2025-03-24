@@ -15,6 +15,9 @@ def test_load_credential_with_invalid_credential_parameters_raises(credential_pa
 
 
 def test_load_credential_with_missing_database_raises():
+    flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
+        'database.kdbx'
+    )
     flexmock(module.os.path).should_receive('exists').and_return(False)
     flexmock(module.borgmatic.execute).should_receive('execute_command_and_capture_output').never()
 
@@ -25,6 +28,9 @@ def test_load_credential_with_missing_database_raises():
 
 
 def test_load_credential_with_present_database_fetches_password_from_keepassxc():
+    flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
+        'database.kdbx'
+    )
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
@@ -51,6 +57,9 @@ def test_load_credential_with_present_database_fetches_password_from_keepassxc()
 
 
 def test_load_credential_with_custom_keepassxc_cli_command_calls_it():
+    flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
+        'database.kdbx'
+    )
     config = {'keepassxc': {'keepassxc_cli_command': '/usr/local/bin/keepassxc-cli --some-option'}}
     flexmock(module.os.path).should_receive('exists').and_return(True)
     flexmock(module.borgmatic.execute).should_receive(
@@ -75,6 +84,35 @@ def test_load_credential_with_custom_keepassxc_cli_command_calls_it():
             hook_config=config['keepassxc'],
             config=config,
             credential_parameters=('database.kdbx', 'mypassword'),
+        )
+        == 'password'
+    )
+
+
+def test_load_credential_with_expanded_directory_with_present_database_fetches_password_from_keepassxc():
+    flexmock(module.os.path).should_receive('expanduser').with_args('~/database.kdbx').and_return(
+        '/root/database.kdbx'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(
+        (
+            'keepassxc-cli',
+            'show',
+            '--show-protected',
+            '--attributes',
+            'Password',
+            '/root/database.kdbx',
+            'mypassword',
+        )
+    ).and_return(
+        'password'
+    ).once()
+
+    assert (
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=('~/database.kdbx', 'mypassword')
         )
         == 'password'
     )
