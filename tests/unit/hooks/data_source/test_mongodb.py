@@ -24,9 +24,6 @@ def test_use_streaming_false_for_no_databases():
 
 
 def test_dump_data_sources_runs_mongodump_for_each_database():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     processes = [flexmock(), flexmock()]
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -56,9 +53,6 @@ def test_dump_data_sources_runs_mongodump_for_each_database():
 
 
 def test_dump_data_sources_with_dry_run_skips_mongodump():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo'}, {'name': 'bar'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -81,9 +75,6 @@ def test_dump_data_sources_with_dry_run_skips_mongodump():
 
 
 def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo', 'hostname': 'database.example.org', 'port': 5433}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -120,12 +111,9 @@ def test_dump_data_sources_runs_mongodump_with_hostname_and_port():
 
 
 def test_dump_data_sources_runs_mongodump_with_username_and_password():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [
         {
-            'name': 'foo',  # Ensure this matches the expected format in the related functions
+            'name': 'foo',
             'username': 'mongo',
             'password': 'trustsome1',
             'authentication_database': 'admin',
@@ -174,9 +162,6 @@ def test_dump_data_sources_runs_mongodump_with_username_and_password():
 
 
 def test_dump_data_sources_runs_mongodump_with_directory_format():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo', 'format': 'directory'}]
     flexmock(module).should_receive('make_dump_path').and_return('')
     flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
@@ -204,9 +189,6 @@ def test_dump_data_sources_runs_mongodump_with_directory_format():
 
 
 def test_dump_data_sources_runs_mongodump_with_options():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'foo', 'options': '--stuff=such'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -240,9 +222,6 @@ def test_dump_data_sources_runs_mongodump_with_options():
 
 
 def test_dump_data_sources_runs_mongodumpall_for_all_databases():
-    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
-        flexmock()
-    )
     databases = [{'name': 'all'}]
     process = flexmock()
     flexmock(module).should_receive('make_dump_path').and_return('')
@@ -296,7 +275,7 @@ def test_build_dump_command_with_username_injection_attack_gets_escaped():
 
 def test_restore_data_source_dump_runs_mongorestore():
     hook_config = [{'name': 'foo', 'schemas': None}, {'name': 'bar'}]
-    extract_process = flexmock(stdout=flexmock(read=lambda: b""))
+    extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
@@ -311,9 +290,9 @@ def test_restore_data_source_dump_runs_mongorestore():
     ).once()
 
     module.restore_data_source_dump(
-        hook_config=hook_config,
-        config={},
-        data_source=hook_config[0],
+        hook_config,
+        {},
+        data_source={'name': 'foo'},
         dry_run=False,
         extract_process=extract_process,
         connection_params={
@@ -330,7 +309,7 @@ def test_restore_data_source_dump_runs_mongorestore_with_hostname_and_port():
     hook_config = [
         {'name': 'foo', 'hostname': 'database.example.org', 'port': 5433, 'schemas': None}
     ]
-    extract_process = flexmock(stdout=flexmock(read=lambda: b""))
+    extract_process = flexmock(stdout=flexmock())
 
     flexmock(module).should_receive('make_dump_path')
     flexmock(module.dump).should_receive('make_data_source_dump_filename')
