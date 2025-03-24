@@ -1563,6 +1563,13 @@ def make_parsers():
         help='Name of the archive to recreate',
     )
     recreate_group.add_argument(
+        '--path',
+        metavar='PATH',
+        dest='paths',
+        action='append',
+        help='Path to recreate the repository/archive',
+    )
+    recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 

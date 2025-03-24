@@ -30,11 +30,15 @@ def recreate_archive(
 
     repo_archive_arg = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
+    # handle path from recreate_arguments
+    path_flag = ('--path', recreate_arguments.path) if recreate_arguments.path else ()
+
 
     recreate_cmd = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
         + repo_archive_arg
+        + path_flag
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
