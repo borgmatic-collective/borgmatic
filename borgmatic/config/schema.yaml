@@ -37,7 +37,7 @@ properties:
                 path:
                     type: string
                     description: The local path or Borg URL of the repository.
-                    example: ssh://user@backupserver/./{fqdn}
+                    example: ssh://user@backupserver/./sourcehostname.borg
                 label:
                     type: string
                     description: |
