@@ -29,6 +29,10 @@ def recreate_archive(
     '''
     lock_wait = config.get('lock_wait', None)
 
+    if archive is None:
+        logger.error('Please provide a valid archive name.')
+        return
+
     repo_archive_arg = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
 
@@ -40,9 +44,13 @@ def recreate_archive(
     recreate_cmd = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
-        + (('--path', recreate_arguments.path) if recreate_arguments.path else ())
+        + (
+            ('--path', recreate_arguments.path)
+            if hasattr(recreate_arguments, 'path') and recreate_arguments.path
+            else ()
+        )
         + (('--log-json',) if global_arguments.log_json else ())
-        + (('--lock-wait', str(lock_wait)) if lock_wait else ())
+        + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--patterns-from', patterns_file.name) if patterns_file else ())
@@ -52,7 +60,7 @@ def recreate_archive(
                 '--filter',
                 make_list_filter_flags(local_borg_version, global_arguments.dry_run),
             )
-            if recreate_arguments.list
+            if hasattr(recreate_arguments, 'list') and recreate_arguments.list
             else ()
         )
         + exclude_flags

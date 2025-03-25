@@ -64,6 +64,24 @@ def test_recreate_calls_borg_with_required_flags():
     )
 
 
+def test_recreate_calls_borg_without_archive():
+    logger_mock = flexmock(module.logger)
+    logger_mock.should_receive('error').with_args('Please provide a valid archive name.').once()
+
+    flexmock(module.borgmatic.execute).should_receive('execute_command').never()
+
+    module.recreate_archive(
+        repository='repo',
+        archive=None,
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(path=None, list=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
 def test_recreate_with_remote_path():
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
         ('repo::archive',)
