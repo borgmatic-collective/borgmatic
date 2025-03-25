@@ -729,9 +729,7 @@ def test_build_dump_command_prevents_shell_injection():
     dump_filename = '/path/to/dump'
     dump_format = 'archive'
 
-    from borgmatic.hooks.data_source.mongodb import build_dump_command, build_restore_command  # Import the functions
-
-    command = build_dump_command(database, config, dump_filename, dump_format)
+    command = module.build_dump_command(database, config, dump_filename, dump_format)
 
     # Ensure the malicious input is properly escaped and does not execute
     assert 'testdb; rm -rf /' not in command
@@ -779,7 +777,35 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
         },
         borgmatic_runtime_directory='/run/borgmatic',
     )
+    
+def test_build_restore_command_prevents_shell_injection():
+    database = {
+        'name': 'testdb; rm -rf /',  # Malicious input
+        'restore_hostname': 'localhost',
+        'restore_port': 27017,
+        'restore_username': 'user',
+        'restore_password': 'password',
+        'mongorestore_command': 'mongorestore',
+        'restore_options': '--gzip',
+    }
+    config = {}
+    dump_filename = '/path/to/dump'
+    connection_params = {
+        'hostname': None,
+        'port': None,
+        'username': None,
+        'password': None,
+    }
+    extract_process = None
+
+    command = module.build_restore_command(
+        extract_process, database, config, dump_filename, connection_params
+    )
+    
+    # print(command)
+    # Ensure the malicious input is properly escaped and does not execute
+    assert 'rm -rf /' not in command
+    assert ';' not in command
 
 
- 
 
