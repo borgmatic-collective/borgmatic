@@ -1019,6 +1019,26 @@ def test_run_actions_runs_create():
     assert result == (expected,)
 
 
+def test_run_actions_with_skip_actions_skips_create():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['create'])
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(borgmatic.actions.create).should_receive('run_create').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['create']},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_recreate():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
@@ -1040,17 +1060,17 @@ def test_run_actions_runs_recreate():
     )
 
 
-def test_run_actions_with_skip_actions_skips_create():
+def test_run_actions_with_skip_actions_skips_recreate():
     flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return(['create'])
+    flexmock(module).should_receive('get_skip_actions').and_return(['recreate'])
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.create).should_receive('run_create').never()
+    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').never()
 
     tuple(
         module.run_actions(
-            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'create': flexmock()},
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'recreate': flexmock()},
             config_filename=flexmock(),
-            config={'repositories': [], 'skip_actions': ['create']},
+            config={'repositories': [], 'skip_actions': ['recreate']},
             config_paths=[],
             local_path=flexmock(),
             remote_path=flexmock(),
