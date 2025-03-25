@@ -17,7 +17,6 @@ import borgmatic.actions.config.bootstrap
 import borgmatic.actions.config.generate
 import borgmatic.actions.config.validate
 import borgmatic.actions.create
-import borgmatic.actions.recreate
 import borgmatic.actions.delete
 import borgmatic.actions.export_key
 import borgmatic.actions.export_tar
@@ -27,6 +26,7 @@ import borgmatic.actions.info
 import borgmatic.actions.list
 import borgmatic.actions.mount
 import borgmatic.actions.prune
+import borgmatic.actions.recreate
 import borgmatic.actions.repo_create
 import borgmatic.actions.repo_delete
 import borgmatic.actions.repo_info

@@ -3,7 +3,7 @@ import logging
 import borgmatic.borg.environment
 import borgmatic.config.paths
 import borgmatic.execute
-from borgmatic.borg.create import make_exclude_flags, write_patterns_file, make_list_filter_flags
+from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
 from borgmatic.borg.flags import make_repository_archive_flags
 
 logger = logging.getLogger(__name__)
@@ -64,11 +64,10 @@ def recreate_archive(
         return
 
     borgmatic.execute.execute_command(
-        recreate_cmd,
+        full_command=recreate_cmd,
         output_log_level=logging.INFO,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
-        remote_path=remote_path,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
