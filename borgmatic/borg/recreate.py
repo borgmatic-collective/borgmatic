@@ -40,7 +40,6 @@ def recreate_archive(
     recreate_cmd = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
-        + repo_archive_arg
         + (('--path', recreate_arguments.path) if recreate_arguments.path else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
@@ -57,6 +56,7 @@ def recreate_archive(
             else ()
         )
         + exclude_flags
+        + repo_archive_arg
     )
 
     if global_arguments.dry_run:
