@@ -943,6 +943,22 @@ def exit_with_help_link():  # pragma: no cover
     sys.exit(1)
 
 
+def check_and_show_help_on_no_args():
+    """
+    Check if the 'borgmatic' command is run without any arguments. If the configuration option
+    'show_help_on_no_args' is set to True, show the help message. Otherwise, trigger the
+    default backup behavior.
+    """
+    if len(sys.argv) == 1:  # No arguments provided
+        show_help_on_no_args = any(
+            config.get('show_help_on_no_args', False)
+            for config in load_configurations(tuple(collect.collect_config_filenames(None)))[0].values()
+        )
+        if show_help_on_no_args:
+            print(parse_arguments('--help'))
+            sys.exit(0)
+
+
 def main(extra_summary_logs=[]):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
@@ -970,6 +986,9 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     if global_arguments.fish_completion:
         print(borgmatic.commands.completion.fish.fish_completion())
         sys.exit(0)
+
+    # Use the helper function to check and show help on no arguments
+    check_and_show_help_on_no_args()
 
     validate = bool('validate' in arguments)
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
