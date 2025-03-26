@@ -1556,18 +1556,38 @@ def make_parsers():
     recreate_group = recreate_parser.add_argument_group('recreate arguments')
     recreate_group.add_argument(
         '--repository',
-        help='Path of the repository containing the archive',
+        help='Path of repository containing archive to recreate, defaults to the configured repository if there is only one, quoted globs supported',
     )
     recreate_group.add_argument(
         '--archive',
-        help='Name of the archive to recreate',
+        help='Archive name, hash, or series to recreate',
+    )
+    # recreate_group.add_argument(
+    #     '--path',
+    #     metavar='PATH',
+    #     dest='path',
+    #     help='Path to recreate the repository/archive',
+    #     required=True,
+    # )
+    recreate_group.add_argument(
+        '--list', dest='list', action='store_true', help='Show per-file details'
     )
     recreate_group.add_argument(
-        '--path',
-        metavar='PATH',
-        dest='paths',
-        action='append',
-        help='Path to recreate the repository/archive',
+        '--target',
+        metavar='TARGET',
+        help='Name of new archive name',
+    )
+    recreate_group.add_argument(
+        '--comment',
+        metavar='COMMENT',
+        help='Add a comment text to the archive, if archive not provided, consider all archives',
+    )
+    recreate_group.add_argument(
+        '--compression',
+        '-C',
+        dest='compression',
+        metavar='COMPRESSION',
+        help='Select compression algorithm',
     )
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

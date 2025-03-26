@@ -4,7 +4,7 @@ import borgmatic.borg.environment
 import borgmatic.config.paths
 import borgmatic.execute
 from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
-from borgmatic.borg.flags import make_repository_archive_flags
+from borgmatic.borg import flags
 
 logger = logging.getLogger(__name__)
 
@@ -28,27 +28,22 @@ def recreate_archive(
     Executes the recreate command with the given arguments.
     '''
     lock_wait = config.get('lock_wait', None)
-
-    if archive is None:
-        logger.error('Please provide a valid archive name.')
-        return
-
-    repo_archive_arg = make_repository_archive_flags(repository, archive, local_borg_version)
     exclude_flags = make_exclude_flags(config)
+    compression = config.get('compression', None)
 
     # Write patterns to a temporary file and use that file with --patterns-from.
     patterns_file = write_patterns_file(
         patterns, borgmatic.config.paths.get_working_directory(config)
     )
 
-    recreate_cmd = (
+    recreate_command = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
-        + (
-            ('--path', recreate_arguments.path)
-            if hasattr(recreate_arguments, 'path') and recreate_arguments.path
-            else ()
-        )
+        # + (
+        #     ('--path', recreate_arguments.path)
+        #     if recreate_arguments.path
+        #     else ()
+        # )
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -60,11 +55,18 @@ def recreate_archive(
                 '--filter',
                 make_list_filter_flags(local_borg_version, global_arguments.dry_run),
             )
-            if hasattr(recreate_arguments, 'list') and recreate_arguments.list
+            if recreate_arguments.list
             else ()
         )
+        + (('--target', recreate_arguments.target) if recreate_arguments.target else ())
+        + (('--comment', f'"{recreate_arguments.comment}"') if recreate_arguments.comment else ())
+        + (('--compression', compression) if compression else ())
         + exclude_flags
-        + repo_archive_arg
+        + (
+            flags.make_repository_archive_flags(repository, archive, local_borg_version)
+            if archive
+            else flags.make_repository_flags(repository, local_borg_version)
+        )
     )
 
     if global_arguments.dry_run:
@@ -72,7 +74,7 @@ def recreate_archive(
         return
 
     borgmatic.execute.execute_command(
-        full_command=recreate_cmd,
+        full_command=recreate_command,
         output_log_level=logging.INFO,
         environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
