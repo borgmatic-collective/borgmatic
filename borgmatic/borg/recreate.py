@@ -1,12 +1,22 @@
 import logging
+from datetime import datetime
 
 import borgmatic.borg.environment
 import borgmatic.config.paths
 import borgmatic.execute
-from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
 from borgmatic.borg import flags
+from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
 
 logger = logging.getLogger(__name__)
+
+
+def is_valid_timestamp(time_str):
+    try:
+        # Attempt to parse the time string using the expected format
+        datetime.strptime(time_str, r"%Y-%m-%dT%H:%M:%S")
+        return True
+    except ValueError:
+        return False
 
 
 def recreate_archive(
@@ -27,6 +37,12 @@ def recreate_archive(
 
     Executes the recreate command with the given arguments.
     '''
+    if recreate_arguments.timestamp and not is_valid_timestamp(recreate_arguments.timestamp):
+        logger.error(
+            'Please provide a valid timestamp of format: yyyy-mm-ddThh:mm:ss. Example: 2025-03-26T14:45:59'
+        )
+        return
+
     lock_wait = config.get('lock_wait', None)
     exclude_flags = make_exclude_flags(config)
     compression = config.get('compression', None)
@@ -58,7 +74,12 @@ def recreate_archive(
             if recreate_arguments.list
             else ()
         )
-        + (('--target', recreate_arguments.target) if recreate_arguments.target else ())
+        # Flag --target works only for a single archive
+        + (
+            ('--target', recreate_arguments.target)
+            if recreate_arguments.target and recreate_arguments.archive
+            else ()
+        )
         + (('--comment', f'"{recreate_arguments.comment}"') if recreate_arguments.comment else ())
         + (('--compression', compression) if compression else ())
         + exclude_flags

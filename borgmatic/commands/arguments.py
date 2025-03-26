@@ -1587,7 +1587,12 @@ def make_parsers():
         '-C',
         dest='compression',
         metavar='COMPRESSION',
-        help='Select compression algorithm',
+        help='Select the compression algorithm',
+    )
+    recreate_group.add_argument(
+        '--timestamp',
+        metavar='TIMESTAMP',
+        help='Manually specify the archive creation date/time (UTC, yyyy-mm-ddThh:mm:ss format)',
     )
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
