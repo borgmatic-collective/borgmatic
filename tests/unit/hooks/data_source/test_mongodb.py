@@ -681,6 +681,8 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         },
         borgmatic_runtime_directory='/run/borgmatic',
     )
+
+
 def test_dump_data_sources_uses_custom_mongodump_command():
     flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
         flexmock()
@@ -714,7 +716,8 @@ def test_dump_data_sources_uses_custom_mongodump_command():
         patterns=[],
         dry_run=False,
     ) == [process]
-    
+
+
 def test_build_dump_command_prevents_shell_injection():
     database = {
         'name': 'testdb; rm -rf /',  # Malicious input
@@ -733,8 +736,11 @@ def test_build_dump_command_prevents_shell_injection():
 
     # Ensure the malicious input is properly escaped and does not execute
     assert 'testdb; rm -rf /' not in command
-    assert any('testdb' in part for part in command)  # Check if 'testdb' is in any part of the tuple
-    
+    assert any(
+        'testdb' in part for part in command
+    )  # Check if 'testdb' is in any part of the tuple
+
+
 def test_restore_data_source_dump_uses_custom_mongorestore_command():
     hook_config = [
         {
@@ -777,7 +783,8 @@ def test_restore_data_source_dump_uses_custom_mongorestore_command():
         },
         borgmatic_runtime_directory='/run/borgmatic',
     )
-    
+
+
 def test_build_restore_command_prevents_shell_injection():
     database = {
         'name': 'testdb; rm -rf /',  # Malicious input
@@ -801,11 +808,8 @@ def test_build_restore_command_prevents_shell_injection():
     command = module.build_restore_command(
         extract_process, database, config, dump_filename, connection_params
     )
-    
+
     # print(command)
     # Ensure the malicious input is properly escaped and does not execute
     assert 'rm -rf /' not in command
     assert ';' not in command
-
-
-

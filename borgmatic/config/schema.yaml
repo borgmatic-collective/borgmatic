@@ -1729,20 +1729,21 @@ properties:
                 mongodump_command:
                     type: string
                     description: |
-                        Command to use instead of "mongodump". This can be used to
-                        run a specific mongodump version (e.g., one inside a
+                        Command to use instead of "mongodump". This can be used
+                        to run a specific mongodump version (e.g., one inside a
                         running container). If you run it from within a
                         container, make sure to mount the path in the
                         "user_runtime_directory" option from the host into the
-                        container at the same location.  Defaults to "mongodump".
+                        container at the same location.  Defaults to
+                        "mongodump".
                     example: docker exec mongodb_container mongodump
                 mongorestore_command:
                     type: string
                     description: |
-                        Command to run when restoring a database instead
-                        of "mongorestore". This can be used to run a specific 
-                        mongorestore version (e.g., one inside a running container). 
-                        Defaults to "mongorestore".
+                        Command to run when restoring a database instead of
+                        "mongorestore". This can be used to run a specific
+                        mongorestore version (e.g., one inside a running
+                        container). Defaults to "mongorestore".
                     example: docker exec mongodb_container mongorestore
         description: |
             List of one or more MongoDB databases to dump before creating a
