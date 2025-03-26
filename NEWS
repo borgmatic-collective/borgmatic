@@ -10,6 +10,7 @@
  * #790: BREAKING: Run all command hooks (both new and deprecated) respecting the
    "working_directory" option if configured, meaning that hook commands are run in that directory.
  * #836: Add a custom command option for the SQLite hook.
+ * #837: Add custom command options for the MongoDB hook.
  * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
  * #1020: Document a database use case involving a temporary database client container:
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
