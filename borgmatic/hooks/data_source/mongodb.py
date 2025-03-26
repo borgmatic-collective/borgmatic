@@ -114,14 +114,17 @@ def make_password_config_file(password):
 
 def build_dump_command(database, config, dump_filename, dump_format):
     '''
-    Return the mongodump command from a single database configuration.
+    Return the custom mongodump_command from a single database configuration.
     '''
     all_databases = database['name'] == 'all'
 
     password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
 
+    dump_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
+    )
     return (
-        ('mongodump',)
+        dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
         + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
         + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
@@ -230,7 +233,7 @@ def restore_data_source_dump(
 
 def build_restore_command(extract_process, database, config, dump_filename, connection_params):
     '''
-    Return the mongorestore command from a single database configuration.
+    Return the custom mongorestore_command from a single database configuration.
     '''
     hostname = connection_params['hostname'] or database.get(
         'restore_hostname', database.get('hostname')
@@ -251,7 +254,10 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
         config,
     )
 
-    command = ['mongorestore']
+    command = list(
+        shlex.quote(part)
+        for part in shlex.split(database.get('mongorestore_command') or 'mongorestore')
+    )
     if extract_process:
         command.append('--archive')
     else:

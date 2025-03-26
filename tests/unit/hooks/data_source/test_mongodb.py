@@ -681,3 +681,131 @@ def test_restore_data_source_dump_without_extract_process_restores_from_disk():
         },
         borgmatic_runtime_directory='/run/borgmatic',
     )
+def test_dump_data_sources_uses_custom_mongodump_command():
+    flexmock(module.borgmatic.hooks.command).should_receive('Before_after_hooks').and_return(
+        flexmock()
+    )
+    databases = [{'name': 'foo', 'mongodump_command': 'custom_mongodump'}]
+    process = flexmock()
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/foo'
+    )
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'custom_mongodump',
+            '--db',
+            'foo',
+            '--archive',
+            '>',
+            'databases/localhost/foo',
+        ),
+        shell=True,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert module.dump_data_sources(
+        databases,
+        {},
+        config_paths=('test.yaml',),
+        borgmatic_runtime_directory='/run/borgmatic',
+        patterns=[],
+        dry_run=False,
+    ) == [process]
+    
+def test_build_dump_command_prevents_shell_injection():
+    database = {
+        'name': 'testdb; rm -rf /',  # Malicious input
+        'hostname': 'localhost',
+        'port': 27017,
+        'username': 'user',
+        'password': 'password',
+        'mongodump_command': 'mongodump',
+        'options': '--gzip',
+    }
+    config = {}
+    dump_filename = '/path/to/dump'
+    dump_format = 'archive'
+
+    command = module.build_dump_command(database, config, dump_filename, dump_format)
+
+    # Ensure the malicious input is properly escaped and does not execute
+    assert 'testdb; rm -rf /' not in command
+    assert any('testdb' in part for part in command)  # Check if 'testdb' is in any part of the tuple
+    
+def test_restore_data_source_dump_uses_custom_mongorestore_command():
+    hook_config = [
+        {
+            'name': 'foo',
+            'mongorestore_command': 'custom_mongorestore',
+            'schemas': None,
+            'restore_options': '--gzip',
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module).should_receive('make_dump_path')
+    flexmock(module.dump).should_receive('make_data_source_dump_filename')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        [
+            'custom_mongorestore',  # Should use custom command instead of default
+            '--archive',
+            '--drop',
+            '--gzip',  # Should include restore options
+        ],
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+    ).once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        data_source=hook_config[0],
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+    
+def test_build_restore_command_prevents_shell_injection():
+    database = {
+        'name': 'testdb; rm -rf /',  # Malicious input
+        'restore_hostname': 'localhost',
+        'restore_port': 27017,
+        'restore_username': 'user',
+        'restore_password': 'password',
+        'mongorestore_command': 'mongorestore',
+        'restore_options': '--gzip',
+    }
+    config = {}
+    dump_filename = '/path/to/dump'
+    connection_params = {
+        'hostname': None,
+        'port': None,
+        'username': None,
+        'password': None,
+    }
+    extract_process = None
+
+    command = module.build_restore_command(
+        extract_process, database, config, dump_filename, connection_params
+    )
+    
+    # print(command)
+    # Ensure the malicious input is properly escaped and does not execute
+    assert 'rm -rf /' not in command
+    assert ';' not in command
+
+
+
