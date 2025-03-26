@@ -26,6 +26,9 @@ def test_load_credential_reads_named_credential_from_file():
     credential_stream = io.StringIO('password')
     credential_stream.name = '/credentials/mycredential'
     builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os.path).should_receive('expanduser').with_args(
+        '/credentials/mycredential'
+    ).and_return('/credentials/mycredential')
     builtins.should_receive('open').with_args('/credentials/mycredential').and_return(
         credential_stream
     )
@@ -42,6 +45,9 @@ def test_load_credential_reads_named_credential_from_file_using_working_director
     credential_stream = io.StringIO('password')
     credential_stream.name = '/working/credentials/mycredential'
     builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os.path).should_receive('expanduser').with_args(
+        'credentials/mycredential'
+    ).and_return('credentials/mycredential')
     builtins.should_receive('open').with_args('/working/credentials/mycredential').and_return(
         credential_stream
     )
@@ -58,6 +64,9 @@ def test_load_credential_reads_named_credential_from_file_using_working_director
 
 def test_load_credential_with_file_not_found_error_raises():
     builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os.path).should_receive('expanduser').with_args(
+        '/credentials/mycredential'
+    ).and_return('/credentials/mycredential')
     builtins.should_receive('open').with_args('/credentials/mycredential').and_raise(
         FileNotFoundError
     )
@@ -66,3 +75,22 @@ def test_load_credential_with_file_not_found_error_raises():
         module.load_credential(
             hook_config={}, config={}, credential_parameters=('/credentials/mycredential',)
         )
+
+
+def test_load_credential_reads_named_credential_from_expanded_directory():
+    credential_stream = io.StringIO('password')
+    credential_stream.name = '/root/credentials/mycredential'
+    builtins = flexmock(sys.modules['builtins'])
+    flexmock(module.os.path).should_receive('expanduser').with_args(
+        '~/credentials/mycredential'
+    ).and_return('/root/credentials/mycredential')
+    builtins.should_receive('open').with_args('/root/credentials/mycredential').and_return(
+        credential_stream
+    )
+
+    assert (
+        module.load_credential(
+            hook_config={}, config={}, credential_parameters=('~/credentials/mycredential',)
+        )
+        == 'password'
+    )
