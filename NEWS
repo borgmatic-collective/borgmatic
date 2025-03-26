@@ -16,6 +16,8 @@
    https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
  * #1037: Fix an error with the "extract" action when both a remote repository and a
    "working_directory" are used.
+ * #1044: Fix an error in the systemd credential hook when the credential name contains a "."
+   chararcter.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
