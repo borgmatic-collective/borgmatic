@@ -672,13 +672,31 @@ def test_add_array_element_arguments_without_any_flags_bails():
     )
 
 
+# Use this instead of a flexmock because it's not easy to check the type() of a flexmock instance.
+Group_action = collections.namedtuple(
+    'Group_action',
+    (
+        'option_strings',
+        'choices',
+        'default',
+        'nargs',
+        'required',
+        'type',
+    ),
+    defaults=(
+        flexmock(), flexmock(), flexmock(), flexmock(), flexmock(),
+    )
+)
+
+
 def test_add_array_element_arguments_without_array_index_flags_bails():
     arguments_group = flexmock(
         _group_actions=(
-            flexmock(
+            Group_action(
                 option_strings=('--foo[0].val',),
             ),
-        )
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
     )
     arguments_group.should_receive('add_argument').never()
 
@@ -692,10 +710,11 @@ def test_add_array_element_arguments_without_array_index_flags_bails():
 def test_add_array_element_arguments_with_non_matching_array_index_flags_bails():
     arguments_group = flexmock(
         _group_actions=(
-            flexmock(
+            Group_action(
                 option_strings=('--foo[0].val',),
             ),
-        )
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
     )
     arguments_group.should_receive('add_argument').never()
 
@@ -709,10 +728,11 @@ def test_add_array_element_arguments_with_non_matching_array_index_flags_bails()
 def test_add_array_element_arguments_with_identical_array_index_flag_bails():
     arguments_group = flexmock(
         _group_actions=(
-            flexmock(
+            Group_action(
                 option_strings=('--foo[0].val',),
             ),
-        )
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
     )
     arguments_group.should_receive('add_argument').never()
 
@@ -723,10 +743,10 @@ def test_add_array_element_arguments_with_identical_array_index_flag_bails():
     )
 
 
-def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
+def test_add_array_element_arguments_without_action_type_in_registry_bails():
     arguments_group = flexmock(
         _group_actions=(
-            flexmock(
+            Group_action(
                 option_strings=('--foo[0].val',),
                 choices=flexmock(),
                 default=flexmock(),
@@ -734,10 +754,35 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
                 required=flexmock(),
                 type=flexmock(),
             ),
-        )
+        ),
+        _registries={'action': {'store_stuff': bool}},
+    )
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[25].val', 'fooval', '--bar[1].val', 'barval'),
+        flag_name='foo[0].val',
+    )
+
+
+def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
+    arguments_group = flexmock(
+        _group_actions=(
+            Group_action(
+                option_strings=('--foo[0].val',),
+                choices=flexmock(),
+                default=flexmock(),
+                nargs=flexmock(),
+                required=flexmock(),
+                type=flexmock(),
+            ),
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
     )
     arguments_group.should_receive('add_argument').with_args(
         '--foo[25].val',
+        action='store_stuff',
         choices=object,
         default=object,
         dest='foo[25].val',
@@ -756,7 +801,7 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
 def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_equals_sign():
     arguments_group = flexmock(
         _group_actions=(
-            flexmock(
+            Group_action(
                 option_strings=('--foo[0].val',),
                 choices=flexmock(),
                 default=flexmock(),
@@ -764,10 +809,12 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_e
                 required=flexmock(),
                 type=flexmock(),
             ),
-        )
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
     )
     arguments_group.should_receive('add_argument').with_args(
         '--foo[25].val',
+        action='store_stuff',
         choices=object,
         default=object,
         dest='foo[25].val',

@@ -362,15 +362,23 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
 
     pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
 
-    # Find an existing list index flag (and its action) corresponding to the given flag name. If one
-    # isn't found, bail.
     try:
+        # Find an existing list index flag (and its action) corresponding to the given flag name.
         (argument_action, existing_flag_name) = next(
             (action, action_flag_name)
             for action in arguments_group._group_actions
             for action_flag_name in action.option_strings
             if pattern.match(action_flag_name)
             if f'--{flag_name}'.startswith(action_flag_name)
+        )
+
+        # Based on the type of the action (e.g. argparse._StoreTrueAction), look up the corresponding
+        # action registry name (e.g., "store_true") to pass to add_argument(action=...) below.
+        action_registry_name = next(
+            registry_name
+            for registry_name, action_type in arguments_group._registries['action'].items()
+            # Not using isinstance() here because we only want an exact match—no parent classes.
+            if type(argument_action) == action_type
         )
     except StopIteration:
         return
@@ -383,6 +391,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
 
         arguments_group.add_argument(
             unparsed_flag_name,
+            action=action_registry_name,
             choices=argument_action.choices,
             default=argument_action.default,
             dest=unparsed_flag_name.lstrip('-'),
