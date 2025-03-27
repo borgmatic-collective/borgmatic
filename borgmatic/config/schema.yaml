@@ -2665,9 +2665,11 @@ properties:
                 example: /usr/local/bin/keepassxc-cli
         description: |
             Configuration for integration with the KeePassXC password manager.
-    show_help_on_no_args:
+    default_actions:
         type: boolean
         description: |
-            If true, running borgmatic without any arguments will display the
-            help message instead of triggering a backup. Defaults to false.
+            Whether to apply default actions (e.g., backup) when no arguments
+            are supplied to the borgmatic command. If set to true, borgmatic
+            will trigger the default actions. If set to false, borgmatic will
+            display the help message instead.
         example: true
