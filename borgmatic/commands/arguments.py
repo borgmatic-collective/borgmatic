@@ -1583,16 +1583,21 @@ def make_parsers():
         help='Add a comment text to the archive, if archive not provided, consider all archives',
     )
     recreate_group.add_argument(
-        '--compression',
-        '-C',
-        dest='compression',
-        metavar='COMPRESSION',
-        help='Select the compression algorithm',
-    )
-    recreate_group.add_argument(
         '--timestamp',
         metavar='TIMESTAMP',
-        help='Manually specify the archive creation date/time (UTC, yyyy-mm-ddThh:mm:ss format)',
+        help='Manually specify the archive creation date/time (UTC)',
+    )
+    recreate_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        metavar='PATTERN',
+        help='Only consider archive names, hashes, or series matching this pattern',
+    )
+    recreate_group.add_argument(
+        '--recompress',
+        metavar='MODE',
+        help='Recompress data chunks according to MODE: [if-different (default), always, never]',
     )
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

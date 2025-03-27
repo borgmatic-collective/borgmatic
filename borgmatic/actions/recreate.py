@@ -23,9 +23,9 @@ def run_recreate(
         repository, recreate_arguments.repository
     ):
         if recreate_arguments.archive:
-            logger.info(f'Recreating archive {recreate_arguments.archive}')
+            logger.answer(f'Recreating archive {recreate_arguments.archive}')
         else:
-            logger.info('Recreating repository')
+            logger.answer('Recreating repository')
 
         # Collect and process patterns.
         processed_patterns = process_patterns(

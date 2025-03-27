@@ -1,4 +1,5 @@
 import logging
+import shlex
 from datetime import datetime
 
 import borgmatic.borg.environment
@@ -8,15 +9,6 @@ from borgmatic.borg import flags
 from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
 
 logger = logging.getLogger(__name__)
-
-
-def is_valid_timestamp(time_str):
-    try:
-        # Attempt to parse the time string using the expected format
-        datetime.strptime(time_str, r"%Y-%m-%dT%H:%M:%S")
-        return True
-    except ValueError:
-        return False
 
 
 def recreate_archive(
@@ -37,15 +29,11 @@ def recreate_archive(
 
     Executes the recreate command with the given arguments.
     '''
-    if recreate_arguments.timestamp and not is_valid_timestamp(recreate_arguments.timestamp):
-        logger.error(
-            'Please provide a valid timestamp of format: yyyy-mm-ddThh:mm:ss. Example: 2025-03-26T14:45:59'
-        )
-        return
 
     lock_wait = config.get('lock_wait', None)
     exclude_flags = make_exclude_flags(config)
     compression = config.get('compression', None)
+    chunker_params = config.get('chunker_params', None)
 
     # Write patterns to a temporary file and use that file with --patterns-from.
     patterns_file = write_patterns_file(
@@ -80,8 +68,20 @@ def recreate_archive(
             if recreate_arguments.target and recreate_arguments.archive
             else ()
         )
-        + (('--comment', f'"{recreate_arguments.comment}"') if recreate_arguments.comment else ())
+        + (
+            ('--comment', shlex.quote(recreate_arguments.comment))
+            if recreate_arguments.comment
+            else ()
+        )
+        + (('--timestamp', recreate_arguments.timestamp) if recreate_arguments.timestamp else ())
         + (('--compression', compression) if compression else ())
+        + (('--chunker-params', chunker_params) if chunker_params else ())
+        + flags.make_match_archives_flags(
+            recreate_arguments.match_archives or archive or config.get('match_archives'),
+            config.get('archive_name_format'),
+            local_borg_version,
+        )
+        + (('--recompress', recreate_arguments.recompress) if recreate_arguments.recompress else ())
         + exclude_flags
         + (
             flags.make_repository_archive_flags(repository, archive, local_borg_version)
