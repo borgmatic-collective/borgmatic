@@ -148,9 +148,9 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 #### Subvolume discovery
 
-For any read-write subvolume you'd like backed up, add its path to borgmatic's
-`source_directories` option. Btrfs does not support snapshotting read-only
-subvolumes.
+For any read-write subvolume you'd like backed up, add its mount point path to
+borgmatic's `source_directories` option. Btrfs does not support snapshotting
+read-only subvolumes.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
 the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
@@ -161,27 +161,27 @@ includes the snapshotted files in the paths sent to Borg. borgmatic is also
 responsible for cleaning up (deleting) these snapshots after a backup completes.
 
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
-directories of each of your `source_directories` to discover any subvolumes.
-For instance, let's say you add `/var/log` and `/var/lib` to your source
-directories, but `/var` is a subvolume. borgmatic will discover that and
-snapshot `/var` accordingly. This also works even with nested subvolumes;
+directories of each of your `source_directories` to discover any subvolumes. For
+instance, let's say you add `/var/log` and `/var/lib` to your source
+directories, but `/var` is a subvolume mount point. borgmatic will discover that
+and snapshot `/var` accordingly. This also works even with nested subvolumes;
 borgmatic selects the subvolume that's the "closest" parent to your source
 directories.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> When using
 [patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
 the initial portion of a pattern's path that you intend borgmatic to match
-against a subvolume can't have globs or other non-literal characters in it—or it
-won't actually match. For instance, a subvolume of `/var` would match a pattern
-of `+ fm:/var/*/data`, but borgmatic isn't currently smart enough to match
-`/var` to a pattern like `+ fm:/v*/lib/data`.
+against a subvolume mount point can't have globs or other non-literal characters
+in it—or it won't actually match. For instance, a subvolume mount point of
+`/var` would match a pattern of `+ fm:/var/*/data`, but borgmatic isn't
+currently smart enough to match `/var` to a pattern like `+ fm:/v*/lib/data`.
 
-Additionally, borgmatic rewrites the snapshot file paths so that they appear
-at their original subvolume locations in a Borg archive. For instance, if your
-subvolume exists at `/var/subvolume`, then the snapshotted files will appear
+Additionally, borgmatic rewrites the snapshot file paths so that they appear at
+their original subvolume locations in a Borg archive. For instance, if your
+subvolume is mounted at `/var/subvolume`, then the snapshotted files will appear
 in an archive at `/var/subvolume` as well—even if borgmatic has to mount the
-snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform
-the backup.
+snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform the
+backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the

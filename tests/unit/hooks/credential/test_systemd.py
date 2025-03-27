@@ -42,12 +42,12 @@ def test_load_credential_reads_named_credential_from_file():
         '/var'
     )
     credential_stream = io.StringIO('password')
-    credential_stream.name = '/var/mycredential'
+    credential_stream.name = '/var/borgmatic.pw'
     builtins = flexmock(sys.modules['builtins'])
-    builtins.should_receive('open').with_args('/var/mycredential').and_return(credential_stream)
+    builtins.should_receive('open').with_args('/var/borgmatic.pw').and_return(credential_stream)
 
     assert (
-        module.load_credential(hook_config={}, config={}, credential_parameters=('mycredential',))
+        module.load_credential(hook_config={}, config={}, credential_parameters=('borgmatic.pw',))
         == 'password'
     )
 

@@ -5,7 +5,7 @@ import re
 logger = logging.getLogger(__name__)
 
 
-CREDENTIAL_NAME_PATTERN = re.compile(r'^\w+$')
+CREDENTIAL_NAME_PATTERN = re.compile(r'^[\w.-]+$')
 
 
 def load_credential(hook_config, config, credential_parameters):
