@@ -2670,6 +2670,10 @@ properties:
         description: |
             Whether to apply default actions (e.g., backup) when no arguments
             are supplied to the borgmatic command. If set to true, borgmatic
-            will trigger the default actions. If set to false, borgmatic will
-            display the help message instead.
+            will trigger the default actions,which include :
+            -Create backups based on your configured schedules and paths.
+            - Prune old backups based on your retention policies.
+            - Verify the integrity of your backups.
+            
+            If set to false, borgmatic will display the help message instead.
         example: true
