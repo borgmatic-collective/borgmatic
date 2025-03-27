@@ -5,14 +5,17 @@ from borgmatic.commands import arguments as module
 
 
 def test_make_argument_description_with_array_adds_example():
-    assert module.make_argument_description(
-        schema={
-            'description': 'Thing.',
-            'type': 'array',
-            'example': [1, '- foo', {'bar': 'baz'}],
-        },
-        flag_name='flag',
-    ) == 'Thing. Example value: "[1, \'- foo\', bar: baz]"'
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'array',
+                'example': [1, '- foo', {'bar': 'baz'}],
+            },
+            flag_name='flag',
+        )
+        == 'Thing. Example value: "[1, \'- foo\', bar: baz]"'
+    )
 
 
 def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
@@ -39,6 +42,80 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
         arguments_group=arguments_group,
         unparsed_arguments=('--foo[25].val', 'fooval', '--bar[1].val', 'barval'),
         flag_name='foo[0].val',
+    )
+
+
+def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option():
+    parser = module.ArgumentParser(allow_abbrev=False, add_help=False)
+    arguments_group = parser.add_argument_group('arguments')
+    flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--foo.bar',
+        type=int,
+        metavar='BAR',
+        help='help 1',
+    ).once()
+    flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--foo.baz',
+        type=str,
+        metavar='BAZ',
+        help='help 2',
+    ).once()
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'object',
+                    'properties': {
+                        'bar': {'type': 'integer', 'description': 'help 1'},
+                        'baz': {'type': 'string', 'description': 'help 2'},
+                    }
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_flags():
+    parser = module.ArgumentParser(allow_abbrev=False, add_help=False)
+    arguments_group = parser.add_argument_group('arguments')
+    flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--foo[0].bar',
+        type=int,
+        metavar='BAR',
+        help=object,
+    ).once()
+    flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--foo',
+        type=str,
+        metavar='FOO',
+        help='help 2',
+    ).once()
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'bar': {
+                                'type': 'integer',
+                                'description': 'help 1',
+                            }
+                        }
+                    },
+                    'description': 'help 2',
+                }
+            }
+        },
+        unparsed_arguments=(),
     )
 
 

@@ -35,6 +35,8 @@ def parse_type(schema_type):
             'integer': int,
             'number': decimal.Decimal,
             'boolean': bool,
+            # This is str instead of list to support specifying a list as a YAML string on the
+            # command-line.
             'array': str,
         }[schema_type]
     except KeyError:

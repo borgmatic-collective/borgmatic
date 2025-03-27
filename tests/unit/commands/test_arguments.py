@@ -578,13 +578,16 @@ def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
 
 
 def test_make_argument_description_without_description_bails():
-    assert module.make_argument_description(
-        schema={
-            'description': None,
-            'type': 'not yours',
-        },
-        flag_name='flag',
-    ) is None
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': None,
+                'type': 'not yours',
+            },
+            flag_name='flag',
+        )
+        is None
+    )
 
 
 def test_make_argument_description_with_array_adds_example():
@@ -595,14 +598,17 @@ def test_make_argument_description_with_array_adds_example():
     yaml.should_receive('dump')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
 
-    assert module.make_argument_description(
-        schema={
-            'description': 'Thing.',
-            'type': 'array',
-            'example': ['example'],
-        },
-        flag_name='flag',
-    ) == 'Thing. Example value: "[example]"'
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'array',
+                'example': ['example'],
+            },
+            flag_name='flag',
+        )
+        == 'Thing. Example value: "[example]"'
+    )
 
 
 def test_make_argument_description_with_array_skips_missing_example():
@@ -610,13 +616,16 @@ def test_make_argument_description_with_array_skips_missing_example():
     yaml.should_receive('dump').and_return('[example]')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
 
-    assert module.make_argument_description(
-        schema={
-            'description': 'Thing.',
-            'type': 'array',
-        },
-        flag_name='flag',
-    ) == 'Thing.'
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'array',
+            },
+            flag_name='flag',
+        )
+        == 'Thing.'
+    )
 
 
 def test_make_argument_description_with_array_index_in_flag_name_adds_to_description():
@@ -630,13 +639,16 @@ def test_make_argument_description_with_array_index_in_flag_name_adds_to_descrip
 
 
 def test_make_argument_description_escapes_percent_character():
-    assert module.make_argument_description(
-        schema={
-            'description': '% Thing.',
-            'type': 'something',
-        },
-        flag_name='flag',
-    ) == '%% Thing.'
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': '% Thing.',
+                'type': 'something',
+            },
+            flag_name='flag',
+        )
+        == '%% Thing.'
+    )
 
 
 def test_add_array_element_arguments_without_array_index_bails():
@@ -684,8 +696,12 @@ Group_action = collections.namedtuple(
         'type',
     ),
     defaults=(
-        flexmock(), flexmock(), flexmock(), flexmock(), flexmock(),
-    )
+        flexmock(),
+        flexmock(),
+        flexmock(),
+        flexmock(),
+        flexmock(),
+    ),
 )
 
 
@@ -827,4 +843,341 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_e
         arguments_group=arguments_group,
         unparsed_arguments=('--foo[25].val=fooval', '--bar[1].val=barval'),
         flag_name='foo[0].val',
+    )
+
+
+def test_add_arguments_from_schema_with_non_dict_schema_bails():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').never()
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').never()
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group, schema='foo', unparsed_arguments=()
+    )
+
+
+def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return('help 2')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int).and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo.bar',
+        type=int,
+        metavar='BAR',
+        help='help 1',
+    ).once()
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo.baz',
+        type=str,
+        metavar='BAZ',
+        help='help 2',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'object',
+                    'properties': {
+                        'bar': {'type': 'integer'},
+                        'baz': {'type': 'str'},
+                    }
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_uses_first_non_null_type_from_multi_type_object():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help 1')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo.bar',
+        type=int,
+        metavar='BAR',
+        help='help 1',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': ['null', 'object', 'boolean'],
+                    'properties': {
+                        'bar': {'type': 'integer'},
+                    }
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_empty_multi_type_raises():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help 1')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int)
+    arguments_group.should_receive('add_argument').never()
+    flexmock(module).should_receive('add_array_element_arguments').never()
+
+    with pytest.raises(ValueError):
+        module.add_arguments_from_schema(
+            arguments_group=arguments_group,
+            schema={
+                'type': 'object',
+                'properties': {
+                    'foo': {
+                        'type': [],
+                        'properties': {
+                            'bar': {'type': 'integer'},
+                        }
+                    }
+                }
+            },
+            unparsed_arguments=(),
+        )
+
+
+def test_add_arguments_from_schema_with_propertyless_option_does_not_add_flag():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').never()
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').never()
+    arguments_group.should_receive('add_argument').never()
+    flexmock(module).should_receive('add_array_element_arguments').never()
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'object',
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_array_adds_flag():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=str,
+        metavar='FOO',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'integer',
+                    }
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_flags():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return('help 2')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int).and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo[0].bar',
+        type=int,
+        metavar='BAR',
+        help='help 1',
+    ).once()
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=str,
+        metavar='FOO',
+        help='help 2',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+    flexmock(module).should_receive('add_array_element_arguments').with_args(
+        arguments_group=arguments_group,
+        unparsed_arguments=(),
+        flag_name='foo[0].bar',
+    ).once()
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'array',
+                    'items': {
+                        'type': 'object',
+                        'properties': {
+                            'bar': {
+                                'type': 'integer',
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_default_false_boolean_adds_valueless_flag():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        action='store_true',
+        default=None,
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'boolean',
+                    'default': False,
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_default_true_boolean_adds_value_flag():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=bool,
+        metavar='FOO',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'boolean',
+                    'default': True,
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_defaultless_boolean_adds_value_flag():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=bool,
+        metavar='FOO',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'boolean',
+                }
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_skips_omitted_flag_name():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--match-archives',
+        type=object,
+        metavar=object,
+        help=object,
+    ).never()
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=str,
+        metavar='FOO',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'match_archives': {
+                    'type': 'string',
+                },
+                'foo': {
+                    'type': 'string',
+                },
+            }
+        },
+        unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_rewrites_option_name_to_flag_name():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo-and-stuff',
+        type=str,
+        metavar='FOO_AND_STUFF',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'foo_and_stuff': {
+                    'type': 'string',
+                },
+            }
+        },
+        unparsed_arguments=(),
     )

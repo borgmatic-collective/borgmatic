@@ -323,8 +323,7 @@ def make_argument_description(schema, flag_name):
 def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
     r'''
     Given an argparse._ArgumentGroup instance, a sequence of unparsed argument strings, and a dotted
-    flag name, convert the schema into corresponding command-line array element flags that
-    correspond to the given unparsed arguments.
+    flag name, add command-line array element flags that correspond to the given unparsed arguments.
 
     Here's the background. We want to support flags that can have arbitrary indices like:
 
@@ -353,9 +352,9 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
 
         --foo.bar[1].baz
 
-    ... then an argument flag will get added equal to that unparsed argument. And the unparsed
+    ... then an argument flag will get added equal to that unparsed argument. And so the unparsed
     argument will match it when parsing is performed! In this manner, we're using the actual user
-    CLI input to inform what exact flags we support!
+    CLI input to inform what exact flags we support.
     '''
     if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
         return
@@ -462,8 +461,8 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
         return
 
-    # If this is an "array" type, recurse for each child option of its items type. Don't return yet,
-    # so that a flag also gets added below for the array itself.
+    # If this is an "array" type, recurse for each items type child option. Don't return yet so that
+    # a flag also gets added below for the array itself.
     if schema_type == 'array':
         properties = borgmatic.config.schema.get_properties(schema.get('items', {}))
 
