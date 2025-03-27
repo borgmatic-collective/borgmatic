@@ -299,31 +299,32 @@ def make_argument_description(schema, flag_name):
     '''
     description = schema.get('description')
     schema_type = schema.get('type')
+    example = schema.get('example')
 
     if not description:
         return None
 
-    if schema_type == 'array':
+    if '[0]' in flag_name:
+        description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+
+    if example and schema_type == 'array':
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
-        yaml.dump(schema.get('example'), example_buffer)
+        yaml.dump(example, example_buffer)
 
         description += f' Example value: "{example_buffer.getvalue().strip()}"'
-
-    if '[0]' in flag_name:
-        description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
 
     description = description.replace('%', '%%')
 
     return description
 
 
-def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name):
+def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
     r'''
-    Given an argparse._ArgumentGroup instance, a configuration schema dict, a sequence of unparsed
-    argument strings, and a dotted flag name, convert the schema into corresponding command-line
-    array element flags that correspond to the given unparsed arguments.
+    Given an argparse._ArgumentGroup instance, a sequence of unparsed argument strings, and a dotted
+    flag name, convert the schema into corresponding command-line array element flags that
+    correspond to the given unparsed arguments.
 
     Here's the background. We want to support flags that can have arbitrary indices like:
 
@@ -356,26 +357,39 @@ def add_array_element_arguments_from_schema(arguments_group, schema, unparsed_ar
     argument will match it when parsing is performed! In this manner, we're using the actual user
     CLI input to inform what exact flags we support!
     '''
-    if '[0]' not in flag_name or '--help' in unparsed_arguments:
+    if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
         return
 
     pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
-    existing_flags = set(
-        itertools.chain(
-            *(group_action.option_strings for group_action in arguments_group._group_actions)
+
+    # Find an existing list index flag (and its action) corresponding to the given flag name. If one
+    # isn't found, bail.
+    try:
+        (argument_action, existing_flag_name) = next(
+            (action, action_flag_name)
+            for action in arguments_group._group_actions
+            for action_flag_name in action.option_strings
+            if pattern.match(action_flag_name)
+            if f'--{flag_name}'.startswith(action_flag_name)
         )
-    )
+    except StopIteration:
+        return
 
     for unparsed in unparsed_arguments:
         unparsed_flag_name = unparsed.split('=', 1)[0]
 
-        if pattern.match(unparsed_flag_name) and unparsed_flag_name not in existing_flags:
-            arguments_group.add_argument(
-                unparsed_flag_name,
-                type=argument_type,
-                metavar=metavar,
-                help=description,
-            )
+        if not pattern.match(unparsed_flag_name) or unparsed_flag_name == existing_flag_name:
+            continue
+
+        arguments_group.add_argument(
+            unparsed_flag_name,
+            choices=argument_action.choices,
+            default=argument_action.default,
+            dest=unparsed_flag_name.lstrip('-'),
+            nargs=argument_action.nargs,
+            required=argument_action.nargs,
+            type=argument_action.type,
+        )
 
 
 def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
@@ -482,7 +496,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             help=description,
         )
 
-    add_array_element_arguments_from_schema(arguments_group, schema, unparsed_arguments, flag_name)
+    add_array_element_arguments(arguments_group, unparsed_arguments, flag_name)
 
 
 def make_parsers(schema, unparsed_arguments):

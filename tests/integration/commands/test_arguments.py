@@ -4,6 +4,42 @@ from flexmock import flexmock
 from borgmatic.commands import arguments as module
 
 
+def test_make_argument_description_with_array_adds_example():
+    assert module.make_argument_description(
+        schema={
+            'description': 'Thing.',
+            'type': 'array',
+            'example': [1, '- foo', {'bar': 'baz'}],
+        },
+        flag_name='flag',
+    ) == 'Thing. Example value: "[1, \'- foo\', bar: baz]"'
+
+
+def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
+    parser = module.ArgumentParser(allow_abbrev=False, add_help=False)
+    arguments_group = parser.add_argument_group('arguments')
+    arguments_group.add_argument(
+        '--foo[0].val',
+        dest='--foo[0].val',
+    )
+
+    flexmock(arguments_group).should_receive('add_argument').with_args(
+        '--foo[25].val',
+        choices=object,
+        default=object,
+        dest='foo[25].val',
+        nargs=object,
+        required=object,
+        type=object,
+    ).once()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[25].val', 'fooval', '--bar[1].val', 'barval'),
+        flag_name='foo[0].val',
+    )
+
+
 def test_parse_arguments_with_no_arguments_uses_defaults():
     config_paths = ['default']
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)

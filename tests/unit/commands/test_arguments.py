@@ -575,3 +575,209 @@ def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
 
     with pytest.raises(ValueError):
         module.parse_arguments_for_actions(('config',), action_parsers, global_parser)
+
+
+def test_make_argument_description_without_description_bails():
+    assert module.make_argument_description(
+        schema={
+            'description': None,
+            'type': 'not yours',
+        },
+        flag_name='flag',
+    ) is None
+
+
+def test_make_argument_description_with_array_adds_example():
+    buffer = flexmock()
+    buffer.should_receive('getvalue').and_return('[example]')
+    flexmock(module.io).should_receive('StringIO').and_return(buffer)
+    yaml = flexmock()
+    yaml.should_receive('dump')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+
+    assert module.make_argument_description(
+        schema={
+            'description': 'Thing.',
+            'type': 'array',
+            'example': ['example'],
+        },
+        flag_name='flag',
+    ) == 'Thing. Example value: "[example]"'
+
+
+def test_make_argument_description_with_array_skips_missing_example():
+    yaml = flexmock()
+    yaml.should_receive('dump').and_return('[example]')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+
+    assert module.make_argument_description(
+        schema={
+            'description': 'Thing.',
+            'type': 'array',
+        },
+        flag_name='flag',
+    ) == 'Thing.'
+
+
+def test_make_argument_description_with_array_index_in_flag_name_adds_to_description():
+    assert 'list element' in module.make_argument_description(
+        schema={
+            'description': 'Thing.',
+            'type': 'something',
+        },
+        flag_name='flag[0]',
+    )
+
+
+def test_make_argument_description_escapes_percent_character():
+    assert module.make_argument_description(
+        schema={
+            'description': '% Thing.',
+            'type': 'something',
+        },
+        flag_name='flag',
+    ) == '%% Thing.'
+
+
+def test_add_array_element_arguments_without_array_index_bails():
+    arguments_group = flexmock()
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=(),
+        flag_name='foo',
+    )
+
+
+def test_add_array_element_arguments_with_help_flag_bails():
+    arguments_group = flexmock()
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo', '--help', '--bar'),
+        flag_name='foo[0]',
+    )
+
+
+def test_add_array_element_arguments_without_any_flags_bails():
+    arguments_group = flexmock()
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=(),
+        flag_name='foo[0]',
+    )
+
+
+def test_add_array_element_arguments_without_array_index_flags_bails():
+    arguments_group = flexmock(
+        _group_actions=(
+            flexmock(
+                option_strings=('--foo[0].val',),
+            ),
+        )
+    )
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo', '--bar'),
+        flag_name='foo[0].val',
+    )
+
+
+def test_add_array_element_arguments_with_non_matching_array_index_flags_bails():
+    arguments_group = flexmock(
+        _group_actions=(
+            flexmock(
+                option_strings=('--foo[0].val',),
+            ),
+        )
+    )
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo', '--bar[25].val', 'barval'),
+        flag_name='foo[0].val',
+    )
+
+
+def test_add_array_element_arguments_with_identical_array_index_flag_bails():
+    arguments_group = flexmock(
+        _group_actions=(
+            flexmock(
+                option_strings=('--foo[0].val',),
+            ),
+        )
+    )
+    arguments_group.should_receive('add_argument').never()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[0].val', 'fooval', '--bar'),
+        flag_name='foo[0].val',
+    )
+
+
+def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
+    arguments_group = flexmock(
+        _group_actions=(
+            flexmock(
+                option_strings=('--foo[0].val',),
+                choices=flexmock(),
+                default=flexmock(),
+                nargs=flexmock(),
+                required=flexmock(),
+                type=flexmock(),
+            ),
+        )
+    )
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo[25].val',
+        choices=object,
+        default=object,
+        dest='foo[25].val',
+        nargs=object,
+        required=object,
+        type=object,
+    ).once()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[25].val', 'fooval', '--bar[1].val', 'barval'),
+        flag_name='foo[0].val',
+    )
+
+
+def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_equals_sign():
+    arguments_group = flexmock(
+        _group_actions=(
+            flexmock(
+                option_strings=('--foo[0].val',),
+                choices=flexmock(),
+                default=flexmock(),
+                nargs=flexmock(),
+                required=flexmock(),
+                type=flexmock(),
+            ),
+        )
+    )
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo[25].val',
+        choices=object,
+        default=object,
+        dest='foo[25].val',
+        nargs=object,
+        required=object,
+        type=object,
+    ).once()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[25].val=fooval', '--bar[1].val=barval'),
+        flag_name='foo[0].val',
+    )
