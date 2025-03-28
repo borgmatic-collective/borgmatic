@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 from flexmock import flexmock
 
@@ -34,10 +35,7 @@ def test_recreate_archive_dry_run_skips_execution():
         target=None,
         comment=None,
         timestamp=None,
-        compression=None,
-        chunker_params=None,
         match_archives=None,
-        recompress=None,
     )
 
     result = module.recreate_archive(
@@ -66,10 +64,7 @@ def test_recreate_calls_borg_with_required_flags():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -91,10 +86,7 @@ def test_recreate_with_remote_path():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -116,10 +108,7 @@ def test_recreate_with_lock_wait():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -142,10 +131,7 @@ def test_recreate_with_log_info():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -167,10 +153,7 @@ def test_recreate_with_log_debug():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -191,10 +174,7 @@ def test_recreate_with_log_json():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=True),
         local_path='borg',
@@ -218,10 +198,7 @@ def test_recreate_with_list_filter_flags():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -246,10 +223,7 @@ def test_recreate_with_patterns_from_flag():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -271,13 +245,248 @@ def test_recreate_with_exclude_flags():
             target=None,
             comment=None,
             timestamp=None,
-            compression=None,
-            chunker_params=None,
             match_archives=None,
-            recompress=None,
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         patterns=None,
     )
 
+
+def test_recreate_with_target_flag():
+    insert_execute_command_mock(('borg', 'recreate', '--target', 'new-archive', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target='new-archive',
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_comment_flag():
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--comment', shlex.quote('This is a test comment'), 'repo::archive')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment='This is a test comment',
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_timestamp_flag():
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--timestamp', '2023-10-01T12:00:00', 'repo::archive')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp='2023-10-01T12:00:00',
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_compression_flag():
+    insert_execute_command_mock(('borg', 'recreate', '--compression', 'lz4', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'compression': 'lz4'},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_chunker_params_flag():
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--chunker-params', '19,23,21,4095', 'repo::archive')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'chunker_params': '19,23,21,4095'},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_recompress_flag():
+    insert_execute_command_mock(('borg', 'recreate', '--recompress', 'always', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'recompress': 'always'},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_match_archives_star():
+    insert_execute_command_mock(('borg', 'recreate', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives='*',
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_match_archives_regex():
+    insert_execute_command_mock(('borg', 'recreate', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives='re:.*',
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_match_archives_shell():
+    insert_execute_command_mock(('borg', 'recreate', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives='sh:*',
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_glob_archives_flag():
+    insert_execute_command_mock(('borg', 'recreate', '--glob-archives', 'foo-*', 'repo::archive'))
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives='foo-*',
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_with_match_archives_flag():
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--match-archives', 'sh:foo-*', '--repo', 'repo', 'archive')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={},
+        local_borg_version='2.0.0b3',
+        recreate_arguments=flexmock(
+            list=None,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives='sh:foo-*',
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )

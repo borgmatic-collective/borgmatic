@@ -33,6 +33,8 @@ def recreate_archive(
     exclude_flags = make_exclude_flags(config)
     compression = config.get('compression', None)
     chunker_params = config.get('chunker_params', None)
+    # Available recompress MODES: 'if-different' (default), 'always', 'never'
+    recompress = config.get('recompress', None)
 
     # Write patterns to a temporary file and use that file with --patterns-from.
     patterns_file = write_patterns_file(
@@ -42,11 +44,6 @@ def recreate_archive(
     recreate_command = (
         (local_path, 'recreate')
         + (('--remote-path', remote_path) if remote_path else ())
-        # + (
-        #     ('--path', recreate_arguments.path)
-        #     if recreate_arguments.path
-        #     else ()
-        # )
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait is not None else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
@@ -62,11 +59,7 @@ def recreate_archive(
             else ()
         )
         # Flag --target works only for a single archive
-        + (
-            ('--target', recreate_arguments.target)
-            if recreate_arguments.target and recreate_arguments.archive
-            else ()
-        )
+        + (('--target', recreate_arguments.target) if recreate_arguments.target and archive else ())
         + (
             ('--comment', shlex.quote(recreate_arguments.comment))
             if recreate_arguments.comment
@@ -84,7 +77,7 @@ def recreate_archive(
             if recreate_arguments.match_archives
             else ()
         )
-        + (('--recompress', recreate_arguments.recompress) if recreate_arguments.recompress else ())
+        + (('--recompress', recompress) if recompress else ())
         + exclude_flags
         + (
             flags.make_repository_archive_flags(repository, archive, local_borg_version)

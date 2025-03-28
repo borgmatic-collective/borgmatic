@@ -1562,13 +1562,6 @@ def make_parsers():
         '--archive',
         help='Archive name, hash, or series to recreate',
     )
-    # recreate_group.add_argument(
-    #     '--path',
-    #     metavar='PATH',
-    #     dest='path',
-    #     help='Path to recreate the repository/archive',
-    #     required=True,
-    # )
     recreate_group.add_argument(
         '--list', dest='list', action='store_true', help='Show per-file details'
     )
@@ -1594,11 +1587,6 @@ def make_parsers():
         dest='match_archives',
         metavar='PATTERN',
         help='Only consider archive names, hashes, or series matching this pattern',
-    )
-    recreate_group.add_argument(
-        '--recompress',
-        metavar='MODE',
-        help='Recompress data chunks according to MODE: [if-different (default), always, never]',
     )
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
