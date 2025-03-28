@@ -196,7 +196,7 @@ def check_all_root_patterns_exist(patterns):
 
     if missing_paths:
         raise ValueError(
-            f"Source directories / root pattern paths do not exist: {', '.join(missing_paths)}"
+            f"Source directories or root pattern paths do not exist: {', '.join(missing_paths)}"
         )
 
 

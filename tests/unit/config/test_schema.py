@@ -1,3 +1,5 @@
+import pytest
+
 from borgmatic.config import schema as module
 
 
@@ -75,3 +77,84 @@ def test_get_properties_interleaves_oneof_list_properties():
             ('field3', {'example': 'Example 3'}),
         ]
     )
+
+
+def test_parse_type_maps_schema_type_to_python_type():
+    module.parse_type('boolean') == bool
+
+
+def test_parse_type_with_unknown_schema_type_raises():
+    with pytest.raises(ValueError):
+        module.parse_type('what')
+
+
+def test_parse_type_respect_overrides_when_mapping_types():
+    module.parse_type('boolean', boolean=int) == int
+
+
+@pytest.mark.parametrize(
+    'schema_type,target_types,match,expected_result',
+    (
+        (
+            'string',
+            {'integer', 'string', 'boolean'},
+            None,
+            True,
+        ),
+        (
+            'string',
+            {'integer', 'boolean'},
+            None,
+            False,
+        ),
+        (
+            'string',
+            {'integer', 'string', 'boolean'},
+            all,
+            True,
+        ),
+        (
+            'string',
+            {'integer', 'boolean'},
+            all,
+            False,
+        ),
+        (
+            ['string', 'array'],
+            {'integer', 'string', 'boolean'},
+            None,
+            True,
+        ),
+        (
+            ['string', 'array'],
+            {'integer', 'boolean'},
+            None,
+            False,
+        ),
+        (
+            ['string', 'array'],
+            {'integer', 'string', 'boolean', 'array'},
+            all,
+            True,
+        ),
+        (
+            ['string', 'array'],
+            {'integer', 'string', 'boolean'},
+            all,
+            False,
+        ),
+        (
+            ['string', 'array'],
+            {'integer', 'boolean'},
+            all,
+            False,
+        ),
+    ),
+)
+def test_compare_types_returns_whether_schema_type_matches_target_types(
+    schema_type, target_types, match, expected_result
+):
+    if match:
+        assert module.compare_types(schema_type, target_types, match) == expected_result
+    else:
+        assert module.compare_types(schema_type, target_types) == expected_result

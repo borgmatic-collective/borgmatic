@@ -1,5 +1,4 @@
 import pytest
-from flexmock import flexmock
 
 from borgmatic.config import arguments as module
 

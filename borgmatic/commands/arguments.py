@@ -1,7 +1,6 @@
 import collections
 import io
 import itertools
-import json
 import re
 import sys
 from argparse import ArgumentParser
@@ -377,7 +376,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
             registry_name
             for registry_name, action_type in arguments_group._registries['action'].items()
             # Not using isinstance() here because we only want an exact match—no parent classes.
-            if type(argument_action) == action_type
+            if type(argument_action) is action_type
         )
     except StopIteration:
         return
@@ -492,7 +491,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
     # As a UX nicety, allow boolean options that have a default of false to have command-line flags
     # without values.
-    if schema_type == 'boolean' and schema.get('default') == False:
+    if schema_type == 'boolean' and schema.get('default') is False:
         arguments_group.add_argument(
             full_flag_name,
             action='store_true',

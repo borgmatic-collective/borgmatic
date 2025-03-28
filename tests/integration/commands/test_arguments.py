@@ -14,7 +14,12 @@ def test_make_argument_description_with_array_adds_example():
             },
             flag_name='flag',
         )
-        == 'Thing. Example value: "[1, \'- foo\', bar: baz]"'
+        # Apparently different versions of ruamel.yaml serialize this
+        # differently.
+        in (
+            'Thing. Example value: "[1, \'- foo\', bar: baz]"'
+            'Thing. Example value: "[1, \'- foo\', {bar: baz}]"'
+        )
     )
 
 

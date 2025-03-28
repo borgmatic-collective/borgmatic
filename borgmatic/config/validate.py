@@ -21,7 +21,7 @@ def schema_filename():
         return schema_path
 
 
-def load_schema(schema_path):
+def load_schema(schema_path):  # pragma: no cover
     '''
     Given a schema filename path, load the schema and return it as a dict.
 

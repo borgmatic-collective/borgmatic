@@ -23,6 +23,16 @@ def get_properties(schema):
     return schema.get('properties', {})
 
 
+SCHEMA_TYPE_TO_PYTHON_TYPE = {
+    'array': list,
+    'boolean': bool,
+    'integer': int,
+    'number': decimal.Decimal,
+    'object': dict,
+    'string': str,
+}
+
+
 def parse_type(schema_type, **overrides):
     '''
     Given a schema type as a string, return the corresponding Python type.
@@ -34,14 +44,7 @@ def parse_type(schema_type, **overrides):
     '''
     try:
         return dict(
-            {
-                'array': list,
-                'boolean': bool,
-                'integer': int,
-                'number': decimal.Decimal,
-                'object': dict,
-                'string': str,
-            },
+            SCHEMA_TYPE_TO_PYTHON_TYPE,
             **overrides,
         )[schema_type]
     except KeyError:
@@ -54,7 +57,8 @@ def compare_types(schema_type, target_types, match=any):
     target type strings, return whether every schema type is in the set of target types.
 
     If the schema type is a list of strings, use the given match function (such as any or all) to
-    compare elements.
+    compare elements. For instance, if match is given as all, then every element of the schema_type
+    list must be in the target types.
     '''
     if isinstance(schema_type, list):
         if match(element_schema_type in target_types for element_schema_type in schema_type):

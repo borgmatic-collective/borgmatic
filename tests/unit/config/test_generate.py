@@ -2,7 +2,6 @@ import pytest
 from flexmock import flexmock
 
 from borgmatic.config import generate as module
-import borgmatic.config.schema
 
 
 def test_schema_to_sample_configuration_generates_config_map_with_examples():

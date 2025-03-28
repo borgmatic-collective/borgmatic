@@ -175,9 +175,7 @@ def test_prepare_arguments_for_config_skips_option_with_none_value():
                 'other_option': {'type': 'string'},
             },
         },
-    ) == (
-        (('other_option',), 'value2'),
-    )
+    ) == ((('other_option',), 'value2'),)
 
 
 def test_prepare_arguments_for_config_skips_option_missing_from_schema():
@@ -190,6 +188,4 @@ def test_prepare_arguments_for_config_skips_option_missing_from_schema():
                 'other_option': {'type': 'string'},
             },
         },
-    ) == (
-        (('other_option',), 'value2'),
-    )
+    ) == ((('other_option',), 'value2'),)
