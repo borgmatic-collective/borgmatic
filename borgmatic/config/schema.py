@@ -23,22 +23,27 @@ def get_properties(schema):
     return schema.get('properties', {})
 
 
-def parse_type(schema_type):
+def parse_type(schema_type, **overrides):
     '''
     Given a schema type as a string, return the corresponding Python type.
+
+    If any overrides are given in the from of a schema type string to a Python type, then override
+    the default type mapping with them.
 
     Raise ValueError if the schema type is unknown.
     '''
     try:
-        return {
-            'string': str,
-            'integer': int,
-            'number': decimal.Decimal,
-            'boolean': bool,
-            # This is str instead of list to support specifying a list as a YAML string on the
-            # command-line.
-            'array': str,
-        }[schema_type]
+        return dict(
+            {
+                'array': list,
+                'boolean': bool,
+                'integer': int,
+                'number': decimal.Decimal,
+                'object': dict,
+                'string': str,
+            },
+            **overrides,
+        )[schema_type]
     except KeyError:
         raise ValueError(f'Unknown type in configuration schema: {schema_type}')
 

@@ -3,6 +3,8 @@ import re
 
 import ruamel.yaml
 
+import borgmatic.config.schema
+
 LIST_INDEX_KEY_PATTERN = re.compile(r'^(?P<list_name>[a-zA-z-]+)\[(?P<index>\d+)\]$')
 
 
@@ -45,7 +47,7 @@ def set_values(config, keys, value):
         try:
             set_values(config[list_key][list_index], keys[1:], value)
         except IndexError:
-            raise ValueError(f'The list index {first_key} is out of range')
+            raise ValueError(f'Argument list index {first_key} is out of range')
 
         return
 
@@ -99,6 +101,7 @@ def convert_value_type(value, option_type):
     And if the source value isn't a string, return it as-is.
 
     Raise ruamel.yaml.error.YAMLError if there's a parse issue with the YAML.
+    Raise ValueError if the parsed value doesn't match the option type.
     '''
     if not isinstance(value, str):
         return value
@@ -106,7 +109,15 @@ def convert_value_type(value, option_type):
     if option_type == 'string':
         return value
 
-    return ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
+    try:
+        parsed_value = ruamel.yaml.YAML(typ='safe').load(io.StringIO(value))
+    except ruamel.yaml.error.YAMLError as error:
+        raise ValueError(f'Argument value "{value}" is invalid: {error.problem}')
+
+    if not isinstance(parsed_value, borgmatic.config.schema.parse_type(option_type)):
+        raise ValueError(f'Argument value "{value}" is not of the expected type: {option_type}')
+
+    return parsed_value
 
 
 def prepare_arguments_for_config(global_arguments, schema):
@@ -122,39 +133,34 @@ def prepare_arguments_for_config(global_arguments, schema):
 
         (
             (('my_option', 'sub_option'), 'value1'),
-            (('other_option'), 'value2'),
+            (('other_option',), 'value2'),
         )
-
-    Raise ValueError if an override can't be parsed.
     '''
     prepared_values = []
 
     for argument_name, value in global_arguments.__dict__.items():
-        try:
-            if value is None:
-                continue
+        if value is None:
+            continue
 
-            keys = tuple(argument_name.split('.'))
-            option_type = type_for_option(schema, keys)
+        keys = tuple(argument_name.split('.'))
+        option_type = type_for_option(schema, keys)
 
-            # The argument doesn't correspond to any option in the schema, so ignore it. It's
-            # probably a flag that borgmatic has on the command-line but not in configuration.
-            if option_type is None:
-                continue
+        # The argument doesn't correspond to any option in the schema, so ignore it. It's
+        # probably a flag that borgmatic has on the command-line but not in configuration.
+        if option_type is None:
+            continue
 
-            prepared_values.append(
-                (
-                    keys,
-                    convert_value_type(value, option_type),
-                )
+        prepared_values.append(
+            (
+                keys,
+                convert_value_type(value, option_type),
             )
-        except ruamel.yaml.error.YAMLError as error:
-            raise ValueError(f'Invalid override "{argument_name}": {error.problem}')
+        )
 
     return tuple(prepared_values)
 
 
-def apply_arguments_to_config(config, schema, global_arguments):
+def apply_arguments_to_config(config, schema, global_arguments):  # pragma: no cover
     '''
     Given a configuration dict, a corresponding configuration schema dict, and global arguments as
     an argparse.Namespace, set those given argument values into their corresponding configuration
@@ -164,6 +170,5 @@ def apply_arguments_to_config(config, schema, global_arguments):
     configuration object. Additionally, flags like "--foo.bar[0].baz" are supported to update a list
     element in the configuration.
     '''
-
     for keys, value in prepare_arguments_for_config(global_arguments, schema):
         set_values(config, keys, value)

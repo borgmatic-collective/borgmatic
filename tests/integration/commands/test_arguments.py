@@ -71,9 +71,9 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
                     'properties': {
                         'bar': {'type': 'integer', 'description': 'help 1'},
                         'baz': {'type': 'string', 'description': 'help 2'},
-                    }
+                    },
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -109,11 +109,11 @@ def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_fl
                                 'type': 'integer',
                                 'description': 'help 1',
                             }
-                        }
+                        },
                     },
                     'description': 'help 2',
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )

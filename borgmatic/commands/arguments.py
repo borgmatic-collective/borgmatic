@@ -484,7 +484,10 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
 
     metavar = names[-1].upper()
     description = make_argument_description(schema, flag_name)
-    argument_type = borgmatic.config.schema.parse_type(schema_type)
+
+    # array=str instead of list here to support specifying a list as a YAML string on the
+    # command-line.
+    argument_type = borgmatic.config.schema.parse_type(schema_type, array=str)
     full_flag_name = f"--{flag_name.replace('_', '-')}"
 
     # As a UX nicety, allow boolean options that have a default of false to have command-line flags

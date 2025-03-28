@@ -859,8 +859,12 @@ def test_add_arguments_from_schema_with_non_dict_schema_bails():
 
 def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option():
     arguments_group = flexmock()
-    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return('help 2')
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int).and_return(str)
+    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return(
+        'help 2'
+    )
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(
+        int
+    ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
         '--foo.bar',
         type=int,
@@ -885,9 +889,9 @@ def test_add_arguments_from_schema_with_nested_object_adds_flag_for_each_option(
                     'properties': {
                         'bar': {'type': 'integer'},
                         'baz': {'type': 'str'},
-                    }
+                    },
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -914,9 +918,9 @@ def test_add_arguments_from_schema_uses_first_non_null_type_from_multi_type_obje
                     'type': ['null', 'object', 'boolean'],
                     'properties': {
                         'bar': {'type': 'integer'},
-                    }
+                    },
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -939,9 +943,9 @@ def test_add_arguments_from_schema_with_empty_multi_type_raises():
                         'type': [],
                         'properties': {
                             'bar': {'type': 'integer'},
-                        }
+                        },
                     }
-                }
+                },
             },
             unparsed_arguments=(),
         )
@@ -962,7 +966,7 @@ def test_add_arguments_from_schema_with_propertyless_option_does_not_add_flag():
                 'foo': {
                     'type': 'object',
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -989,9 +993,9 @@ def test_add_arguments_from_schema_with_array_adds_flag():
                     'type': 'array',
                     'items': {
                         'type': 'integer',
-                    }
+                    },
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -999,8 +1003,12 @@ def test_add_arguments_from_schema_with_array_adds_flag():
 
 def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_flags():
     arguments_group = flexmock()
-    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return('help 2')
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(int).and_return(str)
+    flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return(
+        'help 2'
+    )
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(
+        int
+    ).and_return(str)
     arguments_group.should_receive('add_argument').with_args(
         '--foo[0].bar',
         type=int,
@@ -1033,10 +1041,10 @@ def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_fl
                             'bar': {
                                 'type': 'integer',
                             }
-                        }
-                    }
+                        },
+                    },
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -1063,7 +1071,7 @@ def test_add_arguments_from_schema_with_default_false_boolean_adds_valueless_fla
                     'type': 'boolean',
                     'default': False,
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -1090,7 +1098,7 @@ def test_add_arguments_from_schema_with_default_true_boolean_adds_value_flag():
                     'type': 'boolean',
                     'default': True,
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -1116,7 +1124,7 @@ def test_add_arguments_from_schema_with_defaultless_boolean_adds_value_flag():
                 'foo': {
                     'type': 'boolean',
                 }
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -1151,7 +1159,7 @@ def test_add_arguments_from_schema_skips_omitted_flag_name():
                 'foo': {
                     'type': 'string',
                 },
-            }
+            },
         },
         unparsed_arguments=(),
     )
@@ -1177,7 +1185,7 @@ def test_add_arguments_from_schema_rewrites_option_name_to_flag_name():
                 'foo_and_stuff': {
                     'type': 'string',
                 },
-            }
+            },
         },
         unparsed_arguments=(),
     )
