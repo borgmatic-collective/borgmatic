@@ -1591,6 +1591,7 @@ def make_parsers():
         '-a',
         '--match-archives',
         '--glob-archives',
+        dest='match_archives',
         metavar='PATTERN',
         help='Only consider archive names, hashes, or series matching this pattern',
     )

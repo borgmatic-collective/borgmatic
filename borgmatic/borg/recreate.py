@@ -1,6 +1,5 @@
 import logging
 import shlex
-from datetime import datetime
 
 import borgmatic.borg.environment
 import borgmatic.config.paths
@@ -76,10 +75,14 @@ def recreate_archive(
         + (('--timestamp', recreate_arguments.timestamp) if recreate_arguments.timestamp else ())
         + (('--compression', compression) if compression else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
-        + flags.make_match_archives_flags(
-            recreate_arguments.match_archives or archive or config.get('match_archives'),
-            config.get('archive_name_format'),
-            local_borg_version,
+        + (
+            flags.make_match_archives_flags(
+                recreate_arguments.match_archives or archive or config.get('match_archives'),
+                config.get('archive_name_format'),
+                local_borg_version,
+            )
+            if recreate_arguments.match_archives
+            else ()
         )
         + (('--recompress', recreate_arguments.recompress) if recreate_arguments.recompress else ())
         + exclude_flags
