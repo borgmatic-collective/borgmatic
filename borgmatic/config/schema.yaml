@@ -284,6 +284,24 @@ properties:
             http://borgbackup.readthedocs.io/en/stable/usage/create.html for
             details. Defaults to "lz4".
         example: lz4
+    recompress:
+        type: string
+        enum: ['if-different', 'always', 'never']
+        description: |
+            Mode for recompressing data chunks according to MODE. 
+            Possible modes are:
+            - "if-different": Recompress if the current compression
+            is with a different compression algorithm.
+            - "always": Recompress even if the current compression
+            is with the same compression algorithm. Use this to change
+            the compression level.
+            - "never": Do not recompress. Use this option to explicitly
+            prevent recompression.
+            See https://borgbackup.readthedocs.io/en/stable/usage/recreate.html
+            for details.
+            Not passing --recompress is equivalent to "--recompress never". 
+            Defaults to "if-different".
+        example: if-different
     upload_rate_limit:
         type: integer
         description: |
