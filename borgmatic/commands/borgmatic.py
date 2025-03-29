@@ -26,6 +26,7 @@ import borgmatic.actions.info
 import borgmatic.actions.list
 import borgmatic.actions.mount
 import borgmatic.actions.prune
+import borgmatic.actions.recreate
 import borgmatic.actions.repo_create
 import borgmatic.actions.repo_delete
 import borgmatic.actions.repo_info
@@ -394,6 +395,16 @@ def run_actions(
                         action_arguments,
                         global_arguments,
                         dry_run_label,
+                        local_path,
+                        remote_path,
+                    )
+                elif action_name == 'recreate' and action_name not in skip_actions:
+                    borgmatic.actions.recreate.run_recreate(
+                        repository,
+                        config,
+                        local_borg_version,
+                        action_arguments,
+                        global_arguments,
                         local_path,
                         remote_path,
                     )
