@@ -20,16 +20,6 @@ def insert_execute_command_mock(command, working_directory=None, borg_exit_codes
     ).once()
 
 
-def mock_dependencies():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
-    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive(
-        'make_repository_archive_flags'
-    ).and_return(('repo::archive',))
-
-
 def test_recreate_archive_dry_run_skips_execution():
     flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
@@ -235,7 +225,7 @@ def test_recreate_with_log_json():
     )
 
 
-def test_recreate_with_list_filter_flags():
+def test_recreate_archive_favors_list_flag_over_config():
     flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
@@ -250,10 +240,40 @@ def test_recreate_with_list_filter_flags():
     module.recreate_archive(
         repository='repo',
         archive='archive',
-        config={},
+        config={'list_details': False},
         local_borg_version='1.2.3',
         recreate_arguments=flexmock(
             list=True,
+            target=None,
+            comment=None,
+            timestamp=None,
+            match_archives=None,
+        ),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        patterns=None,
+    )
+
+
+def test_recreate_archive_defaults_to_list_config():
+    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive(
+        'make_repository_archive_flags'
+    ).and_return(('repo::archive',))
+    flexmock(module).should_receive('make_list_filter_flags').and_return('AME+-')
+    insert_execute_command_mock(
+        ('borg', 'recreate', '--list', '--filter', 'AME+-', 'repo::archive')
+    )
+
+    module.recreate_archive(
+        repository='repo',
+        archive='archive',
+        config={'list_details': True},
+        local_borg_version='1.2.3',
+        recreate_arguments=flexmock(
+            list=None,
             target=None,
             comment=None,
             timestamp=None,

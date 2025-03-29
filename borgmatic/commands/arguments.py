@@ -288,7 +288,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'statistics', 'list_files'}
+OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'statistics', 'list_details'}
 
 
 def make_argument_description(schema, flag_name):
