@@ -1568,17 +1568,17 @@ def make_parsers():
     recreate_group.add_argument(
         '--target',
         metavar='TARGET',
-        help='Name of new archive name',
+        help='Create a new archive from the specified archive (via --archive), without replacing it',
     )
     recreate_group.add_argument(
         '--comment',
         metavar='COMMENT',
-        help='Add a comment text to the archive, if archive not provided, consider all archives',
+        help='Add a comment text to the archive or, if an archive is not provided, to all matching archives',
     )
     recreate_group.add_argument(
         '--timestamp',
         metavar='TIMESTAMP',
-        help='Manually specify the archive creation date/time (UTC)',
+        help='Manually override the archive creation date/time (UTC)',
     )
     recreate_group.add_argument(
         '-a',

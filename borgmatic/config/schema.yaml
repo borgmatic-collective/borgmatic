@@ -299,8 +299,7 @@ properties:
             prevent recompression.
             See https://borgbackup.readthedocs.io/en/stable/usage/recreate.html
             for details.
-            Not passing --recompress is equivalent to "--recompress never". 
-            Defaults to "if-different".
+            Defaults to "never".
         example: if-different
     upload_rate_limit:
         type: integer
