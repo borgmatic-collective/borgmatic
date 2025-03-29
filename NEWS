@@ -1,6 +1,6 @@
 2.0.0.dev0
- * #303: Add command-line flags for every borgmatic configuration option. See the
-   documentation for more information:
+ * #303: Deprecate the "--override" flag in favor of direct command-line flags for every borgmatic
+   configuration option. See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides
  * #303: Add configuration options that serve as defaults for some (but not all) command-line
    action flags. For example, each entry in "repositories:" now has an "encryption" option that
