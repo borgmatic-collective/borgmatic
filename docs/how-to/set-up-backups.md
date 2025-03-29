@@ -296,6 +296,16 @@ skip_actions:
     - compact
 ```
 
+## Disabling default actions
+
+By default, running `borgmatic` without any arguments will perform the default backup actions (create, prune, and compact). If you want to disable this behavior and require explicit actions to be specified, add the following to your configuration:
+
+```yaml
+default_actions: false
+```
+
+With this setting, running `borgmatic` without arguments will show the help message instead of performing any actions.
+
 
 ## Autopilot
 
