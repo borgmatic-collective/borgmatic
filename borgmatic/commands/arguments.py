@@ -32,6 +32,7 @@ ACTION_ALIASES = {
     'break-lock': [],
     'key': [],
     'borg': [],
+    'recreate': [],
 }
 
 
@@ -1749,6 +1750,52 @@ def make_parsers(schema, unparsed_arguments):
         help='Path of repository to change the passphrase for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     key_change_passphrase_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    recreate_parser = action_parsers.add_parser(
+        'recreate',
+        aliases=ACTION_ALIASES['recreate'],
+        help='Recreate an archive in a repository',
+        description='Recreate an archive in a repository',
+        add_help=False,
+    )
+    recreate_group = recreate_parser.add_argument_group('recreate arguments')
+    recreate_group.add_argument(
+        '--repository',
+        help='Path of repository containing archive to recreate, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    recreate_group.add_argument(
+        '--archive',
+        help='Archive name, hash, or series to recreate',
+    )
+    recreate_group.add_argument(
+        '--list', dest='list', action='store_true', help='Show per-file details'
+    )
+    recreate_group.add_argument(
+        '--target',
+        metavar='TARGET',
+        help='Create a new archive from the specified archive (via --archive), without replacing it',
+    )
+    recreate_group.add_argument(
+        '--comment',
+        metavar='COMMENT',
+        help='Add a comment text to the archive or, if an archive is not provided, to all matching archives',
+    )
+    recreate_group.add_argument(
+        '--timestamp',
+        metavar='TIMESTAMP',
+        help='Manually override the archive creation date/time (UTC)',
+    )
+    recreate_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        dest='match_archives',
+        metavar='PATTERN',
+        help='Only consider archive names, hashes, or series matching this pattern',
+    )
+    recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
