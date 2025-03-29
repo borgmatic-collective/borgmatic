@@ -171,7 +171,7 @@ def test_make_delete_command_includes_lock_wait():
     assert command == ('borg', 'delete', '--lock-wait', '5', 'repo')
 
 
-def test_make_delete_command_includes_list():
+def test_make_delete_command_favors_list_flag_over_config():
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
         'list', True
@@ -184,9 +184,33 @@ def test_make_delete_command_includes_list():
 
     command = module.make_delete_command(
         repository={'path': 'repo'},
-        config={},
+        config={'list_details': False},
         local_borg_version='1.2.3',
         delete_arguments=flexmock(list_archives=True, force=0, match_archives=None, archive=None),
+        global_arguments=flexmock(dry_run=False, log_json=False),
+        local_path='borg',
+        remote_path=None,
+    )
+
+    assert command == ('borg', 'delete', '--list', 'repo')
+
+
+def test_make_delete_command_defaults_to_list_config():
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
+        'list', True
+    ).and_return(('--list',))
+    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
+        ('repo',)
+    )
+
+    command = module.make_delete_command(
+        repository={'path': 'repo'},
+        config={'list_details': True},
+        local_borg_version='1.2.3',
+        delete_arguments=flexmock(list_archives=None, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -287,8 +311,12 @@ def test_make_delete_command_includes_match_archives():
     assert command == ('borg', 'delete', '--match-archives', 'sh:foo*', 'repo')
 
 
+LOGGING_ANSWER = flexmock()
+
+
 def test_delete_archives_with_archive_calls_borg_delete():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
     flexmock(module).should_receive('make_delete_command').and_return(flexmock())
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -308,6 +336,7 @@ def test_delete_archives_with_archive_calls_borg_delete():
 
 def test_delete_archives_with_match_archives_calls_borg_delete():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
     flexmock(module).should_receive('make_delete_command').and_return(flexmock())
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -328,6 +357,7 @@ def test_delete_archives_with_match_archives_calls_borg_delete():
 @pytest.mark.parametrize('argument_name', module.ARCHIVE_RELATED_ARGUMENT_NAMES[2:])
 def test_delete_archives_with_archive_related_argument_calls_borg_delete(argument_name):
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
     flexmock(module).should_receive('make_delete_command').and_return(flexmock())
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -347,6 +377,7 @@ def test_delete_archives_with_archive_related_argument_calls_borg_delete(argumen
 
 def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').once()
     flexmock(module).should_receive('make_delete_command').never()
@@ -367,6 +398,7 @@ def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete
 
 def test_delete_archives_calls_borg_delete_with_working_directory():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = LOGGING_ANSWER
     flexmock(module.borgmatic.borg.repo_delete).should_receive('delete_repository').never()
     command = flexmock()
     flexmock(module).should_receive('make_delete_command').and_return(command)

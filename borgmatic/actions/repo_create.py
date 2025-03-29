@@ -41,9 +41,21 @@ def run_repo_create(
         encryption_mode,
         repo_create_arguments.source_repository,
         repo_create_arguments.copy_crypt_key,
-        repo_create_arguments.append_only or repository.get('append_only'),
-        repo_create_arguments.storage_quota or repository.get('storage_quota'),
-        repo_create_arguments.make_parent_dirs or repository.get('make_parent_dirs'),
+        (
+            repository.get('append_only')
+            if repo_create_arguments.append_only is None
+            else repo_create_arguments.append_only
+        ),
+        (
+            repository.get('storage_quota')
+            if repo_create_arguments.storage_quota is None
+            else repo_create_arguments.storage_quota
+        ),
+        (
+            repository.get('make_parent_dirs')
+            if repo_create_arguments.make_parent_dirs is None
+            else repo_create_arguments.make_parent_dirs
+        ),
         local_path=local_path,
         remote_path=remote_path,
     )

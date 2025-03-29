@@ -40,11 +40,15 @@ def test_config_flags_do_not_error():
         generate_configuration(config_path)
 
         subprocess.check_call(
-            shlex.split(f'borgmatic -v 2 --config {config_path} --repositories "[{{path: {repository_path}, label: repo}}]" repo-create --encryption repokey')
+            shlex.split(
+                f'borgmatic -v 2 --config {config_path} --repositories "[{{path: {repository_path}, label: repo}}]" repo-create --encryption repokey'
+            )
         )
 
         subprocess.check_call(
-            shlex.split(f'borgmatic create --config {config_path} --repositories[0].path "{repository_path}"')
+            shlex.split(
+                f'borgmatic create --config {config_path} --repositories[0].path "{repository_path}"'
+            )
         )
     finally:
         os.chdir(original_working_directory)

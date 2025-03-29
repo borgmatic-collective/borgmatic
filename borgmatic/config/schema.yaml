@@ -823,7 +823,7 @@ properties:
             actions. Defaults to false.
         default: false
         example: true
-    stats:
+    statistics:
         type: boolean
         description: |
             Display statistics for an archive when running supported actions.
@@ -831,7 +831,7 @@ properties:
             false.
         default: false
         example: true
-    list:
+    list_details:
         type: boolean
         description: |
             Display details for each file or archive as it is processed when

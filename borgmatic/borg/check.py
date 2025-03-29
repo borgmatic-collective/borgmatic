@@ -143,7 +143,9 @@ def check_archives(
     umask = config.get('umask')
     borg_exit_codes = config.get('borg_exit_codes')
     working_directory = borgmatic.config.paths.get_working_directory(config)
-    progress = check_arguments.progress or config.get('progress')
+    progress = (
+        config.get('progress') if check_arguments.progress is None else check_arguments.progress
+    )
 
     if 'data' in checks:
         checks.add('archives')

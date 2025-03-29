@@ -331,8 +331,8 @@ def test_get_repository_id_with_missing_json_keys_raises():
         )
 
 
-def test_check_archives_with_progress_passes_through_to_borg():
-    config = {}
+def test_check_archives_favors_progress_flag_over_config():
+    config = {'progress': False}
     flexmock(module).should_receive('make_check_name_flags').with_args(
         {'repository'}, ()
     ).and_return(())
@@ -354,6 +354,41 @@ def test_check_archives_with_progress_passes_through_to_borg():
         local_borg_version='1.2.3',
         check_arguments=flexmock(
             progress=True,
+            repair=None,
+            only_checks=None,
+            force=None,
+            match_archives=None,
+            max_duration=None,
+        ),
+        global_arguments=flexmock(log_json=False),
+        checks={'repository'},
+        archive_filter_flags=(),
+    )
+
+
+def test_check_archives_defaults_to_progress_config():
+    config = {'progress': True}
+    flexmock(module).should_receive('make_check_name_flags').with_args(
+        {'repository'}, ()
+    ).and_return(())
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'check', '--progress', 'repo'),
+        output_file=module.DO_NOT_CAPTURE,
+        environment=None,
+        working_directory=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+    ).once()
+
+    module.check_archives(
+        repository_path='repo',
+        config=config,
+        local_borg_version='1.2.3',
+        check_arguments=flexmock(
+            progress=None,
             repair=None,
             only_checks=None,
             force=None,

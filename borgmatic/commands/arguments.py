@@ -287,7 +287,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'stats', 'list'}
+OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'statistics', 'list_files'}
 
 
 def make_argument_description(schema, flag_name):
@@ -520,9 +520,9 @@ def make_parsers(schema, unparsed_arguments):
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
-    # allow_abbrev=False prevents the global parser from erroring about "ambiguous" options like
-    # --encryption. Such options are intended for an action parser rather than the global parser,
-    # and so we don't want to error on them here.
+    # Using allow_abbrev=False here prevents the global parser from erroring about "ambiguous"
+    # options like --encryption. Such options are intended for an action parser rather than the
+    # global parser, and so we don't want to error on them here.
     global_parser = ArgumentParser(allow_abbrev=False, add_help=False)
     global_group = global_parser.add_argument_group('global arguments')
 

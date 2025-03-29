@@ -327,10 +327,22 @@ def run_create(
             borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            progress=create_arguments.progress or config.get('progress'),
-            stats=create_arguments.stats or config.get('stats'),
+            progress=(
+                config.get('progress')
+                if create_arguments.progress is None
+                else create_arguments.progress
+            ),
+            stats=(
+                config.get('statistics')
+                if create_arguments.stats is None
+                else create_arguments.stats
+            ),
             json=create_arguments.json,
-            list_files=create_arguments.list_files or config.get('list'),
+            list_files=(
+                config.get('list_details')
+                if create_arguments.list_files is None
+                else create_arguments.list_files
+            ),
             stream_processes=stream_processes,
         )
 
