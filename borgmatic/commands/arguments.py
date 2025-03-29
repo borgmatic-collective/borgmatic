@@ -1522,30 +1522,6 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
-    borg_parser = action_parsers.add_parser(
-        'borg',
-        aliases=ACTION_ALIASES['borg'],
-        help='Run an arbitrary Borg command',
-        description="Run an arbitrary Borg command based on borgmatic's configuration",
-        add_help=False,
-    )
-    borg_group = borg_parser.add_argument_group('borg arguments')
-    borg_group.add_argument(
-        '--repository',
-        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
-    )
-    borg_group.add_argument(
-        '--archive', help='Archive name, hash, or series to pass to Borg (or "latest")'
-    )
-    borg_group.add_argument(
-        '--',
-        metavar='OPTION',
-        dest='options',
-        nargs='+',
-        help='Options to pass to Borg, command first ("create", "list", etc). "--" is optional. To specify the repository or the archive, you must use --repository or --archive instead of providing them here.',
-    )
-    borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
-
     recreate_parser = action_parsers.add_parser(
         'recreate',
         aliases=ACTION_ALIASES['recreate'],
@@ -1591,6 +1567,30 @@ def make_parsers():
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
+
+    borg_parser = action_parsers.add_parser(
+        'borg',
+        aliases=ACTION_ALIASES['borg'],
+        help='Run an arbitrary Borg command',
+        description="Run an arbitrary Borg command based on borgmatic's configuration",
+        add_help=False,
+    )
+    borg_group = borg_parser.add_argument_group('borg arguments')
+    borg_group.add_argument(
+        '--repository',
+        help='Path of repository to pass to Borg, defaults to the configured repositories, quoted globs supported',
+    )
+    borg_group.add_argument(
+        '--archive', help='Archive name, hash, or series to pass to Borg (or "latest")'
+    )
+    borg_group.add_argument(
+        '--',
+        metavar='OPTION',
+        dest='options',
+        nargs='+',
+        help='Options to pass to Borg, command first ("create", "list", etc). "--" is optional. To specify the repository or the archive, you must use --repository or --archive instead of providing them here.',
+    )
+    borg_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     return global_parser, action_parsers, global_plus_action_parser
 

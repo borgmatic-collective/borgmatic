@@ -1,6 +1,8 @@
 2.0.0.dev0
  * #345: Add a "key import" action to import a repository key from backup.
  * #422: Add home directory expansion to file-based and KeePassXC credential hooks.
+ * #610: Add a "recreate" action for recreating archives, for instance for retroactively excluding
+   particular files from existing archives.
  * #790, #821: Deprecate all "before_*", "after_*" and "on_error" command hooks in favor of more
    flexible "commands:". See the documentation for more information:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
