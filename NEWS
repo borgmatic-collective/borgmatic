@@ -22,6 +22,8 @@
    "working_directory" are used.
  * #1044: Fix an error in the systemd credential hook when the credential name contains a "."
    character.
+ * #1048: Fix a "no such file or directory" error in ZFS, Btrfs, and LVM hooks with nested
+   directories that reside on separate devices/filesystems.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
