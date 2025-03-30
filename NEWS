@@ -1,4 +1,6 @@
 2.0.0.dev0
+ * #262: Add a "default_actions" option that supports disabling default actions when borgmatic is
+   run without any command-line arguments.
  * #345: Add a "key import" action to import a repository key from backup.
  * #422: Add home directory expansion to file-based and KeePassXC credential hooks.
  * #610: Add a "recreate" action for recreating archives, for instance for retroactively excluding
