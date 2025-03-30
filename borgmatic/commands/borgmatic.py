@@ -961,9 +961,7 @@ def check_and_show_help_on_no_args(configs):
     default backup behavior.
     """
     if len(sys.argv) == 1:  # No arguments provided
-        default_actions = any(
-            config.get('default_actions', True) for config in configs.values()
-        )
+        default_actions = any(config.get('default_actions', True) for config in configs.values())
         if not default_actions:
             parse_arguments('--help')
             sys.exit(0)
