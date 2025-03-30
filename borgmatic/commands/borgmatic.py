@@ -955,11 +955,11 @@ def exit_with_help_link():  # pragma: no cover
 
 
 def check_and_show_help_on_no_args(configs):
-    """
-    Check if the 'borgmatic' command is run without any arguments. If the configuration option
-    'default_actions' is set to False, show the help message. Otherwise, trigger the
-    default backup behavior.
-    """
+    '''
+    Check if the borgmatic command is run without any arguments. If the configuration option
+    "default_actions" is set to False, show the help message. Otherwise, trigger the default backup
+    behavior.
+    '''
     if len(sys.argv) == 1:  # No arguments provided
         default_actions = any(config.get('default_actions', True) for config in configs.values())
         if not default_actions:
