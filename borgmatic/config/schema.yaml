@@ -2685,3 +2685,11 @@ properties:
                 example: /usr/local/bin/keepassxc-cli
         description: |
             Configuration for integration with the KeePassXC password manager.
+    default_actions:
+        type: boolean
+        description: |
+            Whether to apply default actions (e.g., backup) when no arguments
+            are supplied to the borgmatic command. If set to true, borgmatic
+            will trigger the default actions(create, prune, compact and check).
+            If set to false, borgmatic will display the help message instead.
+        example: true
