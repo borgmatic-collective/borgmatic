@@ -2683,6 +2683,16 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
+            key_file:
+                type: string
+                description: |
+                    Path to a key file for unlocking the KeePassXC database.
+                example: /path/to/keyfile
+            yubikey:
+                type: boolean
+                description: |
+                    Whether to use a YubiKey for unlocking the KeePassXC database.
+                example: true
         description: |
             Configuration for integration with the KeePassXC password manager.
     default_actions:
