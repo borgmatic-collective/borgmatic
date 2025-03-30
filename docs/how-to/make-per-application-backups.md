@@ -482,16 +482,83 @@ applications, but then set the repository for each application at runtime. Or
 you might want to try a variant of an option for testing purposes without
 actually touching your configuration file.
 
+<span class="minilink minilink-addedin">New in version 2.0.0</span>
 Whatever the reason, you can override borgmatic configuration options at the
-command-line via the `--override` flag. Here's an example:
+command-line, as there's a command-line flag corresponding to every
+configuration option (with its underscores converted to dashes).
+
+For instance, to override the `compression` configuration option, use the
+corresponding `--compression` flag on the command-line:
+
+```bash
+borgmatic create --compression zstd
+```
+
+What this does is load your given configuration files and for each one, disregard
+the configured value for the `compression` option and use the value given on the
+command-line instead—but just for the duration of the borgmatic run.
+
+You can override nested configuration options too by separating such option
+names with a period. For instance:
+
+```bash
+borgmatic create --bootstrap.store-config-files false
+```
+
+You can even set complex option data structures by using inline YAML syntax. For
+example, set the `repositories` option with a YAML list of key/value pairs:
+
+```bash
+borgmatic create --repositories "[{path: /mnt/backup, label: local}]"
+```
+
+If your override value contains characters like colons or spaces, then you'll
+need to use quotes for it to parse correctly.
+
+You can also set individual nested options within existing list elements:
+
+```bash
+borgmatic create --repositories[0].path /mnt/backup
+```
+
+This updates the `path` option for the first repository in `repositories`.
+Change the `[0]` index as needed to address different list elements. And note
+that this only works for elements already set in configuration; you can't append
+new list elements from the command-line.
+
+See the [command-line reference
+documentation](https://torsion.org/borgmatic/docs/reference/command-line/) for
+the full set of available arguments, including examples of each for the complex
+values.
+
+There are a handful of configuration options that don't have corresponding
+command-line flags at the global scope, but instead have flags within individual
+borgmatic actions. For instance, the `list_details` option can be overridden by
+the `--list` flag that's only present on particular actions. Similarly with
+`progress` and `--progress`, `statistics` and `--stats`, and `match_archives`
+and `--match-archives`.
+
+An alternate to command-line overrides is passing in your values via
+[environment
+variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
+
+
+### Deprecated overrides
+
+<span class="minilink minilink-addedin">Prior to version 2.0.0</span>
+Configuration overrides were performed with an `--override` flag. You can still
+use `--override` with borgmatic 2.0.0+, but it's deprecated in favor of the new
+command-line flags described above.
+
+Here's an example of `--override`:
 
 ```bash
 borgmatic create --override remote_path=/usr/local/bin/borg1
 ```
 
-What this does is load your configuration files and for each one, disregard
-the configured value for the `remote_path` option and use the value of
-`/usr/local/bin/borg1` instead.
+What this does is load your given configuration files and for each one, disregard
+the configured value for the `remote_path` option and use the value given on the
+command-line instead—but just for the duration of the borgmatic run.
 
 You can even override nested values or multiple values at once. For instance:
 
@@ -539,10 +606,6 @@ type (like `location.repositories`). See the [configuration
 reference](https://torsion.org/borgmatic/docs/reference/configuration/) for
 which options are list types. (YAML list values look like `- this` with an
 indentation and a leading dash.)
-
-An alternate to command-line overrides is passing in your values via
-[environment
-variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
 
 
 ## Constant interpolation
