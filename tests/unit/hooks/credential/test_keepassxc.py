@@ -181,3 +181,43 @@ def test_load_credential_with_yubikey():
         )
         == 'password'
     )
+
+
+def test_load_credential_with_key_file_and_yubikey():
+    flexmock(module.os.path).should_receive('expanduser').with_args('database.kdbx').and_return(
+        'database.kdbx'
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(
+        (
+            'keepassxc-cli',
+            'show',
+            '--show-protected',
+            '--attributes',
+            'Password',
+            'database.kdbx',
+            'mypassword',
+            '--key-file',
+            '/path/to/keyfile',
+            '--yubikey',
+        )
+    ).and_return(
+        'password'
+    ).once()
+
+    assert (
+        module.load_credential(
+            hook_config={},
+            config={},
+            credential_parameters=(
+                'database.kdbx',
+                'mypassword',
+                '--key-file',
+                '/path/to/keyfile',
+                '--yubikey',
+            ),
+        )
+        == 'password'
+    )
