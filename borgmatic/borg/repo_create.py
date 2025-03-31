@@ -24,7 +24,7 @@ def create_repository(
     copy_crypt_key=False,
     append_only=None,
     storage_quota=None,
-    make_parent_dirs=False,
+    make_parent_directories=False,
     local_path='borg',
     remote_path=None,
 ):
@@ -79,7 +79,7 @@ def create_repository(
         + (('--copy-crypt-key',) if copy_crypt_key else ())
         + (('--append-only',) if append_only else ())
         + (('--storage-quota', storage_quota) if storage_quota else ())
-        + (('--make-parent-dirs',) if make_parent_dirs else ())
+        + (('--make-parent-dirs',) if make_parent_directories else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--log-json',) if global_arguments.log_json else ())

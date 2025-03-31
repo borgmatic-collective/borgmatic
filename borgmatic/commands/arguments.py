@@ -666,6 +666,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     repo_create_group.add_argument(
         '--append-only',
+        default=None,
         action='store_true',
         help='Create an append-only repository',
     )
@@ -675,6 +676,8 @@ def make_parsers(schema, unparsed_arguments):
     )
     repo_create_group.add_argument(
         '--make-parent-dirs',
+        dest='make_parent_directories',
+        default=None,
         action='store_true',
         help='Create any missing parent directories of the repository directory',
     )

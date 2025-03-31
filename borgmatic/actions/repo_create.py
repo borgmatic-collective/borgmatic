@@ -52,9 +52,9 @@ def run_repo_create(
             else repo_create_arguments.storage_quota
         ),
         (
-            repository.get('make_parent_dirs')
-            if repo_create_arguments.make_parent_dirs is None
-            else repo_create_arguments.make_parent_dirs
+            repository.get('make_parent_directories')
+            if repo_create_arguments.make_parent_directories is None
+            else repo_create_arguments.make_parent_directories
         ),
         local_path=local_path,
         remote_path=remote_path,

@@ -15,7 +15,7 @@ def test_run_repo_create_with_encryption_mode_argument_does_not_raise():
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
         storage_quota=flexmock(),
-        make_parent_dirs=flexmock(),
+        make_parent_directories=flexmock(),
     )
 
     module.run_repo_create(
@@ -40,7 +40,7 @@ def test_run_repo_create_with_encryption_mode_option_does_not_raise():
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
         storage_quota=flexmock(),
-        make_parent_dirs=flexmock(),
+        make_parent_directories=flexmock(),
     )
 
     module.run_repo_create(
@@ -65,7 +65,7 @@ def test_run_repo_create_without_encryption_mode_raises():
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
         storage_quota=flexmock(),
-        make_parent_dirs=flexmock(),
+        make_parent_directories=flexmock(),
     )
 
     with pytest.raises(ValueError):
@@ -93,7 +93,7 @@ def test_run_repo_create_bails_if_repository_does_not_match():
         copy_crypt_key=flexmock(),
         append_only=flexmock(),
         storage_quota=flexmock(),
-        make_parent_dirs=flexmock(),
+        make_parent_directories=flexmock(),
     )
 
     module.run_repo_create(
@@ -121,7 +121,7 @@ def test_run_repo_create_favors_flags_over_config():
         object,
         append_only=False,
         storage_quota=0,
-        make_parent_dirs=False,
+        make_parent_directories=False,
         local_path=object,
         remote_path=object,
     ).once()
@@ -132,7 +132,7 @@ def test_run_repo_create_favors_flags_over_config():
         copy_crypt_key=flexmock(),
         append_only=False,
         storage_quota=0,
-        make_parent_dirs=False,
+        make_parent_directories=False,
     )
 
     module.run_repo_create(
@@ -140,7 +140,7 @@ def test_run_repo_create_favors_flags_over_config():
             'path': 'repo',
             'append_only': True,
             'storage_quota': '10G',
-            'make_parent_dirs': True,
+            'make_parent_directories': True,
         },
         config={},
         local_borg_version=None,
@@ -165,7 +165,7 @@ def test_run_repo_create_defaults_to_config():
         object,
         append_only=True,
         storage_quota='10G',
-        make_parent_dirs=True,
+        make_parent_directories=True,
         local_path=object,
         remote_path=object,
     ).once()
@@ -176,7 +176,7 @@ def test_run_repo_create_defaults_to_config():
         copy_crypt_key=flexmock(),
         append_only=None,
         storage_quota=None,
-        make_parent_dirs=None,
+        make_parent_directories=None,
     )
 
     module.run_repo_create(
@@ -184,7 +184,7 @@ def test_run_repo_create_defaults_to_config():
             'path': 'repo',
             'append_only': True,
             'storage_quota': '10G',
-            'make_parent_dirs': True,
+            'make_parent_directories': True,
         },
         config={},
         local_borg_version=None,

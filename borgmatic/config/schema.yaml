@@ -33,6 +33,7 @@ properties:
             type: object
             required:
                 - path
+            additionalProperties: false
             properties:
                 path:
                     type: string
@@ -67,7 +68,7 @@ properties:
                         only used for the repo-create action. Defaults to no
                         quota.
                     example: 5G
-                make_parent_dirs:
+                make_parent_directories:
                     type: boolean
                     description: |
                         Whether any missing parent directories of the repository
@@ -1187,6 +1188,7 @@ properties:
               run: [echo Backing up.]
     bootstrap:
         type: object
+        additionalProperties: false
         properties:
             store_config_files:
                 type: boolean
@@ -1918,6 +1920,7 @@ properties:
                 example: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1941,6 +1944,7 @@ properties:
                         example: incoming_envelope
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1964,6 +1968,7 @@ properties:
                         example: incoming_envelope
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2022,6 +2027,7 @@ properties:
                 example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -2097,6 +2103,7 @@ properties:
                         example: Pushover Link
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -2172,6 +2179,7 @@ properties:
                         example: Pushover Link
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -2311,6 +2319,7 @@ properties:
                 example: fakekey
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2319,6 +2328,7 @@ properties:
                         example: STARTED
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2327,6 +2337,7 @@ properties:
                         example: FINISH
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2358,6 +2369,7 @@ properties:
                 type: array
                 items:
                     type: object
+                    additionalProperties: false
                     required:
                         - url
                         - label
@@ -2399,6 +2411,7 @@ properties:
             start:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2414,6 +2427,7 @@ properties:
             finish:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2429,6 +2443,7 @@ properties:
             fail:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2444,6 +2459,7 @@ properties:
             log:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
