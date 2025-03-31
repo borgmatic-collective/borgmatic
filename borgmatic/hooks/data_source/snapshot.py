@@ -32,7 +32,7 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     if not candidate_patterns:
         return ()
 
-    parent_device = os.stat(parent_directory).st_dev
+    parent_device = os.stat(parent_directory).st_dev if os.path.exists(parent_directory) else None
 
     contained_patterns = tuple(
         candidate
