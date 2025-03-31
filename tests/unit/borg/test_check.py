@@ -155,22 +155,6 @@ def test_make_archive_filter_flags_with_data_check_and_prefix_includes_match_arc
     assert flags == ('--match-archives', 'sh:foo-*')
 
 
-def test_make_archive_filter_flags_prefers_check_arguments_match_archives_to_config_match_archives():
-    flexmock(module.feature).should_receive('available').and_return(True)
-    flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
-        'baz-*', None, '1.2.3'
-    ).and_return(('--match-archives', 'sh:baz-*'))
-
-    flags = module.make_archive_filter_flags(
-        '1.2.3',
-        {'match_archives': 'bar-{now}', 'prefix': ''},  # noqa: FS003
-        ('archives',),
-        check_arguments=flexmock(match_archives='baz-*'),
-    )
-
-    assert flags == ('--match-archives', 'sh:baz-*')
-
-
 def test_make_archive_filter_flags_with_archives_check_and_empty_prefix_uses_archive_name_format_instead():
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_match_archives_flags').with_args(
@@ -331,42 +315,7 @@ def test_get_repository_id_with_missing_json_keys_raises():
         )
 
 
-def test_check_archives_favors_progress_flag_over_config():
-    config = {'progress': False}
-    flexmock(module).should_receive('make_check_name_flags').with_args(
-        {'repository'}, ()
-    ).and_return(())
-    flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    flexmock(module.environment).should_receive('make_environment')
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
-    flexmock(module).should_receive('execute_command').with_args(
-        ('borg', 'check', '--progress', 'repo'),
-        output_file=module.DO_NOT_CAPTURE,
-        environment=None,
-        working_directory=None,
-        borg_local_path='borg',
-        borg_exit_codes=None,
-    ).once()
-
-    module.check_archives(
-        repository_path='repo',
-        config=config,
-        local_borg_version='1.2.3',
-        check_arguments=flexmock(
-            progress=True,
-            repair=None,
-            only_checks=None,
-            force=None,
-            match_archives=None,
-            max_duration=None,
-        ),
-        global_arguments=flexmock(log_json=False),
-        checks={'repository'},
-        archive_filter_flags=(),
-    )
-
-
-def test_check_archives_defaults_to_progress_config():
+def test_check_archives_with_progress_passes_through_to_borg():
     config = {'progress': True}
     flexmock(module).should_receive('make_check_name_flags').with_args(
         {'repository'}, ()

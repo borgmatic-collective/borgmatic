@@ -271,11 +271,11 @@ def test_parse_arguments_with_no_actions_passes_argument_to_relevant_actions():
     arguments = module.parse_arguments({}, '--stats', '--list')
 
     assert 'prune' in arguments
-    assert arguments['prune'].stats
-    assert arguments['prune'].list_archives
+    assert arguments['prune'].statistics
+    assert arguments['prune'].list_details
     assert 'create' in arguments
-    assert arguments['create'].stats
-    assert arguments['create'].list_files
+    assert arguments['create'].statistics
+    assert arguments['create'].list_details
     assert 'check' in arguments
 
 
@@ -557,20 +557,6 @@ def test_parse_arguments_with_list_flag_but_no_relevant_action_raises_value_erro
         module.parse_arguments({}, '--list', 'repo-create')
 
 
-def test_parse_arguments_disallows_list_with_progress_for_create_action():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments({}, 'create', '--list', '--progress')
-
-
-def test_parse_arguments_disallows_list_with_json_for_create_action():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments({}, 'create', '--list', '--json')
-
-
 def test_parse_arguments_allows_json_with_list_or_info():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
@@ -597,22 +583,6 @@ def test_parse_arguments_disallows_json_with_both_repo_info_and_info():
 
     with pytest.raises(ValueError):
         module.parse_arguments({}, 'repo-info', 'info', '--json')
-
-
-def test_parse_arguments_disallows_transfer_with_both_archive_and_match_archives():
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
-
-    with pytest.raises(ValueError):
-        module.parse_arguments(
-            {},
-            'transfer',
-            '--source-repository',
-            'source.borg',
-            '--archive',
-            'foo',
-            '--match-archives',
-            'sh:*bar',
-        )
 
 
 def test_parse_arguments_disallows_list_with_both_prefix_and_match_archives():

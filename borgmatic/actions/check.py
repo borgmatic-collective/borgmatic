@@ -372,7 +372,7 @@ def collect_spot_check_source_paths(
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],
-            config=config,
+            config=dict(config, list_details=True),
             patterns=borgmatic.actions.create.process_patterns(
                 borgmatic.actions.create.collect_patterns(config),
                 working_directory,
@@ -382,7 +382,6 @@ def collect_spot_check_source_paths(
             borgmatic_runtime_directory=borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            list_files=True,
             stream_processes=stream_processes,
         )
     )

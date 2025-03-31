@@ -127,5 +127,4 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         extract_to_stdout=False,
         destination_path=bootstrap_arguments.destination,
         strip_components=bootstrap_arguments.strip_components,
-        progress=bootstrap_arguments.progress,
     )

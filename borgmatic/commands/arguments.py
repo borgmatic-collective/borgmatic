@@ -709,7 +709,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     transfer_group.add_argument(
         '--progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress as each archive is transferred',
     )
@@ -776,13 +776,17 @@ def make_parsers(schema, unparsed_arguments):
     )
     prune_group.add_argument(
         '--stats',
-        dest='stats',
-        default=False,
+        dest='statistics',
+        default=None,
         action='store_true',
         help='Display statistics of the pruned archive [Borg 1 only]',
     )
     prune_group.add_argument(
-        '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
+        '--list',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='List archives kept/pruned',
     )
     prune_group.add_argument(
         '--oldest',
@@ -820,8 +824,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     compact_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress as each segment is compacted',
     )
@@ -835,7 +838,7 @@ def make_parsers(schema, unparsed_arguments):
     compact_group.add_argument(
         '--threshold',
         type=int,
-        dest='threshold',
+        dest='compact_threshold',
         help='Minimum saved space percentage threshold for compacting a segment, defaults to 10',
     )
     compact_group.add_argument(
@@ -856,20 +859,24 @@ def make_parsers(schema, unparsed_arguments):
     )
     create_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is backed up',
     )
     create_group.add_argument(
         '--stats',
-        dest='stats',
-        default=False,
+        dest='statistics',
+        default=None,
         action='store_true',
         help='Display statistics of archive',
     )
     create_group.add_argument(
-        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
+        '--list',
+        '--files',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
     )
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
@@ -890,8 +897,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     check_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is checked',
     )
@@ -948,12 +954,15 @@ def make_parsers(schema, unparsed_arguments):
     )
     delete_group.add_argument(
         '--list',
-        dest='list_archives',
+        dest='list_details',
+        default=None,
         action='store_true',
         help='Show details for the deleted archives',
     )
     delete_group.add_argument(
         '--stats',
+        dest='statistics',
+        default=None,
         action='store_true',
         help='Display statistics for the deleted archives',
     )
@@ -1058,8 +1067,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     extract_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is extracted',
     )
@@ -1134,8 +1142,7 @@ def make_parsers(schema, unparsed_arguments):
     )
     config_bootstrap_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is extracted',
     )
@@ -1228,7 +1235,12 @@ def make_parsers(schema, unparsed_arguments):
         '--tar-filter', help='Name of filter program to pipe data through'
     )
     export_tar_group.add_argument(
-        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
+        '--list',
+        '--files',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
     )
     export_tar_group.add_argument(
         '--strip-components',
@@ -1339,7 +1351,8 @@ def make_parsers(schema, unparsed_arguments):
     )
     repo_delete_group.add_argument(
         '--list',
-        dest='list_archives',
+        dest='list_details',
+        default=None,
         action='store_true',
         help='Show details for the archives in the given repository',
     )
@@ -1770,7 +1783,11 @@ def make_parsers(schema, unparsed_arguments):
         help='Archive name, hash, or series to recreate',
     )
     recreate_group.add_argument(
-        '--list', dest='list', action='store_true', help='Show per-file details'
+        '--list',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
     )
     recreate_group.add_argument(
         '--target',
@@ -1865,30 +1882,12 @@ def parse_arguments(schema, *unparsed_arguments):
             f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
         )
 
-    if 'create' in arguments and arguments['create'].list_files and arguments['create'].progress:
-        raise ValueError(
-            'With the create action, only one of --list (--files) and --progress flags can be used.'
-        )
-    if 'create' in arguments and arguments['create'].list_files and arguments['create'].json:
-        raise ValueError(
-            'With the create action, only one of --list (--files) and --json flags can be used.'
-        )
-
     if (
         ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
         raise ValueError('With the --json flag, multiple actions cannot be used together.')
-
-    if (
-        'transfer' in arguments
-        and arguments['transfer'].archive
-        and arguments['transfer'].match_archives
-    ):
-        raise ValueError(
-            'With the transfer action, only one of --archive and --match-archives flags can be used.'
-        )
 
     if 'list' in arguments and (arguments['list'].prefix and arguments['list'].match_archives):
         raise ValueError(

@@ -44,7 +44,6 @@ def test_run_extract_favors_flags_over_config():
         remote_path=object,
         destination_path=object,
         strip_components=object,
-        progress=False,
     ).once()
     extract_arguments = flexmock(
         paths=flexmock(),
@@ -83,7 +82,6 @@ def test_run_extract_defaults_to_config():
         remote_path=object,
         destination_path=object,
         strip_components=object,
-        progress=True,
     ).once()
     extract_arguments = flexmock(
         paths=flexmock(),

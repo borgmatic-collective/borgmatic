@@ -160,15 +160,16 @@ def prepare_arguments_for_config(global_arguments, schema):
     return tuple(prepared_values)
 
 
-def apply_arguments_to_config(config, schema, global_arguments):  # pragma: no cover
+def apply_arguments_to_config(config, schema, arguments):
     '''
-    Given a configuration dict, a corresponding configuration schema dict, and global arguments as
-    an argparse.Namespace, set those given argument values into their corresponding configuration
-    options in the configuration dict.
+    Given a configuration dict, a corresponding configuration schema dict, and arguments as a dict
+    from action name to argparse.Namespace, set those given argument values into their corresponding
+    configuration options in the configuration dict.
 
     This supports argument flags of the from "--foo.bar.baz" where each dotted component is a nested
     configuration object. Additionally, flags like "--foo.bar[0].baz" are supported to update a list
     element in the configuration.
     '''
-    for keys, value in prepare_arguments_for_config(global_arguments, schema):
-        set_values(config, keys, value)
+    for action_arguments in arguments.values():
+        for keys, value in prepare_arguments_for_config(action_arguments, schema):
+            set_values(config, keys, value)

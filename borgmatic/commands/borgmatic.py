@@ -600,14 +600,14 @@ def run_actions(
                     )
 
 
-def load_configurations(config_filenames, global_arguments, overrides=None, resolve_env=True):
+def load_configurations(config_filenames, arguments, overrides=None, resolve_env=True):
     '''
-    Given a sequence of configuration filenames, global arguments as an argparse.Namespace, a
-    sequence of configuration file override strings in the form of "option.suboption=value", and
-    whether to resolve environment variables, load and validate each configuration file. Return the
-    results as a tuple of: dict of configuration filename to corresponding parsed configuration, a
-    sequence of paths for all loaded configuration files (including includes), and a sequence of
-    logging.LogRecord instances containing any parse errors.
+    Given a sequence of configuration filenames, arguments as a dict from action name to
+    argparse.Namespace, a sequence of configuration file override strings in the form of
+    "option.suboption=value", and whether to resolve environment variables, load and validate each
+    configuration file. Return the results as a tuple of: dict of configuration filename to
+    corresponding parsed configuration, a sequence of paths for all loaded configuration files
+    (including includes), and a sequence of logging.LogRecord instances containing any parse errors.
 
     Log records are returned here instead of being logged directly because logging isn't yet
     initialized at this point! (Although with the Delayed_logging_handler now in place, maybe this
@@ -635,7 +635,7 @@ def load_configurations(config_filenames, global_arguments, overrides=None, reso
             configs[config_filename], paths, parse_logs = validate.parse_configuration(
                 config_filename,
                 validate.schema_filename(),
-                global_arguments,
+                arguments,
                 overrides,
                 resolve_env,
             )
@@ -1010,7 +1010,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, config_paths, parse_logs = load_configurations(
         config_filenames,
-        global_arguments,
+        arguments,
         global_arguments.overrides,
         resolve_env=global_arguments.resolve_env and not validate,
     )

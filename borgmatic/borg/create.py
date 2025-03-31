@@ -213,9 +213,7 @@ def make_base_create_command(
     borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
-    progress=False,
     json=False,
-    list_files=False,
     stream_processes=None,
 ):
     '''
@@ -293,7 +291,7 @@ def make_base_create_command(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--list', '--filter', list_filter_flags)
-            if list_files and not json and not progress
+            if config.get('list_details') and not json and not config.get('progress')
             else ()
         )
         + (('--dry-run',) if dry_run else ())
@@ -361,10 +359,7 @@ def create_archive(
     borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
-    progress=False,
-    stats=False,
     json=False,
-    list_files=False,
     stream_processes=None,
 ):
     '''
@@ -389,28 +384,26 @@ def create_archive(
         borgmatic_runtime_directory,
         local_path,
         remote_path,
-        progress,
         json,
-        list_files,
         stream_processes,
     )
 
     if json:
         output_log_level = None
-    elif list_files or (stats and not dry_run):
+    elif config.get('list_details') or (config.get('statistics') and not dry_run):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
-    output_file = DO_NOT_CAPTURE if progress else None
+    output_file = DO_NOT_CAPTURE if config.get('progress') else None
 
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
-        + (('--stats',) if stats and not json and not dry_run else ())
+        + (('--stats',) if config.get('statistics') and not json and not dry_run else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
-        + (('--progress',) if progress else ())
+        + (('--progress',) if config.get('progress') else ())
         + (('--json',) if json else ())
     )
     borg_exit_codes = config.get('borg_exit_codes')

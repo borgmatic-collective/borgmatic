@@ -59,7 +59,7 @@ def test_parse_configuration_transforms_file_into_mapping():
     )
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
     )
 
     assert config == {
@@ -89,7 +89,7 @@ def test_parse_configuration_passes_through_quoted_punctuation():
     )
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
     )
 
     assert config == {
@@ -123,7 +123,9 @@ def test_parse_configuration_with_schema_lacking_examples_does_not_raise():
         ''',
     )
 
-    module.parse_configuration('/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock())
+    module.parse_configuration(
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
+    )
 
 
 def test_parse_configuration_inlines_include_inside_deprecated_section():
@@ -150,7 +152,7 @@ def test_parse_configuration_inlines_include_inside_deprecated_section():
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
     )
 
     assert config == {
@@ -188,7 +190,7 @@ def test_parse_configuration_merges_include():
     builtins.should_receive('open').with_args('/tmp/include.yaml').and_return(include_file)
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
     )
 
     assert config == {
@@ -205,7 +207,7 @@ def test_parse_configuration_merges_include():
 def test_parse_configuration_raises_for_missing_config_file():
     with pytest.raises(FileNotFoundError):
         module.parse_configuration(
-            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+            '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
         )
 
 
@@ -219,7 +221,7 @@ def test_parse_configuration_raises_for_missing_schema_file():
 
     with pytest.raises(FileNotFoundError):
         module.parse_configuration(
-            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+            '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
         )
 
 
@@ -228,7 +230,7 @@ def test_parse_configuration_raises_for_syntax_error():
 
     with pytest.raises(ValueError):
         module.parse_configuration(
-            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+            '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
         )
 
 
@@ -243,7 +245,7 @@ def test_parse_configuration_raises_for_validation_error():
 
     with pytest.raises(module.Validation_error):
         module.parse_configuration(
-            '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+            '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
         )
 
 
@@ -263,7 +265,7 @@ def test_parse_configuration_applies_overrides():
     config, config_paths, logs = module.parse_configuration(
         '/tmp/config.yaml',
         '/tmp/schema.yaml',
-        global_arguments=flexmock(),
+        arguments={'global': flexmock()},
         overrides=['local_path=borg2'],
     )
 
@@ -293,7 +295,7 @@ def test_parse_configuration_applies_normalization_after_environment_variable_in
     flexmock(os).should_receive('getenv').replace_with(lambda variable_name, default: default)
 
     config, config_paths, logs = module.parse_configuration(
-        '/tmp/config.yaml', '/tmp/schema.yaml', global_arguments=flexmock()
+        '/tmp/config.yaml', '/tmp/schema.yaml', arguments={'global': flexmock()}
     )
 
     assert config == {

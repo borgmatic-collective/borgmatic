@@ -664,7 +664,7 @@ def test_make_repo_list_command_with_match_archives_calls_borg_with_match_archiv
 
     command = module.make_repo_list_command(
         repository_path='repo',
-        config={},
+        config={'match_archives': 'foo-*'},
         local_borg_version='1.2.3',
         repo_list_arguments=flexmock(
             archive=None,

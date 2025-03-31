@@ -38,9 +38,6 @@ def recreate_archive(
     patterns_file = write_patterns_file(
         patterns, borgmatic.config.paths.get_working_directory(config)
     )
-    list_files = (
-        config.get('list_details') if recreate_arguments.list is None else recreate_arguments.list
-    )
 
     recreate_command = (
         (local_path, 'recreate')
@@ -56,7 +53,7 @@ def recreate_archive(
                 '--filter',
                 make_list_filter_flags(local_borg_version, global_arguments.dry_run),
             )
-            if list_files
+            if config.get('list_details')
             else ()
         )
         # Flag --target works only for a single archive.
@@ -71,12 +68,10 @@ def recreate_archive(
         + (('--chunker-params', chunker_params) if chunker_params else ())
         + (
             flags.make_match_archives_flags(
-                recreate_arguments.match_archives or archive or config.get('match_archives'),
+                archive or config.get('match_archives'),
                 config.get('archive_name_format'),
                 local_borg_version,
             )
-            if recreate_arguments.match_archives
-            else ()
         )
         + (('--recompress', recompress) if recompress else ())
         + exclude_flags

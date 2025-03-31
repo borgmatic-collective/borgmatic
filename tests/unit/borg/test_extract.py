@@ -580,7 +580,7 @@ def test_extract_archive_with_strip_components_all_and_no_paths_raises():
         )
 
 
-def test_extract_archive_calls_borg_with_progress_parameter():
+def test_extract_archive_calls_borg_with_progress_flag():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -606,10 +606,9 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         repository='repo',
         archive='archive',
         paths=None,
-        config={},
+        config={'progress': True},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
-        progress=True,
     )
 
 
@@ -622,10 +621,9 @@ def test_extract_archive_with_progress_and_extract_to_stdout_raises():
             repository='repo',
             archive='archive',
             paths=None,
-            config={},
+            config={'progress': True},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
-            progress=True,
             extract_to_stdout=True,
         )
 

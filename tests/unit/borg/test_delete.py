@@ -21,7 +21,7 @@ def test_make_delete_command_includes_log_info():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -43,7 +43,7 @@ def test_make_delete_command_includes_log_debug():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -67,7 +67,7 @@ def test_make_delete_command_includes_dry_run():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=True, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -91,7 +91,7 @@ def test_make_delete_command_includes_remote_path():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path='borg1',
@@ -114,7 +114,7 @@ def test_make_delete_command_includes_umask():
         repository={'path': 'repo'},
         config={'umask': '077'},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -138,7 +138,7 @@ def test_make_delete_command_includes_log_json():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=True),
         local_path='borg',
         remote_path=None,
@@ -162,7 +162,7 @@ def test_make_delete_command_includes_lock_wait():
         repository={'path': 'repo'},
         config={'lock_wait': 5},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -171,31 +171,7 @@ def test_make_delete_command_includes_lock_wait():
     assert command == ('borg', 'delete', '--lock-wait', '5', 'repo')
 
 
-def test_make_delete_command_favors_list_flag_over_config():
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
-        'list', True
-    ).and_return(('--list',))
-    flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_flags_from_arguments').and_return(())
-    flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
-        ('repo',)
-    )
-
-    command = module.make_delete_command(
-        repository={'path': 'repo'},
-        config={'list_details': False},
-        local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=True, force=0, match_archives=None, archive=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
-        local_path='borg',
-        remote_path=None,
-    )
-
-    assert command == ('borg', 'delete', '--list', 'repo')
-
-
-def test_make_delete_command_defaults_to_list_config():
+def test_make_delete_command_with_list_config_calls_borg_with_list_flag():
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').and_return(())
     flexmock(module.borgmatic.borg.flags).should_receive('make_flags').with_args(
         'list', True
@@ -210,7 +186,7 @@ def test_make_delete_command_defaults_to_list_config():
         repository={'path': 'repo'},
         config={'list_details': True},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=None, force=0, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=None, force=0, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -231,7 +207,7 @@ def test_make_delete_command_includes_force():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=1, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=1, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -252,7 +228,7 @@ def test_make_delete_command_includes_force_twice():
         repository={'path': 'repo'},
         config={},
         local_borg_version='1.2.3',
-        delete_arguments=flexmock(list_archives=False, force=2, match_archives=None, archive=None),
+        delete_arguments=flexmock(list_details=False, force=2, match_archives=None, archive=None),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
         remote_path=None,
@@ -276,7 +252,7 @@ def test_make_delete_command_includes_archive():
         config={},
         local_borg_version='1.2.3',
         delete_arguments=flexmock(
-            list_archives=False, force=0, match_archives=None, archive='archive'
+            list_details=False, force=0, match_archives=None, archive='archive'
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -301,7 +277,7 @@ def test_make_delete_command_includes_match_archives():
         config={},
         local_borg_version='1.2.3',
         delete_arguments=flexmock(
-            list_archives=False, force=0, match_archives='sh:foo*', archive='archive'
+            list_details=False, force=0, match_archives='sh:foo*', archive='archive'
         ),
         global_arguments=flexmock(dry_run=False, log_json=False),
         local_path='borg',
@@ -390,7 +366,7 @@ def test_delete_archives_without_archive_related_argument_calls_borg_repo_delete
         config={},
         local_borg_version=flexmock(),
         delete_arguments=flexmock(
-            list_archives=True, force=False, cache_only=False, keep_security_info=False
+            list_details=True, force=False, cache_only=False, keep_security_info=False
         ),
         global_arguments=flexmock(),
     )

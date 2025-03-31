@@ -48,9 +48,7 @@ def make_info_command(
             if info_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    info_arguments.match_archives
-                    or info_arguments.archive
-                    or config.get('match_archives'),
+                    info_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )

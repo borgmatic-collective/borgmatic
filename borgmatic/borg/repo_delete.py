@@ -39,14 +39,14 @@ def make_repo_delete_command(
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + borgmatic.borg.flags.make_flags('log-json', global_arguments.log_json)
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
-        + borgmatic.borg.flags.make_flags('list', repo_delete_arguments.list_archives)
+        + borgmatic.borg.flags.make_flags('list', config.get('list_details'))
         + (
             (('--force',) + (('--force',) if repo_delete_arguments.force >= 2 else ()))
             if repo_delete_arguments.force
             else ()
         )
         + borgmatic.borg.flags.make_flags_from_arguments(
-            repo_delete_arguments, excludes=('list_archives', 'force', 'repository')
+            repo_delete_arguments, excludes=('list_details', 'force', 'repository')
         )
         + borgmatic.borg.flags.make_repository_flags(repository['path'], local_borg_version)
     )

@@ -13,7 +13,7 @@ def test_run_export_tar_does_not_raise():
         paths=flexmock(),
         destination=flexmock(),
         tar_filter=flexmock(),
-        list_files=flexmock(),
+        list_details=flexmock(),
         strip_components=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -44,7 +44,6 @@ def test_run_export_tar_favors_flags_over_config():
         local_path=object,
         remote_path=object,
         tar_filter=object,
-        list_files=False,
         strip_components=object,
     ).once()
     export_tar_arguments = flexmock(
@@ -53,7 +52,7 @@ def test_run_export_tar_favors_flags_over_config():
         paths=flexmock(),
         destination=flexmock(),
         tar_filter=flexmock(),
-        list_files=False,
+        list_details=False,
         strip_components=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -84,7 +83,6 @@ def test_run_export_tar_defaults_to_config():
         local_path=object,
         remote_path=object,
         tar_filter=object,
-        list_files=True,
         strip_components=object,
     ).once()
     export_tar_arguments = flexmock(
@@ -93,7 +91,7 @@ def test_run_export_tar_defaults_to_config():
         paths=flexmock(),
         destination=flexmock(),
         tar_filter=flexmock(),
-        list_files=None,
+        list_details=None,
         strip_components=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)

@@ -267,7 +267,6 @@ def test_run_bootstrap_does_not_raise():
         archive='archive',
         destination='dest',
         strip_components=1,
-        progress=False,
         user_runtime_directory='/borgmatic',
         ssh_command=None,
         local_path='borg7',
@@ -307,7 +306,6 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         archive='archive',
         destination='dest',
         strip_components=1,
-        progress=False,
         user_runtime_directory='/borgmatic',
         ssh_command='ssh -i key',
         local_path='borg7',
@@ -339,7 +337,6 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         extract_to_stdout=False,
         destination_path='dest',
         strip_components=1,
-        progress=False,
         local_path='borg7',
         remote_path='borg8',
     ).and_return(extract_process).once()

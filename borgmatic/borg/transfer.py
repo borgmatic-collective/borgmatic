@@ -40,9 +40,7 @@ def transfer_archives(
             )
             or (
                 flags.make_match_archives_flags(
-                    transfer_arguments.match_archives
-                    or transfer_arguments.archive
-                    or config.get('match_archives'),
+                    transfer_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )
@@ -52,16 +50,11 @@ def transfer_archives(
         + flags.make_flags('other-repo', transfer_arguments.source_repository)
         + flags.make_flags('dry-run', dry_run)
     )
-    progress = (
-        config.get('progress')
-        if transfer_arguments.progress is None
-        else transfer_arguments.progress
-    )
 
     return execute_command(
         full_command,
         output_log_level=logging.ANSWER,
-        output_file=DO_NOT_CAPTURE if progress else None,
+        output_file=DO_NOT_CAPTURE if config.get('progress') else None,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
