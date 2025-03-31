@@ -119,7 +119,9 @@ def run_bootstrap(bootstrap_arguments, global_arguments, local_borg_version):
         bootstrap_arguments.repository,
         archive_name,
         [config_path.lstrip(os.path.sep) for config_path in manifest_config_paths],
-        config,
+        # Only add progress here and not the extract_archive() call above, because progress
+        # conflicts with extract_to_stdout.
+        dict(config, progress=bootstrap_arguments.progress or False),
         local_borg_version,
         global_arguments,
         local_path=bootstrap_arguments.local_path,

@@ -105,7 +105,7 @@ def test_get_config_paths_translates_ssh_command_argument_to_config():
     flexmock(module.borgmatic.config.paths).should_receive(
         'get_borgmatic_source_directory'
     ).and_return('/source')
-    config = flexmock()
+    config = {}
     flexmock(module).should_receive('make_bootstrap_config').and_return(config)
     bootstrap_arguments = flexmock(
         repository='repo',
@@ -271,6 +271,7 @@ def test_run_bootstrap_does_not_raise():
         ssh_command=None,
         local_path='borg7',
         remote_path='borg8',
+        progress=None,
     )
     global_arguments = flexmock(
         dry_run=False,
@@ -298,7 +299,7 @@ def test_run_bootstrap_does_not_raise():
 
 
 def test_run_bootstrap_translates_ssh_command_argument_to_config():
-    config = flexmock()
+    config = {}
     flexmock(module).should_receive('make_bootstrap_config').and_return(config)
     flexmock(module).should_receive('get_config_paths').and_return(['/borgmatic/config.yaml'])
     bootstrap_arguments = flexmock(
@@ -310,6 +311,7 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         ssh_command='ssh -i key',
         local_path='borg7',
         remote_path='borg8',
+        progress=None,
     )
     global_arguments = flexmock(
         dry_run=False,
@@ -331,7 +333,7 @@ def test_run_bootstrap_translates_ssh_command_argument_to_config():
         'repo',
         'archive',
         object,
-        config,
+        {'progress': False},
         object,
         object,
         extract_to_stdout=False,
