@@ -1813,7 +1813,7 @@ def make_parsers(schema, unparsed_arguments):
         '--glob-archives',
         dest='match_archives',
         metavar='PATTERN',
-        help='Only consider archive names, hashes, or series matching this pattern',
+        help='Only consider archive names, hashes, or series matching this pattern [Borg 2.x+ only]',
     )
     recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

@@ -1,3 +1,4 @@
+import os
 import pathlib
 
 IS_A_HOOK = False
@@ -10,6 +11,10 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     very same directory, etc. The idea is if, say, /var/log and /var/lib are candidate pattern
     paths, but there's a parent directory (logical volume, dataset, subvolume, etc.) at /var, then
     /var is what we want to snapshot.
+
+    If a parent directory and a candidate pattern are on different devices, skip the pattern. That's
+    because any snapshot of a parent directory won't actually include "contained" directories if
+    they reside on separate devices.
 
     For this function to work, a candidate pattern path can't have any globs or other non-literal
     characters in the initial portion of the path that matches the parent directory. For instance, a
@@ -27,6 +32,8 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     if not candidate_patterns:
         return ()
 
+    parent_device = os.stat(parent_directory).st_dev if os.path.exists(parent_directory) else None
+
     contained_patterns = tuple(
         candidate
         for candidate in candidate_patterns
@@ -35,6 +42,7 @@ def get_contained_patterns(parent_directory, candidate_patterns):
             pathlib.PurePath(parent_directory) == candidate_path
             or pathlib.PurePath(parent_directory) in candidate_path.parents
         )
+        if candidate.device == parent_device
     )
     candidate_patterns -= set(contained_patterns)
 
