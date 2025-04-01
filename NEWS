@@ -31,6 +31,7 @@
    character.
  * #1048: Fix a "no such file or directory" error in ZFS, Btrfs, and LVM hooks with nested
    directories that reside on separate devices/filesystems.
+ * #1050: Fix a failure in the "spot" check when the archive contains a symlink.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
