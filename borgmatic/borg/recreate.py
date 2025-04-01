@@ -2,6 +2,7 @@ import logging
 import shlex
 
 import borgmatic.borg.environment
+import borgmatic.borg.feature
 import borgmatic.config.paths
 import borgmatic.execute
 from borgmatic.borg import flags
@@ -68,21 +69,25 @@ def recreate_archive(
         + (('--timestamp', recreate_arguments.timestamp) if recreate_arguments.timestamp else ())
         + (('--compression', compression) if compression else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
-        + (
-            flags.make_match_archives_flags(
-                recreate_arguments.match_archives or archive or config.get('match_archives'),
-                config.get('archive_name_format'),
-                local_borg_version,
-            )
-            if recreate_arguments.match_archives
-            else ()
-        )
         + (('--recompress', recompress) if recompress else ())
         + exclude_flags
         + (
-            flags.make_repository_archive_flags(repository, archive, local_borg_version)
-            if archive
-            else flags.make_repository_flags(repository, local_borg_version)
+            (
+                flags.make_repository_flags(repository, local_borg_version)
+                + flags.make_match_archives_flags(
+                    archive or config.get('match_archives'),
+                    config.get('archive_name_format'),
+                    local_borg_version,
+                )
+            )
+            if borgmatic.borg.feature.available(
+                borgmatic.borg.feature.Feature.SEPARATE_REPOSITORY_ARCHIVE, local_borg_version
+            )
+            else (
+                flags.make_repository_archive_flags(repository, archive, local_borg_version)
+                if archive
+                else flags.make_repository_flags(repository, local_borg_version)
+            )
         )
     )
 
