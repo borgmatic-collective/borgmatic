@@ -903,6 +903,7 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
@@ -943,6 +944,7 @@ def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes(
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', 'foo', 'bar'), working_directory=None).and_return(
@@ -983,6 +985,7 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
@@ -1023,6 +1026,7 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('/usr/local/bin/xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
@@ -1060,6 +1064,7 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
@@ -1067,6 +1072,42 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
         ['hash1 foo']
+    )
+
+    assert module.compare_spot_check_hashes(
+        repository={'path': 'repo'},
+        archive='archive',
+        config={
+            'checks': [
+                {
+                    'name': 'spot',
+                    'data_sample_percentage': 50,
+                },
+            ]
+        },
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        source_paths=('/foo', '/bar', '/baz', '/quux'),
+    ) == ('/bar',)
+
+
+def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
+    flexmock(module.random).should_receive('sample').replace_with(
+        lambda population, count: population[:count]
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        None,
+    )
+    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').with_args('/foo').and_return(False)
+    flexmock(module.os.path).should_receive('islink').with_args('/bar').and_return(True)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('xxh64sum', '/foo'), working_directory=None).and_return('hash1  /foo')
+    flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
+        ['hash1 foo', 'hash2 bar']
     )
 
     assert module.compare_spot_check_hashes(
@@ -1097,6 +1138,7 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
     )
     flexmock(module.os.path).should_receive('exists').with_args('/foo').and_return(True)
     flexmock(module.os.path).should_receive('exists').with_args('/bar').and_return(False)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo'), working_directory=None).and_return('hash1  /foo')
@@ -1132,6 +1174,7 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
         None,
     )
     flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
@@ -1178,6 +1221,7 @@ def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths
     )
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/foo').and_return(True)
     flexmock(module.os.path).should_receive('exists').with_args('/working/dir/bar').and_return(True)
+    flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).with_args(('xxh64sum', 'foo', 'bar'), working_directory='/working/dir').and_return(
