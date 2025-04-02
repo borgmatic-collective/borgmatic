@@ -2683,7 +2683,7 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
-            key-file:
+            key_file:
                 type: string
                 description: |
                     Path to a key file for unlocking the KeePassXC database.
