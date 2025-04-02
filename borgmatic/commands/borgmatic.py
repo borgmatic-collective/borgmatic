@@ -909,7 +909,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                     dict(
                         levelno=logging.INFO,
                         levelname='INFO',
-                        msg='Successfully ran configuration file',
+                        msg=f'{config_filename}: Successfully ran configuration file',
                     )
                 )
                 if results:
