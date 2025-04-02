@@ -590,6 +590,42 @@ def test_make_argument_description_without_description_bails():
     )
 
 
+def test_make_argument_description_with_object_adds_example():
+    buffer = flexmock()
+    buffer.should_receive('getvalue').and_return('{foo: example}')
+    flexmock(module.io).should_receive('StringIO').and_return(buffer)
+    yaml = flexmock()
+    yaml.should_receive('dump')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'object',
+                'example': {'foo': 'example'},
+            },
+            flag_name='flag',
+        )
+        == 'Thing. Example value: "{foo: example}"'
+    )
+
+
+def test_make_argument_description_with_object_skips_missing_example():
+    flexmock(module.ruamel.yaml).should_receive('YAML').never()
+
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'object',
+            },
+            flag_name='flag',
+        )
+        == 'Thing.'
+    )
+
+
 def test_make_argument_description_with_array_adds_example():
     buffer = flexmock()
     buffer.should_receive('getvalue').and_return('[example]')
@@ -612,9 +648,7 @@ def test_make_argument_description_with_array_adds_example():
 
 
 def test_make_argument_description_with_array_skips_missing_example():
-    yaml = flexmock()
-    yaml.should_receive('dump').and_return('[example]')
-    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+    flexmock(module.ruamel.yaml).should_receive('YAML').never()
 
     assert (
         module.make_argument_description(
@@ -951,12 +985,17 @@ def test_add_arguments_from_schema_with_empty_multi_type_raises():
         )
 
 
-def test_add_arguments_from_schema_with_propertyless_option_does_not_add_flag():
+def test_add_arguments_from_schema_with_propertyless_option_adds_flag():
     arguments_group = flexmock()
-    flexmock(module).should_receive('make_argument_description').never()
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').never()
-    arguments_group.should_receive('add_argument').never()
-    flexmock(module).should_receive('add_array_element_arguments').never()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        type=str,
+        metavar='FOO',
+        help='help',
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
 
     module.add_arguments_from_schema(
         arguments_group=arguments_group,

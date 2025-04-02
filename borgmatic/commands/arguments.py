@@ -307,7 +307,7 @@ def make_argument_description(schema, flag_name):
     if '[0]' in flag_name:
         description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
 
-    if example and schema_type == 'array':
+    if example and schema_type in ('array', 'object'):
         example_buffer = io.StringIO()
         yaml = ruamel.yaml.YAML(typ='safe')
         yaml.default_flow_style = True
@@ -453,13 +453,15 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     if schema_type == 'object':
         properties = schema.get('properties')
 
+        # If there are child properties, recurse for each one. But if there are no child properties,
+        # fall through so that a flag gets added below for the (empty) object.
         if properties:
             for name, child in properties.items():
                 add_arguments_from_schema(
                     arguments_group, child, unparsed_arguments, names + (name,)
                 )
 
-        return
+            return
 
     # If this is an "array" type, recurse for each items type child option. Don't return yet so that
     # a flag also gets added below for the array itself.
@@ -485,9 +487,9 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     metavar = names[-1].upper()
     description = make_argument_description(schema, flag_name)
 
-    # array=str instead of list here to support specifying a list as a YAML string on the
+    # The ...=str given here is to support specifying an object or an array as a YAML string on the
     # command-line.
-    argument_type = borgmatic.config.schema.parse_type(schema_type, array=str)
+    argument_type = borgmatic.config.schema.parse_type(schema_type, object=str, array=str)
     full_flag_name = f"--{flag_name.replace('_', '-')}"
 
     # As a UX nicety, allow boolean options that have a default of false to have command-line flags

@@ -4,6 +4,22 @@ from flexmock import flexmock
 from borgmatic.commands import arguments as module
 
 
+def test_make_argument_description_with_object_adds_example():
+    assert (
+        module.make_argument_description(
+            schema={
+                'description': 'Thing.',
+                'type': 'object',
+                'example': {'bar': 'baz'},
+            },
+            flag_name='flag',
+        )
+        # Apparently different versions of ruamel.yaml serialize this
+        # differently.
+        in ('Thing. Example value: "bar: baz"' 'Thing. Example value: "{bar: baz}"')
+    )
+
+
 def test_make_argument_description_with_array_adds_example():
     assert (
         module.make_argument_description(
