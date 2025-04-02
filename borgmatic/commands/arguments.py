@@ -288,7 +288,7 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-OMITTED_FLAG_NAMES = {'match_archives', 'progress', 'statistics', 'list_details'}
+OMITTED_FLAG_NAMES = {'match-archives', 'progress', 'statistics', 'list-details'}
 
 
 def make_argument_description(schema, flag_name):
@@ -359,9 +359,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
     if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
         return
 
-    pattern = re.compile(
-        fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.").replace("_", "-")}$'
-    )
+    pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
 
     try:
         # Find an existing list index flag (and its action) corresponding to the given flag name.
@@ -370,7 +368,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
             for action in arguments_group._group_actions
             for action_flag_name in action.option_strings
             if pattern.match(action_flag_name)
-            if f'--{flag_name.replace("_", "-")}'.startswith(action_flag_name)
+            if f'--{flag_name}'.startswith(action_flag_name)
         )
 
         # Based on the type of the action (e.g. argparse._StoreTrueAction), look up the corresponding
@@ -386,6 +384,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
 
     for unparsed in unparsed_arguments:
         unparsed_flag_name = unparsed.split('=', 1)[0]
+        destination_name = unparsed_flag_name.lstrip('-').replace('-', '_')
 
         if not pattern.match(unparsed_flag_name) or unparsed_flag_name == existing_flag_name:
             continue
@@ -395,7 +394,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
                 unparsed_flag_name,
                 action=action_registry_name,
                 default=argument_action.default,
-                dest=unparsed_flag_name.lstrip('-'),
+                dest=destination_name,
                 required=argument_action.nargs,
             )
         else:
@@ -404,7 +403,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
                 action=action_registry_name,
                 choices=argument_action.choices,
                 default=argument_action.default,
-                dest=unparsed_flag_name.lstrip('-'),
+                dest=destination_name,
                 nargs=argument_action.nargs,
                 required=argument_action.nargs,
                 type=argument_action.type,
@@ -488,7 +487,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                     names[:-1] + (f'{names[-1]}[0]',) + (name,),
                 )
 
-    flag_name = '.'.join(names)
+    flag_name = '.'.join(names).replace('_', '-')
 
     # Certain options already have corresponding flags on individual actions (like "create
     # --progress"), so don't bother adding them to the global flags.
@@ -501,7 +500,7 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     # The ...=str given here is to support specifying an object or an array as a YAML string on the
     # command-line.
     argument_type = borgmatic.config.schema.parse_type(schema_type, object=str, array=str)
-    full_flag_name = f"--{flag_name.replace('_', '-')}"
+    full_flag_name = f"--{flag_name}"
 
     # As a UX nicety, allow boolean options that have a default of false to have command-line flags
     # without values.

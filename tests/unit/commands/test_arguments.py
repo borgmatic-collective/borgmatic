@@ -899,7 +899,7 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_d
         action='store_stuff',
         choices=object,
         default=object,
-        dest='foo[25].val-and-stuff',
+        dest='foo[25].val_and_stuff',
         nargs=object,
         required=object,
         type=object,
@@ -908,7 +908,7 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_d
     module.add_array_element_arguments(
         arguments_group=arguments_group,
         unparsed_arguments=('--foo[25].val-and-stuff', 'fooval', '--bar[1].val', 'barval'),
-        flag_name='foo[0].val_and_stuff',
+        flag_name='foo[0].val-and-stuff',
     )
 
 
