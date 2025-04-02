@@ -25,29 +25,16 @@ def load_credential(hook_config, config, credential_parameters):
     if not os.path.exists(expanded_database_path):
         raise ValueError( f'KeePassXC database path does not exist: {database_path}')
     
-    # Retrieve key file and Yubikey options from config
-    key_file = hook_config.get('key_file')
-    yubikey = hook_config.get('yubikey')
-    
+     
     # Build the keepassxc-cli command
     command = (
         tuple(shlex.split((hook_config or {}).get('keepassxc_cli_command', 'keepassxc-cli')))
-        + (
-            'show',
-            '--show-protected',
-            '--attributes',
-            'Password',
-            expanded_database_path,
-            attribute_name,
-        )
+        + ('show', '--show-protected', '--attributes', 'Password')  
+        + (('--key-file', hook_config['key_file']) if 'key_file' in hook_config else ())  
+        + (('--yubikey', hook_config['yubikey']) if 'yubikey' in hook_config else ())  
+        + (expanded_database_path, attribute_name)  # Ensure database & entry are last  
     )
     
-    if key_file:
-        command += ('--key-file', key_file)
-    
-    if yubikey:
-        command += ('--yubikey', yubikey)
-
     try:
         return borgmatic.execute.execute_command_and_capture_output(command).rstrip(os.linesep)
     except Exception as e:

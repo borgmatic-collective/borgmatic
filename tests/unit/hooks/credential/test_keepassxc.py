@@ -132,10 +132,10 @@ def test_load_credential_with_key_file():
             '--show-protected',
             '--attributes',
             'Password',
-            'database.kdbx',
-            'mypassword',
             '--key-file',
             '/path/to/keyfile',
+            'database.kdbx',
+            'mypassword',  
         )
     ).and_return(
         'password'
@@ -165,10 +165,10 @@ def test_load_credential_with_yubikey():
             '--show-protected',
             '--attributes',
             'Password',
-            'database.kdbx',
-            'mypassword',
             '--yubikey',
             '/path/to/yubikey',
+            'database.kdbx',
+            'mypassword',
         )
     ).and_return(
         'password'
@@ -198,12 +198,12 @@ def test_load_credential_with_key_file_and_yubikey():
             '--show-protected',
             '--attributes',
             'Password',
-            'database.kdbx',
-            'mypassword',
             '--key-file',
             '/path/to/keyfile',
             '--yubikey',
             '/path/to/yubikey',
+            'database.kdbx',
+            'mypassword',
         )
     ).and_return(
         'password'
