@@ -39,6 +39,35 @@ def test_schema_to_sample_configuration_generates_config_map_with_examples():
     )
 
 
+def test_schema_to_sample_configuration_with_empty_object_generates_config_map_with_example():
+    schema = {
+        'type': 'object',
+        'example': {
+            'foo': 'Example 1',
+            'baz': 'Example 2',
+        },
+    }
+    flexmock(module.borgmatic.config.schema).should_receive('compare_types').and_return(False)
+    flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
+        'object', {'object'}
+    ).and_return(True)
+    flexmock(module.borgmatic.config.schema).should_receive('compare_types').with_args(
+        'string', module.SCALAR_SCHEMA_TYPES, match=all
+    ).and_return(True)
+    flexmock(module.borgmatic.config.schema).should_receive('get_properties').and_return({})
+    flexmock(module.ruamel.yaml.comments).should_receive('CommentedMap').replace_with(dict)
+    flexmock(module).should_receive('add_comments_to_configuration_object')
+
+    config = module.schema_to_sample_configuration(schema)
+
+    assert config == dict(
+        [
+            ('foo', 'Example 1'),
+            ('baz', 'Example 2'),
+        ]
+    )
+
+
 def test_schema_to_sample_configuration_generates_config_sequence_of_strings_with_example():
     flexmock(module.ruamel.yaml.comments).should_receive('CommentedSeq').replace_with(list)
     flexmock(module).should_receive('add_comments_to_configuration_sequence')

@@ -53,16 +53,21 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         if source_config and isinstance(source_config, list) and isinstance(source_config[0], dict):
             source_config = dict(collections.ChainMap(*source_config))
 
-        config = ruamel.yaml.comments.CommentedMap(
-            [
-                (
-                    field_name,
-                    schema_to_sample_configuration(
-                        sub_schema, (source_config or {}).get(field_name, {}), level + 1
-                    ),
-                )
-                for field_name, sub_schema in borgmatic.config.schema.get_properties(schema).items()
-            ]
+        config = (
+            ruamel.yaml.comments.CommentedMap(
+                [
+                    (
+                        field_name,
+                        schema_to_sample_configuration(
+                            sub_schema, (source_config or {}).get(field_name, {}), level + 1
+                        ),
+                    )
+                    for field_name, sub_schema in borgmatic.config.schema.get_properties(
+                        schema
+                    ).items()
+                ]
+            )
+            or example
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
         add_comments_to_configuration_object(
