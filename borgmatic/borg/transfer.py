@@ -32,11 +32,18 @@ def transfer_archives(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', config.get('lock_wait', None))
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
+        + flags.make_flags('progress', config.get('progress'))
         + (
             flags.make_flags_from_arguments(
                 transfer_arguments,
-                excludes=('repository', 'source_repository', 'archive', 'match_archives'),
+                excludes=(
+                    'repository',
+                    'source_repository',
+                    'archive',
+                    'match_archives',
+                    'progress',
+                ),
             )
             or (
                 flags.make_match_archives_flags(

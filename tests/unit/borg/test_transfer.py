@@ -440,8 +440,11 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('progress', True).and_return(
+        ('--progress',)
+    )
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--progress',))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
