@@ -2689,10 +2689,10 @@ properties:
                     Path to a key file for unlocking the KeePassXC database.
                 example: /path/to/keyfile
             yubikey:
-                type: boolean
+                type: string
                 description: |
-                    Whether to use a YubiKey for unlocking the KeePassXC database.
-                example: true
+                    Path or identifier for the YubiKey to use for unlocking the KeePassXC database.
+                example: /path/to/yubikey
         description: |
             Configuration for integration with the KeePassXC password manager.
     default_actions:
