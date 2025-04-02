@@ -880,6 +880,38 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_e
     )
 
 
+def test_add_array_element_arguments_adds_arguments_for_array_index_flags_with_dashes():
+    arguments_group = flexmock(
+        _group_actions=(
+            Group_action(
+                option_strings=('--foo[0].val-and-stuff',),
+                choices=flexmock(),
+                default=flexmock(),
+                nargs=flexmock(),
+                required=flexmock(),
+                type=flexmock(),
+            ),
+        ),
+        _registries={'action': {'store_stuff': Group_action}},
+    )
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo[25].val-and-stuff',
+        action='store_stuff',
+        choices=object,
+        default=object,
+        dest='foo[25].val-and-stuff',
+        nargs=object,
+        required=object,
+        type=object,
+    ).once()
+
+    module.add_array_element_arguments(
+        arguments_group=arguments_group,
+        unparsed_arguments=('--foo[25].val-and-stuff', 'fooval', '--bar[1].val', 'barval'),
+        flag_name='foo[0].val_and_stuff',
+    )
+
+
 def test_add_arguments_from_schema_with_non_dict_schema_bails():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').never()

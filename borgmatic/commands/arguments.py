@@ -359,7 +359,9 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
     if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
         return
 
-    pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+    pattern = re.compile(
+        fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.").replace("_", "-")}$'
+    )
 
     try:
         # Find an existing list index flag (and its action) corresponding to the given flag name.
@@ -368,7 +370,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
             for action in arguments_group._group_actions
             for action_flag_name in action.option_strings
             if pattern.match(action_flag_name)
-            if f'--{flag_name}'.startswith(action_flag_name)
+            if f'--{flag_name.replace("_", "-")}'.startswith(action_flag_name)
         )
 
         # Based on the type of the action (e.g. argparse._StoreTrueAction), look up the corresponding
@@ -388,16 +390,25 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
         if not pattern.match(unparsed_flag_name) or unparsed_flag_name == existing_flag_name:
             continue
 
-        arguments_group.add_argument(
-            unparsed_flag_name,
-            action=action_registry_name,
-            choices=argument_action.choices,
-            default=argument_action.default,
-            dest=unparsed_flag_name.lstrip('-'),
-            nargs=argument_action.nargs,
-            required=argument_action.nargs,
-            type=argument_action.type,
-        )
+        if action_registry_name in ('store_true', 'store_false'):
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                action=action_registry_name,
+                default=argument_action.default,
+                dest=unparsed_flag_name.lstrip('-'),
+                required=argument_action.nargs,
+            )
+        else:
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                action=action_registry_name,
+                choices=argument_action.choices,
+                default=argument_action.default,
+                dest=unparsed_flag_name.lstrip('-'),
+                nargs=argument_action.nargs,
+                required=argument_action.nargs,
+                type=argument_action.type,
+            )
 
 
 def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):

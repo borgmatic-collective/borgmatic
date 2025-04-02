@@ -51,12 +51,9 @@ def test_add_array_element_arguments_adds_arguments_for_array_index_flags():
     flexmock(arguments_group).should_receive('add_argument').with_args(
         '--foo[25].val',
         action='store_true',
-        choices=object,
-        default=object,
+        default=False,
         dest='foo[25].val',
-        nargs=object,
         required=object,
-        type=object,
     ).once()
 
     module.add_array_element_arguments(
