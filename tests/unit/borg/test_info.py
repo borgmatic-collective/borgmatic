@@ -380,7 +380,7 @@ def test_make_info_command_with_match_archives_flag_passes_through_to_command():
 
     command = module.make_info_command(
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}', 'match_archives': 'sh:foo-*'},  # noqa: FS003
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives='sh:foo-*'),

@@ -29,12 +29,13 @@ def interactive_console():
     return sys.stderr.isatty() and os.environ.get('TERM') != 'dumb'
 
 
-def should_do_markup(no_color, configs):
+def should_do_markup(configs, json_enabled):
     '''
-    Given the value of the command-line no-color argument, and a dict of configuration filename to
-    corresponding parsed configuration, determine if we should enable color marking up.
+    Given a dict of configuration filename to corresponding parsed configuration (which already have
+    any command-line overrides applied) and whether json is enabled, determine if we should enable
+    color marking up.
     '''
-    if no_color:
+    if json_enabled:
         return False
 
     if any(config.get('color', True) is False for config in configs.values()):

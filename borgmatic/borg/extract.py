@@ -77,7 +77,6 @@ def extract_archive(
     remote_path=None,
     destination_path=None,
     strip_components=None,
-    progress=False,
     extract_to_stdout=False,
 ):
     '''
@@ -92,8 +91,8 @@ def extract_archive(
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
 
-    if progress and extract_to_stdout:
-        raise ValueError('progress and extract_to_stdout cannot both be set')
+    if config.get('progress') and extract_to_stdout:
+        raise ValueError('progress and extract to stdout cannot both be set')
 
     if feature.available(feature.Feature.NUMERIC_IDS, local_borg_version):
         numeric_ids_flags = ('--numeric-ids',) if config.get('numeric_ids') else ()
@@ -128,7 +127,7 @@ def extract_archive(
         + (('--debug', '--list', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--strip-components', str(strip_components)) if strip_components else ())
-        + (('--progress',) if progress else ())
+        + (('--progress',) if config.get('progress') else ())
         + (('--stdout',) if extract_to_stdout else ())
         + flags.make_repository_archive_flags(
             # Make the repository path absolute so the destination directory used below via changing
@@ -148,7 +147,7 @@ def extract_archive(
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
-    if progress:
+    if config.get('progress'):
         return execute_command(
             full_command,
             output_file=DO_NOT_CAPTURE,

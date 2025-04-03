@@ -289,6 +289,16 @@ def run_create(
     ):
         return
 
+    if config.get('list_details') and config.get('progress'):
+        raise ValueError(
+            'With the create action, only one of --list/--files/list_details and --progress/progress can be used.'
+        )
+
+    if config.get('list_details') and create_arguments.json:
+        raise ValueError(
+            'With the create action, only one of --list/--files/list_details and --json can be used.'
+        )
+
     logger.info(f'Creating archive{dry_run_label}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
 
@@ -327,10 +337,7 @@ def run_create(
             borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            progress=create_arguments.progress,
-            stats=create_arguments.stats,
             json=create_arguments.json,
-            list_files=create_arguments.list_files,
             stream_processes=stream_processes,
         )
 

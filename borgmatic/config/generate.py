@@ -1,11 +1,11 @@
 import collections
 import io
-import itertools
 import os
 import re
 
 import ruamel.yaml
 
+import borgmatic.config.schema
 from borgmatic.config import load, normalize
 
 INDENT = 4
@@ -22,25 +22,7 @@ def insert_newline_before_comment(config, field_name):
     )
 
 
-def get_properties(schema):
-    '''
-    Given a schema dict, return its properties. But if it's got sub-schemas with multiple different
-    potential properties, returned their merged properties instead (interleaved so the first
-    properties of each sub-schema come first). The idea is that the user should see all possible
-    options even if they're not all possible together.
-    '''
-    if 'oneOf' in schema:
-        return dict(
-            item
-            for item in itertools.chain(
-                *itertools.zip_longest(
-                    *[sub_schema['properties'].items() for sub_schema in schema['oneOf']]
-                )
-            )
-            if item is not None
-        )
-
-    return schema['properties']
+SCALAR_SCHEMA_TYPES = {'string', 'boolean', 'integer', 'number'}
 
 
 def schema_to_sample_configuration(schema, source_config=None, level=0, parent_is_sequence=False):
@@ -54,37 +36,45 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
     schema_type = schema.get('type')
     example = schema.get('example')
 
-    if example is not None:
-        return example
-
-    if schema_type == 'array' or (isinstance(schema_type, list) and 'array' in schema_type):
+    if borgmatic.config.schema.compare_types(schema_type, {'array'}):
         config = ruamel.yaml.comments.CommentedSeq(
-            [
+            example
+            if borgmatic.config.schema.compare_types(
+                schema['items'].get('type'), SCALAR_SCHEMA_TYPES
+            )
+            else [
                 schema_to_sample_configuration(
                     schema['items'], source_config, level, parent_is_sequence=True
                 )
             ]
         )
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
-    elif schema_type == 'object' or (isinstance(schema_type, list) and 'object' in schema_type):
+    elif borgmatic.config.schema.compare_types(schema_type, {'object'}):
         if source_config and isinstance(source_config, list) and isinstance(source_config[0], dict):
             source_config = dict(collections.ChainMap(*source_config))
 
-        config = ruamel.yaml.comments.CommentedMap(
-            [
-                (
-                    field_name,
-                    schema_to_sample_configuration(
-                        sub_schema, (source_config or {}).get(field_name, {}), level + 1
-                    ),
-                )
-                for field_name, sub_schema in get_properties(schema).items()
-            ]
+        config = (
+            ruamel.yaml.comments.CommentedMap(
+                [
+                    (
+                        field_name,
+                        schema_to_sample_configuration(
+                            sub_schema, (source_config or {}).get(field_name, {}), level + 1
+                        ),
+                    )
+                    for field_name, sub_schema in borgmatic.config.schema.get_properties(
+                        schema
+                    ).items()
+                ]
+            )
+            or example
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
         add_comments_to_configuration_object(
             config, schema, source_config, indent=indent, skip_first=parent_is_sequence
         )
+    elif borgmatic.config.schema.compare_types(schema_type, SCALAR_SCHEMA_TYPES, match=all):
+        return example
     else:
         raise ValueError(f'Schema at level {level} is unsupported: {schema}')
 
@@ -189,7 +179,7 @@ def add_comments_to_configuration_sequence(config, schema, indent=0):
         return
 
     for field_name in config[0].keys():
-        field_schema = get_properties(schema['items']).get(field_name, {})
+        field_schema = borgmatic.config.schema.get_properties(schema['items']).get(field_name, {})
         description = field_schema.get('description')
 
         # No description to use? Skip it.
@@ -223,7 +213,7 @@ def add_comments_to_configuration_object(
         if skip_first and index == 0:
             continue
 
-        field_schema = get_properties(schema).get(field_name, {})
+        field_schema = borgmatic.config.schema.get_properties(schema).get(field_name, {})
         description = field_schema.get('description', '').strip()
 
         # If this isn't a default key, add an indicator to the comment flagging it to be commented

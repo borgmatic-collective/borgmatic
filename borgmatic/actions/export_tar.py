@@ -43,6 +43,5 @@ def run_export_tar(
             local_path=local_path,
             remote_path=remote_path,
             tar_filter=export_tar_arguments.tar_filter,
-            list_files=export_tar_arguments.list_files,
             strip_components=export_tar_arguments.strip_components,
         )

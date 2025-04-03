@@ -360,6 +360,11 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
             False,
         ),
         (
+            {'repositories': [{'path': None, 'label': 'foo'}]},
+            {'repositories': []},
+            False,
+        ),
+        (
             {'prefix': 'foo'},
             {'prefix': 'foo'},
             True,

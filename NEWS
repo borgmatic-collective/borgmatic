@@ -1,6 +1,16 @@
 2.0.0.dev0
+ * TL;DR: More flexible, completely revamped command hooks. All config options settable on the
+   command-line. Config option defaults for many command-line flags. New "key import" and "recreate"
+   actions. Almost everything is backwards compatible.
  * #262: Add a "default_actions" option that supports disabling default actions when borgmatic is
    run without any command-line arguments.
+ * #303: Deprecate the "--override" flag in favor of direct command-line flags for every borgmatic
+   configuration option. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides
+ * #303: Add configuration options that serve as defaults for some (but not all) command-line
+   action flags. For example, each entry in "repositories:" now has an "encryption" option that
+   applies to the "repo-create" action, serving as a default for the "--encryption" flag. See the
+   documentation for more information: https://torsion.org/borgmatic/docs/reference/configuration/
  * #345: Add a "key import" action to import a repository key from backup.
  * #422: Add home directory expansion to file-based and KeePassXC credential hooks.
  * #610: Add a "recreate" action for recreating archives, for instance for retroactively excluding
@@ -26,7 +36,7 @@
  * #1048: Fix a "no such file or directory" error in ZFS, Btrfs, and LVM hooks with nested
    directories that reside on separate devices/filesystems.
  * #1050: Fix a failure in the "spot" check when the archive contains a symlink.
- * #1051: Add configuration filename to "Successfully ran configuration file" log message.
+ * #1051: Add configuration filename to the "Successfully ran configuration file" log message.
 
 1.9.14
  * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the

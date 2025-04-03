@@ -113,7 +113,7 @@ def make_repo_list_command(
             if repo_list_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    repo_list_arguments.match_archives or config.get('match_archives'),
+                    config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )

@@ -9,7 +9,10 @@ def test_compact_actions_calls_hooks_for_configured_repository():
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').once()
     compact_arguments = flexmock(
-        repository=None, progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
+        repository=None,
+        progress=flexmock(),
+        cleanup_commits=flexmock(),
+        compact_threshold=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -34,7 +37,10 @@ def test_compact_runs_with_selected_repository():
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').once()
     compact_arguments = flexmock(
-        repository=flexmock(), progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
+        repository=flexmock(),
+        progress=flexmock(),
+        cleanup_commits=flexmock(),
+        compact_threshold=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -59,7 +65,10 @@ def test_compact_bails_if_repository_does_not_match():
     ).once().and_return(False)
     flexmock(module.borgmatic.borg.compact).should_receive('compact_segments').never()
     compact_arguments = flexmock(
-        repository=flexmock(), progress=flexmock(), cleanup_commits=flexmock(), threshold=flexmock()
+        repository=flexmock(),
+        progress=flexmock(),
+        cleanup_commits=flexmock(),
+        compact_threshold=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 

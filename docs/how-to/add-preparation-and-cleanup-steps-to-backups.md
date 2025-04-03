@@ -17,8 +17,8 @@ points as it runs.
 feature](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/)
 instead.)
 
-<span class="minilink minilink-addedin">New in version 2.0.0 (not yet
-released)</span> Command hooks are now configured via a list of `commands:` in
+<span class="minilink minilink-addedin">New in version 2.0.0 (**not yet
+released**)</span> Command hooks are now configured via a list of `commands:` in
 your borgmatic configuration file. For example:
 
 ```yaml

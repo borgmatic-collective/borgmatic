@@ -267,7 +267,7 @@ def test_recreate_with_log_json():
     )
 
 
-def test_recreate_with_list_filter_flags():
+def test_recreate_with_list_config_calls_borg_with_list_flag():
     flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
     flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
@@ -288,10 +288,10 @@ def test_recreate_with_list_filter_flags():
     module.recreate_archive(
         repository='repo',
         archive='archive',
-        config={},
+        config={'list_details': True},
         local_borg_version='1.2.3',
         recreate_arguments=flexmock(
-            list=True,
+            list=None,
             target=None,
             comment=None,
             timestamp=None,

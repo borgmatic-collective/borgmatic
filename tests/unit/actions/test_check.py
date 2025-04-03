@@ -577,7 +577,6 @@ def test_collect_spot_check_source_paths_parses_borg_output():
         borgmatic_runtime_directory='/run/borgmatic',
         local_path=object,
         remote_path=object,
-        list_files=True,
         stream_processes=True,
     ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -625,7 +624,6 @@ def test_collect_spot_check_source_paths_passes_through_stream_processes_false()
         borgmatic_runtime_directory='/run/borgmatic',
         local_path=object,
         remote_path=object,
-        list_files=True,
         stream_processes=False,
     ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -673,7 +671,6 @@ def test_collect_spot_check_source_paths_without_working_directory_parses_borg_o
         borgmatic_runtime_directory='/run/borgmatic',
         local_path=object,
         remote_path=object,
-        list_files=True,
         stream_processes=True,
     ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -721,7 +718,6 @@ def test_collect_spot_check_source_paths_skips_directories():
         borgmatic_runtime_directory='/run/borgmatic',
         local_path=object,
         remote_path=object,
-        list_files=True,
         stream_processes=True,
     ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
@@ -860,14 +856,13 @@ def test_collect_spot_check_source_paths_uses_working_directory():
     flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
         dry_run=True,
         repository_path='repo',
-        config=object,
+        config={'working_directory': '/working/dir', 'list_details': True},
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version=object,
         global_arguments=object,
         borgmatic_runtime_directory='/run/borgmatic',
         local_path=object,
         remote_path=object,
-        list_files=True,
         stream_processes=True,
     ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
     flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(

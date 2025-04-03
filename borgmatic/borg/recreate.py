@@ -23,18 +23,16 @@ def recreate_archive(
     patterns=None,
 ):
     '''
-    Given a local or remote repository path, an archive name, a configuration dict,
-    the local Borg version string, an argparse.Namespace of recreate arguments,
-    an argparse.Namespace of global arguments, optional local and remote Borg paths.
-
-    Executes the recreate command with the given arguments.
+    Given a local or remote repository path, an archive name, a configuration dict, the local Borg
+    version string, an argparse.Namespace of recreate arguments, an argparse.Namespace of global
+    arguments, optional local and remote Borg paths, executes the recreate command with the given
+    arguments.
     '''
-
     lock_wait = config.get('lock_wait', None)
     exclude_flags = make_exclude_flags(config)
     compression = config.get('compression', None)
     chunker_params = config.get('chunker_params', None)
-    # Available recompress MODES: 'if-different' (default), 'always', 'never'
+    # Available recompress MODES: "if-different", "always", "never" (default)
     recompress = config.get('recompress', None)
 
     # Write patterns to a temporary file and use that file with --patterns-from.
@@ -56,10 +54,10 @@ def recreate_archive(
                 '--filter',
                 make_list_filter_flags(local_borg_version, global_arguments.dry_run),
             )
-            if recreate_arguments.list
+            if config.get('list_details')
             else ()
         )
-        # Flag --target works only for a single archive
+        # Flag --target works only for a single archive.
         + (('--target', recreate_arguments.target) if recreate_arguments.target and archive else ())
         + (
             ('--comment', shlex.quote(recreate_arguments.comment))

@@ -631,12 +631,12 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
         config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
+            'list_details': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/run/borgmatic',
-        list_files=True,
     )
 
     assert create_flags == ('borg', 'create', '--list', '--filter', 'FOO')
@@ -962,7 +962,7 @@ def test_make_base_create_command_with_non_existent_directory_and_source_directo
         )
 
 
-def test_create_archive_calls_borg_with_parameters():
+def test_create_archive_calls_borg_with_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1029,7 +1029,7 @@ def test_create_archive_calls_borg_with_environment():
     )
 
 
-def test_create_archive_with_log_info_calls_borg_with_info_parameter():
+def test_create_archive_with_log_info_calls_borg_with_info_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1096,7 +1096,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
     )
 
 
-def test_create_archive_with_log_debug_calls_borg_with_debug_parameter():
+def test_create_archive_with_log_debug_calls_borg_with_debug_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1196,7 +1196,6 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        stats=True,
     )
 
 
@@ -1271,7 +1270,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
     )
 
 
-def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_output_log_level():
+def test_create_archive_with_stats_calls_borg_with_stats_flag_and_answer_output_log_level():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1296,12 +1295,12 @@ def test_create_archive_with_stats_calls_borg_with_stats_parameter_and_answer_ou
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'statistics': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        stats=True,
     )
 
 
@@ -1334,16 +1333,16 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'list_details': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        list_files=True,
     )
 
 
-def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_parameter_and_no_list():
+def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_flag_and_no_list():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1369,16 +1368,16 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_para
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'progress': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        progress=True,
     )
 
 
-def test_create_archive_with_progress_calls_borg_with_progress_parameter():
+def test_create_archive_with_progress_calls_borg_with_progress_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module).should_receive('make_base_create_command').and_return(
@@ -1403,16 +1402,16 @@ def test_create_archive_with_progress_calls_borg_with_progress_parameter():
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'progress': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        progress=True,
     )
 
 
-def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progress_parameter():
+def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progress_flag():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     processes = flexmock()
@@ -1459,12 +1458,12 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
             'exclude_patterns': None,
+            'progress': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
-        progress=True,
         stream_processes=processes,
     )
 
@@ -1532,7 +1531,6 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
         global_arguments=flexmock(log_json=False),
         borgmatic_runtime_directory='/borgmatic/run',
         json=True,
-        stats=True,
     )
 
     assert json_output == '[]'

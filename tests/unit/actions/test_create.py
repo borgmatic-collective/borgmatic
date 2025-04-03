@@ -443,9 +443,9 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
     create_arguments = flexmock(
         repository=None,
         progress=flexmock(),
-        stats=flexmock(),
+        statistics=flexmock(),
         json=False,
-        list_files=flexmock(),
+        list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -484,9 +484,9 @@ def test_run_create_runs_with_selected_repository():
     create_arguments = flexmock(
         repository=flexmock(),
         progress=flexmock(),
-        stats=flexmock(),
+        statistics=flexmock(),
         json=False,
-        list_files=flexmock(),
+        list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -516,9 +516,9 @@ def test_run_create_bails_if_repository_does_not_match():
     create_arguments = flexmock(
         repository=flexmock(),
         progress=flexmock(),
-        stats=flexmock(),
+        statistics=flexmock(),
         json=False,
-        list_files=flexmock(),
+        list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
@@ -536,6 +536,72 @@ def test_run_create_bails_if_repository_does_not_match():
             remote_path=None,
         )
     )
+
+
+def test_run_create_with_both_list_and_json_errors():
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
+    create_arguments = flexmock(
+        repository=flexmock(),
+        progress=flexmock(),
+        statistics=flexmock(),
+        json=True,
+        list_details=flexmock(),
+    )
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    with pytest.raises(ValueError):
+        list(
+            module.run_create(
+                config_filename='test.yaml',
+                repository={'path': 'repo'},
+                config={'list_details': True},
+                config_paths=['/tmp/test.yaml'],
+                local_borg_version=None,
+                create_arguments=create_arguments,
+                global_arguments=global_arguments,
+                dry_run_label='',
+                local_path=None,
+                remote_path=None,
+            )
+        )
+
+
+def test_run_create_with_both_list_and_progress_errors():
+    flexmock(module.logger).answer = lambda message: None
+    flexmock(module.borgmatic.config.validate).should_receive(
+        'repositories_match'
+    ).once().and_return(True)
+    flexmock(module.borgmatic.config.paths).should_receive('Runtime_directory').never()
+    flexmock(module.borgmatic.borg.create).should_receive('create_archive').never()
+    create_arguments = flexmock(
+        repository=flexmock(),
+        progress=flexmock(),
+        statistics=flexmock(),
+        json=False,
+        list_details=flexmock(),
+    )
+    global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
+
+    with pytest.raises(ValueError):
+        list(
+            module.run_create(
+                config_filename='test.yaml',
+                repository={'path': 'repo'},
+                config={'list_details': True, 'progress': True},
+                config_paths=['/tmp/test.yaml'],
+                local_borg_version=None,
+                create_arguments=create_arguments,
+                global_arguments=global_arguments,
+                dry_run_label='',
+                local_path=None,
+                remote_path=None,
+            )
+        )
 
 
 def test_run_create_produces_json():
@@ -561,9 +627,9 @@ def test_run_create_produces_json():
     create_arguments = flexmock(
         repository=flexmock(),
         progress=flexmock(),
-        stats=flexmock(),
+        statistics=flexmock(),
         json=True,
-        list_files=flexmock(),
+        list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 

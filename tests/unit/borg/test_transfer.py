@@ -193,7 +193,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}', 'match_archives': 'sh:foo*'},  # noqa: FS003
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives='sh:foo*', source_repository=None
@@ -436,12 +436,15 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
     )
 
 
-def test_transfer_archives_with_progress_calls_borg_with_progress_flag():
+def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
     flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
     flexmock(module.flags).should_receive('make_flags').and_return(())
+    flexmock(module.flags).should_receive('make_flags').with_args('progress', True).and_return(
+        ('--progress',)
+    )
     flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
-    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(('--progress',))
+    flexmock(module.flags).should_receive('make_flags_from_arguments').and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('--repo', 'repo'))
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
@@ -458,10 +461,10 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flag():
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'progress': True},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
-            archive=None, progress=True, match_archives=None, source_repository=None
+            archive=None, progress=None, match_archives=None, source_repository=None
         ),
         global_arguments=flexmock(log_json=False),
     )

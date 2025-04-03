@@ -8,6 +8,8 @@ import time
 from queue import Queue
 from subprocess import CalledProcessError
 
+import ruamel.yaml
+
 import borgmatic.actions.borg
 import borgmatic.actions.break_lock
 import borgmatic.actions.change_passphrase
@@ -35,6 +37,7 @@ import borgmatic.actions.restore
 import borgmatic.actions.transfer
 import borgmatic.commands.completion.bash
 import borgmatic.commands.completion.fish
+import borgmatic.config.load
 import borgmatic.config.paths
 from borgmatic.borg import umount as borg_umount
 from borgmatic.borg import version as borg_version
@@ -597,14 +600,14 @@ def run_actions(
                     )
 
 
-def load_configurations(config_filenames, overrides=None, resolve_env=True):
+def load_configurations(config_filenames, arguments, overrides=None, resolve_env=True):
     '''
-    Given a sequence of configuration filenames, a sequence of configuration file override strings
-    in the form of "option.suboption=value", and whether to resolve environment variables, load and
-    validate each configuration file. Return the results as a tuple of: dict of configuration
-    filename to corresponding parsed configuration, a sequence of paths for all loaded configuration
-    files (including includes), and a sequence of logging.LogRecord instances containing any parse
-    errors.
+    Given a sequence of configuration filenames, arguments as a dict from action name to
+    argparse.Namespace, a sequence of configuration file override strings in the form of
+    "option.suboption=value", and whether to resolve environment variables, load and validate each
+    configuration file. Return the results as a tuple of: dict of configuration filename to
+    corresponding parsed configuration, a sequence of paths for all loaded configuration files
+    (including includes), and a sequence of logging.LogRecord instances containing any parse errors.
 
     Log records are returned here instead of being logged directly because logging isn't yet
     initialized at this point! (Although with the Delayed_logging_handler now in place, maybe this
@@ -632,6 +635,7 @@ def load_configurations(config_filenames, overrides=None, resolve_env=True):
             configs[config_filename], paths, parse_logs = validate.parse_configuration(
                 config_filename,
                 validate.schema_filename(),
+                arguments,
                 overrides,
                 resolve_env,
             )
@@ -970,9 +974,17 @@ def check_and_show_help_on_no_args(configs):
 def main(extra_summary_logs=[]):  # pragma: no cover
     configure_signals()
     configure_delayed_logging()
+    schema_filename = validate.schema_filename()
 
     try:
-        arguments = parse_arguments(*sys.argv[1:])
+        schema = borgmatic.config.load.load_configuration(schema_filename)
+    except (ruamel.yaml.error.YAMLError, RecursionError) as error:
+        configure_logging(logging.CRITICAL)
+        logger.critical(error)
+        exit_with_help_link()
+
+    try:
+        arguments = parse_arguments(schema, *sys.argv[1:])
     except ValueError as error:
         configure_logging(logging.CRITICAL)
         logger.critical(error)
@@ -995,10 +1007,10 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         print(borgmatic.commands.completion.fish.fish_completion())
         sys.exit(0)
 
-    validate = bool('validate' in arguments)
     config_filenames = tuple(collect.collect_config_filenames(global_arguments.config_paths))
     configs, config_paths, parse_logs = load_configurations(
         config_filenames,
+        arguments,
         global_arguments.overrides,
         resolve_env=global_arguments.resolve_env and not validate,
     )
@@ -1013,7 +1025,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     any_json_flags = any(
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
-    color_enabled = should_do_markup(global_arguments.no_color or any_json_flags, configs)
+    color_enabled = should_do_markup(configs, any_json_flags)
 
     try:
         configure_logging(

@@ -44,19 +44,23 @@ def test_interactive_console_true_when_isatty_and_TERM_is_not_dumb(capsys):
         assert module.interactive_console() is True
 
 
-def test_should_do_markup_respects_no_color_value():
-    flexmock(module.os.environ).should_receive('get').and_return(None)
+def test_should_do_markup_respects_json_enabled_value():
+    flexmock(module.os.environ).should_receive('get').never()
     flexmock(module).should_receive('interactive_console').never()
-    assert module.should_do_markup(no_color=True, configs={}) is False
+    assert module.should_do_markup(configs={}, json_enabled=True) is False
 
 
 def test_should_do_markup_respects_config_value():
     flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
-    assert module.should_do_markup(no_color=False, configs={'foo.yaml': {'color': False}}) is False
+    assert (
+        module.should_do_markup(configs={'foo.yaml': {'color': False}}, json_enabled=False) is False
+    )
 
     flexmock(module).should_receive('interactive_console').and_return(True).once()
-    assert module.should_do_markup(no_color=False, configs={'foo.yaml': {'color': True}}) is True
+    assert (
+        module.should_do_markup(configs={'foo.yaml': {'color': True}}, json_enabled=False) is True
+    )
 
 
 def test_should_do_markup_prefers_any_false_config_value():
@@ -65,11 +69,11 @@ def test_should_do_markup_prefers_any_false_config_value():
 
     assert (
         module.should_do_markup(
-            no_color=False,
             configs={
                 'foo.yaml': {'color': True},
                 'bar.yaml': {'color': False},
             },
+            json_enabled=False,
         )
         is False
     )
@@ -83,14 +87,16 @@ def test_should_do_markup_respects_PY_COLORS_environment_variable():
 
     flexmock(module).should_receive('to_bool').and_return(True)
 
-    assert module.should_do_markup(no_color=False, configs={}) is True
+    assert module.should_do_markup(configs={}, json_enabled=False) is True
 
 
-def test_should_do_markup_prefers_no_color_value_to_config_value():
+def test_should_do_markup_prefers_json_enabled_value_to_config_value():
     flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=True, configs={'foo.yaml': {'color': True}}) is False
+    assert (
+        module.should_do_markup(configs={'foo.yaml': {'color': True}}, json_enabled=True) is False
+    )
 
 
 def test_should_do_markup_prefers_config_value_to_environment_variables():
@@ -98,7 +104,9 @@ def test_should_do_markup_prefers_config_value_to_environment_variables():
     flexmock(module).should_receive('to_bool').and_return(True)
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=False, configs={'foo.yaml': {'color': False}}) is False
+    assert (
+        module.should_do_markup(configs={'foo.yaml': {'color': False}}, json_enabled=False) is False
+    )
 
 
 def test_should_do_markup_prefers_no_color_value_to_environment_variables():
@@ -106,14 +114,14 @@ def test_should_do_markup_prefers_no_color_value_to_environment_variables():
     flexmock(module).should_receive('to_bool').and_return(True)
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=True, configs={}) is False
+    assert module.should_do_markup(configs={}, json_enabled=False) is False
 
 
 def test_should_do_markup_respects_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').and_return(None)
     flexmock(module).should_receive('interactive_console').and_return(True)
 
-    assert module.should_do_markup(no_color=False, configs={}) is True
+    assert module.should_do_markup(configs={}, json_enabled=False) is True
 
 
 def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
@@ -124,7 +132,7 @@ def test_should_do_markup_prefers_PY_COLORS_to_interactive_console_value():
     flexmock(module).should_receive('to_bool').and_return(True)
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=False, configs={}) is True
+    assert module.should_do_markup(configs={}, json_enabled=False) is True
 
 
 def test_should_do_markup_prefers_NO_COLOR_to_interactive_console_value():
@@ -132,7 +140,7 @@ def test_should_do_markup_prefers_NO_COLOR_to_interactive_console_value():
     flexmock(module.os.environ).should_receive('get').with_args('NO_COLOR', None).and_return('True')
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=False, configs={}) is False
+    assert module.should_do_markup(configs={}, json_enabled=False) is False
 
 
 def test_should_do_markup_respects_NO_COLOR_environment_variable():
@@ -140,7 +148,7 @@ def test_should_do_markup_respects_NO_COLOR_environment_variable():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(None)
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=False, configs={}) is False
+    assert module.should_do_markup(configs={}, json_enabled=False) is False
 
 
 def test_should_do_markup_ignores_empty_NO_COLOR_environment_variable():
@@ -148,7 +156,7 @@ def test_should_do_markup_ignores_empty_NO_COLOR_environment_variable():
     flexmock(module.os.environ).should_receive('get').with_args('PY_COLORS', None).and_return(None)
     flexmock(module).should_receive('interactive_console').and_return(True)
 
-    assert module.should_do_markup(no_color=False, configs={}) is True
+    assert module.should_do_markup(configs={}, json_enabled=False) is True
 
 
 def test_should_do_markup_prefers_NO_COLOR_to_PY_COLORS():
@@ -160,7 +168,7 @@ def test_should_do_markup_prefers_NO_COLOR_to_PY_COLORS():
     )
     flexmock(module).should_receive('interactive_console').never()
 
-    assert module.should_do_markup(no_color=False, configs={}) is False
+    assert module.should_do_markup(configs={}, json_enabled=False) is False
 
 
 def test_multi_stream_handler_logs_to_handler_for_log_level():

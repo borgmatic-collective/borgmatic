@@ -33,13 +33,47 @@ properties:
             type: object
             required:
                 - path
+            additionalProperties: false
             properties:
                 path:
                     type: string
-                    example: ssh://user@backupserver/./{fqdn}
+                    description: The local path or Borg URL of the repository.
+                    example: ssh://user@backupserver/./sourcehostname.borg
                 label:
                     type: string
+                    description: |
+                        An optional label for the repository, used in logging
+                        and to make selecting the repository easier on the
+                        command-line.
                     example: backupserver
+                encryption:
+                    type: string
+                    description: |
+                        The encryption mode with which to create the repository,
+                        only used for the repo-create action. To see the
+                        available encryption modes, run "borg init --help" with
+                        Borg 1 or "borg repo-create --help" with Borg 2.
+                    example: repokey-blake2
+                append_only:
+                    type: boolean
+                    description: |
+                        Whether the repository should be created append-only,
+                        only used for the repo-create action. Defaults to false.
+                    example: true
+                storage_quota:
+                    type: string
+                    description: |
+                        The storage quota with which to create the repository,
+                        only used for the repo-create action. Defaults to no
+                        quota.
+                    example: 5G
+                make_parent_directories:
+                    type: boolean
+                    description: |
+                        Whether any missing parent directories of the repository
+                        path should be created, only used for the repo-create
+                        action. Defaults to false.
+                    example: true
         description: |
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to
@@ -48,8 +82,7 @@ properties:
             output of "borg help placeholders" for details. See ssh_command for
             SSH options like identity file or port. If systemd service is used,
             then add local repository paths in the systemd service file to the
-            ReadWritePaths list. Prior to borgmatic 1.7.10, repositories was a
-            list of plain path strings.
+            ReadWritePaths list.
         example:
             - path: ssh://user@backupserver/./sourcehostname.borg
               label: backupserver
@@ -99,13 +132,13 @@ properties:
             used when backing up special devices such as /dev/zero. Defaults to
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
-        example: false
+        example: true
     flags:
         type: boolean
         description: |
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
-        example: true
+        example: false
     files_cache:
         type: string
         description: |
@@ -442,19 +475,19 @@ properties:
         type: boolean
         description: |
             Bypass Borg error about a repository that has been moved. Defaults
-            to not bypassing.
+            to false.
         example: true
     unknown_unencrypted_repo_access_is_ok:
         type: boolean
         description: |
             Bypass Borg error about a previously unknown unencrypted repository.
-            Defaults to not bypassing.
+            Defaults to false.
         example: true
     check_i_know_what_i_am_doing:
         type: boolean
         description: |
             Bypass Borg confirmation about check with repair option. Defaults to
-            an interactive prompt from Borg.
+            false and an interactive prompt from Borg.
         example: true
     extra_borg_options:
         type: object
@@ -534,6 +567,12 @@ properties:
             not specified, borgmatic defaults to matching archives based on the
             archive_name_format (see above).
         example: sourcehostname
+    compact_threshold:
+        type: integer
+        description: |
+            Minimum saved space percentage threshold for compacting a segment,
+            defaults to 10.
+        example: 20
     checks:
         type: array
         items:
@@ -749,6 +788,10 @@ properties:
             List of one or more consistency checks to run on a periodic basis
             (if "frequency" is set) or every time borgmatic runs checks (if
             "frequency" is omitted).
+        example:
+          - name: archives
+            frequency: 2 weeks
+          - name: repository
     check_repositories:
         type: array
         items:
@@ -770,9 +813,29 @@ properties:
     color:
         type: boolean
         description: |
-            Apply color to console output. Can be overridden with --no-color
-            command-line flag. Defaults to true.
+            Apply color to console output. Defaults to true.
         example: false
+    progress:
+        type: boolean
+        description: |
+            Display progress as each file or archive is processed when running
+            supported actions. Corresponds to the "--progress" flag on those
+            actions. Defaults to false.
+        example: true
+    statistics:
+        type: boolean
+        description: |
+            Display statistics for an archive when running supported actions.
+            Corresponds to the "--stats" flag on those actions. Defaults to
+            false.
+        example: true
+    list_details:
+        type: boolean
+        description: |
+            Display details for each file or archive as it is processed when
+            running supported actions. Corresponds to the "--list" flag on those
+            actions. Defaults to false.
+        example: true
     skip_actions:
         type: array
         items:
@@ -1099,8 +1162,13 @@ properties:
             List of one or more command hooks to execute, triggered at
             particular points during borgmatic's execution. For each command
             hook, specify one of "before" or "after", not both.
+        example:
+            - before: action
+              when: [create]
+              run: [echo Backing up.]
     bootstrap:
         type: object
+        additionalProperties: false
         properties:
             store_config_files:
                 type: boolean
@@ -1313,6 +1381,9 @@ properties:
             https://www.postgresql.org/docs/current/app-pgdump.html and
             https://www.postgresql.org/docs/current/libpq-ssl.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     mariadb_databases:
         type: array
         items:
@@ -1458,6 +1529,9 @@ properties:
             added to your source directories at runtime and streamed directly
             to Borg. Requires mariadb-dump/mariadb commands. See
             https://mariadb.com/kb/en/library/mysqldump/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     mysql_databases:
         type: array
         items:
@@ -1603,6 +1677,9 @@ properties:
             to Borg. Requires mysqldump/mysql commands. See
             https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     sqlite_databases:
         type: array
         items:
@@ -1650,6 +1727,15 @@ properties:
                         sqlite3 version (e.g., one inside a running container). 
                         Defaults to "sqlite3".
                     example: docker exec sqlite_container sqlite3
+        description: |
+            List of one or more SQLite databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly to
+            Borg. Requires the sqlite3 command. See https://sqlite.org/cli.html
+            for details.
+        example:
+            - name: users
+              path: /var/lib/db.sqlite
     mongodb_databases:
         type: array
         items:
@@ -1771,6 +1857,9 @@ properties:
             to Borg. Requires mongodump/mongorestore commands. See
             https://docs.mongodb.com/database-tools/mongodump/ and
             https://docs.mongodb.com/database-tools/mongorestore/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     ntfy:
         type: object
         required: ['topic']
@@ -1807,6 +1896,7 @@ properties:
                 example: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1830,6 +1920,7 @@ properties:
                         example: incoming_envelope
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1853,6 +1944,7 @@ properties:
                         example: incoming_envelope
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1911,6 +2003,7 @@ properties:
                 example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -1950,8 +2043,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -1986,6 +2079,7 @@ properties:
                         example: Pushover Link
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -2025,8 +2119,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -2061,6 +2155,7 @@ properties:
                         example: Pushover Link
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -2100,8 +2195,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -2200,6 +2295,7 @@ properties:
                 example: fakekey
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2208,6 +2304,7 @@ properties:
                         example: STARTED
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2216,6 +2313,7 @@ properties:
                         example: FINISH
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2247,15 +2345,20 @@ properties:
                 type: array
                 items:
                     type: object
+                    additionalProperties: false
                     required:
                         - url
                         - label
                     properties:
                         url:
                             type: string
+                            description: URL of this Apprise service.
                             example: "gotify://hostname/token"
                         label:
                             type: string
+                            description: |
+                                Label used in borgmatic logs for this Apprise
+                                service.
                             example: gotify
                 description: |
                     A list of Apprise services to publish to with URLs and
@@ -2270,7 +2373,7 @@ properties:
             send_logs:
                 type: boolean
                 description: |
-                    Send borgmatic logs to Apprise services as part the
+                    Send borgmatic logs to Apprise services as part of the
                     "finish", "fail", and "log" states. Defaults to true.
                 example: false
             logs_size_limit:
@@ -2283,6 +2386,7 @@ properties:
             start:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2298,6 +2402,7 @@ properties:
             finish:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2313,6 +2418,7 @@ properties:
             fail:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2328,6 +2434,7 @@ properties:
             log:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2381,7 +2488,7 @@ properties:
             send_logs:
                 type: boolean
                 description: |
-                    Send borgmatic logs to Healthchecks as part the "finish",
+                    Send borgmatic logs to Healthchecks as part of the "finish",
                     "fail", and "log" states. Defaults to true.
                 example: false
             ping_body_limit:

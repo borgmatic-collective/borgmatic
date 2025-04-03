@@ -15,9 +15,7 @@ def compact_segments(
     global_arguments,
     local_path='borg',
     remote_path=None,
-    progress=False,
     cleanup_commits=False,
-    threshold=None,
 ):
     '''
     Given dry-run flag, a local or remote repository path, a configuration dict, and the local Borg
@@ -26,6 +24,7 @@ def compact_segments(
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
     extra_borg_options = config.get('extra_borg_options', {}).get('compact', '')
+    threshold = config.get('compact_threshold')
 
     full_command = (
         (local_path, 'compact')
@@ -33,7 +32,7 @@ def compact_segments(
         + (('--umask', str(umask)) if umask else ())
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
-        + (('--progress',) if progress else ())
+        + (('--progress',) if config.get('progress') else ())
         + (('--cleanup-commits',) if cleanup_commits else ())
         + (('--threshold', str(threshold)) if threshold else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())

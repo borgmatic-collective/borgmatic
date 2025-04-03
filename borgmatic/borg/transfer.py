@@ -32,17 +32,22 @@ def transfer_archives(
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', global_arguments.log_json)
-        + flags.make_flags('lock-wait', config.get('lock_wait', None))
+        + flags.make_flags('lock-wait', config.get('lock_wait'))
+        + flags.make_flags('progress', config.get('progress'))
         + (
             flags.make_flags_from_arguments(
                 transfer_arguments,
-                excludes=('repository', 'source_repository', 'archive', 'match_archives'),
+                excludes=(
+                    'repository',
+                    'source_repository',
+                    'archive',
+                    'match_archives',
+                    'progress',
+                ),
             )
             or (
                 flags.make_match_archives_flags(
-                    transfer_arguments.match_archives
-                    or transfer_arguments.archive
-                    or config.get('match_archives'),
+                    transfer_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )
@@ -56,7 +61,7 @@ def transfer_archives(
     return execute_command(
         full_command,
         output_log_level=logging.ANSWER,
-        output_file=DO_NOT_CAPTURE if transfer_arguments.progress else None,
+        output_file=DO_NOT_CAPTURE if config.get('progress') else None,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,

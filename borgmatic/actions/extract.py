@@ -45,5 +45,4 @@ def run_extract(
             remote_path=remote_path,
             destination_path=extract_arguments.destination,
             strip_components=extract_arguments.strip_components,
-            progress=extract_arguments.progress,
         )

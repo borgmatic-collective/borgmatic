@@ -32,7 +32,7 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
             if prefix
             else (
                 flags.make_match_archives_flags(
-                    check_arguments.match_archives or config.get('match_archives'),
+                    config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )
@@ -170,7 +170,7 @@ def check_archives(
             + (('--log-json',) if global_arguments.log_json else ())
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
-            + (('--progress',) if check_arguments.progress else ())
+            + (('--progress',) if config.get('progress') else ())
             + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
             + flags.make_repository_flags(repository_path, local_borg_version)
         )
@@ -180,7 +180,7 @@ def check_archives(
             # The Borg repair option triggers an interactive prompt, which won't work when output is
             # captured. And progress messes with the terminal directly.
             output_file=(
-                DO_NOT_CAPTURE if check_arguments.repair or check_arguments.progress else None
+                DO_NOT_CAPTURE if check_arguments.repair or config.get('progress') else None
             ),
             environment=environment.make_environment(config),
             working_directory=working_directory,
