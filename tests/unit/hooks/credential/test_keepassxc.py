@@ -135,7 +135,7 @@ def test_load_credential_with_key_file():
             '--key-file',
             '/path/to/keyfile',
             'database.kdbx',
-            'mypassword',  
+            'mypassword',
         )
     ).and_return(
         'password'

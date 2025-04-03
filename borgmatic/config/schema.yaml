@@ -2691,12 +2691,12 @@ properties:
             yubikey:
                 type: string
                 description: |
-                    YubiKey slot and optional serial number used to access the KeePassXC database.
-                    Format: "<slot[:serial]>", where:
-                     - <slot> is the YubiKey slot number (e.g., `1` or `2`).
-                     - <serial> (optional) is the YubiKey's serial number (e.g., `1:7370001`).
+                    YubiKey slot and optional serial number used to access the
+                    KeePassXC database. The format is "<slot[:serial]>", where:
+                     * <slot> is the YubiKey slot number (e.g., `1` or `2`).
+                     * <serial> (optional) is the YubiKey's serial number (e.g.,
+                       `7370001`).
                 example: "1:7370001"
-
         description: |
             Configuration for integration with the KeePassXC password manager.
     default_actions:
