@@ -2683,6 +2683,20 @@ properties:
                 description: |
                     Command to use instead of "keepassxc-cli".
                 example: /usr/local/bin/keepassxc-cli
+            key_file:
+                type: string
+                description: |
+                    Path to a key file for unlocking the KeePassXC database.
+                example: /path/to/keyfile
+            yubikey:
+                type: string
+                description: |
+                    YubiKey slot and optional serial number used to access the KeePassXC database.
+                    Format: "<slot[:serial]>", where:
+                     - <slot> is the YubiKey slot number (e.g., `1` or `2`).
+                     - <serial> (optional) is the YubiKey's serial number (e.g., `1:7370001`).
+                example: "1:7370001"
+
         description: |
             Configuration for integration with the KeePassXC password manager.
     default_actions:
