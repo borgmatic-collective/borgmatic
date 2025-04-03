@@ -538,6 +538,12 @@ the `--list` flag that's only present on particular actions. Similarly with
 `progress` and `--progress`, `statistics` and `--stats`, and `match_archives`
 and `--match-archives`.
 
+Also note that if you want to pass a command-line flag itself as a value to one
+of these override flags, that may not work. For instance, specifying
+`--extra-borg-options.create --no-cache-sync` results in an error, because
+`--no-cache-sync` gets interpreted as a borgmatic option (which in this case
+doesn't exist) rather than a Borg option.
+
 An alternate to command-line overrides is passing in your values via
 [environment
 variables](https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/).
