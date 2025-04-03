@@ -36,15 +36,15 @@ def set_values(config, keys, value):
         list_key = match.group('list_name')
         list_index = int(match.group('index'))
 
-        if len(keys) == 1:
-            config[list_key][list_index] = value
-
-            return
-
-        if list_key not in config:
-            config[list_key] = []
-
         try:
+            if len(keys) == 1:
+                config[list_key][list_index] = value
+
+                return
+
+            if list_key not in config:
+                config[list_key] = []
+
             set_values(config[list_key][list_index], keys[1:], value)
         except IndexError:
             raise ValueError(f'Argument list index {first_key} is out of range')

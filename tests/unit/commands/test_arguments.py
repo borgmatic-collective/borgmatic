@@ -577,19 +577,6 @@ def test_parse_arguments_for_actions_raises_error_when_no_action_is_specified():
         module.parse_arguments_for_actions(('config',), action_parsers, global_parser)
 
 
-def test_make_argument_description_without_description_bails():
-    assert (
-        module.make_argument_description(
-            schema={
-                'description': None,
-                'type': 'not yours',
-            },
-            flag_name='flag',
-        )
-        is None
-    )
-
-
 def test_make_argument_description_with_object_adds_example():
     buffer = flexmock()
     buffer.should_receive('getvalue').and_return('{foo: example}')
@@ -608,6 +595,26 @@ def test_make_argument_description_with_object_adds_example():
             flag_name='flag',
         )
         == 'Thing. Example value: "{foo: example}"'
+    )
+
+
+def test_make_argument_description_without_description_and_with_object_sets_example():
+    buffer = flexmock()
+    buffer.should_receive('getvalue').and_return('{foo: example}')
+    flexmock(module.io).should_receive('StringIO').and_return(buffer)
+    yaml = flexmock()
+    yaml.should_receive('dump')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+
+    assert (
+        module.make_argument_description(
+            schema={
+                'type': 'object',
+                'example': {'foo': 'example'},
+            },
+            flag_name='flag',
+        )
+        == 'Example value: "{foo: example}"'
     )
 
 
@@ -647,6 +654,26 @@ def test_make_argument_description_with_array_adds_example():
     )
 
 
+def test_make_argument_description_without_description_and_with_array_sets_example():
+    buffer = flexmock()
+    buffer.should_receive('getvalue').and_return('[example]')
+    flexmock(module.io).should_receive('StringIO').and_return(buffer)
+    yaml = flexmock()
+    yaml.should_receive('dump')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(yaml)
+
+    assert (
+        module.make_argument_description(
+            schema={
+                'type': 'array',
+                'example': ['example'],
+            },
+            flag_name='flag',
+        )
+        == 'Example value: "[example]"'
+    )
+
+
 def test_make_argument_description_with_array_skips_missing_example():
     flexmock(module.ruamel.yaml).should_receive('YAML').never()
 
@@ -666,6 +693,15 @@ def test_make_argument_description_with_array_index_in_flag_name_adds_to_descrip
     assert 'list element' in module.make_argument_description(
         schema={
             'description': 'Thing.',
+            'type': 'something',
+        },
+        flag_name='flag[0]',
+    )
+
+
+def test_make_argument_description_without_description_and_with_array_index_in_flag_name_sets_description():
+    assert 'list element' in module.make_argument_description(
+        schema={
             'type': 'something',
         },
         flag_name='flag[0]',
@@ -1043,10 +1079,21 @@ def test_add_arguments_from_schema_with_propertyless_option_adds_flag():
     )
 
 
-def test_add_arguments_from_schema_with_array_adds_flag():
+def test_add_arguments_from_schema_with_array_of_scalars_adds_multiple_flags():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help')
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(str)
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').with_args(
+        'integer', object=str, array=str
+    ).and_return(int)
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').with_args(
+        'array', object=str, array=str
+    ).and_return(str)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo[0]',
+        type=int,
+        metavar='FOO[0]',
+        help='help',
+    ).once()
     arguments_group.should_receive('add_argument').with_args(
         '--foo',
         type=str,
@@ -1072,7 +1119,7 @@ def test_add_arguments_from_schema_with_array_adds_flag():
     )
 
 
-def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_flags():
+def test_add_arguments_from_schema_with_array_of_objects_adds_multiple_flags():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help 1').and_return(
         'help 2'

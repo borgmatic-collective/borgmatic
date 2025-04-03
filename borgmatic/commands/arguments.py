@@ -300,12 +300,12 @@ def make_argument_description(schema, flag_name):
     description = schema.get('description')
     schema_type = schema.get('type')
     example = schema.get('example')
-
-    if not description:
-        return None
+    pieces = [description] if description else []
 
     if '[0]' in flag_name:
-        description += ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+        pieces.append(
+            ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+        )
 
     if example and schema_type in ('array', 'object'):
         example_buffer = io.StringIO()
@@ -313,11 +313,9 @@ def make_argument_description(schema, flag_name):
         yaml.default_flow_style = True
         yaml.dump(example, example_buffer)
 
-        description += f' Example value: "{example_buffer.getvalue().strip()}"'
+        pieces.append(f'Example value: "{example_buffer.getvalue().strip()}"')
 
-    description = description.replace('%', '%%')
-
-    return description
+    return ' '.join(pieces).replace('%', '%%')
 
 
 def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
@@ -476,7 +474,8 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     # If this is an "array" type, recurse for each items type child option. Don't return yet so that
     # a flag also gets added below for the array itself.
     if schema_type == 'array':
-        properties = borgmatic.config.schema.get_properties(schema.get('items', {}))
+        items = schema.get('items', {})
+        properties = borgmatic.config.schema.get_properties(items)
 
         if properties:
             for name, child in properties.items():
@@ -486,6 +485,11 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
                     unparsed_arguments,
                     names[:-1] + (f'{names[-1]}[0]',) + (name,),
                 )
+        # If there aren't any children, then this is an array of scalars. Recurse accordingly.
+        else:
+            add_arguments_from_schema(
+                arguments_group, items, unparsed_arguments, names[:-1] + (f'{names[-1]}[0]',)
+            )
 
     flag_name = '.'.join(names).replace('_', '-')
 
@@ -497,8 +501,8 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     metavar = names[-1].upper()
     description = make_argument_description(schema, flag_name)
 
-    # The ...=str given here is to support specifying an object or an array as a YAML string on the
-    # command-line.
+    # The object=str and array=str given here is to support specifying an object or an array as a
+    # YAML string on the command-line.
     argument_type = borgmatic.config.schema.parse_type(schema_type, object=str, array=str)
 
     # As a UX nicety, add separate true and false flags for boolean options.

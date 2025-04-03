@@ -50,6 +50,13 @@ def test_set_values_with_list_index_key_out_of_range_raises():
         module.set_values(config=config, keys=('foo', 'bar[1]', 'baz'), value=5)
 
 
+def test_set_values_with_final_list_index_key_out_of_range_raises():
+    config = {'foo': {'bar': [{'option': 'value'}]}}
+
+    with pytest.raises(ValueError):
+        module.set_values(config=config, keys=('foo', 'bar[1]'), value=5)
+
+
 def test_set_values_with_list_index_key_missing_list_and_out_of_range_raises():
     config = {'other': 'value'}
 
