@@ -16,7 +16,7 @@ def load_credential(hook_config, config, credential_parameters):
     Raise ValueError if keepassxc-cli can't retrieve the credential.
     '''
     try:
-        database_path, attribute_name = credential_parameters[:2]
+        (database_path, attribute_name) = credential_parameters
     except ValueError:
         raise ValueError( f'Invalid KeePassXC credential parameters: {credential_parameters}')
 

@@ -166,7 +166,7 @@ def test_load_credential_with_yubikey():
             '--attributes',
             'Password',
             '--yubikey',
-            '/path/to/yubikey',
+            '1:7370001',
             'database.kdbx',
             'mypassword',
         )
@@ -176,7 +176,7 @@ def test_load_credential_with_yubikey():
 
     assert (
         module.load_credential(
-            hook_config={'yubikey': '/path/to/yubikey'},
+            hook_config={'yubikey': '1:7370001'},
             config={},
             credential_parameters=('database.kdbx', 'mypassword'),
         )
@@ -201,7 +201,7 @@ def test_load_credential_with_key_file_and_yubikey():
             '--key-file',
             '/path/to/keyfile',
             '--yubikey',
-            '/path/to/yubikey',
+            '2',
             'database.kdbx',
             'mypassword',
         )
@@ -211,7 +211,7 @@ def test_load_credential_with_key_file_and_yubikey():
 
     assert (
         module.load_credential(
-            hook_config={'key_file': '/path/to/keyfile', 'yubikey': '/path/to/yubikey'},
+            hook_config={'key_file': '/path/to/keyfile', 'yubikey': '2'},
             config={},
             credential_parameters=('database.kdbx', 'mypassword'),
         )

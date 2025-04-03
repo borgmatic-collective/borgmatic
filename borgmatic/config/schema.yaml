@@ -2691,8 +2691,12 @@ properties:
             yubikey:
                 type: string
                 description: |
-                    Path or identifier for the YubiKey to use for unlocking the KeePassXC database.
-                example: /path/to/yubikey
+                    YubiKey slot and optional serial number used to access the KeePassXC database.
+                    Format: "<slot[:serial]>", where:
+                     - <slot> is the YubiKey slot number (e.g., `1` or `2`).
+                     - <serial> (optional) is the YubiKey's serial number (e.g., `1:7370001`).
+                example: "1:7370001"
+
         description: |
             Configuration for integration with the KeePassXC password manager.
     default_actions:
