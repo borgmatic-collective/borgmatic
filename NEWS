@@ -32,6 +32,7 @@
    "working_directory" are used.
  * #1044: Fix an error in the systemd credential hook when the credential name contains a "."
    character.
+ * #1047: Add "key-file" and "yubikey" options to the KeePassXC credential hook.
  * #1048: Fix a "no such file or directory" error in ZFS, Btrfs, and LVM hooks with nested
    directories that reside on separate devices/filesystems.
  * #1050: Fix a failure in the "spot" check when the archive contains a symlink.
