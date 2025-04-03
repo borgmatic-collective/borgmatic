@@ -1525,8 +1525,8 @@ def make_parsers():
     recreate_parser = action_parsers.add_parser(
         'recreate',
         aliases=ACTION_ALIASES['recreate'],
-        help='Recreate an archive in a repository',
-        description='Recreate an archive in a repository',
+        help='Recreate an archive in a repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        description='Recreate an archive in a repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
         add_help=False,
     )
     recreate_group = recreate_parser.add_argument_group('recreate arguments')
