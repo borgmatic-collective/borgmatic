@@ -500,20 +500,26 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
     # The ...=str given here is to support specifying an object or an array as a YAML string on the
     # command-line.
     argument_type = borgmatic.config.schema.parse_type(schema_type, object=str, array=str)
-    full_flag_name = f"--{flag_name}"
 
-    # As a UX nicety, allow boolean options that have a default of false to have command-line flags
-    # without values.
-    if schema_type == 'boolean' and schema.get('default') is False:
+    # As a UX nicety, add separate true and false flags for boolean options.
+    if schema_type == 'boolean':
         arguments_group.add_argument(
-            full_flag_name,
+            f'--{flag_name}',
             action='store_true',
             default=None,
             help=description,
         )
+        no_flag_name = '.'.join(names[:-1] + ('no-' + names[-1],)).replace('_', '-')
+        arguments_group.add_argument(
+            f'--{no_flag_name}',
+            dest=flag_name.replace('-', '_'),
+            action='store_false',
+            default=None,
+            help=f'Set the --{flag_name} value to false.',
+        )
     else:
         arguments_group.add_argument(
-            full_flag_name,
+            f'--{flag_name}',
             type=argument_type,
             metavar=metavar,
             help=description,
@@ -552,9 +558,6 @@ def make_parsers(schema, unparsed_arguments):
         dest='dry_run',
         action='store_true',
         help='Go through the motions, but do not actually write to any repositories',
-    )
-    global_group.add_argument(
-        '-nc', '--no-color', dest='no_color', action='store_true', help='Disable colored output'
     )
     global_group.add_argument(
         '-v',

@@ -1025,7 +1025,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     any_json_flags = any(
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
-    color_enabled = should_do_markup(global_arguments.no_color or any_json_flags, configs)
+    color_enabled = should_do_markup(configs, any_json_flags)
 
     try:
         configure_logging(

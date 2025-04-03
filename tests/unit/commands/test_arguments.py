@@ -1121,7 +1121,7 @@ def test_add_arguments_from_schema_with_array_and_nested_object_adds_multiple_fl
     )
 
 
-def test_add_arguments_from_schema_with_default_false_boolean_adds_valueless_flag():
+def test_add_arguments_from_schema_with_boolean_adds_two_valueless_flags():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help')
     flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
@@ -1131,59 +1131,12 @@ def test_add_arguments_from_schema_with_default_false_boolean_adds_valueless_fla
         default=None,
         help='help',
     ).once()
-    flexmock(module).should_receive('add_array_element_arguments')
-
-    module.add_arguments_from_schema(
-        arguments_group=arguments_group,
-        schema={
-            'type': 'object',
-            'properties': {
-                'foo': {
-                    'type': 'boolean',
-                    'default': False,
-                }
-            },
-        },
-        unparsed_arguments=(),
-    )
-
-
-def test_add_arguments_from_schema_with_default_true_boolean_adds_value_flag():
-    arguments_group = flexmock()
-    flexmock(module).should_receive('make_argument_description').and_return('help')
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
     arguments_group.should_receive('add_argument').with_args(
-        '--foo',
-        type=bool,
-        metavar='FOO',
-        help='help',
-    ).once()
-    flexmock(module).should_receive('add_array_element_arguments')
-
-    module.add_arguments_from_schema(
-        arguments_group=arguments_group,
-        schema={
-            'type': 'object',
-            'properties': {
-                'foo': {
-                    'type': 'boolean',
-                    'default': True,
-                }
-            },
-        },
-        unparsed_arguments=(),
-    )
-
-
-def test_add_arguments_from_schema_with_defaultless_boolean_adds_value_flag():
-    arguments_group = flexmock()
-    flexmock(module).should_receive('make_argument_description').and_return('help')
-    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
-    arguments_group.should_receive('add_argument').with_args(
-        '--foo',
-        type=bool,
-        metavar='FOO',
-        help='help',
+        '--no-foo',
+        dest='foo',
+        action='store_false',
+        default=None,
+        help=object,
     ).once()
     flexmock(module).should_receive('add_array_element_arguments')
 
@@ -1198,6 +1151,40 @@ def test_add_arguments_from_schema_with_defaultless_boolean_adds_value_flag():
             },
         },
         unparsed_arguments=(),
+    )
+
+
+def test_add_arguments_from_schema_with_nested_boolean_adds_two_valueless_flags():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo.bar.baz-quux',
+        action='store_true',
+        default=None,
+        help='help',
+    ).once()
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo.bar.no-baz-quux',
+        dest='foo.bar.baz_quux',
+        action='store_false',
+        default=None,
+        help=object,
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'baz_quux': {
+                    'type': 'boolean',
+                }
+            },
+        },
+        unparsed_arguments=(),
+        names=('foo', 'bar'),
     )
 
 
