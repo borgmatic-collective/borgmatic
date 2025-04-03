@@ -170,7 +170,7 @@ def filter_checks_on_frequency(
 
             if calendar.day_name[datetime_now().weekday()] not in days:
                 logger.info(
-                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(days)} (use --force to check anyway)"
+                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(day.title() for day in days)} (use --force to check anyway)"
                 )
                 filtered_checks.remove(check)
                 continue

@@ -46,7 +46,7 @@ def set_values(config, keys, value):
                 config[list_key] = []
 
             set_values(config[list_key][list_index], keys[1:], value)
-        except IndexError:
+        except (IndexError, KeyError):
             raise ValueError(f'Argument list index {first_key} is out of range')
 
         return
@@ -75,12 +75,13 @@ def type_for_option(schema, option_keys):
     for key in option_keys:
         # Support "name[0]"-style list index syntax.
         match = LIST_INDEX_KEY_PATTERN.match(key)
+        properties = borgmatic.config.schema.get_properties(option_schema)
 
         try:
             if match:
-                option_schema = option_schema['properties'][match.group('list_name')]['items']
+                option_schema = properties[match.group('list_name')]['items']
             else:
-                option_schema = option_schema['properties'][key]
+                option_schema = properties[key]
         except KeyError:
             return None
 
