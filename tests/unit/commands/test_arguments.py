@@ -1235,6 +1235,39 @@ def test_add_arguments_from_schema_with_nested_boolean_adds_two_valueless_flags(
     )
 
 
+def test_add_arguments_from_schema_with_boolean_with_name_prefixed_with_no_adds_two_valueless_flags_and_removes_the_no_for_one():
+    arguments_group = flexmock()
+    flexmock(module).should_receive('make_argument_description').and_return('help')
+    flexmock(module.borgmatic.config.schema).should_receive('parse_type').and_return(bool)
+    arguments_group.should_receive('add_argument').with_args(
+        '--no-foo',
+        action='store_true',
+        default=None,
+        help='help',
+    ).once()
+    arguments_group.should_receive('add_argument').with_args(
+        '--foo',
+        dest='no_foo',
+        action='store_false',
+        default=None,
+        help=object,
+    ).once()
+    flexmock(module).should_receive('add_array_element_arguments')
+
+    module.add_arguments_from_schema(
+        arguments_group=arguments_group,
+        schema={
+            'type': 'object',
+            'properties': {
+                'no_foo': {
+                    'type': 'boolean',
+                }
+            },
+        },
+        unparsed_arguments=(),
+    )
+
+
 def test_add_arguments_from_schema_skips_omitted_flag_name():
     arguments_group = flexmock()
     flexmock(module).should_receive('make_argument_description').and_return('help')

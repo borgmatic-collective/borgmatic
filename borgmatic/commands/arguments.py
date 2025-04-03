@@ -513,7 +513,12 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             default=None,
             help=description,
         )
-        no_flag_name = '.'.join(names[:-1] + ('no-' + names[-1],)).replace('_', '-')
+
+        if names[-1].startswith('no_'):
+            no_flag_name = '.'.join(names[:-1] + (names[-1][len('no_') :],)).replace('_', '-')
+        else:
+            no_flag_name = '.'.join(names[:-1] + ('no-' + names[-1],)).replace('_', '-')
+
         arguments_group.add_argument(
             f'--{no_flag_name}',
             dest=flag_name.replace('-', '_'),
