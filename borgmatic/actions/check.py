@@ -170,7 +170,7 @@ def filter_checks_on_frequency(
 
             if calendar.day_name[datetime_now().weekday()] not in days:
                 logger.info(
-                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(days)} (use --force to check anyway)"
+                    f"Skipping {check} check due to day of the week; check only runs on {'/'.join(day.title() for day in days)} (use --force to check anyway)"
                 )
                 filtered_checks.remove(check)
                 continue
@@ -372,7 +372,7 @@ def collect_spot_check_source_paths(
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],
-            config=config,
+            config=dict(config, list_details=True),
             patterns=borgmatic.actions.create.process_patterns(
                 borgmatic.actions.create.collect_patterns(config),
                 working_directory,
@@ -382,7 +382,6 @@ def collect_spot_check_source_paths(
             borgmatic_runtime_directory=borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            list_files=True,
             stream_processes=stream_processes,
         )
     )
@@ -391,7 +390,7 @@ def collect_spot_check_source_paths(
     paths_output = borgmatic.execute.execute_command_and_capture_output(
         create_flags + create_positional_arguments,
         capture_stderr=True,
-        extra_environment=borgmatic.borg.environment.make_environment(config),
+        environment=borgmatic.borg.environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
@@ -483,10 +482,12 @@ def compare_spot_check_hashes(
     )
     source_sample_paths = tuple(random.sample(source_paths, sample_count))
     working_directory = borgmatic.config.paths.get_working_directory(config)
-    existing_source_sample_paths = {
+    hashable_source_sample_path = {
         source_path
         for source_path in source_sample_paths
-        if os.path.exists(os.path.join(working_directory or '', source_path))
+        for full_source_path in (os.path.join(working_directory or '', source_path),)
+        if os.path.exists(full_source_path)
+        if not os.path.islink(full_source_path)
     }
     logger.debug(
         f'Sampling {sample_count} source paths (~{spot_check_config["data_sample_percentage"]}%) for spot check'
@@ -509,7 +510,7 @@ def compare_spot_check_hashes(
         hash_output = borgmatic.execute.execute_command_and_capture_output(
             (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
             + tuple(
-                path for path in source_sample_paths_subset if path in existing_source_sample_paths
+                path for path in source_sample_paths_subset if path in hashable_source_sample_path
             ),
             working_directory=working_directory,
         )
@@ -517,11 +518,13 @@ def compare_spot_check_hashes(
         source_hashes.update(
             **dict(
                 (reversed(line.split('  ', 1)) for line in hash_output.splitlines()),
-                # Represent non-existent files as having empty hashes so the comparison below still works.
+                # Represent non-existent files as having empty hashes so the comparison below still
+                # works. Same thing for filesystem links, since Borg produces empty archive hashes
+                # for them.
                 **{
                     path: ''
                     for path in source_sample_paths_subset
-                    if path not in existing_source_sample_paths
+                    if path not in hashable_source_sample_path
                 },
             )
         )
@@ -682,7 +685,6 @@ def run_check(
     config_filename,
     repository,
     config,
-    hook_context,
     local_borg_version,
     check_arguments,
     global_arguments,
@@ -698,15 +700,6 @@ def run_check(
         repository, check_arguments.repository
     ):
         return
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_check'),
-        config.get('umask'),
-        config_filename,
-        'pre-check',
-        global_arguments.dry_run,
-        **hook_context,
-    )
 
     logger.info('Running consistency checks')
 
@@ -772,12 +765,3 @@ def run_check(
                 borgmatic_runtime_directory,
             )
         write_check_time(make_check_time_path(config, repository_id, 'spot'))
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_check'),
-        config.get('umask'),
-        config_filename,
-        'post-check',
-        global_arguments.dry_run,
-        **hook_context,
-    )

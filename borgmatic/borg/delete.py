@@ -34,7 +34,7 @@ def make_delete_command(
         + borgmatic.borg.flags.make_flags('umask', config.get('umask'))
         + borgmatic.borg.flags.make_flags('log-json', global_arguments.log_json)
         + borgmatic.borg.flags.make_flags('lock-wait', config.get('lock_wait'))
-        + borgmatic.borg.flags.make_flags('list', delete_arguments.list_archives)
+        + borgmatic.borg.flags.make_flags('list', config.get('list_details'))
         + (
             (('--force',) + (('--force',) if delete_arguments.force >= 2 else ()))
             if delete_arguments.force
@@ -48,9 +48,17 @@ def make_delete_command(
             local_borg_version=local_borg_version,
             default_archive_name_format='*',
         )
+        + (('--stats',) if config.get('statistics') else ())
         + borgmatic.borg.flags.make_flags_from_arguments(
             delete_arguments,
-            excludes=('list_archives', 'force', 'match_archives', 'archive', 'repository'),
+            excludes=(
+                'list_details',
+                'statistics',
+                'force',
+                'match_archives',
+                'archive',
+                'repository',
+            ),
         )
         + borgmatic.borg.flags.make_repository_flags(repository['path'], local_borg_version)
     )
@@ -98,7 +106,7 @@ def delete_archives(
 
         repo_delete_arguments = argparse.Namespace(
             repository=repository['path'],
-            list_archives=delete_arguments.list_archives,
+            list_details=delete_arguments.list_details,
             force=delete_arguments.force,
             cache_only=delete_arguments.cache_only,
             keep_security_info=delete_arguments.keep_security_info,
@@ -128,7 +136,7 @@ def delete_archives(
     borgmatic.execute.execute_command(
         command,
         output_log_level=logging.ANSWER,
-        extra_environment=borgmatic.borg.environment.make_environment(config),
+        environment=borgmatic.borg.environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

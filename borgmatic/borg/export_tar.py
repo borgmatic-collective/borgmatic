@@ -20,7 +20,6 @@ def export_tar_archive(
     local_path='borg',
     remote_path=None,
     tar_filter=None,
-    list_files=False,
     strip_components=None,
 ):
     '''
@@ -43,7 +42,7 @@ def export_tar_archive(
         + (('--log-json',) if global_arguments.log_json else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
-        + (('--list',) if list_files else ())
+        + (('--list',) if config.get('list_details') else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
         + (('--tar-filter', tar_filter) if tar_filter else ())
@@ -57,7 +56,7 @@ def export_tar_archive(
         + (tuple(paths) if paths else ())
     )
 
-    if list_files:
+    if config.get('list_details'):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
@@ -70,7 +69,7 @@ def export_tar_archive(
         full_command,
         output_file=DO_NOT_CAPTURE if destination_path == '-' else None,
         output_log_level=output_log_level,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

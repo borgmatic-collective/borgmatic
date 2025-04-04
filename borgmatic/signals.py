@@ -24,6 +24,9 @@ def handle_signal(signal_number, frame):
         logger.critical('Exiting due to TERM signal')
         sys.exit(EXIT_CODE_FROM_SIGNAL + signal.SIGTERM)
     elif signal_number == signal.SIGINT:
+        # Borg doesn't always exit on a SIGINT, so give it a little encouragement.
+        os.killpg(os.getpgrp(), signal.SIGTERM)
+
         raise KeyboardInterrupt()
 
 

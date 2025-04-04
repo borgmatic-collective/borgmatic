@@ -17,6 +17,7 @@ class Feature(Enum):
     MATCH_ARCHIVES = 11
     EXCLUDED_FILES_MINUS = 12
     ARCHIVE_SERIES = 13
+    NO_PRUNE_STATS = 14
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -33,6 +34,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.MATCH_ARCHIVES: parse('2.0.0b3'),  # borg --match-archives
     Feature.EXCLUDED_FILES_MINUS: parse('2.0.0b5'),  # --list --filter uses "-" for excludes
     Feature.ARCHIVE_SERIES: parse('2.0.0b11'),  # identically named archives form a series
+    Feature.NO_PRUNE_STATS: parse('2.0.0b10'),  # prune --stats is not available
 }
 
 

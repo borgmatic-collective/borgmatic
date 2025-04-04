@@ -380,7 +380,7 @@ def test_make_info_command_with_match_archives_flag_passes_through_to_command():
 
     command = module.make_info_command(
         repository_path='repo',
-        config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
+        config={'archive_name_format': 'bar-{now}', 'match_archives': 'sh:foo-*'},  # noqa: FS003
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         info_arguments=flexmock(archive=None, json=False, prefix=None, match_archives='sh:foo-*'),
@@ -514,7 +514,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
     )
     flexmock(module).should_receive('execute_command_and_capture_output').with_args(
         full_command=object,
-        extra_environment=object,
+        environment=object,
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,
@@ -523,7 +523,7 @@ def test_display_archives_info_calls_borg_with_working_directory():
     flexmock(module).should_receive('execute_command').with_args(
         full_command=object,
         output_log_level=object,
-        extra_environment=object,
+        environment=object,
         working_directory='/working/dir',
         borg_local_path=object,
         borg_exit_codes=object,

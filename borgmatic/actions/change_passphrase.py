@@ -16,7 +16,7 @@ def run_change_passphrase(
     remote_path,
 ):
     '''
-    Run the "key change-passprhase" action for the given repository.
+    Run the "key change-passphrase" action for the given repository.
     '''
     if (
         change_passphrase_arguments.repository is None

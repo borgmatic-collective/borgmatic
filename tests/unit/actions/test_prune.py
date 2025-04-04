@@ -7,15 +7,13 @@ def test_run_prune_calls_hooks_for_configured_repository():
     flexmock(module.logger).answer = lambda message: None
     flexmock(module.borgmatic.config.validate).should_receive('repositories_match').never()
     flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').once()
-    flexmock(module.borgmatic.hooks.command).should_receive('execute_hook').times(2)
-    prune_arguments = flexmock(repository=None, stats=flexmock(), list_archives=flexmock())
+    prune_arguments = flexmock(repository=None, statistics=flexmock(), list_details=flexmock())
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_prune(
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={},
-        hook_context={},
         local_borg_version=None,
         prune_arguments=prune_arguments,
         global_arguments=global_arguments,
@@ -31,14 +29,15 @@ def test_run_prune_runs_with_selected_repository():
         'repositories_match'
     ).once().and_return(True)
     flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').once()
-    prune_arguments = flexmock(repository=flexmock(), stats=flexmock(), list_archives=flexmock())
+    prune_arguments = flexmock(
+        repository=flexmock(), statistics=flexmock(), list_details=flexmock()
+    )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_prune(
         config_filename='test.yaml',
         repository={'path': 'repo'},
         config={},
-        hook_context={},
         local_borg_version=None,
         prune_arguments=prune_arguments,
         global_arguments=global_arguments,
@@ -54,14 +53,15 @@ def test_run_prune_bails_if_repository_does_not_match():
         'repositories_match'
     ).once().and_return(False)
     flexmock(module.borgmatic.borg.prune).should_receive('prune_archives').never()
-    prune_arguments = flexmock(repository=flexmock(), stats=flexmock(), list_archives=flexmock())
+    prune_arguments = flexmock(
+        repository=flexmock(), statistics=flexmock(), list_details=flexmock()
+    )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
 
     module.run_prune(
         config_filename='test.yaml',
         repository='repo',
         config={},
-        hook_context={},
         local_borg_version=None,
         prune_arguments=prune_arguments,
         global_arguments=global_arguments,

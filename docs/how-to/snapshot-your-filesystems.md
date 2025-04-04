@@ -54,8 +54,8 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
  * For any dataset you'd like backed up, add its mount point to borgmatic's
    `source_directories` option.
  * <span class="minilink minilink-addedin">New in version 1.9.6</span> Or
-   include the mount point with borgmatic's `patterns` or `patterns_from`
-   options.
+   include the mount point as a root pattern with borgmatic's `patterns` or
+   `patterns_from` options.
  * Or set the borgmatic-specific user property
    `org.torsion.borgmatic:backup=auto` onto your dataset, e.g. by running `zfs
    set org.torsion.borgmatic:backup=auto datasetname`. Then borgmatic can find
@@ -64,6 +64,11 @@ You have a couple of options for borgmatic to find and backup your ZFS datasets:
 If you have multiple borgmatic configuration files with ZFS enabled, and you'd
 like particular datasets to be backed up only for particular configuration
 files, use the `source_directories` option instead of the user property.
+
+<span class="minilink minilink-addedin">New in version 1.9.11</span> borgmatic
+won't snapshot datasets with the `canmount=off` property, which is often set on
+datasets that only serve as a container for other datasets. Use `zfs get
+canmount datasetname` to see the `canmount` value for a dataset.
 
 During a backup, borgmatic automatically snapshots these discovered datasets
 (non-recursively), temporarily mounts the snapshots within its [runtime
@@ -143,38 +148,40 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 #### Subvolume discovery
 
-For any subvolume you'd like backed up, add its path to borgmatic's
-`source_directories` option.
+For any read-write subvolume you'd like backed up, add its mount point path to
+borgmatic's `source_directories` option. Btrfs does not support snapshotting
+read-only subvolumes.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic snapshots these subvolumes (non-recursively) and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also
 responsible for cleaning up (deleting) these snapshots after a backup completes.
 
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
-directories of each of your `source_directories` to discover any subvolumes.
-For instance, let's say you add `/var/log` and `/var/lib` to your source
-directories, but `/var` is a subvolume. borgmatic will discover that and
-snapshot `/var` accordingly. This also works even with nested subvolumes;
+directories of each of your `source_directories` to discover any subvolumes. For
+instance, let's say you add `/var/log` and `/var/lib` to your source
+directories, but `/var` is a subvolume mount point. borgmatic will discover that
+and snapshot `/var` accordingly. This also works even with nested subvolumes;
 borgmatic selects the subvolume that's the "closest" parent to your source
 directories.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> When using
 [patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
 the initial portion of a pattern's path that you intend borgmatic to match
-against a subvolume can't have globs or other non-literal characters in it—or it
-won't actually match. For instance, a subvolume of `/var` would match a pattern
-of `+ fm:/var/*/data`, but borgmatic isn't currently smart enough to match
-`/var` to a pattern like `+ fm:/v*/lib/data`.
+against a subvolume mount point can't have globs or other non-literal characters
+in it—or it won't actually match. For instance, a subvolume mount point of
+`/var` would match a pattern of `+ fm:/var/*/data`, but borgmatic isn't
+currently smart enough to match `/var` to a pattern like `+ fm:/v*/lib/data`.
 
-Additionally, borgmatic rewrites the snapshot file paths so that they appear
-at their original subvolume locations in a Borg archive. For instance, if your
-subvolume exists at `/var/subvolume`, then the snapshotted files will appear
+Additionally, borgmatic rewrites the snapshot file paths so that they appear at
+their original subvolume locations in a Borg archive. For instance, if your
+subvolume is mounted at `/var/subvolume`, then the snapshotted files will appear
 in an archive at `/var/subvolume` as well—even if borgmatic has to mount the
-snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform
-the backup.
+snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform the
+backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
@@ -198,6 +205,14 @@ taking snapshots with [LVM](https://sourceware.org/lvm2/) (Linux Logical
 Volume Manager) and sending those snapshots to Borg for backup. LVM isn't
 itself a filesystem, but it can take snapshots at the layer right below your
 filesystem.
+
+Note that, due to Borg being a file-level backup, this feature is really only
+suitable for filesystems, not whole disk or raw images containing multiple
+filesystems (for example, if you're using a LVM volume to run a Windows
+KVM that contains an MBR, partitions, etc.).
+
+In those cases, you can omit the `lvm:` option and use Borg's own support for
+[image backup](https://borgbackup.readthedocs.io/en/stable/deployment/image-backup.html).
 
 To use this feature, first you need one or more mounted LVM logical volumes.
 Then, enable LVM within borgmatic by adding the following line to your
@@ -252,7 +267,8 @@ For any logical volume you'd like backed up, add its mount point to
 borgmatic's `source_directories` option.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point with borgmatic's `patterns` or `patterns_from` options.
+the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
+options.
 
 During a backup, borgmatic automatically snapshots these discovered logical volumes
 (non-recursively), temporarily mounts the snapshots within its [runtime

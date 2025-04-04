@@ -1,5 +1,6 @@
 import collections
 import glob
+import hashlib
 import logging
 import os
 import shutil
@@ -38,6 +39,9 @@ def get_datasets_to_backup(zfs_command, patterns):
     pattern paths represent the requested datasets to snapshot. But also include any datasets tagged
     with a borgmatic-specific user property, whether or not they appear in the patterns.
 
+    Only include datasets that contain at least one root pattern sourced from borgmatic
+    configuration (as opposed to generated elsewhere in borgmatic).
+
     Return the result as a sequence of Dataset instances, sorted by mount point.
     '''
     list_output = borgmatic.execute.execute_command_and_capture_output(
@@ -48,7 +52,7 @@ def get_datasets_to_backup(zfs_command, patterns):
             '-t',
             'filesystem',
             '-o',
-            f'name,mountpoint,{BORGMATIC_USER_PROPERTY}',
+            f'name,mountpoint,canmount,{BORGMATIC_USER_PROPERTY}',
         )
     )
 
@@ -60,7 +64,12 @@ def get_datasets_to_backup(zfs_command, patterns):
             (
                 Dataset(dataset_name, mount_point, (user_property_value == 'auto'), ())
                 for line in list_output.splitlines()
-                for (dataset_name, mount_point, user_property_value) in (line.rstrip().split('\t'),)
+                for (dataset_name, mount_point, can_mount, user_property_value) in (
+                    line.rstrip().split('\t'),
+                )
+                # Skip datasets that are marked "canmount=off", because mounting their snapshots will
+                # result in completely empty mount points—thereby preventing us from backing them up.
+                if can_mount == 'on'
             ),
             key=lambda dataset: dataset.mount_point,
             reverse=True,
@@ -83,7 +92,12 @@ def get_datasets_to_backup(zfs_command, patterns):
                 for contained_patterns in (
                     (
                         (
-                            (borgmatic.borg.pattern.Pattern(dataset.mount_point),)
+                            (
+                                borgmatic.borg.pattern.Pattern(
+                                    dataset.mount_point,
+                                    source=borgmatic.borg.pattern.Pattern_source.HOOK,
+                                ),
+                            )
                             if dataset.auto_backup
                             else ()
                         )
@@ -92,7 +106,12 @@ def get_datasets_to_backup(zfs_command, patterns):
                         )
                     ),
                 )
-                if contained_patterns
+                if dataset.auto_backup
+                or any(
+                    pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                    and pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
+                    for pattern in contained_patterns
+                )
             ),
             key=lambda dataset: dataset.mount_point,
         )
@@ -115,7 +134,16 @@ def get_all_dataset_mount_points(zfs_command):
         )
     )
 
-    return tuple(sorted(line.rstrip() for line in list_output.splitlines()))
+    return tuple(
+        sorted(
+            {
+                mount_point
+                for line in list_output.splitlines()
+                for mount_point in (line.rstrip(),)
+                if mount_point != 'none'
+            }
+        )
+    )
 
 
 def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
@@ -155,10 +183,14 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
     )
 
 
-def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
+MOUNT_POINT_HASH_LENGTH = 10
+
+
+def make_borg_snapshot_pattern(pattern, dataset, normalized_runtime_directory):
     '''
-    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance, return a new Pattern with its
-    path rewritten to be in a snapshot directory based on the given runtime directory.
+    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance and the Dataset containing it,
+    return a new Pattern with its path rewritten to be in a snapshot directory based on both the
+    given runtime directory and the given Dataset's mount point.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
     the regular expression.
@@ -173,6 +205,10 @@ def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
     rewritten_path = initial_caret + os.path.join(
         normalized_runtime_directory,
         'zfs_snapshots',
+        # Including this hash prevents conflicts between snapshot patterns for different datasets.
+        # For instance, without this, snapshotting a dataset at /var and another at /var/spool would
+        # result in overlapping snapshot patterns and therefore colliding mount attempts.
+        hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(MOUNT_POINT_HASH_LENGTH),
         '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
@@ -183,6 +219,7 @@ def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
         pattern.type,
         pattern.style,
         pattern.device,
+        source=borgmatic.borg.pattern.Pattern_source.HOOK,
     )
 
 
@@ -209,7 +246,8 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'Snapshotting ZFS datasets{dry_run_label}')
 
-    # List ZFS datasets to get their mount points.
+    # List ZFS datasets to get their mount points, but only consider those patterns that came from
+    # actual user configuration (as opposed to, say, other hooks).
     zfs_command = hook_config.get('zfs_command', 'zfs')
     requested_datasets = get_datasets_to_backup(zfs_command, patterns)
 
@@ -234,6 +272,9 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'zfs_snapshots',
+            hashlib.shake_256(dataset.mount_point.encode('utf-8')).hexdigest(
+                MOUNT_POINT_HASH_LENGTH
+            ),
             dataset.mount_point.lstrip(os.path.sep),
         )
 
@@ -249,7 +290,9 @@ def dump_data_sources(
         )
 
         for pattern in dataset.contained_patterns:
-            snapshot_pattern = make_borg_snapshot_pattern(pattern, normalized_runtime_directory)
+            snapshot_pattern = make_borg_snapshot_pattern(
+                pattern, dataset, normalized_runtime_directory
+            )
 
             # Attempt to update the pattern in place, since pattern order matters to Borg.
             try:
@@ -334,6 +377,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
             os.path.normpath(borgmatic_runtime_directory),
         ),
         'zfs_snapshots',
+        '*',
     )
     logger.debug(f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}')
     umount_command = hook_config.get('umount_command', 'umount')
@@ -346,7 +390,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         # child datasets before the shorter mount point paths of parent datasets.
         for mount_point in reversed(dataset_mount_points):
             snapshot_mount_path = os.path.join(snapshots_directory, mount_point.lstrip(os.path.sep))
-            if not os.path.isdir(snapshot_mount_path):
+
+            # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
+            # dataset and therefore there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
                 continue
 
             # This might fail if the path is already mounted, but we swallow errors here since we'll
@@ -370,10 +417,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                     return
                 except subprocess.CalledProcessError as error:
                     logger.debug(error)
-                    return
+                    continue
 
         if not dry_run:
-            shutil.rmtree(snapshots_directory)
+            shutil.rmtree(snapshot_mount_path, ignore_errors=True)
 
     # Destroy snapshots.
     full_snapshot_names = get_all_snapshots(zfs_command)

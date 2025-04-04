@@ -17,7 +17,13 @@ def run_transfer(
     '''
     Run the "transfer" action for the given repository.
     '''
+    if transfer_arguments.archive and config.get('match_archives'):
+        raise ValueError(
+            'With the transfer action, only one of --archive and --match-archives/match_archives can be used.'
+        )
+
     logger.info('Transferring archives to repository')
+
     borgmatic.borg.transfer.transfer_archives(
         global_arguments.dry_run,
         repository['path'],

@@ -33,13 +33,47 @@ properties:
             type: object
             required:
                 - path
+            additionalProperties: false
             properties:
                 path:
                     type: string
-                    example: ssh://user@backupserver/./{fqdn}
+                    description: The local path or Borg URL of the repository.
+                    example: ssh://user@backupserver/./sourcehostname.borg
                 label:
                     type: string
+                    description: |
+                        An optional label for the repository, used in logging
+                        and to make selecting the repository easier on the
+                        command-line.
                     example: backupserver
+                encryption:
+                    type: string
+                    description: |
+                        The encryption mode with which to create the repository,
+                        only used for the repo-create action. To see the
+                        available encryption modes, run "borg init --help" with
+                        Borg 1 or "borg repo-create --help" with Borg 2.
+                    example: repokey-blake2
+                append_only:
+                    type: boolean
+                    description: |
+                        Whether the repository should be created append-only,
+                        only used for the repo-create action. Defaults to false.
+                    example: true
+                storage_quota:
+                    type: string
+                    description: |
+                        The storage quota with which to create the repository,
+                        only used for the repo-create action. Defaults to no
+                        quota.
+                    example: 5G
+                make_parent_directories:
+                    type: boolean
+                    description: |
+                        Whether any missing parent directories of the repository
+                        path should be created, only used for the repo-create
+                        action. Defaults to false.
+                    example: true
         description: |
             A required list of local or remote repositories with paths and
             optional labels (which can be used with the --repository flag to
@@ -48,8 +82,7 @@ properties:
             output of "borg help placeholders" for details. See ssh_command for
             SSH options like identity file or port. If systemd service is used,
             then add local repository paths in the systemd service file to the
-            ReadWritePaths list. Prior to borgmatic 1.7.10, repositories was a
-            list of plain path strings.
+            ReadWritePaths list.
         example:
             - path: ssh://user@backupserver/./sourcehostname.borg
               label: backupserver
@@ -99,13 +132,13 @@ properties:
             used when backing up special devices such as /dev/zero. Defaults to
             false. But when a database hook is used, the setting here is ignored
             and read_special is considered true.
-        example: false
+        example: true
     flags:
         type: boolean
         description: |
             Record filesystem flags (e.g. NODUMP, IMMUTABLE) in archive.
             Defaults to true.
-        example: true
+        example: false
     files_cache:
         type: string
         description: |
@@ -250,7 +283,7 @@ properties:
             repositories that were initialized with passphrase/repokey/keyfile
             encryption. Quote the value if it contains punctuation, so it parses
             correctly. And backslash any quote or backslash literals as well.
-            Defaults to not set.
+            Defaults to not set. Supports the "{credential ...}" syntax.
         example: "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
     checkpoint_interval:
         type: integer
@@ -284,6 +317,22 @@ properties:
             http://borgbackup.readthedocs.io/en/stable/usage/create.html for
             details. Defaults to "lz4".
         example: lz4
+    recompress:
+        type: string
+        enum: ['if-different', 'always', 'never']
+        description: |
+            Mode for recompressing data chunks according to MODE. 
+            Possible modes are:
+             * "if-different": Recompress if the current compression
+            is with a different compression algorithm.
+             * "always": Recompress even if the current compression
+            is with the same compression algorithm. Use this to change
+            the compression level.
+             * "never": Do not recompress. Use this option to explicitly
+            prevent recompression.
+            See https://borgbackup.readthedocs.io/en/stable/usage/recreate.html
+            for details. Defaults to "never".
+        example: if-different
     upload_rate_limit:
         type: integer
         description: |
@@ -426,19 +475,19 @@ properties:
         type: boolean
         description: |
             Bypass Borg error about a repository that has been moved. Defaults
-            to not bypassing.
+            to false.
         example: true
     unknown_unencrypted_repo_access_is_ok:
         type: boolean
         description: |
             Bypass Borg error about a previously unknown unencrypted repository.
-            Defaults to not bypassing.
+            Defaults to false.
         example: true
     check_i_know_what_i_am_doing:
         type: boolean
         description: |
             Bypass Borg confirmation about check with repair option. Defaults to
-            an interactive prompt from Borg.
+            false and an interactive prompt from Borg.
         example: true
     extra_borg_options:
         type: object
@@ -518,6 +567,12 @@ properties:
             not specified, borgmatic defaults to matching archives based on the
             archive_name_format (see above).
         example: sourcehostname
+    compact_threshold:
+        type: integer
+        description: |
+            Minimum saved space percentage threshold for compacting a segment,
+            defaults to 10.
+        example: 20
     checks:
         type: array
         items:
@@ -733,6 +788,10 @@ properties:
             List of one or more consistency checks to run on a periodic basis
             (if "frequency" is set) or every time borgmatic runs checks (if
             "frequency" is omitted).
+        example:
+          - name: archives
+            frequency: 2 weeks
+          - name: repository
     check_repositories:
         type: array
         items:
@@ -855,8 +914,31 @@ properties:
                     false.
                 example: true
         description: |
-            Settings for where to log borgmatic progress and how verbose those
+            Settings for where to log borgmatic output and how verbose those
             logs should be.
+        example: false
+    progress:
+        type: boolean
+        description: |
+            Display progress as each file or archive is processed when running
+            supported actions. Corresponds to the "--progress" flag on those
+            actions. Defaults to false.
+        example: true
+    statistics:
+        type: boolean
+        description: |
+            Display statistics for an archive when running supported actions.
+            Corresponds to the "--stats" flag on those actions. Defaults to
+            false.
+        example: true
+    list_details:
+        type: boolean
+        description: |
+            Display details for each file or archive as it is processed when
+            running supported actions. Corresponds to the "--list" flag on those
+            actions. Defaults to false.
+        example: true
+>>>>>>> main
     skip_actions:
         type: array
         items:
@@ -867,6 +949,7 @@ properties:
                 - prune
                 - compact
                 - create
+                - recreate
                 - check
                 - delete
                 - extract
@@ -896,8 +979,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before all
-            the actions for each repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before all the actions for each
+            repository.
         example:
             - "echo Starting actions."
     before_backup:
@@ -905,8 +989,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            creating a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before creating a backup, run once
+            per repository.
         example:
             - "echo Starting a backup."
     before_prune:
@@ -914,8 +999,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            pruning, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before pruning, run once per
+            repository.
         example:
             - "echo Starting pruning."
     before_compact:
@@ -923,8 +1009,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            compaction, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before compaction, run once per
+            repository.
         example:
             - "echo Starting compaction."
     before_check:
@@ -932,8 +1019,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            consistency checks, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before consistency checks, run once
+            per repository.
         example:
             - "echo Starting checks."
     before_extract:
@@ -941,8 +1029,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            extracting a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before extracting a backup, run once
+            per repository.
         example:
             - "echo Starting extracting."
     after_backup:
@@ -950,8 +1039,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            creating a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after creating a backup, run once per
+            repository.
         example:
             - "echo Finished a backup."
     after_compact:
@@ -959,8 +1049,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            compaction, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after compaction, run once per
+            repository.
         example:
             - "echo Finished compaction."
     after_prune:
@@ -968,8 +1059,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            pruning, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after pruning, run once per
+            repository.
         example:
             - "echo Finished pruning."
     after_check:
@@ -977,8 +1069,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            consistency checks, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after consistency checks, run once
+            per repository.
         example:
             - "echo Finished checks."
     after_extract:
@@ -986,8 +1079,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            extracting a backup, run once per repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after extracting a backup, run once
+            per repository.
         example:
             - "echo Finished extracting."
     after_actions:
@@ -995,8 +1089,9 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after all
-            actions for each repository.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after all actions for each
+            repository.
         example:
             - "echo Finished actions."
     on_error:
@@ -1004,9 +1099,10 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute when an
-            exception occurs during a "create", "prune", "compact", or "check"
-            action or an associated before/after hook.
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute when an exception occurs during a
+            "create", "prune", "compact", or "check" action or an associated
+            before/after hook.
         example:
             - "echo Error during create/prune/compact/check."
     before_everything:
@@ -1014,10 +1110,10 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute before
-            running all actions (if one of them is "create"). These are
-            collected from all configuration files and then run once before all
-            of them (prior to all actions).
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute before running all actions (if one of
+            them is "create"). These are collected from all configuration files
+            and then run once before all of them (prior to all actions).
         example:
             - "echo Starting actions."
     after_everything:
@@ -1025,14 +1121,157 @@ properties:
         items:
             type: string
         description: |
-            List of one or more shell commands or scripts to execute after
-            running all actions (if one of them is "create"). These are
-            collected from all configuration files and then run once after all
-            of them (after any action).
+            Deprecated. Use "commands:" instead. List of one or more shell
+            commands or scripts to execute after running all actions (if one of
+            them is "create"). These are collected from all configuration files
+            and then run once after all of them (after any action).
         example:
             - "echo Completed actions."
+    commands:
+        type: array
+        items:
+            type: object
+            oneOf:
+                - required: [before, run]
+                  additionalProperties: false
+                  properties:
+                      before:
+                          type: string
+                          enum:
+                              - action
+                              - repository
+                              - configuration
+                              - everything
+                          description: |
+                              Name for the point in borgmatic's execution that
+                              the commands should be run before (required if
+                              "after" isn't set):
+                               * "action" runs before each action for each
+                              repository.
+                               * "repository" runs before all actions for each
+                              repository.
+                               * "configuration" runs before all actions and
+                              repositories in the current configuration file.
+                               * "everything" runs before all configuration
+                              files.
+                          example: action
+                      when:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - repo-create
+                                  - transfer
+                                  - prune
+                                  - compact
+                                  - create
+                                  - recreate
+                                  - check
+                                  - delete
+                                  - extract
+                                  - config
+                                  - export-tar
+                                  - mount
+                                  - umount
+                                  - repo-delete
+                                  - restore
+                                  - repo-list
+                                  - list
+                                  - repo-info
+                                  - info
+                                  - break-lock
+                                  - key
+                                  - borg
+                          description: |
+                              List of actions for which the commands will be
+                              run. Defaults to running for all actions.
+                          example: [create, prune, compact, check]
+                      run:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of one or more shell commands or scripts to
+                              run when this command hook is triggered. Required.
+                          example:
+                              - "echo Doing stuff."
+                - required: [after, run]
+                  additionalProperties: false
+                  properties:
+                      after:
+                          type: string
+                          enum:
+                              - action
+                              - repository
+                              - configuration
+                              - everything
+                              - error
+                          description: |
+                              Name for the point in borgmatic's execution that
+                              the commands should be run after (required if
+                              "before" isn't set):
+                               * "action" runs after each action for each
+                              repository.
+                               * "repository" runs after all actions for each
+                              repository.
+                               * "configuration" runs after all actions and
+                              repositories in the current configuration file.
+                               * "everything" runs after all configuration
+                              files.
+                               * "error" runs after an error occurs.
+                          example: action
+                      when:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - repo-create
+                                  - transfer
+                                  - prune
+                                  - compact
+                                  - create
+                                  - recreate
+                                  - check
+                                  - delete
+                                  - extract
+                                  - config
+                                  - export-tar
+                                  - mount
+                                  - umount
+                                  - repo-delete
+                                  - restore
+                                  - repo-list
+                                  - list
+                                  - repo-info
+                                  - info
+                                  - break-lock
+                                  - key
+                                  - borg
+                          description: |
+                              Only trigger the hook when borgmatic is run with
+                              particular actions listed here. Defaults to
+                              running for all actions.
+                          example: [create, prune, compact, check]
+                      run:
+                          type: array
+                          items:
+                              type: string
+                          description: |
+                              List of one or more shell commands or scripts to
+                              run when this command hook is triggered. Required.
+                          example:
+                              - "echo Doing stuff."
+        description: |
+            List of one or more command hooks to execute, triggered at
+            particular points during borgmatic's execution. For each command
+            hook, specify one of "before" or "after", not both.
+        example:
+            - before: action
+              when: [create]
+              run: [echo Backing up.]
     bootstrap:
         type: object
+        additionalProperties: false
         properties:
             store_config_files:
                 type: boolean
@@ -1089,13 +1328,15 @@ properties:
                         Username with which to connect to the database. Defaults
                         to the username of the current user. You probably want
                         to specify the "postgres" superuser here when the
-                        database name is "all".
+                        database name is "all". Supports the "{credential ...}"
+                        syntax.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "{credential ...}"
+                        syntax.
                     example: dbuser
                 password:
                     type: string
@@ -1103,13 +1344,15 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if PostgreSQL is configured to
                         trust the configured username without a password or you
-                        create a ~/.pgpass file.
+                        create a ~/.pgpass file. Supports the "{credential ...}"
+                        syntax.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "{credential ...}" syntax.
                     example: trustsome1
                 no_owner:
                     type: boolean
@@ -1136,6 +1379,18 @@ properties:
                         individual databases. See the pg_dump documentation for
                         more about formats.
                     example: directory
+                compression:
+                    type: ["string", "integer"]
+                    description: |
+                        Database dump compression level (integer) or method
+                        ("gzip", "lz4", "zstd", or "none") and optional
+                        colon-separated detail. Defaults to moderate "gzip" for
+                        "custom" and "directory" formats and no compression for
+                        the "plain" format. Compression is not supported for the
+                        "tar" format. Be aware that Borg does its own
+                        compression as well, so you may not need it in both
+                        places.
+                    example: none
                 ssl_mode:
                     type: string
                     enum: ['disable', 'allow', 'prefer',
@@ -1172,11 +1427,11 @@ properties:
                         Command to use instead of "pg_dump" or "pg_dumpall".
                         This can be used to run a specific pg_dump version
                         (e.g., one inside a running container). If you run it
-                        from within a container, make sure to mount your
-                        host's ".borgmatic" folder into the container using
-                        the same directory structure. Defaults to "pg_dump"
-                        for single database dump or "pg_dumpall" to dump all
-                        databases.
+                        from within a container, make sure to mount the path in
+                        the "user_runtime_directory" option from the host into
+                        the container at the same location. Defaults to
+                        "pg_dump" for single database dump or "pg_dumpall" to
+                        dump all databases.
                     example: docker exec my_pg_container pg_dump
                 pg_restore_command:
                     type: string
@@ -1229,6 +1484,9 @@ properties:
             https://www.postgresql.org/docs/current/app-pgdump.html and
             https://www.postgresql.org/docs/current/libpq-ssl.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     mariadb_databases:
         type: array
         items:
@@ -1269,13 +1527,15 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Defaults
-                        to the username of the current user.
+                        to the username of the current user. Supports the
+                        "{credential ...}" syntax.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "{credential ...}"
+                        syntax.
                     example: dbuser
                 password:
                     type: string
@@ -1283,16 +1543,39 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if MariaDB is configured to
                         trust the configured username without a password.
+                        Supports the "{credential ...}" syntax.
                     example: trustsome1
+                restore_password:
+                    type: string
+                    description: |
+                        Password with which to connect to the restore database.
+                        Defaults to the "password" option. Supports the
+                        "{credential ...}" syntax.
+                    example: trustsome1
+                tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and server. The default varies based on the
+                        MariaDB version.
+                    example: false
+                restore_tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and restore server. The default varies based on
+                        the MariaDB version.
+                    example: false
                 mariadb_dump_command:
                     type: string
                     description: |
                         Command to use instead of "mariadb-dump". This can be
                         used to run a specific mariadb_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mariadb-dump".
+                        inside a running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to
+                        "mariadb-dump".
                     example: docker exec mariadb_container mariadb-dump
                 mariadb_command:
                     type: string
@@ -1301,12 +1584,6 @@ properties:
                         run a specific mariadb version (e.g., one inside a
                         running container). Defaults to "mariadb".
                     example: docker exec mariadb_container mariadb           
-                restore_password:
-                    type: string
-                    description: |
-                        Password with which to connect to the restore database.
-                        Defaults to the "password" option.
-                    example: trustsome1
                 format:
                     type: string
                     enum: ['sql']
@@ -1355,6 +1632,9 @@ properties:
             added to your source directories at runtime and streamed directly
             to Borg. Requires mariadb-dump/mariadb commands. See
             https://mariadb.com/kb/en/library/mysqldump/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     mysql_databases:
         type: array
         items:
@@ -1395,13 +1675,15 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Defaults
-                        to the username of the current user.
+                        to the username of the current user. Supports the
+                        "{credential ...}" syntax.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "{credential ...}"
+                        syntax.
                     example: dbuser
                 password:
                     type: string
@@ -1409,22 +1691,38 @@ properties:
                         Password with which to connect to the database. Omitting
                         a password will only work if MySQL is configured to
                         trust the configured username without a password.
+                        Supports the "{credential ...}" syntax.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "{credential ...}" syntax.
                     example: trustsome1
+                tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and server. The default varies based on the
+                        MySQL installation.
+                    example: false
+                restore_tls:
+                    type: boolean
+                    description: |
+                        Whether to TLS-encrypt data transmitted between the
+                        client and restore server. The default varies based on
+                        the MySQL installation.
+                    example: false
                 mysql_dump_command:
                     type: string
                     description: |
-                        Command to use instead of "mysqldump". This can be
-                        used to run a specific mysql_dump version (e.g., one
-                        inside a running container). If you run it from within
-                        a container, make sure to mount your host's
-                        ".borgmatic" folder into the container using the same
-                        directory structure. Defaults to "mysqldump".
+                        Command to use instead of "mysqldump". This can be used
+                        to run a specific mysql_dump version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "mysqldump".
                     example: docker exec mysql_container mysqldump
                 mysql_command:
                     type: string
@@ -1482,6 +1780,9 @@ properties:
             to Borg. Requires mysqldump/mysql commands. See
             https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html for
             details.
+        example:
+            - name: users
+              hostname: database.example.org
     sqlite_databases:
         type: array
         items:
@@ -1511,6 +1812,33 @@ properties:
                         Path to the SQLite database file to restore to. Defaults
                         to the "path" option.
                     example: /var/lib/sqlite/users.db
+                sqlite_command:
+                    type: string
+                    description: |
+                        Command to use instead of "sqlite3". This can be used to
+                        run a specific sqlite3 version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location. Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
+                sqlite_restore_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead
+                        of "sqlite3". This can be used to run a specific 
+                        sqlite3 version (e.g., one inside a running container). 
+                        Defaults to "sqlite3".
+                    example: docker exec sqlite_container sqlite3
+        description: |
+            List of one or more SQLite databases to dump before creating a
+            backup, run once per configuration file. The database dumps are
+            added to your source directories at runtime and streamed directly to
+            Borg. Requires the sqlite3 command. See https://sqlite.org/cli.html
+            for details.
+        example:
+            - name: users
+              path: /var/lib/db.sqlite
     mongodb_databases:
         type: array
         items:
@@ -1551,25 +1879,29 @@ properties:
                     type: string
                     description: |
                         Username with which to connect to the database. Skip it
-                        if no authentication is needed.
+                        if no authentication is needed. Supports the
+                        "{credential ...}" syntax.
                     example: dbuser
                 restore_username:
                     type: string
                     description: |
                         Username with which to restore the database. Defaults to
-                        the "username" option.
+                        the "username" option. Supports the "{credential ...}"
+                        syntax.
                     example: dbuser
                 password:
                     type: string
                     description: |
                         Password with which to connect to the database. Skip it
-                        if no authentication is needed.
+                        if no authentication is needed. Supports the
+                        "{credential ...}" syntax.
                     example: trustsome1
                 restore_password:
                     type: string
                     description: |
                         Password with which to connect to the restore database.
-                        Defaults to the "password" option.
+                        Defaults to the "password" option. Supports the
+                        "{credential ...}" syntax.
                     example: trustsome1
                 authentication_database:
                     type: string
@@ -1602,6 +1934,25 @@ properties:
                         dump command, without performing any validation on them.
                         See mongorestore documentation for details.
                     example: --restoreDbUsersAndRoles
+                mongodump_command:
+                    type: string
+                    description: |
+                        Command to use instead of "mongodump". This can be used
+                        to run a specific mongodump version (e.g., one inside a
+                        running container). If you run it from within a
+                        container, make sure to mount the path in the
+                        "user_runtime_directory" option from the host into the
+                        container at the same location.  Defaults to
+                        "mongodump".
+                    example: docker exec mongodb_container mongodump
+                mongorestore_command:
+                    type: string
+                    description: |
+                        Command to run when restoring a database instead of
+                        "mongorestore". This can be used to run a specific
+                        mongorestore version (e.g., one inside a running
+                        container). Defaults to "mongorestore".
+                    example: docker exec mongodb_container mongorestore
         description: |
             List of one or more MongoDB databases to dump before creating a
             backup, run once per configuration file. The database dumps are
@@ -1609,6 +1960,9 @@ properties:
             to Borg. Requires mongodump/mongorestore commands. See
             https://docs.mongodb.com/database-tools/mongodump/ and
             https://docs.mongodb.com/database-tools/mongorestore/ for details.
+        example:
+            - name: users
+              hostname: database.example.org
     ntfy:
         type: object
         required: ['topic']
@@ -1628,21 +1982,24 @@ properties:
             username:
                 type: string
                 description: |
-                    The username used for authentication.
+                    The username used for authentication. Supports the
+                    "{credential ...}" syntax.
                 example: testuser
             password:
                 type: string
                 description: |
-                    The password used for authentication.
+                    The password used for authentication. Supports the
+                    "{credential ...}" syntax.
                 example: fakepassword
             access_token:
                 type: string
                 description: |
                     An ntfy access token to authenticate with instead of
-                    username/password.
+                    username/password. Supports the "{credential ...}" syntax.
                 example: tk_AgQdq7mVBoFD37zQVN29RhuMzNIz2
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1666,6 +2023,7 @@ properties:
                         example: incoming_envelope
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1689,6 +2047,7 @@ properties:
                         example: incoming_envelope
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -1734,17 +2093,20 @@ properties:
             token:
                 type: string
                 description: |
-                    Your application's API token.
+                    Your application's API token. Supports the "{credential
+                    ...}" syntax.
                 example: 7ms6TXHpTokTou2P6x4SodDeentHRa
             user:
                 type: string
                 description: |
-                    Your user/group key (or that of your target user), viewable 
-                    when logged into your dashboard: often referred to as 
+                    Your user/group key (or that of your target user), viewable
+                    when logged into your dashboard: often referred to as
                     USER_KEY in Pushover documentation and code examples.
+                    Supports the "{credential ...}" syntax.
                 example: hwRwoWsXMBWwgrSecfa9EfPey55WSN
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -1784,8 +2146,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -1820,6 +2182,7 @@ properties:
                         example: Pushover Link
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -1859,8 +2222,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -1895,6 +2258,7 @@ properties:
                         example: Pushover Link
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     message:
                         type: string
@@ -1934,8 +2298,8 @@ properties:
                         type: boolean
                         description: |
                             Set to True to enable HTML parsing of the message.
-                            Set to False for plain text.
-                        example: True
+                            Set to false for plain text.
+                        example: true
                     sound:
                         type: string
                         description: |
@@ -1987,6 +2351,8 @@ properties:
     zabbix:
         type: object
         additionalProperties: false
+        required:
+            - server
         properties:
             itemid:
                 type: integer
@@ -2009,28 +2375,30 @@ properties:
             server:
                 type: string
                 description: |
-                    The address of your Zabbix instance.
+                    The API endpoint URL of your Zabbix instance, usually ending
+                    with "/api_jsonrpc.php". Required.
                 example: https://zabbix.your-domain.com
             username:
                 type: string
                 description: |
                     The username used for authentication. Not needed if using
-                    an API key.
+                    an API key. Supports the "{credential ...}" syntax.
                 example: testuser
             password:
                 type: string
                 description: |
                     The password used for authentication. Not needed if using
-                    an API key.
+                    an API key. Supports the "{credential ...}" syntax.
                 example: fakepassword
             api_key:
                 type: string
                 description: |
-                    The API key used for authentication. Not needed if using
-                    an username/password.
+                    The API key used for authentication. Not needed if using an
+                    username/password. Supports the "{credential ...}" syntax.
                 example: fakekey
             start:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2039,6 +2407,7 @@ properties:
                         example: STARTED
             finish:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2047,6 +2416,7 @@ properties:
                         example: FINISH
             fail:
                 type: object
+                additionalProperties: false
                 properties:
                     value:
                         type: ["integer", "string"]
@@ -2078,15 +2448,20 @@ properties:
                 type: array
                 items:
                     type: object
+                    additionalProperties: false
                     required:
                         - url
                         - label
                     properties:
                         url:
                             type: string
+                            description: URL of this Apprise service.
                             example: "gotify://hostname/token"
                         label:
                             type: string
+                            description: |
+                                Label used in borgmatic logs for this Apprise
+                                service.
                             example: gotify
                 description: |
                     A list of Apprise services to publish to with URLs and
@@ -2101,7 +2476,7 @@ properties:
             send_logs:
                 type: boolean
                 description: |
-                    Send borgmatic logs to Apprise services as part the
+                    Send borgmatic logs to Apprise services as part of the
                     "finish", "fail", and "log" states. Defaults to true.
                 example: false
             logs_size_limit:
@@ -2114,6 +2489,7 @@ properties:
             start:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2129,6 +2505,7 @@ properties:
             finish:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2144,6 +2521,7 @@ properties:
             fail:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2159,6 +2537,7 @@ properties:
             log:
                 type: object
                 required: ['body']
+                additionalProperties: false
                 properties:
                     title:
                         type: string
@@ -2212,7 +2591,7 @@ properties:
             send_logs:
                 type: boolean
                 description: |
-                    Send borgmatic logs to Healthchecks as part the "finish",
+                    Send borgmatic logs to Healthchecks as part of the "finish",
                     "fail", and "log" states. Defaults to true.
                 example: false
             ping_body_limit:
@@ -2280,6 +2659,12 @@ properties:
                     - start
                     - finish
                     - fail
+            verify_tls:
+                type: boolean
+                description: |
+                    Verify the TLS certificate of the push URL host. Defaults to
+                    true.
+                example: false
         description: |
             Configuration for a monitoring integration with Uptime Kuma using
             the Push monitor type.
@@ -2307,9 +2692,15 @@ properties:
             integration_key:
                 type: string
                 description: |
-                    PagerDuty integration key used to notify PagerDuty
-                    when a backup errors.
+                    PagerDuty integration key used to notify PagerDuty when a
+                    backup errors. Supports the "{credential ...}" syntax.
                 example: a177cad45bd374409f78906a810a3074
+            send_logs:
+                type: boolean
+                description: |
+                    Send borgmatic logs to PagerDuty when a backup errors.
+                    Defaults to true.
+                example: false
         description: |
             Configuration for a monitoring integration with PagerDuty. Create an
             account at https://www.pagerduty.com if you'd like to use this
@@ -2482,3 +2873,47 @@ properties:
         description: |
             Configuration for integration with Linux LVM (Logical Volume
             Manager).
+    container:
+        type: object
+        additionalProperties: false
+        properties:
+            secrets_directory:
+                type: string
+                description: |
+                    Secrets directory to use instead of "/run/secrets".
+                example: /path/to/secrets
+        description: |
+            Configuration for integration with Docker or Podman secrets.
+    keepassxc:
+        type: object
+        additionalProperties: false
+        properties:
+            keepassxc_cli_command:
+                type: string
+                description: |
+                    Command to use instead of "keepassxc-cli".
+                example: /usr/local/bin/keepassxc-cli
+            key_file:
+                type: string
+                description: |
+                    Path to a key file for unlocking the KeePassXC database.
+                example: /path/to/keyfile
+            yubikey:
+                type: string
+                description: |
+                    YubiKey slot and optional serial number used to access the
+                    KeePassXC database. The format is "<slot[:serial]>", where:
+                     * <slot> is the YubiKey slot number (e.g., `1` or `2`).
+                     * <serial> (optional) is the YubiKey's serial number (e.g.,
+                       `7370001`).
+                example: "1:7370001"
+        description: |
+            Configuration for integration with the KeePassXC password manager.
+    default_actions:
+        type: boolean
+        description: |
+            Whether to apply default actions (e.g., backup) when no arguments
+            are supplied to the borgmatic command. If set to true, borgmatic
+            triggers the default actions (create, prune, compact and check). If
+            set to false, borgmatic displays the help message instead.
+        example: true

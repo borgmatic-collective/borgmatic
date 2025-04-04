@@ -36,6 +36,7 @@ def parse_pattern(pattern_line, default_style=borgmatic.borg.pattern.Pattern_sty
         path,
         borgmatic.borg.pattern.Pattern_type(pattern_type),
         borgmatic.borg.pattern.Pattern_style(pattern_style),
+        source=borgmatic.borg.pattern.Pattern_source.CONFIG,
     )
 
 
@@ -51,7 +52,9 @@ def collect_patterns(config):
     try:
         return (
             tuple(
-                borgmatic.borg.pattern.Pattern(source_directory)
+                borgmatic.borg.pattern.Pattern(
+                    source_directory, source=borgmatic.borg.pattern.Pattern_source.CONFIG
+                )
                 for source_directory in config.get('source_directories', ())
             )
             + tuple(
@@ -127,8 +130,11 @@ def expand_directory(directory, working_directory):
 def expand_patterns(patterns, working_directory=None, skip_paths=None):
     '''
     Given a sequence of borgmatic.borg.pattern.Pattern instances and an optional working directory,
-    expand tildes and globs in each root pattern. Return all the resulting patterns (not just the
-    root patterns) as a tuple.
+    expand tildes and globs in each root pattern and expand just tildes in each non-root pattern.
+    The idea is that non-root patterns may be regular expressions or other pattern styles containing
+    "*" that borgmatic should not expand as a shell glob.
+
+    Return all the resulting patterns as a tuple.
 
     If a set of paths are given to skip, then don't expand any patterns matching them.
     '''
@@ -144,12 +150,21 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
                         pattern.type,
                         pattern.style,
                         pattern.device,
+                        pattern.source,
                     )
                     for expanded_path in expand_directory(pattern.path, working_directory)
                 )
                 if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
                 and pattern.path not in (skip_paths or ())
-                else (pattern,)
+                else (
+                    borgmatic.borg.pattern.Pattern(
+                        os.path.expanduser(pattern.path),
+                        pattern.type,
+                        pattern.style,
+                        pattern.device,
+                        pattern.source,
+                    ),
+                )
             )
             for pattern in patterns
         )
@@ -178,6 +193,7 @@ def device_map_patterns(patterns, working_directory=None):
                 and os.path.exists(full_path)
                 else None
             ),
+            source=pattern.source,
         )
         for pattern in patterns
         for full_path in (os.path.join(working_directory or '', pattern.path),)
@@ -256,7 +272,6 @@ def run_create(
     repository,
     config,
     config_paths,
-    hook_context,
     local_borg_version,
     create_arguments,
     global_arguments,
@@ -274,14 +289,15 @@ def run_create(
     ):
         return
 
-    borgmatic.hooks.command.execute_hook(
-        config.get('before_backup'),
-        config.get('umask'),
-        config_filename,
-        'pre-backup',
-        global_arguments.dry_run,
-        **hook_context,
-    )
+    if config.get('list_details') and config.get('progress'):
+        raise ValueError(
+            'With the create action, only one of --list/--files/list_details and --progress/progress can be used.'
+        )
+
+    if config.get('list_details') and create_arguments.json:
+        raise ValueError(
+            'With the create action, only one of --list/--files/list_details and --json can be used.'
+        )
 
     logger.info(f'Creating archive{dry_run_label}')
     working_directory = borgmatic.config.paths.get_working_directory(config)
@@ -321,10 +337,7 @@ def run_create(
             borgmatic_runtime_directory,
             local_path=local_path,
             remote_path=remote_path,
-            progress=create_arguments.progress,
-            stats=create_arguments.stats,
             json=create_arguments.json,
-            list_files=create_arguments.list_files,
             stream_processes=stream_processes,
         )
 
@@ -338,12 +351,3 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-
-    borgmatic.hooks.command.execute_hook(
-        config.get('after_backup'),
-        config.get('umask'),
-        config_filename,
-        'post-backup',
-        global_arguments.dry_run,
-        **hook_context,
-    )

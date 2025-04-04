@@ -1,4 +1,95 @@
-1.9.10.dev0
+2.0.0.dev0
+ * TL;DR: More flexible, completely revamped command hooks. All config options settable on the
+   command-line. Config option defaults for many command-line flags. New "key import" and "recreate"
+   actions. Almost everything is backwards compatible.
+ * #262: Add a "default_actions" option that supports disabling default actions when borgmatic is
+   run without any command-line arguments.
+ * #303: Deprecate the "--override" flag in favor of direct command-line flags for every borgmatic
+   configuration option. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/make-per-application-backups/#configuration-overrides
+ * #303: Add configuration options that serve as defaults for some (but not all) command-line
+   action flags. For example, each entry in "repositories:" now has an "encryption" option that
+   applies to the "repo-create" action, serving as a default for the "--encryption" flag. See the
+   documentation for more information: https://torsion.org/borgmatic/docs/reference/configuration/
+ * #345: Add a "key import" action to import a repository key from backup.
+ * #422: Add home directory expansion to file-based and KeePassXC credential hooks.
+ * #610: Add a "recreate" action for recreating archives, for instance for retroactively excluding
+   particular files from existing archives.
+ * #790, #821: Deprecate all "before_*", "after_*" and "on_error" command hooks in favor of more
+   flexible "commands:". See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
+ * #790: BREAKING: For both new and deprecated command hooks, run a configured "after" hook even if
+   an error occurs first. This allows you to perform cleanup steps that correspond to "before"
+   preparation commands—even when something goes wrong.
+ * #790: BREAKING: Run all command hooks (both new and deprecated) respecting the
+   "working_directory" option if configured, meaning that hook commands are run in that directory.
+ * #836: Add a custom command option for the SQLite hook.
+ * #837: Add custom command options for the MongoDB hook.
+ * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
+ * #1020: Document a database use case involving a temporary database client container:
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+ * #1037: Fix an error with the "extract" action when both a remote repository and a
+   "working_directory" are used.
+ * #1044: Fix an error in the systemd credential hook when the credential name contains a "."
+   character.
+ * #1047: Add "key-file" and "yubikey" options to the KeePassXC credential hook.
+ * #1048: Fix a "no such file or directory" error in ZFS, Btrfs, and LVM hooks with nested
+   directories that reside on separate devices/filesystems.
+ * #1050: Fix a failure in the "spot" check when the archive contains a symlink.
+ * #1051: Add configuration filename to the "Successfully ran configuration file" log message.
+
+1.9.14
+ * #409: With the PagerDuty monitoring hook, send borgmatic logs to PagerDuty so they show up in the
+   incident UI. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook
+ * #936: Clarify Zabbix monitoring hook documentation about creating items:
+   https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook
+ * #1017: Fix a regression in which some MariaDB/MySQL passwords were not escaped correctly.
+ * #1021: Fix a regression in which the "exclude_patterns" option didn't expand "~" (the user's
+   home directory). This fix means that all "patterns" and "patterns_from" also now expand "~".
+ * #1023: Fix an error in the Btrfs hook when attempting to snapshot a read-only subvolume. Now,
+   read-only subvolumes are ignored since Btrfs can't actually snapshot them.
+
+1.9.13
+ * #975: Add a "compression" option to the PostgreSQL database hook.
+ * #1001: Fix a ZFS error during snapshot cleanup.
+ * #1003: In the Zabbix monitoring hook, support Zabbix 7.2's authentication changes.
+ * #1009: Send database passwords to MariaDB and MySQL via anonymous pipe, which is more secure than
+   using an environment variable.
+ * #1013: Send database passwords to MongoDB via anonymous pipe, which is more secure than using
+   "--password" on the command-line!
+ * #1015: When ctrl-C is pressed, more strongly encourage Borg to actually exit.
+ * Add a "verify_tls" option to the Uptime Kuma monitoring hook for disabling TLS verification.
+ * Add "tls" options to the MariaDB and MySQL database hooks to enable or disable TLS encryption
+   between client and server.
+
+1.9.12
+ * #1005: Fix the credential hooks to avoid using Python 3.12+ string features. Now borgmatic will
+   work with Python 3.9, 3.10, and 3.11 again.
+
+1.9.11
+ * #795: Add credential loading from file, KeePassXC, and Docker/Podman secrets. See the
+   documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
+ * #996: Fix the "create" action to omit the repository label prefix from Borg's output when
+   databases are enabled.
+ * #998: Send the "encryption_passphrase" option to Borg via an anonymous pipe, which is more secure
+   than using an environment variable.
+ * #999: Fix a runtime directory error from a conflict between "extra_borg_options" and special file
+   detection.
+ * #1001: For the ZFS, Btrfs, and LVM hooks, only make snapshots for root patterns that come from
+   a borgmatic configuration option (e.g. "source_directories")—not from other hooks within
+   borgmatic.
+ * #1001: Fix a ZFS/LVM error due to colliding snapshot mount points for nested datasets or logical
+   volumes.
+ * #1001: Don't try to snapshot ZFS datasets that have the "canmount=off" property.
+ * Fix another error in the Btrfs hook when a subvolume mounted at "/" is configured in borgmatic's
+   source directories.
+
+1.9.10
+ * #966: Add a "{credential ...}" syntax for loading systemd credentials into borgmatic
+   configuration files. See the documentation for more information:
+   https://torsion.org/borgmatic/docs/how-to/provide-your-passwords/
  * #987: Fix a "list" action error when the "encryption_passcommand" option is set.
  * #987: When both "encryption_passcommand" and "encryption_passphrase" are configured, prefer
    "encryption_passphrase" even if it's an empty value.
@@ -7,6 +98,8 @@
    refused to run checks in this situation.
  * #989: Fix the log message code to avoid using Python 3.10+ logging features. Now borgmatic will
    work with Python 3.9 again.
+ * Capture and delay any log records produced before logging is fully configured, so early log
+   records don't get lost.
  * Add support for Python 3.13.
 
 1.9.9

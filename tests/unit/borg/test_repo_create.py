@@ -36,7 +36,7 @@ def insert_repo_create_command_mock(
     flexmock(module).should_receive('execute_command').with_args(
         repo_create_command,
         output_file=module.DO_NOT_CAPTURE,
-        extra_environment=None,
+        environment=None,
         working_directory=working_directory,
         borg_local_path=repo_create_command[0],
         borg_exit_codes=borg_exit_codes,
@@ -228,7 +228,29 @@ def test_create_repository_with_append_only_calls_borg_with_append_only_flag():
     module.create_repository(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'append_only': True},
+        local_borg_version='2.3.4',
+        global_arguments=flexmock(log_json=False),
+        encryption_mode='repokey',
+        append_only=True,
+    )
+
+
+def test_create_repository_with_append_only_config_calls_borg_with_append_only_flag():
+    insert_repo_info_command_not_found_mock()
+    insert_repo_create_command_mock(REPO_CREATE_COMMAND + ('--append-only', '--repo', 'repo'))
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_repository_flags').and_return(
+        (
+            '--repo',
+            'repo',
+        )
+    )
+
+    module.create_repository(
+        dry_run=False,
+        repository_path='repo',
+        config={'append_only': True},
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
@@ -252,7 +274,7 @@ def test_create_repository_with_storage_quota_calls_borg_with_storage_quota_flag
     module.create_repository(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'storage_quota': '5G'},
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
@@ -274,11 +296,11 @@ def test_create_repository_with_make_parent_dirs_calls_borg_with_make_parent_dir
     module.create_repository(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'make_parent_directories': True},
         local_borg_version='2.3.4',
         global_arguments=flexmock(log_json=False),
         encryption_mode='repokey',
-        make_parent_dirs=True,
+        make_parent_directories=True,
     )
 
 

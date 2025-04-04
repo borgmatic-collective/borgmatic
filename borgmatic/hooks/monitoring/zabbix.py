@@ -2,6 +2,8 @@ import logging
 
 import requests
 
+import borgmatic.hooks.credential.parse
+
 logger = logging.getLogger(__name__)
 
 
@@ -12,6 +14,42 @@ def initialize_monitor(
     No initialization is necessary for this monitor.
     '''
     pass
+
+
+def send_zabbix_request(server, headers, data):
+    '''
+    Given a Zabbix server URL, HTTP headers as a dict, and valid Zabbix JSON payload data as a dict,
+    send a request to the Zabbix server via API.
+
+    Return the response "result" value or None.
+    '''
+    logging.getLogger('urllib3').setLevel(logging.ERROR)
+
+    logger.debug(f'Sending a "{data["method"]}" request to the Zabbix server')
+
+    try:
+        response = requests.post(server, headers=headers, json=data)
+
+        if not response.ok:
+            response.raise_for_status()
+    except requests.exceptions.RequestException as error:
+        logger.warning(f'Zabbix error: {error}')
+
+        return None
+
+    try:
+        result = response.json().get('result')
+        error_message = result['data'][0]['error']
+    except requests.exceptions.JSONDecodeError:
+        logger.warning('Zabbix error: Cannot parse API response')
+
+        return None
+    except (TypeError, KeyError, IndexError):
+        return result
+    else:
+        logger.warning(f'Zabbix error: {error_message}')
+
+        return None
 
 
 def ping_monitor(hook_config, config, config_filename, state, monitoring_log_level, dry_run):
@@ -34,22 +72,30 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         },
     )
 
+    try:
+        username = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('username'), config
+        )
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('password'), config
+        )
+        api_key = borgmatic.hooks.credential.parse.resolve_credential(
+            hook_config.get('api_key'), config
+        )
+    except ValueError as error:
+        logger.warning(f'Zabbix credential error: {error}')
+
+        return
+
     server = hook_config.get('server')
-    username = hook_config.get('username')
-    password = hook_config.get('password')
-    api_key = hook_config.get('api_key')
     itemid = hook_config.get('itemid')
     host = hook_config.get('host')
     key = hook_config.get('key')
     value = state_config.get('value')
     headers = {'Content-Type': 'application/json-rpc'}
 
-    logger.info(f'Updating Zabbix{dry_run_label}')
+    logger.info(f'Pinging Zabbix{dry_run_label}')
     logger.debug(f'Using Zabbix URL: {server}')
-
-    if server is None:
-        logger.warning('Server missing for Zabbix')
-        return
 
     # Determine the Zabbix method used to store the value: itemid or host/key
     if itemid is not None:
@@ -61,8 +107,8 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
             'id': 1,
         }
 
-    elif (host and key) is not None:
-        logger.info(f'Updating Host:{host} and Key:{key} on Zabbix')
+    elif host is not None and key is not None:
+        logger.info(f'Updating Host: "{host}" and Key: "{key}" on Zabbix')
         data = {
             'jsonrpc': '2.0',
             'method': 'history.push',
@@ -72,58 +118,63 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     elif host is not None:
         logger.warning('Key missing for Zabbix')
-        return
 
+        return
     elif key is not None:
         logger.warning('Host missing for Zabbix')
+
         return
     else:
         logger.warning('No Zabbix itemid or host/key provided')
+
         return
 
     # Determine the authentication method: API key or username/password
     if api_key is not None:
         logger.info('Using API key auth for Zabbix')
-        headers['Authorization'] = 'Bearer ' + api_key
-
-    elif (username and password) is not None:
-        logger.info('Using user/pass auth with user {username} for Zabbix')
-        auth_data = {
+        headers['Authorization'] = f'Bearer {api_key}'
+    elif username is not None and password is not None:
+        logger.info(f'Using user/pass auth with user {username} for Zabbix')
+        login_data = {
             'jsonrpc': '2.0',
             'method': 'user.login',
             'params': {'username': username, 'password': password},
             'id': 1,
         }
+
         if not dry_run:
-            logging.getLogger('urllib3').setLevel(logging.ERROR)
-            try:
-                response = requests.post(server, headers=headers, json=auth_data)
-                data['auth'] = response.json().get('result')
-                if not response.ok:
-                    response.raise_for_status()
-            except requests.exceptions.RequestException as error:
-                logger.warning(f'Zabbix error: {error}')
+            result = send_zabbix_request(server, headers, login_data)
+
+            if not result:
                 return
 
+            headers['Authorization'] = f'Bearer {result}'
     elif username is not None:
         logger.warning('Password missing for Zabbix authentication')
-        return
 
+        return
     elif password is not None:
         logger.warning('Username missing for Zabbix authentication')
+
         return
     else:
         logger.warning('Authentication data missing for Zabbix')
+
         return
 
     if not dry_run:
-        logging.getLogger('urllib3').setLevel(logging.ERROR)
-        try:
-            response = requests.post(server, headers=headers, json=data)
-            if not response.ok:
-                response.raise_for_status()
-        except requests.exceptions.RequestException as error:
-            logger.warning(f'Zabbix error: {error}')
+        send_zabbix_request(server, headers, data)
+
+    if username is not None and password is not None:
+        logout_data = {
+            'jsonrpc': '2.0',
+            'method': 'user.logout',
+            'params': [],
+            'id': 1,
+        }
+
+        if not dry_run:
+            send_zabbix_request(server, headers, logout_data)
 
 
 def destroy_monitor(ping_url_or_uuid, config, monitoring_log_level, dry_run):  # pragma: no cover

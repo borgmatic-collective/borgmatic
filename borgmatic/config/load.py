@@ -69,7 +69,7 @@ def include_configuration(loader, filename_node, include_directory, config_paths
         ]
 
     raise ValueError(
-        '!include value is not supported; use a single filename or a list of filenames'
+        'The value given for the !include tag is invalid; use a single filename or a list of filenames instead'
     )
 
 

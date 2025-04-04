@@ -53,7 +53,7 @@ def fuzz_argument(arguments, argument_name):
 
 def test_transfer_archives_command_does_not_duplicate_flags_or_raise():
     arguments = borgmatic.commands.arguments.parse_arguments(
-        'transfer', '--source-repository', 'foo'
+        {}, 'transfer', '--source-repository', 'foo'
     )['transfer']
     flexmock(borgmatic.borg.transfer).should_receive('execute_command').replace_with(
         assert_command_does_not_duplicate_flags
@@ -74,7 +74,7 @@ def test_transfer_archives_command_does_not_duplicate_flags_or_raise():
 
 
 def test_prune_archives_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('prune')['prune']
+    arguments = borgmatic.commands.arguments.parse_arguments({}, 'prune')['prune']
     flexmock(borgmatic.borg.prune).should_receive('execute_command').replace_with(
         assert_command_does_not_duplicate_flags
     )
@@ -94,7 +94,7 @@ def test_prune_archives_command_does_not_duplicate_flags_or_raise():
 
 
 def test_mount_archive_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('mount', '--mount-point', 'tmp')[
+    arguments = borgmatic.commands.arguments.parse_arguments({}, 'mount', '--mount-point', 'tmp')[
         'mount'
     ]
     flexmock(borgmatic.borg.mount).should_receive('execute_command').replace_with(
@@ -116,7 +116,7 @@ def test_mount_archive_command_does_not_duplicate_flags_or_raise():
 
 
 def test_make_list_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('list')['list']
+    arguments = borgmatic.commands.arguments.parse_arguments({}, 'list')['list']
 
     for argument_name in dir(arguments):
         if argument_name.startswith('_'):
@@ -134,7 +134,7 @@ def test_make_list_command_does_not_duplicate_flags_or_raise():
 
 
 def test_make_repo_list_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('repo-list')['repo-list']
+    arguments = borgmatic.commands.arguments.parse_arguments({}, 'repo-list')['repo-list']
 
     for argument_name in dir(arguments):
         if argument_name.startswith('_'):
@@ -152,7 +152,7 @@ def test_make_repo_list_command_does_not_duplicate_flags_or_raise():
 
 
 def test_display_archives_info_command_does_not_duplicate_flags_or_raise():
-    arguments = borgmatic.commands.arguments.parse_arguments('info')['info']
+    arguments = borgmatic.commands.arguments.parse_arguments({}, 'info')['info']
     flexmock(borgmatic.borg.info).should_receive('execute_command_and_capture_output').replace_with(
         assert_command_does_not_duplicate_flags
     )

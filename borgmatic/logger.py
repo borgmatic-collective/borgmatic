@@ -29,12 +29,13 @@ def interactive_console():
     return sys.stderr.isatty() and os.environ.get('TERM') != 'dumb'
 
 
-def should_do_markup(no_color, configs):
+def should_do_markup(configs, json_enabled):
     '''
-    Given the value of the command-line no-color argument, and a dict of configuration filename to
-    corresponding parsed configuration, determine if we should enable color marking up.
+    Given a dict of configuration filename to corresponding parsed configuration (which already have
+    any command-line overrides applied) and whether json is enabled, determine if we should enable
+    color marking up.
     '''
-    if no_color:
+    if json_enabled:
         return False
 
     if any(config.get('color', True) is False for config in configs.values()):
@@ -256,7 +257,7 @@ class Log_prefix:
         self.original_prefix = get_log_prefix()
         set_log_prefix(self.prefix)
 
-    def __exit__(self, exception, value, traceback):
+    def __exit__(self, exception_type, exception, traceback):
         '''
         Restore any original prefix.
         '''
@@ -265,9 +266,14 @@ class Log_prefix:
 
 class Delayed_logging_handler(logging.handlers.BufferingHandler):
     '''
-    A logging handler that buffers logs and doesn't flush them until explicitly flushed (after target
-    handlers are actually set). It's useful for holding onto logged records from before logging is
-    configured to ensure those records eventually make their way to the relevant logging handlers.
+    A logging handler that buffers logs and doesn't flush them until explicitly flushed (after
+    target handlers are actually set). It's useful for holding onto messages logged before logging
+    is configured, ensuring those records eventually make their way to the relevant logging
+    handlers.
+
+    When flushing, don't forward log records to a target handler if the record's log level is below
+    that of the handler. This recreates the standard logging behavior of, say, logging.DEBUG records
+    getting suppressed if a handler's level is only set to logging.INFO.
     '''
 
     def __init__(self):
@@ -287,7 +293,8 @@ class Delayed_logging_handler(logging.handlers.BufferingHandler):
 
             for record in self.buffer:
                 for target in self.targets:
-                    target.handle(record)
+                    if record.levelno >= target.level:
+                        target.handle(record)
 
             self.buffer.clear()
         finally:

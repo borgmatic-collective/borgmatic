@@ -4,6 +4,7 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.parse
 from borgmatic.execute import execute_command, execute_command_with_processes
 from borgmatic.hooks.data_source import dump
 
@@ -52,6 +53,7 @@ def dump_data_sources(
     logger.info(f'Dumping MongoDB databases{dry_run_label}')
 
     processes = []
+
     for database in databases:
         name = database['name']
         dump_filename = dump.make_data_source_dump_filename(
@@ -68,7 +70,7 @@ def dump_data_sources(
         if dry_run:
             continue
 
-        command = build_dump_command(database, dump_filename, dump_format)
+        command = build_dump_command(database, config, dump_filename, dump_format)
 
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
@@ -80,26 +82,65 @@ def dump_data_sources(
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'mongodb_databases')
+                os.path.join(borgmatic_runtime_directory, 'mongodb_databases'),
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
             )
         )
 
     return processes
 
 
-def build_dump_command(database, dump_filename, dump_format):
+def make_password_config_file(password):
     '''
-    Return the mongodump command from a single database configuration.
+    Given a database password, write it as a MongoDB configuration file to an anonymous pipe and
+    return its filename. The idea is that this is a more secure way to transmit a password to
+    MongoDB than providing it directly on the command-line.
+
+    Do not use the returned value for multiple different command invocations. That will not work
+    because each pipe is "used up" once read.
+    '''
+    logger.debug('Writing MongoDB password to configuration file pipe')
+
+    read_file_descriptor, write_file_descriptor = os.pipe()
+    os.write(write_file_descriptor, f'password: {password}'.encode('utf-8'))
+    os.close(write_file_descriptor)
+
+    # This plus subprocess.Popen(..., close_fds=False) in execute.py is necessary for the database
+    # client child process to inherit the file descriptor.
+    os.set_inheritable(read_file_descriptor, True)
+
+    return f'/dev/fd/{read_file_descriptor}'
+
+
+def build_dump_command(database, config, dump_filename, dump_format):
+    '''
+    Return the custom mongodump_command from a single database configuration.
     '''
     all_databases = database['name'] == 'all'
 
+    password = borgmatic.hooks.credential.parse.resolve_credential(database.get('password'), config)
+
+    dump_command = tuple(
+        shlex.quote(part) for part in shlex.split(database.get('mongodump_command') or 'mongodump')
+    )
     return (
-        ('mongodump',)
+        dump_command
         + (('--out', shlex.quote(dump_filename)) if dump_format == 'directory' else ())
         + (('--host', shlex.quote(database['hostname'])) if 'hostname' in database else ())
         + (('--port', shlex.quote(str(database['port']))) if 'port' in database else ())
-        + (('--username', shlex.quote(database['username'])) if 'username' in database else ())
-        + (('--password', shlex.quote(database['password'])) if 'password' in database else ())
+        + (
+            (
+                '--username',
+                shlex.quote(
+                    borgmatic.hooks.credential.parse.resolve_credential(
+                        database['username'], config
+                    )
+                ),
+            )
+            if 'username' in database
+            else ()
+        )
+        + (('--config', make_password_config_file(password)) if password else ())
         + (
             ('--authenticationDatabase', shlex.quote(database['authentication_database']))
             if 'authentication_database' in database
@@ -173,7 +214,7 @@ def restore_data_source_dump(
         data_source.get('hostname'),
     )
     restore_command = build_restore_command(
-        extract_process, data_source, dump_filename, connection_params
+        extract_process, data_source, config, dump_filename, connection_params
     )
 
     logger.debug(f"Restoring MongoDB database {data_source['name']}{dry_run_label}")
@@ -190,22 +231,33 @@ def restore_data_source_dump(
     )
 
 
-def build_restore_command(extract_process, database, dump_filename, connection_params):
+def build_restore_command(extract_process, database, config, dump_filename, connection_params):
     '''
-    Return the mongorestore command from a single database configuration.
+    Return the custom mongorestore_command from a single database configuration.
     '''
     hostname = connection_params['hostname'] or database.get(
         'restore_hostname', database.get('hostname')
     )
     port = str(connection_params['port'] or database.get('restore_port', database.get('port', '')))
-    username = connection_params['username'] or database.get(
-        'restore_username', database.get('username')
+    username = borgmatic.hooks.credential.parse.resolve_credential(
+        (
+            connection_params['username']
+            or database.get('restore_username', database.get('username'))
+        ),
+        config,
     )
-    password = connection_params['password'] or database.get(
-        'restore_password', database.get('password')
+    password = borgmatic.hooks.credential.parse.resolve_credential(
+        (
+            connection_params['password']
+            or database.get('restore_password', database.get('password'))
+        ),
+        config,
     )
 
-    command = ['mongorestore']
+    command = list(
+        shlex.quote(part)
+        for part in shlex.split(database.get('mongorestore_command') or 'mongorestore')
+    )
     if extract_process:
         command.append('--archive')
     else:
@@ -219,7 +271,7 @@ def build_restore_command(extract_process, database, dump_filename, connection_p
     if username:
         command.extend(('--username', username))
     if password:
-        command.extend(('--password', password))
+        command.extend(('--config', make_password_config_file(password)))
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
     if 'restore_options' in database:

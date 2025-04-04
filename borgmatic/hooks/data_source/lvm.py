@@ -1,5 +1,6 @@
 import collections
 import glob
+import hashlib
 import json
 import logging
 import os
@@ -33,7 +34,9 @@ def get_logical_volumes(lsblk_command, patterns=None):
     between the current LVM logical volume mount points and the paths of any patterns. The idea is
     that these pattern paths represent the requested logical volumes to snapshot.
 
-    If patterns is None, include all logical volume mounts points, not just those in patterns.
+    Only include logical volumes that contain at least one root pattern sourced from borgmatic
+    configuration (as opposed to generated elsewhere in borgmatic). But if patterns is None, include
+    all logical volume mounts points instead, not just those in patterns.
 
     Return the result as a sequence of Logical_volume instances.
     '''
@@ -72,7 +75,12 @@ def get_logical_volumes(lsblk_command, patterns=None):
                     device['mountpoint'], candidate_patterns
                 ),
             )
-            if not patterns or contained_patterns
+            if not patterns
+            or any(
+                pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
+                and pattern.source == borgmatic.borg.pattern.Pattern_source.CONFIG
+                for pattern in contained_patterns
+            )
         )
     except KeyError as error:
         raise ValueError(f'Invalid {lsblk_command} output: Missing key "{error}"')
@@ -124,10 +132,14 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
     )
 
 
-def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
+MOUNT_POINT_HASH_LENGTH = 10
+
+
+def make_borg_snapshot_pattern(pattern, logical_volume, normalized_runtime_directory):
     '''
-    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance, return a new Pattern with its
-    path rewritten to be in a snapshot directory based on the given runtime directory.
+    Given a Borg pattern as a borgmatic.borg.pattern.Pattern instance and a Logical_volume
+    containing it, return a new Pattern with its path rewritten to be in a snapshot directory based
+    on both the given runtime directory and the given Logical_volume's mount point.
 
     Move any initial caret in a regular expression pattern path to the beginning, so as not to break
     the regular expression.
@@ -142,6 +154,13 @@ def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
     rewritten_path = initial_caret + os.path.join(
         normalized_runtime_directory,
         'lvm_snapshots',
+        # Including this hash prevents conflicts between snapshot patterns for different logical
+        # volumes. For instance, without this, snapshotting a logical volume at /var and another at
+        # /var/spool would result in overlapping snapshot patterns and therefore colliding mount
+        # attempts.
+        hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
+            MOUNT_POINT_HASH_LENGTH
+        ),
         '.',  # Borg 1.4+ "slashdot" hack.
         # Included so that the source directory ends up in the Borg archive at its "original" path.
         pattern.path.lstrip('^').lstrip(os.path.sep),
@@ -152,6 +171,7 @@ def make_borg_snapshot_pattern(pattern, normalized_runtime_directory):
         pattern.type,
         pattern.style,
         pattern.device,
+        source=borgmatic.borg.pattern.Pattern_source.HOOK,
     )
 
 
@@ -180,7 +200,8 @@ def dump_data_sources(
     dry_run_label = ' (dry run; not actually snapshotting anything)' if dry_run else ''
     logger.info(f'Snapshotting LVM logical volumes{dry_run_label}')
 
-    # List logical volumes to get their mount points.
+    # List logical volumes to get their mount points, but only consider those patterns that came
+    # from actual user configuration (as opposed to, say, other hooks).
     lsblk_command = hook_config.get('lsblk_command', 'lsblk')
     requested_logical_volumes = get_logical_volumes(lsblk_command, patterns)
 
@@ -218,6 +239,9 @@ def dump_data_sources(
         snapshot_mount_path = os.path.join(
             normalized_runtime_directory,
             'lvm_snapshots',
+            hashlib.shake_256(logical_volume.mount_point.encode('utf-8')).hexdigest(
+                MOUNT_POINT_HASH_LENGTH
+            ),
             logical_volume.mount_point.lstrip(os.path.sep),
         )
 
@@ -233,7 +257,9 @@ def dump_data_sources(
         )
 
         for pattern in logical_volume.contained_patterns:
-            snapshot_pattern = make_borg_snapshot_pattern(pattern, normalized_runtime_directory)
+            snapshot_pattern = make_borg_snapshot_pattern(
+                pattern, logical_volume, normalized_runtime_directory
+            )
 
             # Attempt to update the pattern in place, since pattern order matters to Borg.
             try:
@@ -337,6 +363,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
             os.path.normpath(borgmatic_runtime_directory),
         ),
         'lvm_snapshots',
+        '*',
     )
     logger.debug(f'Looking for snapshots to remove in {snapshots_glob}{dry_run_label}')
     umount_command = hook_config.get('umount_command', 'umount')
@@ -349,7 +376,10 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
             snapshot_mount_path = os.path.join(
                 snapshots_directory, logical_volume.mount_point.lstrip(os.path.sep)
             )
-            if not os.path.isdir(snapshot_mount_path):
+
+            # If the snapshot mount path is empty, this is probably just a "shadow" of a nested
+            # logical volume and therefore there's nothing to unmount.
+            if not os.path.isdir(snapshot_mount_path) or not os.listdir(snapshot_mount_path):
                 continue
 
             # This might fail if the directory is already mounted, but we swallow errors here since
@@ -374,7 +404,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                 return
             except subprocess.CalledProcessError as error:
                 logger.debug(error)
-                return
+                continue
 
         if not dry_run:
             shutil.rmtree(snapshots_directory)

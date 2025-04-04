@@ -14,140 +14,55 @@ and alerting comes in.
 
 There are several different ways you can monitor your backups and find out
 whether they're succeeding. Which of these you choose to do is up to you and
-your particular infrastructure.
+your particular infrastructure:
 
-### Job runner alerts
-
-The easiest place to start is with failure alerts from the [scheduled job
-runner](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot)
-(cron, systemd, etc.) that's running borgmatic. But note that if the job
-doesn't even get scheduled (e.g. due to the job runner not running), you
-probably won't get an alert at all! Still, this is a decent first line of
-defense, especially when combined with some of the other approaches below.
-
-### Commands run on error
-
-The `on_error` hook allows you to run an arbitrary command or script when
-borgmatic itself encounters an error running your backups. So for instance,
-you can run a script to send yourself a text message alert. But note that if
-borgmatic doesn't actually run, this alert won't fire.  See [error
-hooks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#error-hooks)
-below for how to configure this.
-
-### Third-party monitoring services
-
-borgmatic integrates with these monitoring services and libraries, pinging
-them as backups happen:
-
- * [Apprise](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook)
- * [Cronhub](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
- * [Cronitor](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
- * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
- * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
- * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
- * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
- * [Pushover](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pushover-hook)
- * [Sentry](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#sentry-hook)
- * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
- * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
-
-The idea is that you'll receive an alert when something goes wrong or when the
-service doesn't hear from borgmatic for a configured interval (if supported).
-See the documentation links above for configuration information.
-
-While these services and libraries offer different features, you probably only
-need to use one of them at most.
-
-
-### Third-party monitoring software
-
-You can use traditional monitoring software to consume borgmatic JSON output
-and track when the last successful backup occurred. See [scripting
-borgmatic](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#scripting-borgmatic)
-below for how to configure this.
-
-### Borg hosting providers
-
-Most [Borg hosting
-providers](https://torsion.org/borgmatic/#hosting-providers) include
-monitoring and alerting as part of their offering. This gives you a dashboard
-to check on all of your backups, and can alert you if the service doesn't hear
-from borgmatic for a configured interval.
-
-### Consistency checks
-
-While not strictly part of monitoring, if you want confidence that your
-backups are not only running but are restorable as well, you can configure
-particular [consistency
-checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)
-or even script full [extract
-tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
-
-
-## Error hooks
-
-When an error occurs during a `create`, `prune`, `compact`, or `check` action,
-borgmatic can run configurable shell commands to fire off custom error
-notifications or take other actions, so you can get alerted as soon as
-something goes wrong. Here's a not-so-useful example:
-
-```yaml
-on_error:
-    - echo "Error while creating a backup or running a backup hook."
-```
-
-<span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
-this option in the `hooks:` section of your configuration.
-
-The `on_error` hook supports interpolating particular runtime variables into
-the hook command. Here's an example that assumes you provide a separate shell
-script to handle the alerting:
-
-```yaml
-on_error:
-    - send-text-message.sh {configuration_filename} {repository}
-```
-
-In this example, when the error occurs, borgmatic interpolates runtime values
-into the hook command: the borgmatic configuration filename and the path of
-the repository. Here's the full set of supported variables you can use here:
-
- * `configuration_filename`: borgmatic configuration filename in which the
-   error occurred
- * `repository`: path of the repository in which the error occurred (may be
-   blank if the error occurs in a hook)
- * `error`: the error message itself
- * `output`: output of the command that failed (may be blank if an error
-   occurred without running a command)
-
-Note that borgmatic runs the `on_error` hooks only for `create`, `prune`,
-`compact`, or `check` actions/hooks in which an error occurs and not other
-actions. borgmatic does not run `on_error` hooks if an error occurs within a
-`before_everything` or `after_everything` hook. For more about hooks, see the
-[borgmatic hooks
-documentation](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/),
-especially the security information.
-
-<span class="minilink minilink-addedin">New in version 1.8.7</span> borgmatic
-automatically escapes these interpolated values to prevent shell injection
-attacks. One implication of this change is that you shouldn't wrap the
-interpolated values in your own quotes, as that will interfere with the
-quoting performed by borgmatic and result in your command receiving incorrect
-arguments. For instance, this won't work:
-
-
-```yaml
-on_error:
-    # Don't do this! It won't work, as the {error} value is already quoted.
-    - send-text-message.sh "Uh oh: {error}"
-```
-
-Do this instead:
-
-```yaml
-on_error:
-    - send-text-message.sh {error}
-```
+ * **Job runner alerts**: The easiest place to start is with failure alerts from
+   the [scheduled job
+   runner](https://torsion.org/borgmatic/docs/how-to/set-up-backups/#autopilot)
+   (cron, systemd, etc.) that's running borgmatic. But note that if the job
+   doesn't even get scheduled (e.g. due to the job runner not running), you
+   probably won't get an alert at all! Still, this is a decent first line of
+   defense, especially when combined with some of the other approaches below.
+ * **Third-party monitoring services:** borgmatic integrates with these monitoring
+   services and libraries, pinging them as backups happen. The idea is that
+   you'll receive an alert when something goes wrong or when the service doesn't
+   hear from borgmatic for a configured interval (if supported). While these
+   services and libraries offer different features, you probably only need to
+   use one of them at most. See these documentation links for configuration
+   information:
+     * [Apprise](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#apprise-hook)
+     * [Cronhub](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronhub-hook)
+     * [Cronitor](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#cronitor-hook)
+     * [Grafana Loki](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#loki-hook)
+     * [Healthchecks](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#healthchecks-hook)
+     * [ntfy](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#ntfy-hook)
+     * [PagerDuty](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pagerduty-hook)
+     * [Pushover](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#pushover-hook)
+     * [Sentry](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#sentry-hook)
+     * [Uptime Kuma](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#uptime-kuma-hook)
+     * [Zabbix](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#zabbix-hook)
+ * **Third-party monitoring software:** You can use traditional monitoring
+   software to consume borgmatic JSON output and track when the last successful
+   backup occurred. See [scripting
+   borgmatic](https://torsion.org/borgmatic/docs/how-to/monitor-your-backups/#scripting-borgmatic)
+   below for how to configure this.
+ * **Borg hosting providers:** Some [Borg hosting
+   providers](https://torsion.org/borgmatic/#hosting-providers) include
+   monitoring and alerting as part of their offering. This gives you a dashboard
+   to check on all of your backups, and can alert you if the service doesn't
+   hear from borgmatic for a configured interval.
+ * **Consistency checks:** While not strictly part of monitoring, if you want
+   confidence that your backups are not only running but are restorable as well,
+   you can configure particular [consistency
+   checks](https://torsion.org/borgmatic/docs/how-to/deal-with-very-large-backups/#consistency-check-configuration)
+   or even script full [extract
+   tests](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/).
+ * **Commands run on error:** borgmatic's command hooks support running
+   arbitrary commands or scripts when borgmatic itself encounters an error
+   running your backups. So for instance, you can run a script to send yourself
+   a text message alert. But note that if borgmatic doesn't actually run, this
+   alert won't fire. See the [documentation on command hooks](https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/)
+   for details.
 
 
 ## Healthchecks hook
@@ -290,6 +205,27 @@ fail.
 
 If you have any issues with the integration, [please contact
 us](https://torsion.org/borgmatic/#support-and-contributing).
+
+
+### Sending logs
+
+<span class="minilink minilink-addedin">New in version 1.9.14</span> borgmatic
+logs are included in the payload data sent to PagerDuty. This means that
+(truncated) borgmatic logs, including error messages, show up in the PagerDuty
+incident UI and corresponding notification emails.
+
+You can customize the verbosity of the logs that are sent with borgmatic's
+`--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
+use. See `borgmatic create --help` for more information.
+
+If you don't want any logs sent, you can disable this feature by setting
+`send_logs` to `false`:
+
+```yaml
+pagerduty:
+    integration_key: a177cad45bd374409f78906a810a3074
+    send_logs: false
+```
 
 
 ## Pushover hook
@@ -710,7 +646,10 @@ zabbix:
         - fail
 ```
 
-This hook requires the Zabbix server be running version 7.0+
+This hook requires the Zabbix server be running version 7.0.
+
+<span class="minilink minilink-addedin">New in version 1.9.3</span> Zabbix 7.2+
+is supported as well.
 
 
 ### Authentication methods
@@ -721,11 +660,19 @@ Authentication can be accomplished via `api_key` or both `username` and
 
 ### Items
 
-The item to be updated can be chosen by either declaring the `itemid` or both
-`host` and `key`. If all three are declared, only `itemid` is used.
+borgmatic writes its monitoring updates to a particular Zabbix item, which
+you'll need to create in advance. In the Zabbix web UI, [make a new item with a
+Type of "Zabbix
+trapper"](https://www.zabbix.com/documentation/current/en/manual/config/items/itemtypes/trapper)
+and a named Key. The "Type of information" for the item should be "Text", and
+"History" designates how much data you want to retain.
 
-Keep in mind that `host` is referring to the "Host name" on the Zabbix server
-and not the "Visual name".
+When configuring borgmatic with this item to be updated, you can either declare
+the `itemid` or both `host` and `key`. If all three are declared, only `itemid`
+is used.
+
+Keep in mind that `host` refers to the "Host name" on the Zabbix server and not
+the "Visual name".
 
 
 ## Scripting borgmatic

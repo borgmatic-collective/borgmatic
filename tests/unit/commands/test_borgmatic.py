@@ -27,9 +27,393 @@ def test_get_skip_actions_uses_config_and_arguments(config, arguments, expected_
     assert module.get_skip_actions(config, arguments) == expected_actions
 
 
+def test_monitoring_hooks_with_monioring_disabled_bails():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(module.DISABLED)
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+
+    with module.Monitoring_hooks(
+        config_filename='test.yaml',
+        config={},
+        arguments={'create': flexmock()},
+        global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+    ):
+        pass
+
+
+def test_monitoring_hooks_with_non_primary_action_bails():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').never()
+
+    with module.Monitoring_hooks(
+        config_filename='test.yaml',
+        config={},
+        arguments={'extract': flexmock()},
+        global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+    ):
+        pass
+
+
+def test_monitoring_hooks_pings_monitors():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).once()
+
+    with module.Monitoring_hooks(
+        config_filename='test.yaml',
+        config={},
+        arguments={'create': flexmock()},
+        global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+    ):
+        pass
+
+
+def test_monitoring_hooks_with_start_ping_error_raises():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).and_raise(OSError).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).never()
+
+    with pytest.raises(ValueError):
+        with module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ):
+            assert False  # This should never get called.
+
+
+def test_monitoring_hooks_with_log_ping_error_raises():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).and_raise(OSError).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).never()
+
+    with pytest.raises(ValueError):
+        with module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ):
+            pass
+
+
+def test_monitoring_hooks_with_finish_ping_error_raises():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).and_raise(OSError).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).never()
+
+    with pytest.raises(ValueError):
+        with module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ):
+            pass
+
+
+def test_monitoring_with_wrapped_code_error_pings_fail():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).once()
+
+    with pytest.raises(OSError):
+        with module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ):
+            raise OSError()
+
+
+def test_monitoring_with_fail_ping_error_raise_original_error():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'initialize_monitor',
+        object,
+        object,
+        object,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.START,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.LOG,
+        object,
+        object,
+    ).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FINISH,
+        object,
+        object,
+    ).never()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'ping_monitor',
+        object,
+        object,
+        object,
+        module.monitor.State.FAIL,
+        object,
+        object,
+    ).and_raise(OSError).once()
+    flexmock(module.dispatch).should_receive('call_hooks').with_args(
+        'destroy_monitor',
+        object,
+        object,
+        object,
+        object,
+    ).never()
+
+    with pytest.raises(OSError):
+        with module.Monitoring_hooks(
+            config_filename='test.yaml',
+            config={},
+            arguments={'create': flexmock()},
+            global_arguments=flexmock(monitoring_verbosity=99, dry_run=False),
+        ):
+            raise OSError()
+
+
 def test_run_configuration_runs_actions_for_each_repository():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
@@ -37,7 +421,7 @@ def test_run_configuration_runs_actions_for_each_repository():
         expected_results[1:]
     )
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1)}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock())}
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
@@ -47,11 +431,13 @@ def test_run_configuration_runs_actions_for_each_repository():
 def test_run_configuration_with_skip_actions_does_not_raise():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_return(flexmock()).and_return(flexmock())
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}], 'skip_actions': ['compact']}
-    arguments = {'global': flexmock(monitoring_verbosity=1)}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock())}
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
@@ -59,65 +445,34 @@ def test_run_configuration_with_skip_actions_does_not_raise():
 def test_run_configuration_with_invalid_borg_version_errors():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_raise(ValueError)
-    flexmock(module.command).should_receive('execute_hook').never()
-    flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').never()
     config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'prune': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'prune': flexmock(),
+    }
 
     list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-
-def test_run_configuration_logs_monitor_start_error():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.dispatch).should_receive('call_hooks').and_raise(OSError).and_return(
-        None
-    ).and_return(None).and_return(None)
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').never()
-    config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == expected_results
-
-
-def test_run_configuration_bails_for_monitor_start_soft_failure():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.dispatch).should_receive('call_hooks').and_raise(error).and_return(None)
-    flexmock(module).should_receive('log_error_records').never()
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').never()
-    config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == []
 
 
 def test_run_configuration_logs_actions_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
-    flexmock(module.dispatch).should_receive('call_hooks')
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False)}
+    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock())}
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
@@ -127,8 +482,9 @@ def test_run_configuration_logs_actions_error():
 def test_run_configuration_skips_remaining_actions_for_actions_soft_failure_but_still_runs_next_repository_actions():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.dispatch).should_receive('call_hooks').times(5)
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     log = flexmock()
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
@@ -136,102 +492,31 @@ def test_run_configuration_skips_remaining_actions_for_actions_soft_failure_but_
     flexmock(module).should_receive('log_error_records').never()
     flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
     assert results == [log]
 
 
-def test_run_configuration_logs_monitor_log_error():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
-        None
-    ).and_raise(OSError)
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == expected_results
-
-
-def test_run_configuration_still_pings_monitor_for_monitor_log_soft_failure():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
-        None
-    ).and_raise(error).and_return(None).and_return(None).times(5)
-    flexmock(module).should_receive('log_error_records').never()
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').and_return([])
-    flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
-    config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == []
-
-
-def test_run_configuration_logs_monitor_finish_error():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
-        None
-    ).and_return(None).and_raise(OSError)
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').and_return([])
-    config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == expected_results
-
-
-def test_run_configuration_bails_for_monitor_finish_soft_failure():
-    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
-    flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.dispatch).should_receive('call_hooks').and_return(None).and_return(
-        None
-    ).and_raise(None).and_raise(error)
-    flexmock(module).should_receive('log_error_records').never()
-    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
-    flexmock(module).should_receive('run_actions').and_return([])
-    flexmock(module.command).should_receive('considered_soft_failure').and_return(True)
-    config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
-
-    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
-
-    assert results == []
-
-
 def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_are_disabled():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(module.DISABLED)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
 
-    flexmock(module.dispatch).should_receive('call_hooks').never()
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_return([])
 
     config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=-2, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=-2, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
     assert results == []
 
@@ -239,8 +524,11 @@ def test_run_configuration_does_not_call_monitoring_hooks_if_monitoring_hooks_ar
 def test_run_configuration_logs_on_error_hook_error():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook').and_raise(OSError)
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks').and_raise(OSError)
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(
         expected_results[:1]
@@ -248,7 +536,56 @@ def test_run_configuration_logs_on_error_hook_error():
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
+    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
+    assert results == expected_results
+
+
+def test_run_configuration_logs_on_before_command_hook_error():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_raise(OSError)
+    flexmock(module.borg_version).should_receive('local_borg_version').never()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
+    expected_results = [flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    flexmock(module).should_receive('Log_prefix').never()
+    flexmock(module).should_receive('run_actions').never()
+    config = {'repositories': [{'path': 'foo'}]}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
+    results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
+    assert results == expected_results
+
+
+def test_run_configuration_logs_on_monitoring_hook_error():
+    flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_raise(OSError)
+    flexmock(module.command).should_receive('Before_after_hooks').never()
+    flexmock(module.borg_version).should_receive('local_borg_version').never()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
+    expected_results = [flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    flexmock(module).should_receive('Log_prefix').never()
+    flexmock(module).should_receive('run_actions').never()
+    config = {'repositories': [{'path': 'foo'}]}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
@@ -258,15 +595,21 @@ def test_run_configuration_logs_on_error_hook_error():
 def test_run_configuration_bails_for_on_error_hook_soft_failure():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
-    flexmock(module.command).should_receive('execute_hook').and_raise(error)
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks').and_raise(error)
     expected_results = [flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(expected_results)
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     config = {'repositories': [{'path': 'foo'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
@@ -277,14 +620,22 @@ def test_run_configuration_retries_soft_error():
     # Run action first fails, second passes.
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_return([])
     flexmock(module).should_receive('log_error_records').and_return([flexmock()]).once()
+    flexmock(module.command).should_receive('filter_hooks').never()
+    flexmock(module.command).should_receive('execute_hooks').never()
     config = {'repositories': [{'path': 'foo'}], 'retries': 1}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == []
 
 
@@ -292,8 +643,9 @@ def test_run_configuration_retries_hard_error():
     # Run action fails twice.
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     flexmock(module).should_receive('log_error_records').with_args(
@@ -307,17 +659,25 @@ def test_run_configuration_retries_hard_error():
         'Error running actions for repository',
         OSError,
     ).and_return(error_logs)
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {'repositories': [{'path': 'foo'}], 'retries': 1}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == error_logs
 
 
-def test_run_configuration_repos_ordered():
+def test_run_configuration_retries_repositories_in_order():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
     expected_results = [flexmock(), flexmock()]
@@ -327,17 +687,25 @@ def test_run_configuration_repos_ordered():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(expected_results[1:]).ordered()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == expected_results
 
 
 def test_run_configuration_retries_round_robin():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     flexmock(module).should_receive('log_error_records').with_args(
@@ -360,20 +728,28 @@ def test_run_configuration_retries_round_robin():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(bar_error_logs).ordered()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {
         'repositories': [{'path': 'foo'}, {'path': 'bar'}],
         'retries': 1,
     }
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == foo_error_logs + bar_error_logs
 
 
-def test_run_configuration_retries_one_passes():
+def test_run_configuration_with_one_retry():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
         []
@@ -394,20 +770,28 @@ def test_run_configuration_retries_one_passes():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(error_logs).ordered()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {
         'repositories': [{'path': 'foo'}, {'path': 'bar'}],
         'retries': 1,
     }
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == error_logs
 
 
-def test_run_configuration_retry_wait():
+def test_run_configuration_with_retry_wait_does_backoff_after_each_retry():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(4)
     flexmock(module).should_receive('log_error_records').with_args(
@@ -438,21 +822,29 @@ def test_run_configuration_retry_wait():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(error_logs).ordered()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {
         'repositories': [{'path': 'foo'}],
         'retries': 3,
         'retry_wait': 10,
     }
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == error_logs
 
 
-def test_run_configuration_retries_timeout_multiple_repos():
+def test_run_configuration_with_multiple_repositories_retries_with_timeout():
     flexmock(module).should_receive('verbosity_to_log_level').and_return(logging.INFO)
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    flexmock(module.command).should_receive('execute_hook')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).and_raise(OSError).and_return(
         []
@@ -479,20 +871,27 @@ def test_run_configuration_retries_timeout_multiple_repos():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(error_logs).ordered()
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     config = {
         'repositories': [{'path': 'foo'}, {'path': 'bar'}],
         'retries': 1,
         'retry_wait': 10,
     }
-    arguments = {'global': flexmock(monitoring_verbosity=1, dry_run=False), 'create': flexmock()}
+    arguments = {
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+        'create': flexmock(),
+    }
+
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
+
     assert results == error_logs
 
 
 def test_run_actions_runs_repo_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
 
     tuple(
@@ -515,19 +914,13 @@ def test_run_actions_runs_repo_create():
 def test_run_actions_adds_label_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
         config_filename=object,
         repository={'path': 'repo', 'label': 'my repo'},
         config={'repositories': []},
         config_paths=[],
-        hook_context={
-            'repository_label': 'my repo',
-            'log_file': '',
-            'repositories': '',
-            'repository': 'repo',
-        },
         local_borg_version=object,
         create_arguments=object,
         global_arguments=object,
@@ -554,19 +947,13 @@ def test_run_actions_adds_label_file_to_hook_context():
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
         config_filename=object,
         repository={'path': 'repo'},
         config={'repositories': []},
         config_paths=[],
-        hook_context={
-            'repository_label': '',
-            'log_file': 'foo',
-            'repositories': '',
-            'repository': 'repo',
-        },
         local_borg_version=object,
         create_arguments=object,
         global_arguments=object,
@@ -593,7 +980,7 @@ def test_run_actions_adds_log_file_to_hook_context():
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.transfer).should_receive('run_transfer').once()
 
     tuple(
@@ -613,7 +1000,7 @@ def test_run_actions_runs_transfer():
 def test_run_actions_runs_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
 
@@ -635,7 +1022,7 @@ def test_run_actions_runs_create():
 def test_run_actions_with_skip_actions_skips_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['create'])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.create).should_receive('run_create').never()
 
     tuple(
@@ -652,10 +1039,51 @@ def test_run_actions_with_skip_actions_skips_create():
     )
 
 
+def test_run_actions_runs_recreate():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+
+    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'recreate': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
+def test_run_actions_with_skip_actions_skips_recreate():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return(['recreate'])
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').never()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'recreate': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': [], 'skip_actions': ['recreate']},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.prune).should_receive('run_prune').once()
 
     tuple(
@@ -675,7 +1103,7 @@ def test_run_actions_runs_prune():
 def test_run_actions_with_skip_actions_skips_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['prune'])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.prune).should_receive('run_prune').never()
 
     tuple(
@@ -695,7 +1123,7 @@ def test_run_actions_with_skip_actions_skips_prune():
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.compact).should_receive('run_compact').once()
 
     tuple(
@@ -715,7 +1143,7 @@ def test_run_actions_runs_compact():
 def test_run_actions_with_skip_actions_skips_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.compact).should_receive('run_compact').never()
 
     tuple(
@@ -735,7 +1163,7 @@ def test_run_actions_with_skip_actions_skips_compact():
 def test_run_actions_runs_check_when_repository_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').once()
 
@@ -756,7 +1184,7 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
 def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(False)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
 
@@ -777,7 +1205,7 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
 def test_run_actions_with_skip_actions_skips_check():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['check'])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
 
@@ -798,7 +1226,7 @@ def test_run_actions_with_skip_actions_skips_check():
 def test_run_actions_runs_extract():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.extract).should_receive('run_extract').once()
 
     tuple(
@@ -818,7 +1246,7 @@ def test_run_actions_runs_extract():
 def test_run_actions_runs_export_tar():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.export_tar).should_receive('run_export_tar').once()
 
     tuple(
@@ -838,7 +1266,7 @@ def test_run_actions_runs_export_tar():
 def test_run_actions_runs_mount():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.mount).should_receive('run_mount').once()
 
     tuple(
@@ -858,7 +1286,7 @@ def test_run_actions_runs_mount():
 def test_run_actions_runs_restore():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once()
 
     tuple(
@@ -878,7 +1306,7 @@ def test_run_actions_runs_restore():
 def test_run_actions_runs_repo_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
 
@@ -900,7 +1328,7 @@ def test_run_actions_runs_repo_list():
 def test_run_actions_runs_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.list).should_receive('run_list').and_yield(expected).once()
 
@@ -922,7 +1350,7 @@ def test_run_actions_runs_list():
 def test_run_actions_runs_repo_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
 
@@ -944,7 +1372,7 @@ def test_run_actions_runs_repo_info():
 def test_run_actions_runs_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.info).should_receive('run_info').and_yield(expected).once()
 
@@ -966,7 +1394,7 @@ def test_run_actions_runs_info():
 def test_run_actions_runs_break_lock():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.break_lock).should_receive('run_break_lock').once()
 
     tuple(
@@ -986,7 +1414,7 @@ def test_run_actions_runs_break_lock():
 def test_run_actions_runs_export_key():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.export_key).should_receive('run_export_key').once()
 
     tuple(
@@ -1003,10 +1431,30 @@ def test_run_actions_runs_export_key():
     )
 
 
+def test_run_actions_runs_import_key():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(borgmatic.actions.import_key).should_receive('run_import_key').once()
+
+    tuple(
+        module.run_actions(
+            arguments={'global': flexmock(dry_run=False, log_file='foo'), 'import': flexmock()},
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
 def test_run_actions_runs_change_passphrase():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
 
     tuple(
@@ -1029,7 +1477,7 @@ def test_run_actions_runs_change_passphrase():
 def test_run_actions_runs_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.delete).should_receive('run_delete').once()
 
     tuple(
@@ -1049,7 +1497,7 @@ def test_run_actions_runs_delete():
 def test_run_actions_runs_repo_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.repo_delete).should_receive('run_repo_delete').once()
 
     tuple(
@@ -1072,7 +1520,7 @@ def test_run_actions_runs_repo_delete():
 def test_run_actions_runs_borg():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once()
 
     tuple(
@@ -1092,7 +1540,7 @@ def test_run_actions_runs_borg():
 def test_run_actions_runs_multiple_actions_in_argument_order():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
-    flexmock(module.command).should_receive('execute_hook')
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once().ordered()
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once().ordered()
 
@@ -1114,7 +1562,11 @@ def test_run_actions_runs_multiple_actions_in_argument_order():
     )
 
 
-def test_load_configurations_collects_parsed_configurations_and_logs():
+@pytest.mark.parametrize(
+    'resolve_env',
+    ((True, False),),
+)
+def test_load_configurations_collects_parsed_configurations_and_logs(resolve_env):
     configuration = flexmock()
     other_configuration = flexmock()
     test_expected_logs = [flexmock(), flexmock()]
@@ -1123,7 +1575,13 @@ def test_load_configurations_collects_parsed_configurations_and_logs():
         configuration, ['/tmp/test.yaml'], test_expected_logs
     ).and_return(other_configuration, ['/tmp/other.yaml'], other_expected_logs)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml', 'other.yaml')))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(
+            ('test.yaml', 'other.yaml'),
+            arguments=flexmock(),
+            resolve_env=resolve_env,
+        )
+    )
 
     assert configs == {'test.yaml': configuration, 'other.yaml': other_configuration}
     assert config_paths == ['/tmp/other.yaml', '/tmp/test.yaml']
@@ -1133,7 +1591,9 @@ def test_load_configurations_collects_parsed_configurations_and_logs():
 def test_load_configurations_logs_warning_for_permission_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(PermissionError)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml',)))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(('test.yaml',), arguments=flexmock())
+    )
 
     assert configs == {}
     assert config_paths == []
@@ -1143,7 +1603,9 @@ def test_load_configurations_logs_warning_for_permission_error():
 def test_load_configurations_logs_critical_for_parse_error():
     flexmock(module.validate).should_receive('parse_configuration').and_raise(ValueError)
 
-    configs, config_paths, logs = tuple(module.load_configurations(('test.yaml',)))
+    configs, config_paths, logs = tuple(
+        module.load_configurations(('test.yaml',), arguments=flexmock())
+    )
 
     assert configs == {}
     assert config_paths == []
@@ -1389,11 +1851,12 @@ def test_collect_highlander_action_summary_logs_error_on_run_validate_failure():
 
 
 def test_collect_configuration_run_summary_logs_info_for_success():
-    flexmock(module.command).should_receive('execute_hook').never()
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
-    arguments = {}
+    arguments = {'global': flexmock(dry_run=False, log_file=flexmock())}
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1406,9 +1869,14 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 def test_collect_configuration_run_summary_executes_hooks_for_create():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
-    arguments = {'create': flexmock(), 'global': flexmock(monitoring_verbosity=1, dry_run=False)}
+    arguments = {
+        'create': flexmock(),
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1421,9 +1889,14 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
-    arguments = {'extract': flexmock(repository='repo')}
+    arguments = {
+        'extract': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1440,7 +1913,7 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
     )
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
-    arguments = {'extract': flexmock(repository='repo')}
+    arguments = {'extract': flexmock(repository='repo', log_file=flexmock())}
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1453,9 +1926,14 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_mount():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
-    arguments = {'mount': flexmock(repository='repo')}
+    arguments = {
+        'mount': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1472,7 +1950,10 @@ def test_collect_configuration_run_summary_logs_mount_with_repository_error():
     )
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
-    arguments = {'mount': flexmock(repository='repo')}
+    arguments = {
+        'mount': flexmock(repository='repo'),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1484,7 +1965,10 @@ def test_collect_configuration_run_summary_logs_mount_with_repository_error():
 
 
 def test_collect_configuration_run_summary_logs_missing_configs_error():
-    arguments = {'global': flexmock(config_paths=[])}
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
+    arguments = {'global': flexmock(config_paths=[], log_file=flexmock())}
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
 
@@ -1496,10 +1980,15 @@ def test_collect_configuration_run_summary_logs_missing_configs_error():
 
 
 def test_collect_configuration_run_summary_logs_pre_hook_error():
-    flexmock(module.command).should_receive('execute_hook').and_raise(ValueError)
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks').and_raise(ValueError)
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
-    arguments = {'create': flexmock(), 'global': flexmock(monitoring_verbosity=1, dry_run=False)}
+    arguments = {
+        'create': flexmock(),
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1511,13 +2000,17 @@ def test_collect_configuration_run_summary_logs_pre_hook_error():
 
 
 def test_collect_configuration_run_summary_logs_post_hook_error():
-    flexmock(module.command).should_receive('execute_hook').and_return(None).and_raise(ValueError)
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks').and_return(None).and_raise(ValueError)
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
-    arguments = {'create': flexmock(), 'global': flexmock(monitoring_verbosity=1, dry_run=False)}
+    arguments = {
+        'create': flexmock(),
+        'global': flexmock(monitoring_verbosity=1, dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1534,7 +2027,10 @@ def test_collect_configuration_run_summary_logs_for_list_with_archive_and_reposi
     )
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
-    arguments = {'list': flexmock(repository='repo', archive='test')}
+    arguments = {
+        'list': flexmock(repository='repo', archive='test'),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1547,9 +2043,14 @@ def test_collect_configuration_run_summary_logs_for_list_with_archive_and_reposi
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_list():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
-    arguments = {'list': flexmock(repository='repo', archive=None)}
+    arguments = {
+        'list': flexmock(repository='repo', archive=None),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1560,14 +2061,16 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_list():
     assert {log.levelno for log in logs} == {logging.INFO}
 
 
-def test_collect_configuration_run_summary_logs_run_configuration_error():
+def test_collect_configuration_run_summary_logs_run_configuration_error_logs():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return(
         [logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg='Error'))]
     )
     flexmock(module).should_receive('log_error_records').and_return([])
-    arguments = {}
+    arguments = {'global': flexmock(dry_run=False, log_file=flexmock())}
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1580,13 +2083,18 @@ def test_collect_configuration_run_summary_logs_run_configuration_error():
 
 def test_collect_configuration_run_summary_logs_run_umount_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
     flexmock(module.borg_umount).should_receive('unmount_archive').and_raise(OSError)
     flexmock(module).should_receive('log_error_records').and_return(
         [logging.makeLogRecord(dict(levelno=logging.CRITICAL, levelname='CRITICAL', msg='Error'))]
     )
-    arguments = {'umount': flexmock(mount_point='/mnt')}
+    arguments = {
+        'umount': flexmock(mount_point='/mnt'),
+        'global': flexmock(dry_run=False, log_file=flexmock()),
+    }
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
@@ -1599,6 +2107,8 @@ def test_collect_configuration_run_summary_logs_run_umount_error():
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return(['foo', 'bar']).and_return(
         ['baz']
@@ -1606,7 +2116,7 @@ def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
     stdout = flexmock()
     stdout.should_receive('write').with_args('["foo", "bar", "baz"]').once()
     flexmock(module.sys).stdout = stdout
-    arguments = {}
+    arguments = {'global': flexmock(dry_run=False, log_file=flexmock())}
 
     tuple(
         module.collect_configuration_run_summary_logs(
@@ -1615,3 +2125,56 @@ def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
             arguments=arguments,
         )
     )
+
+
+def test_check_and_show_help_on_no_args_shows_help_when_no_args_and_default_actions_false():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module.sys).should_receive('exit').with_args(0).once()
+    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+
+def test_check_and_show_help_on_no_args_does_not_show_help_when_no_args_and_default_actions_true():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+    flexmock(module).should_receive('parse_arguments').never()
+    flexmock(module.sys).should_receive('exit').never()
+    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': True}})
+
+
+def test_check_and_show_help_on_no_args_does_not_show_help_when_args_provided():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic', '--create'])
+    flexmock(module).should_receive('parse_arguments').never()
+    flexmock(module.sys).should_receive('exit').never()
+    module.check_and_show_help_on_no_args({'test.yaml': {'default_actions': False}})
+
+
+def test_check_and_show_help_on_no_args_with_no_default_actions_in_all_configs():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+
+    # Both configs have default_actions set to False, so help should be shown
+    configs = {
+        'config1.yaml': {'default_actions': False},
+        'config2.yaml': {'default_actions': False},
+    }
+
+    # Expect help to be shown
+    flexmock(module).should_receive('parse_arguments').with_args('--help').once()
+    flexmock(module.sys).should_receive('exit').with_args(0).once()
+
+    module.check_and_show_help_on_no_args(configs)
+
+
+def test_check_and_show_help_on_no_args_with_conflicting_configs():
+    flexmock(module.sys).should_receive('argv').and_return(['borgmatic'])
+
+    # Simulate two config files with conflicting 'default_actions' values
+    configs = {
+        'config1.yaml': {'default_actions': True},
+        'config2.yaml': {'default_actions': False},
+    }
+
+    # Expect help not to be shown because at least one config enables default actions
+    flexmock(module).should_receive('parse_arguments').never()
+    flexmock(module.sys).should_receive('exit').never()
+
+    module.check_and_show_help_on_no_args(configs)

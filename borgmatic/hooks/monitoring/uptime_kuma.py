@@ -37,7 +37,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logging.getLogger('urllib3').setLevel(logging.ERROR)
 
     try:
-        response = requests.get(f'{push_url}?{query}')
+        response = requests.get(f'{push_url}?{query}', verify=hook_config.get('verify_tls', True))
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:

@@ -5,6 +5,8 @@ import shlex
 
 import borgmatic.borg.pattern
 import borgmatic.config.paths
+import borgmatic.hooks.credential.parse
+import borgmatic.hooks.data_source.mariadb
 from borgmatic.execute import (
     execute_command,
     execute_command_and_capture_output,
@@ -25,11 +27,12 @@ def make_dump_path(base_directory):  # pragma: no cover
 SYSTEM_DATABASE_NAMES = ('information_schema', 'mysql', 'performance_schema', 'sys')
 
 
-def database_names_to_dump(database, extra_environment, dry_run):
+def database_names_to_dump(database, config, username, password, environment, dry_run):
     '''
-    Given a requested database config, return the corresponding sequence of database names to dump.
-    In the case of "all", query for the names of databases on the configured host and return them,
-    excluding any system databases that will cause problems during restore.
+    Given a requested database config, a configuration dict, a database username and password, an
+    environment dict, and whether this is a dry run, return the corresponding sequence of database
+    names to dump. In the case of "all", query for the names of databases on the configured host and
+    return them, excluding any system databases that will cause problems during restore.
     '''
     if database['name'] != 'all':
         return (database['name'],)
@@ -39,20 +42,27 @@ def database_names_to_dump(database, extra_environment, dry_run):
     mysql_show_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_command') or 'mysql')
     )
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('list_options'))
+    )
     show_command = (
         mysql_show_command
-        + (tuple(database['list_options'].split(' ')) if 'list_options' in database else ())
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
+        )
+        + extra_options
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (('--user', database['username']) if 'username' in database else ())
+        + (('--ssl',) if database.get('tls') is True else ())
+        + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--skip-column-names', '--batch')
         + ('--execute', 'show schemas')
     )
+
     logger.debug('Querying for "all" MySQL databases to dump')
-    show_output = execute_command_and_capture_output(
-        show_command, extra_environment=extra_environment
-    )
+
+    show_output = execute_command_and_capture_output(show_command, environment=environment)
 
     return tuple(
         show_name
@@ -62,7 +72,15 @@ def database_names_to_dump(database, extra_environment, dry_run):
 
 
 def execute_dump_command(
-    database, dump_path, database_names, extra_environment, dry_run, dry_run_label
+    database,
+    config,
+    username,
+    password,
+    dump_path,
+    database_names,
+    environment,
+    dry_run,
+    dry_run_label,
 ):
     '''
     Kick off a dump for the given MySQL/MariaDB database (provided as a configuration dict) to a
@@ -88,14 +106,21 @@ def execute_dump_command(
     mysql_dump_command = tuple(
         shlex.quote(part) for part in shlex.split(database.get('mysql_dump_command') or 'mysqldump')
     )
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('options'))
+    )
     dump_command = (
         mysql_dump_command
-        + (tuple(database['options'].split(' ')) if 'options' in database else ())
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
+        )
+        + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
-        + (('--user', database['username']) if 'username' in database else ())
+        + (('--ssl',) if database.get('tls') is True else ())
+        + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--databases',)
         + database_names
         + ('--result-file', dump_filename)
@@ -109,7 +134,7 @@ def execute_dump_command(
 
     return execute_command(
         dump_command,
-        extra_environment=extra_environment,
+        environment=environment,
         run_to_completion=False,
     )
 
@@ -151,8 +176,16 @@ def dump_data_sources(
 
     for database in databases:
         dump_path = make_dump_path(borgmatic_runtime_directory)
-        extra_environment = {'MYSQL_PWD': database['password']} if 'password' in database else None
-        dump_database_names = database_names_to_dump(database, extra_environment, dry_run)
+        username = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('username'), config
+        )
+        password = borgmatic.hooks.credential.parse.resolve_credential(
+            database.get('password'), config
+        )
+        environment = dict(os.environ)
+        dump_database_names = database_names_to_dump(
+            database, config, username, password, environment, dry_run
+        )
 
         if not dump_database_names:
             if dry_run:
@@ -167,9 +200,12 @@ def dump_data_sources(
                 processes.append(
                     execute_dump_command(
                         renamed_database,
+                        config,
+                        username,
+                        password,
                         dump_path,
                         (dump_name,),
-                        extra_environment,
+                        environment,
                         dry_run,
                         dry_run_label,
                     )
@@ -178,9 +214,12 @@ def dump_data_sources(
             processes.append(
                 execute_dump_command(
                     database,
+                    config,
+                    username,
+                    password,
                     dump_path,
                     dump_database_names,
-                    extra_environment,
+                    environment,
                     dry_run,
                     dry_run_label,
                 )
@@ -189,7 +228,8 @@ def dump_data_sources(
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(
-                os.path.join(borgmatic_runtime_directory, 'mysql_databases')
+                os.path.join(borgmatic_runtime_directory, 'mysql_databases'),
+                source=borgmatic.borg.pattern.Pattern_source.HOOK,
             )
         )
 
@@ -250,30 +290,42 @@ def restore_data_source_dump(
     port = str(
         connection_params['port'] or data_source.get('restore_port', data_source.get('port', ''))
     )
-    username = connection_params['username'] or data_source.get(
-        'restore_username', data_source.get('username')
+    tls = data_source.get('restore_tls', data_source.get('tls'))
+    username = borgmatic.hooks.credential.parse.resolve_credential(
+        (
+            connection_params['username']
+            or data_source.get('restore_username', data_source.get('username'))
+        ),
+        config,
     )
-    password = connection_params['password'] or data_source.get(
-        'restore_password', data_source.get('password')
+    password = borgmatic.hooks.credential.parse.resolve_credential(
+        (
+            connection_params['password']
+            or data_source.get('restore_password', data_source.get('password'))
+        ),
+        config,
     )
 
     mysql_restore_command = tuple(
         shlex.quote(part) for part in shlex.split(data_source.get('mysql_command') or 'mysql')
     )
+    extra_options, defaults_extra_filename = (
+        borgmatic.hooks.data_source.mariadb.parse_extra_options(data_source.get('restore_options'))
+    )
     restore_command = (
         mysql_restore_command
-        + ('--batch',)
-        + (
-            tuple(data_source['restore_options'].split(' '))
-            if 'restore_options' in data_source
-            else ()
+        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+            username, password, defaults_extra_filename
         )
+        + extra_options
+        + ('--batch',)
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
-        + (('--user', username) if username else ())
+        + (('--ssl',) if tls is True else ())
+        + (('--skip-ssl',) if tls is False else ())
     )
-    extra_environment = {'MYSQL_PWD': password} if password else None
+    environment = dict(os.environ)
 
     logger.debug(f"Restoring MySQL database {data_source['name']}{dry_run_label}")
     if dry_run:
@@ -286,5 +338,5 @@ def restore_data_source_dump(
         [extract_process],
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
-        extra_environment=extra_environment,
+        environment=environment,
     )

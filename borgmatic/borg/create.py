@@ -132,41 +132,53 @@ def collect_special_file_paths(
     used.
 
     Skip looking for special files in the given borgmatic runtime directory, as borgmatic creates
-    its own special files there for database dumps. And if the borgmatic runtime directory is
-    configured to be excluded from the files Borg backs up, error, because this means Borg won't be
-    able to consume any database dumps and therefore borgmatic will hang.
+    its own special files there for database dumps and we don't want those omitted.
+
+    Additionally, if the borgmatic runtime directory is not contained somewhere in the files Borg
+    plans to backup, that means the user must have excluded the runtime directory (e.g. via
+    "exclude_patterns" or similar). Therefore, raise, because this means Borg won't be able to
+    consume any database dumps and therefore borgmatic will hang when it tries to do so.
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
-    # files including any named pipe we've created.
+    # files including any named pipe we've created. And omit "--filter" because that can break the
+    # paths output parsing below such that path lines no longer start with th expected "- ".
     paths_output = execute_command_and_capture_output(
-        tuple(argument for argument in create_command if argument != '--exclude-nodump')
+        flags.omit_flag_and_value(flags.omit_flag(create_command, '--exclude-nodump'), '--filter')
         + ('--dry-run', '--list'),
         capture_stderr=True,
         working_directory=working_directory,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
 
+    # These are all the individual files that Borg is planning to backup as determined by the Borg
+    # create dry run above.
     paths = tuple(
         path_line.split(' ', 1)[1]
         for path_line in paths_output.split('\n')
         if path_line and path_line.startswith('- ') or path_line.startswith('+ ')
     )
-    skip_paths = {}
+
+    # These are the subset of those files that contain the borgmatic runtime directory.
+    paths_containing_runtime_directory = {}
 
     if os.path.exists(borgmatic_runtime_directory):
-        skip_paths = {
+        paths_containing_runtime_directory = {
             path for path in paths if any_parent_directories(path, (borgmatic_runtime_directory,))
         }
 
-        if not skip_paths and not dry_run:
+        # If no paths to backup contain the runtime directory, it must've been excluded.
+        if not paths_containing_runtime_directory and not dry_run:
             raise ValueError(
                 f'The runtime directory {os.path.normpath(borgmatic_runtime_directory)} overlaps with the configured excludes or patterns with excludes. Please ensure the runtime directory is not excluded.'
             )
 
     return tuple(
-        path for path in paths if special_file(path, working_directory) if path not in skip_paths
+        path
+        for path in paths
+        if special_file(path, working_directory)
+        if path not in paths_containing_runtime_directory
     )
 
 
@@ -184,7 +196,7 @@ def check_all_root_patterns_exist(patterns):
 
     if missing_paths:
         raise ValueError(
-            f"Source directories / root pattern paths do not exist: {', '.join(missing_paths)}"
+            f"Source directories or root pattern paths do not exist: {', '.join(missing_paths)}"
         )
 
 
@@ -201,9 +213,7 @@ def make_base_create_command(
     borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
-    progress=False,
     json=False,
-    list_files=False,
     stream_processes=None,
 ):
     '''
@@ -281,7 +291,7 @@ def make_base_create_command(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--list', '--filter', list_filter_flags)
-            if list_files and not json and not progress
+            if config.get('list_details') and not json and not config.get('progress')
             else ()
         )
         + (('--dry-run',) if dry_run else ())
@@ -325,6 +335,7 @@ def make_base_create_command(
                         special_file_path,
                         borgmatic.borg.pattern.Pattern_type.NO_RECURSE,
                         borgmatic.borg.pattern.Pattern_style.FNMATCH,
+                        source=borgmatic.borg.pattern.Pattern_source.INTERNAL,
                     )
                     for special_file_path in special_file_paths
                 ),
@@ -348,10 +359,7 @@ def create_archive(
     borgmatic_runtime_directory,
     local_path='borg',
     remote_path=None,
-    progress=False,
-    stats=False,
     json=False,
-    list_files=False,
     stream_processes=None,
 ):
     '''
@@ -376,28 +384,26 @@ def create_archive(
         borgmatic_runtime_directory,
         local_path,
         remote_path,
-        progress,
         json,
-        list_files,
         stream_processes,
     )
 
     if json:
         output_log_level = None
-    elif list_files or (stats and not dry_run):
+    elif config.get('list_details') or (config.get('statistics') and not dry_run):
         output_log_level = logging.ANSWER
     else:
         output_log_level = logging.INFO
 
     # The progress output isn't compatible with captured and logged output, as progress messes with
     # the terminal directly.
-    output_file = DO_NOT_CAPTURE if progress else None
+    output_file = DO_NOT_CAPTURE if config.get('progress') else None
 
     create_flags += (
         (('--info',) if logger.getEffectiveLevel() == logging.INFO and not json else ())
-        + (('--stats',) if stats and not json and not dry_run else ())
+        + (('--stats',) if config.get('statistics') and not json and not dry_run else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) and not json else ())
-        + (('--progress',) if progress else ())
+        + (('--progress',) if config.get('progress') else ())
         + (('--json',) if json else ())
     )
     borg_exit_codes = config.get('borg_exit_codes')
@@ -409,7 +415,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -417,7 +423,7 @@ def create_archive(
         return execute_command_and_capture_output(
             create_flags + create_positional_arguments,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )
@@ -427,7 +433,7 @@ def create_archive(
             output_log_level,
             output_file,
             working_directory=working_directory,
-            extra_environment=environment.make_environment(config),
+            environment=environment.make_environment(config),
             borg_local_path=local_path,
             borg_exit_codes=borg_exit_codes,
         )

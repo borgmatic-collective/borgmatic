@@ -1,8 +1,13 @@
 import collections
+import io
 import itertools
+import re
 import sys
 from argparse import ArgumentParser
 
+import ruamel.yaml
+
+import borgmatic.config.schema
 from borgmatic.config import collect
 
 ACTION_ALIASES = {
@@ -27,6 +32,7 @@ ACTION_ALIASES = {
     'break-lock': [],
     'key': [],
     'borg': [],
+    'recreate': [],
 }
 
 
@@ -63,9 +69,9 @@ def get_subactions_for_actions(action_parsers):
 
 def omit_values_colliding_with_action_names(unparsed_arguments, parsed_arguments):
     '''
-    Given a sequence of string arguments and a dict from action name to parsed argparse.Namespace
-    arguments, return the string arguments with any values omitted that happen to be the same as
-    the name of a borgmatic action.
+    Given unparsed arguments as a sequence of strings and a dict from action name to parsed
+    argparse.Namespace arguments, return the string arguments with any values omitted that happen to
+    be the same as the name of a borgmatic action.
 
     This prevents, for instance, "check --only extract" from triggering the "extract" action.
     '''
@@ -282,17 +288,270 @@ def parse_arguments_for_actions(unparsed_arguments, action_parsers, global_parse
     )
 
 
-def make_parsers():
+OMITTED_FLAG_NAMES = {'match-archives', 'progress', 'statistics', 'list-details'}
+
+
+def make_argument_description(schema, flag_name):
     '''
-    Build a global arguments parser, individual action parsers, and a combined parser containing
-    both. Return them as a tuple. The global parser is useful for parsing just global arguments
-    while ignoring actions, and the combined parser is handy for displaying help that includes
-    everything: global flags, a list of actions, etc.
+    Given a configuration schema dict and a flag name for it, extend the schema's description with
+    an example or additional information as appropriate based on its type. Return the updated
+    description for use in a command-line argument.
+    '''
+    description = schema.get('description')
+    schema_type = schema.get('type')
+    example = schema.get('example')
+    pieces = [description] if description else []
+
+    if '[0]' in flag_name:
+        pieces.append(
+            ' To specify a different list element, replace the "[0]" with another array index ("[1]", "[2]", etc.).'
+        )
+
+    if example and schema_type in ('array', 'object'):
+        example_buffer = io.StringIO()
+        yaml = ruamel.yaml.YAML(typ='safe')
+        yaml.default_flow_style = True
+        yaml.dump(example, example_buffer)
+
+        pieces.append(f'Example value: "{example_buffer.getvalue().strip()}"')
+
+    return ' '.join(pieces).replace('%', '%%')
+
+
+def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
+    r'''
+    Given an argparse._ArgumentGroup instance, a sequence of unparsed argument strings, and a dotted
+    flag name, add command-line array element flags that correspond to the given unparsed arguments.
+
+    Here's the background. We want to support flags that can have arbitrary indices like:
+
+      --foo.bar[1].baz
+
+    But argparse doesn't support that natively because the index can be an arbitrary number. We
+    won't let that stop us though, will we?
+
+    If the current flag name has an array component in it (e.g. a name with "[0]"), then make a
+    pattern that would match the flag name regardless of the number that's in it. The idea is that
+    we want to look for unparsed arguments that appear like the flag name, but instead of "[0]" they
+    have, say, "[1]" or "[123]".
+
+    Next, we check each unparsed argument against that pattern. If one of them matches, add an
+    argument flag for it to the argument parser group. Example:
+
+    Let's say flag_name is:
+
+        --foo.bar[0].baz
+
+    ... then the regular expression pattern will be:
+
+        ^--foo\.bar\[\d+\]\.baz
+
+    ... and, if that matches an unparsed argument of:
+
+        --foo.bar[1].baz
+
+    ... then an argument flag will get added equal to that unparsed argument. And so the unparsed
+    argument will match it when parsing is performed! In this manner, we're using the actual user
+    CLI input to inform what exact flags we support.
+    '''
+    if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
+        return
+
+    pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+
+    try:
+        # Find an existing list index flag (and its action) corresponding to the given flag name.
+        (argument_action, existing_flag_name) = next(
+            (action, action_flag_name)
+            for action in arguments_group._group_actions
+            for action_flag_name in action.option_strings
+            if pattern.match(action_flag_name)
+            if f'--{flag_name}'.startswith(action_flag_name)
+        )
+
+        # Based on the type of the action (e.g. argparse._StoreTrueAction), look up the corresponding
+        # action registry name (e.g., "store_true") to pass to add_argument(action=...) below.
+        action_registry_name = next(
+            registry_name
+            for registry_name, action_type in arguments_group._registries['action'].items()
+            # Not using isinstance() here because we only want an exact match—no parent classes.
+            if type(argument_action) is action_type
+        )
+    except StopIteration:
+        return
+
+    for unparsed in unparsed_arguments:
+        unparsed_flag_name = unparsed.split('=', 1)[0]
+        destination_name = unparsed_flag_name.lstrip('-').replace('-', '_')
+
+        if not pattern.match(unparsed_flag_name) or unparsed_flag_name == existing_flag_name:
+            continue
+
+        if action_registry_name in ('store_true', 'store_false'):
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                action=action_registry_name,
+                default=argument_action.default,
+                dest=destination_name,
+                required=argument_action.nargs,
+            )
+        else:
+            arguments_group.add_argument(
+                unparsed_flag_name,
+                action=action_registry_name,
+                choices=argument_action.choices,
+                default=argument_action.default,
+                dest=destination_name,
+                nargs=argument_action.nargs,
+                required=argument_action.nargs,
+                type=argument_action.type,
+            )
+
+
+def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names=None):
+    '''
+    Given an argparse._ArgumentGroup instance, a configuration schema dict, and a sequence of
+    unparsed argument strings, convert the entire schema into corresponding command-line flags and
+    add them to the arguments group.
+
+    For instance, given a schema of:
+
+        {
+            'type': 'object',
+            'properties': {
+                'foo': {
+                    'type': 'object',
+                    'properties': {
+                        'bar': {'type': 'integer'}
+                    }
+                }
+            }
+        }
+
+    ... the following flag will be added to the arguments group:
+
+        --foo.bar
+
+    If "foo" is instead an array of objects, both of the following will get added:
+
+        --foo
+        --foo[0].bar
+
+    And if names are also passed in, they are considered to be the name components of an option
+    (e.g. "foo" and "bar") and are used to construct a resulting flag.
+
+    Bail if the schema is not a dict.
+    '''
+    if names is None:
+        names = ()
+
+    if not isinstance(schema, dict):
+        return
+
+    schema_type = schema.get('type')
+
+    # If this option has multiple types, just use the first one (that isn't "null").
+    if isinstance(schema_type, list):
+        try:
+            schema_type = next(single_type for single_type in schema_type if single_type != 'null')
+        except StopIteration:
+            raise ValueError(f'Unknown type in configuration schema: {schema_type}')
+
+    # If this is an "object" type, recurse for each child option ("property").
+    if schema_type == 'object':
+        properties = schema.get('properties')
+
+        # If there are child properties, recurse for each one. But if there are no child properties,
+        # fall through so that a flag gets added below for the (empty) object.
+        if properties:
+            for name, child in properties.items():
+                add_arguments_from_schema(
+                    arguments_group, child, unparsed_arguments, names + (name,)
+                )
+
+            return
+
+    # If this is an "array" type, recurse for each items type child option. Don't return yet so that
+    # a flag also gets added below for the array itself.
+    if schema_type == 'array':
+        items = schema.get('items', {})
+        properties = borgmatic.config.schema.get_properties(items)
+
+        if properties:
+            for name, child in properties.items():
+                add_arguments_from_schema(
+                    arguments_group,
+                    child,
+                    unparsed_arguments,
+                    names[:-1] + (f'{names[-1]}[0]',) + (name,),
+                )
+        # If there aren't any children, then this is an array of scalars. Recurse accordingly.
+        else:
+            add_arguments_from_schema(
+                arguments_group, items, unparsed_arguments, names[:-1] + (f'{names[-1]}[0]',)
+            )
+
+    flag_name = '.'.join(names).replace('_', '-')
+
+    # Certain options already have corresponding flags on individual actions (like "create
+    # --progress"), so don't bother adding them to the global flags.
+    if not flag_name or flag_name in OMITTED_FLAG_NAMES:
+        return
+
+    metavar = names[-1].upper()
+    description = make_argument_description(schema, flag_name)
+
+    # The object=str and array=str given here is to support specifying an object or an array as a
+    # YAML string on the command-line.
+    argument_type = borgmatic.config.schema.parse_type(schema_type, object=str, array=str)
+
+    # As a UX nicety, add separate true and false flags for boolean options.
+    if schema_type == 'boolean':
+        arguments_group.add_argument(
+            f'--{flag_name}',
+            action='store_true',
+            default=None,
+            help=description,
+        )
+
+        if names[-1].startswith('no_'):
+            no_flag_name = '.'.join(names[:-1] + (names[-1][len('no_') :],)).replace('_', '-')
+        else:
+            no_flag_name = '.'.join(names[:-1] + ('no-' + names[-1],)).replace('_', '-')
+
+        arguments_group.add_argument(
+            f'--{no_flag_name}',
+            dest=flag_name.replace('-', '_'),
+            action='store_false',
+            default=None,
+            help=f'Set the --{flag_name} value to false.',
+        )
+    else:
+        arguments_group.add_argument(
+            f'--{flag_name}',
+            type=argument_type,
+            metavar=metavar,
+            help=description,
+        )
+
+    add_array_element_arguments(arguments_group, unparsed_arguments, flag_name)
+
+
+def make_parsers(schema, unparsed_arguments):
+    '''
+    Given a configuration schema dict and unparsed arguments as a sequence of strings, build a
+    global arguments parser, individual action parsers, and a combined parser containing both.
+    Return them as a tuple. The global parser is useful for parsing just global arguments while
+    ignoring actions, and the combined parser is handy for displaying help that includes everything:
+    global flags, a list of actions, etc.
     '''
     config_paths = collect.get_default_config_paths(expand_home=True)
     unexpanded_config_paths = collect.get_default_config_paths(expand_home=False)
 
-    global_parser = ArgumentParser(add_help=False)
+    # Using allow_abbrev=False here prevents the global parser from erroring about "ambiguous"
+    # options like --encryption. Such options are intended for an action parser rather than the
+    # global parser, and so we don't want to error on them here.
+    global_parser = ArgumentParser(allow_abbrev=False, add_help=False)
     global_group = global_parser.add_argument_group('global arguments')
 
     global_group.add_argument(
@@ -308,9 +567,6 @@ def make_parsers():
         dest='dry_run',
         action='store_true',
         help='Go through the motions, but do not actually write to any repositories',
-    )
-    global_group.add_argument(
-        '-nc', '--no-color', dest='no_color', action='store_true', help='Disable colored output'
     )
     global_group.add_argument(
         '-v',
@@ -388,6 +644,7 @@ def make_parsers():
         action='store_true',
         help='Display installed version number of borgmatic and exit',
     )
+    add_arguments_from_schema(global_group, schema, unparsed_arguments)
 
     global_plus_action_parser = ArgumentParser(
         description='''
@@ -415,7 +672,6 @@ def make_parsers():
         '--encryption',
         dest='encryption_mode',
         help='Borg repository encryption mode',
-        required=True,
     )
     repo_create_group.add_argument(
         '--source-repository',
@@ -434,6 +690,7 @@ def make_parsers():
     )
     repo_create_group.add_argument(
         '--append-only',
+        default=None,
         action='store_true',
         help='Create an append-only repository',
     )
@@ -443,6 +700,8 @@ def make_parsers():
     )
     repo_create_group.add_argument(
         '--make-parent-dirs',
+        dest='make_parent_directories',
+        default=None,
         action='store_true',
         help='Create any missing parent directories of the repository directory',
     )
@@ -477,7 +736,7 @@ def make_parsers():
     )
     transfer_group.add_argument(
         '--progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress as each archive is transferred',
     )
@@ -544,13 +803,17 @@ def make_parsers():
     )
     prune_group.add_argument(
         '--stats',
-        dest='stats',
-        default=False,
+        dest='statistics',
+        default=None,
         action='store_true',
-        help='Display statistics of the pruned archive',
+        help='Display statistics of the pruned archive [Borg 1 only]',
     )
     prune_group.add_argument(
-        '--list', dest='list_archives', action='store_true', help='List archives kept/pruned'
+        '--list',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='List archives kept/pruned',
     )
     prune_group.add_argument(
         '--oldest',
@@ -588,8 +851,7 @@ def make_parsers():
     )
     compact_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress as each segment is compacted',
     )
@@ -603,7 +865,7 @@ def make_parsers():
     compact_group.add_argument(
         '--threshold',
         type=int,
-        dest='threshold',
+        dest='compact_threshold',
         help='Minimum saved space percentage threshold for compacting a segment, defaults to 10',
     )
     compact_group.add_argument(
@@ -624,20 +886,24 @@ def make_parsers():
     )
     create_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is backed up',
     )
     create_group.add_argument(
         '--stats',
-        dest='stats',
-        default=False,
+        dest='statistics',
+        default=None,
         action='store_true',
         help='Display statistics of archive',
     )
     create_group.add_argument(
-        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
+        '--list',
+        '--files',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
     )
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
@@ -658,8 +924,7 @@ def make_parsers():
     )
     check_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is checked',
     )
@@ -716,12 +981,15 @@ def make_parsers():
     )
     delete_group.add_argument(
         '--list',
-        dest='list_archives',
+        dest='list_details',
+        default=None,
         action='store_true',
         help='Show details for the deleted archives',
     )
     delete_group.add_argument(
         '--stats',
+        dest='statistics',
+        default=None,
         action='store_true',
         help='Display statistics for the deleted archives',
     )
@@ -826,8 +1094,7 @@ def make_parsers():
     )
     extract_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is extracted',
     )
@@ -902,8 +1169,7 @@ def make_parsers():
     )
     config_bootstrap_group.add_argument(
         '--progress',
-        dest='progress',
-        default=False,
+        default=None,
         action='store_true',
         help='Display progress for each file as it is extracted',
     )
@@ -996,7 +1262,12 @@ def make_parsers():
         '--tar-filter', help='Name of filter program to pipe data through'
     )
     export_tar_group.add_argument(
-        '--list', '--files', dest='list_files', action='store_true', help='Show per-file details'
+        '--list',
+        '--files',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
     )
     export_tar_group.add_argument(
         '--strip-components',
@@ -1107,7 +1378,8 @@ def make_parsers():
     )
     repo_delete_group.add_argument(
         '--list',
-        dest='list_archives',
+        dest='list_details',
+        default=None,
         action='store_true',
         help='Show details for the archives in the given repository',
     )
@@ -1479,6 +1751,31 @@ def make_parsers():
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
+    key_import_parser = key_parsers.add_parser(
+        'import',
+        help='Import a copy of the repository key from backup',
+        description='Import a copy of the repository key from backup',
+        add_help=False,
+    )
+    key_import_group = key_import_parser.add_argument_group('key import arguments')
+    key_import_group.add_argument(
+        '--paper',
+        action='store_true',
+        help='Import interactively from a backup done with --paper',
+    )
+    key_import_group.add_argument(
+        '--repository',
+        help='Path of repository to import the key from, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    key_import_group.add_argument(
+        '--path',
+        metavar='PATH',
+        help='Path to import the key from backup, defaults to stdin',
+    )
+    key_import_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
     key_change_passphrase_parser = key_parsers.add_parser(
         'change-passphrase',
         help='Change the passphrase protecting the repository key',
@@ -1493,6 +1790,56 @@ def make_parsers():
         help='Path of repository to change the passphrase for, defaults to the configured repository if there is only one, quoted globs supported',
     )
     key_change_passphrase_group.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit'
+    )
+
+    recreate_parser = action_parsers.add_parser(
+        'recreate',
+        aliases=ACTION_ALIASES['recreate'],
+        help='Recreate an archive in a repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        description='Recreate an archive in a repository (with Borg 1.2+, you must run compact afterwards to actually free space)',
+        add_help=False,
+    )
+    recreate_group = recreate_parser.add_argument_group('recreate arguments')
+    recreate_group.add_argument(
+        '--repository',
+        help='Path of repository containing archive to recreate, defaults to the configured repository if there is only one, quoted globs supported',
+    )
+    recreate_group.add_argument(
+        '--archive',
+        help='Archive name, hash, or series to recreate',
+    )
+    recreate_group.add_argument(
+        '--list',
+        dest='list_details',
+        default=None,
+        action='store_true',
+        help='Show per-file details',
+    )
+    recreate_group.add_argument(
+        '--target',
+        metavar='TARGET',
+        help='Create a new archive from the specified archive (via --archive), without replacing it',
+    )
+    recreate_group.add_argument(
+        '--comment',
+        metavar='COMMENT',
+        help='Add a comment text to the archive or, if an archive is not provided, to all matching archives',
+    )
+    recreate_group.add_argument(
+        '--timestamp',
+        metavar='TIMESTAMP',
+        help='Manually override the archive creation date/time (UTC)',
+    )
+    recreate_group.add_argument(
+        '-a',
+        '--match-archives',
+        '--glob-archives',
+        dest='match_archives',
+        metavar='PATTERN',
+        help='Only consider archive names, hashes, or series matching this pattern [Borg 2.x+ only]',
+    )
+    recreate_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'
     )
 
@@ -1523,15 +1870,18 @@ def make_parsers():
     return global_parser, action_parsers, global_plus_action_parser
 
 
-def parse_arguments(*unparsed_arguments):
+def parse_arguments(schema, *unparsed_arguments):
     '''
-    Given command-line arguments with which this script was invoked, parse the arguments and return
-    them as a dict mapping from action name (or "global") to an argparse.Namespace instance.
+    Given a configuration schema dict and the command-line arguments with which this script was
+    invoked and unparsed arguments as a sequence of strings, parse the arguments and return them as
+    a dict mapping from action name (or "global") to an argparse.Namespace instance.
 
     Raise ValueError if the arguments cannot be parsed.
     Raise SystemExit with an error code of 0 if "--help" was requested.
     '''
-    global_parser, action_parsers, global_plus_action_parser = make_parsers()
+    global_parser, action_parsers, global_plus_action_parser = make_parsers(
+        schema, unparsed_arguments
+    )
     arguments, remaining_action_arguments = parse_arguments_for_actions(
         unparsed_arguments, action_parsers.choices, global_parser
     )
@@ -1559,30 +1909,12 @@ def parse_arguments(*unparsed_arguments):
             f"Unrecognized argument{'s' if len(unknown_arguments) > 1 else ''}: {' '.join(unknown_arguments)}"
         )
 
-    if 'create' in arguments and arguments['create'].list_files and arguments['create'].progress:
-        raise ValueError(
-            'With the create action, only one of --list (--files) and --progress flags can be used.'
-        )
-    if 'create' in arguments and arguments['create'].list_files and arguments['create'].json:
-        raise ValueError(
-            'With the create action, only one of --list (--files) and --json flags can be used.'
-        )
-
     if (
         ('list' in arguments and 'repo-info' in arguments and arguments['list'].json)
         or ('list' in arguments and 'info' in arguments and arguments['list'].json)
         or ('repo-info' in arguments and 'info' in arguments and arguments['repo-info'].json)
     ):
         raise ValueError('With the --json flag, multiple actions cannot be used together.')
-
-    if (
-        'transfer' in arguments
-        and arguments['transfer'].archive
-        and arguments['transfer'].match_archives
-    ):
-        raise ValueError(
-            'With the transfer action, only one of --archive and --match-archives flags can be used.'
-        )
 
     if 'list' in arguments and (arguments['list'].prefix and arguments['list'].match_archives):
         raise ValueError(

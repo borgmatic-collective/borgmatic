@@ -24,7 +24,14 @@ def parse_arguments(*unparsed_arguments):
     delete_parser = subvolume_subparser.add_parser('delete')
     delete_parser.add_argument('snapshot_path')
 
-    return global_parser.parse_args(unparsed_arguments)
+    property_parser = action_parsers.add_parser('property')
+    property_subparser = property_parser.add_subparsers(dest='subaction')
+    get_parser = property_subparser.add_parser('get')
+    get_parser.add_argument('-t', dest='type')
+    get_parser.add_argument('subvolume_path')
+    get_parser.add_argument('property_name')
+
+    return (global_parser, global_parser.parse_args(unparsed_arguments))
 
 
 BUILTIN_SUBVOLUME_LIST_LINES = (
@@ -60,8 +67,12 @@ def print_subvolume_list(arguments, snapshot_paths):
 
 
 def main():
-    arguments = parse_arguments(*sys.argv[1:])
+    (global_parser, arguments) = parse_arguments(*sys.argv[1:])
     snapshot_paths = load_snapshots()
+
+    if not hasattr(arguments, 'subaction'):
+        global_parser.print_help()
+        sys.exit(1)
 
     if arguments.subaction == 'list':
         print_subvolume_list(arguments, snapshot_paths)
@@ -84,6 +95,8 @@ def main():
             if snapshot_path.endswith('/' + arguments.snapshot_path)
         ]
         save_snapshots(snapshot_paths)
+    elif arguments.action == 'property' and arguments.subaction == 'get':
+        print(f'{arguments.property_name}=false')
 
 
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ def insert_execute_command_mock(command, destination_path=None, borg_exit_codes=
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module).should_receive('execute_command').with_args(
         command,
-        extra_environment=None,
+        environment=None,
         working_directory=destination_path,
         borg_local_path=command[0],
         borg_exit_codes=borg_exit_codes,
@@ -580,14 +580,14 @@ def test_extract_archive_with_strip_components_all_and_no_paths_raises():
         )
 
 
-def test_extract_archive_calls_borg_with_progress_parameter():
+def test_extract_archive_calls_borg_with_progress_flag():
     flexmock(module.os.path).should_receive('abspath').and_return('repo')
     flexmock(module.environment).should_receive('make_environment')
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'extract', '--progress', 'repo::archive'),
         output_file=module.DO_NOT_CAPTURE,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -606,10 +606,9 @@ def test_extract_archive_calls_borg_with_progress_parameter():
         repository='repo',
         archive='archive',
         paths=None,
-        config={},
+        config={'progress': True},
         local_borg_version='1.2.3',
         global_arguments=flexmock(log_json=False),
-        progress=True,
     )
 
 
@@ -622,10 +621,9 @@ def test_extract_archive_with_progress_and_extract_to_stdout_raises():
             repository='repo',
             archive='archive',
             paths=None,
-            config={},
+            config={'progress': True},
             local_borg_version='1.2.3',
             global_arguments=flexmock(log_json=False),
-            progress=True,
             extract_to_stdout=True,
         )
 
@@ -639,7 +637,7 @@ def test_extract_archive_calls_borg_with_stdout_parameter_and_returns_process():
         ('borg', 'extract', '--stdout', 'repo::archive'),
         output_file=module.subprocess.PIPE,
         run_to_completion=False,
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -674,7 +672,7 @@ def test_extract_archive_skips_abspath_for_remote_repository():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module).should_receive('execute_command').with_args(
         ('borg', 'extract', 'server:repo::archive'),
-        extra_environment=None,
+        environment=None,
         working_directory=None,
         borg_local_path='borg',
         borg_exit_codes=None,
@@ -710,7 +708,7 @@ def test_extract_archive_uses_configured_working_directory_in_repo_path_and_dest
     )
     flexmock(module.borgmatic.config.validate).should_receive(
         'normalize_repository_path'
-    ).with_args('/working/dir/repo').and_return('/working/dir/repo').once()
+    ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(
         dry_run=False,
@@ -733,7 +731,7 @@ def test_extract_archive_uses_configured_working_directory_in_repo_path_when_des
     )
     flexmock(module.borgmatic.config.validate).should_receive(
         'normalize_repository_path'
-    ).with_args('/working/dir/repo').and_return('/working/dir/repo').once()
+    ).with_args('repo', '/working/dir').and_return('/working/dir/repo').once()
 
     module.extract_archive(
         dry_run=False,

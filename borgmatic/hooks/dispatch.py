@@ -3,6 +3,7 @@ import importlib
 import logging
 import pkgutil
 
+import borgmatic.hooks.command
 import borgmatic.hooks.credential
 import borgmatic.hooks.data_source
 import borgmatic.hooks.monitoring

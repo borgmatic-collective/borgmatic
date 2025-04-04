@@ -56,7 +56,7 @@ def change_passphrase(
         full_command,
         output_file=borgmatic.execute.DO_NOT_CAPTURE,
         output_log_level=logging.ANSWER,
-        extra_environment=environment.make_environment(config_without_passphrase),
+        environment=environment.make_environment(config_without_passphrase),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),

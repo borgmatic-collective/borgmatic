@@ -48,9 +48,7 @@ def make_info_command(
             if info_arguments.prefix
             else (
                 flags.make_match_archives_flags(
-                    info_arguments.match_archives
-                    or info_arguments.archive
-                    or config.get('match_archives'),
+                    info_arguments.archive or config.get('match_archives'),
                     config.get('archive_name_format'),
                     local_borg_version,
                 )
@@ -102,7 +100,7 @@ def display_archives_info(
 
     json_info = execute_command_and_capture_output(
         json_command,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
@@ -116,7 +114,7 @@ def display_archives_info(
     execute_command(
         main_command,
         output_log_level=logging.ANSWER,
-        extra_environment=environment.make_environment(config),
+        environment=environment.make_environment(config),
         working_directory=working_directory,
         borg_local_path=local_path,
         borg_exit_codes=borg_exit_codes,
