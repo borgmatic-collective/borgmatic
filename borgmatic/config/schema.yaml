@@ -810,6 +810,12 @@ properties:
             Restrict the number of checked archives to the last n. Applies only
             to the "archives" check. Defaults to checking all archives.
         example: 3
+    color:
+        type: boolean
+        description: |
+            Deprecated. Use "color" under "logging:" and "console:" instead.
+            Apply color to console output. Defaults to true.
+        example: false
     logging:
         type: object
         additionalProperties: false
@@ -835,8 +841,7 @@ properties:
                     color:
                         type: boolean
                         description: |
-                            Apply color to console output. Can be overridden with --no-color
-                            command-line flag. Defaults to true.
+                            Apply color to console output. Defaults to true.
                         example: false
             syslog:
                 type: object
@@ -886,7 +891,6 @@ properties:
                             Python format string used for log messages written
                             to the log file.
                         example: "%(asctime)s %(message)s"
-                            
             monitoring:
                 type: object
                 additionalProperties: false
