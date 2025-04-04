@@ -402,8 +402,6 @@ def test_delayed_logging_handler_flush_forwards_each_record_to_each_target():
     assert handler.buffer == []
 
 
-<<<<<<< HEAD
-=======
 def test_delayed_logging_handler_flush_skips_forwarding_when_log_record_is_too_low_for_target():
     handler = module.Delayed_logging_handler()
     flexmock(handler).should_receive('acquire')
@@ -420,7 +418,6 @@ def test_delayed_logging_handler_flush_skips_forwarding_when_log_record_is_too_l
     assert handler.buffer == []
 
 
->>>>>>> main
 def test_flush_delayed_logging_without_handlers_does_not_raise():
     root_logger = flexmock(handlers=[])
     root_logger.should_receive('removeHandler')

@@ -938,7 +938,6 @@ properties:
             running supported actions. Corresponds to the "--list" flag on those
             actions. Defaults to false.
         example: true
->>>>>>> main
     skip_actions:
         type: array
         items:
