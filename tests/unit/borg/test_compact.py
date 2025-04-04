@@ -36,7 +36,7 @@ def test_compact_segments_calls_borg_with_flags():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -49,7 +49,7 @@ def test_compact_segments_with_log_info_calls_borg_with_info_flag():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         dry_run=False,
     )
 
@@ -63,7 +63,7 @@ def test_compact_segments_with_log_debug_calls_borg_with_debug_flag():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         dry_run=False,
     )
 
@@ -75,7 +75,7 @@ def test_compact_segments_with_dry_run_skips_borg_call():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         dry_run=True,
     )
 
@@ -89,7 +89,7 @@ def test_compact_segments_with_local_path_calls_borg_via_local_path():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg1',
     )
 
@@ -106,7 +106,7 @@ def test_compact_segments_with_exit_codes_calls_borg_using_them():
         repository_path='repo',
         config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -119,7 +119,7 @@ def test_compact_segments_with_remote_path_calls_borg_with_remote_path_flags():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg1',
     )
 
@@ -133,7 +133,7 @@ def test_compact_segments_with_progress_calls_borg_with_progress_flag():
         repository_path='repo',
         config={'progress': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -146,7 +146,7 @@ def test_compact_segments_with_cleanup_commits_calls_borg_with_cleanup_commits_f
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         cleanup_commits=True,
     )
 
@@ -160,7 +160,7 @@ def test_compact_segments_with_threshold_calls_borg_with_threshold_flag():
         repository_path='repo',
         config={'compact_threshold': 20},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -174,7 +174,7 @@ def test_compact_segments_with_umask_calls_borg_with_umask_flags():
         repository_path='repo',
         config=config,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -185,9 +185,9 @@ def test_compact_segments_with_log_json_calls_borg_with_log_json_flags():
     module.compact_segments(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
     )
 
 
@@ -201,7 +201,7 @@ def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_flags():
         repository_path='repo',
         config=config,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -214,7 +214,7 @@ def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options(
         repository_path='repo',
         config={'extra_borg_options': {'compact': '--extra --options'}},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -229,5 +229,5 @@ def test_compact_segments_calls_borg_with_working_directory():
         repository_path='repo',
         config={'working_directory': '/working/dir'},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )

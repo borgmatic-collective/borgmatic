@@ -39,7 +39,7 @@ def export_tar_archive(
         (local_path, 'export-tar')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--list',) if config.get('list_details') else ())

@@ -35,7 +35,7 @@ def test_transfer_archives_calls_borg_with_flags():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -69,7 +69,7 @@ def test_transfer_archives_with_dry_run_calls_borg_with_dry_run_flag():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -100,7 +100,7 @@ def test_transfer_archives_with_log_info_calls_borg_with_info_flag():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -132,7 +132,7 @@ def test_transfer_archives_with_log_debug_calls_borg_with_debug_flag():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -165,7 +165,7 @@ def test_transfer_archives_with_archive_calls_borg_with_match_archives_flag():
         transfer_arguments=flexmock(
             archive='archive', progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -198,7 +198,7 @@ def test_transfer_archives_with_match_archives_calls_borg_with_match_archives_fl
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives='sh:foo*', source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -231,7 +231,7 @@ def test_transfer_archives_with_archive_name_format_calls_borg_with_match_archiv
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -262,7 +262,7 @@ def test_transfer_archives_with_local_path_calls_borg_via_local_path():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg2',
     )
 
@@ -295,7 +295,7 @@ def test_transfer_archives_with_exit_codes_calls_borg_using_them():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -329,7 +329,7 @@ def test_transfer_archives_with_remote_path_calls_borg_with_remote_path_flags():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg2',
     )
 
@@ -363,7 +363,7 @@ def test_transfer_archives_with_umask_calls_borg_with_umask_flags():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -392,12 +392,12 @@ def test_transfer_archives_with_log_json_calls_borg_with_log_json_flags():
     module.transfer_archives(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='2.3.4',
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
     )
 
 
@@ -432,7 +432,7 @@ def test_transfer_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -466,7 +466,7 @@ def test_transfer_archives_with_progress_calls_borg_with_progress_flags():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -505,7 +505,7 @@ def test_transfer_archives_passes_through_arguments_to_borg(argument_name):
             source_repository=None,
             **{argument_name: 'value'},
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -538,7 +538,7 @@ def test_transfer_archives_with_source_repository_calls_borg_with_other_repo_fla
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository='other'
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -580,7 +580,7 @@ def test_transfer_archives_with_date_based_matching_calls_borg_with_date_based_f
         repository_path='repo',
         config={},
         local_borg_version='2.3.4',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         transfer_arguments=flexmock(
             archive=None,
             progress=None,
@@ -622,5 +622,5 @@ def test_transfer_archives_calls_borg_with_working_directory():
         transfer_arguments=flexmock(
             archive=None, progress=None, match_archives=None, source_repository=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )

@@ -25,7 +25,7 @@ def test_resolve_archive_name_passes_through_non_latest_archive_name():
             archive,
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == archive
     )
@@ -49,7 +49,7 @@ def test_resolve_archive_name_calls_borg_with_flags():
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -74,7 +74,7 @@ def test_resolve_archive_name_with_log_info_calls_borg_without_info_flag():
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -99,7 +99,7 @@ def test_resolve_archive_name_with_log_debug_calls_borg_without_debug_flag():
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -123,7 +123,7 @@ def test_resolve_archive_name_with_local_path_calls_borg_via_local_path():
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
             local_path='borg1',
         )
         == expected_archive
@@ -149,7 +149,7 @@ def test_resolve_archive_name_with_exit_codes_calls_borg_using_them():
             'latest',
             config={'borg_exit_codes': borg_exit_codes},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -173,7 +173,7 @@ def test_resolve_archive_name_with_remote_path_calls_borg_with_remote_path_flags
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
             remote_path='borg1',
         )
         == expected_archive
@@ -198,7 +198,7 @@ def test_resolve_archive_name_with_umask_calls_borg_with_umask_flags():
             'latest',
             config={'umask': '077'},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -221,7 +221,7 @@ def test_resolve_archive_name_without_archives_raises():
             'latest',
             config={},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
 
 
@@ -242,9 +242,9 @@ def test_resolve_archive_name_with_log_json_calls_borg_with_log_json_flags():
         module.resolve_archive_name(
             'repo',
             'latest',
-            config={},
+            config={'log_json': True},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=True),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -269,7 +269,7 @@ def test_resolve_archive_name_with_lock_wait_calls_borg_with_lock_wait_flags():
             'latest',
             config={'lock_wait': 'okay'},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -295,7 +295,7 @@ def test_resolve_archive_name_calls_borg_with_working_directory():
             'latest',
             config={'working_directory': '/working/dir'},
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
         )
         == expected_archive
     )
@@ -317,7 +317,7 @@ def test_make_repo_list_command_includes_log_info():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--info', 'repo')
@@ -339,7 +339,7 @@ def test_make_repo_list_command_includes_json_but_not_info():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=True, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -361,7 +361,7 @@ def test_make_repo_list_command_includes_log_debug():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--debug', '--show-rc', 'repo')
@@ -383,7 +383,7 @@ def test_make_repo_list_command_includes_json_but_not_debug():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=True, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -404,7 +404,7 @@ def test_make_repo_list_command_includes_json():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=True, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--json', 'repo')
@@ -422,12 +422,12 @@ def test_make_repo_list_command_includes_log_json():
 
     command = module.make_repo_list_command(
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--log-json', 'repo')
@@ -450,7 +450,7 @@ def test_make_repo_list_command_includes_lock_wait():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--lock-wait', '5', 'repo')
@@ -471,7 +471,7 @@ def test_make_repo_list_command_includes_local_path():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg2',
     )
 
@@ -495,7 +495,7 @@ def test_make_repo_list_command_includes_remote_path():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg2',
     )
 
@@ -519,7 +519,7 @@ def test_make_repo_list_command_includes_umask():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--umask', '077', 'repo')
@@ -540,7 +540,7 @@ def test_make_repo_list_command_transforms_prefix_into_match_archives():
         config={},
         local_borg_version='1.2.3',
         repo_list_arguments=flexmock(archive=None, paths=None, json=False, prefix='foo'),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--match-archives', 'sh:foo*', 'repo')
@@ -559,7 +559,7 @@ def test_make_repo_list_command_prefers_prefix_over_archive_name_format():
         config={'archive_name_format': 'bar-{now}'},  # noqa: FS003
         local_borg_version='1.2.3',
         repo_list_arguments=flexmock(archive=None, paths=None, json=False, prefix='foo'),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--match-archives', 'sh:foo*', 'repo')
@@ -580,7 +580,7 @@ def test_make_repo_list_command_transforms_archive_name_format_into_match_archiv
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--match-archives', 'sh:bar-*', 'repo')
@@ -601,7 +601,7 @@ def test_make_repo_list_command_includes_short():
         repo_list_arguments=flexmock(
             archive=None, paths=None, json=False, prefix=None, match_archives=None, short=True
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--short', 'repo')
@@ -643,7 +643,7 @@ def test_make_repo_list_command_includes_additional_flags(argument_name):
             format=None,
             **{argument_name: 'value'},
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--' + argument_name.replace('_', '-'), 'value', 'repo')
@@ -675,7 +675,7 @@ def test_make_repo_list_command_with_match_archives_calls_borg_with_match_archiv
             find_paths=None,
             format=None,
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == ('borg', 'list', '--match-archives', 'foo-*', 'repo')
@@ -746,7 +746,7 @@ def test_make_repo_list_command_with_date_based_matching_calls_borg_with_date_ba
             older='1m',
             oldest='1w',
         ),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert command == (

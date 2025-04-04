@@ -813,114 +813,77 @@ properties:
     color:
         type: boolean
         description: |
-            Deprecated. Use "color" under "logging:" and "console:" instead.
             Apply color to console output. Defaults to true.
         example: false
-    logging:
-        type: object
-        additionalProperties: false
-        properties:
-            console:
-                type: object
-                additionalProperties: false
-                properties:
-                    verbosity:
-                        type: integer
-                        enum:
-                            - -2
-                            - -1
-                            - 0
-                            - 1
-                            - 2
-                        description: |
-                            Display verbose progress to the console: -2
-                            (disabled), -1 (errors only), 0 (responses to
-                            actions, the default), 1 (info about steps borgmatic
-                            is taking), or 2 (debug).
-                        example: 2
-                    color:
-                        type: boolean
-                        description: |
-                            Apply color to console output. Defaults to true.
-                        example: false
-            syslog:
-                type: object
-                additionalProperties: false
-                properties:
-                    verbosity:
-                        type: integer
-                        enum:
-                            - -2
-                            - -1
-                            - 0
-                            - 1
-                            - 2
-                        description: |
-                            Log verbose progress to syslog: -2 (disabled, the
-                            default), -1 (errors only), 0 (responses to
-                            actions), 1 (info about steps borgmatic is taking),
-                            or 2 (debug).
-                        example: 2
-            file:
-                type: object
-                required: ['path']
-                additionalProperties: false
-                properties:
-                    verbosity:
-                        type: integer
-                        enum:
-                            - -2
-                            - -1
-                            - 0
-                            - 1
-                            - 2
-                        description: |
-                            Log verbose progress to file: -2 (disabled), -1
-                            (errors only), 0 (responses to actions), 1 (info
-                            about steps borgmatic is taking, the default), or 2
-                            (debug).
-                        example: 2
-                    path:
-                        type: string
-                        description: |
-                            Write log messages to this file instead of syslog.
-                        example: /var/log/borgmatic/logfile.txt
-                    format:
-                        type: string
-                        description: |
-                            Python format string used for log messages written
-                            to the log file.
-                        example: "%(asctime)s %(message)s"
-            monitoring:
-                type: object
-                additionalProperties: false
-                properties:
-                    verbosity:
-                        type: integer
-                        enum:
-                            - -2
-                            - -1
-                            - 0
-                            - 1
-                            - 2
-                        description: |
-                            When a monitoring integration supporting logging is
-                            configured, log verbose progress to it: -2
-                            (disabled), -1 (errors only), responses to actions
-                            (0), 1 (info about steps borgmatic is taking, the
-                            default), or 2 (debug).
-                        example: 2
-            json:
-                type: boolean
-                description: |
-                    Write Borg log messages and console output as one JSON
-                    object per log line instead of formatted text. Defaults to
-                    false.
-                example: true
+    verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
         description: |
-            Settings for where to log borgmatic output and how verbose those
-            logs should be.
-        example: false
+            Display verbose output to the console: -2 (disabled), -1 (errors
+            only), 0 (warnings and responses to actions, the default), 1 (info
+            about steps borgmatic is taking), or 2 (debug).
+        example: 2
+    syslog_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            Log verbose output to syslog: -2 (disabled, the default), -1 (errors
+            only), 0 (warnings and responses to actions), 1 (info about steps
+            borgmatic is taking), or 2 (debug).
+        example: 2
+    log_file_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            Log verbose output to file: -2 (disabled), -1 (errors only), 0
+            (warnings and responses to actions), 1 (info about steps borgmatic
+            is taking, the default), or 2 (debug).
+        example: 2
+    log_file:
+        type: string
+        description: |
+            Write log messages to the file at this path.
+        example: /var/log/borgmatic/logfile.txt
+    log_file_format:
+        type: string
+        description: |
+            Python format string used for log messages written to the log file.
+        example: "%(asctime)s %(message)s"
+    monitoring_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            When a monitoring integration supporting logging is configured, log
+            verbose output to it: -2 (disabled), -1 (errors only), 0 (warnings
+            and responses to actions), 1 (info about steps borgmatic is taking,
+            the default), or 2 (debug).
+        example: 2
+    log_json:
+        type: boolean
+        description: |
+            Write Borg log messages and console output as one JSON object per
+            log line instead of formatted text. Defaults to false.
+        example: true
     progress:
         type: boolean
         description: |
@@ -941,6 +904,13 @@ properties:
             Display details for each file or archive as it is processed when
             running supported actions. Corresponds to the "--list" flag on those
             actions. Defaults to false.
+        example: true
+    default_actions:
+        type: boolean
+        description: |
+            Whether to apply default actions (create, prune, compact and check)
+            when no arguments are supplied to the borgmatic command. If set to
+            false, borgmatic displays the help message instead.
         example: true
     skip_actions:
         type: array
@@ -2912,11 +2882,3 @@ properties:
                 example: "1:7370001"
         description: |
             Configuration for integration with the KeePassXC password manager.
-    default_actions:
-        type: boolean
-        description: |
-            Whether to apply default actions (e.g., backup) when no arguments
-            are supplied to the borgmatic command. If set to true, borgmatic
-            triggers the default actions (create, prune, compact and check). If
-            set to false, borgmatic displays the help message instead.
-        example: true

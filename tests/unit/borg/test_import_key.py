@@ -38,7 +38,7 @@ def test_import_key_calls_borg_with_required_flags():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -53,7 +53,7 @@ def test_import_key_calls_borg_with_local_path():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg1',
     )
 
@@ -70,7 +70,7 @@ def test_import_key_calls_borg_using_exit_codes():
         config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -85,7 +85,7 @@ def test_import_key_calls_borg_with_remote_path_flags():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         remote_path='borg1',
     )
 
@@ -101,7 +101,7 @@ def test_import_key_calls_borg_with_umask_flags():
         config={'umask': '0770'},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -113,10 +113,10 @@ def test_import_key_calls_borg_with_log_json_flags():
 
     module.import_key(
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=True),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -131,7 +131,7 @@ def test_import_key_calls_borg_with_lock_wait_flags():
         config={'lock_wait': '5'},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -147,7 +147,7 @@ def test_import_key_with_log_info_calls_borg_with_info_parameter():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -163,7 +163,7 @@ def test_import_key_with_log_debug_calls_borg_with_debug_flags():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -178,7 +178,7 @@ def test_import_key_calls_borg_with_paper_flags():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=True, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -193,7 +193,7 @@ def test_import_key_calls_borg_with_path_argument():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path='source'),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -209,7 +209,7 @@ def test_import_key_with_non_existent_path_raises():
             config={},
             local_borg_version='1.2.3',
             import_arguments=flexmock(paper=False, path='source'),
-            global_arguments=flexmock(dry_run=False, log_json=False),
+            global_arguments=flexmock(dry_run=False),
         )
 
 
@@ -224,7 +224,7 @@ def test_import_key_with_stdin_path_calls_borg_without_path_argument():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path='-'),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -239,7 +239,7 @@ def test_import_key_with_dry_run_skips_borg_call():
         config={},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=True, log_json=False),
+        global_arguments=flexmock(dry_run=True),
     )
 
 
@@ -254,7 +254,7 @@ def test_import_key_calls_borg_with_working_directory():
         config={'working_directory': '/working/dir'},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path=None),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -275,5 +275,5 @@ def test_import_key_calls_borg_with_path_argument_and_working_directory():
         config={'working_directory': '/working/dir'},
         local_borg_version='1.2.3',
         import_arguments=flexmock(paper=False, path='source'),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )

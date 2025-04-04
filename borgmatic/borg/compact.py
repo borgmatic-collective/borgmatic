@@ -30,7 +30,7 @@ def compact_segments(
         (local_path, 'compact')
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--progress',) if config.get('progress') else ())
         + (('--cleanup-commits',) if cleanup_commits else ())

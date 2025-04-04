@@ -195,7 +195,7 @@ def test_prune_archives_calls_borg_with_flags():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -217,7 +217,7 @@ def test_prune_archives_with_log_info_calls_borg_with_info_flag():
         config={},
         dry_run=False,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -239,7 +239,7 @@ def test_prune_archives_with_log_debug_calls_borg_with_debug_flag():
         config={},
         dry_run=False,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -260,7 +260,7 @@ def test_prune_archives_with_dry_run_calls_borg_with_dry_run_flag():
         config={},
         dry_run=True,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -281,7 +281,7 @@ def test_prune_archives_with_local_path_calls_borg_via_local_path():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg1',
         prune_arguments=prune_arguments,
     )
@@ -308,7 +308,7 @@ def test_prune_archives_with_exit_codes_calls_borg_using_them():
         repository_path='repo',
         config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -329,7 +329,7 @@ def test_prune_archives_with_remote_path_calls_borg_with_remote_path_flags():
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg1',
         prune_arguments=prune_arguments,
     )
@@ -351,7 +351,7 @@ def test_prune_archives_with_stats_config_calls_borg_with_stats_flag():
         repository_path='repo',
         config={'statistics': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -372,7 +372,7 @@ def test_prune_archives_with_list_config_calls_borg_with_list_flag():
         repository_path='repo',
         config={'list_details': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -394,7 +394,7 @@ def test_prune_archives_with_umask_calls_borg_with_umask_flags():
         repository_path='repo',
         config=config,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -413,9 +413,9 @@ def test_prune_archives_with_log_json_calls_borg_with_log_json_flag():
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -437,7 +437,7 @@ def test_prune_archives_with_lock_wait_calls_borg_with_lock_wait_flags():
         repository_path='repo',
         config=config,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -458,7 +458,7 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
         repository_path='repo',
         config={'extra_borg_options': {'prune': '--extra --options'}},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -527,7 +527,7 @@ def test_prune_archives_with_date_based_matching_calls_borg_with_date_based_flag
         repository_path='repo',
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -550,7 +550,7 @@ def test_prune_archives_calls_borg_with_working_directory():
         repository_path='repo',
         config={'working_directory': '/working/dir'},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )
 
@@ -571,6 +571,6 @@ def test_prune_archives_calls_borg_without_stats_when_feature_is_not_available()
         repository_path='repo',
         config={'statistics': True},
         local_borg_version='2.0.0b10',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         prune_arguments=prune_arguments,
     )

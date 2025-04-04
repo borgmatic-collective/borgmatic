@@ -33,7 +33,7 @@ def test_mount_archive_calls_borg_with_required_flags():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -56,7 +56,7 @@ def test_mount_archive_with_borg_features_calls_borg_with_repository_and_match_a
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -74,7 +74,7 @@ def test_mount_archive_without_archive_calls_borg_with_repository_flags_only():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -94,7 +94,7 @@ def test_mount_archive_calls_borg_with_path_flags():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -112,7 +112,7 @@ def test_mount_archive_calls_borg_with_local_path():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg1',
     )
 
@@ -135,7 +135,7 @@ def test_mount_archive_calls_borg_using_exit_codes():
         mount_arguments=mount_arguments,
         config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -155,7 +155,7 @@ def test_mount_archive_calls_borg_with_remote_path_flags():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg1',
     )
 
@@ -174,7 +174,7 @@ def test_mount_archive_calls_borg_with_umask_flags():
         mount_arguments=mount_arguments,
         config={'umask': '0770'},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -190,9 +190,9 @@ def test_mount_archive_calls_borg_with_log_json_flags():
         repository_path='repo',
         archive='archive',
         mount_arguments=mount_arguments,
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
     )
 
 
@@ -210,7 +210,7 @@ def test_mount_archive_calls_borg_with_lock_wait_flags():
         mount_arguments=mount_arguments,
         config={'lock_wait': '5'},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -229,7 +229,7 @@ def test_mount_archive_with_log_info_calls_borg_with_info_parameter():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -248,7 +248,7 @@ def test_mount_archive_with_log_debug_calls_borg_with_debug_flags():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -275,7 +275,7 @@ def test_mount_archive_calls_borg_with_foreground_parameter():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -295,7 +295,7 @@ def test_mount_archive_calls_borg_with_options_flags():
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -359,7 +359,7 @@ def test_mount_archive_with_date_based_matching_calls_borg_with_date_based_flags
         mount_arguments=mount_arguments,
         config={},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -375,5 +375,5 @@ def test_mount_archive_calls_borg_with_working_directory():
         mount_arguments=mount_arguments,
         config={'working_directory': '/working/dir'},
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )

@@ -145,10 +145,6 @@ def test_parse_arguments_with_no_arguments_uses_defaults():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == config_paths
-    assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == -2
-    assert global_arguments.log_file_verbosity == 1
-    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_multiple_config_flags_parses_as_list():
@@ -158,10 +154,6 @@ def test_parse_arguments_with_multiple_config_flags_parses_as_list():
 
     global_arguments = arguments['global']
     assert global_arguments.config_paths == ['myconfig', 'otherconfig']
-    assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == -2
-    assert global_arguments.log_file_verbosity == 1
-    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_action_after_config_path_omits_action():
@@ -197,48 +189,6 @@ def test_parse_arguments_with_action_and_positional_arguments_after_config_path_
     assert global_arguments.config_paths == ['myconfig']
     assert 'borg' in arguments
     assert arguments['borg'].options == ['key', 'export']
-
-
-def test_parse_arguments_with_verbosity_overrides_default():
-    config_paths = ['default']
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
-
-    arguments = module.parse_arguments({}, '--verbosity', '1')
-
-    global_arguments = arguments['global']
-    assert global_arguments.config_paths == config_paths
-    assert global_arguments.verbosity == 1
-    assert global_arguments.syslog_verbosity == -2
-    assert global_arguments.log_file_verbosity == 1
-    assert global_arguments.monitoring_verbosity == 1
-
-
-def test_parse_arguments_with_syslog_verbosity_overrides_default():
-    config_paths = ['default']
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
-
-    arguments = module.parse_arguments({}, '--syslog-verbosity', '2')
-
-    global_arguments = arguments['global']
-    assert global_arguments.config_paths == config_paths
-    assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == 2
-    assert global_arguments.log_file_verbosity == 1
-    assert global_arguments.monitoring_verbosity == 1
-
-
-def test_parse_arguments_with_log_file_verbosity_overrides_default():
-    config_paths = ['default']
-    flexmock(module.collect).should_receive('get_default_config_paths').and_return(config_paths)
-
-    arguments = module.parse_arguments({}, '--log-file-verbosity', '-1')
-
-    global_arguments = arguments['global']
-    assert global_arguments.config_paths == config_paths
-    assert global_arguments.verbosity == 0
-    assert global_arguments.syslog_verbosity == -2
-    assert global_arguments.log_file_verbosity == -1
-    assert global_arguments.monitoring_verbosity == 1
 
 
 def test_parse_arguments_with_single_override_parses():
@@ -320,19 +270,19 @@ def test_parse_arguments_with_help_and_action_shows_action_help(capsys):
 def test_parse_arguments_with_action_before_global_options_parses_options():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    arguments = module.parse_arguments({}, 'prune', '--verbosity', '2')
+    arguments = module.parse_arguments({}, 'prune', '--dry-run')
 
     assert 'prune' in arguments
-    assert arguments['global'].verbosity == 2
+    assert arguments['global'].dry_run
 
 
 def test_parse_arguments_with_global_options_before_action_parses_options():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    arguments = module.parse_arguments({}, '--verbosity', '2', 'prune')
+    arguments = module.parse_arguments({}, '--dry-run', 'prune')
 
     assert 'prune' in arguments
-    assert arguments['global'].verbosity == 2
+    assert arguments['global'].dry_run
 
 
 def test_parse_arguments_with_prune_action_leaves_other_actions_disabled():
@@ -708,7 +658,7 @@ def test_parse_arguments_config_with_subaction_and_global_flags_at_start_does_no
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments(
-        {}, '--verbosity', '1', 'config', 'bootstrap', '--repository', 'repo.borg'
+        {}, '--dry-run', 'config', 'bootstrap', '--repository', 'repo.borg'
     )
 
 
@@ -716,7 +666,7 @@ def test_parse_arguments_config_with_subaction_and_global_flags_at_end_does_not_
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
     module.parse_arguments(
-        {}, 'config', 'bootstrap', '--repository', 'repo.borg', '--verbosity', '1'
+        {}, 'config', 'bootstrap', '--repository', 'repo.borg', '--dry-run'
     )
 
 

@@ -287,7 +287,7 @@ def make_base_create_command(
         + (('--files-cache', files_cache) if files_cache else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (
             ('--list', '--filter', list_filter_flags)

@@ -20,7 +20,7 @@ def test_make_repo_delete_command_with_feature_available_runs_borg_repo_delete()
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -41,7 +41,7 @@ def test_make_repo_delete_command_without_feature_available_runs_borg_delete():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -63,7 +63,7 @@ def test_make_repo_delete_command_includes_log_info():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -85,7 +85,7 @@ def test_make_repo_delete_command_includes_log_debug():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -109,7 +109,7 @@ def test_make_repo_delete_command_includes_dry_run():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=True, log_json=False),
+        global_arguments=flexmock(dry_run=True),
         local_path='borg',
         remote_path=None,
     )
@@ -133,7 +133,7 @@ def test_make_repo_delete_command_includes_remote_path():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path='borg1',
     )
@@ -156,7 +156,7 @@ def test_make_repo_delete_command_includes_umask():
         config={'umask': '077'},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -177,10 +177,10 @@ def test_make_repo_delete_command_includes_log_json():
 
     command = module.make_repo_delete_command(
         repository={'path': 'repo'},
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=True),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -204,7 +204,7 @@ def test_make_repo_delete_command_includes_lock_wait():
         config={'lock_wait': 5},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -228,7 +228,7 @@ def test_make_repo_delete_command_includes_list():
         config={'list_details': True},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=True, force=0),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -249,7 +249,7 @@ def test_make_repo_delete_command_includes_force():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=1),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )
@@ -270,7 +270,7 @@ def test_make_repo_delete_command_includes_force_twice():
         config={},
         local_borg_version='1.2.3',
         repo_delete_arguments=flexmock(list_details=False, force=2),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
     )

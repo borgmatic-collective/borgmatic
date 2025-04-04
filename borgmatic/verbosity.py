@@ -22,3 +22,25 @@ def verbosity_to_log_level(verbosity):
         VERBOSITY_SOME: logging.INFO,
         VERBOSITY_LOTS: logging.DEBUG,
     }.get(verbosity, logging.WARNING)
+
+
+DEFAULT_VERBOSITIES = {
+    'verbosity': 0,
+    'syslog_verbosity': -2,
+    'log_file_verbosity': 1,
+    'monitoring_verbosity': 1,
+}
+
+
+def get_verbosity(configs, option_name):
+    '''
+    Given a dict from configuration filename to configuration dict, and the name of a configuration
+    verbosity option, return the maximum verbosity value from that option across the given
+    configuration files.
+    '''
+    try:
+        return max(
+            config.get(option_name, DEFAULT_VERBOSITIES[option_name]) for config in configs.values()
+        )
+    except ValueError:
+        return DEFAULT_VERBOSITIES[option_name]

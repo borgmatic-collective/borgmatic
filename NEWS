@@ -1,7 +1,7 @@
 2.0.0.dev0
  * TL;DR: More flexible, completely revamped command hooks. All config options settable on the
-   command-line. Config option defaults for many command-line flags. New "key import" and "recreate"
-   actions. Almost everything is backwards compatible.
+   command-line. Config option defaults for many command-line flags (including verbosity!). New "key
+   import" and "recreate" actions. Almost everything is backwards compatible.
  * #262: Add a "default_actions" option that supports disabling default actions when borgmatic is
    run without any command-line arguments.
  * #303: Deprecate the "--override" flag in favor of direct command-line flags for every borgmatic
@@ -23,6 +23,8 @@
    preparation commands—even when something goes wrong.
  * #790: BREAKING: Run all command hooks (both new and deprecated) respecting the
    "working_directory" option if configured, meaning that hook commands are run in that directory.
+ * #793: Add configuration options for all verbosity and logging flags, so you don't have to set
+   verbosity on the command-line.
  * #836: Add a custom command option for the SQLite hook.
  * #837: Add custom command options for the MongoDB hook.
  * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
