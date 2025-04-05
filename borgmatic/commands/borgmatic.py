@@ -987,8 +987,9 @@ def get_singular_option_value(configs, option_name):
 
     if len(distinct_values) > 1:
         configure_logging(logging.CRITICAL)
+        joined_values = ', '.join(str(value) for value in distinct_values)
         logger.critical(
-            f'The {option_name} option has conflicting values across configuration files: {", ".join(distinct_values)}'
+            f'The {option_name} option has conflicting values across configuration files: {joined_values}'
         )
         exit_with_help_link()
 

@@ -657,17 +657,13 @@ def test_parse_arguments_config_with_subaction_and_required_flags_does_not_raise
 def test_parse_arguments_config_with_subaction_and_global_flags_at_start_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    module.parse_arguments(
-        {}, '--dry-run', 'config', 'bootstrap', '--repository', 'repo.borg'
-    )
+    module.parse_arguments({}, '--dry-run', 'config', 'bootstrap', '--repository', 'repo.borg')
 
 
 def test_parse_arguments_config_with_subaction_and_global_flags_at_end_does_not_raise():
     flexmock(module.collect).should_receive('get_default_config_paths').and_return(['default'])
 
-    module.parse_arguments(
-        {}, 'config', 'bootstrap', '--repository', 'repo.borg', '--dry-run'
-    )
+    module.parse_arguments({}, 'config', 'bootstrap', '--repository', 'repo.borg', '--dry-run')
 
 
 def test_parse_arguments_config_with_subaction_and_explicit_config_file_does_not_raise():

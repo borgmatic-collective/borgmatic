@@ -40,7 +40,10 @@ def get_verbosity(configs, option_name):
     '''
     try:
         return max(
-            config.get(option_name, DEFAULT_VERBOSITIES[option_name]) for config in configs.values()
+            verbosity
+            for config in configs.values()
+            for verbosity in (config.get(option_name, DEFAULT_VERBOSITIES[option_name]),)
+            if verbosity
         )
     except ValueError:
         return DEFAULT_VERBOSITIES[option_name]

@@ -2217,3 +2217,61 @@ def test_check_and_show_help_on_no_args_with_conflicting_configs():
     flexmock(module.sys).should_receive('exit').never()
 
     module.check_and_show_help_on_no_args(configs)
+
+
+def test_get_singular_option_value_with_conflicting_values_exits():
+    flexmock(module).should_receive('configure_logging')
+    flexmock(module).should_receive('exit_with_help_link').once()
+
+    module.get_singular_option_value(
+        configs={
+            'test1.yaml': {'foo': 1, 'bar': 'baz'},
+            'test2.yaml': {'foo': 2, 'bar': 'baz'},
+        },
+        option_name='foo',
+    )
+
+
+def test_get_singular_option_value_with_same_value_returns_it():
+    flexmock(module).should_receive('configure_logging').never()
+    flexmock(module).should_receive('exit_with_help_link').never()
+
+    assert (
+        module.get_singular_option_value(
+            configs={
+                'test1.yaml': {'foo': 1, 'bar': 'baz'},
+                'test2.yaml': {'foo': 1, 'bar': 'baz'},
+            },
+            option_name='foo',
+        )
+        == 1
+    )
+
+
+def test_get_singular_option_value_with_no_values_returns_none():
+    flexmock(module).should_receive('configure_logging').never()
+    flexmock(module).should_receive('exit_with_help_link').never()
+
+    assert (
+        module.get_singular_option_value(
+            configs={
+                'test1.yaml': {'bar': 'baz'},
+                'test2.yaml': {'bar': 'baz'},
+            },
+            option_name='foo',
+        )
+        is None
+    )
+
+
+def test_get_singular_option_value_with_no_config_returns_none():
+    flexmock(module).should_receive('configure_logging').never()
+    flexmock(module).should_receive('exit_with_help_link').never()
+
+    assert (
+        module.get_singular_option_value(
+            configs={},
+            option_name='foo',
+        )
+        is None
+    )

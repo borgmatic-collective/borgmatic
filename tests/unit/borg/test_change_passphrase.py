@@ -111,7 +111,9 @@ def test_change_passphrase_calls_borg_with_umask_flags():
 def test_change_passphrase_calls_borg_with_log_json_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
     config = {'log_json': True}
-    insert_execute_command_mock(('borg', 'key', 'change-passphrase', '--log-json', 'repo'), config=config)
+    insert_execute_command_mock(
+        ('borg', 'key', 'change-passphrase', '--log-json', 'repo'), config=config
+    )
 
     module.change_passphrase(
         repository_path='repo',
