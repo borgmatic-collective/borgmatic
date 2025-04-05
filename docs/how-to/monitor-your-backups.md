@@ -104,6 +104,10 @@ Additionally, see the [borgmatic configuration
 file](https://torsion.org/borgmatic/docs/reference/configuration/) for
 additional Healthchecks options.
 
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+defaults for these flags in your borgmatic configuration via the
+`monitoring_verbosity`, `list`, and `statistics` options.
+
 You can configure Healthchecks to notify you by a [variety of
 mechanisms](https://healthchecks.io/#welcome-integrations) when backups fail
 or it doesn't hear from borgmatic for a certain period of time.
@@ -218,7 +222,11 @@ You can customize the verbosity of the logs that are sent with borgmatic's
 `--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
 use. See `borgmatic create --help` for more information.
 
-If you don't want any logs sent, you can disable this feature by setting
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+defaults for these flags in your borgmatic configuration via the
+`monitoring_verbosity`, `list`, and `statistics` options.
+
+If you don't want any logs sent, you can disable log sending by setting
 `send_logs` to `false`:
 
 ```yaml
@@ -523,7 +531,11 @@ You can customize the verbosity of the logs that are sent with borgmatic's
 `--monitoring-verbosity` flag. The `--list` and `--stats` flags may also be of
 use. See `borgmatic create --help` for more information.
 
-If you don't want any logs sent, you can disable this feature by setting
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+defaults for these flags in your borgmatic configuration via the
+`monitoring_verbosity`, `list`, and `statistics` options.
+
+If you don't want any logs sent, you can disable log sending by setting
 `send_logs` to `false`:
 
 ```yaml
