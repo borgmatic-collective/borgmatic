@@ -82,7 +82,7 @@ def create_repository(
         + (('--make-parent-dirs',) if make_parent_directories else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug',) if logger.isEnabledFor(logging.DEBUG) else ())
-        + (('--log-json',) if global_arguments.log_json else ())
+        + (('--log-json',) if config.get('log_json') else ())
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())

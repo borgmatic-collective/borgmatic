@@ -37,6 +37,16 @@ def test_forgetful_buffering_handler_emit_forgets_log_records_when_capacity_reac
     assert handler.forgot
 
 
+def test_add_handler_does_not_raise():
+    logger = flexmock(handlers=[flexmock(level=0)])
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
+    flexmock(logger).should_receive('addHandler')
+    flexmock(logger).should_receive('removeHandler')
+    flexmock(logger).should_receive('setLevel')
+
+    module.add_handler(flexmock())
+
+
 def test_get_handler_matches_by_identifier():
     handlers = [
         flexmock(),
@@ -92,7 +102,10 @@ def test_format_buffered_logs_for_payload_without_handler_produces_empty_payload
 
 def test_remove_handler_with_matching_handler_does_not_raise():
     flexmock(module).should_receive('get_handler').and_return(flexmock())
-    flexmock(module.logging.getLogger()).should_receive('removeHandler')
+    logger = flexmock(handlers=[flexmock(level=0)])
+    flexmock(module.logging).should_receive('getLogger').and_return(logger)
+    flexmock(logger).should_receive('removeHandler')
+    flexmock(logger).should_receive('setLevel')
 
     module.remove_handler('test')
 

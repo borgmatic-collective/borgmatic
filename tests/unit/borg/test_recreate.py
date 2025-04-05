@@ -51,7 +51,7 @@ def test_recreate_archive_dry_run_skips_execution():
         config={},
         local_borg_version='1.2.3',
         recreate_arguments=recreate_arguments,
-        global_arguments=flexmock(log_json=False, dry_run=True),
+        global_arguments=flexmock(dry_run=True),
         local_path='borg',
     )
 
@@ -86,7 +86,7 @@ def test_recreate_calls_borg_with_required_flags():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path=None,
         patterns=None,
@@ -121,7 +121,7 @@ def test_recreate_with_remote_path():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         remote_path='borg1',
         patterns=None,
@@ -156,7 +156,7 @@ def test_recreate_with_lock_wait():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -192,7 +192,7 @@ def test_recreate_with_log_info():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -227,7 +227,7 @@ def test_recreate_with_log_debug():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -252,7 +252,7 @@ def test_recreate_with_log_json():
     module.recreate_archive(
         repository='repo',
         archive='archive',
-        config={},
+        config={'log_json': True},
         local_borg_version='1.2.3',
         recreate_arguments=flexmock(
             list=None,
@@ -261,7 +261,7 @@ def test_recreate_with_log_json():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=True),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -297,7 +297,7 @@ def test_recreate_with_list_config_calls_borg_with_list_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -334,7 +334,7 @@ def test_recreate_with_patterns_from_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=['pattern1', 'pattern2'],
     )
@@ -368,7 +368,7 @@ def test_recreate_with_exclude_flags():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -402,7 +402,7 @@ def test_recreate_with_target_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -438,7 +438,7 @@ def test_recreate_with_comment_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -474,7 +474,7 @@ def test_recreate_with_timestamp_flag():
             timestamp='2023-10-01T12:00:00',
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -508,7 +508,7 @@ def test_recreate_with_compression_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -544,7 +544,7 @@ def test_recreate_with_chunker_params_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -578,7 +578,7 @@ def test_recreate_with_recompress_flag():
             timestamp=None,
             match_archives=None,
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -612,7 +612,7 @@ def test_recreate_with_match_archives_star():
             timestamp=None,
             match_archives='*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -646,7 +646,7 @@ def test_recreate_with_match_archives_regex():
             timestamp=None,
             match_archives='re:.*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -680,7 +680,7 @@ def test_recreate_with_match_archives_shell():
             timestamp=None,
             match_archives='sh:*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -712,7 +712,7 @@ def test_recreate_with_match_archives_and_feature_available_calls_borg_with_matc
             timestamp=None,
             match_archives='foo-*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -746,7 +746,7 @@ def test_recreate_with_archives_flag_and_feature_available_calls_borg_with_match
             timestamp=None,
             match_archives='foo-*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -776,7 +776,7 @@ def test_recreate_with_match_archives_and_feature_not_available_calls_borg_witho
             timestamp=None,
             match_archives='foo-*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )
@@ -806,7 +806,7 @@ def test_recreate_with_archives_flags_and_feature_not_available_calls_borg_with_
             timestamp=None,
             match_archives='foo-*',
         ),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg',
         patterns=None,
     )

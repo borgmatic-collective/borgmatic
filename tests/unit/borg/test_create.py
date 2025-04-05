@@ -343,7 +343,7 @@ def test_make_base_create_produces_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -379,7 +379,7 @@ def test_make_base_create_command_includes_patterns_file_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -411,7 +411,7 @@ def test_make_base_create_command_with_store_config_false_omits_config_files():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -476,7 +476,7 @@ def test_make_base_create_command_includes_configuration_option_as_command_flag(
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -508,7 +508,7 @@ def test_make_base_create_command_includes_dry_run_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -539,7 +539,7 @@ def test_make_base_create_command_includes_local_path_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
         local_path='borg1',
     )
@@ -571,7 +571,7 @@ def test_make_base_create_command_includes_remote_path_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
         remote_path='borg1',
     )
@@ -600,10 +600,11 @@ def test_make_base_create_command_includes_log_json_in_borg_command():
         config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
+            'log_json': True,
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -635,7 +636,7 @@ def test_make_base_create_command_includes_list_flags_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -687,7 +688,7 @@ def test_make_base_create_command_with_stream_processes_ignores_read_special_fal
         },
         patterns=patterns,
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
         stream_processes=flexmock(),
     )
@@ -738,7 +739,7 @@ def test_make_base_create_command_without_patterns_and_with_stream_processes_ign
         },
         patterns=[],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
         stream_processes=flexmock(),
     )
@@ -773,7 +774,7 @@ def test_make_base_create_command_with_stream_processes_and_read_special_true_sk
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
         stream_processes=flexmock(),
     )
@@ -806,7 +807,7 @@ def test_make_base_create_command_includes_archive_name_format_in_borg_command()
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -837,7 +838,7 @@ def test_make_base_create_command_includes_default_archive_name_format_in_borg_c
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -869,7 +870,7 @@ def test_make_base_create_command_includes_archive_name_format_with_placeholders
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -901,7 +902,7 @@ def test_make_base_create_command_includes_repository_and_archive_name_format_wi
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -933,7 +934,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
@@ -957,7 +958,7 @@ def test_make_base_create_command_with_non_existent_directory_and_source_directo
             },
             patterns=[Pattern('foo'), Pattern('bar')],
             local_borg_version='1.2.3',
-            global_arguments=flexmock(log_json=False),
+            global_arguments=flexmock(),
             borgmatic_runtime_directory='/run/borgmatic',
         )
 
@@ -990,7 +991,7 @@ def test_create_archive_calls_borg_with_flags():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1024,7 +1025,7 @@ def test_create_archive_calls_borg_with_environment():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1058,7 +1059,7 @@ def test_create_archive_with_log_info_calls_borg_with_info_flag():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1090,7 +1091,7 @@ def test_create_archive_with_log_info_and_json_suppresses_most_borg_output():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
@@ -1125,7 +1126,7 @@ def test_create_archive_with_log_debug_calls_borg_with_debug_flag():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1157,7 +1158,7 @@ def test_create_archive_with_log_debug_and_json_suppresses_most_borg_output():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
@@ -1194,7 +1195,7 @@ def test_create_archive_with_stats_and_dry_run_calls_borg_without_stats():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1230,7 +1231,7 @@ def test_create_archive_with_working_directory_calls_borg_with_working_directory
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1265,7 +1266,7 @@ def test_create_archive_with_exit_codes_calls_borg_using_them():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1299,7 +1300,7 @@ def test_create_archive_with_stats_calls_borg_with_stats_flag_and_answer_output_
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1337,7 +1338,7 @@ def test_create_archive_with_files_calls_borg_with_answer_output_log_level():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1372,7 +1373,7 @@ def test_create_archive_with_progress_and_log_info_calls_borg_with_progress_flag
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1406,7 +1407,7 @@ def test_create_archive_with_progress_calls_borg_with_progress_flag():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 
@@ -1462,7 +1463,7 @@ def test_create_archive_with_progress_and_stream_processes_calls_borg_with_progr
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
         stream_processes=processes,
     )
@@ -1494,7 +1495,7 @@ def test_create_archive_with_json_calls_borg_with_json_flag():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
@@ -1528,7 +1529,7 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
         json=True,
     )
@@ -1567,7 +1568,7 @@ def test_create_archive_calls_borg_with_working_directory():
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         borgmatic_runtime_directory='/borgmatic/run',
     )
 

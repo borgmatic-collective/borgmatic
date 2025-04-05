@@ -48,7 +48,7 @@ def make_list_command(
         )
         + flags.make_flags('remote-path', remote_path)
         + flags.make_flags('umask', config.get('umask'))
-        + flags.make_flags('log-json', global_arguments.log_json)
+        + flags.make_flags('log-json', config.get('log_json'))
         + flags.make_flags('lock-wait', config.get('lock_wait'))
         + flags.make_flags_from_arguments(list_arguments, excludes=MAKE_FLAGS_EXCLUDES)
         + (

@@ -526,6 +526,14 @@ def add_arguments_from_schema(arguments_group, schema, unparsed_arguments, names
             default=None,
             help=f'Set the --{flag_name} value to false.',
         )
+    elif flag_name == 'verbosity':
+        arguments_group.add_argument(
+            '-v',
+            '--verbosity',
+            type=argument_type,
+            metavar=metavar,
+            help=description,
+        )
     else:
         arguments_group.add_argument(
             f'--{flag_name}',
@@ -569,55 +577,11 @@ def make_parsers(schema, unparsed_arguments):
         help='Go through the motions, but do not actually write to any repositories',
     )
     global_group.add_argument(
-        '-v',
-        '--verbosity',
-        type=int,
-        choices=range(-2, 3),
-        default=0,
-        help='Display verbose progress to the console: -2 (disabled), -1 (errors only), 0 (responses to actions, the default), 1 (info about steps borgmatic is taking), or 2 (debug)',
-    )
-    global_group.add_argument(
-        '--syslog-verbosity',
-        type=int,
-        choices=range(-2, 3),
-        default=-2,
-        help='Log verbose progress to syslog: -2 (disabled, the default), -1 (errors only), 0 (responses to actions), 1 (info about steps borgmatic is taking), or 2 (debug)',
-    )
-    global_group.add_argument(
-        '--log-file-verbosity',
-        type=int,
-        choices=range(-2, 3),
-        default=1,
-        help='When --log-file is given, log verbose progress to file: -2 (disabled), -1 (errors only), 0 (responses to actions), 1 (info about steps borgmatic is taking, the default), or 2 (debug)',
-    )
-    global_group.add_argument(
-        '--monitoring-verbosity',
-        type=int,
-        choices=range(-2, 3),
-        default=1,
-        help='When a monitoring integration supporting logging is configured, log verbose progress to it: -2 (disabled), -1 (errors only), responses to actions (0), 1 (info about steps borgmatic is taking, the default), or 2 (debug)',
-    )
-    global_group.add_argument(
-        '--log-file',
-        type=str,
-        help='Write log messages to this file instead of syslog',
-    )
-    global_group.add_argument(
-        '--log-file-format',
-        type=str,
-        help='Python format string used for log messages written to the log file',
-    )
-    global_group.add_argument(
-        '--log-json',
-        action='store_true',
-        help='Write Borg log messages and console output as one JSON object per log line instead of formatted text',
-    )
-    global_group.add_argument(
         '--override',
         metavar='OPTION.SUBOPTION=VALUE',
         dest='overrides',
         action='append',
-        help='Configuration file option to override with specified value, see documentation for overriding list or key/value options, can specify flag multiple times',
+        help='Deprecated. Configuration file option to override with specified value, see documentation for overriding list or key/value options, can specify flag multiple times',
     )
     global_group.add_argument(
         '--no-environment-interpolation',

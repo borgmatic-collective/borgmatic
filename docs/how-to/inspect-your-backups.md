@@ -7,9 +7,9 @@ eleventyNavigation:
 ---
 ## Backup progress
 
-By default, borgmatic runs proceed silently except in the case of errors. But
-if you'd like to to get additional information about the progress of the
-backup as it proceeds, use the verbosity option:
+By default, borgmatic runs proceed silently except in the case of warnings or
+errors. But if you'd like to to get additional information about the progress of
+the backup as it proceeds, use the verbosity option:
 
 ```bash
 borgmatic --verbosity 1
@@ -31,6 +31,9 @@ The full set of verbosity levels are:
  * `0`: default output
  * `1`: some additional output (informational level)
  * `2`: lots of additional output (debug level)
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+verbosity in your borgmatic configuration via the `verbosity` option.
 
 
 ## Backup summary
@@ -149,6 +152,10 @@ borgmatic --syslog-verbosity 2
 
 See above for further details about the verbosity levels.
 
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+syslog verbosity in your borgmatic configuration via the `syslog_verbosity`
+option.
+
 Where these logs show up depends on your particular system. If you're using
 systemd, try running `journalctl -xe`. Otherwise, try viewing
 `/var/log/syslog` or similar.
@@ -190,6 +197,10 @@ You can use the `--log-file-verbosity` flag to customize the log file's log leve
 borgmatic --log-file /path/to/file.log --log-file-verbosity 2
 ```
 
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the log
+file verbosity in your borgmatic configuration via the `log_file_verbosity`
+option.
+
 <span class="minilink minilink-addedin">New in version 1.7.11</span> Use the
 `--log-file-format` flag to override the default log message format. This
 format string can contain a series of named placeholders wrapped in curly
@@ -218,3 +229,7 @@ for additional placeholders.
 
 Note that this `--log-file-format` flag only applies to the specified
 `--log-file` and not to syslog or other logging.
+
+<span class="minilink minilink-addedin">New in version 2.0.0</span>Set the
+defaults for these flags in your borgmatic configuration via the `log_file` and
+`log_file_format` options.

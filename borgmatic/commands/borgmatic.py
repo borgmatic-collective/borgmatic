@@ -54,7 +54,7 @@ from borgmatic.logger import (
     should_do_markup,
 )
 from borgmatic.signals import configure_signals
-from borgmatic.verbosity import verbosity_to_log_level
+from borgmatic.verbosity import get_verbosity, verbosity_to_log_level
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ class Monitoring_hooks:
         self.config_filename = config_filename
         self.config = config
         self.dry_run = global_arguments.dry_run
-        self.monitoring_log_level = verbosity_to_log_level(global_arguments.monitoring_verbosity)
+        self.monitoring_log_level = verbosity_to_log_level(config.get('monitoring_verbosity'))
         self.monitoring_hooks_are_activated = (
             using_primary_action and self.monitoring_log_level != DISABLED
         )
@@ -217,7 +217,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                 dry_run=global_arguments.dry_run,
                 action_names=arguments.keys(),
                 configuration_filename=config_filename,
-                log_file=arguments['global'].log_file or '',
+                log_file=config.get('log_file', ''),
             ):
                 try:
                     local_borg_version = borg_version.local_borg_version(config, local_path)
@@ -296,7 +296,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
             borgmatic.config.paths.get_working_directory(config),
             global_arguments.dry_run,
             configuration_filename=config_filename,
-            log_file=arguments['global'].log_file or '',
+            log_file=config.get('log_file', ''),
             repository=error_repository.get('path', '') if error_repository else '',
             repository_label=error_repository.get('label', '') if error_repository else '',
             error=encountered_error,
@@ -339,7 +339,7 @@ def run_actions(
     hook_context = {
         'configuration_filename': config_filename,
         'repository_label': repository.get('label', ''),
-        'log_file': global_arguments.log_file if global_arguments.log_file else '',
+        'log_file': config.get('log_file', ''),
         # Deprecated: For backwards compatibility with borgmatic < 1.6.0.
         'repositories': ','.join([repo['path'] for repo in config['repositories']]),
         'repository': repository_path,
@@ -848,12 +848,12 @@ def collect_highlander_action_summary_logs(configs, arguments, configuration_par
         return
 
 
-def collect_configuration_run_summary_logs(configs, config_paths, arguments):
+def collect_configuration_run_summary_logs(configs, config_paths, arguments, log_file_path):
     '''
     Given a dict of configuration filename to corresponding parsed configuration, a sequence of
-    loaded configuration paths, and parsed command-line arguments as a dict from subparser name to a
-    parsed namespace of arguments, run each configuration file and yield a series of
-    logging.LogRecord instances containing summary information about each run.
+    loaded configuration paths, parsed command-line arguments as a dict from subparser name to a
+    parsed namespace of arguments, and the path of a log file (if any), run each configuration file
+    and yield a series of logging.LogRecord instances containing summary information about each run.
 
     As a side effect of running through these configuration files, output their JSON results, if
     any, to stdout.
@@ -888,7 +888,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 borgmatic.config.paths.get_working_directory(config),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
-                log_file=arguments['global'].log_file or '',
+                log_file=log_file_path or '',
             )
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running before everything hook', error)
@@ -943,7 +943,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments):
                 borgmatic.config.paths.get_working_directory(config),
                 arguments['global'].dry_run,
                 configuration_filename=config_filename,
-                log_file=arguments['global'].log_file or '',
+                log_file=log_file_path or '',
             )
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running after everything hook', error)
@@ -960,15 +960,43 @@ def exit_with_help_link():  # pragma: no cover
 
 def check_and_show_help_on_no_args(configs):
     '''
-    Check if the borgmatic command is run without any arguments. If the configuration option
-    "default_actions" is set to False, show the help message. Otherwise, trigger the default backup
-    behavior.
+    Given a dict of configuration filename to corresponding parsed configuration, check if the
+    borgmatic command is run without any arguments. If the configuration option "default_actions" is
+    set to False, show the help message. Otherwise, trigger the default backup behavior.
     '''
     if len(sys.argv) == 1:  # No arguments provided
         default_actions = any(config.get('default_actions', True) for config in configs.values())
         if not default_actions:
             parse_arguments('--help')
             sys.exit(0)
+
+
+def get_singular_option_value(configs, option_name):
+    '''
+    Given a dict of configuration filename to corresponding parsed configuration, return the value
+    of the given option from the configuration files or None if it's not set.
+
+    Log and exit if there are conflicting values for the option across the configuration files.
+    '''
+    distinct_values = {
+        value
+        for config in configs.values()
+        for value in (config.get(option_name),)
+        if value is not None
+    }
+
+    if len(distinct_values) > 1:
+        configure_logging(logging.CRITICAL)
+        joined_values = ', '.join(str(value) for value in distinct_values)
+        logger.critical(
+            f'The {option_name} option has conflicting values across configuration files: {joined_values}'
+        )
+        exit_with_help_link()
+
+    try:
+        return tuple(distinct_values)[0]
+    except IndexError:
+        return None
 
 
 def main(extra_summary_logs=[]):  # pragma: no cover
@@ -1025,17 +1053,17 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     any_json_flags = any(
         getattr(sub_arguments, 'json', False) for sub_arguments in arguments.values()
     )
-    color_enabled = should_do_markup(configs, any_json_flags)
+    log_file_path = get_singular_option_value(configs, 'log_file')
 
     try:
         configure_logging(
-            verbosity_to_log_level(global_arguments.verbosity),
-            verbosity_to_log_level(global_arguments.syslog_verbosity),
-            verbosity_to_log_level(global_arguments.log_file_verbosity),
-            verbosity_to_log_level(global_arguments.monitoring_verbosity),
-            global_arguments.log_file,
-            global_arguments.log_file_format,
-            color_enabled=color_enabled,
+            verbosity_to_log_level(get_verbosity(configs, 'verbosity')),
+            verbosity_to_log_level(get_verbosity(configs, 'syslog_verbosity')),
+            verbosity_to_log_level(get_verbosity(configs, 'log_file_verbosity')),
+            verbosity_to_log_level(get_verbosity(configs, 'monitoring_verbosity')),
+            log_file_path,
+            get_singular_option_value(configs, 'log_file_format'),
+            color_enabled=should_do_markup(configs, any_json_flags),
         )
     except (FileNotFoundError, PermissionError) as error:
         configure_logging(logging.CRITICAL)
@@ -1051,7 +1079,11 @@ def main(extra_summary_logs=[]):  # pragma: no cover
                     configs, arguments, configuration_parse_errors
                 )
             )
-            or list(collect_configuration_run_summary_logs(configs, config_paths, arguments))
+            or list(
+                collect_configuration_run_summary_logs(
+                    configs, config_paths, arguments, log_file_path
+                )
+            )
         )
     )
     summary_logs_max_level = max(log.levelno for log in summary_logs)

@@ -44,7 +44,7 @@ def test_display_repository_info_calls_borg_with_flags():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -80,7 +80,7 @@ def test_display_repository_info_without_borg_features_calls_borg_with_info_sub_
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -121,7 +121,7 @@ def test_display_repository_info_with_log_info_calls_borg_with_info_flag():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -155,7 +155,7 @@ def test_display_repository_info_with_log_info_and_json_suppresses_most_borg_out
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=True),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert json_output == '[]'
@@ -199,7 +199,7 @@ def test_display_repository_info_with_log_debug_calls_borg_with_debug_flag():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -233,7 +233,7 @@ def test_display_repository_info_with_log_debug_and_json_suppresses_most_borg_ou
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=True),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert json_output == '[]'
@@ -268,7 +268,7 @@ def test_display_repository_info_with_json_calls_borg_with_json_flag():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=True),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
     assert json_output == '[]'
@@ -311,7 +311,7 @@ def test_display_repository_info_with_local_path_calls_borg_via_local_path():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         local_path='borg1',
     )
 
@@ -354,7 +354,7 @@ def test_display_repository_info_with_exit_codes_calls_borg_using_them():
         config={'borg_exit_codes': borg_exit_codes},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -395,7 +395,7 @@ def test_display_repository_info_with_remote_path_calls_borg_with_remote_path_fl
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path='borg1',
     )
 
@@ -437,7 +437,7 @@ def test_display_repository_info_with_umask_calls_borg_with_umask_flags():
         config={'umask': '077'},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
         remote_path=None,
     )
 
@@ -479,10 +479,10 @@ def test_display_repository_info_with_log_json_calls_borg_with_log_json_flags():
 
     module.display_repository_info(
         repository_path='repo',
-        config={},
+        config={'log_json': True},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=True),
+        global_arguments=flexmock(),
     )
 
 
@@ -524,7 +524,7 @@ def test_display_repository_info_with_lock_wait_calls_borg_with_lock_wait_flags(
         config=config,
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )
 
 
@@ -567,5 +567,5 @@ def test_display_repository_info_calls_borg_with_working_directory():
         config={},
         local_borg_version='2.3.4',
         repo_info_arguments=flexmock(json=False),
-        global_arguments=flexmock(log_json=False),
+        global_arguments=flexmock(),
     )

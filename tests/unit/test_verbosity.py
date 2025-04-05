@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 from flexmock import flexmock
 
 from borgmatic import verbosity as module
@@ -31,3 +32,67 @@ def test_verbosity_to_log_level_maps_unknown_verbosity_to_warning_level():
     flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
 
     assert module.verbosity_to_log_level('my pants') == logging.WARNING
+
+
+@pytest.mark.parametrize(
+    'option_name',
+    (
+        'verbosity',
+        'syslog_verbosity',
+        'log_file_verbosity',
+        'monitoring_verbosity',
+    ),
+)
+def test_get_verbosity_gets_maximum_verbosity_across_configurations(option_name):
+    assert (
+        module.get_verbosity(
+            configs={
+                'test1.yaml': {option_name: -1},
+                'test2.yaml': {option_name: 2},
+                'test3.yaml': {option_name: None},
+            },
+            option_name=option_name,
+        )
+        == 2
+    )
+
+
+@pytest.mark.parametrize(
+    'option_name',
+    (
+        'verbosity',
+        'syslog_verbosity',
+        'log_file_verbosity',
+        'monitoring_verbosity',
+    ),
+)
+def test_get_verbosity_with_nothing_set_gets_default_verbosity(option_name):
+    assert (
+        module.get_verbosity(
+            configs={
+                'test1.yaml': {},
+                'test2.yaml': {'other': 'thing'},
+            },
+            option_name=option_name,
+        )
+        == module.DEFAULT_VERBOSITIES[option_name]
+    )
+
+
+@pytest.mark.parametrize(
+    'option_name',
+    (
+        'verbosity',
+        'syslog_verbosity',
+        'log_file_verbosity',
+        'monitoring_verbosity',
+    ),
+)
+def test_get_verbosity_with_no_configs_set_gets_default_verbosity(option_name):
+    assert (
+        module.get_verbosity(
+            configs={},
+            option_name=option_name,
+        )
+        == module.DEFAULT_VERBOSITIES[option_name]
+    )

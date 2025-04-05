@@ -41,7 +41,7 @@ def test_change_passphrase_calls_borg_with_required_flags():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -54,7 +54,7 @@ def test_change_passphrase_calls_borg_with_local_path():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         local_path='borg1',
     )
 
@@ -72,7 +72,7 @@ def test_change_passphrase_calls_borg_using_exit_codes():
         config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -87,7 +87,7 @@ def test_change_passphrase_calls_borg_with_remote_path_flags():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
         remote_path='borg1',
     )
 
@@ -104,20 +104,23 @@ def test_change_passphrase_calls_borg_with_umask_flags():
         config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
 def test_change_passphrase_calls_borg_with_log_json_flags():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(('borg', 'key', 'change-passphrase', '--log-json', 'repo'))
+    config = {'log_json': True}
+    insert_execute_command_mock(
+        ('borg', 'key', 'change-passphrase', '--log-json', 'repo'), config=config
+    )
 
     module.change_passphrase(
         repository_path='repo',
-        config={},
+        config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=True),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -133,7 +136,7 @@ def test_change_passphrase_calls_borg_with_lock_wait_flags():
         config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -147,7 +150,7 @@ def test_change_passphrase_with_log_info_calls_borg_with_info_parameter():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -163,7 +166,7 @@ def test_change_passphrase_with_log_debug_calls_borg_with_debug_flags():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -177,7 +180,7 @@ def test_change_passphrase_with_dry_run_skips_borg_call():
         config={},
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(paper=False, qr_html=False, path=None),
-        global_arguments=flexmock(dry_run=True, log_json=False),
+        global_arguments=flexmock(dry_run=True),
     )
 
 
@@ -196,7 +199,7 @@ def test_change_passphrase_calls_borg_without_passphrase():
         },
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )
 
 
@@ -214,5 +217,5 @@ def test_change_passphrase_calls_borg_with_working_directory():
         config=config,
         local_borg_version='1.2.3',
         change_passphrase_arguments=flexmock(),
-        global_arguments=flexmock(dry_run=False, log_json=False),
+        global_arguments=flexmock(dry_run=False),
     )

@@ -815,6 +815,75 @@ properties:
         description: |
             Apply color to console output. Defaults to true.
         example: false
+    verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            Display verbose output to the console: -2 (disabled), -1 (errors
+            only), 0 (warnings and responses to actions, the default), 1 (info
+            about steps borgmatic is taking), or 2 (debug).
+        example: 2
+    syslog_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            Log verbose output to syslog: -2 (disabled, the default), -1 (errors
+            only), 0 (warnings and responses to actions), 1 (info about steps
+            borgmatic is taking), or 2 (debug).
+        example: 2
+    log_file_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            Log verbose output to file: -2 (disabled), -1 (errors only), 0
+            (warnings and responses to actions), 1 (info about steps borgmatic
+            is taking, the default), or 2 (debug).
+        example: 2
+    log_file:
+        type: string
+        description: |
+            Write log messages to the file at this path.
+        example: /var/log/borgmatic/logfile.txt
+    log_file_format:
+        type: string
+        description: |
+            Python format string used for log messages written to the log file.
+        example: "[{asctime}] {levelname}: {prefix}{message}"
+    monitoring_verbosity:
+        type: integer
+        enum:
+            - -2
+            - -1
+            - 0
+            - 1
+            - 2
+        description: |
+            When a monitoring integration supporting logging is configured, log
+            verbose output to it: -2 (disabled), -1 (errors only), 0 (warnings
+            and responses to actions), 1 (info about steps borgmatic is taking,
+            the default), or 2 (debug).
+        example: 2
+    log_json:
+        type: boolean
+        description: |
+            Write Borg log messages and console output as one JSON object per
+            log line instead of formatted text. Defaults to false.
+        example: true
     progress:
         type: boolean
         description: |
@@ -835,6 +904,13 @@ properties:
             Display details for each file or archive as it is processed when
             running supported actions. Corresponds to the "--list" flag on those
             actions. Defaults to false.
+        example: true
+    default_actions:
+        type: boolean
+        description: |
+            Whether to apply default actions (create, prune, compact and check)
+            when no arguments are supplied to the borgmatic command. If set to
+            false, borgmatic displays the help message instead.
         example: true
     skip_actions:
         type: array
@@ -2806,11 +2882,3 @@ properties:
                 example: "1:7370001"
         description: |
             Configuration for integration with the KeePassXC password manager.
-    default_actions:
-        type: boolean
-        description: |
-            Whether to apply default actions (e.g., backup) when no arguments
-            are supplied to the borgmatic command. If set to true, borgmatic
-            triggers the default actions (create, prune, compact and check). If
-            set to false, borgmatic displays the help message instead.
-        example: true
