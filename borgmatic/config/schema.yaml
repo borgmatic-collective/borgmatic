@@ -863,7 +863,7 @@ properties:
         type: string
         description: |
             Python format string used for log messages written to the log file.
-        example: "%(asctime)s %(message)s"
+        example: "[{asctime}] {levelname}: {prefix}{message}"
     monitoring_verbosity:
         type: integer
         enum:
