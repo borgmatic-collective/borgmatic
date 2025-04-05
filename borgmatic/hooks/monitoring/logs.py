@@ -38,11 +38,13 @@ class Forgetful_buffering_handler(logging.Handler):
             self.forgot = True
 
 
-def add_handler(handler):  # pragma: no cover
+def add_handler(handler):
     '''
     Add the given handler to the global logger.
     '''
-    logging.getLogger().addHandler(handler)
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(min(handler.level for handler in logger.handlers))
 
 
 def get_handler(identifier):
@@ -90,3 +92,5 @@ def remove_handler(identifier):
         logger.removeHandler(get_handler(identifier))
     except ValueError:
         pass
+
+    logger.setLevel(min(handler.level for handler in logger.handlers))

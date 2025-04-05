@@ -3,29 +3,22 @@ from flexmock import flexmock
 from borgmatic.hooks.monitoring import pagerduty as module
 
 
-def mock_logger():
-    logger = flexmock()
-    logger.should_receive('addHandler')
-    logger.should_receive('removeHandler')
-    flexmock(module.logging).should_receive('getLogger').and_return(logger)
-
-
 def test_initialize_monitor_creates_log_handler():
     monitoring_log_level = 1
 
-    mock_logger()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler'
     ).once()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor({}, {}, 'test.yaml', monitoring_log_level, dry_run=False)
 
 
 def test_initialize_monitor_creates_log_handler_when_send_logs_true():
-    mock_logger()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler'
     ).once()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
         {'send_logs': True}, {}, 'test.yaml', monitoring_log_level=1, dry_run=False
@@ -33,10 +26,10 @@ def test_initialize_monitor_creates_log_handler_when_send_logs_true():
 
 
 def test_initialize_monitor_bails_when_send_logs_false():
-    mock_logger()
     flexmock(module.borgmatic.hooks.monitoring.logs).should_receive(
         'Forgetful_buffering_handler'
     ).never()
+    flexmock(module.borgmatic.hooks.monitoring.logs).should_receive('add_handler')
 
     module.initialize_monitor(
         {'send_logs': False}, {}, 'test.yaml', monitoring_log_level=1, dry_run=False
