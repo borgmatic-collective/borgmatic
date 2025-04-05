@@ -43,7 +43,7 @@ def get_verbosity(configs, option_name):
             verbosity
             for config in configs.values()
             for verbosity in (config.get(option_name, DEFAULT_VERBOSITIES[option_name]),)
-            if verbosity
+            if verbosity is not None
         )
     except ValueError:
         return DEFAULT_VERBOSITIES[option_name]

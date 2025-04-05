@@ -77,3 +77,22 @@ def test_get_verbosity_with_nothing_set_gets_default_verbosity(option_name):
         )
         == module.DEFAULT_VERBOSITIES[option_name]
     )
+
+
+@pytest.mark.parametrize(
+    'option_name',
+    (
+        'verbosity',
+        'syslog_verbosity',
+        'log_file_verbosity',
+        'monitoring_verbosity',
+    ),
+)
+def test_get_verbosity_with_no_configs_set_gets_default_verbosity(option_name):
+    assert (
+        module.get_verbosity(
+            configs={},
+            option_name=option_name,
+        )
+        == module.DEFAULT_VERBOSITIES[option_name]
+    )
