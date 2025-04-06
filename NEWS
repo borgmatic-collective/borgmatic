@@ -1,7 +1,8 @@
-2.0.0.dev0
+2.0.0
  * TL;DR: More flexible, completely revamped command hooks. All configuration options settable on
    the command-line. New configuration options for many command-line flags (including verbosity!).
-   New "key import" and "recreate" actions. Almost everything is backwards compatible.
+   New "key import" and "recreate" actions. Almost everything is backwards compatible—but mind those
+   deprecation warnings!
  * #262: Add a "default_actions" option that supports disabling default actions when borgmatic is
    run without any command-line arguments.
  * #303: Deprecate the "--override" flag in favor of direct command-line flags for every borgmatic

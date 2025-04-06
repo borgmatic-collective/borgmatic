@@ -1,6 +1,6 @@
 [project]
 name = "borgmatic"
-version = "2.0.0dev0"
+version = "2.0.0"
 authors = [
   { name="Dan Helfman", email="witten@torsion.org" },
 ]
