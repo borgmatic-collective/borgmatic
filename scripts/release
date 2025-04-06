@@ -39,7 +39,7 @@ twine upload -r pypi --username __token__ dist/borgmatic-*-py3-none-any.whl
 
 # Set release changelogs on projects.torsion.org and GitHub.
 release_changelog="$(cat NEWS | sed '/^$/q' | grep -v '^\S')"
-escaped_release_changelog="$(echo "$release_changelog" | sed -z 's/\n/\\n/g' | sed -z 's/\"/\\"/g' | sed -z 's/\*/\\*/g')"
+escaped_release_changelog="$(echo "$release_changelog" | sed -z 's/\n/\\n/g' | sed -z 's/\"/\\"/g')"
 curl --silent --request POST \
     "https://projects.torsion.org/api/v1/repos/borgmatic-collective/borgmatic/releases" \
     --header "Authorization: token $projects_token" \
