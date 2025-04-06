@@ -6,7 +6,7 @@ import borgmatic.borg.feature
 import borgmatic.config.paths
 import borgmatic.execute
 from borgmatic.borg import flags
-from borgmatic.borg.create import make_exclude_flags, make_list_filter_flags, write_patterns_file
+from borgmatic.borg.pattern import write_patterns_file
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def recreate_archive(
     arguments.
     '''
     lock_wait = config.get('lock_wait', None)
-    exclude_flags = make_exclude_flags(config)
+    exclude_flags = flags.make_exclude_flags(config)
     compression = config.get('compression', None)
     chunker_params = config.get('chunker_params', None)
     # Available recompress MODES: "if-different", "always", "never" (default)
@@ -52,7 +52,7 @@ def recreate_archive(
             (
                 '--list',
                 '--filter',
-                make_list_filter_flags(local_borg_version, global_arguments.dry_run),
+                flags.make_list_filter_flags(local_borg_version, global_arguments.dry_run),
             )
             if config.get('list_details')
             else ()

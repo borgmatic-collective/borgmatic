@@ -2,7 +2,7 @@ import logging
 
 import borgmatic.borg.recreate
 import borgmatic.config.validate
-from borgmatic.actions.create import collect_patterns, process_patterns
+from borgmatic.actions.pattern import collect_patterns, process_patterns
 
 logger = logging.getLogger(__name__)
 
