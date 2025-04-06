@@ -357,7 +357,7 @@ def add_array_element_arguments(arguments_group, unparsed_arguments, flag_name):
     if '[0]' not in flag_name or not unparsed_arguments or '--help' in unparsed_arguments:
         return
 
-    pattern = re.compile(fr'^--{flag_name.replace("[0]", r"\[\d+\]").replace(".", r"\.")}$')
+    pattern = re.compile('^--' + flag_name.replace('[0]', r'\[\d+\]').replace('.', r'\.') + '$')
 
     try:
         # Find an existing list index flag (and its action) corresponding to the given flag name.

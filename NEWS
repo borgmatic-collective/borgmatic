@@ -1,3 +1,7 @@
+2.0.1
+ * #1057: Fix argument parsing to avoid using Python 3.12+ string features. Now borgmatic will
+   work with Python 3.9, 3.10, and 3.11 again.
+
 2.0.0
  * TL;DR: More flexible, completely revamped command hooks. All configuration options settable on
    the command-line. New configuration options for many command-line flags (including verbosity!).
