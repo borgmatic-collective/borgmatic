@@ -1,3 +1,6 @@
+2.0.2.dev0
+ * #1059: Fix a regression in which soft failure exit codes in command hooks were not respected.
+
 2.0.1
  * #1057: Fix argument parsing to avoid using Python 3.12+ string features. Now borgmatic will
    work with Python 3.9, 3.10, and 3.11 again.

@@ -396,7 +396,7 @@ def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
             assert False  # This should never get called.
 
 
-def test_before_after_hooks_with_before_soft_failure_does_not_raise():
+def test_before_after_hooks_with_before_soft_failure_raises():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
         {'after': 'repository', 'run': ['baz']},
@@ -412,22 +412,23 @@ def test_before_after_hooks_with_before_soft_failure_does_not_raise():
         after='action',
         hook_name='myhook',
         action_names=['create'],
-    ).and_return(flexmock()).once()
+    ).never()
     flexmock(module).should_receive('execute_hooks').and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
 
-    with module.Before_after_hooks(
-        command_hooks=commands,
-        before_after='action',
-        umask=1234,
-        working_directory='/working',
-        dry_run=False,
-        hook_name='myhook',
-        action_names=['create'],
-        context1='stuff',
-        context2='such',
-    ):
-        pass
+    with pytest.raises(OSError):
+        with module.Before_after_hooks(
+            command_hooks=commands,
+            before_after='action',
+            umask=1234,
+            working_directory='/working',
+            dry_run=False,
+            hook_name='myhook',
+            action_names=['create'],
+            context1='stuff',
+            context2='such',
+        ):
+            pass
 
 
 def test_before_after_hooks_with_after_error_raises():
@@ -465,7 +466,7 @@ def test_before_after_hooks_with_after_error_raises():
             pass
 
 
-def test_before_after_hooks_with_after_soft_failure_does_not_raise():
+def test_before_after_hooks_with_after_soft_failure_raises():
     commands = [
         {'before': 'repository', 'run': ['foo', 'bar']},
         {'after': 'repository', 'run': ['baz']},
@@ -485,18 +486,19 @@ def test_before_after_hooks_with_after_soft_failure_does_not_raise():
     flexmock(module).should_receive('execute_hooks').and_return(None).and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
 
-    with module.Before_after_hooks(
-        command_hooks=commands,
-        before_after='action',
-        umask=1234,
-        working_directory='/working',
-        dry_run=False,
-        hook_name='myhook',
-        action_names=['create'],
-        context1='stuff',
-        context2='such',
-    ):
-        pass
+    with pytest.raises(OSError):
+        with module.Before_after_hooks(
+            command_hooks=commands,
+            before_after='action',
+            umask=1234,
+            working_directory='/working',
+            dry_run=False,
+            hook_name='myhook',
+            action_names=['create'],
+            context1='stuff',
+            context2='such',
+        ):
+            pass
 
 
 def test_considered_soft_failure_treats_soft_fail_exit_code_as_soft_fail():
@@ -513,3 +515,11 @@ def test_considered_soft_failure_does_not_treat_other_exit_code_as_soft_fail():
 
 def test_considered_soft_failure_does_not_treat_other_exception_type_as_soft_fail():
     assert not module.considered_soft_failure(Exception())
+
+
+def test_considered_soft_failure_caches_results_and_only_logs_once():
+    error = subprocess.CalledProcessError(module.SOFT_FAIL_EXIT_CODE, 'try again')
+    flexmock(module.logger).should_receive('info').once()
+
+    assert module.considered_soft_failure(error)
+    assert module.considered_soft_failure(error)
