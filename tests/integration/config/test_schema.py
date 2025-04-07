@@ -25,17 +25,23 @@ ACTIONS_MODULE_NAMES_TO_OMIT = {
 ACTIONS_MODULE_NAMES_TO_ADD = {'key', 'umount'}
 
 
-def test_schema_skip_actions_correspond_to_supported_actions():
+def test_schema_actions_correspond_to_supported_actions():
     '''
-    Ensure that the allowed actions in the schema's "skip_actions" option don't drift from
-    borgmatic's actual supported actions.
+    Ensure that the allowed actions in the schema's various options don't drift from borgmatic's
+    actual supported actions.
     '''
     schema = borgmatic.config.load.load_configuration(borgmatic.config.validate.schema_filename())
-    schema_skip_actions = set(schema['properties']['skip_actions']['items']['enum'])
     supported_actions = {
         module.name.replace('_', '-')
         for module in pkgutil.iter_modules(borgmatic.actions.__path__)
         if module.name not in ACTIONS_MODULE_NAMES_TO_OMIT
     }.union(ACTIONS_MODULE_NAMES_TO_ADD)
+    properties = schema['properties']
+    commands_one_of = properties['commands']['items']['oneOf']
 
-    assert schema_skip_actions == supported_actions
+    for schema_actions in (
+        set(properties['skip_actions']['items']['enum']),
+        set(commands_one_of[0]['properties']['when']['items']['enum']),
+        set(commands_one_of[1]['properties']['when']['items']['enum']),
+    ):
+        assert schema_actions == supported_actions
