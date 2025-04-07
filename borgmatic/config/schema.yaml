@@ -923,7 +923,6 @@ properties:
                 - compact
                 - create
                 - recreate
-                - pattern
                 - check
                 - delete
                 - extract

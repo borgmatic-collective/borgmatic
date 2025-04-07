@@ -20,6 +20,7 @@ ACTIONS_MODULE_NAMES_TO_OMIT = {
     'export_key',
     'import_key',
     'json',
+    'pattern',
 }
 ACTIONS_MODULE_NAMES_TO_ADD = {'key', 'umount'}
 
