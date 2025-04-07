@@ -116,6 +116,27 @@ you can use the standard
 extract them.
 
 
+#### ZFS performance
+
+<span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
+the way that ZFS snapshot paths can change from one borgmatic invocation to the
+next, the [Borg file
+cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
+may not get cache hits on snapshotted files. This makes backing up ZFS snapshots
+a little slower than non-snapshotted files that have consistent paths. You can
+mitigate this by setting a fixed [runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+(that's not located in `/tmp`). This allows borgmatic to use a consistent
+snapshot path from one run to the next, thereby resulting in Borg files cache
+hits.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span> Snapshotted
+files should get cache hits regardless of whether their paths change, because
+Borg 2.x is smarter about how it looks up file paths in its cache—it constructs
+the cache key with the path *as it's seen in the archive* (which is consistent
+across runs) rather than the full absolute source path (which can change).
+
+
 ### Btrfs
 
 <span class="minilink minilink-addedin">New in version 1.9.4</span> <span
@@ -195,6 +216,22 @@ Subvolume snapshots are stored in a Borg archive as normal files, so you can use
 the standard [extract
 action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to extract
 them.
+
+
+#### Btrfs performance
+
+<span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
+the way that Btrfs snapshot paths change from one borgmatic invocation to the
+next, the [Borg file
+cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
+will never get cache hits on snapshotted files. This makes backing up Btrfs
+snapshots a little slower than non-snapshotted files that have consistent paths.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span> Even
+snapshotted files should get cache hits, because Borg 2.x is smarter about how
+it looks up file paths in its cache—it constructs the cache key with the path
+*as it's seen in the archive* (which is consistent across runs) rather than the
+full absolute source path (which changes).
 
 
 ### LVM
@@ -311,3 +348,24 @@ Logical volume snapshots are stored in a Borg archive as normal files, so
 you can use the standard
 [extract action](https://torsion.org/borgmatic/docs/how-to/extract-a-backup/) to
 extract them.
+
+
+#### LVM performance
+
+<span class="minilink minilink-addedin">With Borg version 1.x</span> Because of
+the way that LVM snapshot paths can change from one borgmatic invocation to the
+next, the [Borg file
+cache](https://borgbackup.readthedocs.io/en/stable/internals/data-structures.html#cache)
+may not get cache hits on snapshotted files. This makes backing up LVM snapshots
+a little slower than non-snapshotted files that have consistent paths. You can
+mitigate this by setting a fixed [runtime
+directory](https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#runtime-directory)
+(that's not located in `/tmp`). This allows borgmatic to use a consistent
+snapshot path from one run to the next, thereby resulting in Borg files cache
+hits.
+
+<span class="minilink minilink-addedin">With Borg version 2.x</span> Snapshotted
+files should get cache hits regardless of whether their paths change, because
+Borg 2.x is smarter about how it looks up file paths in its cache—it constructs
+the cache key with the path *as it's seen in the archive* (which is consistent
+across runs) rather than the full absolute source path (which can change).
