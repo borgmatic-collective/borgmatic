@@ -40,8 +40,10 @@ checks:
       frequency: 2 weeks
 
 # Custom preparation scripts to run.
-before_backup:
-    - prepare-for-backup.sh
+commands:
+    - before: action
+      when: [create]
+      run: [prepare-for-backup.sh]
 
 # Databases to dump and include in backups.
 postgresql_databases:
