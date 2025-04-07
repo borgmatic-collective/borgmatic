@@ -8,7 +8,7 @@ import pathlib
 import random
 import shutil
 
-import borgmatic.actions.create
+import borgmatic.actions.pattern
 import borgmatic.borg.check
 import borgmatic.borg.create
 import borgmatic.borg.environment
@@ -373,8 +373,8 @@ def collect_spot_check_source_paths(
             dry_run=True,
             repository_path=repository['path'],
             config=dict(config, list_details=True),
-            patterns=borgmatic.actions.create.process_patterns(
-                borgmatic.actions.create.collect_patterns(config),
+            patterns=borgmatic.actions.pattern.process_patterns(
+                borgmatic.actions.pattern.collect_patterns(config),
                 working_directory,
             ),
             local_borg_version=local_borg_version,

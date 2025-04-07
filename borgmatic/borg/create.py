@@ -1,9 +1,7 @@
-import itertools
 import logging
 import os
 import pathlib
 import stat
-import tempfile
 import textwrap
 
 import borgmatic.borg.pattern
@@ -18,76 +16,6 @@ from borgmatic.execute import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def write_patterns_file(patterns, borgmatic_runtime_directory, patterns_file=None):
-    '''
-    Given a sequence of patterns as borgmatic.borg.pattern.Pattern instances, write them to a named
-    temporary file in the given borgmatic runtime directory and return the file object so it can
-    continue to exist on disk as long as the caller needs it.
-
-    If an optional open pattern file is given, append to it instead of making a new temporary file.
-    Return None if no patterns are provided.
-    '''
-    if not patterns:
-        return None
-
-    if patterns_file is None:
-        patterns_file = tempfile.NamedTemporaryFile('w', dir=borgmatic_runtime_directory)
-        operation_name = 'Writing'
-    else:
-        patterns_file.write('\n')
-        operation_name = 'Appending'
-
-    patterns_output = '\n'.join(
-        f'{pattern.type.value} {pattern.style.value}{":" if pattern.style.value else ""}{pattern.path}'
-        for pattern in patterns
-    )
-    logger.debug(f'{operation_name} patterns to {patterns_file.name}:\n{patterns_output}')
-
-    patterns_file.write(patterns_output)
-    patterns_file.flush()
-
-    return patterns_file
-
-
-def make_exclude_flags(config):
-    '''
-    Given a configuration dict with various exclude options, return the corresponding Borg flags as
-    a tuple.
-    '''
-    caches_flag = ('--exclude-caches',) if config.get('exclude_caches') else ()
-    if_present_flags = tuple(
-        itertools.chain.from_iterable(
-            ('--exclude-if-present', if_present)
-            for if_present in config.get('exclude_if_present', ())
-        )
-    )
-    keep_exclude_tags_flags = ('--keep-exclude-tags',) if config.get('keep_exclude_tags') else ()
-    exclude_nodump_flags = ('--exclude-nodump',) if config.get('exclude_nodump') else ()
-
-    return caches_flag + if_present_flags + keep_exclude_tags_flags + exclude_nodump_flags
-
-
-def make_list_filter_flags(local_borg_version, dry_run):
-    '''
-    Given the local Borg version and whether this is a dry run, return the corresponding flags for
-    passing to "--list --filter". The general idea is that excludes are shown for a dry run or when
-    the verbosity is debug.
-    '''
-    base_flags = 'AME'
-    show_excludes = logger.isEnabledFor(logging.DEBUG)
-
-    if feature.available(feature.Feature.EXCLUDED_FILES_MINUS, local_borg_version):
-        if show_excludes or dry_run:
-            return f'{base_flags}+-'
-        else:
-            return base_flags
-
-    if show_excludes:
-        return f'{base_flags}x-'
-    else:
-        return f'{base_flags}-'
 
 
 def special_file(path, working_directory=None):
@@ -182,24 +110,6 @@ def collect_special_file_paths(
     )
 
 
-def check_all_root_patterns_exist(patterns):
-    '''
-    Given a sequence of borgmatic.borg.pattern.Pattern instances, check that all root pattern
-    paths exist. If any don't, raise an exception.
-    '''
-    missing_paths = [
-        pattern.path
-        for pattern in patterns
-        if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
-        if not os.path.exists(pattern.path)
-    ]
-
-    if missing_paths:
-        raise ValueError(
-            f"Source directories or root pattern paths do not exist: {', '.join(missing_paths)}"
-        )
-
-
 MAX_SPECIAL_FILE_PATHS_LENGTH = 1000
 
 
@@ -224,9 +134,11 @@ def make_base_create_command(
     arguments, open pattern file handle).
     '''
     if config.get('source_directories_must_exist', False):
-        check_all_root_patterns_exist(patterns)
+        borgmatic.borg.pattern.check_all_root_patterns_exist(patterns)
 
-    patterns_file = write_patterns_file(patterns, borgmatic_runtime_directory)
+    patterns_file = borgmatic.borg.pattern.write_patterns_file(
+        patterns, borgmatic_runtime_directory
+    )
     checkpoint_interval = config.get('checkpoint_interval', None)
     checkpoint_volume = config.get('checkpoint_volume', None)
     chunker_params = config.get('chunker_params', None)
@@ -235,7 +147,7 @@ def make_base_create_command(
     upload_buffer_size = config.get('upload_buffer_size', None)
     umask = config.get('umask', None)
     lock_wait = config.get('lock_wait', None)
-    list_filter_flags = make_list_filter_flags(local_borg_version, dry_run)
+    list_filter_flags = flags.make_list_filter_flags(local_borg_version, dry_run)
     files_cache = config.get('files_cache')
     archive_name_format = config.get(
         'archive_name_format', flags.get_default_archive_name_format(local_borg_version)
@@ -270,7 +182,7 @@ def make_base_create_command(
         tuple(local_path.split(' '))
         + ('create',)
         + (('--patterns-from', patterns_file.name) if patterns_file else ())
-        + make_exclude_flags(config)
+        + flags.make_exclude_flags(config)
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--checkpoint-volume', str(checkpoint_volume)) if checkpoint_volume else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
@@ -329,7 +241,7 @@ def make_base_create_command(
             logger.warning(
                 f'Excluding special files to prevent Borg from hanging: {truncated_special_file_paths}'
             )
-            patterns_file = write_patterns_file(
+            patterns_file = borgmatic.borg.pattern.write_patterns_file(
                 tuple(
                     borgmatic.borg.pattern.Pattern(
                         special_file_path,

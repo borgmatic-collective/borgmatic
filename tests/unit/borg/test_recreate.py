@@ -21,9 +21,9 @@ def insert_execute_command_mock(command, working_directory=None, borg_exit_codes
 
 
 def test_recreate_archive_dry_run_skips_execution():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -59,9 +59,9 @@ def test_recreate_archive_dry_run_skips_execution():
 
 
 def test_recreate_calls_borg_with_required_flags():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -94,9 +94,9 @@ def test_recreate_calls_borg_with_required_flags():
 
 
 def test_recreate_with_remote_path():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -129,9 +129,9 @@ def test_recreate_with_remote_path():
 
 
 def test_recreate_with_lock_wait():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -163,9 +163,9 @@ def test_recreate_with_lock_wait():
 
 
 def test_recreate_with_log_info():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -199,9 +199,9 @@ def test_recreate_with_log_info():
 
 
 def test_recreate_with_log_debug():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -234,9 +234,9 @@ def test_recreate_with_log_debug():
 
 
 def test_recreate_with_log_json():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -268,8 +268,8 @@ def test_recreate_with_log_json():
 
 
 def test_recreate_with_list_config_calls_borg_with_list_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -280,7 +280,9 @@ def test_recreate_with_list_config_calls_borg_with_list_flag():
             'repo',
         )
     )
-    flexmock(module).should_receive('make_list_filter_flags').and_return('AME+-')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return(
+        'AME+-'
+    )
     insert_execute_command_mock(
         ('borg', 'recreate', '--list', '--filter', 'AME+-', '--repo', 'repo')
     )
@@ -304,8 +306,8 @@ def test_recreate_with_list_config_calls_borg_with_list_flag():
 
 
 def test_recreate_with_patterns_from_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -341,8 +343,8 @@ def test_recreate_with_patterns_from_flag():
 
 
 def test_recreate_with_exclude_flags():
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -353,7 +355,9 @@ def test_recreate_with_exclude_flags():
             'repo',
         )
     )
-    flexmock(module).should_receive('make_exclude_flags').and_return(('--exclude', 'pattern'))
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(
+        ('--exclude', 'pattern')
+    )
     insert_execute_command_mock(('borg', 'recreate', '--exclude', 'pattern', '--repo', 'repo'))
 
     module.recreate_archive(
@@ -375,9 +379,9 @@ def test_recreate_with_exclude_flags():
 
 
 def test_recreate_with_target_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -409,9 +413,9 @@ def test_recreate_with_target_flag():
 
 
 def test_recreate_with_comment_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -445,9 +449,9 @@ def test_recreate_with_comment_flag():
 
 
 def test_recreate_with_timestamp_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -481,9 +485,9 @@ def test_recreate_with_timestamp_flag():
 
 
 def test_recreate_with_compression_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -515,9 +519,9 @@ def test_recreate_with_compression_flag():
 
 
 def test_recreate_with_chunker_params_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -551,9 +555,9 @@ def test_recreate_with_chunker_params_flag():
 
 
 def test_recreate_with_recompress_flag():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -585,9 +589,9 @@ def test_recreate_with_recompress_flag():
 
 
 def test_recreate_with_match_archives_star():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -619,9 +623,9 @@ def test_recreate_with_match_archives_star():
 
 
 def test_recreate_with_match_archives_regex():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -653,9 +657,9 @@ def test_recreate_with_match_archives_regex():
 
 
 def test_recreate_with_match_archives_shell():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').and_return(())
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(True)
     flexmock(module.borgmatic.borg.flags).should_receive(
@@ -687,9 +691,9 @@ def test_recreate_with_match_archives_shell():
 
 
 def test_recreate_with_match_archives_and_feature_available_calls_borg_with_match_archives():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').with_args(
         'foo-*', None, '1.2.3'
     ).and_return(('--match-archives', 'foo-*'))
@@ -719,9 +723,9 @@ def test_recreate_with_match_archives_and_feature_available_calls_borg_with_matc
 
 
 def test_recreate_with_archives_flag_and_feature_available_calls_borg_with_match_archives():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').with_args(
         'archive', None, '1.2.3'
     ).and_return(('--match-archives', 'archive'))
@@ -753,9 +757,9 @@ def test_recreate_with_archives_flag_and_feature_available_calls_borg_with_match
 
 
 def test_recreate_with_match_archives_and_feature_not_available_calls_borg_without_match_archives():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive('make_repository_flags').and_return(
@@ -783,9 +787,9 @@ def test_recreate_with_match_archives_and_feature_not_available_calls_borg_witho
 
 
 def test_recreate_with_archives_flags_and_feature_not_available_calls_borg_with_combined_repo_and_archive():
-    flexmock(module.borgmatic.borg.create).should_receive('make_exclude_flags').and_return(())
-    flexmock(module.borgmatic.borg.create).should_receive('write_patterns_file').and_return(None)
-    flexmock(module.borgmatic.borg.create).should_receive('make_list_filter_flags').and_return('')
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('')
     flexmock(module.borgmatic.borg.flags).should_receive('make_match_archives_flags').never()
     flexmock(module.borgmatic.borg.feature).should_receive('available').and_return(False)
     flexmock(module.borgmatic.borg.flags).should_receive(

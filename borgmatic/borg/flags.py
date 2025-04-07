@@ -197,3 +197,42 @@ def omit_flag_and_value(arguments, flag):
         if flag not in (previous_argument, argument)
         if not argument.startswith(f'{flag}=')
     )
+
+
+def make_exclude_flags(config):
+    '''
+    Given a configuration dict with various exclude options, return the corresponding Borg flags as
+    a tuple.
+    '''
+    caches_flag = ('--exclude-caches',) if config.get('exclude_caches') else ()
+    if_present_flags = tuple(
+        itertools.chain.from_iterable(
+            ('--exclude-if-present', if_present)
+            for if_present in config.get('exclude_if_present', ())
+        )
+    )
+    keep_exclude_tags_flags = ('--keep-exclude-tags',) if config.get('keep_exclude_tags') else ()
+    exclude_nodump_flags = ('--exclude-nodump',) if config.get('exclude_nodump') else ()
+
+    return caches_flag + if_present_flags + keep_exclude_tags_flags + exclude_nodump_flags
+
+
+def make_list_filter_flags(local_borg_version, dry_run):
+    '''
+    Given the local Borg version and whether this is a dry run, return the corresponding flags for
+    passing to "--list --filter". The general idea is that excludes are shown for a dry run or when
+    the verbosity is debug.
+    '''
+    base_flags = 'AME'
+    show_excludes = logger.isEnabledFor(logging.DEBUG)
+
+    if feature.available(feature.Feature.EXCLUDED_FILES_MINUS, local_borg_version):
+        if show_excludes or dry_run:
+            return f'{base_flags}+-'
+        else:
+            return base_flags
+
+    if show_excludes:
+        return f'{base_flags}x-'
+    else:
+        return f'{base_flags}-'

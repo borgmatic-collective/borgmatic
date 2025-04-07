@@ -327,3 +327,100 @@ def test_omit_flag_and_value_without_flag_present_passes_through_arguments():
         'create',
         '--other',
     )
+
+
+def test_make_exclude_flags_includes_exclude_caches_when_true_in_config():
+    exclude_flags = module.make_exclude_flags(config={'exclude_caches': True})
+
+    assert exclude_flags == ('--exclude-caches',)
+
+
+def test_make_exclude_flags_does_not_include_exclude_caches_when_false_in_config():
+    exclude_flags = module.make_exclude_flags(config={'exclude_caches': False})
+
+    assert exclude_flags == ()
+
+
+def test_make_exclude_flags_includes_exclude_if_present_when_in_config():
+    exclude_flags = module.make_exclude_flags(
+        config={'exclude_if_present': ['exclude_me', 'also_me']}
+    )
+
+    assert exclude_flags == (
+        '--exclude-if-present',
+        'exclude_me',
+        '--exclude-if-present',
+        'also_me',
+    )
+
+
+def test_make_exclude_flags_includes_keep_exclude_tags_when_true_in_config():
+    exclude_flags = module.make_exclude_flags(config={'keep_exclude_tags': True})
+
+    assert exclude_flags == ('--keep-exclude-tags',)
+
+
+def test_make_exclude_flags_does_not_include_keep_exclude_tags_when_false_in_config():
+    exclude_flags = module.make_exclude_flags(config={'keep_exclude_tags': False})
+
+    assert exclude_flags == ()
+
+
+def test_make_exclude_flags_includes_exclude_nodump_when_true_in_config():
+    exclude_flags = module.make_exclude_flags(config={'exclude_nodump': True})
+
+    assert exclude_flags == ('--exclude-nodump',)
+
+
+def test_make_exclude_flags_does_not_include_exclude_nodump_when_false_in_config():
+    exclude_flags = module.make_exclude_flags(config={'exclude_nodump': False})
+
+    assert exclude_flags == ()
+
+
+def test_make_exclude_flags_is_empty_when_config_has_no_excludes():
+    exclude_flags = module.make_exclude_flags(config={})
+
+    assert exclude_flags == ()
+
+
+def test_make_list_filter_flags_with_debug_and_feature_available_includes_plus_and_minus():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(True)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=False) == 'AME+-'
+
+
+def test_make_list_filter_flags_with_info_and_feature_available_omits_plus_and_minus():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(False)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=False) == 'AME'
+
+
+def test_make_list_filter_flags_with_debug_and_feature_available_and_dry_run_includes_plus_and_minus():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(True)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=True) == 'AME+-'
+
+
+def test_make_list_filter_flags_with_info_and_feature_available_and_dry_run_includes_plus_and_minus():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(False)
+    flexmock(module.feature).should_receive('available').and_return(True)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=True) == 'AME+-'
+
+
+def test_make_list_filter_flags_with_debug_and_feature_not_available_includes_x():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(True)
+    flexmock(module.feature).should_receive('available').and_return(False)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=False) == 'AMEx-'
+
+
+def test_make_list_filter_flags_with_info_and_feature_not_available_omits_x():
+    flexmock(module.logger).should_receive('isEnabledFor').and_return(False)
+    flexmock(module.feature).should_receive('available').and_return(False)
+
+    assert module.make_list_filter_flags(local_borg_version=flexmock(), dry_run=False) == 'AME-'
