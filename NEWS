@@ -1,4 +1,4 @@
-2.0.2.dev0
+2.0.2
  * #1035: Document potential performance issues and workarounds with the ZFS, Btrfs, and LVM hooks:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
  * #1053: Display a nicer error message when the "recreate" action encounters an archive that
