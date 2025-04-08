@@ -82,11 +82,14 @@ def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
 
     for hook_config in command_hooks:
         commands = hook_config.get('run')
+        when_description = (
+            f"{'/'.join(hook_config.get('when'))} " if hook_config.get('when') else ''
+        )
 
         if 'before' in hook_config:
-            description = f'before {hook_config.get("before")}'
+            description = f'before {when_description}{hook_config.get("before")}'
         elif 'after' in hook_config:
-            description = f'after {hook_config.get("after")}'
+            description = f'after {when_description}{hook_config.get("after")}'
         else:
             raise ValueError(f'Invalid hook configuration: {hook_config}')
 

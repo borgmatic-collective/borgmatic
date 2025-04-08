@@ -5,8 +5,6 @@ import subprocess
 import sys
 import tempfile
 
-import pytest
-
 
 def generate_configuration(config_path, repository_path):
     '''
