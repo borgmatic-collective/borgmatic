@@ -1,8 +1,8 @@
 2.0.2.dev0
  * #1035: Document potential performance issues and workarounds with the ZFS, Btrfs, and LVM hooks:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/
- * #1053: Display a nicer error message when running the "recreate" action on a leftover temporary
-   archive from a prior recreate run.
+ * #1053: Display a nicer error message when the "recreate" action encounters an archive that
+   already exists.
  * #1059: Fix a regression in which soft failure exit codes in command hooks were not respected.
  * #1060: Fix action command hooks getting run too many times when multiple borgmatic actions are
    executed (implicitly or explicitly).

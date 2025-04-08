@@ -1,11 +1,16 @@
 import logging
+import subprocess
 
+import borgmatic.borg.info
 import borgmatic.borg.recreate
 import borgmatic.borg.repo_list
 import borgmatic.config.validate
 from borgmatic.actions.pattern import collect_patterns, process_patterns
 
 logger = logging.getLogger(__name__)
+
+
+BORG_EXIT_CODE_ARCHIVE_ALREADY_EXISTS = 30
 
 
 def run_recreate(
@@ -53,14 +58,27 @@ def run_recreate(
                     f'The archive "{recreate_arguments.archive}" is leftover from a prior recreate. Select a different archive.'
                 )
 
-        borgmatic.borg.recreate.recreate_archive(
-            repository['path'],
-            archive,
-            config,
-            local_borg_version,
-            recreate_arguments,
-            global_arguments,
-            local_path=local_path,
-            remote_path=remote_path,
-            patterns=processed_patterns,
-        )
+        try:
+            borgmatic.borg.recreate.recreate_archive(
+                repository['path'],
+                archive,
+                config,
+                local_borg_version,
+                recreate_arguments,
+                global_arguments,
+                local_path=local_path,
+                remote_path=remote_path,
+                patterns=processed_patterns,
+            )
+        except subprocess.CalledProcessError as error:
+            if error.returncode == BORG_EXIT_CODE_ARCHIVE_ALREADY_EXISTS:
+                if recreate_arguments.target:
+                    raise ValueError(
+                        f'The archive "{recreate_arguments.target}" already exists. Delete it first or set a different target archive name.'
+                    )
+                elif archive:
+                    raise ValueError(
+                        f'The archive "{archive}.recreate" is leftover from a prior recreate. Delete it first or select a different archive.'
+                    )
+
+            raise
