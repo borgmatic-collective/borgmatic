@@ -365,7 +365,7 @@ def run_actions(
                 umask=config.get('umask'),
                 working_directory=borgmatic.config.paths.get_working_directory(config),
                 dry_run=global_arguments.dry_run,
-                action_names=arguments.keys(),
+                action_names=(action_name,),
                 **hook_context,
             ):
                 if action_name == 'repo-create' and action_name not in skip_actions:

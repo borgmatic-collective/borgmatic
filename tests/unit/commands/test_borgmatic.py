@@ -891,6 +891,9 @@ def test_run_configuration_with_multiple_repositories_retries_with_timeout():
 def test_run_actions_runs_repo_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.repo_create).should_receive('run_repo_create').once()
 
@@ -914,6 +917,9 @@ def test_run_actions_runs_repo_create():
 def test_run_actions_adds_label_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
@@ -947,6 +953,9 @@ def test_run_actions_adds_label_file_to_hook_context():
 def test_run_actions_adds_log_file_to_hook_context():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').with_args(
@@ -980,6 +989,9 @@ def test_run_actions_adds_log_file_to_hook_context():
 def test_run_actions_runs_transfer():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.transfer).should_receive('run_transfer').once()
 
@@ -1000,6 +1012,9 @@ def test_run_actions_runs_transfer():
 def test_run_actions_runs_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.create).should_receive('run_create').and_yield(expected).once()
@@ -1022,6 +1037,9 @@ def test_run_actions_runs_create():
 def test_run_actions_with_skip_actions_skips_create():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['create'])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.create).should_receive('run_create').never()
 
@@ -1042,6 +1060,9 @@ def test_run_actions_with_skip_actions_skips_create():
 def test_run_actions_runs_recreate():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
 
     flexmock(borgmatic.actions.recreate).should_receive('run_recreate').once()
@@ -1063,6 +1084,9 @@ def test_run_actions_runs_recreate():
 def test_run_actions_with_skip_actions_skips_recreate():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['recreate'])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.recreate).should_receive('run_recreate').never()
 
@@ -1083,6 +1107,9 @@ def test_run_actions_with_skip_actions_skips_recreate():
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.prune).should_receive('run_prune').once()
 
@@ -1103,6 +1130,9 @@ def test_run_actions_runs_prune():
 def test_run_actions_with_skip_actions_skips_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['prune'])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.prune).should_receive('run_prune').never()
 
@@ -1123,6 +1153,9 @@ def test_run_actions_with_skip_actions_skips_prune():
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.compact).should_receive('run_compact').once()
 
@@ -1143,6 +1176,9 @@ def test_run_actions_runs_compact():
 def test_run_actions_with_skip_actions_skips_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.compact).should_receive('run_compact').never()
 
@@ -1163,6 +1199,9 @@ def test_run_actions_with_skip_actions_skips_compact():
 def test_run_actions_runs_check_when_repository_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').once()
@@ -1184,6 +1223,9 @@ def test_run_actions_runs_check_when_repository_enabled_for_checks():
 def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(False)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
@@ -1205,6 +1247,9 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
 def test_run_actions_with_skip_actions_skips_check():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['check'])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
     flexmock(borgmatic.actions.check).should_receive('run_check').never()
@@ -1226,6 +1271,9 @@ def test_run_actions_with_skip_actions_skips_check():
 def test_run_actions_runs_extract():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.extract).should_receive('run_extract').once()
 
@@ -1246,6 +1294,9 @@ def test_run_actions_runs_extract():
 def test_run_actions_runs_export_tar():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.export_tar).should_receive('run_export_tar').once()
 
@@ -1266,6 +1317,9 @@ def test_run_actions_runs_export_tar():
 def test_run_actions_runs_mount():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.mount).should_receive('run_mount').once()
 
@@ -1286,6 +1340,9 @@ def test_run_actions_runs_mount():
 def test_run_actions_runs_restore():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once()
 
@@ -1306,6 +1363,9 @@ def test_run_actions_runs_restore():
 def test_run_actions_runs_repo_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.repo_list).should_receive('run_repo_list').and_yield(expected).once()
@@ -1328,6 +1388,9 @@ def test_run_actions_runs_repo_list():
 def test_run_actions_runs_list():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.list).should_receive('run_list').and_yield(expected).once()
@@ -1350,6 +1413,9 @@ def test_run_actions_runs_list():
 def test_run_actions_runs_repo_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.repo_info).should_receive('run_repo_info').and_yield(expected).once()
@@ -1372,6 +1438,9 @@ def test_run_actions_runs_repo_info():
 def test_run_actions_runs_info():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     expected = flexmock()
     flexmock(borgmatic.actions.info).should_receive('run_info').and_yield(expected).once()
@@ -1394,6 +1463,9 @@ def test_run_actions_runs_info():
 def test_run_actions_runs_break_lock():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.break_lock).should_receive('run_break_lock').once()
 
@@ -1414,6 +1486,9 @@ def test_run_actions_runs_break_lock():
 def test_run_actions_runs_export_key():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.export_key).should_receive('run_export_key').once()
 
@@ -1434,6 +1509,9 @@ def test_run_actions_runs_export_key():
 def test_run_actions_runs_import_key():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.import_key).should_receive('run_import_key').once()
 
@@ -1454,6 +1532,9 @@ def test_run_actions_runs_import_key():
 def test_run_actions_runs_change_passphrase():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.change_passphrase).should_receive('run_change_passphrase').once()
 
@@ -1477,6 +1558,9 @@ def test_run_actions_runs_change_passphrase():
 def test_run_actions_runs_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.delete).should_receive('run_delete').once()
 
@@ -1497,6 +1581,9 @@ def test_run_actions_runs_delete():
 def test_run_actions_runs_repo_delete():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.repo_delete).should_receive('run_repo_delete').once()
 
@@ -1520,6 +1607,9 @@ def test_run_actions_runs_repo_delete():
 def test_run_actions_runs_borg():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once()
 
@@ -1540,9 +1630,56 @@ def test_run_actions_runs_borg():
 def test_run_actions_runs_multiple_actions_in_argument_order():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(borgmatic.actions.borg).should_receive('run_borg').once().ordered()
     flexmock(borgmatic.actions.restore).should_receive('run_restore').once().ordered()
+
+    tuple(
+        module.run_actions(
+            arguments={
+                'global': flexmock(dry_run=False),
+                'borg': flexmock(),
+                'restore': flexmock(),
+            },
+            config_filename=flexmock(),
+            config={'repositories': []},
+            config_paths=[],
+            local_path=flexmock(),
+            remote_path=flexmock(),
+            local_borg_version=flexmock(),
+            repository={'path': 'repo'},
+        )
+    )
+
+
+def test_run_actions_runs_action_hooks_for_one_action_at_a_time():
+    flexmock(module).should_receive('add_custom_log_levels')
+    flexmock(module).should_receive('get_skip_actions').and_return([])
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+
+    for action_name in ('borg', 'restore'):
+        flexmock(module.command).should_receive('Before_after_hooks').with_args(
+            command_hooks=object,
+            before_after='action',
+            umask=object,
+            working_directory=object,
+            dry_run=object,
+            action_names=(action_name,),
+            configuration_filename=object,
+            repository_label=object,
+            log_file=object,
+            repositories=object,
+            repository=object,
+        ).and_return(flexmock()).once()
+
+    flexmock(borgmatic.actions.borg).should_receive('run_borg')
+    flexmock(borgmatic.actions.restore).should_receive('run_restore')
 
     tuple(
         module.run_actions(
