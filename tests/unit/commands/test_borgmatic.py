@@ -1034,13 +1034,26 @@ def test_run_actions_runs_create():
     assert result == (expected,)
 
 
-def test_run_actions_with_skip_actions_skips_create():
+def test_run_actions_with_skip_actions_does_not_run_action_or_action_command_hooks():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return(['create'])
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         flexmock()
     )
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
+    flexmock(module.command).should_receive('Before_after_hooks').with_args(
+        command_hooks=object,
+        before_after='action',
+        umask=object,
+        working_directory=object,
+        dry_run=object,
+        action_names=object,
+        configuration_filename=object,
+        repository_label=object,
+        log_file=object,
+        repositories=object,
+        repository=object,
+    ).never()
     flexmock(borgmatic.actions.create).should_receive('run_create').never()
 
     tuple(
@@ -1081,29 +1094,6 @@ def test_run_actions_runs_recreate():
     )
 
 
-def test_run_actions_with_skip_actions_skips_recreate():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return(['recreate'])
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
-        flexmock()
-    )
-    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.recreate).should_receive('run_recreate').never()
-
-    tuple(
-        module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'recreate': flexmock()},
-            config_filename=flexmock(),
-            config={'repositories': [], 'skip_actions': ['recreate']},
-            config_paths=[],
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository={'path': 'repo'},
-        )
-    )
-
-
 def test_run_actions_runs_prune():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
@@ -1127,29 +1117,6 @@ def test_run_actions_runs_prune():
     )
 
 
-def test_run_actions_with_skip_actions_skips_prune():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return(['prune'])
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
-        flexmock()
-    )
-    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.prune).should_receive('run_prune').never()
-
-    tuple(
-        module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'prune': flexmock()},
-            config_filename=flexmock(),
-            config={'repositories': [], 'skip_actions': ['prune']},
-            config_paths=[],
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository={'path': 'repo'},
-        )
-    )
-
-
 def test_run_actions_runs_compact():
     flexmock(module).should_receive('add_custom_log_levels')
     flexmock(module).should_receive('get_skip_actions').and_return([])
@@ -1164,29 +1131,6 @@ def test_run_actions_runs_compact():
             arguments={'global': flexmock(dry_run=False), 'compact': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
-            config_paths=[],
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository={'path': 'repo'},
-        )
-    )
-
-
-def test_run_actions_with_skip_actions_skips_compact():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return(['compact'])
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
-        flexmock()
-    )
-    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(borgmatic.actions.compact).should_receive('run_compact').never()
-
-    tuple(
-        module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'compact': flexmock()},
-            config_filename=flexmock(),
-            config={'repositories': [], 'skip_actions': ['compact']},
             config_paths=[],
             local_path=flexmock(),
             remote_path=flexmock(),
@@ -1235,30 +1179,6 @@ def test_run_actions_skips_check_when_repository_not_enabled_for_checks():
             arguments={'global': flexmock(dry_run=False), 'check': flexmock()},
             config_filename=flexmock(),
             config={'repositories': []},
-            config_paths=[],
-            local_path=flexmock(),
-            remote_path=flexmock(),
-            local_borg_version=flexmock(),
-            repository={'path': 'repo'},
-        )
-    )
-
-
-def test_run_actions_with_skip_actions_skips_check():
-    flexmock(module).should_receive('add_custom_log_levels')
-    flexmock(module).should_receive('get_skip_actions').and_return(['check'])
-    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
-        flexmock()
-    )
-    flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
-    flexmock(module.checks).should_receive('repository_enabled_for_checks').and_return(True)
-    flexmock(borgmatic.actions.check).should_receive('run_check').never()
-
-    tuple(
-        module.run_actions(
-            arguments={'global': flexmock(dry_run=False), 'check': flexmock()},
-            config_filename=flexmock(),
-            config={'repositories': [], 'skip_actions': ['check']},
             config_paths=[],
             local_path=flexmock(),
             remote_path=flexmock(),
