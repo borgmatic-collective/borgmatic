@@ -1,6 +1,7 @@
 import logging
 
 import borgmatic.borg.recreate
+import borgmatic.borg.repo_list
 import borgmatic.config.validate
 from borgmatic.actions.pattern import collect_patterns, process_patterns
 
@@ -32,17 +33,29 @@ def run_recreate(
             collect_patterns(config), borgmatic.config.paths.get_working_directory(config)
         )
 
+        archive = borgmatic.borg.repo_list.resolve_archive_name(
+            repository['path'],
+            recreate_arguments.archive,
+            config,
+            local_borg_version,
+            global_arguments,
+            local_path,
+            remote_path,
+        )
+
+        if archive and archive.endswith('.recreate'):
+            if recreate_arguments.archive == 'latest':
+                raise ValueError(
+                    f'The latest archive "{archive}" is leftover from a prior recreate. Delete it first or select a different archive.'
+                )
+            else:
+                raise ValueError(
+                    f'The archive "{recreate_arguments.archive}" is leftover from a prior recreate. Select a different archive.'
+                )
+
         borgmatic.borg.recreate.recreate_archive(
             repository['path'],
-            borgmatic.borg.repo_list.resolve_archive_name(
-                repository['path'],
-                recreate_arguments.archive,
-                config,
-                local_borg_version,
-                global_arguments,
-                local_path,
-                remote_path,
-            ),
+            archive,
             config,
             local_borg_version,
             recreate_arguments,

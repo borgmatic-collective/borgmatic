@@ -32,6 +32,7 @@ def recreate_archive(
     exclude_flags = flags.make_exclude_flags(config)
     compression = config.get('compression', None)
     chunker_params = config.get('chunker_params', None)
+
     # Available recompress MODES: "if-different", "always", "never" (default)
     recompress = config.get('recompress', None)
 
