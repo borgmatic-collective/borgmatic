@@ -7,6 +7,7 @@
  * #1060: Fix action command hooks getting run too many times when multiple borgmatic actions are
    executed (implicitly or explicitly).
  * #1060: Don't run action command hooks for actions listed in the "skip_actions" option.
+ * #1062: Fix a regression that broke environment variable interpolation.
 
 2.0.1
  * #1057: Fix argument parsing to avoid using Python 3.12+ string features. Now borgmatic will

@@ -587,7 +587,7 @@ def make_parsers(schema, unparsed_arguments):
         '--no-environment-interpolation',
         dest='resolve_env',
         action='store_false',
-        help='Do not resolve environment variables in configuration file',
+        help='Do not resolve environment variables in configuration files',
     )
     global_group.add_argument(
         '--bash-completion',

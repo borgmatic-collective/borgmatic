@@ -1040,7 +1040,7 @@ def main(extra_summary_logs=[]):  # pragma: no cover
         config_filenames,
         arguments,
         global_arguments.overrides,
-        resolve_env=global_arguments.resolve_env and not validate,
+        resolve_env=global_arguments.resolve_env and not arguments.get('validate'),
     )
 
     # Use the helper function to check and show help on no arguments, passing the preloaded configs
