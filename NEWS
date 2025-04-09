@@ -1,3 +1,7 @@
+2.0.3.dev0
+ * #1065: Fix a regression in monitoring hooks in which an error pinged the finish state instead of
+   the fail state.
+
 2.0.2
  * #1035: Document potential performance issues and workarounds with the ZFS, Btrfs, and LVM hooks:
    https://torsion.org/borgmatic/docs/how-to/snapshot-your-filesystems/

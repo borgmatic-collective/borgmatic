@@ -465,8 +465,10 @@ def test_run_configuration_logs_actions_error():
     flexmock(module).should_receive('Monitoring_hooks').and_return(flexmock())
     flexmock(module.command).should_receive('Before_after_hooks').and_return(flexmock())
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    expected_results = [flexmock(), flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(
+        expected_results[:1]
+    ).and_return(expected_results[1:])
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     flexmock(module.command).should_receive('filter_hooks')
@@ -532,7 +534,7 @@ def test_run_configuration_logs_on_error_hook_error():
     expected_results = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').and_return(
         expected_results[:1]
-    ).and_return(expected_results[1:])
+    ).and_return(expected_results[1:2]).and_return(expected_results[2:])
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     config = {'repositories': [{'path': 'foo'}]}
@@ -601,8 +603,10 @@ def test_run_configuration_bails_for_on_error_hook_soft_failure():
     error = subprocess.CalledProcessError(borgmatic.hooks.command.SOFT_FAIL_EXIT_CODE, 'try again')
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks').and_raise(error)
-    expected_results = [flexmock()]
-    flexmock(module).should_receive('log_error_records').and_return(expected_results)
+    expected_results = [flexmock(), flexmock()]
+    flexmock(module).should_receive('log_error_records').and_return(
+        expected_results[:1]
+    ).and_return(expected_results[1:])
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError)
     config = {'repositories': [{'path': 'foo'}]}
@@ -654,11 +658,14 @@ def test_run_configuration_retries_hard_error():
         levelno=logging.WARNING,
         log_command_error_output=True,
     ).and_return([flexmock()])
-    error_logs = [flexmock()]
+    error_logs = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository',
         OSError,
-    ).and_return(error_logs)
+    ).and_return(error_logs[:1]).ordered()
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(error_logs[1:]).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {'repositories': [{'path': 'foo'}], 'retries': 1}
@@ -680,13 +687,16 @@ def test_run_configuration_retries_repositories_in_order():
     flexmock(module.borg_version).should_receive('local_borg_version').and_return(flexmock())
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_actions').and_raise(OSError).times(2)
-    expected_results = [flexmock(), flexmock()]
+    expected_results = [flexmock(), flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(expected_results[:1]).ordered()
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
-    ).and_return(expected_results[1:]).ordered()
+    ).and_return(expected_results[1:2]).ordered()
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(expected_results[2:]).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {'repositories': [{'path': 'foo'}, {'path': 'bar'}]}
@@ -728,6 +738,10 @@ def test_run_configuration_retries_round_robin():
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
     ).and_return(bar_error_logs).ordered()
+    config_error_logs = [flexmock()]
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(config_error_logs).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {
@@ -741,7 +755,7 @@ def test_run_configuration_retries_round_robin():
 
     results = list(module.run_configuration('test.yaml', config, ['/tmp/test.yaml'], arguments))
 
-    assert results == foo_error_logs + bar_error_logs
+    assert results == foo_error_logs + bar_error_logs + config_error_logs
 
 
 def test_run_configuration_with_one_retry():
@@ -766,10 +780,13 @@ def test_run_configuration_with_one_retry():
         levelno=logging.WARNING,
         log_command_error_output=True,
     ).and_return(flexmock()).ordered()
-    error_logs = [flexmock()]
+    error_logs = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
-    ).and_return(error_logs).ordered()
+    ).and_return(error_logs[:1]).ordered()
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(error_logs[1:]).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {
@@ -818,10 +835,13 @@ def test_run_configuration_with_retry_wait_does_backoff_after_each_retry():
     ).and_return([flexmock()]).ordered()
 
     flexmock(time).should_receive('sleep').with_args(30).and_return().ordered()
-    error_logs = [flexmock()]
+    error_logs = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
-    ).and_return(error_logs).ordered()
+    ).and_return(error_logs[:1]).ordered()
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(error_logs[1:]).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {
@@ -867,10 +887,13 @@ def test_run_configuration_with_multiple_repositories_retries_with_timeout():
 
     # Sleep before retrying bar (and failing)
     flexmock(time).should_receive('sleep').with_args(10).and_return().ordered()
-    error_logs = [flexmock()]
+    error_logs = [flexmock(), flexmock()]
     flexmock(module).should_receive('log_error_records').with_args(
         'Error running actions for repository', OSError
-    ).and_return(error_logs).ordered()
+    ).and_return(error_logs[:1]).ordered()
+    flexmock(module).should_receive('log_error_records').with_args(
+        'Error running configuration',
+    ).and_return(error_logs[1:]).ordered()
     flexmock(module.command).should_receive('filter_hooks')
     flexmock(module.command).should_receive('execute_hooks')
     config = {

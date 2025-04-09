@@ -279,8 +279,19 @@ def run_configuration(config_filename, config, config_paths, arguments):
                             encountered_error = error
                             error_repository = repository
 
+                # Re-raise any error, so that the Monitoring_hooks context manager wrapping this
+                # code can see the error and act accordingly. Do this here rather than as soon as
+                # the error is encountered so that an error with one repository doesn't prevent
+                # other repositories from running.
+                if encountered_error:
+                    raise encountered_error
+
     except (OSError, CalledProcessError, ValueError) as error:
-        yield from log_error_records('Error running configuration', error)
+        # No need to repeat logging of the error if it was already logged above.
+        if error_repository:
+            yield from log_error_records('Error running configuration')
+        else:
+            yield from log_error_records('Error running configuration', error)
 
         encountered_error = error
 
