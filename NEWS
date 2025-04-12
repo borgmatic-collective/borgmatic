@@ -1,6 +1,8 @@
 2.0.3.dev0
  * #1065: Fix a regression in monitoring hooks in which an error pinged the finish state instead of
    the fail state.
+ * #1066: Add a "states" option to command hooks, so you can optionally skip an "after" hook if
+   borgmatic encounters an error.
 
 2.0.2
  * #1035: Document potential performance issues and workarounds with the ZFS, Btrfs, and LVM hooks:

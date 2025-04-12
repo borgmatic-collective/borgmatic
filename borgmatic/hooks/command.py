@@ -47,21 +47,25 @@ def make_environment(current_environment, sys_module=sys):
     return environment
 
 
-def filter_hooks(command_hooks, before=None, after=None, hook_name=None, action_names=None):
+def filter_hooks(command_hooks, before=None, after=None, action_names=None, state_names=None):
     '''
     Given a sequence of command hook dicts from configuration and one or more filters (before name,
-    after name, calling hook name, or a sequence of action names), filter down the command hooks to
-    just the ones that match the given filters.
+    after name, a sequence of action names, and/or a sequence of execution result state names),
+    filter down the command hooks to just the ones that match the given filters.
     '''
     return tuple(
         hook_config
         for hook_config in command_hooks or ()
         for config_action_names in (hook_config.get('when'),)
+        for config_state_names in (hook_config.get('states'),)
         if before is None or hook_config.get('before') == before
         if after is None or hook_config.get('after') == after
         if action_names is None
         or config_action_names is None
         or set(config_action_names or ()).intersection(set(action_names))
+        if state_names is None
+        or config_state_names is None
+        or set(config_state_names or ()).intersection(set(state_names))
     )
 
 
@@ -143,7 +147,7 @@ class Before_after_hooks:
            before_after='do_stuff',
            umask=config.get('umask'),
            dry_run=dry_run,
-           hook_name='myhook',
+           action_names=['create'],
        ):
             do()
             some()
@@ -160,22 +164,20 @@ class Before_after_hooks:
         umask,
         working_directory,
         dry_run,
-        hook_name=None,
         action_names=None,
         **context,
     ):
         '''
         Given a sequence of command hook configuration dicts, the before/after name, a umask to run
-        commands with, a working directory to run commands with, a dry run flag, the name of the
-        calling hook, a sequence of action names, and any context for the executed commands, save
-        those data points for use below.
+        commands with, a working directory to run commands with, a dry run flag, a sequence of
+        action names, and any context for the executed commands, save those data points for use
+        below.
         '''
         self.command_hooks = command_hooks
         self.before_after = before_after
         self.umask = umask
         self.working_directory = working_directory
         self.dry_run = dry_run
-        self.hook_name = hook_name
         self.action_names = action_names
         self.context = context
 
@@ -188,7 +190,6 @@ class Before_after_hooks:
                 borgmatic.hooks.command.filter_hooks(
                     self.command_hooks,
                     before=self.before_after,
-                    hook_name=self.hook_name,
                     action_names=self.action_names,
                 ),
                 self.umask,
@@ -202,7 +203,7 @@ class Before_after_hooks:
 
             # Trigger the after hook manually, since raising here will prevent it from being run
             # otherwise.
-            self.__exit__(None, None, None)
+            self.__exit__(exception_type=type(error), exception=error, traceback=None)
 
             raise ValueError(f'Error running before {self.before_after} hook: {error}')
 
@@ -215,8 +216,8 @@ class Before_after_hooks:
                 borgmatic.hooks.command.filter_hooks(
                     self.command_hooks,
                     after=self.before_after,
-                    hook_name=self.hook_name,
                     action_names=self.action_names,
+                    state_names=['fail' if exception_type else 'finish'],
                 ),
                 self.umask,
                 self.working_directory,

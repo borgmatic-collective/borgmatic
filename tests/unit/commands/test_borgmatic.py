@@ -1932,7 +1932,12 @@ def test_collect_highlander_action_summary_logs_error_on_run_validate_failure():
 
 def test_collect_configuration_run_summary_logs_info_for_success():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -1952,7 +1957,12 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 def test_collect_configuration_run_summary_executes_hooks_for_create():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -1975,7 +1985,12 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_extract():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2018,7 +2033,12 @@ def test_collect_configuration_run_summary_logs_extract_with_repository_error():
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_mount():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2064,7 +2084,12 @@ def test_collect_configuration_run_summary_logs_mount_with_repository_error():
 
 def test_collect_configuration_run_summary_logs_missing_configs_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['fail']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     arguments = {'global': flexmock(config_paths=[])}
     expected_logs = (flexmock(),)
@@ -2079,9 +2104,14 @@ def test_collect_configuration_run_summary_logs_missing_configs_error():
     assert logs == expected_logs
 
 
-def test_collect_configuration_run_summary_logs_pre_hook_error():
+def test_collect_configuration_run_summary_logs_before_hook_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['fail']
+    )
     flexmock(module.command).should_receive('execute_hooks').and_raise(ValueError)
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
@@ -2102,9 +2132,14 @@ def test_collect_configuration_run_summary_logs_pre_hook_error():
     assert logs == expected_logs
 
 
-def test_collect_configuration_run_summary_logs_post_hook_error():
+def test_collect_configuration_run_summary_logs_after_hook_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks').and_return(None).and_raise(ValueError)
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2152,7 +2187,12 @@ def test_collect_configuration_run_summary_logs_for_list_with_archive_and_reposi
 
 def test_collect_configuration_run_summary_logs_info_for_success_with_list():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2175,7 +2215,12 @@ def test_collect_configuration_run_summary_logs_info_for_success_with_list():
 
 def test_collect_configuration_run_summary_logs_run_configuration_error_logs():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['fail']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return(
@@ -2198,7 +2243,12 @@ def test_collect_configuration_run_summary_logs_run_configuration_error_logs():
 
 def test_collect_configuration_run_summary_logs_run_umount_error():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['fail']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2225,7 +2275,12 @@ def test_collect_configuration_run_summary_logs_run_umount_error():
 
 def test_collect_configuration_run_summary_logs_outputs_merged_json_results():
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
-    flexmock(module.command).should_receive('filter_hooks')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, before='everything', action_names=object
+    )
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        object, after='everything', action_names=object, state_names=['finish']
+    )
     flexmock(module.command).should_receive('execute_hooks')
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return(['foo', 'bar']).and_return(

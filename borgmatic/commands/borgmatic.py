@@ -301,7 +301,10 @@ def run_configuration(config_filename, config, config_paths, arguments):
     try:
         command.execute_hooks(
             command.filter_hooks(
-                config.get('commands'), after='error', action_names=arguments.keys()
+                config.get('commands'),
+                after='error',
+                action_names=arguments.keys(),
+                state_names=['fail'],
             ),
             config.get('umask'),
             borgmatic.config.paths.get_working_directory(config),
@@ -907,6 +910,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
 
     # Execute the actions corresponding to each configuration file.
     json_results = []
+    encountered_error = False
 
     for config_filename, config in configs.items():
         with Log_prefix(config_filename):
@@ -917,6 +921,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
             )
 
             if error_logs:
+                encountered_error = True
                 yield from log_error_records('An error occurred')
                 yield from error_logs
             else:
@@ -939,6 +944,7 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
                 local_path=get_local_path(configs),
             )
         except (CalledProcessError, OSError) as error:
+            encountered_error = True
             yield from log_error_records('Error unmounting mount point', error)
 
     if json_results:
@@ -948,7 +954,10 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
         for config_filename, config in configs.items():
             command.execute_hooks(
                 command.filter_hooks(
-                    config.get('commands'), after='everything', action_names=arguments.keys()
+                    config.get('commands'),
+                    after='everything',
+                    action_names=arguments.keys(),
+                    state_names=['fail' if encountered_error else 'finish'],
                 ),
                 config.get('umask'),
                 borgmatic.config.paths.get_working_directory(config),

@@ -55,6 +55,29 @@ commands:
           - "echo Backup: start"
 ```
 
+By default, an `after` command hook runs even if an error occurs in the
+corresponding `before` hook or between those two hooks. This allows you to
+perform cleanup steps that correspond to `before` preparation commands—even when
+something goes wrong. You may notice that this is a departure from the way that
+the deprecated `after_*` hooks worked in borgmatic prior to version 2.0.0.
+
+<span class="minilink minilink-addedin">New in version 2.0.3</span> You can
+customize this behavior with the `states` option. For instance, here's an
+example of an `after` hook that only triggers on success and not on error:
+
+```yaml
+commands:
+    - after: action
+      when: [create]
+      states: [finish]
+      run:
+          - echo "After successful create!"
+```
+
+Additionally, when command hooks run, they respect the `working_directory`
+option if it is configured, meaning that the hook commands are run in that
+directory.
+
 Each command in the `commands:` list has the following options:
 
  * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
@@ -64,17 +87,10 @@ Each command in the `commands:` list has the following options:
     * `everything` runs before or after all configuration files. Errors here do not trigger `error` hooks or the `fail` state in monitoring hooks. This replaces the deprecated `before_everything` and `after_everything`.
     * `error` runs after an error occurs—and it's only available for `after`. This replaces the deprecated `on_error` hook.
  * `when`: Only trigger the hook when borgmatic is run with particular actions (`create`, `prune`, etc.) listed here. Defaults to running for all actions.
+ * `states`: <span class="minilink minilink-addedin">New in version 2.0.3</span> Only trigger the hook if borgmatic encounters one of the states (execution results) listed here. This state is evaluated only for the scope of the configured `action`, `repository`, etc., rather than for the entire borgmatic run. Only available for `after` hooks. Defaults to running the hook for all states. One or more of:
+    * `finish`: No errors occurred.
+    * `fail`: An error occurred.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
-
-An `after` command hook runs even if an error occurs in the corresponding
-`before` hook or between those two hooks. This allows you to perform cleanup
-steps that correspond to `before` preparation commands—even when something goes
-wrong. This is a departure from the way that the deprecated `after_*` hooks
-worked in borgmatic prior to version 2.0.0.
-
-Additionally, when command hooks run, they respect the `working_directory`
-option if it is configured, meaning that the hook commands are run in that
-directory.
 
 
 ### Order of execution

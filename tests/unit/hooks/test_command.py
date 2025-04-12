@@ -167,6 +167,44 @@ def test_make_environment_with_pyinstaller_and_LD_LIBRARY_PATH_ORIG_copies_it_in
                 },
             ),
         ),
+        (
+            (
+                {
+                    'before': 'action',
+                    'states': ['finish'],  # Not actually valid; only valid for "after".
+                    'run': ['foo'],
+                },
+                {
+                    'after': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'after': 'action',
+                    'states': ['finish'],
+                    'run': ['baz'],
+                },
+                {
+                    'after': 'action',
+                    'states': ['fail'],
+                    'run': ['quux'],
+                },
+            ),
+            {
+                'after': 'action',
+                'state_names': ['finish'],
+            },
+            (
+                {
+                    'after': 'action',
+                    'run': ['bar'],
+                },
+                {
+                    'after': 'action',
+                    'states': ['finish'],
+                    'run': ['baz'],
+                },
+            ),
+        ),
     ),
 )
 def test_filter_hooks(hooks, filters, expected_hooks):
@@ -336,14 +374,13 @@ def test_before_after_hooks_calls_command_hooks():
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         before='action',
-        hook_name='myhook',
         action_names=['create'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         after='action',
-        hook_name='myhook',
         action_names=['create'],
+        state_names=['finish'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('execute_hooks').twice()
 
@@ -353,7 +390,6 @@ def test_before_after_hooks_calls_command_hooks():
         umask=1234,
         working_directory='/working',
         dry_run=False,
-        hook_name='myhook',
         action_names=['create'],
         context1='stuff',
         context2='such',
@@ -369,14 +405,13 @@ def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         before='action',
-        hook_name='myhook',
         action_names=['create'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         after='action',
-        hook_name='myhook',
         action_names=['create'],
+        state_names=['fail'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('execute_hooks').and_raise(OSError).and_return(None)
     flexmock(module).should_receive('considered_soft_failure').and_return(False)
@@ -388,7 +423,6 @@ def test_before_after_hooks_with_before_error_runs_after_hook_and_raises():
             umask=1234,
             working_directory='/working',
             dry_run=False,
-            hook_name='myhook',
             action_names=['create'],
             context1='stuff',
             context2='such',
@@ -404,14 +438,13 @@ def test_before_after_hooks_with_before_soft_failure_raises():
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         before='action',
-        hook_name='myhook',
         action_names=['create'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         after='action',
-        hook_name='myhook',
         action_names=['create'],
+        state_names=['finish'],
     ).never()
     flexmock(module).should_receive('execute_hooks').and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
@@ -423,12 +456,43 @@ def test_before_after_hooks_with_before_soft_failure_raises():
             umask=1234,
             working_directory='/working',
             dry_run=False,
-            hook_name='myhook',
             action_names=['create'],
             context1='stuff',
             context2='such',
         ):
             pass
+
+
+def test_before_after_hooks_with_wrapped_code_error_runs_after_hook_and_raises():
+    commands = [
+        {'before': 'repository', 'run': ['foo', 'bar']},
+        {'after': 'repository', 'run': ['baz']},
+    ]
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        before='action',
+        action_names=['create'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('filter_hooks').with_args(
+        commands,
+        after='action',
+        action_names=['create'],
+        state_names=['fail'],
+    ).and_return(flexmock()).once()
+    flexmock(module).should_receive('execute_hooks').twice()
+
+    with pytest.raises(ValueError):
+        with module.Before_after_hooks(
+            command_hooks=commands,
+            before_after='action',
+            umask=1234,
+            working_directory='/working',
+            dry_run=False,
+            action_names=['create'],
+            context1='stuff',
+            context2='such',
+        ):
+            raise ValueError()
 
 
 def test_before_after_hooks_with_after_error_raises():
@@ -439,14 +503,13 @@ def test_before_after_hooks_with_after_error_raises():
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         before='action',
-        hook_name='myhook',
         action_names=['create'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         after='action',
-        hook_name='myhook',
         action_names=['create'],
+        state_names=['finish'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('execute_hooks').and_return(None).and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(False)
@@ -458,7 +521,6 @@ def test_before_after_hooks_with_after_error_raises():
             umask=1234,
             working_directory='/working',
             dry_run=False,
-            hook_name='myhook',
             action_names=['create'],
             context1='stuff',
             context2='such',
@@ -474,14 +536,13 @@ def test_before_after_hooks_with_after_soft_failure_raises():
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         before='action',
-        hook_name='myhook',
         action_names=['create'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('filter_hooks').with_args(
         commands,
         after='action',
-        hook_name='myhook',
         action_names=['create'],
+        state_names=['finish'],
     ).and_return(flexmock()).once()
     flexmock(module).should_receive('execute_hooks').and_return(None).and_raise(OSError)
     flexmock(module).should_receive('considered_soft_failure').and_return(True)
@@ -493,7 +554,6 @@ def test_before_after_hooks_with_after_soft_failure_raises():
             umask=1234,
             working_directory='/working',
             dry_run=False,
-            hook_name='myhook',
             action_names=['create'],
             context1='stuff',
             context2='such',

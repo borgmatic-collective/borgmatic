@@ -1225,6 +1225,26 @@ properties:
                               particular actions listed here. Defaults to
                               running for all actions.
                           example: [create, prune, compact, check]
+                      states:
+                          type: array
+                          items:
+                              type: string
+                              enum:
+                                  - finish
+                                  - fail
+                          description: |
+                              Only trigger the hook if borgmatic encounters one
+                              of the states (execution results) listed here,
+                              where:
+                               * "finish": No errors occurred.
+                               * "fail": An error occurred.
+                              This state is evaluated only for the scope of the
+                              configured "action", "repository", etc., rather
+                              than for the entire borgmatic run. Only available
+                              for "after" hooks. Defaults to running the hook
+                              for all states.
+                          example:
+                              - finish
                       run:
                           type: array
                           items:
