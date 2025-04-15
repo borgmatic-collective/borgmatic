@@ -288,6 +288,7 @@ def execute_command(
     borg_local_path=None,
     borg_exit_codes=None,
     run_to_completion=True,
+    close_fds=False,  # Necessary for passing credentials via anonymous pipe.
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
@@ -315,8 +316,7 @@ def execute_command(
         shell=shell,
         env=environment,
         cwd=working_directory,
-        # Necessary for passing credentials via anonymous pipe.
-        close_fds=False,
+        close_fds=close_fds,
     )
     if not run_to_completion:
         return process
@@ -340,6 +340,7 @@ def execute_command_and_capture_output(
     working_directory=None,
     borg_local_path=None,
     borg_exit_codes=None,
+    close_fds=False,  # Necessary for passing credentials via anonymous pipe.
 ):
     '''
     Execute the given command (a sequence of command/argument strings), capturing and returning its
@@ -365,8 +366,7 @@ def execute_command_and_capture_output(
             shell=shell,
             env=environment,
             cwd=working_directory,
-            # Necessary for passing credentials via anonymous pipe.
-            close_fds=False,
+            close_fds=close_fds,
         )
     except subprocess.CalledProcessError as error:
         if (
@@ -390,6 +390,7 @@ def execute_command_with_processes(
     working_directory=None,
     borg_local_path=None,
     borg_exit_codes=None,
+    close_fds=False,  # Necessary for passing credentials via anonymous pipe.
 ):
     '''
     Execute the given command (a sequence of command/argument strings) and log its output at the
@@ -425,8 +426,7 @@ def execute_command_with_processes(
             shell=shell,
             env=environment,
             cwd=working_directory,
-            # Necessary for passing credentials via anonymous pipe.
-            close_fds=False,
+            close_fds=close_fds,
         )
     except (subprocess.CalledProcessError, OSError):
         # Something has gone wrong. So vent each process' output buffer to prevent it from hanging.

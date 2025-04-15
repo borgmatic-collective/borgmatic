@@ -214,6 +214,7 @@ def test_snapshot_logical_volume_with_percentage_snapshot_name_uses_lvcreate_ext
             '/dev/snap',
         ),
         output_log_level=object,
+        close_fds=True,
     )
 
     module.snapshot_logical_volume('lvcreate', 'snap', '/dev/snap', '10%ORIGIN')
@@ -233,6 +234,7 @@ def test_snapshot_logical_volume_with_non_percentage_snapshot_name_uses_lvcreate
             '/dev/snap',
         ),
         output_log_level=object,
+        close_fds=True,
     )
 
     module.snapshot_logical_volume('lvcreate', 'snap', '/dev/snap', '10TB')
