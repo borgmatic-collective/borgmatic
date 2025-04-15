@@ -1,4 +1,4 @@
-2.0.3.dev0
+2.0.3
  * #1065: Fix a regression in monitoring hooks in which an error pinged the finish state instead of
    the fail state.
  * #1066: Add a "states" option to command hooks, so you can optionally skip an "after" hook if
