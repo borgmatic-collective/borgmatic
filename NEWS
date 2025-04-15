@@ -3,6 +3,7 @@
    the fail state.
  * #1066: Add a "states" option to command hooks, so you can optionally skip an "after" hook if
    borgmatic encounters an error.
+ * #1071: Fix an error in the LVM hook when removing a snapshot directory.
 
 2.0.2
  * #1035: Document potential performance issues and workarounds with the ZFS, Btrfs, and LVM hooks:

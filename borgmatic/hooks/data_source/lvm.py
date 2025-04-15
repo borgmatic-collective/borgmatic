@@ -407,7 +407,7 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
                 continue
 
         if not dry_run:
-            shutil.rmtree(snapshots_directory)
+            shutil.rmtree(snapshots_directory, ignore_errors=True)
 
     # Delete snapshots.
     lvremove_command = hook_config.get('lvremove_command', 'lvremove')
