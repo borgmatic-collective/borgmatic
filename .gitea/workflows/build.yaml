@@ -17,6 +17,7 @@ jobs:
   docs:
     needs: [test]
     runs-on: host
+    if: gitea.event_name == 'push'
     env:
       IMAGE_NAME: projects.torsion.org/borgmatic-collective/borgmatic:docs
 
