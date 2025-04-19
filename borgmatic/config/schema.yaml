@@ -558,6 +558,14 @@ properties:
         type: integer
         description: Number of yearly archives to keep.
         example: 1
+    keep_13weekly:
+        type: integer
+        description: Number of quarterly archives to keep (13 week strategy).
+        example: 13
+    keep_3monthly:
+        type: integer
+        description: Number of quarterly archives to keep (3 month strategy).
+        example: 3
     prefix:
         type: string
         description: |
