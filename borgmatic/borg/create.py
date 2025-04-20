@@ -69,7 +69,7 @@ def collect_special_file_paths(
     '''
     # Omit "--exclude-nodump" from the Borg dry run command, because that flag causes Borg to open
     # files including any named pipe we've created. And omit "--filter" because that can break the
-    # paths output parsing below such that path lines no longer start with th expected "- ".
+    # paths output parsing below such that path lines no longer start with the expected "- ".
     paths_output = execute_command_and_capture_output(
         flags.omit_flag_and_value(flags.omit_flag(create_command, '--exclude-nodump'), '--filter')
         + ('--dry-run', '--list'),

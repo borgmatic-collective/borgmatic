@@ -13,6 +13,19 @@ logger = logging.getLogger(__name__)
 
 
 SOFT_FAIL_EXIT_CODE = 75
+BORG_PLACEHOLDERS = {
+    '{hostname}',
+    '{fqdn}',
+    '{reverse-fqdn}',
+    '{now}',
+    '{utcnow}',
+    '{user}',
+    '{pid}',
+    '{borgversion}',
+    '{borgmajor}',
+    '{borgminor}',
+    '{borgpatch}',
+}
 
 
 def interpolate_context(hook_description, command, context):
@@ -23,10 +36,13 @@ def interpolate_context(hook_description, command, context):
     for name, value in context.items():
         command = command.replace(f'{{{name}}}', shlex.quote(str(value)))
 
-    for unsupported_variable in re.findall(r'{\w+}', command):
-        logger.warning(
-            f"Variable '{unsupported_variable}' is not supported in {hook_description} hook"
-        )
+    for unsupported_variable in re.findall(r'\{\w+\}', command):
+        # Warn about variables unknown to borgmatic, but don't warn if the variable name happens to
+        # be a Borg placeholder, as Borg should hopefully consume it.
+        if unsupported_variable not in BORG_PLACEHOLDERS:
+            logger.warning(
+                f'Variable "{unsupported_variable}" is not supported in the {hook_description} hook'
+            )
 
     return command
 

@@ -1,3 +1,6 @@
+2.0.4.dev0
+ * #1075: Fix an incorrect warning about Borg placeholders being unsupported in a command hook.
+
 2.0.3
  * #1065: Fix a regression in monitoring hooks in which an error pinged the finish state instead of
    the fail state.
