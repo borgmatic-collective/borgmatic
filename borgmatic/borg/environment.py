@@ -79,6 +79,9 @@ def make_environment(config):
         os.set_inheritable(read_file_descriptor, True)
         environment['BORG_PASSPHRASE_FD'] = str(read_file_descriptor)
 
+    if 'use_chunks_archive' in config:
+        environment['BORG_USE_CHUNKS_ARCHIVE'] = 'yes' if config.get('use_chunks_archive') else 'no'
+
     for (
         option_name,
         environment_variable_name,

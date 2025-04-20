@@ -389,6 +389,13 @@ properties:
             Path for Borg cache files. Defaults to
             $borg_base_directory/.cache/borg
         example: /path/to/base/cache
+    use_chunks_archive:
+        type: boolean
+        description: |
+            Enables or disables the use of chunks.archive.d for faster cache
+            resyncs in Borg. If true, value is set to "yes" (default) else
+            it's set to "no", reducing disk usage but slowing resyncs.
+        default: true
     borg_files_cache_ttl:
         type: integer
         description: |

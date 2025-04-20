@@ -170,3 +170,13 @@ def test_make_environment_with_integer_variable_value():
     environment = module.make_environment({'borg_files_cache_ttl': 40})
 
     assert environment.get('BORG_FILES_CACHE_TTL') == '40'
+
+
+def test_make_environment_with_use_chunks_archive_should_set_correct_environment_value():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+
+    environment = module.make_environment({'use_chunks_archive': True})
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'yes'
+
+    environment = module.make_environment({'use_chunks_archive': False})
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'no'
