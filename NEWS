@@ -1,4 +1,7 @@
 2.0.4.dev0
+ * #1073: Clarify the documentation about when an "after: error" command hook runs and how it
+   differs from other hooks:
+   https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
  * #1075: Fix an incorrect warning about Borg placeholders being unsupported in a command hook.
 
 2.0.3

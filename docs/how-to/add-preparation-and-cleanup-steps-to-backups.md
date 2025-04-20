@@ -74,10 +74,6 @@ commands:
           - echo "After successful create!"
 ```
 
-Additionally, when command hooks run, they respect the `working_directory`
-option if it is configured, meaning that the hook commands are run in that
-directory.
-
 Each command in the `commands:` list has the following options:
 
  * `before` or `after`: Name for the point in borgmatic's execution that the commands should be run before or after, one of:
@@ -91,6 +87,9 @@ Each command in the `commands:` list has the following options:
     * `finish`: No errors occurred.
     * `fail`: An error occurred.
  * `run`: List of one or more shell commands or scripts to run when this command hook is triggered.
+
+When command hooks run, they respect the `working_directory` option if it is
+configured, meaning that the hook commands are run in that directory.
 
 
 ### Order of execution
@@ -113,10 +112,19 @@ borgmatic for the `create` and `prune` actions. Here's the order of execution:
             * Run `after: action` hooks for `prune`.
         * Run `after: repository` hooks (for the first repository).
     * Run `after: configuration` hooks (from the first configuration file).
+    * Run `after: error` hooks (if an error occurs).
  * Run `after: everything` hooks (from all configuration files).
 
 This same order of execution extends to multiple repositories and/or
 configuration files.
+
+Based on the above, you can see the difference between, say, an `after: action`
+hook with `states: [fail]` and an `after: error` hook. The `after: action hook`
+runs immediately after the create action fails for a particular repository—so
+before any subsequent actions for that repository or other repositories even
+have a chance to run. Whereas the `after: error` hook doesn't run until all
+actions for—and repositories in—a configuration file have had a chance to
+execute.
 
 
 ### Deprecated command hooks
