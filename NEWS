@@ -1,4 +1,5 @@
 2.0.4.dev0
+ * #1072: Fix path rewriting for non-root patterns in the ZFS, Btrfs, and LVM hooks.
  * #1073: Clarify the documentation about when an "after: error" command hook runs and how it
    differs from other hooks:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/

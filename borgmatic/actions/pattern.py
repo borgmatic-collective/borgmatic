@@ -165,6 +165,26 @@ def expand_patterns(patterns, working_directory=None, skip_paths=None):
     )
 
 
+def get_existent_path_or_parent(path):
+    '''
+    Given a path, return it if it exists. Otherwise, return the longest parent directory of the path
+    that exists. Return None if none of these paths exist.
+
+    This is used below for finding an existent path prefix of pattern's path, which is necessary if
+    the path contain globs or other special characters that we don't want to try to interpret
+    (because we want to leave that responsibility to Borg).
+    '''
+    try:
+        return next(
+            candidate_path
+            for candidate_path in (path,)
+            + tuple(str(parent) for parent in pathlib.PurePath(path).parents)
+            if os.path.exists(candidate_path)
+        )
+    except StopIteration:
+        return None
+
+
 def device_map_patterns(patterns, working_directory=None):
     '''
     Given a sequence of borgmatic.borg.pattern.Pattern instances and an optional working directory,
@@ -174,23 +194,31 @@ def device_map_patterns(patterns, working_directory=None):
 
     This is handy for determining whether two different pattern paths are on the same filesystem
     (have the same device identifier).
+
+    This function only considers the start of a pattern's path—from the start of the path up until
+    there's a path component with a glob or other non-literal character. If there are no such
+    characters, the whole path is considered. The rationale is that it's not feasible for borgmatic
+    to interpret Borg's patterns to see which actual files (and therefore devices) they map to. So
+    for instance, a pattern with a path of "/var/log/*/data" would end up with its device set to the
+    device of "/var/log"—ignoring the "/*/data" part due to that glob.
+
+    The one exception is that if a regular expression pattern path starts with "^", that will get
+    stripped off for purposes of determining its device.
     '''
     return tuple(
         borgmatic.borg.pattern.Pattern(
             pattern.path,
             pattern.type,
             pattern.style,
-            device=pattern.device
-            or (
-                os.stat(full_path).st_dev
-                if pattern.type == borgmatic.borg.pattern.Pattern_type.ROOT
-                and os.path.exists(full_path)
-                else None
-            ),
+            device=pattern.device or (os.stat(full_path).st_dev if full_path else None),
             source=pattern.source,
         )
         for pattern in patterns
-        for full_path in (os.path.join(working_directory or '', pattern.path),)
+        for full_path in (
+            get_existent_path_or_parent(
+                os.path.join(working_directory or '', pattern.path.lstrip('^'))
+            ),
+        )
     )
 
 

@@ -245,36 +245,63 @@ def test_expand_patterns_expands_only_tildes_in_non_root_patterns():
     assert paths == (Pattern('/root/bar/*', Pattern_type.INCLUDE),)
 
 
-def test_device_map_patterns_gives_device_id_per_path():
+def test_get_existent_path_or_parent_passes_through_existent_path():
     flexmock(module.os.path).should_receive('exists').and_return(True)
+
+    assert module.get_existent_path_or_parent('/foo/bar/baz') == '/foo/bar/baz'
+
+
+def test_get_existent_path_or_parent_with_non_existent_path_returns_none():
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+
+    assert module.get_existent_path_or_parent('/foo/bar/baz') is None
+
+
+def test_get_existent_path_or_parent_with_non_existent_path_returns_existent_parent():
+    flexmock(module.os.path).should_receive('exists').with_args('/foo/bar/baz*').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/foo/bar').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/foo').never()
+    flexmock(module.os.path).should_receive('exists').with_args('/').never()
+
+    assert module.get_existent_path_or_parent('/foo/bar/baz*') == '/foo/bar'
+
+
+def test_get_existent_path_or_parent_with_non_existent_path_returns_existent_grandparent():
+    flexmock(module.os.path).should_receive('exists').with_args('/foo/bar/baz*').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/foo/bar').and_return(False)
+    flexmock(module.os.path).should_receive('exists').with_args('/foo').and_return(True)
+    flexmock(module.os.path).should_receive('exists').with_args('/').never()
+
+    assert module.get_existent_path_or_parent('/foo/bar/baz*') == '/foo'
+
+
+def test_device_map_patterns_gives_device_id_per_path():
+    flexmock(module).should_receive('get_existent_path_or_parent').replace_with(lambda path: path)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/bar').and_return(flexmock(st_dev=66))
 
-    device_map = module.device_map_patterns((Pattern('/foo'), Pattern('/bar')))
-
-    assert device_map == (
-        Pattern('/foo', device=55),
-        Pattern('/bar', device=66),
-    )
-
-
-def test_device_map_patterns_only_considers_root_patterns():
-    flexmock(module.os.path).should_receive('exists').and_return(True)
-    flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
-    flexmock(module.os).should_receive('stat').with_args('/bar*').never()
-
     device_map = module.device_map_patterns(
-        (Pattern('/foo'), Pattern('/bar*', Pattern_type.INCLUDE))
+        (
+            Pattern('/foo'),
+            Pattern('^/bar', type=Pattern_type.INCLUDE, style=Pattern_style.REGULAR_EXPRESSION),
+        )
     )
 
     assert device_map == (
         Pattern('/foo', device=55),
-        Pattern('/bar*', Pattern_type.INCLUDE),
+        Pattern(
+            '^/bar', type=Pattern_type.INCLUDE, style=Pattern_style.REGULAR_EXPRESSION, device=66
+        ),
     )
 
 
 def test_device_map_patterns_with_missing_path_does_not_error():
-    flexmock(module.os.path).should_receive('exists').and_return(True).and_return(False)
+    flexmock(module).should_receive('get_existent_path_or_parent').with_args('/foo').and_return(
+        '/foo'
+    )
+    flexmock(module).should_receive('get_existent_path_or_parent').with_args('/bar').and_return(
+        None
+    )
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/bar').never()
 
@@ -287,7 +314,7 @@ def test_device_map_patterns_with_missing_path_does_not_error():
 
 
 def test_device_map_patterns_uses_working_directory_to_construct_path():
-    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('get_existent_path_or_parent').replace_with(lambda path: path)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/working/dir/bar').and_return(
         flexmock(st_dev=66)
@@ -304,7 +331,7 @@ def test_device_map_patterns_uses_working_directory_to_construct_path():
 
 
 def test_device_map_patterns_with_existing_device_id_does_not_overwrite_it():
-    flexmock(module.os.path).should_receive('exists').and_return(True)
+    flexmock(module).should_receive('get_existent_path_or_parent').replace_with(lambda path: path)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))
     flexmock(module.os).should_receive('stat').with_args('/bar').and_return(flexmock(st_dev=100))
 

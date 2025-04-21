@@ -8,9 +8,9 @@ def get_contained_patterns(parent_directory, candidate_patterns):
     '''
     Given a parent directory and a set of candidate patterns potentially inside it, get the subset
     of contained patterns for which the parent directory is actually the parent, a grandparent, the
-    very same directory, etc. The idea is if, say, /var/log and /var/lib are candidate pattern
-    paths, but there's a parent directory (logical volume, dataset, subvolume, etc.) at /var, then
-    /var is what we want to snapshot.
+    very same directory, etc. The idea is if, say, "/var/log" and "/var/lib" are candidate pattern
+    paths, but there's a parent directory (logical volume, dataset, subvolume, etc.) at "/var", then
+    "/var" is what we want to snapshot.
 
     If a parent directory and a candidate pattern are on different devices, skip the pattern. That's
     because any snapshot of a parent directory won't actually include "contained" directories if
@@ -18,8 +18,8 @@ def get_contained_patterns(parent_directory, candidate_patterns):
 
     For this function to work, a candidate pattern path can't have any globs or other non-literal
     characters in the initial portion of the path that matches the parent directory. For instance, a
-    parent directory of /var would match a candidate pattern path of /var/log/*/data, but not a
-    pattern path like /v*/log/*/data.
+    parent directory of "/var" would match a candidate pattern path of "/var/log/*/data", but not a
+    pattern path like "/v*/log/*/data".
 
     The one exception is that if a regular expression pattern path starts with "^", that will get
     stripped off for purposes of matching against a parent directory.
