@@ -1,11 +1,11 @@
-2.0.4.dev0
+2.0.4
  * #1072: Fix path rewriting for non-root patterns in the ZFS, Btrfs, and LVM hooks.
  * #1073: Clarify the documentation about when an "after: error" command hook runs and how it
    differs from other hooks:
    https://torsion.org/borgmatic/docs/how-to/add-preparation-and-cleanup-steps-to-backups/
  * #1075: Fix an incorrect warning about Borg placeholders being unsupported in a command hook.
  * #1080: If the exact same "everything" command hook is present in multiple configuration files,
-   borgmatic only runs it once.
+   only run it once.
 
 2.0.3
  * #1065: Fix a regression in monitoring hooks in which an error pinged the finish state instead of
