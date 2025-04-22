@@ -14,7 +14,7 @@ def parse_arguments(*unparsed_arguments):
 BUILTIN_FILESYSTEM_MOUNT_OUTPUT = '''{
        "filesystems": [
           {
-             "target": "/mnt/subvolume",
+             "target": "/e2e/mnt/subvolume",
              "source": "/dev/loop0",
              "fstype": "btrfs",
              "options": "rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/"

@@ -23,20 +23,20 @@ def parse_arguments(*unparsed_arguments):
 
 BUILTIN_DATASETS = (
     {
-        'name': 'pool',
+        'name': 'e2e/pool',
         'used': '256K',
         'avail': '23.7M',
         'refer': '25K',
         'canmount': 'on',
-        'mountpoint': '/pool',
+        'mountpoint': '/e2e/pool',
     },
     {
-        'name': 'pool/dataset',
+        'name': 'e2e/pool/dataset',
         'used': '256K',
         'avail': '23.7M',
         'refer': '25K',
         'canmount': 'on',
-        'mountpoint': '/pool/dataset',
+        'mountpoint': '/e2e/pool/dataset',
     },
 )
 

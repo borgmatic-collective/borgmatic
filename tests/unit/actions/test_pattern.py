@@ -275,6 +275,12 @@ def test_get_existent_path_or_parent_with_non_existent_path_returns_existent_gra
     assert module.get_existent_path_or_parent('/foo/bar/baz*') == '/foo'
 
 
+def test_get_existent_path_or_parent_with_end_to_end_test_prefix_returns_none():
+    flexmock(module.os.path).should_receive('exists').never()
+
+    assert module.get_existent_path_or_parent('/e2e/foo/bar/baz') is None
+
+
 def test_device_map_patterns_gives_device_id_per_path():
     flexmock(module).should_receive('get_existent_path_or_parent').replace_with(lambda path: path)
     flexmock(module.os).should_receive('stat').with_args('/foo').and_return(flexmock(st_dev=55))

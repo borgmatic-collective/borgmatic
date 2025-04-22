@@ -17,10 +17,10 @@ def generate_configuration(config_path, repository_path):
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- path: /mnt/backup', '')
+        .replace('- path: /e2e/mnt/backup', '')
         .replace('label: local', '')
         .replace('- /home', f'- {config_path}')
-        .replace('- /etc', '- /mnt/lvolume/subdir')
+        .replace('- /etc', '- /e2e/mnt/lvolume/subdir')
         .replace('- /var/log/syslog*', '')
         + 'encryption_passphrase: "test"\n'
         + 'lvm:\n'
@@ -56,7 +56,7 @@ def test_lvm_create_and_list():
             f'borgmatic --config {config_path} list --archive latest'.split(' ')
         ).decode(sys.stdout.encoding)
 
-        assert 'mnt/lvolume/subdir/file.txt' in output
+        assert 'e2e/mnt/lvolume/subdir/file.txt' in output
 
         # Assert that the snapshot has been deleted.
         assert not json.loads(

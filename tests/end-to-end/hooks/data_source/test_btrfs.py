@@ -16,10 +16,10 @@ def generate_configuration(config_path, repository_path):
         open(config_path)
         .read()
         .replace('ssh://user@backupserver/./sourcehostname.borg', repository_path)
-        .replace('- path: /mnt/backup', '')
+        .replace('- path: /e2e/mnt/backup', '')
         .replace('label: local', '')
         .replace('- /home', f'- {config_path}')
-        .replace('- /etc', '- /mnt/subvolume/subdir')
+        .replace('- /etc', '- /e2e/mnt/subvolume/subdir')
         .replace('- /var/log/syslog*', '')
         + 'encryption_passphrase: "test"\n'
         + 'btrfs:\n'
@@ -51,11 +51,11 @@ def test_btrfs_create_and_list():
             f'borgmatic --config {config_path} list --archive latest'.split(' ')
         ).decode(sys.stdout.encoding)
 
-        assert 'mnt/subvolume/subdir/file.txt' in output
+        assert 'e2e/mnt/subvolume/subdir/file.txt' in output
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
-            'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /mnt/subvolume'.split(
+            'python3 /app/tests/end-to-end/commands/fake_btrfs.py subvolume list -s /e2e/mnt/subvolume'.split(
                 ' '
             )
         )

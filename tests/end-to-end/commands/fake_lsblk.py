@@ -20,7 +20,7 @@ BUILTIN_BLOCK_DEVICES = {
         {
             'name': 'vgroup-lvolume',
             'path': '/dev/mapper/vgroup-lvolume',
-            'mountpoint': '/mnt/lvolume',
+            'mountpoint': '/e2e/mnt/lvolume',
             'type': 'lvm',
         },
         {

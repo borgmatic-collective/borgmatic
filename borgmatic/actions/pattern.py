@@ -174,6 +174,9 @@ def get_existent_path_or_parent(path):
     the path contain globs or other special characters that we don't want to try to interpret
     (because we want to leave that responsibility to Borg).
     '''
+    if path.startswith('/e2e/'):
+        return None
+
     try:
         return next(
             candidate_path
@@ -210,11 +213,11 @@ def device_map_patterns(patterns, working_directory=None):
             pattern.path,
             pattern.type,
             pattern.style,
-            device=pattern.device or (os.stat(full_path).st_dev if full_path else None),
+            device=pattern.device or (os.stat(existent_path).st_dev if existent_path else None),
             source=pattern.source,
         )
         for pattern in patterns
-        for full_path in (
+        for existent_path in (
             get_existent_path_or_parent(
                 os.path.join(working_directory or '', pattern.path.lstrip('^'))
             ),

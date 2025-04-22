@@ -53,7 +53,7 @@ def save_snapshots(snapshot_paths):
 
 
 def print_subvolume_list(arguments, snapshot_paths):
-    assert arguments.subvolume_path == '/mnt/subvolume'
+    assert arguments.subvolume_path == '/e2e/mnt/subvolume'
 
     if not arguments.snapshots_only:
         for line in BUILTIN_SUBVOLUME_LIST_LINES:

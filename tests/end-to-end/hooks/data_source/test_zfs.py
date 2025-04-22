@@ -19,7 +19,7 @@ def generate_configuration(config_path, repository_path):
         .replace('- path: /mnt/backup', '')
         .replace('label: local', '')
         .replace('- /home', f'- {config_path}')
-        .replace('- /etc', '- /pool/dataset/subdir')
+        .replace('- /etc', '- /e2e/pool/dataset/subdir')
         .replace('- /var/log/syslog*', '')
         + 'encryption_passphrase: "test"\n'
         + 'zfs:\n'
@@ -45,14 +45,14 @@ def test_zfs_create_and_list():
         )
 
         # Run a create action to exercise ZFS snapshotting and backup.
-        subprocess.check_call(f'borgmatic --config {config_path} create'.split(' '))
+        subprocess.check_call(f'borgmatic -v 2 --config {config_path} create'.split(' '))
 
         # List the resulting archive and assert that the snapshotted files are there.
         output = subprocess.check_output(
             f'borgmatic --config {config_path} list --archive latest'.split(' ')
         ).decode(sys.stdout.encoding)
 
-        assert 'pool/dataset/subdir/file.txt' in output
+        assert 'e2e/pool/dataset/subdir/file.txt' in output
 
         # Assert that the snapshot has been deleted.
         assert not subprocess.check_output(
