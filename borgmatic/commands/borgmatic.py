@@ -893,17 +893,29 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
         return
 
     try:
+        seen_command_hooks = []
+
         for config_filename, config in configs.items():
-            command.execute_hooks(
-                command.filter_hooks(
-                    config.get('commands'), before='everything', action_names=arguments.keys()
+            command_hooks = command.filter_hooks(
+                tuple(
+                    command_hook
+                    for command_hook in config.get('commands', ())
+                    if command_hook not in seen_command_hooks
                 ),
-                config.get('umask'),
-                borgmatic.config.paths.get_working_directory(config),
-                arguments['global'].dry_run,
-                configuration_filename=config_filename,
-                log_file=log_file_path or '',
+                before='everything',
+                action_names=arguments.keys(),
             )
+
+            if command_hooks:
+                command.execute_hooks(
+                    command_hooks,
+                    config.get('umask'),
+                    borgmatic.config.paths.get_working_directory(config),
+                    arguments['global'].dry_run,
+                    configuration_filename=config_filename,
+                    log_file=log_file_path or '',
+                )
+                seen_command_hooks += list(command_hooks)
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running before everything hook', error)
         return
@@ -951,20 +963,30 @@ def collect_configuration_run_summary_logs(configs, config_paths, arguments, log
         sys.stdout.write(json.dumps(json_results))
 
     try:
+        seen_command_hooks = []
+
         for config_filename, config in configs.items():
-            command.execute_hooks(
-                command.filter_hooks(
-                    config.get('commands'),
-                    after='everything',
-                    action_names=arguments.keys(),
-                    state_names=['fail' if encountered_error else 'finish'],
+            command_hooks = command.filter_hooks(
+                tuple(
+                    command_hook
+                    for command_hook in config.get('commands', ())
+                    if command_hook not in seen_command_hooks
                 ),
-                config.get('umask'),
-                borgmatic.config.paths.get_working_directory(config),
-                arguments['global'].dry_run,
-                configuration_filename=config_filename,
-                log_file=log_file_path or '',
+                after='everything',
+                action_names=arguments.keys(),
+                state_names=['fail' if encountered_error else 'finish'],
             )
+
+            if command_hooks:
+                command.execute_hooks(
+                    command_hooks,
+                    config.get('umask'),
+                    borgmatic.config.paths.get_working_directory(config),
+                    arguments['global'].dry_run,
+                    configuration_filename=config_filename,
+                    log_file=log_file_path or '',
+                )
+                seen_command_hooks += list(command_hooks)
     except (CalledProcessError, ValueError, OSError) as error:
         yield from log_error_records('Error running after everything hook', error)
 

@@ -91,6 +91,10 @@ Each command in the `commands:` list has the following options:
 When command hooks run, they respect the `working_directory` option if it is
 configured, meaning that the hook commands are run in that directory.
 
+<span class="minilink minilink-addedin">New in version 2.0.4</span>If the exact
+same `everything` command hook is present in multiple configuration files,
+borgmatic only runs it once.
+
 
 ### Order of execution
 

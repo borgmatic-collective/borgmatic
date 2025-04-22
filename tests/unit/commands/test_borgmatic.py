@@ -1956,14 +1956,17 @@ def test_collect_configuration_run_summary_logs_info_for_success():
 
 
 def test_collect_configuration_run_summary_executes_hooks_for_create():
+    before_everything_hook = {'before': 'everything', 'run': ['echo hi']}
+    after_everything_hook = {'after': 'everything', 'run': ['echo hi']}
+    command_hooks = (before_everything_hook, after_everything_hook)
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module.command).should_receive('filter_hooks').with_args(
-        object, before='everything', action_names=object
-    )
+        command_hooks, before='everything', action_names=object
+    ).and_return([before_everything_hook])
     flexmock(module.command).should_receive('filter_hooks').with_args(
-        object, after='everything', action_names=object, state_names=['finish']
-    )
-    flexmock(module.command).should_receive('execute_hooks')
+        command_hooks, after='everything', action_names=object, state_names=['finish']
+    ).and_return([after_everything_hook])
+    flexmock(module.command).should_receive('execute_hooks').twice()
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
     arguments = {
@@ -1973,8 +1976,45 @@ def test_collect_configuration_run_summary_executes_hooks_for_create():
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
-            {'test.yaml': {}},
+            {'test.yaml': {'commands': command_hooks}},
             config_paths=['/tmp/test.yaml'],
+            arguments=arguments,
+            log_file_path=None,
+        )
+    )
+
+    assert {log.levelno for log in logs} == {logging.INFO}
+
+
+def test_collect_configuration_run_summary_deduplicates_everything_hooks_across_config_files():
+    before_everything_hook = {'before': 'everything', 'run': ['echo hi']}
+    after_everything_hook = {'after': 'everything', 'run': ['echo hi']}
+    command_hooks = (before_everything_hook, after_everything_hook)
+    flexmock(module.validate).should_receive('guard_configuration_contains_repository')
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        command_hooks, before='everything', action_names=object
+    ).and_return([before_everything_hook]).once()
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        (after_everything_hook,), before='everything', action_names=object
+    ).and_return([]).once()
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        command_hooks, after='everything', action_names=object, state_names=['finish']
+    ).and_return([after_everything_hook]).once()
+    flexmock(module.command).should_receive('filter_hooks').with_args(
+        (before_everything_hook,), after='everything', action_names=object, state_names=['finish']
+    ).and_return([]).once()
+    flexmock(module.command).should_receive('execute_hooks').twice()
+    flexmock(module).should_receive('Log_prefix').and_return(flexmock())
+    flexmock(module).should_receive('run_configuration').and_return([])
+    arguments = {
+        'create': flexmock(),
+        'global': flexmock(monitoring_verbosity=1, dry_run=False),
+    }
+
+    logs = tuple(
+        module.collect_configuration_run_summary_logs(
+            {'test.yaml': {'commands': command_hooks}, 'other.yaml': {'commands': command_hooks}},
+            config_paths=['/tmp/test.yaml', '/tmp/other.yaml'],
             arguments=arguments,
             log_file_path=None,
         )
@@ -2105,13 +2145,16 @@ def test_collect_configuration_run_summary_logs_missing_configs_error():
 
 
 def test_collect_configuration_run_summary_logs_before_hook_error():
+    before_everything_hook = {'before': 'everything', 'run': ['echo hi']}
+    after_everything_hook = {'after': 'everything', 'run': ['echo hi']}
+    command_hooks = (before_everything_hook, after_everything_hook)
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module.command).should_receive('filter_hooks').with_args(
         object, before='everything', action_names=object
-    )
+    ).and_return([before_everything_hook])
     flexmock(module.command).should_receive('filter_hooks').with_args(
         object, after='everything', action_names=object, state_names=['fail']
-    )
+    ).and_return([after_everything_hook])
     flexmock(module.command).should_receive('execute_hooks').and_raise(ValueError)
     expected_logs = (flexmock(),)
     flexmock(module).should_receive('log_error_records').and_return(expected_logs)
@@ -2122,7 +2165,7 @@ def test_collect_configuration_run_summary_logs_before_hook_error():
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
-            {'test.yaml': {}},
+            {'test.yaml': {'commands': command_hooks}},
             config_paths=['/tmp/test.yaml'],
             arguments=arguments,
             log_file_path=None,
@@ -2133,13 +2176,16 @@ def test_collect_configuration_run_summary_logs_before_hook_error():
 
 
 def test_collect_configuration_run_summary_logs_after_hook_error():
+    before_everything_hook = {'before': 'everything', 'run': ['echo hi']}
+    after_everything_hook = {'after': 'everything', 'run': ['echo hi']}
+    command_hooks = (before_everything_hook, after_everything_hook)
     flexmock(module.validate).should_receive('guard_configuration_contains_repository')
     flexmock(module.command).should_receive('filter_hooks').with_args(
         object, before='everything', action_names=object
-    )
+    ).and_return([before_everything_hook])
     flexmock(module.command).should_receive('filter_hooks').with_args(
         object, after='everything', action_names=object, state_names=['finish']
-    )
+    ).and_return([after_everything_hook])
     flexmock(module.command).should_receive('execute_hooks').and_return(None).and_raise(ValueError)
     flexmock(module).should_receive('Log_prefix').and_return(flexmock())
     flexmock(module).should_receive('run_configuration').and_return([])
@@ -2152,7 +2198,7 @@ def test_collect_configuration_run_summary_logs_after_hook_error():
 
     logs = tuple(
         module.collect_configuration_run_summary_logs(
-            {'test.yaml': {}},
+            {'test.yaml': {'commands': command_hooks}},
             config_paths=['/tmp/test.yaml'],
             arguments=arguments,
             log_file_path=None,
