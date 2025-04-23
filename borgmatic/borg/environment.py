@@ -17,6 +17,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
 DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE = {
     'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
     'unknown_unencrypted_repo_access_is_ok': 'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK',
+    'use_chunks_archive': 'BORG_USE_CHUNKS_ARCHIVE',
 }
 
 DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
@@ -78,9 +79,6 @@ def make_environment(config):
         # child process to inherit the file descriptor.
         os.set_inheritable(read_file_descriptor, True)
         environment['BORG_PASSPHRASE_FD'] = str(read_file_descriptor)
-
-    if 'use_chunks_archive' in config:
-        environment['BORG_USE_CHUNKS_ARCHIVE'] = 'yes' if config.get('use_chunks_archive') else 'no'
 
     for (
         option_name,
