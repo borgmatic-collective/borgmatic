@@ -19,6 +19,7 @@ BORG_PLACEHOLDERS = {
     '{reverse-fqdn}',
     '{now}',
     '{utcnow}',
+    '{unixtime}',
     '{user}',
     '{pid}',
     '{borgversion}',
