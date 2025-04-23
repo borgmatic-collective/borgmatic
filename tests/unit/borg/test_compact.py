@@ -69,7 +69,24 @@ def test_compact_segments_with_log_debug_calls_borg_with_debug_flag():
 
 
 def test_compact_segments_with_dry_run_skips_borg_call():
+    # Test borg version supports dry run.
+    logger_mock = flexmock(logging)
+    logger_mock.should_receive('info').with_args('Skipping compact (dry run)').once()
+
     flexmock(module).should_receive('execute_command').never()
+
+    module.compact_segments(
+        repository_path='repo',
+        config={},
+        local_borg_version='1.4.1',
+        global_arguments=flexmock(),
+        dry_run=True,
+    )
+
+    # Test borg version that does not support dry run.
+    logger_mock.should_receive('warning').with_args(
+        'The --dry-run option is not supported for compact in the current version of Borg.'
+    ).once()
 
     module.compact_segments(
         repository_path='repo',

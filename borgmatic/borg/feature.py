@@ -18,6 +18,7 @@ class Feature(Enum):
     EXCLUDED_FILES_MINUS = 12
     ARCHIVE_SERIES = 13
     NO_PRUNE_STATS = 14
+    DRY_RUN_COMPACT = 15
 
 
 FEATURE_TO_MINIMUM_BORG_VERSION = {
@@ -35,6 +36,7 @@ FEATURE_TO_MINIMUM_BORG_VERSION = {
     Feature.EXCLUDED_FILES_MINUS: parse('2.0.0b5'),  # --list --filter uses "-" for excludes
     Feature.ARCHIVE_SERIES: parse('2.0.0b11'),  # identically named archives form a series
     Feature.NO_PRUNE_STATS: parse('2.0.0b10'),  # prune --stats is not available
+    Feature.DRY_RUN_COMPACT: parse('1.4.1'),  # borg compact --dry-run support
 }
 
 

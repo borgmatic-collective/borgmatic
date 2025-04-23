@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.config.paths
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,12 @@ def compact_segments(
     )
 
     if dry_run:
-        logging.info('Skipping compact (dry run)')
+        if feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version):
+            logging.info('Skipping compact (dry run)')
+        else:
+            logging.warning(
+                'The --dry-run option is not supported for compact in the current version of Borg.'
+            )
         return
 
     execute_command(
