@@ -73,6 +73,8 @@ def test_compact_segments_with_dry_run_skips_borg_call_when_feature_unavailable(
     flexmock(module.feature).should_receive('available').with_args(
         module.feature.Feature.DRY_RUN_COMPACT, '1.2.3'
     ).and_return(False)
+    flexmock(module.environment).should_receive('make_environment').never()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').never()
     flexmock(module).should_receive('execute_command').never()
     flexmock(logging).should_receive('info').with_args('Skipping compact (dry run)').once()
 
