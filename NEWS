@@ -1,4 +1,9 @@
 2.0.5.dev0
+ * #1078: Add "keep_3monthly" and "keep_13weekly" options for customizing "prune" action archive
+   retention.
+ * #1078: Add a "use_chunks_archive" option for controlling whether Borg uses its chunks cache
+   directory.
+ * #1078: For the "compact" action, pass "--dry-run" through to Borg.
  * #1085: Fix a regression in which the default monitoring verbosity is 0 (warnings only) instead of
    1 (info about steps borgmatic is taking). This prevented logs from showing up in monitoring
    services like Healthchecks unless you had an explicit monitoring verbosity set.
