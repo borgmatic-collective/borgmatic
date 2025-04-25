@@ -41,13 +41,8 @@ def compact_segments(
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if dry_run:
-        if feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version):
-            logging.info('Skipping compact (dry run)')
-        else:
-            logging.warning(
-                'The --dry-run option is not supported for compact in the current version of Borg.'
-            )
+    if dry_run and not feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version):
+        logging.info('Skipping compact (dry run)')
         return
 
     execute_command(
