@@ -95,7 +95,9 @@ class Monitoring_hooks:
         self.config_filename = config_filename
         self.config = config
         self.dry_run = global_arguments.dry_run
-        self.monitoring_log_level = verbosity_to_log_level(config.get('monitoring_verbosity'))
+        self.monitoring_log_level = verbosity_to_log_level(
+            get_verbosity({config_filename: config}, 'monitoring_verbosity')
+        )
         self.monitoring_hooks_are_activated = (
             using_primary_action and self.monitoring_log_level != DISABLED
         )

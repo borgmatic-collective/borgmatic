@@ -28,6 +28,7 @@ def test_get_skip_actions_uses_config_and_arguments(config, arguments, expected_
 
 
 def test_monitoring_hooks_with_monioring_disabled_bails():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(module.DISABLED)
     flexmock(module.dispatch).should_receive('call_hooks').never()
 
@@ -41,6 +42,7 @@ def test_monitoring_hooks_with_monioring_disabled_bails():
 
 
 def test_monitoring_hooks_with_non_primary_action_bails():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').never()
 
@@ -54,6 +56,7 @@ def test_monitoring_hooks_with_non_primary_action_bails():
 
 
 def test_monitoring_hooks_pings_monitors():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
@@ -117,6 +120,7 @@ def test_monitoring_hooks_pings_monitors():
 
 
 def test_monitoring_hooks_with_start_ping_error_raises():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
@@ -172,6 +176,7 @@ def test_monitoring_hooks_with_start_ping_error_raises():
 
 
 def test_monitoring_hooks_with_log_ping_error_raises():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
@@ -227,6 +232,7 @@ def test_monitoring_hooks_with_log_ping_error_raises():
 
 
 def test_monitoring_hooks_with_finish_ping_error_raises():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
@@ -281,7 +287,8 @@ def test_monitoring_hooks_with_finish_ping_error_raises():
             pass
 
 
-def test_monitoring_with_wrapped_code_error_pings_fail():
+def test_monitoring_hooks_with_wrapped_code_error_pings_fail():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
@@ -345,7 +352,8 @@ def test_monitoring_with_wrapped_code_error_pings_fail():
             raise OSError()
 
 
-def test_monitoring_with_fail_ping_error_raise_original_error():
+def test_monitoring_hooks_with_fail_ping_error_raise_original_error():
+    flexmock(module).should_receive('get_verbosity').and_return(module.logging.INFO)
     flexmock(module).should_receive('verbosity_to_log_level').and_return(flexmock())
     flexmock(module.dispatch).should_receive('call_hooks').with_args(
         'initialize_monitor',
