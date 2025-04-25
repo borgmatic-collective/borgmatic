@@ -90,6 +90,8 @@ def test_compact_segments_with_dry_run_executes_borg_call_when_feature_available
     flexmock(module.feature).should_receive('available').with_args(
         module.feature.Feature.DRY_RUN_COMPACT, '1.4.1'
     ).and_return(True)
+    flexmock(module.environment).should_receive('make_environment').once()
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').once()
     flexmock(module).should_receive('execute_command').once()
 
     module.compact_segments(
