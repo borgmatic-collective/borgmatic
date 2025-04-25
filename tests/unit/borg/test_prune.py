@@ -43,6 +43,28 @@ def test_make_prune_flags_returns_flags_from_config():
     assert result == BASE_PRUNE_FLAGS
 
 
+def test_make_prune_flags_with_keep_13weekly_and_keep_3monthly():
+    config = {
+        'keep_13weekly': 4,
+        'keep_3monthly': 5,
+    }
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.flags).should_receive('make_match_archives_flags').and_return(())
+
+    result = module.make_prune_flags(
+        config, flexmock(match_archives=None), local_borg_version='1.2.3'
+    )
+
+    expected = (
+        '--keep-13weekly',
+        '4',
+        '--keep-3monthly',
+        '5',
+    )
+
+    assert result == expected
+
+
 def test_make_prune_flags_accepts_prefix_with_placeholders():
     config = {
         'keep_daily': 1,

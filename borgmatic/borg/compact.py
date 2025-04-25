@@ -1,7 +1,7 @@
 import logging
 
 import borgmatic.config.paths
-from borgmatic.borg import environment, flags
+from borgmatic.borg import environment, feature, flags
 from borgmatic.execute import execute_command
 
 logger = logging.getLogger(__name__)
@@ -37,11 +37,16 @@ def compact_segments(
         + (('--threshold', str(threshold)) if threshold else ())
         + (('--info',) if logger.getEffectiveLevel() == logging.INFO else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
+        + (
+            ('--dry-run',)
+            if dry_run and feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version)
+            else ()
+        )
         + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    if dry_run:
+    if dry_run and not feature.available(feature.Feature.DRY_RUN_COMPACT, local_borg_version):
         logging.info('Skipping compact (dry run)')
         return
 

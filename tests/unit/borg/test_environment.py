@@ -92,6 +92,7 @@ def test_make_environment_without_configuration_sets_certain_environment_variabl
         'BORG_EXIT_CODES': 'modern',
         'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'no',
         'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'no',
+        'BORG_USE_CHUNKS_ARCHIVE': 'no',
     }
 
 
@@ -101,6 +102,7 @@ def test_make_environment_without_configuration_passes_through_default_environme
             'USER': 'root',
             'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yup',
             'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'nah',
+            'BORG_USE_CHUNKS_ARCHIVE': 'yup',
         }
     )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -113,6 +115,7 @@ def test_make_environment_without_configuration_passes_through_default_environme
         'USER': 'root',
         'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yup',
         'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'nah',
+        'BORG_USE_CHUNKS_ARCHIVE': 'yup',
         'BORG_EXIT_CODES': 'modern',
     }
 
@@ -170,3 +173,17 @@ def test_make_environment_with_integer_variable_value():
     environment = module.make_environment({'borg_files_cache_ttl': 40})
 
     assert environment.get('BORG_FILES_CACHE_TTL') == '40'
+
+
+def test_make_environment_with_use_chunks_archive_should_set_correct_environment_value():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+
+    environment = module.make_environment({'use_chunks_archive': True})
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'yes'
+
+    environment = module.make_environment({'use_chunks_archive': False})
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'no'
