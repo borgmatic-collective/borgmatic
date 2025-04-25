@@ -177,6 +177,10 @@ def test_make_environment_with_integer_variable_value():
 
 def test_make_environment_with_use_chunks_archive_should_set_correct_environment_value():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
 
     environment = module.make_environment({'use_chunks_archive': True})
     assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'yes'
