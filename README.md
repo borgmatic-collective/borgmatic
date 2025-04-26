@@ -138,7 +138,8 @@ issues.
 
 ### Social
 
-Follow [borgmatic on Mastodon](https://fosstodon.org/@borgmatic).
+Follow <a rel="me" href="https://floss.social/@borgmatic">borgmatic on
+Mastodon</a>.
 
 
 ### Chat

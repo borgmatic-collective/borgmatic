@@ -7,6 +7,7 @@
  * #1085: Fix a regression in which the default monitoring verbosity is 0 (warnings only) instead of
    1 (info about steps borgmatic is taking). This prevented logs from showing up in monitoring
    services like Healthchecks unless you had an explicit monitoring verbosity set.
+ * Move Mastodon social hosting from Fosstodon to FLOSS.social: https://floss.social/@borgmatic
 
 2.0.4
  * #1072: Fix path rewriting for non-root patterns in the ZFS, Btrfs, and LVM hooks.

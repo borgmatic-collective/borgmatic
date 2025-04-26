@@ -1560,6 +1560,23 @@ properties:
                         Defaults to the "password" option. Supports the
                         "{credential ...}" syntax.
                     example: trustsome1
+                password_transport:
+                    type: string
+                    enum:
+                        - pipe
+                        - environment
+                    description: |
+                        How to transmit database passwords from borgmatic to the
+                        MariaDB client, one of:
+                         * "pipe": Securely transmit passwords via anonymous
+                           pipe. Only works if the database client is on the same
+                           host as borgmatic. (The server can be somewhere else.)
+                           This is the default value.
+                         * "environment": Transmit passwords via environment
+                           variable. Potentially less secure than a pipe, but
+                           necessary when the database client is elsewhere, e.g.
+                           when "mariadb_dump_command" is configured to "exec"
+                           into a container and run a client there.
                 tls:
                     type: boolean
                     description: |
