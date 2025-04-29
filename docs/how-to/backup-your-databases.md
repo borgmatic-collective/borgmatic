@@ -231,13 +231,12 @@ And then you can configure borgmatic running on the host to connect to the
 database:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          hostname: 127.0.0.1
-          port: 5433
-          username: postgres
-          password: trustsome1
+postgresql_databases:
+    - name: users
+      hostname: 127.0.0.1
+      port: 5433
+      username: postgres
+      password: trustsome1
 ```
 
 Alter the ports in these examples to suit your particular database system.
@@ -256,14 +255,13 @@ to run the dump command.
 For instance, if using Docker and PostgreSQL, something like this might work:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          hostname: 127.0.0.1
-          port: 5433
-          username: postgres
-          password: trustsome1
-          pg_dump_command: docker exec my_pg_container pg_dump
+postgresql_databases:
+    - name: users
+      hostname: 127.0.0.1
+      port: 5433
+      username: postgres
+      password: trustsome1
+      pg_dump_command: docker exec my_pg_container pg_dump
 ```
 
 ... where `my_pg_container` is the name of your running database container.
@@ -292,14 +290,13 @@ And here's an example of using a MariaDB database client within a running Docker
 container:
 
 ```yaml
-hooks:
-    mariadb_databases:
-        - name: users
-          hostname: 127.0.0.1
-          username: example
-          password: trustsome1
-          password_transport: environment
-          mariadb_dump_command: docker exec --env MYSQL_PWD my_mariadb_container mariadb-dump
+mariadb_databases:
+    - name: users
+      hostname: 127.0.0.1
+      username: example
+      password: trustsome1
+      password_transport: environment
+      mariadb_dump_command: docker exec --env MYSQL_PWD my_mariadb_container mariadb-dump
 ```
 
 The `password_transport: environment` option tells borgmatic to transmit the
@@ -320,13 +317,12 @@ instance to make use of a `pg_dump` version not present on the host, try
 something like this:
 
 ```yaml
-hooks:
-    postgresql_databases:
-        - name: users
-          hostname: your-database-hostname
-          username: postgres
-          password: trustsome1
-          pg_dump_command: docker run --rm --env PGPASSWORD postgres:17-alpine pg_dump
+postgresql_databases:
+    - name: users
+      hostname: your-database-hostname
+      username: postgres
+      password: trustsome1
+      pg_dump_command: docker run --rm --env PGPASSWORD postgres:17-alpine pg_dump
 ```
 
 The `--env PGPASSWORD` is necessary here for borgmatic to provide your database
