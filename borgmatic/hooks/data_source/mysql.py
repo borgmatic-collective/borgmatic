@@ -45,15 +45,21 @@ def database_names_to_dump(database, config, username, password, environment, dr
     extra_options, defaults_extra_filename = (
         borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('list_options'))
     )
+    password_transport = database.get('password_transport', 'pipe')
     show_command = (
         mysql_show_command
-        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
-            username, password, defaults_extra_filename
+        + (
+            borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+                username, password, defaults_extra_filename
+            )
+            if password_transport == 'pipe'
+            else ()
         )
         + extra_options
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--skip-column-names', '--batch')
@@ -109,16 +115,22 @@ def execute_dump_command(
     extra_options, defaults_extra_filename = (
         borgmatic.hooks.data_source.mariadb.parse_extra_options(database.get('options'))
     )
+    password_transport = database.get('password_transport', 'pipe')
     dump_command = (
         mysql_dump_command
-        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
-            username, password, defaults_extra_filename
+        + (
+            borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+                username, password, defaults_extra_filename
+            )
+            if password_transport == 'pipe'
+            else ()
         )
         + extra_options
         + (('--add-drop-database',) if database.get('add_drop_database', True) else ())
         + (('--host', database['hostname']) if 'hostname' in database else ())
         + (('--port', str(database['port'])) if 'port' in database else ())
         + (('--protocol', 'tcp') if 'hostname' in database or 'port' in database else ())
+        + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if database.get('tls') is True else ())
         + (('--skip-ssl',) if database.get('tls') is False else ())
         + ('--databases',)
@@ -182,7 +194,14 @@ def dump_data_sources(
         password = borgmatic.hooks.credential.parse.resolve_credential(
             database.get('password'), config
         )
-        environment = dict(os.environ)
+        environment = dict(
+            os.environ,
+            **(
+                {'MYSQL_PWD': password}
+                if password and database.get('password_transport') == 'environment'
+                else {}
+            ),
+        )
         dump_database_names = database_names_to_dump(
             database, config, username, password, environment, dry_run
         )
@@ -312,20 +331,29 @@ def restore_data_source_dump(
     extra_options, defaults_extra_filename = (
         borgmatic.hooks.data_source.mariadb.parse_extra_options(data_source.get('restore_options'))
     )
+    password_transport = data_source.get('password_transport', 'pipe')
     restore_command = (
         mysql_restore_command
-        + borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
-            username, password, defaults_extra_filename
+        + (
+            borgmatic.hooks.data_source.mariadb.make_defaults_file_options(
+                username, password, defaults_extra_filename
+            )
+            if password_transport == 'pipe'
+            else ()
         )
         + extra_options
         + ('--batch',)
         + (('--host', hostname) if hostname else ())
         + (('--port', str(port)) if port else ())
         + (('--protocol', 'tcp') if hostname or port else ())
+        + (('--user', username) if username and password_transport == 'environment' else ())
         + (('--ssl',) if tls is True else ())
         + (('--skip-ssl',) if tls is False else ())
     )
-    environment = dict(os.environ)
+    environment = dict(
+        os.environ,
+        **({'MYSQL_PWD': password} if password and password_transport == 'environment' else {}),
+    )
 
     logger.debug(f"Restoring MySQL database {data_source['name']}{dry_run_label}")
     if dry_run:

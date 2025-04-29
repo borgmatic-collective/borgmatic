@@ -191,7 +191,7 @@ mysql_databases:
       format: sql
 ```
 
-### Containers
+### Database containers
 
 If your database server is running within a container and borgmatic is too, no
 problem—configure borgmatic to connect to the container's name on its exposed
@@ -208,6 +208,9 @@ postgresql_databases:
 
 <span class="minilink minilink-addedin">Prior to version 1.8.0</span> Put
 these options in the `hooks:` section of your configuration.
+
+
+#### Database client on the host
 
 But what if borgmatic is running on the host? You can still connect to a
 database server container if its ports are properly exposed to the host. For
@@ -238,6 +241,9 @@ hooks:
 ```
 
 Alter the ports in these examples to suit your particular database system.
+
+
+#### Database client in a running container
 
 Normally, borgmatic dumps a database by running a database dump command (e.g.
 `pg_dump`) on the host or wherever borgmatic is running, and this command
@@ -281,6 +287,32 @@ services:
     volumes:
       - /run/user/1000:/run/user/1000
 ```
+
+And here's an example of using a MariaDB database client within a running Docker
+container:
+
+```yaml
+hooks:
+    mariadb_databases:
+        - name: users
+          hostname: 127.0.0.1
+          username: example
+          password: trustsome1
+          password_transport: environment
+          mariadb_dump_command: docker exec --env MYSQL_PWD my_mariadb_container mariadb-dump
+```
+
+The `password_transport: environment` option tells borgmatic to transmit the
+password via environment variable instead of the default behavior of using an
+anonymous pipe. The environment variable transport is potentially less secure
+than the pipe, but it's necessary when the database client is running in a
+container separate from borgmatic.
+
+A similar approach can work with MySQL, using `mysql_dump_command` instead of
+`mariadb_dump_command` to run `mysqldump` in a container.
+
+
+#### Database client in a temporary container
 
 Another variation: If you're running borgmatic on the host but want to spin up a
 temporary `pg_dump` container whenever borgmatic dumps a database, for

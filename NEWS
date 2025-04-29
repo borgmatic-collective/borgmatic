@@ -1,4 +1,6 @@
 2.0.5.dev0
+ * #1033: Add a "password_transport" option to the MariaDB and MySQL database hooks for customizing
+   how borgmatic transmits passwords to the database client.
  * #1078: Add "keep_3monthly" and "keep_13weekly" options for customizing "prune" action archive
    retention.
  * #1078: Add a "use_chunks_archive" option for controlling whether Borg uses its chunks cache
@@ -76,7 +78,7 @@
  * #837: Add custom command options for the MongoDB hook.
  * #1010: When using Borg 2, don't pass the "--stats" flag to "borg prune".
  * #1020: Document a database use case involving a temporary database client container:
-   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-containers
  * #1037: Fix an error with the "extract" action when both a remote repository and a
    "working_directory" are used.
  * #1044: Fix an error in the systemd credential hook when the credential name contains a "."
@@ -326,7 +328,7 @@
    paths when a "working_directory" is set.
  * #906: Add documentation details for how to run custom database dump commands using binaries from
    running containers:
-   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-containers
  * Fix a regression in which the "color" option had no effect.
  * Add a recent contributors section to the documentation, because credit where credit's due! See:
    https://torsion.org/borgmatic/#recent-contributors
@@ -382,7 +384,7 @@
  * Fix handling of the NO_COLOR environment variable to ignore an empty value.
  * Add documentation about backing up containerized databases by configuring borgmatic to exec into
    a container to run a dump command:
-   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-containers
 
 1.8.9
  * #311: Add custom dump/restore command options for MySQL and MariaDB.
@@ -652,7 +654,7 @@
    at the command-line. See the configuration reference for more information:
    https://torsion.org/borgmatic/docs/reference/configuration/
  * #649: Add documentation on backing up a database running in a container:
-   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#containers
+   https://torsion.org/borgmatic/docs/how-to/backup-your-databases/#database-containers
  * #655: Fix error when databases are configured and a source directory doesn't exist.
  * Add code style plugins to enforce use of Python f-strings and prevent single-letter variables.
    To join in the pedantry, refresh your test environment with "tox --recreate".

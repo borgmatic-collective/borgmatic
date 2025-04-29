@@ -60,6 +60,42 @@ def test_database_names_to_dump_queries_mysql_for_database_names():
     assert names == ('foo', 'bar')
 
 
+def test_database_names_to_dump_with_environment_password_transport_skips_defaults_file_and_passes_user_flag():
+    environment = flexmock()
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options'
+    ).and_return((), None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options'
+    ).never()
+    flexmock(module).should_receive('execute_command_and_capture_output').with_args(
+        (
+            'mysql',
+            '--user',
+            'root',
+            '--skip-column-names',
+            '--batch',
+            '--execute',
+            'show schemas',
+        ),
+        environment=environment,
+    ).and_return('foo\nbar\nmysql\n').once()
+
+    names = module.database_names_to_dump(
+        {'name': 'all', 'password_transport': 'environment'},
+        {},
+        'root',
+        'trustsome1',
+        environment,
+        dry_run=False,
+    )
+
+    assert names == ('foo', 'bar')
+
+
 def test_database_names_to_dump_runs_mysql_with_tls():
     environment = flexmock()
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -141,9 +177,22 @@ def test_dump_data_sources_dumps_each_database():
         'resolve_credential'
     ).and_return(None)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
-    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
-        ('bar',)
-    )
+    flexmock(module).should_receive('database_names_to_dump').with_args(
+        database=databases[0],
+        config={},
+        username=None,
+        password=None,
+        environment={'USER': 'root'},
+        dry_run=False,
+    ).and_return(('foo',))
+    flexmock(module).should_receive('database_names_to_dump').with_args(
+        database=databases[1],
+        config={},
+        username=None,
+        password=None,
+        environment={'USER': 'root'},
+        dry_run=False,
+    ).and_return(('bar',))
 
     for name, process in zip(('foo', 'bar'), processes):
         flexmock(module).should_receive('execute_dump_command').with_args(
@@ -179,9 +228,14 @@ def test_dump_data_sources_dumps_with_password():
         'resolve_credential'
     ).replace_with(lambda value, config: value)
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
-    flexmock(module).should_receive('database_names_to_dump').and_return(('foo',)).and_return(
-        ('bar',)
-    )
+    flexmock(module).should_receive('database_names_to_dump').with_args(
+        database=database,
+        config={},
+        username='root',
+        password='trustsome1',
+        environment={'USER': 'root'},
+        dry_run=False,
+    ).and_return(('foo',))
 
     flexmock(module).should_receive('execute_dump_command').with_args(
         database=database,
@@ -191,6 +245,50 @@ def test_dump_data_sources_dumps_with_password():
         dump_path=object,
         database_names=('foo',),
         environment={'USER': 'root'},
+        dry_run=object,
+        dry_run_label=object,
+    ).and_return(process).once()
+
+    assert module.dump_data_sources(
+        [database],
+        {},
+        config_paths=('test.yaml',),
+        borgmatic_runtime_directory='/run/borgmatic',
+        patterns=[],
+        dry_run=False,
+    ) == [process]
+
+
+def test_dump_data_sources_dumps_with_environment_password_transport_passes_password_environment_variable():
+    database = {
+        'name': 'foo',
+        'username': 'root',
+        'password': 'trustsome1',
+        'password_transport': 'environment',
+    }
+    process = flexmock()
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module).should_receive('database_names_to_dump').with_args(
+        database=database,
+        config={},
+        username='root',
+        password='trustsome1',
+        environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
+        dry_run=False,
+    ).and_return(('foo',))
+
+    flexmock(module).should_receive('execute_dump_command').with_args(
+        database=database,
+        config={},
+        username='root',
+        password='trustsome1',
+        dump_path=object,
+        database_names=('foo',),
+        environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
         dry_run=object,
         dry_run_label=object,
     ).and_return(process).once()
@@ -269,6 +367,54 @@ def test_dump_data_sources_dumps_all_databases_separately_when_format_configured
             dry_run=False,
         )
         == processes
+    )
+
+
+def test_dump_data_sources_errors_for_missing_all_databases():
+    databases = [{'name': 'all'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/all'
+    )
+    flexmock(module).should_receive('database_names_to_dump').and_return(())
+
+    with pytest.raises(ValueError):
+        assert module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=False,
+        )
+
+
+def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
+    databases = [{'name': 'all'}]
+    flexmock(module).should_receive('make_dump_path').and_return('')
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
+        'databases/localhost/all'
+    )
+    flexmock(module).should_receive('database_names_to_dump').and_return(())
+
+    assert (
+        module.dump_data_sources(
+            databases,
+            {},
+            config_paths=('test.yaml',),
+            borgmatic_runtime_directory='/run/borgmatic',
+            patterns=[],
+            dry_run=True,
+        )
+        == []
     )
 
 
@@ -362,6 +508,52 @@ def test_execute_dump_command_runs_mysqldump():
     assert (
         module.execute_dump_command(
             database={'name': 'foo'},
+            config={},
+            username='root',
+            password='trustsome1',
+            dump_path=flexmock(),
+            database_names=('foo',),
+            environment=None,
+            dry_run=False,
+            dry_run_label='',
+        )
+        == process
+    )
+
+
+def test_execute_dump_command_with_environment_password_transport_skips_defaults_file_and_passes_user_flag():
+    process = flexmock()
+    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return('dump')
+    flexmock(module.os.path).should_receive('exists').and_return(False)
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options'
+    ).and_return((), None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options'
+    ).never()
+    flexmock(module.dump).should_receive('create_named_pipe_for_dump')
+
+    flexmock(module).should_receive('execute_command').with_args(
+        (
+            'mysqldump',
+            '--add-drop-database',
+            '--user',
+            'root',
+            '--databases',
+            'foo',
+            '--result-file',
+            'dump',
+        ),
+        environment=None,
+        run_to_completion=False,
+    ).and_return(process).once()
+
+    assert (
+        module.execute_dump_command(
+            database={'name': 'foo', 'password_transport': 'environment'},
             config={},
             username='root',
             password='trustsome1',
@@ -761,54 +953,6 @@ def test_execute_dump_command_with_dry_run_skips_mysqldump():
     )
 
 
-def test_dump_data_sources_errors_for_missing_all_databases():
-    databases = [{'name': 'all'}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
-    ).replace_with(lambda value, config: value)
-    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        'databases/localhost/all'
-    )
-    flexmock(module).should_receive('database_names_to_dump').and_return(())
-
-    with pytest.raises(ValueError):
-        assert module.dump_data_sources(
-            databases,
-            {},
-            config_paths=('test.yaml',),
-            borgmatic_runtime_directory='/run/borgmatic',
-            patterns=[],
-            dry_run=False,
-        )
-
-
-def test_dump_data_sources_does_not_error_for_missing_all_databases_with_dry_run():
-    databases = [{'name': 'all'}]
-    flexmock(module).should_receive('make_dump_path').and_return('')
-    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
-    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
-        'resolve_credential'
-    ).replace_with(lambda value, config: value)
-    flexmock(module.dump).should_receive('make_data_source_dump_filename').and_return(
-        'databases/localhost/all'
-    )
-    flexmock(module).should_receive('database_names_to_dump').and_return(())
-
-    assert (
-        module.dump_data_sources(
-            databases,
-            {},
-            config_paths=('test.yaml',),
-            borgmatic_runtime_directory='/run/borgmatic',
-            patterns=[],
-            dry_run=True,
-        )
-        == []
-    )
-
-
 def test_restore_data_source_dump_runs_mysql_to_restore():
     hook_config = [{'name': 'foo'}, {'name': 'bar'}]
     extract_process = flexmock(stdout=flexmock())
@@ -1074,6 +1218,53 @@ def test_restore_data_source_dump_runs_mysql_with_username_and_password():
         output_log_level=logging.DEBUG,
         input_file=extract_process.stdout,
         environment={'USER': 'root'},
+    ).once()
+
+    module.restore_data_source_dump(
+        hook_config,
+        {},
+        data_source=hook_config[0],
+        dry_run=False,
+        extract_process=extract_process,
+        connection_params={
+            'hostname': None,
+            'port': None,
+            'username': None,
+            'password': None,
+        },
+        borgmatic_runtime_directory='/run/borgmatic',
+    )
+
+
+def test_restore_data_source_with_environment_password_transport_skips_defaults_file_and_passes_user_flag():
+    hook_config = [
+        {
+            'name': 'foo',
+            'username': 'root',
+            'password': 'trustsome1',
+            'password_transport': 'environment',
+        }
+    ]
+    extract_process = flexmock(stdout=flexmock())
+
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).replace_with(lambda value, config: value)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'parse_extra_options'
+    ).and_return((), None)
+    flexmock(module.borgmatic.hooks.data_source.mariadb).should_receive(
+        'make_defaults_file_options'
+    ).never()
+    flexmock(module.os).should_receive('environ').and_return(
+        {'USER': 'root', 'MYSQL_PWD': 'trustsome1'}
+    )
+    flexmock(module).should_receive('execute_command_with_processes').with_args(
+        ('mysql', '--batch', '--user', 'root'),
+        processes=[extract_process],
+        output_log_level=logging.DEBUG,
+        input_file=extract_process.stdout,
+        environment={'USER': 'root', 'MYSQL_PWD': 'trustsome1'},
     ).once()
 
     module.restore_data_source_dump(
