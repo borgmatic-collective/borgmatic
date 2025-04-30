@@ -50,7 +50,8 @@ def get_logical_volumes(lsblk_command, patterns=None):
                     'name,path,mountpoint,type',
                     '--json',
                     '--list',
-                )
+                ),
+                close_fds=True,
             )
         )
     except json.JSONDecodeError as error:
@@ -109,6 +110,7 @@ def snapshot_logical_volume(
             logical_volume_device,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -129,6 +131,7 @@ def mount_snapshot(mount_command, snapshot_device, snapshot_mount_path):  # prag
             snapshot_mount_path,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -277,6 +280,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     borgmatic.execute.execute_command(
         tuple(umount_command.split(' ')) + (snapshot_mount_path,),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -291,6 +295,7 @@ def remove_snapshot(lvremove_command, snapshot_device_path):  # pragma: no cover
             snapshot_device_path,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -318,7 +323,8 @@ def get_snapshots(lvs_command, snapshot_name=None):
                     'lv_name,lv_path',
                     '--select',
                     'lv_attr =~ ^s',  # Filter to just snapshots.
-                )
+                ),
+                close_fds=True,
             )
         )
     except json.JSONDecodeError as error:

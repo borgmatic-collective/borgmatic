@@ -53,7 +53,8 @@ def get_datasets_to_backup(zfs_command, patterns):
             'filesystem',
             '-o',
             f'name,mountpoint,canmount,{BORGMATIC_USER_PROPERTY}',
-        )
+        ),
+        close_fds=True,
     )
 
     try:
@@ -131,7 +132,8 @@ def get_all_dataset_mount_points(zfs_command):
             'filesystem',
             '-o',
             'mountpoint',
-        )
+        ),
+        close_fds=True,
     )
 
     return tuple(
@@ -158,6 +160,7 @@ def snapshot_dataset(zfs_command, full_snapshot_name):  # pragma: no cover
             full_snapshot_name,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -180,6 +183,7 @@ def mount_snapshot(mount_command, full_snapshot_name, snapshot_mount_path):  # p
             snapshot_mount_path,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -310,6 +314,7 @@ def unmount_snapshot(umount_command, snapshot_mount_path):  # pragma: no cover
     borgmatic.execute.execute_command(
         tuple(umount_command.split(' ')) + (snapshot_mount_path,),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -325,6 +330,7 @@ def destroy_snapshot(zfs_command, full_snapshot_name):  # pragma: no cover
             full_snapshot_name,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -342,7 +348,8 @@ def get_all_snapshots(zfs_command):
             'snapshot',
             '-o',
             'name',
-        )
+        ),
+        close_fds=True,
     )
 
     return tuple(line.rstrip() for line in list_output.splitlines())

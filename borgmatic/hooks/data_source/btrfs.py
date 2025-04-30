@@ -32,7 +32,8 @@ def get_subvolume_mount_points(findmnt_command):
             'btrfs',
             '--json',
             '--list',  # Request a flat list instead of a nested subvolume hierarchy.
-        )
+        ),
+        close_fds=True,
     )
 
     try:
@@ -59,6 +60,7 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
             subvolume_path,
             property_name,
         ),
+        close_fds=True,
     )
 
     try:
@@ -227,6 +229,7 @@ def snapshot_subvolume(btrfs_command, subvolume_path, snapshot_path):  # pragma:
             snapshot_path,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
@@ -298,6 +301,7 @@ def delete_snapshot(btrfs_command, snapshot_path):  # pragma: no cover
             snapshot_path,
         ),
         output_log_level=logging.DEBUG,
+        close_fds=True,
     )
 
 
