@@ -1,3 +1,6 @@
+2.0.6.dev0
+ * #1068: Fix a warning from LVM about leaked file descriptors.
+
 2.0.5
  * #1033: Add a "password_transport" option to the MariaDB and MySQL database hooks for customizing
    how borgmatic transmits passwords to the database client.
