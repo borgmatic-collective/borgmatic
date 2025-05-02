@@ -372,7 +372,11 @@ def collect_spot_check_source_paths(
         borgmatic.borg.create.make_base_create_command(
             dry_run=True,
             repository_path=repository['path'],
-            config=dict(config, list_details=True),
+            # Omit "progress" because it interferes with "list_details".
+            config=dict(
+                {option: value for option, value in config.items() if option != 'progress'},
+                list_details=True,
+            ),
             patterns=borgmatic.actions.pattern.process_patterns(
                 borgmatic.actions.pattern.collect_patterns(config),
                 working_directory,

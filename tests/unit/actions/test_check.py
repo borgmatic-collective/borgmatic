@@ -601,6 +601,53 @@ def test_collect_spot_check_source_paths_parses_borg_output():
     ) == ('/etc/path', '/etc/other')
 
 
+def test_collect_spot_check_source_paths_omits_progress_from_create_dry_run_command():
+    flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
+        {'hook1': False, 'hook2': False}
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.pattern).should_receive('collect_patterns').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.actions.pattern).should_receive('process_patterns').and_return(
+        [Pattern('foo'), Pattern('bar')]
+    )
+    flexmock(module.borgmatic.borg.create).should_receive('make_base_create_command').with_args(
+        dry_run=True,
+        repository_path='repo',
+        config={'working_directory': '/', 'list_details': True},
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version=object,
+        global_arguments=object,
+        borgmatic_runtime_directory='/run/borgmatic',
+        local_path=object,
+        remote_path=object,
+        stream_processes=False,
+    ).and_return((('borg', 'create'), ('repo::archive',), flexmock()))
+    flexmock(module.borgmatic.borg.environment).should_receive('make_environment').and_return(
+        flexmock()
+    )
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).and_return(
+        'warning: stuff\n- /etc/path\n+ /etc/other\n? /nope',
+    )
+    flexmock(module.os.path).should_receive('isfile').and_return(True)
+
+    assert module.collect_spot_check_source_paths(
+        repository={'path': 'repo'},
+        config={'working_directory': '/', 'progress': True},
+        local_borg_version=flexmock(),
+        global_arguments=flexmock(),
+        local_path=flexmock(),
+        remote_path=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+    ) == ('/etc/path', '/etc/other')
+
+
 def test_collect_spot_check_source_paths_passes_through_stream_processes_false():
     flexmock(module.borgmatic.hooks.dispatch).should_receive('call_hooks').and_return(
         {'hook1': False, 'hook2': False}
