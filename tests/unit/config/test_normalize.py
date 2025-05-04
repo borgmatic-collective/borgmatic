@@ -335,6 +335,16 @@ def test_normalize_commands_moves_individual_command_hooks_to_unified_commands(
             True,
         ),
         (
+            {'repositories': ['s3:stuff']},
+            {'repositories': [{'path': 's3:stuff'}]},
+            True,
+        ),
+        (
+            {'repositories': ['b2:stuff']},
+            {'repositories': [{'path': 'b2:stuff'}]},
+            True,
+        ),
+        (
             {'repositories': ['file:///repo']},
             {'repositories': [{'path': '/repo'}]},
             True,

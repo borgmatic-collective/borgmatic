@@ -356,6 +356,8 @@ def normalize(config_filename, config):
                     repository_path.startswith('ssh://')
                     or repository_path.startswith('sftp://')
                     or repository_path.startswith('rclone:')
+                    or repository_path.startswith('s3:')
+                    or repository_path.startswith('b2:')
                 ):
                     config['repositories'].append(repository_dict)
                 else:
@@ -365,7 +367,7 @@ def normalize(config_filename, config):
                             dict(
                                 levelno=logging.WARNING,
                                 levelname='WARNING',
-                                msg=f'{config_filename}: Remote repository paths without ssh:// or rclone: syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
+                                msg=f'{config_filename}: Remote repository paths without ssh://, sftp://, rclone:, s3:, or b2:, syntax are deprecated and support will be removed from a future release. Interpreting "{repository_path}" as "{rewritten_repository_path}"',
                             )
                         )
                     )

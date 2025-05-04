@@ -1,6 +1,8 @@
 2.0.6.dev0
  * #1068: Fix a warning from LVM about leaked file descriptors.
  * #1086: Fix for the "spot" check breaking when the "--progress" flag is used.
+ * Add support for Borg 2's "s3:" and "b2:" repository URLs, so you can backup to S3 or B2 cloud
+   storage services even without using Rclone.
 
 2.0.5
  * #1033: Add a "password_transport" option to the MariaDB and MySQL database hooks for customizing
