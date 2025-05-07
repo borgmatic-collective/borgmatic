@@ -72,7 +72,8 @@ properties:
                     description: |
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
-                        action. Defaults to false.
+                        action. Defaults to false. (This option is only present 
+                        in Borg 1.x)
                     example: true
         description: |
             A required list of local or remote repositories with paths and
