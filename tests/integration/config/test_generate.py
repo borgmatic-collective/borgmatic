@@ -126,6 +126,45 @@ def test_schema_to_sample_configuration_comments_out_non_source_config_options_i
     assert 'field3' not in config[0].ca.items
 
 
+def test_schema_to_sample_configuration_comments_out_non_source_config_options_in_sequence_of_maps_with_different_subschemas():
+    schema = {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'oneOf': [
+                {
+                    'properties': dict(
+                        [
+                            ('field1', {'type': 'string', 'example': 'Example 1'}),
+                            ('field2', {'type': 'string', 'example': 'Example 2'}),
+                        ]
+                    )
+                },
+                {
+                    'properties': dict(
+                        [
+                            ('field2', {'type': 'string', 'example': 'Example 2'}),
+                            ('field3', {'type': 'string', 'example': 'Example 3'}),
+                        ]
+                    )
+                },
+            ],
+        },
+    }
+    source_config = [{'field1': 'value'}, {'field3': 'value'}]
+
+    config = module.schema_to_sample_configuration(schema, source_config)
+
+    assert config == [
+        dict([('field1', 'Example 1'), ('field2', 'Example 2'), ('field3', 'Example 3')])
+    ]
+
+    # The first field in a sequence does not get commented.
+    assert 'field1' not in config[0].ca.items
+    assert 'COMMENT_OUT' in config[0].ca.items['field2'][1][-1]._value
+    assert 'COMMENT_OUT' in config[0].ca.items['field3'][1][-1]._value
+
+
 def test_comment_out_line_skips_blank_line():
     line = '    \n'
 
@@ -169,8 +208,11 @@ foo:
         - quux
 
 repositories:
-    - one
-    - two
+    - path: foo
+      # COMMENT_OUT
+      label: bar
+    - path: baz
+      label: quux
 
 # This comment should be kept.
 # COMMENT_OUT
@@ -185,8 +227,10 @@ other: thing
 #         - quux
 
 repositories:
-    - one
-    - two
+    - path: foo
+#       label: bar
+    - path: baz
+      label: quux
 
 # This comment should be kept.
 # other: thing
@@ -297,14 +341,28 @@ def test_add_comments_to_configuration_comments_out_non_source_config_options():
     assert 'baz' not in config.ca.items
 
 
-def test_add_comments_to_configuration_object_with_skip_first_does_not_comment_out_first_option():
+def test_add_comments_to_configuration_object_with_skip_first_field_does_not_comment_out_first_option():
     config = module.ruamel.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
     schema = {
         'type': 'object',
         'properties': {'foo': {'description': 'Foo'}, 'bar': {'description': 'Bar'}},
     }
 
-    module.add_comments_to_configuration_object(config, schema, skip_first=True)
+    module.add_comments_to_configuration_object(config, schema, skip_first_field=True)
+
+    assert 'foo' not in config.ca.items
+    assert 'COMMENT_OUT' in config.ca.items['bar'][1][-1]._value
+    assert 'baz' not in config.ca.items
+
+
+def test_add_comments_to_configuration_object_with_skip_first_field_does_not_comment_out_first_option():
+    config = module.ruamel.yaml.comments.CommentedMap([('foo', 33), ('bar', 44), ('baz', 55)])
+    schema = {
+        'type': 'object',
+        'properties': {'foo': {'description': 'Foo'}, 'bar': {'description': 'Bar'}},
+    }
+
+    module.add_comments_to_configuration_object(config, schema, skip_first_field=True)
 
     assert 'foo' not in config.ca.items
     assert 'COMMENT_OUT' in config.ca.items['bar'][1][-1]._value
@@ -326,15 +384,39 @@ def test_generate_sample_configuration_does_not_raise():
     module.generate_sample_configuration(False, None, 'dest.yaml', 'schema.yaml')
 
 
-def test_generate_sample_configuration_with_source_filename_does_not_raise():
+def test_generate_sample_configuration_with_source_filename_omits_empty_bootstrap_field():
     builtins = flexmock(sys.modules['builtins'])
     builtins.should_receive('open').with_args('schema.yaml').and_return('')
     flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
         flexmock(load=lambda filename: {})
     )
-    flexmock(module.load).should_receive('load_configuration')
+    flexmock(module.load).should_receive('load_configuration').and_return(
+        {'bootstrap': {}, 'foo': 'bar'}
+    )
     flexmock(module.normalize).should_receive('normalize')
-    flexmock(module).should_receive('schema_to_sample_configuration')
+    flexmock(module).should_receive('schema_to_sample_configuration').with_args(
+        object, {'foo': 'bar'}
+    ).once()
+    flexmock(module).should_receive('merge_source_configuration_into_destination')
+    flexmock(module).should_receive('render_configuration')
+    flexmock(module).should_receive('comment_out_optional_configuration')
+    flexmock(module).should_receive('write_configuration')
+
+    module.generate_sample_configuration(False, 'source.yaml', 'dest.yaml', 'schema.yaml')
+
+
+def test_generate_sample_configuration_with_source_filename_keeps_non_empty_bootstrap_field():
+    builtins = flexmock(sys.modules['builtins'])
+    builtins.should_receive('open').with_args('schema.yaml').and_return('')
+    flexmock(module.ruamel.yaml).should_receive('YAML').and_return(
+        flexmock(load=lambda filename: {})
+    )
+    source_config = {'bootstrap': {'stuff': 'here'}, 'foo': 'bar'}
+    flexmock(module.load).should_receive('load_configuration').and_return(source_config)
+    flexmock(module.normalize).should_receive('normalize')
+    flexmock(module).should_receive('schema_to_sample_configuration').with_args(
+        object, source_config
+    ).once()
     flexmock(module).should_receive('merge_source_configuration_into_destination')
     flexmock(module).should_receive('render_configuration')
     flexmock(module).should_receive('comment_out_optional_configuration')

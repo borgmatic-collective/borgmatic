@@ -51,7 +51,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         add_comments_to_configuration_sequence(config, schema, indent=(level * INDENT))
     elif borgmatic.config.schema.compare_types(schema_type, {'object'}):
         if source_config and isinstance(source_config, list) and isinstance(source_config[0], dict):
-            source_config = dict(collections.ChainMap(*source_config))
+            source_config = source_config[0]
 
         config = (
             ruamel.yaml.comments.CommentedMap(
@@ -71,7 +71,7 @@ def schema_to_sample_configuration(schema, source_config=None, level=0, parent_i
         )
         indent = (level * INDENT) + (SEQUENCE_INDENT if parent_is_sequence else 0)
         add_comments_to_configuration_object(
-            config, schema, source_config, indent=indent, skip_first=parent_is_sequence
+            config, schema, source_config, indent=indent, skip_first_field=parent_is_sequence
         )
     elif borgmatic.config.schema.compare_types(schema_type, SCALAR_SCHEMA_TYPES, match=all):
         return example
@@ -108,17 +108,30 @@ def comment_out_optional_configuration(rendered_config):
     '''
     lines = []
     optional = False
+    indent_characters = None
+    indent_characters_at_sentinel = None
 
     for line in rendered_config.split('\n'):
+        indent_characters = len(line) - len(line.lstrip())
+
         # Upon encountering an optional configuration option, comment out lines until the next blank
         # line.
         if line.strip().startswith(f'# {COMMENTED_OUT_SENTINEL}'):
             optional = True
+            indent_characters_at_sentinel = indent_characters
             continue
 
         # Hit a blank line, so reset commenting.
         if not line.strip():
             optional = False
+            indent_characters_at_sentinel = None
+        # Dedented, so reset commenting.
+        elif (
+            indent_characters_at_sentinel is not None
+            and indent_characters < indent_characters_at_sentinel
+        ):
+            optional = False
+            indent_characters_at_sentinel = None
 
         lines.append(comment_out_line(line) if optional else line)
 
@@ -198,25 +211,28 @@ COMMENTED_OUT_SENTINEL = 'COMMENT_OUT'
 
 
 def add_comments_to_configuration_object(
-    config, schema, source_config=None, indent=0, skip_first=False
+    config, schema, source_config=None, indent=0, skip_first_field=False
 ):
     '''
     Using descriptions from a schema as a source, add those descriptions as comments to the given
     configuration dict, putting them before each field. Indent the comment the given number of
     characters.
 
+    If skip_first_field is True, omit the comment for the initial field. This is useful for
+    sequences, where the comment for the first field goes before the sequence itself.
+
     And a sentinel for commenting out options that are neither in DEFAULT_KEYS nor the the given
     source configuration dict. The idea is that any options used in the source configuration should
     stay active in the generated configuration.
     '''
     for index, field_name in enumerate(config.keys()):
-        if skip_first and index == 0:
+        if skip_first_field and index == 0:
             continue
 
         field_schema = borgmatic.config.schema.get_properties(schema).get(field_name, {})
         description = field_schema.get('description', '').strip()
 
-        # If this isn't a default key, add an indicator to the comment flagging it to be commented
+        # If this isn't a default key, add an indicator to the comment, flagging it to be commented
         # out from the sample configuration. This sentinel is consumed by downstream processing that
         # does the actual commenting out.
         if field_name not in DEFAULT_KEYS and (
@@ -298,6 +314,12 @@ def generate_sample_configuration(
     if source_filename:
         source_config = load.load_configuration(source_filename)
         normalize.normalize(source_filename, source_config)
+
+        # The borgmatic.config.normalize.normalize() function tacks on an empty "bootstrap" if
+        # needed, so the hook gets used by default. But we don't want it to end up in the generated
+        # config unless the user has set it explicitly, as an empty "bootstrap:" won't validate.
+        if source_config and source_config.get('bootstrap') == {}:
+            del source_config['bootstrap']
 
     destination_config = merge_source_configuration_into_destination(
         schema_to_sample_configuration(schema, source_config), source_config
