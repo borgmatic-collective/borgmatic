@@ -164,6 +164,50 @@ def test_make_environment_check_i_know_what_i_am_doing_false_should_set_environm
     assert environment.get('BORG_CHECK_I_KNOW_WHAT_I_AM_DOING') == 'NO'
 
 
+def test_make_environment_debug_passphrase_true_should_set_environment_YES():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'debug_passphrase': True})
+
+    assert environment.get('BORG_DEBUG_PASSPHRASE') == 'YES'
+
+
+def test_make_environment_debug_passphrase_false_should_set_environment_NO():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'debug_passphrase': False})
+
+    assert environment.get('BORG_DEBUG_PASSPHRASE') == 'NO'
+
+
+def test_make_environment_display_passphrase_true_should_set_environment_YES():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'display_passphrase': True})
+
+    assert environment.get('BORG_DISPLAY_PASSPHRASE') == 'YES'
+
+
+def test_make_environment_display_passphrase_false_should_set_environment_NO():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'display_passphrase': False})
+
+    assert environment.get('BORG_DISPLAY_PASSPHRASE') == 'NO'
+
+
 def test_make_environment_with_integer_variable_value():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(

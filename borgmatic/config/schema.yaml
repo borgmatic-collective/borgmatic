@@ -491,6 +491,19 @@ properties:
             Bypass Borg error about a previously unknown unencrypted repository.
             Defaults to false.
         example: true
+    debug_passphrase:
+        type: boolean
+        description: |
+            When set true, display debugging information that includes 
+            passphrases used and passphrase related env vars set. 
+            Defaults to false.
+        example: true
+    display_passphrase:
+        type: boolean
+        description: |
+            When set true, always shows passphrase and its hex utf-8 byte
+            sequence. Defaults to false.
+        example: true
     check_i_know_what_i_am_doing:
         type: boolean
         description: |
