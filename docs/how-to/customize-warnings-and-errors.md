@@ -20,8 +20,8 @@ error on them, use the following borgmatic configuration:
 
 ```yaml
 borg_exit_codes:
-   - code: 1
-     treat_as: error
+    - code: 1
+      treat_as: error
 ```
 
 Be aware though that Borg exits with a warning code for a variety of benign
@@ -33,8 +33,8 @@ Here's an example that squashes Borg errors to warnings:
 
 ```yaml
 borg_exit_codes:
-   - code: 2
-     treat_as: warning
+    - code: 2
+      treat_as: warning
 ```
 
 Be careful with this example though, because it prevents borgmatic from
@@ -56,8 +56,8 @@ permission warnings (exit code `105`)—and only those warnings—to errors:
 
 ```yaml
 borg_exit_codes:
-   - code: 105
-     treat_as: error
+    - code: 105
+      treat_as: error
 ```
 
 The following configuration does that *and* elevates backup file not found
@@ -65,10 +65,10 @@ warnings (exit code `107`) to errors as well:
 
 ```yaml
 borg_exit_codes:
-   - code: 105
-     treat_as: error
-   - code: 107
-     treat_as: error
+    - code: 105
+      treat_as: error
+    - code: 107
+      treat_as: error
 ```
 
 If you don't know the exit code for a particular Borg error or warning you're
