@@ -20,7 +20,7 @@ error on them, use the following borgmatic configuration:
 
 ```yaml
 borg_exit_codes:
-   - exit_code: 1
+   - code: 1
      treat_as: error
 ```
 
@@ -33,7 +33,7 @@ Here's an example that squashes Borg errors to warnings:
 
 ```yaml
 borg_exit_codes:
-   - exit_code: 2
+   - code: 2
      treat_as: warning
 ```
 
@@ -56,7 +56,7 @@ permission warnings (exit code `105`)—and only those warnings—to errors:
 
 ```yaml
 borg_exit_codes:
-   - exit_code: 105
+   - code: 105
      treat_as: error
 ```
 
@@ -65,9 +65,9 @@ warnings (exit code `107`) to errors as well:
 
 ```yaml
 borg_exit_codes:
-   - exit_code: 105
+   - code: 105
      treat_as: error
-   - exit_code: 107
+   - code: 107
      treat_as: error
 ```
 
