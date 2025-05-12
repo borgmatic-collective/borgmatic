@@ -230,12 +230,13 @@ def dump_data_sources(
             )
 
         # Get the device path for the snapshot we just created.
-        try:
-            snapshot = get_snapshots(
-                hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
-            )[0]
-        except IndexError:
-            raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
+        if not dry_run:
+            try:
+                snapshot = get_snapshots(
+                    hook_config.get('lvs_command', 'lvs'), snapshot_name=snapshot_name
+                )[0]
+            except IndexError:
+                raise ValueError(f'Cannot find LVM snapshot {snapshot_name}')
 
         # Mount the snapshot into a particular named temporary directory so that the snapshot ends
         # up in the Borg archive at the "original" logical volume mount point path.

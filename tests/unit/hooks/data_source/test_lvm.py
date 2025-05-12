@@ -556,16 +556,7 @@ def test_dump_data_sources_with_dry_run_skips_snapshots_and_does_not_touch_patte
     )
     flexmock(module.os).should_receive('getpid').and_return(1234)
     flexmock(module).should_receive('snapshot_logical_volume').never()
-    flexmock(module).should_receive('get_snapshots').with_args(
-        'lvs', snapshot_name='lvolume1_borgmatic-1234'
-    ).and_return(
-        (module.Snapshot(name='lvolume1_borgmatic-1234', device_path='/dev/lvolume1_snap'),)
-    )
-    flexmock(module).should_receive('get_snapshots').with_args(
-        'lvs', snapshot_name='lvolume2_borgmatic-1234'
-    ).and_return(
-        (module.Snapshot(name='lvolume2_borgmatic-1234', device_path='/dev/lvolume2_snap'),)
-    )
+    flexmock(module).should_receive('get_snapshots').never()
     flexmock(module).should_receive('mount_snapshot').never()
 
     assert (
