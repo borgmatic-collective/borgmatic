@@ -193,7 +193,7 @@ confirmation of success—or tells you if something hasn't been transferred yet.
 Note that by omitting the `--upgrader` flag, you can also do archive transfers
 between related Borg 2 repositories without upgrading, even down to individual
 archives. For more on that functionality, see the [Borg transfer
-documentation](https://borgbackup.readthedocs.io/en/2.0.0b13/usage/transfer.html).
+documentation](https://borgbackup.readthedocs.io/en/2.0.0b16/usage/transfer.html).
 
 That's it! Now you can use your new Borg 2 repository as normal with
 borgmatic. If you've got multiple repositories, repeat the above process for
