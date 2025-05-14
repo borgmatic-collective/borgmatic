@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import random
+import shlex
 import shutil
 
 import borgmatic.actions.pattern
@@ -512,7 +513,10 @@ def compare_spot_check_hashes(
             break
 
         hash_output = borgmatic.execute.execute_command_and_capture_output(
-            (spot_check_config.get('xxh64sum_command', 'xxh64sum'),)
+            tuple(
+                shlex.quote(part)
+                for part in shlex.split(spot_check_config.get('xxh64sum_command', 'xxh64sum'))
+            )
             + tuple(
                 path for path in source_sample_paths_subset if path in hashable_source_sample_path
             ),

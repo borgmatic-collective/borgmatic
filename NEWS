@@ -6,6 +6,8 @@
  * #1093: Fix for the LVM hook erroring when the "--dry-run" flag is used.
  * #1094: Fix incorrect documentation about customizing Borg exit codes:
    https://torsion.org/borgmatic/docs/how-to/customize-warnings-and-errors/
+ * #1095: Fix for the "spot" check's "xxh64sum_command" option erroring on commands containing
+   spaces.
  * Add support for Borg 2's "s3:" and "b2:" repository URLs, so you can backup to S3 or B2 cloud
    storage services even without using Rclone.
 

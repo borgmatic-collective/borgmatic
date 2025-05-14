@@ -1071,7 +1071,9 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
     flexmock(module.os.path).should_receive('islink').and_return(False)
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
-    ).with_args(('/usr/local/bin/xxh64sum', '/foo', '/bar'), working_directory=None).and_return(
+    ).with_args(
+        ('/usr/local/bin/xxhsum', '-H64', '/foo', '/bar'), working_directory=None
+    ).and_return(
         'hash1  /foo\nhash2  /bar'
     )
     flexmock(module.borgmatic.borg.list).should_receive('capture_archive_listing').and_return(
@@ -1086,7 +1088,7 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
                 {
                     'name': 'spot',
                     'data_sample_percentage': 50,
-                    'xxh64sum_command': '/usr/local/bin/xxh64sum',
+                    'xxh64sum_command': '/usr/local/bin/xxhsum -H64',
                 },
             ]
         },
