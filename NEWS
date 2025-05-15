@@ -1,6 +1,7 @@
 2.0.6.dev0
  * #1068: Fix a warning from LVM about leaked file descriptors.
  * #1086: Fix for the "spot" check breaking when the "--progress" flag is used.
+ * #1089: Fix for the "spot" check erroring when a checksum command errors.
  * #1091: Fix for the "config generate" action generating invalid configuration when upgrading
    deprecated command hooks.
  * #1093: Fix for the LVM hook erroring when the "--dry-run" flag is used.

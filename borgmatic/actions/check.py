@@ -460,7 +460,7 @@ def collect_spot_check_archive_paths(
     )
 
 
-SAMPLE_PATHS_SUBSET_COUNT = 10000
+SAMPLE_PATHS_SUBSET_COUNT = 5000
 
 
 def compare_spot_check_hashes(
