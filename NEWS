@@ -1,4 +1,4 @@
-2.0.6.dev0
+2.0.6
  * #1068: Fix a warning from LVM about leaked file descriptors.
  * #1086: Fix for the "spot" check breaking when the "--progress" flag is used.
  * #1089: Fix for the "spot" check erroring when a checksum command errors.
