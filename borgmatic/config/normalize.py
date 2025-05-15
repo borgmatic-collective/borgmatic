@@ -159,7 +159,7 @@ def normalize(config_filename, config):
                 dict(
                     levelno=logging.WARNING,
                     levelname='WARNING',
-                    msg=f'{config_filename}: The borgmatic_source_directory option is deprecated and will be removed from a future release. Use borgmatic_runtime_directory and borgmatic_state_directory instead.',
+                    msg=f'{config_filename}: The borgmatic_source_directory option is deprecated and will be removed from a future release. Use user_runtime_directory and user_state_directory instead.',
                 )
             )
         )
