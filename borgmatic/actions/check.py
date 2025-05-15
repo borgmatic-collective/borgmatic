@@ -8,6 +8,7 @@ import pathlib
 import random
 import shlex
 import shutil
+import textwrap
 
 import borgmatic.actions.pattern
 import borgmatic.borg.check
@@ -570,6 +571,9 @@ def compare_spot_check_hashes(
     return tuple(failing_paths)
 
 
+MAX_SPOT_CHECK_PATHS_LENGTH = 1000
+
+
 def spot_check(
     repository,
     config,
@@ -637,9 +641,12 @@ def spot_check(
     logger.debug(f'{len(archive_paths)} total archive paths for spot check')
 
     if len(source_paths) == 0:
-        logger.debug(
-            f'Paths in latest archive but not source paths: {", ".join(set(archive_paths)) or "none"}'
+        truncated_archive_paths = textwrap.shorten(
+            ', '.join(set(archive_paths)) or 'none',
+            width=MAX_SPOT_CHECK_PATHS_LENGTH,
+            placeholder=' ...',
         )
+        logger.debug(f'Paths in latest archive but not source paths: {truncated_archive_paths}')
         raise ValueError(
             'Spot check failed: There are no source paths to compare against the archive'
         )
@@ -650,11 +657,21 @@ def spot_check(
 
     if count_delta_percentage > spot_check_config['count_tolerance_percentage']:
         rootless_source_paths = set(path.lstrip(os.path.sep) for path in source_paths)
-        logger.debug(
-            f'Paths in source paths but not latest archive: {", ".join(rootless_source_paths - set(archive_paths)) or "none"}'
+        truncated_exclusive_source_paths = textwrap.shorten(
+            ', '.join(rootless_source_paths - set(archive_paths)) or 'none',
+            width=MAX_SPOT_CHECK_PATHS_LENGTH,
+            placeholder=' ...',
         )
         logger.debug(
-            f'Paths in latest archive but not source paths: {", ".join(set(archive_paths) - rootless_source_paths) or "none"}'
+            f'Paths in source paths but not latest archive: {truncated_exclusive_source_paths}'
+        )
+        truncated_exclusive_archive_paths = textwrap.shorten(
+            ', '.join(set(archive_paths) - rootless_source_paths) or 'none',
+            width=MAX_SPOT_CHECK_PATHS_LENGTH,
+            placeholder=' ...',
+        )
+        logger.debug(
+            f'Paths in latest archive but not source paths: {truncated_exclusive_archive_paths}'
         )
         raise ValueError(
             f'Spot check failed: {count_delta_percentage:.2f}% file count delta between source paths and latest archive (tolerance is {spot_check_config["count_tolerance_percentage"]}%)'
@@ -677,8 +694,13 @@ def spot_check(
     failing_percentage = (len(failing_paths) / len(source_paths)) * 100
 
     if failing_percentage > data_tolerance_percentage:
+        truncated_failing_paths = textwrap.shorten(
+            ', '.join(failing_paths),
+            width=MAX_SPOT_CHECK_PATHS_LENGTH,
+            placeholder=' ...',
+        )
         logger.debug(
-            f'Source paths with data not matching the latest archive: {", ".join(failing_paths)}'
+            f'Source paths with data not matching the latest archive: {truncated_failing_paths}'
         )
         raise ValueError(
             f'Spot check failed: {failing_percentage:.2f}% of source paths with data not matching the latest archive (tolerance is {data_tolerance_percentage}%)'
