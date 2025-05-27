@@ -228,7 +228,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     yield from log_error_records(
                         f'{config_filename}: Error getting local Borg version', error
                     )
-                    return
+                    raise
 
                 for repo in config['repositories']:
                     repo_queue.put(
@@ -289,11 +289,7 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     raise encountered_error
 
     except (OSError, CalledProcessError, ValueError) as error:
-        # No need to repeat logging of the error if it was already logged above.
-        if error_repository:
-            yield from log_error_records('Error running configuration')
-        else:
-            yield from log_error_records('Error running configuration', error)
+        yield from log_error_records('Error running configuration')
 
         encountered_error = error
 

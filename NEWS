@@ -1,3 +1,7 @@
+2.0.7.dev0
+ * #1100: Fix a bug in which "borg --version" failing isn't considered a "fail" state in a command
+   hook.
+
 2.0.6
  * #1068: Fix a warning from LVM about leaked file descriptors.
  * #1086: Fix for the "spot" check breaking when the "--progress" flag is used.
