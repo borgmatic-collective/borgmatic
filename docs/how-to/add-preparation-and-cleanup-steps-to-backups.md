@@ -130,6 +130,10 @@ have a chance to run. Whereas the `after: error` hook doesn't run until all
 actions for—and repositories in—a configuration file have had a chance to
 execute.
 
+And if there are multiple hooks defined for a particular step (e.g. `before:
+action` for `create`), then those hooks are run in the order they're defined in
+configuration.
+
 
 ### Deprecated command hooks
 
