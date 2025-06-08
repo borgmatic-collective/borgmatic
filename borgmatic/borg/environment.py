@@ -14,16 +14,16 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'temporary_directory': 'TMPDIR',
 }
 
-DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE = {
+DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
+    'check_i_know_what_i_am_doing': 'BORG_CHECK_I_KNOW_WHAT_I_AM_DOING',
+}
+
+DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE = {
+    'debug_passphrase': 'BORG_DEBUG_PASSPHRASE',
+    'display_passphrase': 'BORG_DISPLAY_PASSPHRASE',
     'relocated_repo_access_is_ok': 'BORG_RELOCATED_REPO_ACCESS_IS_OK',
     'unknown_unencrypted_repo_access_is_ok': 'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK',
     'use_chunks_archive': 'BORG_USE_CHUNKS_ARCHIVE',
-}
-
-DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
-    'check_i_know_what_i_am_doing': 'BORG_CHECK_I_KNOW_WHAT_I_AM_DOING',
-    'debug_passphrase': 'BORG_DEBUG_PASSPHRASE',
-    'display_passphrase': 'BORG_DISPLAY_PASSPHRASE',
 }
 
 
@@ -85,10 +85,10 @@ def make_environment(config):
     for (
         option_name,
         environment_variable_name,
-    ) in DEFAULT_BOOL_OPTION_TO_DOWNCASE_ENVIRONMENT_VARIABLE.items():
+    ) in DEFAULT_BOOL_OPTION_TO_ENVIRONMENT_VARIABLE.items():
         if os.environ.get(environment_variable_name) is None:
             value = config.get(option_name)
-            environment[environment_variable_name] = 'yes' if value else 'no'
+            environment[environment_variable_name] = 'YES' if value else 'NO'
 
     for (
         option_name,

@@ -72,8 +72,8 @@ properties:
                     description: |
                         Whether any missing parent directories of the repository
                         path should be created, only used for the repo-create
-                        action. Defaults to false. (This option is only present 
-                        in Borg 1.x)
+                        action. Defaults to false. (This option is supported 
+                        for Borg 1.x only)
                     example: true
         description: |
             A required list of local or remote repositories with paths and
@@ -495,13 +495,13 @@ properties:
         type: boolean
         description: |
             When set true, display debugging information that includes 
-            passphrases used and passphrase related env vars set. 
+            passphrases used and passphrase related environment variables set. 
             Defaults to false.
         example: true
     display_passphrase:
         type: boolean
         description: |
-            When set true, always shows passphrase and its hex utf-8 byte
+            When set true, always shows passphrase and its hex UTF-8 byte
             sequence. Defaults to false.
         example: true
     check_i_know_what_i_am_doing:
