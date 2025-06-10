@@ -27,6 +27,6 @@ pytest==8.2.1
 pytest-cov==5.0.0
 PyYAML>5.0.0
 regex
-requests==2.32.2
+requests==2.32.4
 ruamel.yaml>0.15.0
 toml==0.10.2
