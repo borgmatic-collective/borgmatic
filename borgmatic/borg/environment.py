@@ -14,7 +14,7 @@ OPTION_TO_ENVIRONMENT_VARIABLE = {
     'temporary_directory': 'TMPDIR',
 }
 
-DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE = {
+DEFAULT_BOOL_OPTION_TO_UNCONDITIONAL_ENVIRONMENT_VARIABLE = {
     'check_i_know_what_i_am_doing': 'BORG_CHECK_I_KNOW_WHAT_I_AM_DOING',
 }
 
@@ -93,7 +93,7 @@ def make_environment(config):
     for (
         option_name,
         environment_variable_name,
-    ) in DEFAULT_BOOL_OPTION_TO_UPPERCASE_ENVIRONMENT_VARIABLE.items():
+    ) in DEFAULT_BOOL_OPTION_TO_UNCONDITIONAL_ENVIRONMENT_VARIABLE.items():
         value = config.get(option_name)
         if value is not None:
             environment[environment_variable_name] = 'YES' if value else 'NO'
