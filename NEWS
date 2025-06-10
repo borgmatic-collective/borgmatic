@@ -1,4 +1,6 @@
 2.0.7.dev0
+ * #1083: Add "debug_passphrase"/"display_passphrase" options and a "{unixtime}" placeholder in
+   support of Borg 2 features.
  * #1099: Clarify documentation on command hooks order of execution.
  * #1100: Fix a bug in which "borg --version" failing isn't considered a "fail" state in a command
    hook.
