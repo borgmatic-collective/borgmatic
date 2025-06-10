@@ -667,7 +667,7 @@ def make_parsers(schema, unparsed_arguments):
         dest='make_parent_directories',
         default=None,
         action='store_true',
-        help='Create any missing parent directories of the repository directory',
+        help='Create any missing parent directories of the repository directory [Borg 1.x only]',
     )
     repo_create_group.add_argument(
         '-h', '--help', action='help', help='Show this help message and exit'

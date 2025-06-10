@@ -90,9 +90,11 @@ def test_make_environment_without_configuration_sets_certain_environment_variabl
     assert environment == {
         'USER': 'root',
         'BORG_EXIT_CODES': 'modern',
-        'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'no',
-        'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'no',
-        'BORG_USE_CHUNKS_ARCHIVE': 'no',
+        'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'NO',
+        'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'NO',
+        'BORG_USE_CHUNKS_ARCHIVE': 'NO',
+        'BORG_DEBUG_PASSPHRASE': 'NO',
+        'BORG_DISPLAY_PASSPHRASE': 'NO',
     }
 
 
@@ -103,6 +105,8 @@ def test_make_environment_without_configuration_passes_through_default_environme
             'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yup',
             'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'nah',
             'BORG_USE_CHUNKS_ARCHIVE': 'yup',
+            'BORG_DEBUG_PASSPHRASE': 'nah',
+            'BORG_DISPLAY_PASSPHRASE': 'yup',
         }
     )
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -116,11 +120,13 @@ def test_make_environment_without_configuration_passes_through_default_environme
         'BORG_RELOCATED_REPO_ACCESS_IS_OK': 'yup',
         'BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK': 'nah',
         'BORG_USE_CHUNKS_ARCHIVE': 'yup',
+        'BORG_DEBUG_PASSPHRASE': 'nah',
+        'BORG_DISPLAY_PASSPHRASE': 'yup',
         'BORG_EXIT_CODES': 'modern',
     }
 
 
-def test_make_environment_with_relocated_repo_access_true_should_set_environment_yes():
+def test_make_environment_with_relocated_repo_access_true_should_set_environment_YES():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
@@ -128,10 +134,10 @@ def test_make_environment_with_relocated_repo_access_true_should_set_environment
     flexmock(module.os).should_receive('pipe').never()
     environment = module.make_environment({'relocated_repo_access_is_ok': True})
 
-    assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'yes'
+    assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'YES'
 
 
-def test_make_environment_with_relocated_repo_access_false_should_set_environment_no():
+def test_make_environment_with_relocated_repo_access_false_should_set_environment_NO():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
         'resolve_credential'
@@ -139,7 +145,7 @@ def test_make_environment_with_relocated_repo_access_false_should_set_environmen
     flexmock(module.os).should_receive('pipe').never()
     environment = module.make_environment({'relocated_repo_access_is_ok': False})
 
-    assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'no'
+    assert environment.get('BORG_RELOCATED_REPO_ACCESS_IS_OK') == 'NO'
 
 
 def test_make_environment_check_i_know_what_i_am_doing_true_should_set_environment_YES():
@@ -164,6 +170,50 @@ def test_make_environment_check_i_know_what_i_am_doing_false_should_set_environm
     assert environment.get('BORG_CHECK_I_KNOW_WHAT_I_AM_DOING') == 'NO'
 
 
+def test_make_environment_debug_passphrase_true_should_set_environment_YES():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'debug_passphrase': True})
+
+    assert environment.get('BORG_DEBUG_PASSPHRASE') == 'YES'
+
+
+def test_make_environment_debug_passphrase_false_should_set_environment_NO():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'debug_passphrase': False})
+
+    assert environment.get('BORG_DEBUG_PASSPHRASE') == 'NO'
+
+
+def test_make_environment_display_passphrase_true_should_set_environment_YES():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'display_passphrase': True})
+
+    assert environment.get('BORG_DISPLAY_PASSPHRASE') == 'YES'
+
+
+def test_make_environment_display_passphrase_false_should_set_environment_NO():
+    flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
+    flexmock(module.borgmatic.hooks.credential.parse).should_receive(
+        'resolve_credential'
+    ).and_return(None)
+    flexmock(module.os).should_receive('pipe').never()
+    environment = module.make_environment({'display_passphrase': False})
+
+    assert environment.get('BORG_DISPLAY_PASSPHRASE') == 'NO'
+
+
 def test_make_environment_with_integer_variable_value():
     flexmock(module.os).should_receive('environ').and_return({'USER': 'root'})
     flexmock(module.borgmatic.hooks.credential.parse).should_receive(
@@ -183,7 +233,7 @@ def test_make_environment_with_use_chunks_archive_should_set_correct_environment
     flexmock(module.os).should_receive('pipe').never()
 
     environment = module.make_environment({'use_chunks_archive': True})
-    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'yes'
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'YES'
 
     environment = module.make_environment({'use_chunks_archive': False})
-    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'no'
+    assert environment.get('BORG_USE_CHUNKS_ARCHIVE') == 'NO'
