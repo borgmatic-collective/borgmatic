@@ -121,6 +121,7 @@ def make_base_create_command(
     local_borg_version,
     global_arguments,
     borgmatic_runtime_directory,
+    archive_suffix='',
     local_path='borg',
     remote_path=None,
     json=False,
@@ -149,8 +150,9 @@ def make_base_create_command(
     lock_wait = config.get('lock_wait', None)
     list_filter_flags = flags.make_list_filter_flags(local_borg_version, dry_run)
     files_cache = config.get('files_cache')
-    archive_name_format = config.get(
-        'archive_name_format', flags.get_default_archive_name_format(local_borg_version)
+    archive_name_format = (
+        config.get('archive_name_format', flags.get_default_archive_name_format(local_borg_version))
+        + archive_suffix
     )
     extra_borg_options = config.get('extra_borg_options', {}).get('create', '')
 
@@ -269,6 +271,7 @@ def create_archive(
     local_borg_version,
     global_arguments,
     borgmatic_runtime_directory,
+    archive_suffix='',
     local_path='borg',
     remote_path=None,
     json=False,
@@ -294,6 +297,7 @@ def create_archive(
         local_borg_version,
         global_arguments,
         borgmatic_runtime_directory,
+        archive_suffix,
         local_path,
         remote_path,
         json,

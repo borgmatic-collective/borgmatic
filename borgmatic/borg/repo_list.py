@@ -1,4 +1,5 @@
 import argparse
+import json
 import logging
 
 import borgmatic.config.paths
@@ -29,6 +30,33 @@ def resolve_archive_name(
     if archive != 'latest':
         return archive
 
+    latest_archive = get_latest_archive(
+        repository_path,
+        config,
+        local_borg_version,
+        global_arguments,
+        local_path=local_path,
+        remote_path=remote_path,
+    )
+
+    return latest_archive['name']
+
+
+def get_latest_archive(
+    repository_path,
+    config,
+    local_borg_version,
+    global_arguments,
+    local_path='borg',
+    remote_path=None,
+    consider_checkpoints=False,
+):
+    '''
+    Returns a dict with information about the latest archive of a repository.
+
+    Raises ValueError if there are no archives in the repository.
+    '''
+
     full_command = (
         (
             local_path,
@@ -42,24 +70,28 @@ def resolve_archive_name(
         + flags.make_flags('umask', config.get('umask'))
         + flags.make_flags('log-json', config.get('log_json'))
         + flags.make_flags('lock-wait', config.get('lock_wait'))
+        + flags.make_flags('consider-checkpoints', consider_checkpoints)
         + flags.make_flags('last', 1)
-        + ('--short',)
+        + ('--json',)
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 
-    output = execute_command_and_capture_output(
+    json_output = execute_command_and_capture_output(
         full_command,
         environment=environment.make_environment(config),
         working_directory=borgmatic.config.paths.get_working_directory(config),
         borg_local_path=local_path,
         borg_exit_codes=config.get('borg_exit_codes'),
     )
+
+    archives = json.loads(json_output)['archives']
+
     try:
-        latest_archive = output.strip().splitlines()[-1]
+        latest_archive = archives[-1]
     except IndexError:
         raise ValueError('No archives found in the repository')
 
-    logger.debug(f'Latest archive is {latest_archive}')
+    logger.debug(f'Latest archive is {latest_archive["name"]}')
 
     return latest_archive
 

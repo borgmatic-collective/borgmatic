@@ -786,6 +786,34 @@ def test_make_base_create_command_includes_repository_and_archive_name_format_wi
     assert not pattern_file
 
 
+def test_make_base_create_command_includes_archive_suffix_in_borg_command():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        DEFAULT_ARCHIVE_NAME
+    )
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+        archive_suffix='.checkpoint',
+    )
+
+    assert create_flags == ('borg', 'create')
+    assert create_positional_arguments == (f'repo::{DEFAULT_ARCHIVE_NAME}.checkpoint',)
+    assert not pattern_file
+
+
 def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
