@@ -74,10 +74,10 @@ def run_create(
         )
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 
-        # If we have stream processes, we first create an archive with .checkpoint suffix.
-        # This is to make sure we only create a real archive if all the
-        # streaming processes completed successfully (create_archive will fail
-        # if a streaming process fails, but the archive might have already been created at this point).
+        # If we have stream processes, we first create an archive with .checkpoint suffix. This is
+        # to make sure we only create a real archive if all the streaming processes completed
+        # successfully (create_archive will fail if a streaming process fails, but the archive might
+        # have already been created at this point).
         use_checkpoint = bool(stream_processes)
 
         json_output = borgmatic.borg.create.create_archive(
