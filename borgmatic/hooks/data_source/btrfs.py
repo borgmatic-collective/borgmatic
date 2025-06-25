@@ -1,5 +1,6 @@
 import collections
 import glob
+import itertools
 import json
 import logging
 import os
@@ -21,9 +22,36 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
-def get_subvolume_mount_points(findmnt_command):
+def list_subvolume_paths(btrfs_command, subvolume_path):
     '''
-    Given a findmnt command to run, get all sorted Btrfs subvolume mount points.
+    Given the path of a Btrfs subvolume, return it in a sequence with the paths of its contained
+    subvolumes.
+
+    If the Btrfs command errors, log that error and return an empty sequence.
+    '''
+    try:
+        btrfs_output = borgmatic.execute.execute_command_and_capture_output(
+            tuple(btrfs_command.split(' ')) + ('subvolume', 'list', subvolume_path,),
+            close_fds=True,
+        )
+    except subprocess.CalledProcessError as error:
+        logger.debug(error)
+
+        return ()
+
+    return (subvolume_path,) + tuple(
+        os.path.join(subvolume_path, line.split(' ')[-1])
+        for line in btrfs_output.splitlines()
+    )
+
+
+FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION = 'subvolid=5'
+
+
+def get_all_subvolume_paths(btrfs_command, findmnt_command):
+    '''
+    Given btrfs and findmnt commands to run, get the sorted paths for all Btrfs subvolumes on the
+    system.
     '''
     findmnt_output = borgmatic.execute.execute_command_and_capture_output(
         tuple(findmnt_command.split(' '))
@@ -38,7 +66,20 @@ def get_subvolume_mount_points(findmnt_command):
 
     try:
         return tuple(
-            sorted(filesystem['target'] for filesystem in json.loads(findmnt_output)['filesystems'])
+            sorted(
+                itertools.chain.from_iterable(
+                    # If findmnt gave us a Btrfs root filesystem, list the subvolumes within it.
+                    # This is necessary because findmnt only returns a subvolume's mount point
+                    # rather than its original subvolume path (which can differ). For instance,
+                    # a subvolume might exist at /mnt/subvolume but be mounted at /home/myuser.
+                    # findmnt is still useful though because it's a global way to discover all
+                    # Btrfs subvolumes—even if we have to do some additional legwork ourselves.
+                    list_subvolume_paths(btrfs_command, filesystem['target']) if
+                    FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION in filesystem['options'].split(',')
+                    else (filesystem['target'],)
+                    for filesystem in json.loads(findmnt_output)['filesystems']
+                )
+            )
         )
     except json.JSONDecodeError as error:
         raise ValueError(f'Invalid {findmnt_command} JSON output: {error}')
@@ -74,11 +115,11 @@ def get_subvolume_property(btrfs_command, subvolume_path, property_name):
     }.get(value, value)
 
 
-def omit_read_only_subvolume_mount_points(btrfs_command, subvolume_paths):
+def omit_read_only_subvolume_paths(btrfs_command, subvolume_paths):
     '''
-    Given a Btrfs command to run and a sequence of Btrfs subvolume mount points, filter them down to
-    just those that are read-write. The idea is that Btrfs can't actually snapshot a read-only
-    subvolume, so we should just ignore them.
+    Given a Btrfs command to run and a sequence of Btrfs subvolume paths, filter them down to just
+    those that are read-write. The idea is that Btrfs can't actually snapshot a read-only subvolume,
+    so we should just ignore them.
     '''
     retained_subvolume_paths = []
 
@@ -94,32 +135,32 @@ def omit_read_only_subvolume_mount_points(btrfs_command, subvolume_paths):
 def get_subvolumes(btrfs_command, findmnt_command, patterns=None):
     '''
     Given a Btrfs command to run and a sequence of configured patterns, find the intersection
-    between the current Btrfs filesystem and subvolume mount points and the paths of any patterns.
-    The idea is that these pattern paths represent the requested subvolumes to snapshot.
+    between the current Btrfs filesystem and subvolume paths and the paths of any patterns.  The
+    idea is that these pattern paths represent the requested subvolumes to snapshot.
 
     Only include subvolumes that contain at least one root pattern sourced from borgmatic
     configuration (as opposed to generated elsewhere in borgmatic). But if patterns is None, then
     return all subvolumes instead, sorted by path.
 
-    Return the result as a sequence of matching subvolume mount points.
+    Return the result as a sequence of matching Subvolume instances.
     '''
     candidate_patterns = set(patterns or ())
     subvolumes = []
 
-    # For each subvolume mount point, match it against the given patterns to find the subvolumes to
+    # For each subvolume path, match it against the given patterns to find the subvolumes to
     # backup. Sort the subvolumes from longest to shortest mount points, so longer mount points get
     # a whack at the candidate pattern piñata before their parents do. (Patterns are consumed during
     # this process, so no two subvolumes end up with the same contained patterns.)
-    for mount_point in reversed(
-        omit_read_only_subvolume_mount_points(
-            btrfs_command, get_subvolume_mount_points(findmnt_command)
+    for subvolume_path in reversed(
+        omit_read_only_subvolume_paths(
+            btrfs_command, get_all_subvolume_paths(btrfs_command, findmnt_command)
         )
     ):
         subvolumes.extend(
-            Subvolume(mount_point, contained_patterns)
+            Subvolume(subvolume_path, contained_patterns)
             for contained_patterns in (
                 borgmatic.hooks.data_source.snapshot.get_contained_patterns(
-                    mount_point, candidate_patterns
+                    subvolume_path, candidate_patterns
                 ),
             )
             if patterns is None
@@ -244,9 +285,9 @@ def dump_data_sources(
     '''
     Given a Btrfs configuration dict, a configuration dict, the borgmatic configuration file paths,
     the borgmatic runtime directory, the configured patterns, and whether this is a dry run,
-    auto-detect and snapshot any Btrfs subvolume mount points listed in the given patterns. Also
-    update those patterns, replacing subvolume mount points with corresponding snapshot directories
-    so they get stored in the Borg archive instead.
+    auto-detect and snapshot any Btrfs subvolume paths listed in the given patterns. Also update
+    those patterns, replacing subvolume paths with corresponding snapshot directories so they get
+    stored in the Borg archive instead.
 
     Return an empty sequence, since there are no ongoing dump processes from this hook.
 
@@ -328,8 +369,8 @@ def remove_data_source_dumps(hook_config, config, borgmatic_runtime_directory, d
         logger.debug(error)
         return
 
-    # Reversing the sorted subvolumes ensures that we remove longer mount point paths of child
-    # subvolumes before the shorter mount point paths of parent subvolumes.
+    # Reversing the sorted subvolumes ensures that we remove longer paths of child subvolumes before
+    # the shorter paths of parent subvolumes.
     for subvolume in reversed(all_subvolumes):
         subvolume_snapshots_glob = borgmatic.config.paths.replace_temporary_subdirectory_with_glob(
             os.path.normpath(make_snapshot_path(subvolume.path)),
