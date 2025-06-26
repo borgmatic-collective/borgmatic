@@ -172,10 +172,10 @@ For any read-write subvolume you'd like backed up, add its subvolume path to
 borgmatic's `source_directories` option. Btrfs does not support snapshotting
 read-only subvolumes.
 
-<span class="minilink minilink-addedin">New in version 2.0.7</span> The
-subvolume path can be either the path of the subvolume itself or the mount point
-where the subvolume is mounted. Prior to version 2.0.7, only the mount point was
-supported (if it differed from the subvolume path).
+<span class="minilink minilink-addedin">New in version 2.0.7</span> The path can
+be either the path of the subvolume itself or the mount point where the
+subvolume is mounted. Prior to version 2.0.7, the subvolume path could not be
+used if the subvolume was mounted elsewhere; only the mount point could be used.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> Instead of
 using `source_directories`, you can include the subvolume path as a root pattern
