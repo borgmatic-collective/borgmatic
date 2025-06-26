@@ -1,5 +1,7 @@
 2.0.7.dev0
  * #1032: Fix a bug in which a Borg archive gets created even when a database hook fails.
+ * #1043: Support Btrfs subvolume paths in "source_directories" in addition to the existing support
+   for subvolume mount points.
  * #1083: Add "debug_passphrase"/"display_passphrase" options and a "{unixtime}" placeholder in
    support of Borg 2 features.
  * #1099: Clarify documentation on command hooks order of execution.

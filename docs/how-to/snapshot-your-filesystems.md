@@ -144,9 +144,8 @@ class="minilink minilink-addedin">Beta feature</span> borgmatic supports taking
 snapshots with the [Btrfs filesystem](https://btrfs.readthedocs.io/) and sending
 those snapshots to Borg for backup.
 
-To use this feature, first you need one or more Btrfs subvolumes on mounted
-filesystems. Then, enable Btrfs within borgmatic by adding the following line to
-your configuration file:
+To use this feature, first you need one or more Btrfs subvolumes. Then, enable
+Btrfs within borgmatic by adding the following line to your configuration file:
 
 ```yaml
 btrfs:
@@ -169,13 +168,18 @@ feedback](https://torsion.org/borgmatic/#issues) you have on this feature.
 
 #### Subvolume discovery
 
-For any read-write subvolume you'd like backed up, add its mount point path to
+For any read-write subvolume you'd like backed up, add its subvolume path to
 borgmatic's `source_directories` option. Btrfs does not support snapshotting
 read-only subvolumes.
 
-<span class="minilink minilink-addedin">New in version 1.9.6</span> Or include
-the mount point as a root pattern with borgmatic's `patterns` or `patterns_from`
-options.
+<span class="minilink minilink-addedin">New in version 2.0.7</span> The
+subvolume path can be either the path of the subvolume itself or the mount point
+where the subvolume is mounted. Prior to version 2.0.7, only the mount point was
+supported (if it differed from the subvolume path).
+
+<span class="minilink minilink-addedin">New in version 1.9.6</span> Instead of
+using `source_directories`, you can include the subvolume path as a root pattern
+with borgmatic's `patterns` or `patterns_from` options.
 
 During a backup, borgmatic snapshots these subvolumes (non-recursively) and
 includes the snapshotted files in the paths sent to Borg. borgmatic is also
@@ -184,25 +188,24 @@ responsible for cleaning up (deleting) these snapshots after a backup completes.
 borgmatic is smart enough to look at the parent (and grandparent, etc.)
 directories of each of your `source_directories` to discover any subvolumes. For
 instance, let's say you add `/var/log` and `/var/lib` to your source
-directories, but `/var` is a subvolume mount point. borgmatic will discover that
-and snapshot `/var` accordingly. This also works even with nested subvolumes;
+directories, but `/var` is a subvolume path. borgmatic will discover that and
+snapshot `/var` accordingly. This also works even with nested subvolumes;
 borgmatic selects the subvolume that's the "closest" parent to your source
 directories.
 
 <span class="minilink minilink-addedin">New in version 1.9.6</span> When using
 [patterns](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-patterns),
 the initial portion of a pattern's path that you intend borgmatic to match
-against a subvolume mount point can't have globs or other non-literal characters
-in it—or it won't actually match. For instance, a subvolume mount point of
-`/var` would match a pattern of `+ fm:/var/*/data`, but borgmatic isn't
-currently smart enough to match `/var` to a pattern like `+ fm:/v*/lib/data`.
+against a subvolume path can't have globs or other non-literal characters in
+it—or it won't actually match. For instance, a subvolume path of `/var` would
+match a pattern of `+ fm:/var/*/data`, but borgmatic isn't currently smart
+enough to match `/var` to a pattern like `+ fm:/v*/lib/data`.
 
 Additionally, borgmatic rewrites the snapshot file paths so that they appear at
 their original subvolume locations in a Borg archive. For instance, if your
-subvolume is mounted at `/var/subvolume`, then the snapshotted files will appear
-in an archive at `/var/subvolume` as well—even if borgmatic has to mount the
-snapshot somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform the
-backup.
+subvolume path is `/var/subvolume`, then the snapshotted files will appear in an
+archive at `/var/subvolume` as well—even if borgmatic has to mount the snapshot
+somewhere in `/var/subvolume/.borgmatic-snapshot-1234/` to perform the backup.
 
 <span class="minilink minilink-addedin">With Borg version 1.2 and
 earlier</span>Snapshotted files are instead stored at a path dependent on the
