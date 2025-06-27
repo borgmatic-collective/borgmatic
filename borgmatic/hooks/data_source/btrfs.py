@@ -22,26 +22,34 @@ def use_streaming(hook_config, config):  # pragma: no cover
     return False
 
 
-def list_subvolume_paths(btrfs_command, subvolume_path):
+def get_contained_subvolume_paths(btrfs_command, subvolume_path):
     '''
-    Given the path of a Btrfs subvolume, return it in a sequence with the paths of its contained
-    subvolumes.
+    Given the path of a Btrfs subvolume, return it in a sequence along with the paths of its
+    contained subvolumes.
 
-    If the Btrfs command errors, log that error and return an empty sequence.
+    If the btrfs command errors, log that error and return an empty sequence.
     '''
     try:
         btrfs_output = borgmatic.execute.execute_command_and_capture_output(
-            tuple(btrfs_command.split(' ')) + ('subvolume', 'list', subvolume_path,),
+            tuple(btrfs_command.split(' '))
+            + (
+                'subvolume',
+                'list',
+                subvolume_path,
+            ),
             close_fds=True,
         )
     except subprocess.CalledProcessError as error:
-        logger.debug(error)
+        logger.debug(
+            f'Ignoring Btrfs subvolume {subvolume_path} because of error listing its subvolumes: {error}'
+        )
 
         return ()
 
     return (subvolume_path,) + tuple(
         os.path.join(subvolume_path, line.split(' ')[-1])
         for line in btrfs_output.splitlines()
+        if line.strip()
     )
 
 
@@ -74,9 +82,11 @@ def get_all_subvolume_paths(btrfs_command, findmnt_command):
                     # a subvolume might exist at /mnt/subvolume but be mounted at /home/myuser.
                     # findmnt is still useful though because it's a global way to discover all
                     # Btrfs subvolumes—even if we have to do some additional legwork ourselves.
-                    list_subvolume_paths(btrfs_command, filesystem['target']) if
-                    FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION in filesystem['options'].split(',')
-                    else (filesystem['target'],)
+                    (
+                        get_contained_subvolume_paths(btrfs_command, filesystem['target'])
+                        if FINDMNT_BTRFS_ROOT_SUBVOLUME_OPTION in filesystem['options'].split(',')
+                        else (filesystem['target'],)
+                    )
                     for filesystem in json.loads(findmnt_output)['filesystems']
                 )
             )
@@ -91,6 +101,12 @@ Subvolume = collections.namedtuple('Subvolume', ('path', 'contained_patterns'), 
 
 
 def get_subvolume_property(btrfs_command, subvolume_path, property_name):
+    '''
+    Given a btrfs command, a subvolume path, and a property name to lookup, return the value of the
+    corresponding property.
+
+    Raise subprocess.CalledProcessError if the btrfs command errors.
+    '''
     output = borgmatic.execute.execute_command_and_capture_output(
         tuple(btrfs_command.split(' '))
         + (
@@ -124,10 +140,15 @@ def omit_read_only_subvolume_paths(btrfs_command, subvolume_paths):
     retained_subvolume_paths = []
 
     for subvolume_path in subvolume_paths:
-        if get_subvolume_property(btrfs_command, subvolume_path, 'ro'):
-            logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
-        else:
-            retained_subvolume_paths.append(subvolume_path)
+        try:
+            if get_subvolume_property(btrfs_command, subvolume_path, 'ro'):
+                logger.debug(f'Ignoring Btrfs subvolume {subvolume_path} because it is read-only')
+            else:
+                retained_subvolume_paths.append(subvolume_path)
+        except subprocess.CalledProcessError as error:
+            logger.debug(
+                f'Error determining read-only status of Btrfs subvolume {subvolume_path}: {error}'
+            )
 
     return tuple(retained_subvolume_paths)
 

@@ -5,7 +5,31 @@ from borgmatic.borg.pattern import Pattern, Pattern_source, Pattern_style, Patte
 from borgmatic.hooks.data_source import btrfs as module
 
 
-def test_get_subvolume_mount_points_parses_findmnt_output():
+def test_get_contained_subvolume_paths_parses_btrfs_output():
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('btrfs', 'subvolume', 'list', '/mnt0'), close_fds=True).and_return(
+        'ID 256 gen 28 top level 5 path @sub\nID 258 gen 17 top level 5 path snap\n\n'
+    )
+
+    assert module.get_contained_subvolume_paths('btrfs', '/mnt0') == (
+        '/mnt0',
+        '/mnt0/@sub',
+        '/mnt0/snap',
+    )
+
+
+def test_get_contained_subvolume_paths_swallows_called_process_error():
+    flexmock(module.borgmatic.execute).should_receive(
+        'execute_command_and_capture_output'
+    ).with_args(('btrfs', 'subvolume', 'list', '/mnt0'), close_fds=True).and_raise(
+        module.subprocess.CalledProcessError(1, 'btrfs')
+    )
+
+    assert module.get_contained_subvolume_paths('btrfs', '/mnt0') == ()
+
+
+def test_get_all_subvolume_paths_parses_findmnt_output():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return(
@@ -22,31 +46,53 @@ def test_get_subvolume_mount_points_parses_findmnt_output():
                  "source": "/dev/loop0",
                  "fstype": "btrfs",
                  "options": "rw,relatime,ssd,space_cache=v2,subvolid=5,subvol=/"
+              },
+              {
+                 "target": "/mnt2",
+                 "source": "/dev/loop0",
+                 "fstype": "btrfs",
+                 "options": "rw,relatime,ssd,space_cache=v2,subvolid=256,subvol=/"
               }
            ]
         }
         '''
     )
+    flexmock(module).should_receive('get_contained_subvolume_paths').with_args(
+        'btrfs', '/mnt0'
+    ).and_return(('/mnt0',))
+    flexmock(module).should_receive('get_contained_subvolume_paths').with_args(
+        'btrfs', '/mnt1'
+    ).and_return(('/mnt1', '/mnt1/sub'))
+    flexmock(module).should_receive('get_contained_subvolume_paths').with_args(
+        'btrfs', '/mnt2'
+    ).never()
 
-    assert module.get_subvolume_mount_points('findmnt') == ('/mnt0', '/mnt1')
+    assert module.get_all_subvolume_paths('btrfs', 'findmnt') == (
+        '/mnt0',
+        '/mnt1',
+        '/mnt1/sub',
+        '/mnt2',
+    )
 
 
-def test_get_subvolume_mount_points_with_invalid_findmnt_json_errors():
+def test_get_all_subvolume_paths_with_invalid_findmnt_json_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return('{')
+    flexmock(module).should_receive('get_contained_subvolume_paths').never()
 
     with pytest.raises(ValueError):
-        module.get_subvolume_mount_points('findmnt')
+        module.get_all_subvolume_paths('btrfs', 'findmnt')
 
 
-def test_get_subvolume_mount_points_with_findmnt_json_missing_filesystems_errors():
+def test_get_all_subvolume_paths_with_findmnt_json_missing_filesystems_errors():
     flexmock(module.borgmatic.execute).should_receive(
         'execute_command_and_capture_output'
     ).and_return('{"wtf": "something is wrong here"}')
+    flexmock(module).should_receive('get_contained_subvolume_paths').never()
 
     with pytest.raises(ValueError):
-        module.get_subvolume_mount_points('findmnt')
+        module.get_all_subvolume_paths('btrfs', 'findmnt')
 
 
 def test_get_subvolume_property_with_invalid_btrfs_output_errors():
@@ -82,7 +128,7 @@ def test_get_subvolume_property_passes_through_general_value():
     assert module.get_subvolume_property('btrfs', '/foo', 'thing') == 'value'
 
 
-def test_omit_read_only_subvolume_mount_points_filters_out_read_only():
+def test_omit_read_only_subvolume_paths_filters_out_read_only_subvolumes():
     flexmock(module).should_receive('get_subvolume_property').with_args(
         'btrfs', '/foo', 'ro'
     ).and_return(False)
@@ -93,17 +139,29 @@ def test_omit_read_only_subvolume_mount_points_filters_out_read_only():
         'btrfs', '/baz', 'ro'
     ).and_return(False)
 
-    assert module.omit_read_only_subvolume_mount_points('btrfs', ('/foo', '/bar', '/baz')) == (
+    assert module.omit_read_only_subvolume_paths('btrfs', ('/foo', '/bar', '/baz')) == (
         '/foo',
         '/baz',
     )
 
 
+def test_omit_read_only_subvolume_paths_filters_out_erroring_subvolumes():
+    flexmock(module).should_receive('get_subvolume_property').with_args(
+        'btrfs', '/foo', 'ro'
+    ).and_raise(module.subprocess.CalledProcessError(1, 'btrfs'))
+    flexmock(module).should_receive('get_subvolume_property').with_args(
+        'btrfs', '/bar', 'ro'
+    ).and_return(True)
+    flexmock(module).should_receive('get_subvolume_property').with_args(
+        'btrfs', '/baz', 'ro'
+    ).and_return(False)
+
+    assert module.omit_read_only_subvolume_paths('btrfs', ('/foo', '/bar', '/baz')) == ('/baz',)
+
+
 def test_get_subvolumes_collects_subvolumes_matching_patterns():
-    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('omit_read_only_subvolume_mount_points').and_return(
-        ('/mnt1', '/mnt2')
-    )
+    flexmock(module).should_receive('get_all_subvolume_paths').and_return(('/mnt1', '/mnt2'))
+    flexmock(module).should_receive('omit_read_only_subvolume_paths').and_return(('/mnt1', '/mnt2'))
 
     contained_pattern = Pattern(
         '/mnt1',
@@ -128,10 +186,8 @@ def test_get_subvolumes_collects_subvolumes_matching_patterns():
 
 
 def test_get_subvolumes_skips_non_root_patterns():
-    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('omit_read_only_subvolume_mount_points').and_return(
-        ('/mnt1', '/mnt2')
-    )
+    flexmock(module).should_receive('get_all_subvolume_paths').and_return(('/mnt1', '/mnt2'))
+    flexmock(module).should_receive('omit_read_only_subvolume_paths').and_return(('/mnt1', '/mnt2'))
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
@@ -162,10 +218,8 @@ def test_get_subvolumes_skips_non_root_patterns():
 
 
 def test_get_subvolumes_skips_non_config_patterns():
-    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('omit_read_only_subvolume_mount_points').and_return(
-        ('/mnt1', '/mnt2')
-    )
+    flexmock(module).should_receive('get_all_subvolume_paths').and_return(('/mnt1', '/mnt2'))
+    flexmock(module).should_receive('omit_read_only_subvolume_paths').and_return(('/mnt1', '/mnt2'))
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
@@ -196,10 +250,8 @@ def test_get_subvolumes_skips_non_config_patterns():
 
 
 def test_get_subvolumes_without_patterns_collects_all_subvolumes():
-    flexmock(module).should_receive('get_subvolume_mount_points').and_return(('/mnt1', '/mnt2'))
-    flexmock(module).should_receive('omit_read_only_subvolume_mount_points').and_return(
-        ('/mnt1', '/mnt2')
-    )
+    flexmock(module).should_receive('get_all_subvolume_paths').and_return(('/mnt1', '/mnt2'))
+    flexmock(module).should_receive('omit_read_only_subvolume_paths').and_return(('/mnt1', '/mnt2'))
 
     flexmock(module.borgmatic.hooks.data_source.snapshot).should_receive(
         'get_contained_patterns'
