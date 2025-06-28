@@ -7,6 +7,9 @@ import borgmatic.hooks.credential.parse
 logger = logging.getLogger(__name__)
 
 
+TIMEOUT_SECONDS = 10
+
+
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -28,7 +31,7 @@ def send_zabbix_request(server, headers, data):
     logger.debug(f'Sending a "{data["method"]}" request to the Zabbix server')
 
     try:
-        response = requests.post(server, headers=headers, json=data)
+        response = requests.post(server, headers=headers, json=data, timeout=TIMEOUT_SECONDS)
 
         if not response.ok:
             response.raise_for_status()

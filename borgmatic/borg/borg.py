@@ -60,7 +60,7 @@ def run_arbitrary_borg(
     return execute_command(
         tuple(shlex.quote(part) for part in full_command),
         output_file=DO_NOT_CAPTURE,
-        shell=True,
+        shell=True,  # noqa: S604
         environment=dict(
             (environment.make_environment(config) or {}),
             **{

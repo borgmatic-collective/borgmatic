@@ -6,6 +6,9 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+TIMEOUT_SECONDS = 10
+
+
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -61,7 +64,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
-        response = requests.post(f'{cron_url}?status={status}')
+        response = requests.post(f'{cron_url}?status={status}', timeout=TIMEOUT_SECONDS)
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:

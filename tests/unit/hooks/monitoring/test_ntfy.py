@@ -43,6 +43,7 @@ def test_ping_monitor_minimal_config_hits_hosted_ntfy_on_fail():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -67,6 +68,7 @@ def test_ping_monitor_with_access_token_hits_hosted_ntfy_on_fail():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=module.requests.auth.HTTPBasicAuth('', 'abc123'),
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -93,6 +95,7 @@ def test_ping_monitor_with_username_password_and_access_token_ignores_username_p
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=module.requests.auth.HTTPBasicAuth('', 'abc123'),
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
     flexmock(module.logger).should_receive('warning').once()
 
@@ -119,6 +122,7 @@ def test_ping_monitor_with_username_password_hits_hosted_ntfy_on_fail():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=module.requests.auth.HTTPBasicAuth('testuser', 'fakepassword'),
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -140,6 +144,7 @@ def test_ping_monitor_with_password_but_no_username_warns():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
     flexmock(module.logger).should_receive('warning').once()
 
@@ -162,6 +167,7 @@ def test_ping_monitor_with_username_but_no_password_warns():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
     flexmock(module.logger).should_receive('warning').once()
 
@@ -218,6 +224,7 @@ def test_ping_monitor_minimal_config_hits_selfhosted_ntfy_on_fail():
         f'{custom_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -253,7 +260,7 @@ def test_ping_monitor_custom_message_hits_hosted_ntfy_on_fail():
         'resolve_credential'
     ).replace_with(lambda value, config: value)
     flexmock(module.requests).should_receive('post').with_args(
-        f'{default_base_url}/{topic}', headers=custom_message_headers, auth=None
+        f'{default_base_url}/{topic}', headers=custom_message_headers, auth=None, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -275,6 +282,7 @@ def test_ping_monitor_custom_state_hits_hosted_ntfy_on_start():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.START),
         auth=None,
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -296,6 +304,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -340,6 +349,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         f'{default_base_url}/{topic}',
         headers=return_default_message_headers(borgmatic.hooks.monitoring.monitor.State.FAIL),
         auth=None,
+        timeout=int,
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

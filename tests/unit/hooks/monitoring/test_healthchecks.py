@@ -79,7 +79,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
     ).never()
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8'), verify=True
+        'https://example.com/start', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -100,7 +100,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
         'format_buffered_logs_for_payload'
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com', data=payload.encode('utf-8'), verify=True
+        'https://example.com', data=payload.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -121,7 +121,7 @@ def test_ping_monitor_hits_ping_url_for_fail_state():
         'format_buffered_logs_for_payload'
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/fail', data=payload.encode('utf'), verify=True
+        'https://example.com/fail', data=payload.encode('utf'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -142,7 +142,7 @@ def test_ping_monitor_hits_ping_url_for_log_state():
         'format_buffered_logs_for_payload'
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/log', data=payload.encode('utf'), verify=True
+        'https://example.com/log', data=payload.encode('utf'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -166,6 +166,7 @@ def test_ping_monitor_with_ping_uuid_hits_corresponding_url():
         f"https://hc-ping.com/{hook_config['ping_url']}",
         data=payload.encode('utf-8'),
         verify=True,
+        timeout=int,
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -186,7 +187,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
         'format_buffered_logs_for_payload'
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com', data=payload.encode('utf-8'), verify=False
+        'https://example.com', data=payload.encode('utf-8'), verify=False, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -207,7 +208,7 @@ def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
         'format_buffered_logs_for_payload'
     ).and_return(payload)
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com', data=payload.encode('utf-8'), verify=True
+        'https://example.com', data=payload.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -260,7 +261,7 @@ def test_ping_monitor_hits_ping_url_when_states_matching():
     ).never()
     hook_config = {'ping_url': 'https://example.com', 'states': ['start', 'finish']}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8'), verify=True
+        'https://example.com/start', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -279,7 +280,7 @@ def test_ping_monitor_adds_create_query_parameter_when_create_slug_true():
     ).never()
     hook_config = {'ping_url': 'https://example.com', 'create_slug': True}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start?create=1', data=''.encode('utf-8'), verify=True
+        'https://example.com/start?create=1', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -298,7 +299,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_create_slug_false
     ).never()
     hook_config = {'ping_url': 'https://example.com', 'create_slug': False}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8'), verify=True
+        'https://example.com/start', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -317,6 +318,7 @@ def test_ping_monitor_does_not_add_create_query_parameter_when_ping_url_is_uuid(
         f"https://hc-ping.com/{hook_config['ping_url']}",
         data=''.encode('utf-8'),
         verify=True,
+        timeout=int,
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -352,7 +354,7 @@ def test_ping_monitor_with_connection_error_logs_warning():
     ).never()
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8'), verify=True
+        'https://example.com/start', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -376,7 +378,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.requests.exceptions.RequestException
     )
     flexmock(module.requests).should_receive('post').with_args(
-        'https://example.com/start', data=''.encode('utf-8'), verify=True
+        'https://example.com/start', data=''.encode('utf-8'), verify=True, timeout=int
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

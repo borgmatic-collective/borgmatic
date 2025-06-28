@@ -15,6 +15,7 @@ MONITOR_STATE_TO_LOKI = {
     monitor.State.FINISH: 'Finished',
     monitor.State.FAIL: 'Failed',
 }
+TIMEOUT_SECONDS = 10
 
 # Threshold at which logs get flushed to loki
 MAX_BUFFER_LINES = 100
@@ -69,7 +70,9 @@ class Loki_log_buffer:
         request_header = {'Content-Type': 'application/json'}
 
         try:
-            result = requests.post(self.url, headers=request_header, data=request_body, timeout=5)
+            result = requests.post(
+                self.url, headers=request_header, data=request_body, timeout=TIMEOUT_SECONDS
+            )
             result.raise_for_status()
         except requests.RequestException:
             logger.warning('Failed to upload logs to loki')

@@ -10,7 +10,7 @@ CUSTOM_PUSH_URL = 'https://uptime.example.com/api/push/efgh5678'
 def test_ping_monitor_hits_default_uptimekuma_on_fail():
     hook_config = {}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{DEFAULT_PUSH_URL}?status=down&msg=fail', verify=True
+        f'{DEFAULT_PUSH_URL}?status=down&msg=fail', verify=True, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -26,7 +26,7 @@ def test_ping_monitor_hits_default_uptimekuma_on_fail():
 def test_ping_monitor_hits_custom_uptimekuma_on_fail():
     hook_config = {'push_url': CUSTOM_PUSH_URL}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True
+        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -42,7 +42,7 @@ def test_ping_monitor_hits_custom_uptimekuma_on_fail():
 def test_ping_monitor_custom_uptimekuma_on_start():
     hook_config = {'push_url': CUSTOM_PUSH_URL}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=up&msg=start', verify=True
+        f'{CUSTOM_PUSH_URL}?status=up&msg=start', verify=True, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -58,7 +58,7 @@ def test_ping_monitor_custom_uptimekuma_on_start():
 def test_ping_monitor_custom_uptimekuma_on_finish():
     hook_config = {'push_url': CUSTOM_PUSH_URL}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=up&msg=finish', verify=True
+        f'{CUSTOM_PUSH_URL}?status=up&msg=finish', verify=True, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -116,7 +116,7 @@ def test_ping_monitor_does_not_hit_custom_uptimekuma_on_finish_dry_run():
 def test_ping_monitor_with_connection_error_logs_warning():
     hook_config = {'push_url': CUSTOM_PUSH_URL}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True
+        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True, timeout=int
     ).and_raise(module.requests.exceptions.ConnectionError)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -137,7 +137,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.requests.exceptions.RequestException
     )
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True
+        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True, timeout=int
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 
@@ -168,7 +168,7 @@ def test_ping_monitor_with_invalid_run_state():
 def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
     hook_config = {'push_url': CUSTOM_PUSH_URL, 'verify_tls': False}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=False
+        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=False, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -184,7 +184,7 @@ def test_ping_monitor_skips_ssl_verification_when_verify_tls_false():
 def test_ping_monitor_executes_ssl_verification_when_verify_tls_true():
     hook_config = {'push_url': CUSTOM_PUSH_URL, 'verify_tls': True}
     flexmock(module.requests).should_receive('get').with_args(
-        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True
+        f'{CUSTOM_PUSH_URL}?status=down&msg=fail', verify=True, timeout=int
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(

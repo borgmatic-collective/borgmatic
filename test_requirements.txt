@@ -1,6 +1,7 @@
 appdirs==1.4.4
 apprise==1.9.3
 attrs==25.3.0
+bandit==1.8.5
 black==25.1.0
 certifi==2025.6.15
 chardet==5.2.0
@@ -8,6 +9,7 @@ click==8.2.1
 codespell==2.4.1
 coverage==7.9.1
 flake8==7.3.0
+flake8-bandit==4.1.1
 flake8-quotes==3.4.0
 flake8-use-fstring==1.4
 flake8-variables-names==0.0.6
@@ -19,6 +21,7 @@ Markdown==3.8.2
 mccabe==0.7.0
 packaging==25.0
 pathspec==0.12.1
+pbr==6.1.1
 pluggy==1.6.0
 py==1.11.0
 pycodestyle==2.14.0

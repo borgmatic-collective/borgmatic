@@ -6,7 +6,7 @@ from borgmatic.hooks.monitoring import cronhub as module
 def test_ping_monitor_rewrites_ping_url_for_start_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef'
+        'https://example.com/start/abcdef', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -22,7 +22,7 @@ def test_ping_monitor_rewrites_ping_url_for_start_state():
 def test_ping_monitor_rewrites_ping_url_and_state_for_start_state():
     hook_config = {'ping_url': 'https://example.com/ping/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef'
+        'https://example.com/start/abcdef', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -38,7 +38,7 @@ def test_ping_monitor_rewrites_ping_url_and_state_for_start_state():
 def test_ping_monitor_rewrites_ping_url_for_finish_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/finish/abcdef'
+        'https://example.com/finish/abcdef', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -54,7 +54,7 @@ def test_ping_monitor_rewrites_ping_url_for_finish_state():
 def test_ping_monitor_rewrites_ping_url_for_fail_state():
     hook_config = {'ping_url': 'https://example.com/start/abcdef'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/fail/abcdef'
+        'https://example.com/fail/abcdef', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -105,7 +105,7 @@ def test_ping_monitor_with_other_error_logs_warning():
         module.requests.exceptions.RequestException
     )
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/start/abcdef'
+        'https://example.com/start/abcdef', timeout=int
     ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 

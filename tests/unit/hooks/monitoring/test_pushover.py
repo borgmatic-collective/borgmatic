@@ -23,6 +23,7 @@ def test_ping_monitor_config_with_minimum_config_fail_state_backup_successfully_
             'user': '983hfe0of902lkjfa2amanfgui',
             'message': 'fail',
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -81,6 +82,7 @@ def test_ping_monitor_start_state_backup_default_message_successfully_send_to_pu
             'user': '983hfe0of902lkjfa2amanfgui',
             'message': 'start',
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -117,6 +119,7 @@ def test_ping_monitor_start_state_backup_custom_message_successfully_send_to_pus
             'user': '983hfe0of902lkjfa2amanfgui',
             'message': 'custom start message',
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -155,6 +158,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
             'retry': 30,
             'expire': 600,
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -193,6 +197,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
             'retry': 30,
             'expire': 600,
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -231,6 +236,7 @@ def test_ping_monitor_start_state_backup_default_message_with_priority_emergency
             'retry': 30,
             'expire': 600,
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -328,6 +334,7 @@ def test_ping_monitor_start_state_backup_based_on_documentation_advanced_example
             'html': 1,
             'ttl': 10,
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -399,6 +406,7 @@ def test_ping_monitor_fail_state_backup_based_on_documentation_advanced_example_
             'url': 'https://ticketing-system.example.com/login',
             'url_title': 'Login to ticketing system',
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -467,6 +475,7 @@ def test_ping_monitor_finish_state_backup_based_on_documentation_advanced_exampl
             'url': 'https://ticketing-system.example.com/login',
             'url_title': 'Login to ticketing system',
         },
+        timeout=int,
     ).and_return(flexmock(ok=True)).once()
 
     module.ping_monitor(
@@ -550,6 +559,7 @@ def test_ping_monitor_push_post_error_bails():
             'user': '983hfe0of902lkjfa2amanfgui',
             'message': 'fail',
         },
+        timeout=int,
     ).and_return(push_response).once()
 
     flexmock(module.logger).should_receive('warning').once()

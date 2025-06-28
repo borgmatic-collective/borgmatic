@@ -224,7 +224,7 @@ def dump_data_sources(
                 dump.create_parent_directory_for_dump(dump_filename)
                 execute_command(
                     command,
-                    shell=True,
+                    shell=True,  # noqa: S604
                     environment=environment,
                 )
             else:
@@ -232,7 +232,7 @@ def dump_data_sources(
                 processes.append(
                     execute_command(
                         command,
-                        shell=True,
+                        shell=True,  # noqa: S604
                         environment=environment,
                         run_to_completion=False,
                     )

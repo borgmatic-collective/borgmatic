@@ -938,8 +938,8 @@ def test_collect_spot_check_source_paths_uses_working_directory():
 
 
 def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -979,8 +979,8 @@ def test_compare_spot_check_hashes_returns_paths_having_failing_hashes():
 
 
 def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1020,8 +1020,8 @@ def test_compare_spot_check_hashes_returns_relative_paths_having_failing_hashes(
 
 
 def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1061,8 +1061,8 @@ def test_compare_spot_check_hashes_handles_data_sample_percentage_above_100():
 
 
 def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1101,8 +1101,8 @@ def test_compare_spot_check_hashes_uses_xxh64sum_command_option():
 
 
 def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_matching():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1138,8 +1138,8 @@ def test_compare_spot_check_hashes_considers_path_missing_from_archive_as_not_ma
 
 
 def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1174,8 +1174,8 @@ def test_compare_spot_check_hashes_considers_symlink_path_as_not_matching():
 
 
 def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1211,8 +1211,8 @@ def test_compare_spot_check_hashes_considers_non_existent_path_as_not_matching()
 
 def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in_chunks():
     flexmock(module).SAMPLE_PATHS_SUBSET_COUNT = 2
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         None,
@@ -1257,8 +1257,8 @@ def test_compare_spot_check_hashes_with_too_many_paths_feeds_them_to_commands_in
 
 
 def test_compare_spot_check_hashes_uses_working_directory_to_access_source_paths():
-    flexmock(module.random).should_receive('sample').replace_with(
-        lambda population, count: population[:count]
+    flexmock(module.random).should_receive('SystemRandom').and_return(
+        flexmock(sample=lambda population, count: population[:count])
     )
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(
         '/working/dir',

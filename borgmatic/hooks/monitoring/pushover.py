@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 EMERGENCY_PRIORITY = 2
+TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
@@ -79,6 +80,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                 'https://api.pushover.net/1/messages.json',
                 headers={'Content-type': 'application/x-www-form-urlencoded'},
                 data=data,
+                timeout=TIMEOUT_SECONDS,
             )
             if not response.ok:
                 response.raise_for_status()

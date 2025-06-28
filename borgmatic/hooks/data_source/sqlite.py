@@ -88,7 +88,9 @@ def dump_data_sources(
             continue
 
         dump.create_named_pipe_for_dump(dump_filename)
-        processes.append(execute_command(command, shell=True, run_to_completion=False))
+        processes.append(
+            execute_command(command, shell=True, run_to_completion=False)  # noqa: S604
+        )
 
     if not dry_run:
         patterns.append(

@@ -750,7 +750,7 @@ def log_error_records(
     except (ValueError, OSError) as error:
         yield log_record(levelno=levelno, levelname=level_name, msg=str(message))
         yield log_record(levelno=levelno, levelname=level_name, msg=str(error))
-    except:  # noqa: E722
+    except:  # noqa: E722, S110
         # Raising above only as a means of determining the error type. Swallow the exception here
         # because we don't want the exception to propagate out of this function.
         pass

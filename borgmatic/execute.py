@@ -313,7 +313,7 @@ def execute_command(
         stdin=input_file,
         stdout=None if do_not_capture else (output_file or subprocess.PIPE),
         stderr=None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT),
-        shell=shell,
+        shell=shell,  # noqa: S602
         env=environment,
         cwd=working_directory,
         close_fds=close_fds,
@@ -363,7 +363,7 @@ def execute_command_and_capture_output(
             command,
             stdin=input_file,
             stderr=subprocess.STDOUT if capture_stderr else None,
-            shell=shell,
+            shell=shell,  # noqa: S602
             env=environment,
             cwd=working_directory,
             close_fds=close_fds,
@@ -423,7 +423,7 @@ def execute_command_with_processes(
             stderr=(
                 None if do_not_capture else (subprocess.PIPE if output_file else subprocess.STDOUT)
             ),
-            shell=shell,
+            shell=shell,  # noqa: S602
             env=environment,
             cwd=working_directory,
             close_fds=close_fds,

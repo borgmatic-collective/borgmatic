@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 EVENTS_API_URL = 'https://events.pagerduty.com/v2/enqueue'
 DEFAULT_LOGS_PAYLOAD_LIMIT_BYTES = 10000
 HANDLER_IDENTIFIER = 'pagerduty'
+TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
@@ -94,7 +95,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
 
     logging.getLogger('urllib3').setLevel(logging.ERROR)
     try:
-        response = requests.post(EVENTS_API_URL, data=payload.encode('utf-8'))
+        response = requests.post(
+            EVENTS_API_URL, data=payload.encode('utf-8'), timeout=TIMEOUT_SECONDS
+        )
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:

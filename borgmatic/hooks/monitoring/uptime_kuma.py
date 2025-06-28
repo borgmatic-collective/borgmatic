@@ -5,6 +5,9 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+TIMEOUT_SECONDS = 10
+
+
 def initialize_monitor(
     push_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -37,7 +40,11 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     logging.getLogger('urllib3').setLevel(logging.ERROR)
 
     try:
-        response = requests.get(f'{push_url}?{query}', verify=hook_config.get('verify_tls', True))
+        response = requests.get(
+            f'{push_url}?{query}',
+            verify=hook_config.get('verify_tls', True),
+            timeout=TIMEOUT_SECONDS,
+        )
         if not response.ok:
             response.raise_for_status()
     except requests.exceptions.RequestException as error:

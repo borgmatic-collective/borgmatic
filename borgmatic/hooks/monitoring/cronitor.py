@@ -11,6 +11,7 @@ MONITOR_STATE_TO_CRONITOR = {
     monitor.State.FINISH: 'complete',
     monitor.State.FAIL: 'fail',
 }
+TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(
@@ -40,7 +41,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
     if not dry_run:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         try:
-            response = requests.get(ping_url)
+            response = requests.get(ping_url, timeout=TIMEOUT_SECONDS)
             if not response.ok:
                 response.raise_for_status()
         except requests.exceptions.RequestException as error:

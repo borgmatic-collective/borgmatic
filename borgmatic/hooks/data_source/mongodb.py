@@ -74,11 +74,12 @@ def dump_data_sources(
 
         if dump_format == 'directory':
             dump.create_parent_directory_for_dump(dump_filename)
-            execute_command(command, shell=True)
+            execute_command(command, shell=True)  # noqa: S604
         else:
             dump.create_named_pipe_for_dump(dump_filename)
-            processes.append(execute_command(command, shell=True, run_to_completion=False))
-
+            processes.append(
+                execute_command(command, shell=True, run_to_completion=False)  # noqa: S604
+            )
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(

@@ -7,6 +7,9 @@ import borgmatic.hooks.credential.parse
 logger = logging.getLogger(__name__)
 
 
+TIMEOUT_SECONDS = 10
+
+
 def initialize_monitor(
     ping_url, config, config_filename, monitoring_log_level, dry_run
 ):  # pragma: no cover
@@ -82,7 +85,9 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         if not dry_run:
             logging.getLogger('urllib3').setLevel(logging.ERROR)
             try:
-                response = requests.post(f'{base_url}/{topic}', headers=headers, auth=auth)
+                response = requests.post(
+                    f'{base_url}/{topic}', headers=headers, auth=auth, timeout=TIMEOUT_SECONDS
+                )
                 if not response.ok:
                     response.raise_for_status()
             except requests.exceptions.RequestException as error:

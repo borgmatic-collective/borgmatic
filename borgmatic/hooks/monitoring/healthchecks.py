@@ -17,6 +17,7 @@ MONITOR_STATE_TO_HEALTHCHECKS = {
 
 DEFAULT_PING_BODY_LIMIT_BYTES = 100000
 HANDLER_IDENTIFIER = 'healthchecks'
+TIMEOUT_SECONDS = 10
 
 
 def initialize_monitor(hook_config, config, config_filename, monitoring_log_level, dry_run):
@@ -84,7 +85,10 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
         logging.getLogger('urllib3').setLevel(logging.ERROR)
         try:
             response = requests.post(
-                ping_url, data=payload.encode('utf-8'), verify=hook_config.get('verify_tls', True)
+                ping_url,
+                data=payload.encode('utf-8'),
+                verify=hook_config.get('verify_tls', True),
+                timeout=TIMEOUT_SECONDS,
             )
             if not response.ok:
                 response.raise_for_status()

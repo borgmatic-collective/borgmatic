@@ -486,7 +486,7 @@ def compare_spot_check_hashes(
     sample_count = max(
         int(len(source_paths) * (min(spot_check_config['data_sample_percentage'], 100) / 100)), 1
     )
-    source_sample_paths = tuple(random.sample(source_paths, sample_count))
+    source_sample_paths = tuple(random.SystemRandom().sample(source_paths, sample_count))
     working_directory = borgmatic.config.paths.get_working_directory(config)
     hashable_source_sample_path = {
         source_path

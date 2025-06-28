@@ -74,7 +74,7 @@ def test_send_zabbix_request_with_post_error_bails():
     )
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data
+        server, headers=headers, json=data, timeout=int
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -89,7 +89,7 @@ def test_send_zabbix_request_with_invalid_json_response_bails():
     response.should_receive('json').and_raise(module.requests.exceptions.JSONDecodeError)
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data
+        server, headers=headers, json=data, timeout=int
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -103,7 +103,7 @@ def test_send_zabbix_request_with_success_returns_response_result():
     response.should_receive('json').and_return({'result': {'foo': 'bar'}})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data
+        server, headers=headers, json=data, timeout=int
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) == {'foo': 'bar'}
@@ -117,7 +117,7 @@ def test_send_zabbix_request_with_success_passes_through_missing_result():
     response.should_receive('json').and_return({})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data
+        server, headers=headers, json=data, timeout=int
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None
@@ -131,7 +131,7 @@ def test_send_zabbix_request_with_error_bails():
     response.should_receive('json').and_return({'result': {'data': [{'error': 'oops'}]}})
 
     flexmock(module.requests).should_receive('post').with_args(
-        server, headers=headers, json=data
+        server, headers=headers, json=data, timeout=int
     ).and_return(response)
 
     assert module.send_zabbix_request(server, headers, data) is None

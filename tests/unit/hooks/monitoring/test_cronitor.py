@@ -5,9 +5,9 @@ from borgmatic.hooks.monitoring import cronitor as module
 
 def test_ping_monitor_hits_ping_url_for_start_state():
     hook_config = {'ping_url': 'https://example.com'}
-    flexmock(module.requests).should_receive('get').with_args('https://example.com/run').and_return(
-        flexmock(ok=True)
-    )
+    flexmock(module.requests).should_receive('get').with_args(
+        'https://example.com/run', timeout=int
+    ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
         hook_config,
@@ -22,7 +22,7 @@ def test_ping_monitor_hits_ping_url_for_start_state():
 def test_ping_monitor_hits_ping_url_for_finish_state():
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/complete'
+        'https://example.com/complete', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -38,7 +38,7 @@ def test_ping_monitor_hits_ping_url_for_finish_state():
 def test_ping_monitor_hits_ping_url_for_fail_state():
     hook_config = {'ping_url': 'https://example.com'}
     flexmock(module.requests).should_receive('get').with_args(
-        'https://example.com/fail'
+        'https://example.com/fail', timeout=int
     ).and_return(flexmock(ok=True))
 
     module.ping_monitor(
@@ -88,9 +88,9 @@ def test_ping_monitor_with_other_error_logs_warning():
     response.should_receive('raise_for_status').and_raise(
         module.requests.exceptions.RequestException
     )
-    flexmock(module.requests).should_receive('get').with_args('https://example.com/run').and_return(
-        response
-    )
+    flexmock(module.requests).should_receive('get').with_args(
+        'https://example.com/run', timeout=int
+    ).and_return(response)
     flexmock(module.logger).should_receive('warning').once()
 
     module.ping_monitor(

@@ -8,6 +8,10 @@
  * #1099: Clarify documentation on command hooks order of execution.
  * #1100: Fix a bug in which "borg --version" failing isn't considered a "fail" state in a command
    hook.
+ * Use the Bandit security analysis tool when running tests.
+ * SECURITY: Add timeouts to all monitoring hooks to prevent hangs on network requests.
+ * SECURITY: For the "spot" check, use a more secure source of randomness when selecting paths to
+   check.
 
 2.0.6
  * #1068: Fix a warning from LVM about leaked file descriptors.

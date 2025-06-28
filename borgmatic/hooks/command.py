@@ -144,7 +144,7 @@ def execute_hooks(command_hooks, umask, working_directory, dry_run, **context):
                     output_log_level=(
                         logging.ERROR if hook_config.get('after') == 'error' else logging.ANSWER
                     ),
-                    shell=True,
+                    shell=True,  # noqa: S604
                     environment=make_environment(os.environ),
                     working_directory=working_directory,
                 )
