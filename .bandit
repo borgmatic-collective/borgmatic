@@ -1,0 +1,3 @@
+[bandit]
+exclude=tests
+skips=S105,S404
