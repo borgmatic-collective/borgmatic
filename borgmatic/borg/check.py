@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import shlex
 
 import borgmatic.config.paths
 from borgmatic.borg import environment, feature, flags, repo_info
@@ -171,7 +172,7 @@ def check_archives(
             + (('--lock-wait', str(lock_wait)) if lock_wait else ())
             + verbosity_flags
             + (('--progress',) if config.get('progress') else ())
-            + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+            + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
             + flags.make_repository_flags(repository_path, local_borg_version)
         )
 

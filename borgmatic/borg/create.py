@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+import shlex
 import stat
 import textwrap
 
@@ -125,14 +126,17 @@ def make_base_create_command(
     local_path='borg',
     remote_path=None,
     json=False,
+    comment=None,
     stream_processes=None,
 ):
     '''
     Given verbosity/dry-run flags, a local or remote repository path, a configuration dict, a
-    sequence of patterns as borgmatic.borg.pattern.Pattern instances, the local Borg version,
-    global arguments as an argparse.Namespace instance, and a sequence of borgmatic source
-    directories, return a tuple of (base Borg create command flags, Borg create command positional
-    arguments, open pattern file handle).
+    sequence of patterns as borgmatic.borg.pattern.Pattern instances, the local Borg version, global
+    arguments as an argparse.Namespace instance, the borgmatic runtime directory, a string suffix to
+    add to the archive name, the local Borg path, the remote Borg path, whether to output JSON,
+    comment text to add to the created archive, and a sequence of processes streaming data to Borg,
+    return a tuple of (base Borg create command flags, Borg create command positional arguments,
+    open pattern file handle).
     '''
     if config.get('source_directories_must_exist', False):
         borgmatic.borg.pattern.check_all_root_patterns_exist(patterns)
@@ -185,6 +189,7 @@ def make_base_create_command(
         + ('create',)
         + (('--patterns-from', patterns_file.name) if patterns_file else ())
         + flags.make_exclude_flags(config)
+        + (('--comment', comment) if comment else ())
         + (('--checkpoint-interval', str(checkpoint_interval)) if checkpoint_interval else ())
         + (('--checkpoint-volume', str(checkpoint_volume)) if checkpoint_volume else ())
         + (('--chunker-params', chunker_params) if chunker_params else ())
@@ -209,7 +214,7 @@ def make_base_create_command(
             else ()
         )
         + (('--dry-run',) if dry_run else ())
-        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
     )
 
     create_positional_arguments = flags.make_repository_archive_flags(
@@ -275,12 +280,16 @@ def create_archive(
     local_path='borg',
     remote_path=None,
     json=False,
+    comment=None,
     stream_processes=None,
 ):
     '''
     Given verbosity/dry-run flags, a local or remote repository path, a configuration dict, a
-    sequence of loaded configuration paths, the local Borg version, and global arguments as an
-    argparse.Namespace instance, create a Borg archive and return Borg's JSON output (if any).
+    sequence of loaded configuration paths, the local Borg version, global arguments as an
+    argparse.Namespace instance, the borgmatic runtime directory, a string suffix to add to the
+    archive name, the local Borg path, the remote Borg path, whether to output JSON, and comment
+    text to add to the created archive, and a sequence of processes streaming data to Borg, create a
+    Borg archive and return Borg's JSON output (if any).
 
     If a sequence of stream processes is given (instances of subprocess.Popen), then execute the
     create command while also triggering the given processes to produce output.
@@ -301,6 +310,7 @@ def create_archive(
         local_path,
         remote_path,
         json,
+        comment,
         stream_processes,
     )
 

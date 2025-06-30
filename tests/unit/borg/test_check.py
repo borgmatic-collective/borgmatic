@@ -911,12 +911,14 @@ def test_check_archives_with_retention_prefix():
 
 
 def test_check_archives_with_extra_borg_options_passes_through_to_borg():
-    config = {'extra_borg_options': {'check': '--extra --options'}}
+    config = {'extra_borg_options': {'check': '--extra --options "value with space"'}}
     flexmock(module).should_receive('make_check_name_flags').with_args(
         {'repository'}, ()
     ).and_return(())
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(('borg', 'check', '--extra', '--options', 'repo'))
+    insert_execute_command_mock(
+        ('borg', 'check', '--extra', '--options', 'value with space', 'repo')
+    )
 
     module.check_archives(
         repository_path='repo',

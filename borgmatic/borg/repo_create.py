@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import shlex
 import subprocess
 
 import borgmatic.config.paths
@@ -86,7 +87,7 @@ def create_repository(
         + (('--lock-wait', str(lock_wait)) if lock_wait else ())
         + (('--remote-path', remote_path) if remote_path else ())
         + (('--umask', str(umask)) if umask else ())
-        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

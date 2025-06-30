@@ -392,6 +392,39 @@ def test_make_base_create_command_includes_dry_run_in_borg_command():
     assert not pattern_file
 
 
+def test_make_base_create_command_includes_comment_in_borg_command():
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_list_filter_flags').and_return('FOO')
+    flexmock(module.flags).should_receive('get_default_archive_name_format').and_return(
+        '{hostname}'
+    )
+    flexmock(module.feature).should_receive('available').and_return(True)
+    flexmock(module.borgmatic.borg.flags).should_receive('make_exclude_flags').and_return(())
+    flexmock(module.flags).should_receive('make_repository_archive_flags').and_return(
+        (f'repo::{DEFAULT_ARCHIVE_NAME}',)
+    )
+
+    (create_flags, create_positional_arguments, pattern_file) = module.make_base_create_command(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': ['exclude'],
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/run/borgmatic',
+        comment='a comment',
+    )
+
+    assert create_flags == ('borg', 'create', '--comment', 'a comment')
+    assert create_positional_arguments == REPO_ARCHIVE
+    assert not pattern_file
+
+
 def test_make_base_create_command_includes_local_path_in_borg_command():
     flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
     flexmock(module.borgmatic.borg.pattern).should_receive('write_patterns_file').and_return(None)
@@ -833,7 +866,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
         config={
             'source_directories': ['foo', 'bar'],
             'repositories': ['repo'],
-            'extra_borg_options': {'create': '--extra --options'},
+            'extra_borg_options': {'create': '--extra --options "value with space"'},
         },
         patterns=[Pattern('foo'), Pattern('bar')],
         local_borg_version='1.2.3',
@@ -841,7 +874,7 @@ def test_make_base_create_command_includes_extra_borg_options_in_borg_command():
         borgmatic_runtime_directory='/run/borgmatic',
     )
 
-    assert create_flags == ('borg', 'create', '--extra', '--options')
+    assert create_flags == ('borg', 'create', '--extra', '--options', 'value with space')
     assert create_positional_arguments == REPO_ARCHIVE
     assert not pattern_file
 
@@ -1440,6 +1473,41 @@ def test_create_archive_with_stats_and_json_calls_borg_without_stats_flag():
     )
 
     assert json_output == '[]'
+
+
+def test_create_archive_with_comment_calls_borg_with_comment_flag():
+    flexmock(module.borgmatic.logger).should_receive('add_custom_log_levels')
+    flexmock(module.logging).ANSWER = module.borgmatic.logger.ANSWER
+    flexmock(module).should_receive('make_base_create_command').and_return(
+        (('borg', 'create', '--comment', 'a comment'), REPO_ARCHIVE, flexmock())
+    )
+    flexmock(module.environment).should_receive('make_environment')
+    flexmock(module.borgmatic.config.paths).should_receive('get_working_directory').and_return(None)
+    flexmock(module).should_receive('execute_command').with_args(
+        ('borg', 'create', '--comment', 'a comment') + REPO_ARCHIVE,
+        output_log_level=logging.INFO,
+        output_file=None,
+        borg_local_path='borg',
+        borg_exit_codes=None,
+        working_directory=None,
+        environment=None,
+    )
+
+    module.create_archive(
+        dry_run=False,
+        repository_path='repo',
+        config={
+            'source_directories': ['foo', 'bar'],
+            'repositories': ['repo'],
+            'exclude_patterns': None,
+        },
+        patterns=[Pattern('foo'), Pattern('bar')],
+        local_borg_version='1.2.3',
+        global_arguments=flexmock(),
+        borgmatic_runtime_directory='/borgmatic/run',
+        json=False,
+        comment='a comment',
+    )
 
 
 def test_create_archive_calls_borg_with_working_directory():

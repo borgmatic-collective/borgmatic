@@ -484,7 +484,7 @@ def test_create_repository_with_umask_calls_borg_with_umask_flag():
 def test_create_repository_with_extra_borg_options_calls_borg_with_extra_options():
     insert_repo_info_command_not_found_mock()
     insert_repo_create_command_mock(
-        REPO_CREATE_COMMAND + ('--extra', '--options', '--repo', 'repo')
+        REPO_CREATE_COMMAND + ('--extra', '--options', 'value with space', '--repo', 'repo')
     )
     flexmock(module.feature).should_receive('available').and_return(True)
     flexmock(module.flags).should_receive('make_repository_flags').and_return(
@@ -497,7 +497,7 @@ def test_create_repository_with_extra_borg_options_calls_borg_with_extra_options
     module.create_repository(
         dry_run=False,
         repository_path='repo',
-        config={'extra_borg_options': {'repo-create': '--extra --options'}},
+        config={'extra_borg_options': {'repo-create': '--extra --options "value with space"'}},
         local_borg_version='2.3.4',
         global_arguments=flexmock(),
         encryption_mode='repokey',

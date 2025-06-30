@@ -8,6 +8,9 @@
  * #1099: Clarify documentation on command hooks order of execution.
  * #1100: Fix a bug in which "borg --version" failing isn't considered a "fail" state in a command
    hook.
+ * #1108: Fix a bug in which quoted "extra_borg_options" values containing spaces are passed to Borg
+   incorrectly.
+ * #1108: Add a "--comment" flag to the "create" action for creating an archive with a comment.
  * Use the Bandit security analysis tool when running tests.
  * SECURITY: Add timeouts to all monitoring hooks to prevent hangs on network requests.
  * SECURITY: For the "spot" check, use a more secure source of randomness when selecting paths to

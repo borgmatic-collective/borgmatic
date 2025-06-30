@@ -26,6 +26,7 @@ def test_run_create_executes_and_calls_hooks_for_configured_repository():
         progress=flexmock(),
         statistics=flexmock(),
         json=False,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -67,6 +68,7 @@ def test_run_create_runs_with_selected_repository():
         progress=flexmock(),
         statistics=flexmock(),
         json=False,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -99,6 +101,7 @@ def test_run_create_bails_if_repository_does_not_match():
         progress=flexmock(),
         statistics=flexmock(),
         json=False,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -131,6 +134,7 @@ def test_run_create_with_both_list_and_json_errors():
         progress=flexmock(),
         statistics=flexmock(),
         json=True,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -164,6 +168,7 @@ def test_run_create_with_both_list_and_progress_errors():
         progress=flexmock(),
         statistics=flexmock(),
         json=False,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -210,6 +215,7 @@ def test_run_create_produces_json():
         progress=flexmock(),
         statistics=flexmock(),
         json=True,
+        comment=None,
         list_details=flexmock(),
     )
     global_arguments = flexmock(monitoring_verbosity=1, dry_run=False)
@@ -268,6 +274,7 @@ def test_run_create_with_active_dumps_roundtrips_via_checkpoint_archive():
         progress=flexmock(),
         statistics=flexmock(),
         json=False,
+        comment=None,
         list_details=flexmock(),
     )
 
@@ -352,6 +359,7 @@ def test_run_create_with_active_dumps_json_updates_archive_info():
         progress=flexmock(),
         statistics=flexmock(),
         json=True,
+        comment=None,
         list_details=flexmock(),
     )
 

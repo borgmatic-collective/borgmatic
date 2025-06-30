@@ -472,13 +472,15 @@ def test_prune_archives_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module.feature).should_receive('available').with_args(
         module.feature.Feature.NO_PRUNE_STATS, '1.2.3'
     ).and_return(False)
-    insert_execute_command_mock(PRUNE_COMMAND + ('--extra', '--options', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        PRUNE_COMMAND + ('--extra', '--options', 'value with space', 'repo'), logging.INFO
+    )
 
     prune_arguments = flexmock(statistics=False, list_details=False)
     module.prune_archives(
         dry_run=False,
         repository_path='repo',
-        config={'extra_borg_options': {'prune': '--extra --options'}},
+        config={'extra_borg_options': {'prune': '--extra --options "value with space"'}},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
         prune_arguments=prune_arguments,

@@ -92,6 +92,7 @@ def run_create(
             local_path=local_path,
             remote_path=remote_path,
             json=create_arguments.json,
+            comment=create_arguments.comment,
             stream_processes=stream_processes,
         )
 

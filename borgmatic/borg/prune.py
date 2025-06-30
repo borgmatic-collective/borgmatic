@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import borgmatic.config.paths
 import borgmatic.logger
@@ -90,7 +91,7 @@ def prune_archives(
         + (('--list',) if config.get('list_details') else ())
         + (('--debug', '--show-rc') if logger.isEnabledFor(logging.DEBUG) else ())
         + (('--dry-run',) if dry_run else ())
-        + (tuple(extra_borg_options.split(' ')) if extra_borg_options else ())
+        + (tuple(shlex.split(extra_borg_options)) if extra_borg_options else ())
         + flags.make_repository_flags(repository_path, local_borg_version)
     )
 

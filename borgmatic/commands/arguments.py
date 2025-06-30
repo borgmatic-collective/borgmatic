@@ -872,6 +872,11 @@ def make_parsers(schema, unparsed_arguments):
     create_group.add_argument(
         '--json', dest='json', default=False, action='store_true', help='Output results as JSON'
     )
+    create_group.add_argument(
+        '--comment',
+        metavar='COMMENT',
+        help='Add a comment text to the archive',
+    )
     create_group.add_argument('-h', '--help', action='help', help='Show this help message and exit')
 
     check_parser = action_parsers.add_parser(

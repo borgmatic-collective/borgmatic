@@ -232,12 +232,14 @@ def test_compact_segments_with_lock_wait_calls_borg_with_lock_wait_flags():
 
 def test_compact_segments_with_extra_borg_options_calls_borg_with_extra_options():
     flexmock(module.flags).should_receive('make_repository_flags').and_return(('repo',))
-    insert_execute_command_mock(COMPACT_COMMAND + ('--extra', '--options', 'repo'), logging.INFO)
+    insert_execute_command_mock(
+        COMPACT_COMMAND + ('--extra', '--options', 'value with space', 'repo'), logging.INFO
+    )
 
     module.compact_segments(
         dry_run=False,
         repository_path='repo',
-        config={'extra_borg_options': {'compact': '--extra --options'}},
+        config={'extra_borg_options': {'compact': '--extra --options "value with space"'}},
         local_borg_version='1.2.3',
         global_arguments=flexmock(),
     )
