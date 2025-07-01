@@ -1,4 +1,4 @@
-2.0.7.dev0
+2.0.7
  * #1032: Fix a bug in which a Borg archive gets created even when a database hook fails.
  * #1043: Support Btrfs subvolume paths in "source_directories" even when the subvolume is mounted
    elsewhere.
