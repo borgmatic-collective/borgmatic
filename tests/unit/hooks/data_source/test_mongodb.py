@@ -809,7 +809,6 @@ def test_build_restore_command_prevents_shell_injection():
         extract_process, database, config, dump_filename, connection_params
     )
 
-    # print(command)
     # Ensure the malicious input is properly escaped and does not execute
     assert 'rm -rf /' not in command
     assert ';' not in command

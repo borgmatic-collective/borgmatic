@@ -10,6 +10,7 @@ codespell==2.4.1
 coverage==7.9.1
 flake8==7.3.0
 flake8-bandit==4.1.1
+flake8-eradicate==1.5.0
 flake8-quotes==3.4.0
 flake8-use-fstring==1.4
 flake8-variables-names==0.0.6
