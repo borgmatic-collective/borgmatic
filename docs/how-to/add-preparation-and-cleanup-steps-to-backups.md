@@ -95,6 +95,10 @@ configured, meaning that the hook commands are run in that directory.
 same `everything` command hook is present in multiple configuration files,
 borgmatic only runs it once.
 
+borgmatic's `--repository` flag does not impact which command hooks get run. But
+you can use the `--config` flag to limit the configuration files (and thus
+command hooks) used.
+
 
 ### Order of execution
 
