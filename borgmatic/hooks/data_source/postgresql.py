@@ -50,12 +50,16 @@ def make_environment(database, config, restore_connection_params=None):
 
     if 'ssl_mode' in database:
         environment['PGSSLMODE'] = database['ssl_mode']
+
     if 'ssl_cert' in database:
         environment['PGSSLCERT'] = database['ssl_cert']
+
     if 'ssl_key' in database:
         environment['PGSSLKEY'] = database['ssl_key']
+
     if 'ssl_root_cert' in database:
         environment['PGSSLROOTCERT'] = database['ssl_root_cert']
+
     if 'ssl_crl' in database:
         environment['PGSSLCRL'] = database['ssl_crl']
 
@@ -76,8 +80,10 @@ def database_names_to_dump(database, config, environment, dry_run):
 
     if requested_name != 'all':
         return (requested_name,)
+
     if not database.get('format'):
         return ('all',)
+
     if dry_run:
         return ()
 

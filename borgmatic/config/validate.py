@@ -194,6 +194,7 @@ def repositories_match(first, second):
     '''
     if isinstance(first, str):
         first = {'path': first, 'label': first}
+
     if isinstance(second, str):
         second = {'path': second, 'label': second}
 

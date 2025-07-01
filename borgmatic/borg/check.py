@@ -44,6 +44,7 @@ def make_archive_filter_flags(local_borg_version, config, checks, check_argument
         logger.warning(
             'Ignoring check_last option, as "archives" or "data" are not in consistency checks'
         )
+
     if prefix:
         logger.warning(
             'Ignoring consistency prefix option, as "archives" or "data" are not in consistency checks'
@@ -127,8 +128,10 @@ def check_archives(
     extra_borg_options = config.get('extra_borg_options', {}).get('check', '')
 
     verbosity_flags = ()
+
     if logger.isEnabledFor(logging.INFO):
         verbosity_flags = ('--info',)
+
     if logger.isEnabledFor(logging.DEBUG):
         verbosity_flags = ('--debug', '--show-rc')
 

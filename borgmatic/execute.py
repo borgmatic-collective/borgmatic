@@ -31,6 +31,7 @@ def interpret_exit_code(command, exit_code, borg_local_path=None, borg_exit_code
     '''
     if exit_code is None:
         return Exit_status.STILL_RUNNING
+
     if exit_code == 0:
         return Exit_status.SUCCESS
 
@@ -374,6 +375,7 @@ def execute_command_and_capture_output(
             == Exit_status.ERROR
         ):
             raise
+
         output = error.output
 
     return output.decode() if output is not None else None
@@ -435,6 +437,7 @@ def execute_command_with_processes(
             if process.poll() is None:
                 process.stdout.read(0)
                 process.kill()
+
         raise
 
     with borgmatic.logger.Log_prefix(None):  # Log command output without any prefix.

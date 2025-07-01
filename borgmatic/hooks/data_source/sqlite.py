@@ -57,6 +57,7 @@ def dump_data_sources(
 
         if database['name'] == 'all':
             logger.warning('The "all" database name has no meaning for SQLite databases')
+
         if not os.path.exists(database_path):
             logger.warning(
                 f'No SQLite database at {database_path}; an empty database will be created and dumped'

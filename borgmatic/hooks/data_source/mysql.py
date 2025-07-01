@@ -36,6 +36,7 @@ def database_names_to_dump(database, config, username, password, environment, dr
     '''
     if database['name'] != 'all':
         return (database['name'],)
+
     if dry_run:
         return ()
 

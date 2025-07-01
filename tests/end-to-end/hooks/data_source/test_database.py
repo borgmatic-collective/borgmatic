@@ -295,12 +295,16 @@ def create_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         get_mongodb_database_client(config, use_restore_options)['test4'].insert_one({'thing': 1})
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
@@ -313,12 +317,16 @@ def drop_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         get_mongodb_database_client(config, use_restore_options)['test4'].drop()
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 
@@ -334,10 +342,13 @@ def select_test_tables(config, use_restore_options=False):
 
     if 'postgresql_databases' in config:
         run_postgresql_command(command.format(id=1), config, use_restore_options)
+
     if 'mariadb_databases' in config:
         run_mariadb_command(command.format(id=2), config, use_restore_options)
+
     if 'mysql_databases' in config:
         run_mariadb_command(command.format(id=3), config, use_restore_options, binary_name='mysql')
+
     if 'mongodb_databases' in config:
         assert (
             get_mongodb_database_client(config, use_restore_options)['test4'].count_documents(
@@ -345,6 +356,7 @@ def select_test_tables(config, use_restore_options=False):
             )
             > 0
         )
+
     if 'sqlite_databases' in config:
         run_sqlite_command(command.format(id=5), config, use_restore_options)
 

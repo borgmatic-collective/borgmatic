@@ -73,6 +73,7 @@ def ping_monitor(hook_config, config, config_filename, state, monitoring_log_lev
                 logger.warning(
                     'ntfy access_token is set but so is username/password, only using access_token'
                 )
+
             auth = requests.auth.HTTPBasicAuth('', access_token)
         elif (username and password) is not None:
             auth = requests.auth.HTTPBasicAuth(username, password)

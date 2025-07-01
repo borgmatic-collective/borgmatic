@@ -57,10 +57,12 @@ def parse_checks(config, only_checks=None):
         logger.warning(
             'The "disabled" value for the "checks" option is deprecated and will be removed from a future release; use "skip_actions" instead'
         )
+
         if len(checks) > 1:
             logger.warning(
                 'Multiple checks are configured, but one of them is "disabled"; not running any checks'
             )
+
         return ()
 
     return checks
@@ -164,6 +166,7 @@ def filter_checks_on_frequency(
                     **dict.fromkeys(day for day in days if day != 'weekday'),
                     **dict.fromkeys(WEEKDAY_DAYS),
                 }
+
             if 'weekend' in days:
                 days = {
                     **dict.fromkeys(day for day in days if day != 'weekend'),
@@ -794,4 +797,5 @@ def run_check(
                 remote_path,
                 borgmatic_runtime_directory,
             )
+
         write_check_time(make_check_time_path(config, repository_id, 'spot'))

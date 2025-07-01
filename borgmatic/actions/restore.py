@@ -40,6 +40,7 @@ def dumps_match(first, second, default_port=None):
         if default_port is not None and field_name == 'port':
             if first_value == default_port and second_value is None:
                 continue
+
             if second_value == default_port and first_value is None:
                 continue
 

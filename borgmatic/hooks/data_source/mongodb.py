@@ -80,6 +80,7 @@ def dump_data_sources(
             processes.append(
                 execute_command(command, shell=True, run_to_completion=False)  # noqa: S604
             )
+
     if not dry_run:
         patterns.append(
             borgmatic.borg.pattern.Pattern(
@@ -259,24 +260,33 @@ def build_restore_command(extract_process, database, config, dump_filename, conn
         shlex.quote(part)
         for part in shlex.split(database.get('mongorestore_command') or 'mongorestore')
     )
+
     if extract_process:
         command.append('--archive')
     else:
         command.extend(('--dir', dump_filename))
+
     if database['name'] != 'all':
         command.extend(('--drop',))
+
     if hostname:
         command.extend(('--host', hostname))
+
     if port:
         command.extend(('--port', str(port)))
+
     if username:
         command.extend(('--username', username))
+
     if password:
         command.extend(('--config', make_password_config_file(password)))
+
     if 'authentication_database' in database:
         command.extend(('--authenticationDatabase', database['authentication_database']))
+
     if 'restore_options' in database:
         command.extend(database['restore_options'].split(' '))
+
     if database.get('schemas'):
         for schema in database['schemas']:
             command.extend(('--nsInclude', schema))

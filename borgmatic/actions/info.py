@@ -28,6 +28,7 @@ def run_info(
     ):
         if not info_arguments.json:
             logger.answer('Displaying archive summary information')
+
         archive_name = borgmatic.borg.repo_list.resolve_archive_name(
             repository['path'],
             info_arguments.archive,

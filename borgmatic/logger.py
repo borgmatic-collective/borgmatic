@@ -344,8 +344,10 @@ def configure_logging(
 
     if syslog_log_level is None:
         syslog_log_level = logging.DISABLED
+
     if log_file_log_level is None:
         log_file_log_level = console_log_level
+
     if monitoring_log_level is None:
         monitoring_log_level = console_log_level
 

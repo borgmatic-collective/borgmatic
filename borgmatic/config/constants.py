@@ -13,6 +13,7 @@ def coerce_scalar(value):
 
     if value == 'true' or value == 'True':
         return True
+
     if value == 'false' or value == 'False':
         return False
 

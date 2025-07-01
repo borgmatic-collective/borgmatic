@@ -267,6 +267,7 @@ def merge_source_configuration_into_destination(destination_config, source_confi
     '''
     if not source_config:
         return destination_config
+
     if not destination_config or not isinstance(source_config, collections.abc.Mapping):
         return source_config
 

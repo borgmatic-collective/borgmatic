@@ -341,6 +341,7 @@ def normalize(config_filename, config):
                         )
                     )
                 )
+
             if ':' in repository_path:
                 if repository_path.startswith('file://'):
                     updated_repository_path = os.path.abspath(

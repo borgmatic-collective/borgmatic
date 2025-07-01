@@ -241,9 +241,11 @@ def run_configuration(config_filename, config, config_paths, arguments):
                     with Log_prefix(repository.get('label', repository['path'])):
                         logger.debug('Running actions for repository')
                         timeout = retry_num * retry_wait
+
                         if timeout:
                             logger.warning(f'Sleeping {timeout}s before next retry')
                             time.sleep(timeout)
+
                         try:
                             yield from run_actions(
                                 arguments=arguments,
@@ -1060,17 +1062,21 @@ def main(extra_summary_logs=[]):  # pragma: no cover
     except SystemExit as error:
         if error.code == 0:
             raise error
+
         configure_logging(logging.CRITICAL)
         logger.critical(f"Error parsing arguments: {' '.join(sys.argv)}")
         exit_with_help_link()
 
     global_arguments = arguments['global']
+
     if global_arguments.version:
         print(importlib.metadata.version('borgmatic'))
         sys.exit(0)
+
     if global_arguments.bash_completion:
         print(borgmatic.commands.completion.bash.bash_completion())
         sys.exit(0)
+
     if global_arguments.fish_completion:
         print(borgmatic.commands.completion.fish.fish_completion())
         sys.exit(0)
