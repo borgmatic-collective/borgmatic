@@ -35,7 +35,7 @@ def run_recreate(
 
         # Collect and process patterns.
         processed_patterns = process_patterns(
-            collect_patterns(config), borgmatic.config.paths.get_working_directory(config)
+            collect_patterns(config), config, borgmatic.config.paths.get_working_directory(config)
         )
 
         archive = borgmatic.borg.repo_list.resolve_archive_name(

@@ -384,6 +384,7 @@ def collect_spot_check_source_paths(
             ),
             patterns=borgmatic.actions.pattern.process_patterns(
                 borgmatic.actions.pattern.collect_patterns(config),
+                config,
                 working_directory,
             ),
             local_borg_version=local_borg_version,

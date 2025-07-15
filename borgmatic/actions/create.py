@@ -55,7 +55,9 @@ def run_create(
             borgmatic_runtime_directory,
             global_arguments.dry_run,
         )
-        patterns = pattern.process_patterns(pattern.collect_patterns(config), working_directory)
+        patterns = pattern.process_patterns(
+            pattern.collect_patterns(config), config, working_directory
+        )
         active_dumps = borgmatic.hooks.dispatch.call_hooks(
             'dump_data_sources',
             config,
@@ -70,7 +72,7 @@ def run_create(
         # we could end up with duplicate paths that cause Borg to hang when it tries to read from
         # the same named pipe twice.
         patterns = pattern.process_patterns(
-            patterns, working_directory, skip_expand_paths=config_paths
+            patterns, config, working_directory, skip_expand_paths=config_paths
         )
         stream_processes = [process for processes in active_dumps.values() for process in processes]
 

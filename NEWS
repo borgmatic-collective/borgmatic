@@ -1,3 +1,7 @@
+2.0.8.dev0
+ * #1118: Fix a bug in which Borg hangs during database backup when different filesystems are in
+   use.
+
 2.0.7
  * #1032: Fix a bug in which a Borg archive gets created even when a database hook fails.
  * #1043: Support Btrfs subvolume paths in "source_directories" even when the subvolume is mounted
